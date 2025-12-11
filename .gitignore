@@ -1,0 +1,80 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Generated localization files (can be regenerated)
+# Uncomment if you want to commit generated l10n files:
+# **/l10n/app_localizations*.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Android keystore files (NEVER commit these)
+*.jks
+*.keystore
+key.properties
+
+# iOS/macOS signing and provisioning
+**/ios/Runner.xcworkspace/xcuserdata/
+**/macos/Runner.xcworkspace/xcuserdata/
+**/ios/Pods/
+**/macos/Pods/
+*.mobileprovision
+*.p12
+*.cer
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Firebase and Google Services (proprietary, F-Droid incompatible)
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# Sensitive data
+secrets.dart
+config/secrets.yaml

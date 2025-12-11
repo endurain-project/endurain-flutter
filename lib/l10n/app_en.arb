@@ -1,0 +1,144 @@
+{
+  "@@locale": "en",
+  "@@context": "Endurain Mobile - English translations organized by feature",
+
+  "@sectionCommon": "=== COMMON / SHARED (core/utils/dialog_utils.dart, core/utils/validators.dart) ===",
+  "error": "Error",
+  "@error": {
+    "description": "Generic error title - Used in: dialog_utils.dart"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button label - Used in: dialog_utils.dart"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button label - Used in: dialog_utils.dart, server_settings_screen.dart"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button label - Used in: server_settings_screen.dart"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Back button label - Used in: login_screen.dart"
+  },
+  "requiredField": "This field is required",
+  "@requiredField": {
+    "description": "Validation message for required fields - Used in: validators.dart"
+  },
+  "invalidUrl": "Please enter a valid URL",
+  "@invalidUrl": {
+    "description": "Validation message for invalid URL - Used in: validators.dart"
+  },
+
+  "@sectionAuth": "=== AUTH (features/auth/login_screen.dart) ===",
+  "loginTitle": "Login",
+  "@loginTitle": {
+    "description": "Title for login screen"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button label"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button label - Used in: settings_screen.dart, server_settings_screen.dart"
+  },
+  "logoutConfirmTitle": "Logout",
+  "@logoutConfirmTitle": {
+    "description": "Logout confirmation dialog title - Used in: dialog_utils.dart (via server_settings_screen)"
+  },
+  "logoutConfirmMessage": "Are you sure you want to logout?",
+  "@logoutConfirmMessage": {
+    "description": "Logout confirmation dialog message - Used in: server_settings_screen.dart"
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Username field label - Used in: login_screen.dart, server_settings_screen.dart"
+  },
+  "usernameHint": "Enter your username",
+  "@usernameHint": {
+    "description": "Username field hint text"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label - Used in: login_screen.dart"
+  },
+  "passwordHint": "Enter your password",
+  "@passwordHint": {
+    "description": "Password field hint text"
+  },
+  "showPassword": "Show password",
+  "@showPassword": {
+    "description": "Show/hide password toggle label"
+  },
+  "mfaTitle": "Two-Factor Authentication",
+  "@mfaTitle": {
+    "description": "MFA screen title"
+  },
+  "mfaCode": "MFA code",
+  "@mfaCode": {
+    "description": "MFA code field label"
+  },
+  "mfaCodeHint": "Enter 6-digit code",
+  "@mfaCodeHint": {
+    "description": "MFA code field hint text"
+  },
+  "mfaCodeRequired": "Please enter MFA code",
+  "@mfaCodeRequired": {
+    "description": "MFA code validation error message"
+  },
+  "verify": "Verify",
+  "@verify": {
+    "description": "MFA verification button label"
+  },
+
+  "@sectionMap": "=== MAP (features/map/map_screen.dart) ===",
+  "mapTab": "Map",
+  "@mapTab": {
+    "description": "Map tab label - Used in: app_bottom_nav.dart"
+  },
+
+  "@sectionSettings": "=== SETTINGS (features/settings/) ===",
+  "settingsTab": "Settings",
+  "@settingsTab": {
+    "description": "Settings tab label - Used in: app_bottom_nav.dart"
+  },
+  "settingsScreen": "Settings",
+  "@settingsScreen": {
+    "description": "Settings screen title - Used in: settings_screen.dart"
+  },
+  "serverSettings": "Server",
+  "@serverSettings": {
+    "description": "Server settings navigation label - Used in: settings_screen.dart"
+  },
+  "serverSettingsTitle": "Server settings",
+  "@serverSettingsTitle": {
+    "description": "Server settings screen title - Used in: server_settings_screen.dart"
+  },
+  "loggedIn": "Logged in",
+  "@loggedIn": {
+    "description": "Logged in section header - Used in: server_settings_screen.dart"
+  },
+  "serverUrl": "Server URL",
+  "@serverUrl": {
+    "description": "Server URL field label - Used in: login_screen.dart, server_settings_screen.dart"
+  },
+  "serverUrlHint": "https://example.com",
+  "@serverUrlHint": {
+    "description": "Server URL field hint text - Used in: login_screen.dart"
+  },
+  "tileServerUrl": "Map tile server URL",
+  "@tileServerUrl": {
+    "description": "Tile server URL field label - Used in: server_settings_screen.dart"
+  },
+  "tileServerUrlHint": "https://tile.openstreetmap.org/...",
+  "@tileServerUrlHint": {
+    "description": "Tile server URL field hint text"
+  },
+  "savedSuccessfully": "Settings saved successfully",
+  "@savedSuccessfully": {
+    "description": "Settings save success message - Used in: server_settings_screen.dart"
+  }
+}

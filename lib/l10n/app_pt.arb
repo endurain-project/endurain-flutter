@@ -1,0 +1,144 @@
+{
+  "@@locale": "pt",
+  "@@context": "Endurain Mobile - Traduções em português organizadas por funcionalidade",
+
+  "@sectionCommon": "=== COMUM / PARTILHADO (core/utils/dialog_utils.dart, core/utils/validators.dart) ===",
+  "error": "Erro",
+  "@error": {
+    "description": "Título de erro genérico - Usado em: dialog_utils.dart"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "Rótulo do botão OK - Usado em: dialog_utils.dart"
+  },
+  "cancel": "Cancelar",
+  "@cancel": {
+    "description": "Rótulo do botão Cancelar - Usado em: dialog_utils.dart, server_settings_screen.dart"
+  },
+  "save": "Guardar",
+  "@save": {
+    "description": "Rótulo do botão Guardar - Usado em: server_settings_screen.dart"
+  },
+  "back": "Voltar",
+  "@back": {
+    "description": "Rótulo do botão Voltar - Usado em: login_screen.dart"
+  },
+  "requiredField": "Este campo é obrigatório",
+  "@requiredField": {
+    "description": "Mensagem de validação para campos obrigatórios - Usado em: validators.dart"
+  },
+  "invalidUrl": "Por favor, insira um URL válido",
+  "@invalidUrl": {
+    "description": "Mensagem de validação para URL inválido - Usado em: validators.dart"
+  },
+
+  "@sectionAuth": "=== AUTENTICAÇÃO (features/auth/login_screen.dart) ===",
+  "loginTitle": "Login",
+  "@loginTitle": {
+    "description": "Título do ecrã de login"
+  },
+  "login": "Entrar",
+  "@login": {
+    "description": "Rótulo do botão de login"
+  },
+  "logout": "Sair",
+  "@logout": {
+    "description": "Rótulo do botão de logout - Usado em: settings_screen.dart, server_settings_screen.dart"
+  },
+  "logoutConfirmTitle": "Sair",
+  "@logoutConfirmTitle": {
+    "description": "Título do diálogo de confirmação de logout - Usado em: dialog_utils.dart (via server_settings_screen)"
+  },
+  "logoutConfirmMessage": "Tem certeza que deseja sair?",
+  "@logoutConfirmMessage": {
+    "description": "Mensagem do diálogo de confirmação de logout - Usado em: server_settings_screen.dart"
+  },
+  "username": "Nome de utilizador",
+  "@username": {
+    "description": "Rótulo do campo de nome de utilizador - Usado em: login_screen.dart, server_settings_screen.dart"
+  },
+  "usernameHint": "Insira o seu nome de utilizador",
+  "@usernameHint": {
+    "description": "Texto de dica do campo de nome de utilizador"
+  },
+  "password": "Palavra-passe",
+  "@password": {
+    "description": "Rótulo do campo de palavra-passe - Usado em: login_screen.dart"
+  },
+  "passwordHint": "Insira a sua palavra-passe",
+  "@passwordHint": {
+    "description": "Texto de dica do campo de palavra-passe"
+  },
+  "showPassword": "Mostrar senha",
+  "@showPassword": {
+    "description": "Rótulo da alternância de mostrar/ocultar palavra-passe"
+  },
+  "mfaTitle": "Autenticação de Dois Fatores",
+  "@mfaTitle": {
+    "description": "Título do ecrã de MFA"
+  },
+  "mfaCode": "Código MFA",
+  "@mfaCode": {
+    "description": "Rótulo do campo de código MFA"
+  },
+  "mfaCodeHint": "Insira o código de 6 dígitos",
+  "@mfaCodeHint": {
+    "description": "Texto de dica do campo de código MFA"
+  },
+  "mfaCodeRequired": "Por favor, insira o código MFA",
+  "@mfaCodeRequired": {
+    "description": "Mensagem de erro de validação do código MFA"
+  },
+  "verify": "Verificar",
+  "@verify": {
+    "description": "Rótulo do botão de verificação MFA"
+  },
+
+  "@sectionMap": "=== MAPA (features/map/map_screen.dart) ===",
+  "mapTab": "Mapa",
+  "@mapTab": {
+    "description": "Rótulo da aba do mapa - Usado em: app_bottom_nav.dart"
+  },
+
+  "@sectionSettings": "=== CONFIGURAÇÕES (features/settings/) ===",
+  "settingsTab": "Configurações",
+  "@settingsTab": {
+    "description": "Rótulo da aba de configurações - Usado em: app_bottom_nav.dart"
+  },
+  "settingsScreen": "Configurações",
+  "@settingsScreen": {
+    "description": "Título do ecrã de configurações - Usado em: settings_screen.dart"
+  },
+  "serverSettings": "Servidor",
+  "@serverSettings": {
+    "description": "Rótulo de navegação para configurações do servidor - Usado em: settings_screen.dart"
+  },
+  "serverSettingsTitle": "Definições do servidor",
+  "@serverSettingsTitle": {
+    "description": "Título do ecrã de configurações do servidor - Usado em: server_settings_screen.dart"
+  },
+  "loggedIn": "Autenticado",
+  "@loggedIn": {
+    "description": "Cabeçalho da secção de autenticação - Usado em: server_settings_screen.dart"
+  },
+  "serverUrl": "URL do servidor",
+  "@serverUrl": {
+    "description": "Rótulo do campo de URL do servidor - Usado em: login_screen.dart, server_settings_screen.dart"
+  },
+  "serverUrlHint": "https://example.com",
+  "@serverUrlHint": {
+    "description": "Texto de dica do campo de URL do servidor - Usado em: login_screen.dart"
+  },
+  "tileServerUrl": "URL do servidor de mapas",
+  "@tileServerUrl": {
+    "description": "Rótulo do campo de URL do servidor de mapas - Usado em: server_settings_screen.dart"
+  },
+  "tileServerUrlHint": "https://tile.openstreetmap.org/...",
+  "@tileServerUrlHint": {
+    "description": "Texto de dica do campo de URL do servidor de mapas"
+  },
+  "savedSuccessfully": "Definições guardadas com sucesso",
+  "@savedSuccessfully": {
+    "description": "Mensagem de sucesso ao guardar configurações - Usado em: server_settings_screen.dart"
+  }
+}
