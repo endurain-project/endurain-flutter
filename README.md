@@ -3,8 +3,8 @@
 
   # Endurain Mobile
 
-  ![License](https://img.shields.io/github/license/joaovitoriasilva/endurain)
-  [![GitHub release](https://img.shields.io/github/v/release/joaovitoriasilva/endurain)](https://github.com/joaovitoriasilva/endurain/releases)
+  ![License](https://img.shields.io/github/license/endurain-project/endurain-flutter)
+  [![GitHub release](https://img.shields.io/github/v/release/endurain-project/endurain)](https://github.com/endurain-project/endurain-flutter/releases)
   [![Trademark Policy](https://img.shields.io/badge/trademark-Endurain%E2%84%A2-blue)](TRADEMARK.md)
 
   **Mobile companion app for Endurain fitness tracking service**  
@@ -28,7 +28,7 @@
 
 ## What is Endurain Mobile?
 
-Endurain Mobile is the official companion app for [Endurain](https://github.com/joaovitoriasilva/endurain), a self-hosted fitness tracking service. Built with Flutter, it provides a native mobile experience for tracking your fitness activities while maintaining full control over your data.
+Endurain Mobile is the official companion app for [Endurain](https://github.com/endurain-project/endurain), a self-hosted fitness tracking service. Built with Flutter, it provides a native mobile experience for tracking your fitness activities while maintaining full control over your data.
 
 The app is designed with privacy in mind, connecting directly to your self-hosted Endurain server without any third-party services or analytics.
 
@@ -96,8 +96,8 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/joaovitoriasilva/endurain.git
-cd endurain/endurain_mobile
+git clone https://github.com/endurain-project/endurain-flutter.git
+cd endurain-flutter
 ```
 
 2. Install dependencies:
