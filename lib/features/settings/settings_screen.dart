@@ -30,7 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       setState(() {
         _version =
-            '© ${UIConstants.copyrightStartYear} - $currentYear Endurain • ${packageInfo.version}+${packageInfo.buildNumber}';
+            '© ${UIConstants.copyrightStartYear} - $currentYear Endurain • ${packageInfo.version}';
       });
     }
   }
