@@ -197,5 +197,5 @@ See [`TRADEMARK.md`](TRADEMARK.md) for full details.
 ---
 
 <div align="center">
-  <sub>Built with ❤️ using Flutter | Part of the Endurain ecosystem</sub>
+  <sub>Built with ❤️ from Portugal | Part of the <a href="https://github.com/endurain-project">Endurain</a> ecosystem</sub>
 </div>
