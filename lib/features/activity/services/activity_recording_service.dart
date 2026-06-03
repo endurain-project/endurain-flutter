@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/repositories/active_activity_store.dart';
+import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
@@ -33,23 +39,64 @@ class ActivityRecordingService {
     DateTime Function()? now,
     DiagnosticsRecorder? diagnostics,
     LocationService? locationService,
-  }) : _now = now ?? DateTime.now,
-       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
-       _locationService = locationService ?? LocationService();
+    ActivityLocationRecorder? recorder,
+    ActiveActivityStore? activeStore,
+    String Function()? sessionIdProvider,
+  }) : this._(
+         now: now ?? DateTime.now,
+         diagnostics: diagnostics ?? const NoopDiagnosticsRecorder(),
+         locationService: locationService ?? LocationService(),
+         recorder: recorder,
+         activeStore: activeStore,
+         sessionIdProvider: sessionIdProvider ?? _defaultSessionId,
+       );
+
+  ActivityRecordingService._({
+    required DateTime Function() now,
+    required DiagnosticsRecorder diagnostics,
+    required LocationService locationService,
+    required ActivityLocationRecorder? recorder,
+    required ActiveActivityStore? activeStore,
+    required String Function() sessionIdProvider,
+  }) : _now = now,
+       _diagnostics = diagnostics,
+       _locationService = locationService,
+       _recorder =
+           recorder ??
+           (activeStore == null
+               ? null
+               : GeolocatorActivityLocationRecorder(
+                   store: activeStore,
+                   locationService: locationService,
+                   diagnostics: diagnostics,
+                   now: now,
+                 )),
+       _activeStore = activeStore,
+       _sessionIdProvider = sessionIdProvider;
 
   final DateTime Function() _now;
   final DiagnosticsRecorder _diagnostics;
   final LocationService _locationService;
+  final ActivityLocationRecorder? _recorder;
+
+  /// Optional durable store for the active recording. When provided, every
+  /// point and session transition is persisted so the recording can be
+  /// recovered after the app is paused, killed, or restarted. When `null`,
+  /// recording behaves as an in-memory-only foreground session.
+  final ActiveActivityStore? _activeStore;
+  final String Function() _sessionIdProvider;
+  ActiveActivitySession? _activeSession;
+  Future<void> _storeChain = Future<void>.value();
   final StreamController<ActivityRecordingState> _stateController =
       StreamController<ActivityRecordingState>.broadcast();
 
   ActivityRecordingState _state = ActivityRecordingState();
   StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<ActivityRecorderEvent>? _recorderSubscription;
   Timer? _elapsedTimer;
   DateTime? _recordingSegmentStartedAt;
   int _elapsedBeforeCurrentSegmentSeconds = 0;
   int _lastBreadcrumbPointCount = 0;
-  DateTime? _lastPointAt;
   bool _isDisposed = false;
   BackgroundLocationConfig? _backgroundConfig;
 
@@ -117,7 +164,6 @@ class ActivityRecordingService {
     _recordingSegmentStartedAt = startedAt;
     _elapsedBeforeCurrentSegmentSeconds = 0;
     _lastBreadcrumbPointCount = 0;
-    _lastPointAt = null;
     _emit(
       ActivityRecordingState(
         status: ActivityRecordingStatus.recording,
@@ -134,7 +180,29 @@ class ActivityRecordingService {
       },
     );
     _startElapsedTimer();
-    _startLocationStream();
+    if (_recorder != null) {
+      _startRecorderEvents();
+      try {
+        await _recorder.start(
+          ActivityRecorderStartRequest(
+            localSessionId: _sessionIdProvider(),
+            activityType: activityType,
+            startedAt: startedAt,
+            backgroundConfig: _backgroundConfig,
+          ),
+        );
+      } catch (error, stackTrace) {
+        _diagnostics.recordErrorSync(
+          error,
+          stackTrace,
+          source: DiagnosticsSources.activityRecorder,
+        );
+        _fail(ActivityRecordingErrorKeys.locationStreamFailed);
+      }
+    } else {
+      _beginActiveSession(activityType, startedAt);
+      _startLocationStream();
+    }
   }
 
   Future<bool> openAppSettings() {
@@ -172,9 +240,10 @@ class ActivityRecordingService {
     final elapsedDurationSeconds = _currentElapsedDurationSeconds();
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
-    _lastPointAt = null;
     _cancelElapsedTimer();
-    final cancelPositionSubscription = _cancelPositionSubscription();
+    final cancelPositionSubscription = _recorder == null
+        ? _cancelPositionSubscription()
+        : null;
     _emit(
       _state.copyWith(
         status: ActivityRecordingStatus.paused,
@@ -189,7 +258,23 @@ class ActivityRecordingService {
         'segmentCount': _state.segments.length,
       },
     );
-    await cancelPositionSubscription;
+    if (_recorder != null) {
+      await _runRecorderCommand(
+        _recorder.pause,
+        ActivityRecordingErrorKeys.localSaveFailed,
+      );
+    } else {
+      _updateActiveSession(
+        (session) => session.copyWith(
+          status: ActiveActivityStatus.paused,
+          elapsedDurationSeconds: elapsedDurationSeconds,
+          currentSegmentIndex: _currentSegmentIndex,
+          pausedAt: _now(),
+        ),
+        save: true,
+      );
+      await cancelPositionSubscription;
+    }
   }
 
   Future<void> resume() async {
@@ -217,7 +302,22 @@ class ActivityRecordingService {
       },
     );
     _startElapsedTimer();
-    _startLocationStream();
+    if (_recorder != null) {
+      await _runRecorderCommand(
+        _recorder.resume,
+        ActivityRecordingErrorKeys.localSaveFailed,
+      );
+    } else {
+      _updateActiveSession(
+        (session) => session.copyWith(
+          status: ActiveActivityStatus.recording,
+          currentSegmentIndex: _currentSegmentIndex,
+          resumedAt: _now(),
+        ),
+        save: true,
+      );
+      _startLocationStream();
+    }
   }
 
   Future<void> stop() async {
@@ -230,7 +330,9 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
     _cancelElapsedTimer();
-    await _cancelPositionSubscription();
+    if (_recorder == null) {
+      await _cancelPositionSubscription();
+    }
     if (_state.points.isEmpty) {
       _recordBreadcrumb(
         DiagnosticsEvents.activityStopFailed,
@@ -247,6 +349,11 @@ class ActivityRecordingService {
           elapsedDurationSeconds: elapsedDurationSeconds,
         ),
       );
+      if (_recorder != null) {
+        await _recorder.discard();
+      } else {
+        _clearActiveSession();
+      }
       return;
     }
 
@@ -270,6 +377,22 @@ class ActivityRecordingService {
         endedAt: _now(),
       ),
     );
+    if (_recorder != null) {
+      await _runRecorderCommand(
+        _recorder.stop,
+        ActivityRecordingErrorKeys.localSaveFailed,
+      );
+    } else {
+      _updateActiveSession(
+        (session) => session.copyWith(
+          status: ActiveActivityStatus.completed,
+          elapsedDurationSeconds: elapsedDurationSeconds,
+          currentSegmentIndex: _currentSegmentIndex,
+          endedAt: _now(),
+        ),
+        complete: true,
+      );
+    }
   }
 
   Future<void> discard() async {
@@ -279,9 +402,22 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = 0;
     _lastBreadcrumbPointCount = 0;
     _backgroundConfig = null;
-    await _cancelPositionSubscription();
+    if (_recorder != null) {
+      final discarded = await _runRecorderCommand(
+        _recorder.discard,
+        ActivityRecordingErrorKeys.localSaveFailed,
+      );
+      if (!discarded) {
+        return;
+      }
+    } else {
+      await _cancelPositionSubscription();
+    }
     _emit(ActivityRecordingState());
     _recordBreadcrumb(DiagnosticsEvents.activityDiscarded);
+    if (_recorder == null) {
+      _clearActiveSession();
+    }
   }
 
   void dispose() {
@@ -292,6 +428,9 @@ class ActivityRecordingService {
     _cancelElapsedTimer();
     _positionSubscription?.cancel();
     _positionSubscription = null;
+    _recorderSubscription?.cancel();
+    _recorderSubscription = null;
+    _disposeRecorderWithoutThrow();
     _stateController.close();
   }
 
@@ -360,24 +499,23 @@ class ActivityRecordingService {
     if (_state.status != ActivityRecordingStatus.recording) {
       return;
     }
-    final receivedAt = _now();
-    final previousPointAt = _lastPointAt;
-    _lastPointAt = receivedAt;
-    _emit(_state.addPoint(ActivityTrackPoint.fromPosition(position)));
-    final pointCount = _state.points.length;
+    final trackPoint = ActivityTrackPoint.fromPosition(position);
+    _emit(_state.addPoint(trackPoint));
+    _persistRecordedPoint(trackPoint);
+    _recordPointMilestoneIfNeeded(pointCount: _state.points.length);
+  }
+
+  void _recordPointMilestoneIfNeeded({required int pointCount}) {
     if (pointCount == 1 || pointCount - _lastBreadcrumbPointCount >= 25) {
       _lastBreadcrumbPointCount = pointCount;
-      final secondsSinceLastPoint = previousPointAt == null
-          ? null
-          : receivedAt.difference(previousPointAt).inSeconds;
       _recordBreadcrumb(
         DiagnosticsEvents.activityPointMilestone,
         details: {
           'pointCount': pointCount,
           'segmentCount': _state.segments.length,
           'elapsedSeconds': _state.elapsedDurationSeconds,
-          'secondsSinceLastPoint': ?secondsSinceLastPoint,
-        },      );
+        },
+      );
     }
   }
 
@@ -398,6 +536,114 @@ class ActivityRecordingService {
         'pointCount': _state.points.length,
       },
     );
+  }
+
+  void _startRecorderEvents() {
+    if (_recorder == null || _recorderSubscription != null) {
+      return;
+    }
+    _recorderSubscription = _recorder.events.listen(
+      _handleRecorderEvent,
+      onError: (Object error, StackTrace stackTrace) {
+        _diagnostics.recordErrorSync(
+          error,
+          stackTrace,
+          source: DiagnosticsSources.activityRecorder,
+        );
+        _fail(ActivityRecordingErrorKeys.locationStreamFailed);
+      },
+    );
+  }
+
+  void _handleRecorderEvent(ActivityRecorderEvent event) {
+    switch (event.type) {
+      case ActivityRecorderEventType.started:
+      case ActivityRecorderEventType.paused:
+      case ActivityRecorderEventType.resumed:
+      case ActivityRecorderEventType.stopped:
+      case ActivityRecorderEventType.recoverableStateChanged:
+        _activeSession = event.session;
+      case ActivityRecorderEventType.pointBatchAvailable:
+        _recordRecordedPoints(event.points);
+      case ActivityRecorderEventType.failed:
+        _fail(_errorKeyForRecorderFailure(event.failureReason));
+    }
+  }
+
+  Future<bool> _runRecorderCommand(
+    Future<void> Function() command,
+    String errorKey,
+  ) async {
+    try {
+      await command();
+      return true;
+    } catch (error, stackTrace) {
+      _recordRecorderError(error, stackTrace);
+      _fail(errorKey);
+      return false;
+    }
+  }
+
+  void _recordRecorderError(Object error, StackTrace stackTrace) {
+    _diagnostics.recordErrorSync(
+      error,
+      stackTrace,
+      source: DiagnosticsSources.activityRecorder,
+    );
+  }
+
+  void _discardRecorderWithoutThrow() {
+    final recorder = _recorder;
+    if (recorder == null) {
+      return;
+    }
+    unawaited(
+      recorder.discard().catchError((Object error, StackTrace stackTrace) {
+        _recordRecorderError(error, stackTrace);
+      }),
+    );
+  }
+
+  void _disposeRecorderWithoutThrow() {
+    final recorder = _recorder;
+    if (recorder == null) {
+      return;
+    }
+    unawaited(
+      recorder.dispose().catchError((Object error, StackTrace stackTrace) {
+        _recordRecorderError(error, stackTrace);
+      }),
+    );
+  }
+
+  void _recordRecordedPoints(List<RecordedActivityPoint> points) {
+    if (_state.status != ActivityRecordingStatus.recording || points.isEmpty) {
+      return;
+    }
+
+    for (final recordedPoint in points) {
+      var nextState = _state;
+      while (nextState.segments.length <= recordedPoint.segmentIndex) {
+        nextState = nextState.startNewSegment();
+      }
+
+      _emit(nextState.addPoint(recordedPoint.toTrackPoint()));
+      _recordPointMilestoneIfNeeded(pointCount: _state.points.length);
+    }
+  }
+
+  String _errorKeyForRecorderFailure(ActivityRecorderFailureReason? reason) {
+    return switch (reason) {
+      ActivityRecorderFailureReason.locationUnavailable =>
+        ActivityRecordingErrorKeys.locationServiceDisabled,
+      ActivityRecorderFailureReason.permissionLost =>
+        ActivityRecordingErrorKeys.locationPermissionDenied,
+      ActivityRecorderFailureReason.persistenceFailed =>
+        ActivityRecordingErrorKeys.localSaveFailed,
+      ActivityRecorderFailureReason.unsupportedPlatform ||
+      ActivityRecorderFailureReason.locationStreamFailed ||
+      null => ActivityRecordingErrorKeys.locationStreamFailed,
+    };
   }
 
   Future<String?> _locationErrorKey() async {
@@ -444,7 +690,11 @@ class ActivityRecordingService {
   void _fail(String errorKey) {
     _cancelElapsedTimer();
     _recordingSegmentStartedAt = null;
-    unawaited(_cancelPositionSubscription());
+    if (_recorder != null) {
+      _discardRecorderWithoutThrow();
+    } else {
+      unawaited(_cancelPositionSubscription());
+    }
     _recordBreadcrumb(
       DiagnosticsEvents.activityFailed,
       details: {'reason': errorKey, 'pointCount': _state.points.length},
@@ -455,6 +705,9 @@ class ActivityRecordingService {
         lastErrorKey: errorKey,
       ),
     );
+    if (_recorder == null) {
+      _clearActiveSession();
+    }
   }
 
   void _emit(ActivityRecordingState state) {
@@ -467,6 +720,194 @@ class ActivityRecordingService {
     Map<String, Object?> details = const {},
   }) {
     _diagnostics.recordBreadcrumbSync(event, details: details);
+  }
+
+  int get _currentSegmentIndex {
+    return _state.segments.isEmpty ? 0 : _state.segments.length - 1;
+  }
+
+  void _beginActiveSession(ActivityType activityType, DateTime startedAt) {
+    final store = _activeStore;
+    if (store == null) {
+      return;
+    }
+    final session = ActiveActivitySession(
+      localSessionId: _sessionIdProvider(),
+      activityType: activityType,
+      status: ActiveActivityStatus.recording,
+      startedAt: startedAt,
+    );
+    _activeSession = session;
+    _enqueueStore(() async {
+      await store.clear();
+      await store.saveSession(session);
+    });
+  }
+
+  void _persistRecordedPoint(ActivityTrackPoint point) {
+    final store = _activeStore;
+    if (store == null || _activeSession == null) {
+      return;
+    }
+    final recorded = RecordedActivityPoint.fromTrackPoint(
+      point,
+      segmentIndex: _currentSegmentIndex,
+    );
+    _enqueueStore(() => store.appendPoints([recorded]));
+  }
+
+  void _updateActiveSession(
+    ActiveActivitySession Function(ActiveActivitySession session) update, {
+    bool save = false,
+    bool complete = false,
+  }) {
+    final store = _activeStore;
+    final session = _activeSession;
+    if (store == null || session == null) {
+      return;
+    }
+    final updated = update(session);
+    _activeSession = updated;
+    if (complete) {
+      _enqueueStore(() => store.complete(updated));
+    } else if (save) {
+      _enqueueStore(() => store.saveSession(updated));
+    }
+  }
+
+  void _clearActiveSession() {
+    final store = _activeStore;
+    _activeSession = null;
+    if (store == null) {
+      return;
+    }
+    _enqueueStore(() => store.clear());
+  }
+
+  void _enqueueStore(Future<void> Function() action) {
+    _storeChain = _storeChain.then((_) => action()).catchError((
+      Object error,
+      StackTrace stackTrace,
+    ) {
+      _recordBreadcrumb(
+        DiagnosticsEvents.activityRecorderFailed,
+        details: const {'reason': 'persistenceFailed'},
+      );
+    });
+  }
+
+  /// Attempts to restore a recoverable active recording from the durable store.
+  ///
+  /// Returns `true` when a non-empty recording was recovered and the service
+  /// state was restored as a paused recording the user can resume or save.
+  /// Empty or non-recoverable sessions are cleared and `false` is returned.
+  Future<bool> recoverActiveSession() async {
+    _ensureNotDisposed();
+    if (_recorder != null) {
+      if (_state.isActive) {
+        return false;
+      }
+      _startRecorderEvents();
+      final session = await _recorder.recoverActiveSession();
+      if (session == null || !session.isActive) {
+        if (session != null) {
+          await _recorder.discard();
+        }
+        return false;
+      }
+      final recordedPoints = await _recorder.drain();
+      if (recordedPoints.isEmpty) {
+        await _recorder.discard();
+        _recordBreadcrumb(
+          DiagnosticsEvents.activityActiveSessionRecovered,
+          details: {'pointCount': 0, 'recovered': false},
+        );
+        return false;
+      }
+
+      return _recoverFromSessionAndPoints(session, recordedPoints);
+    }
+
+    final store = _activeStore;
+    if (store == null || _state.isActive) {
+      return false;
+    }
+
+    final session = await store.loadSession();
+    if (session == null || !session.isActive) {
+      if (session != null) {
+        await store.clear();
+      }
+      return false;
+    }
+
+    final recordedPoints = await store.readPoints();
+    if (recordedPoints.isEmpty) {
+      await store.clear();
+      _recordBreadcrumb(
+        DiagnosticsEvents.activityActiveSessionRecovered,
+        details: {'pointCount': 0, 'recovered': false},
+      );
+      return false;
+    }
+
+    return _recoverFromSessionAndPoints(session, recordedPoints);
+  }
+
+  bool _recoverFromSessionAndPoints(
+    ActiveActivitySession session,
+    List<RecordedActivityPoint> recordedPoints,
+  ) {
+    final segments = _segmentsFromRecorded(recordedPoints);
+    _activeSession = session.copyWith(status: ActiveActivityStatus.paused);
+    _elapsedBeforeCurrentSegmentSeconds = session.elapsedDurationSeconds;
+    _recordingSegmentStartedAt = null;
+    _lastBreadcrumbPointCount = recordedPoints.length;
+    _emit(
+      ActivityRecordingState(
+        status: ActivityRecordingStatus.paused,
+        activityType: session.activityType,
+        startedAt: session.startedAt,
+        elapsedDurationSeconds: session.elapsedDurationSeconds,
+        segments: segments,
+      ),
+    );
+    _recordBreadcrumb(
+      DiagnosticsEvents.activityActiveSessionRecovered,
+      details: {
+        'pointCount': recordedPoints.length,
+        'segmentCount': segments.length,
+        'recovered': true,
+      },
+    );
+    return true;
+  }
+
+  List<ActivityTrackSegment> _segmentsFromRecorded(
+    List<RecordedActivityPoint> points,
+  ) {
+    final segments = <ActivityTrackSegment>[];
+    var currentSegmentIndex = points.first.segmentIndex;
+    var currentPoints = <ActivityTrackPoint>[];
+    for (final point in points) {
+      if (point.segmentIndex != currentSegmentIndex &&
+          currentPoints.isNotEmpty) {
+        segments.add(ActivityTrackSegment(points: currentPoints));
+        currentPoints = <ActivityTrackPoint>[];
+        currentSegmentIndex = point.segmentIndex;
+      }
+      currentPoints.add(point.toTrackPoint());
+    }
+    if (currentPoints.isNotEmpty) {
+      segments.add(ActivityTrackSegment(points: currentPoints));
+    }
+    return segments;
+  }
+
+  static String _defaultSessionId() {
+    final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
+    final random = Random().nextInt(1 << 32);
+    return 'session_${timestamp}_$random';
   }
 
   void _ensureNotDisposed() {

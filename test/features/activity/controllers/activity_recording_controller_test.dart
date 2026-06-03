@@ -5,11 +5,15 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
+import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/active_activity_store.dart';
+import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
@@ -17,6 +21,7 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/in_memory_active_activity_store.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 
 void main() {
@@ -35,6 +40,96 @@ void main() {
       expect(controller.selectedActivityType, ActivityType.ride);
       expect(controller.state.status, ActivityRecordingStatus.recording);
       expect(controller.state.activityType, ActivityType.ride);
+    });
+
+    group('active recording recovery', () {
+      test('returns false when no active session exists', () async {
+        final store = InMemoryActiveActivityStore();
+        final controller = _controllerWithActiveStore(store);
+        addTearDown(controller.dispose);
+
+        final recovered = await controller.recoverActiveRecording();
+
+        expect(recovered, isFalse);
+        expect(controller.state.status, ActivityRecordingStatus.idle);
+        expect(controller.selectedActivityType, ActivityType.run);
+      });
+
+      test('recovers a paused session and selected activity type', () async {
+        final store = InMemoryActiveActivityStore();
+        store.session = _activeSession(ActiveActivityStatus.paused);
+        await store.appendPoints([
+          _recordedPoint(segmentIndex: 0, latitude: 41.1),
+          _recordedPoint(segmentIndex: 1, latitude: 41.2),
+        ]);
+        final controller = _controllerWithActiveStore(store);
+        addTearDown(controller.dispose);
+
+        final recovered = await controller.recoverActiveRecording();
+
+        expect(recovered, isTrue);
+        expect(controller.state.status, ActivityRecordingStatus.paused);
+        expect(controller.state.activityType, ActivityType.ride);
+        expect(controller.selectedActivityType, ActivityType.ride);
+        expect(controller.state.points, hasLength(2));
+        expect(controller.state.segments, hasLength(2));
+      });
+
+      test('recovers a recording session as paused', () async {
+        final store = InMemoryActiveActivityStore();
+        store.session = _activeSession(ActiveActivityStatus.recording);
+        await store.appendPoints([
+          _recordedPoint(segmentIndex: 0, latitude: 41.1),
+        ]);
+        final controller = _controllerWithActiveStore(store);
+        addTearDown(controller.dispose);
+
+        final recovered = await controller.recoverActiveRecording();
+
+        expect(recovered, isTrue);
+        expect(controller.state.status, ActivityRecordingStatus.paused);
+        expect(controller.state.activityType, ActivityType.ride);
+      });
+
+      test('clears and returns false for an empty-point session', () async {
+        final store = InMemoryActiveActivityStore();
+        store.session = _activeSession(ActiveActivityStatus.paused);
+        final controller = _controllerWithActiveStore(store);
+        addTearDown(controller.dispose);
+
+        final recovered = await controller.recoverActiveRecording();
+
+        expect(recovered, isFalse);
+        expect(controller.state.status, ActivityRecordingStatus.idle);
+        expect(store.session, isNull);
+      });
+
+      test('returns false for malformed active session metadata', () async {
+        final tempDirectory = await Directory.systemTemp.createTemp(
+          'endurain_controller_recover_malformed_',
+        );
+        addTearDown(() => tempDirectory.deleteSync(recursive: true));
+        final activeDirectory = Directory(
+          '${tempDirectory.path}${Platform.pathSeparator}'
+          '${FileActiveActivityStore.rootDirectoryName}'
+          '${Platform.pathSeparator}'
+          '${FileActiveActivityStore.activeDirectoryName}',
+        )..createSync(recursive: true);
+        File(
+          '${activeDirectory.path}${Platform.pathSeparator}'
+          '${FileActiveActivityStore.sessionFileName}',
+        ).writeAsStringSync('{ not valid json');
+        final store = FileActiveActivityStore(
+          supportDirectoryProvider: () async => tempDirectory,
+        );
+        final controller = _controllerWithActiveStore(store);
+        addTearDown(controller.dispose);
+
+        final recovered = await controller.recoverActiveRecording();
+
+        expect(recovered, isFalse);
+        expect(controller.state.status, ActivityRecordingStatus.idle);
+      });
     });
 
     test('ignores type changes while active', () async {
@@ -381,6 +476,36 @@ class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
 LocalActivityRepository _repositoryFor(Directory directory) {
   return LocalActivityRepository(
     supportDirectoryProvider: () async => directory,
+  );
+}
+
+ActivityRecordingController _controllerWithActiveStore(
+  ActiveActivityStore store,
+) {
+  return ActivityRecordingController(
+    recordingService: ActivityRecordingService(activeStore: store),
+  );
+}
+
+ActiveActivitySession _activeSession(ActiveActivityStatus status) {
+  return ActiveActivitySession(
+    localSessionId: 'session_1',
+    activityType: ActivityType.ride,
+    status: status,
+    startedAt: DateTime.utc(2026, 6, 3, 9),
+    elapsedDurationSeconds: 120,
+  );
+}
+
+RecordedActivityPoint _recordedPoint({
+  required int segmentIndex,
+  required double latitude,
+}) {
+  return RecordedActivityPoint(
+    timestamp: DateTime.utc(2026, 6, 3, 9),
+    latitude: latitude,
+    longitude: -8,
+    segmentIndex: segmentIndex,
   );
 }
 

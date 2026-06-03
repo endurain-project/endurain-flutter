@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
+import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
@@ -17,22 +16,7 @@ void main() {
     tester,
   ) async {
     _useIosDarkMode(tester);
-    final tempDirectory = await Directory.systemTemp.createTemp(
-      'endurain_activity_history_screen_',
-    );
-    addTearDown(() {
-      if (tempDirectory.existsSync()) {
-        tempDirectory.deleteSync(recursive: true);
-      }
-    });
-
-    final repository = LocalActivityRepository(
-      supportDirectoryProvider: () async => tempDirectory,
-    );
-    final controller = LocalActivityHistoryController(
-      repository: repository,
-      uploadService: ActivityUploadService(),
-    );
+    final controller = _LoadedEmptyHistoryController();
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
@@ -42,11 +26,44 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text(l10n.activityHistoryEmpty));
 
     expect(find.text(l10n.activityHistoryTitle), findsOneWidget);
     _expectBrightCupertinoText(tester, l10n.activityHistoryEmpty);
   });
+}
+
+class _LoadedEmptyHistoryController extends LocalActivityHistoryController {
+  _LoadedEmptyHistoryController()
+    : super(
+        repository: LocalActivityRepository(
+          supportDirectoryProvider: () async => throw StateError('unused'),
+        ),
+        uploadService: ActivityUploadService(),
+      );
+
+  @override
+  List<LocalActivityRecord> get records => const [];
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  Object? get error => null;
+
+  @override
+  Future<void> load() async {}
+}
+
+Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 20; attempt += 1) {
+    await tester.pump(const Duration(milliseconds: 50));
+    if (finder.evaluate().isNotEmpty) {
+      return;
+    }
+  }
+
+  expect(finder, findsOneWidget);
 }
 
 void _useIosDarkMode(WidgetTester tester) {

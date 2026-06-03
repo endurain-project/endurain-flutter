@@ -4,11 +4,15 @@ import 'package:endurain/core/services/location_platform_adapter.dart';
 import 'package:geolocator/geolocator.dart';
 
 /// Builds a deterministic [Position] for activity-recording tests.
-Position recordingPosition({double latitude = 41, double longitude = -8}) {
+Position recordingPosition({
+  double latitude = 41,
+  double longitude = -8,
+  DateTime? timestamp,
+}) {
   return Position(
     latitude: latitude,
     longitude: longitude,
-    timestamp: DateTime.utc(2026),
+    timestamp: timestamp ?? DateTime.utc(2026),
     accuracy: 5,
     altitude: 10,
     altitudeAccuracy: 1,

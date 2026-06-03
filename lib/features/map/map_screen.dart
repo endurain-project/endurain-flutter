@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -13,7 +14,9 @@ import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
+import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
@@ -68,6 +71,9 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       onChanged: _handleControllerChanged,
     );
     _controller.initialize();
+    if (widget.activityController == null) {
+      unawaited(_activityController.recoverActiveRecording());
+    }
   }
 
   MapStateController _createController() {
@@ -82,10 +88,19 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
 
   ActivityRecordingController _createActivityController() {
     final services = AppScope.servicesOf(context, listen: false);
+    final locationService = widget.locationService ?? services.location;
+    final activeStore = FileActiveActivityStore(
+      diagnostics: services.diagnostics,
+    );
     return ActivityRecordingController(
       recordingService: ActivityRecordingService(
         diagnostics: services.diagnostics,
-        locationService: widget.locationService ?? services.location,
+        locationService: locationService,
+        recorder: GeolocatorActivityLocationRecorder(
+          store: activeStore,
+          locationService: locationService,
+          diagnostics: services.diagnostics,
+        ),
       ),
       uploadService: services.activityUpload,
       localActivityRepository: services.localActivities,

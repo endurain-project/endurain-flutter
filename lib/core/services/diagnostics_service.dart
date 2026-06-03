@@ -152,6 +152,7 @@ class DiagnosticsSources {
   static const String rootZone = 'root_zone';
   static const String uncaught = 'uncaught';
   static const String activityLocationStream = 'activity_location_stream';
+  static const String activityRecorder = 'activity_recorder';
 }
 
 class DiagnosticsEvents {
@@ -173,6 +174,16 @@ class DiagnosticsEvents {
   static const String activityPointMilestone = 'activity.point_milestone';
   static const String activityLocationStreamDone =
       'activity.location_stream_done';
+  static const String activityRecorderStarted = 'activity.recorder_started';
+  static const String activityRecorderPaused = 'activity.recorder_paused';
+  static const String activityRecorderResumed = 'activity.recorder_resumed';
+  static const String activityRecorderStopped = 'activity.recorder_stopped';
+  static const String activityRecorderFailed = 'activity.recorder_failed';
+  static const String activityActiveSessionRecovered =
+      'activity.active_session_recovered';
+  static const String activityPointBatchDrained =
+      'activity.point_batch_drained';
+  static const String activityTrackingStall = 'activity.tracking_stall';
 }
 
 class DiagnosticsService implements DiagnosticsStore {

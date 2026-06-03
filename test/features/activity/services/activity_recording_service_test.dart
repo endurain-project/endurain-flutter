@@ -520,32 +520,35 @@ void main() {
       expect(details?['pointCount'], 0);
     });
 
-    test('point milestone records the gap since the previous point', () async {
-      var now = DateTime.utc(2026, 5, 30, 10);
-      final adapter = RecordingLocationPlatformAdapter();
-      final diagnostics = _FakeDiagnosticsRecorder();
-      final service = ActivityRecordingService(
-        now: () => now,
-        diagnostics: diagnostics,
-        locationService: LocationService(platformAdapter: adapter),
-      );
-      addTearDown(service.dispose);
-
-      await service.start(activityType: ActivityType.run);
-      for (var i = 0; i < 26; i += 1) {
-        now = now.add(const Duration(seconds: 2));
-        adapter.addPosition(
-          recordingPosition(latitude: 41 + i * 0.01, longitude: -8),
+    test(
+      'point milestone records counts without per-point gap details',
+      () async {
+        var now = DateTime.utc(2026, 5, 30, 10);
+        final adapter = RecordingLocationPlatformAdapter();
+        final diagnostics = _FakeDiagnosticsRecorder();
+        final service = ActivityRecordingService(
+          now: () => now,
+          diagnostics: diagnostics,
+          locationService: LocationService(platformAdapter: adapter),
         );
-        await pumpEventQueue();
-      }
+        addTearDown(service.dispose);
 
-      final details = diagnostics.detailsFor(
-        DiagnosticsEvents.activityPointMilestone,
-      );
-      expect(details?['pointCount'], 26);
-      expect(details?['secondsSinceLastPoint'], 2);
-    });
+        await service.start(activityType: ActivityType.run);
+        for (var i = 0; i < 26; i += 1) {
+          now = now.add(const Duration(seconds: 2));
+          adapter.addPosition(
+            recordingPosition(latitude: 41 + i * 0.01, longitude: -8),
+          );
+          await pumpEventQueue();
+        }
+
+        final details = diagnostics.detailsFor(
+          DiagnosticsEvents.activityPointMilestone,
+        );
+        expect(details?['pointCount'], 26);
+        expect(details?.containsKey('secondsSinceLastPoint'), isFalse);
+      },
+    );
   });
 }
 

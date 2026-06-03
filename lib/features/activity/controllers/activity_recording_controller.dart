@@ -108,6 +108,20 @@ class ActivityRecordingController extends ChangeNotifier {
     _setState(_recordingService.state);
   }
 
+  /// Attempts to restore a recoverable active recording left behind by a
+  /// previous app run (e.g. after the process was killed mid-recording).
+  ///
+  /// Returns `true` when a paused recording was restored.
+  Future<bool> recoverActiveRecording() async {
+    final recovered = await _recordingService.recoverActiveSession();
+    if (recovered) {
+      _selectedActivityType =
+          _recordingService.state.activityType ?? _selectedActivityType;
+      _setState(_recordingService.state);
+    }
+    return recovered;
+  }
+
   Future<void> pause() async {
     await _recordingService.pause();
     _setState(_recordingService.state);

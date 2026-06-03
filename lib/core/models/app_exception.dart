@@ -1,4 +1,6 @@
 enum AppErrorCode {
+  activeActivityStoreReadFailed,
+  activeActivityStoreWriteFailed,
   activityGpxCleanupFailed,
   activityGpxFileWriteFailed,
   activityLocalActivityNotFound,
