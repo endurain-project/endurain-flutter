@@ -397,10 +397,10 @@ class ActivityRecorderService : Service() {
         }
         val channel = NotificationChannel(
             CHANNEL_ID,
-            CHANNEL_NAME,
+            getString(R.string.activity_recording_channel_name),
             NotificationManager.IMPORTANCE_LOW,
         ).apply {
-            description = CHANNEL_DESCRIPTION
+            description = getString(R.string.activity_recording_channel_description)
             setShowBadge(false)
         }
         manager.createNotificationChannel(channel)
@@ -431,9 +431,6 @@ class ActivityRecorderService : Service() {
         const val EXTRA_TEXT = "text"
 
         private const val CHANNEL_ID = "activity_recording"
-        private const val CHANNEL_NAME = "Activity recording"
-        private const val CHANNEL_DESCRIPTION =
-            "Ongoing notification shown while recording an activity."
         private const val NOTIFICATION_ID = 4711
 
         // Mirror the Dart location/segment policy constants.

@@ -135,6 +135,14 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             return
         }
 
+        // Persist the advanced segment index before the point batch so session
+        // metadata is never behind the stored points across a crash/restart
+        // boundary. A crash between the two only leaves the session one segment
+        // ahead of an unwritten point, which recovery continues cleanly.
+        if segmentChanged {
+            store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex))
+        }
+
         do {
             try store.appendPoints(produced)
         } catch {
@@ -142,10 +150,6 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
                 ActivityRecorderCoordinator.reasonPersistenceFailed
             )
             return
-        }
-
-        if segmentChanged {
-            store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex))
         }
 
         ActivityRecorderCoordinator.shared.emitPointBatch(produced)

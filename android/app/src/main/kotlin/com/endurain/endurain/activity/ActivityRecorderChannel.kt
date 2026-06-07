@@ -151,8 +151,8 @@ class ActivityRecorderChannel(context: Context) :
 
     private fun handleStop(result: MethodChannel.Result) {
         val session = store.loadSession()
-        ActivityRecorderService.stop(appContext)
         if (session == null) {
+            ActivityRecorderService.stop(appContext)
             result.success(null)
             return
         }
@@ -162,7 +162,12 @@ class ActivityRecorderChannel(context: Context) :
             endedAt = IsoTime.format(java.util.Date(nowMillis)),
             elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
         )
+        // Mark the session completed before tearing the service down. The
+        // collection guard in onLocationFix drops any in-flight fix once the
+        // status is no longer recording, so the recorder is quiesced before
+        // Dart drains the store for completion.
         store.saveSession(updated)
+        ActivityRecorderService.stop(appContext)
         ActivityRecorderCoordinator.emitSession(
             ActivityRecorderCoordinator.TYPE_STOPPED,
             updated,
