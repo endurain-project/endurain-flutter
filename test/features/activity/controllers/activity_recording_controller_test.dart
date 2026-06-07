@@ -18,6 +18,7 @@ import 'package:endurain/features/activity/repositories/local_activity_repositor
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -28,9 +29,7 @@ void main() {
   group('ActivityRecordingController', () {
     test('starts recording with selected type', () async {
       final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(recordingService: service);
       addTearDown(controller.dispose);
 
@@ -134,9 +133,7 @@ void main() {
 
     test('ignores type changes while active', () async {
       final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(recordingService: service);
       addTearDown(controller.dispose);
 
@@ -156,9 +153,7 @@ void main() {
         );
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _repositoryFor(tempDirectory);
-        final service = ActivityRecordingService(
-          locationService: LocationService(platformAdapter: adapter),
-        );
+        final service = _recordingService(adapter: adapter);
         final controller = ActivityRecordingController(
           recordingService: service,
           localActivityRepository: repository,
@@ -188,9 +183,7 @@ void main() {
 
     test('does not generate GPX for discarded recordings', () async {
       final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(recordingService: service);
       addTearDown(controller.dispose);
 
@@ -205,9 +198,7 @@ void main() {
 
     test('leaves empty recordings without GPX content', () async {
       final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(recordingService: service);
       addTearDown(controller.dispose);
 
@@ -221,9 +212,7 @@ void main() {
 
     test('surfaces GPX generation failures as recording failures', () async {
       final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(
         recordingService: service,
         gpxBuilder: const _ThrowingGpxBuilder(),
@@ -246,9 +235,7 @@ void main() {
 
     test('surfaces local save failures before upload starts', () async {
       final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(
         recordingService: service,
         localActivityRepository: _ThrowingLocalActivityRepository(),
@@ -286,9 +273,7 @@ void main() {
         );
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _repositoryFor(tempDirectory);
-        final service = ActivityRecordingService(
-          locationService: LocationService(platformAdapter: adapter),
-        );
+        final service = _recordingService(adapter: adapter);
         final controller = ActivityRecordingController(
           recordingService: service,
           localActivityRepository: repository,
@@ -319,9 +304,7 @@ void main() {
       );
       addTearDown(() => tempDirectory.deleteSync(recursive: true));
       final repository = _repositoryFor(tempDirectory);
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(
         recordingService: service,
         localActivityRepository: repository,
@@ -352,9 +335,7 @@ void main() {
         );
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _repositoryFor(tempDirectory);
-        final service = ActivityRecordingService(
-          locationService: LocationService(platformAdapter: adapter),
-        );
+        final service = _recordingService(adapter: adapter);
         final controller = ActivityRecordingController(
           recordingService: service,
           localActivityRepository: repository,
@@ -385,9 +366,7 @@ void main() {
       );
       addTearDown(() => tempDirectory.deleteSync(recursive: true));
       final repository = _repositoryFor(tempDirectory);
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(
         recordingService: service,
         localActivityRepository: repository,
@@ -416,9 +395,7 @@ void main() {
       );
       addTearDown(() => tempDirectory.deleteSync(recursive: true));
       final repository = _repositoryFor(tempDirectory);
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _recordingService(adapter: adapter);
       final controller = ActivityRecordingController(
         recordingService: service,
         localActivityRepository: repository,
@@ -473,6 +450,23 @@ class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
   Future<void> setRetainUploadedGpxEnabled(bool enabled) async {}
 }
 
+ActivityRecordingService _recordingService({
+  RecordingLocationPlatformAdapter? adapter,
+  ActiveActivityStore? store,
+}) {
+  final locationService = LocationService(
+    platformAdapter: adapter ?? RecordingLocationPlatformAdapter(),
+  );
+  final activeStore = store ?? InMemoryActiveActivityStore();
+  return ActivityRecordingService(
+    recorder: GeolocatorActivityLocationRecorder(
+      store: activeStore,
+      locationService: locationService,
+    ),
+    locationService: locationService,
+  );
+}
+
 LocalActivityRepository _repositoryFor(Directory directory) {
   return LocalActivityRepository(
     supportDirectoryProvider: () async => directory,
@@ -483,7 +477,7 @@ ActivityRecordingController _controllerWithActiveStore(
   ActiveActivityStore store,
 ) {
   return ActivityRecordingController(
-    recordingService: ActivityRecordingService(activeStore: store),
+    recordingService: _recordingService(store: store),
   );
 }
 

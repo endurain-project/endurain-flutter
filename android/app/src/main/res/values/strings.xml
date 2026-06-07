@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_title">Endurain</string>
+    <string name="activity_recording_notification_text">Recording activity</string>
+    <string name="activity_recording_channel_name">Activity recording</string>
+    <string name="activity_recording_channel_description">Ongoing notification shown while recording an activity.</string>
+</resources>

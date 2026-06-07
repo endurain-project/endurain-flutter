@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter/foundation.dart';
@@ -17,12 +20,12 @@ void main() {
   group('ActivityRecordingService', () {
     test('starts recording and emits state', () async {
       final startedAt = DateTime.utc(2026, 5, 30, 10);
-      final adapter = RecordingLocationPlatformAdapter();
+      final recorder = _ControllableRecorder();
       final diagnostics = _FakeDiagnosticsRecorder();
-      final service = ActivityRecordingService(
-        now: () => startedAt,
+      final service = _buildService(
+        recorder: recorder,
         diagnostics: diagnostics,
-        locationService: LocationService(platformAdapter: adapter),
+        now: () => startedAt,
       );
       addTearDown(service.dispose);
 
@@ -34,7 +37,7 @@ void main() {
       expect(service.state.points, isEmpty);
       expect(service.state.segments, hasLength(1));
       expect(service.state.segments.single.points, isEmpty);
-      expect(adapter.listenCount, 1);
+      expect(recorder.startCount, 1);
       expect(
         diagnostics.events,
         containsAllInOrder([
@@ -44,51 +47,34 @@ void main() {
       );
     });
 
-    test('uses responsive location updates while recording', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
-      addTearDown(service.dispose);
-
-      await service.start(activityType: ActivityType.run);
-
-      expect(
-        adapter.lastPositionStreamSettings?.distanceFilter,
-        LocationDistanceFilters.recordingMeters,
-      );
-    });
-
-    test('forwards background config to the location stream', () async {
+    test('forwards background config to the recorder', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
+      const config = BackgroundLocationConfig(
+        notificationTitle: 'Recording activity',
+        notificationText: 'Tracking your location.',
+      );
       await service.start(
         activityType: ActivityType.run,
-        backgroundConfig: const BackgroundLocationConfig(
-          notificationTitle: 'Recording activity',
-          notificationText: 'Tracking your location.',
-        ),
+        backgroundConfig: config,
       );
 
-      expect(adapter.lastPositionStreamSettings, isA<AndroidSettings>());
+      expect(recorder.lastStartRequest?.backgroundConfig, same(config));
     });
 
     test('uses configured background tracking for recording starts', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final adapter = RecordingLocationPlatformAdapter(
-        permission: LocationPermission.always,
-      );
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
+      final recorder = _ControllableRecorder();
+      final service = _buildService(
+        recorder: recorder,
+        locationService: _location(LocationPermission.always),
       );
       service.configureBackgroundTracking(
         const BackgroundLocationConfig(
@@ -100,21 +86,18 @@ void main() {
 
       await service.start(activityType: ActivityType.run);
 
-      expect(adapter.lastPositionStreamSettings, isA<AppleSettings>());
-      final settings = adapter.lastPositionStreamSettings! as AppleSettings;
-      expect(settings.allowBackgroundLocationUpdates, isTrue);
-      expect(settings.pauseLocationUpdatesAutomatically, isFalse);
+      expect(service.state.status, ActivityRecordingStatus.recording);
+      expect(recorder.lastStartRequest?.backgroundConfig, isNotNull);
     });
 
     test('requires always permission for background tracking on iOS', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final adapter = RecordingLocationPlatformAdapter(
-        permission: LocationPermission.whileInUse,
-      );
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
+      final recorder = _ControllableRecorder();
+      final service = _buildService(
+        recorder: recorder,
+        locationService: _location(LocationPermission.whileInUse),
       );
       addTearDown(service.dispose);
 
@@ -131,12 +114,18 @@ void main() {
         service.state.lastErrorKey,
         ActivityRecordingErrorKeys.backgroundPermissionRequired,
       );
-      expect(adapter.listenCount, 0);
+      expect(recorder.startCount, 0);
     });
+
     test('does not start when location services are disabled', () async {
-      final adapter = RecordingLocationPlatformAdapter(serviceEnabled: false);
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
+      final recorder = _ControllableRecorder();
+      final service = _buildService(
+        recorder: recorder,
+        locationService: LocationService(
+          platformAdapter: RecordingLocationPlatformAdapter(
+            serviceEnabled: false,
+          ),
+        ),
       );
       addTearDown(service.dispose);
 
@@ -147,15 +136,17 @@ void main() {
         service.state.lastErrorKey,
         ActivityRecordingErrorKeys.locationServiceDisabled,
       );
-      expect(adapter.listenCount, 0);
+      expect(recorder.startCount, 0);
     });
 
     test('does not start when permission is denied', () async {
+      final recorder = _ControllableRecorder();
       final adapter = RecordingLocationPlatformAdapter(
         permission: LocationPermission.denied,
         requestedPermission: LocationPermission.denied,
       );
-      final service = ActivityRecordingService(
+      final service = _buildService(
+        recorder: recorder,
         locationService: LocationService(platformAdapter: adapter),
       );
       addTearDown(service.dispose);
@@ -168,15 +159,14 @@ void main() {
         ActivityRecordingErrorKeys.locationPermissionDenied,
       );
       expect(adapter.requestPermissionCalled, isTrue);
-      expect(adapter.listenCount, 0);
+      expect(recorder.startCount, 0);
     });
 
     test('does not start when permission is denied forever', () async {
-      final adapter = RecordingLocationPlatformAdapter(
-        permission: LocationPermission.deniedForever,
-      );
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
+      final recorder = _ControllableRecorder();
+      final service = _buildService(
+        recorder: recorder,
+        locationService: _location(LocationPermission.deniedForever),
       );
       addTearDown(service.dispose);
 
@@ -187,20 +177,20 @@ void main() {
         service.state.lastErrorKey,
         ActivityRecordingErrorKeys.locationPermissionDeniedForever,
       );
-      expect(adapter.listenCount, 0);
+      expect(recorder.startCount, 0);
     });
 
-    test('records position updates as track points', () async {
-      final adapter = RecordingLocationPlatformAdapter();
+    test('records recorder point batches as track points', () async {
+      final recorder = _ControllableRecorder();
       final diagnostics = _FakeDiagnosticsRecorder();
-      final service = ActivityRecordingService(
+      final service = _buildService(
+        recorder: recorder,
         diagnostics: diagnostics,
-        locationService: LocationService(platformAdapter: adapter),
       );
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
-      adapter.addPosition(recordingPosition(latitude: 41.1, longitude: -8.6));
+      recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
       await pumpEventQueue();
 
       expect(service.state.points, hasLength(1));
@@ -215,10 +205,9 @@ void main() {
     test('updates elapsed duration while recording without GPS points', () {
       fakeAsync((async) {
         var now = DateTime.utc(2026, 5, 30, 10);
-        final adapter = RecordingLocationPlatformAdapter();
-        final service = ActivityRecordingService(
+        final service = _buildService(
+          recorder: _ControllableRecorder(),
           now: () => now,
-          locationService: LocationService(platformAdapter: adapter),
         );
 
         unawaited(service.start(activityType: ActivityType.run));
@@ -240,10 +229,9 @@ void main() {
     test('does not count paused time in elapsed duration', () {
       fakeAsync((async) {
         var now = DateTime.utc(2026, 5, 30, 10);
-        final adapter = RecordingLocationPlatformAdapter();
-        final service = ActivityRecordingService(
+        final service = _buildService(
+          recorder: _ControllableRecorder(),
           now: () => now,
-          locationService: LocationService(platformAdapter: adapter),
         );
 
         unawaited(service.start(activityType: ActivityType.ride));
@@ -272,38 +260,36 @@ void main() {
       });
     });
 
-    test('pause and resume update state', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+    test('pause and resume update state and delegate to recorder', () async {
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.ride);
       await service.pause();
 
       expect(service.state.status, ActivityRecordingStatus.paused);
-      expect(adapter.cancelCount, 1);
+      expect(recorder.pauseCount, 1);
 
       await service.resume();
 
       expect(service.state.status, ActivityRecordingStatus.recording);
-      expect(adapter.listenCount, 2);
+      expect(recorder.resumeCount, 1);
     });
 
     test('pause and resume split track points into segments', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
-      adapter.addPosition(recordingPosition(latitude: 41.1, longitude: -8.6));
+      recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
       await pumpEventQueue();
       await service.pause();
       await service.resume();
-      adapter.addPosition(recordingPosition(latitude: 41.2, longitude: -8.7));
+      recorder.emitPoints([
+        _point(latitude: 41.2, longitude: -8.7, segmentIndex: 1),
+      ]);
       await pumpEventQueue();
 
       expect(service.state.points, hasLength(2));
@@ -312,40 +298,38 @@ void main() {
       expect(service.state.segments.last.points.single.latitude, 41.2);
     });
 
-    test('stop emits stopping then completed', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final completedAt = DateTime.utc(2026, 5, 30, 11);
-      var calls = 0;
-      final service = ActivityRecordingService(
-        now: () => calls++ == 0 ? DateTime.utc(2026, 5, 30, 10) : completedAt,
-        locationService: LocationService(platformAdapter: adapter),
-      );
+    test('stop finalizes durable points and completes', () async {
+      final recorder = _ControllableRecorder();
+      var now = DateTime.utc(2026, 5, 30, 10);
+      final service = _buildService(recorder: recorder, now: () => now);
       addTearDown(service.dispose);
       final states = <ActivityRecordingState>[];
       final subscription = service.stateStream.listen(states.add);
       addTearDown(subscription.cancel);
 
       await service.start(activityType: ActivityType.walk);
-      adapter.addPosition(recordingPosition(latitude: 41.1, longitude: -8.6));
+      recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
       await pumpEventQueue();
+      now = DateTime.utc(2026, 5, 30, 11);
       await service.stop();
       await pumpEventQueue();
 
-      expect(states.map((state) => state.status), [
-        ActivityRecordingStatus.recording,
-        ActivityRecordingStatus.recording,
-        ActivityRecordingStatus.stopping,
-        ActivityRecordingStatus.completed,
-      ]);
-      expect(service.state.endedAt, completedAt);
-      expect(adapter.cancelCount, 1);
+      expect(
+        states.map((state) => state.status),
+        containsAllInOrder([
+          ActivityRecordingStatus.recording,
+          ActivityRecordingStatus.stopping,
+          ActivityRecordingStatus.completed,
+        ]),
+      );
+      expect(service.state.status, ActivityRecordingStatus.completed);
+      expect(service.state.endedAt, DateTime.utc(2026, 5, 30, 11));
+      expect(recorder.stopCount, 1);
     });
 
     test('empty stop fails safely without completing', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
@@ -356,13 +340,12 @@ void main() {
         service.state.lastErrorKey,
         ActivityRecordingErrorKeys.emptyRecording,
       );
+      expect(recorder.discardCount, 1);
     });
 
     test('duplicate start keeps current recording', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
@@ -372,13 +355,13 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.recording);
       expect(service.state.activityType, ActivityType.run);
       expect(service.state.startedAt, startedAt);
-      expect(adapter.listenCount, 1);
+      expect(recorder.startCount, 1);
     });
 
     test(
       'invalid pause moves to failed state without raw error details',
       () async {
-        final service = ActivityRecordingService();
+        final service = _buildService(recorder: _ControllableRecorder());
         addTearDown(service.dispose);
 
         await service.pause();
@@ -392,7 +375,7 @@ void main() {
     );
 
     test('invalid resume from idle moves to failed state', () async {
-      final service = ActivityRecordingService();
+      final service = _buildService(recorder: _ControllableRecorder());
       addTearDown(service.dispose);
 
       await service.resume();
@@ -405,10 +388,7 @@ void main() {
     });
 
     test('pausing twice is idempotent', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final service = _buildService(recorder: _ControllableRecorder());
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
@@ -420,10 +400,8 @@ void main() {
     });
 
     test('resuming while already recording is a no-op', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
@@ -431,11 +409,11 @@ void main() {
 
       expect(service.state.status, ActivityRecordingStatus.recording);
       expect(service.state.lastErrorKey, isNull);
-      expect(adapter.listenCount, 1);
+      expect(recorder.resumeCount, 0);
     });
 
     test('stopping while idle leaves the state untouched', () async {
-      final service = ActivityRecordingService();
+      final service = _buildService(recorder: _ControllableRecorder());
       addTearDown(service.dispose);
 
       await service.stop();
@@ -445,7 +423,7 @@ void main() {
     });
 
     test('operations after dispose throw a guarded state error', () async {
-      final service = ActivityRecordingService();
+      final service = _buildService(recorder: _ControllableRecorder());
       service.dispose();
 
       expect(
@@ -455,10 +433,8 @@ void main() {
     });
 
     test('discard is idempotent and clears state', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final service = ActivityRecordingService(
-        locationService: LocationService(platformAdapter: adapter),
-      );
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.hike);
@@ -468,20 +444,20 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.idle);
       expect(service.state.activityType, isNull);
       expect(service.state.points, isEmpty);
-      expect(adapter.cancelCount, 1);
+      expect(recorder.discardCount, greaterThanOrEqualTo(1));
     });
 
-    test('stream errors fail recording and cancel subscription', () async {
-      final adapter = RecordingLocationPlatformAdapter();
+    test('recorder errors fail recording and discard the recorder', () async {
+      final recorder = _ControllableRecorder();
       final diagnostics = _FakeDiagnosticsRecorder();
-      final service = ActivityRecordingService(
+      final service = _buildService(
+        recorder: recorder,
         diagnostics: diagnostics,
-        locationService: LocationService(platformAdapter: adapter),
       );
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
-      adapter.addError(StateError('stream failed'));
+      recorder.emitError(StateError('recorder failed'));
       await pumpEventQueue();
 
       expect(service.state.status, ActivityRecordingStatus.failed);
@@ -489,58 +465,46 @@ void main() {
         service.state.lastErrorKey,
         ActivityRecordingErrorKeys.locationStreamFailed,
       );
-      expect(adapter.cancelCount, 1);
+      expect(recorder.discardCount, greaterThanOrEqualTo(1));
       expect(
         diagnostics.errorSources,
-        contains(DiagnosticsSources.activityLocationStream),
+        contains(DiagnosticsSources.activityRecorder),
       );
     });
 
-    test('records a breadcrumb when the location stream closes', () async {
-      final adapter = RecordingLocationPlatformAdapter();
-      final diagnostics = _FakeDiagnosticsRecorder();
-      final service = ActivityRecordingService(
-        diagnostics: diagnostics,
-        locationService: LocationService(platformAdapter: adapter),
-      );
+    test('recorder failure events map to typed error keys', () async {
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
       addTearDown(service.dispose);
 
       await service.start(activityType: ActivityType.run);
-      await adapter.closeStream();
+      recorder.emitFailure(ActivityRecorderFailureReason.permissionLost);
       await pumpEventQueue();
 
+      expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
-        diagnostics.events,
-        contains(DiagnosticsEvents.activityLocationStreamDone),
+        service.state.lastErrorKey,
+        ActivityRecordingErrorKeys.locationPermissionDenied,
       );
-      final details = diagnostics.detailsFor(
-        DiagnosticsEvents.activityLocationStreamDone,
-      );
-      expect(details?['status'], ActivityRecordingStatus.recording.name);
-      expect(details?['pointCount'], 0);
     });
 
     test(
       'point milestone records counts without per-point gap details',
       () async {
-        var now = DateTime.utc(2026, 5, 30, 10);
-        final adapter = RecordingLocationPlatformAdapter();
+        final recorder = _ControllableRecorder();
         final diagnostics = _FakeDiagnosticsRecorder();
-        final service = ActivityRecordingService(
-          now: () => now,
+        final service = _buildService(
+          recorder: recorder,
           diagnostics: diagnostics,
-          locationService: LocationService(platformAdapter: adapter),
         );
         addTearDown(service.dispose);
 
         await service.start(activityType: ActivityType.run);
-        for (var i = 0; i < 26; i += 1) {
-          now = now.add(const Duration(seconds: 2));
-          adapter.addPosition(
-            recordingPosition(latitude: 41 + i * 0.01, longitude: -8),
-          );
-          await pumpEventQueue();
-        }
+        recorder.emitPoints([
+          for (var i = 0; i < 26; i += 1)
+            _point(latitude: 41 + i * 0.01, longitude: -8),
+        ]);
+        await pumpEventQueue();
 
         final details = diagnostics.detailsFor(
           DiagnosticsEvents.activityPointMilestone,
@@ -550,6 +514,120 @@ void main() {
       },
     );
   });
+}
+
+ActivityRecordingService _buildService({
+  required ActivityLocationRecorder recorder,
+  LocationService? locationService,
+  DiagnosticsRecorder? diagnostics,
+  DateTime Function()? now,
+}) {
+  return ActivityRecordingService(
+    recorder: recorder,
+    locationService:
+        locationService ??
+        LocationService(platformAdapter: RecordingLocationPlatformAdapter()),
+    diagnostics: diagnostics,
+    now: now,
+  );
+}
+
+LocationService _location(LocationPermission permission) {
+  return LocationService(
+    platformAdapter: RecordingLocationPlatformAdapter(permission: permission),
+  );
+}
+
+RecordedActivityPoint _point({
+  required double latitude,
+  required double longitude,
+  int segmentIndex = 0,
+  DateTime? timestamp,
+}) {
+  return RecordedActivityPoint(
+    timestamp: timestamp ?? DateTime.utc(2026, 5, 30, 10),
+    latitude: latitude,
+    longitude: longitude,
+    segmentIndex: segmentIndex,
+  );
+}
+
+/// A controllable [ActivityLocationRecorder] fake for service-level tests.
+///
+/// Lets tests drive recorder events (point batches, failures, stream errors)
+/// and durable drains independently of any platform location stream.
+class _ControllableRecorder implements ActivityLocationRecorder {
+  _ControllableRecorder();
+
+  final StreamController<ActivityRecorderEvent> _controller =
+      StreamController<ActivityRecorderEvent>.broadcast();
+  final List<RecordedActivityPoint> _drained = [];
+  ActivityRecorderStartRequest? lastStartRequest;
+  int startCount = 0;
+  int pauseCount = 0;
+  int resumeCount = 0;
+  int stopCount = 0;
+  int discardCount = 0;
+
+  @override
+  Stream<ActivityRecorderEvent> get events => _controller.stream;
+
+  @override
+  Future<void> start(ActivityRecorderStartRequest request) async {
+    startCount += 1;
+    lastStartRequest = request;
+  }
+
+  @override
+  Future<void> pause() async {
+    pauseCount += 1;
+  }
+
+  @override
+  Future<void> resume() async {
+    resumeCount += 1;
+  }
+
+  @override
+  Future<void> stop() async {
+    stopCount += 1;
+  }
+
+  @override
+  Future<void> discard() async {
+    discardCount += 1;
+    _drained.clear();
+  }
+
+  @override
+  Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0}) async {
+    return _drained.sublist(sinceOffset.clamp(0, _drained.length));
+  }
+
+  @override
+  Future<ActiveActivitySession?> recoverActiveSession() async {
+    return null;
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (!_controller.isClosed) {
+      await _controller.close();
+    }
+  }
+
+  void emitPoints(List<RecordedActivityPoint> points) {
+    _drained.addAll(points);
+    _controller.add(ActivityRecorderEvent.pointBatchAvailable(points));
+  }
+
+  void emitError(Object error) {
+    _controller.addError(error);
+  }
+
+  void emitFailure(ActivityRecorderFailureReason reason) {
+    _controller.add(ActivityRecorderEvent.failed(reason));
+  }
 }
 
 class _FakeDiagnosticsRecorder implements DiagnosticsRecorder {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
@@ -6,6 +8,7 @@ import 'package:endurain/features/activity/models/activity_recording_state.dart'
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/map/map_screen.dart';
 import 'package:endurain/features/map/map_settings_repository.dart';
 import 'package:endurain/features/map/map_state_controller.dart';
@@ -19,6 +22,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
 import '../../helpers/fake_location_platform_adapter.dart';
+import '../../helpers/in_memory_active_activity_store.dart';
 import '../../helpers/widget_test_app.dart';
 
 void main() {
@@ -105,6 +109,53 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PolylineLayer), findsOneWidget);
+
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
+    testWidgets('renders separate polylines without bridging a paused gap', (
+      tester,
+    ) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            controller: mapController,
+            activityController: activityController,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await activityController.start(ActivityType.run);
+      platform.addPosition(testPosition(latitude: 41.10, longitude: -8.60));
+      await tester.pump();
+      platform.addPosition(testPosition(latitude: 41.11, longitude: -8.61));
+      await tester.pump();
+
+      unawaited(activityController.pause());
+      await tester.pump();
+      unawaited(activityController.resume());
+      await tester.pump();
+
+      platform.addPosition(testPosition(latitude: 41.30, longitude: -8.80));
+      await tester.pump();
+      platform.addPosition(testPosition(latitude: 41.31, longitude: -8.81));
+      await tester.pump();
+
+      final layer = tester.widget<PolylineLayer>(find.byType(PolylineLayer));
+      // Two separate segments render as two polylines; the paused gap is never
+      // bridged with a fake straight line.
+      expect(layer.polylines, hasLength(2));
+      expect(layer.polylines.first.points, hasLength(2));
+      expect(layer.polylines.last.points, hasLength(2));
 
       activityController.dispose();
       mapController.dispose();
@@ -314,9 +365,14 @@ Future<MapStateController> _mapController(
 ActivityRecordingController _activityController(
   FakeLocationPlatformAdapter platform,
 ) {
+  final locationService = LocationService(platformAdapter: platform);
   return ActivityRecordingController(
     recordingService: ActivityRecordingService(
-      locationService: LocationService(platformAdapter: platform),
+      locationService: locationService,
+      recorder: GeolocatorActivityLocationRecorder(
+        store: InMemoryActiveActivityStore(),
+        locationService: locationService,
+      ),
     ),
     uploadService: ActivityUploadService(
       config: const ActivityUploadConfig(endpoint: '', fieldName: ''),

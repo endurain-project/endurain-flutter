@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Shows the ongoing recording notification on Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
     <application
         android:label="Endurain"
@@ -45,6 +47,11 @@
                     android:path="/sso/callback" />
             </intent-filter>
         </activity>
+        <!-- Background activity recording (F-Droid compatible LocationManager). -->
+        <service
+            android:name="com.endurain.endurain.activity.ActivityRecorderService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

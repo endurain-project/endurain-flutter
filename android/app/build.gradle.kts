@@ -68,6 +68,13 @@ flutter {
     source = "../.."
 }
 
+dependencies {
+    // Used by the native activity recorder service for notification/permission
+    // helpers. Kept as an explicit dependency since plugin transitive deps are
+    // not exposed to the app compile classpath.
+    implementation("androidx.core:core-ktx:1.13.1")
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17

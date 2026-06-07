@@ -10,9 +10,14 @@ import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/services/url_launcher_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
+import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
+import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
+import 'package:flutter/foundation.dart';
 
 class AppServices {
   AppServices._();
@@ -55,4 +60,23 @@ class AppServices {
   final AppLinksService appLinks = DefaultAppLinksService();
   final UrlLauncherService urlLauncher = const UrlLauncherService();
   final PackageInfoService packageInfo = const PackageInfoService();
+
+  /// Builds the active-recording recorder for the current platform.
+  ///
+  /// Android and iOS use the native background-capable recorder. Other
+  /// platforms (such as macOS) fall back to the geolocator recorder backed by
+  /// the durable [FileActiveActivityStore].
+  ActivityLocationRecorder createActivityLocationRecorder({
+    LocationService? locationService,
+  }) {
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return NativeActivityRecorderChannel();
+    }
+    return GeolocatorActivityLocationRecorder(
+      store: FileActiveActivityStore(diagnostics: diagnostics),
+      locationService: locationService ?? location,
+      diagnostics: diagnostics,
+    );
+  }
 }

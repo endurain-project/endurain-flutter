@@ -17,7 +17,7 @@ import 'package:flutter/foundation.dart';
 
 class ActivityRecordingController extends ChangeNotifier {
   ActivityRecordingController({
-    ActivityRecordingService? recordingService,
+    required ActivityRecordingService recordingService,
     ActivityGpxBuilder gpxBuilder = const ActivityGpxBuilder(),
     ActivityUploadService? uploadService,
     LocalActivityRepository? localActivityRepository,
@@ -26,7 +26,7 @@ class ActivityRecordingController extends ChangeNotifier {
     String Function()? localActivityIdProvider,
     DateTime Function()? now,
     bool ownsService = true,
-  }) : _recordingService = recordingService ?? ActivityRecordingService(),
+  }) : _recordingService = recordingService,
        _gpxBuilder = gpxBuilder,
        _uploadService = uploadService ?? ActivityUploadService(),
        _localActivityRepository =

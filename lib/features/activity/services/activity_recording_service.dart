@@ -10,9 +10,7 @@ import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
-import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
@@ -36,62 +34,24 @@ class ActivityRecordingErrorKeys {
 
 class ActivityRecordingService {
   ActivityRecordingService({
+    required ActivityLocationRecorder recorder,
     DateTime Function()? now,
     DiagnosticsRecorder? diagnostics,
     LocationService? locationService,
-    ActivityLocationRecorder? recorder,
-    ActiveActivityStore? activeStore,
-    String Function()? sessionIdProvider,
-  }) : this._(
-         now: now ?? DateTime.now,
-         diagnostics: diagnostics ?? const NoopDiagnosticsRecorder(),
-         locationService: locationService ?? LocationService(),
-         recorder: recorder,
-         activeStore: activeStore,
-         sessionIdProvider: sessionIdProvider ?? _defaultSessionId,
-       );
-
-  ActivityRecordingService._({
-    required DateTime Function() now,
-    required DiagnosticsRecorder diagnostics,
-    required LocationService locationService,
-    required ActivityLocationRecorder? recorder,
-    required ActiveActivityStore? activeStore,
-    required String Function() sessionIdProvider,
-  }) : _now = now,
-       _diagnostics = diagnostics,
-       _locationService = locationService,
-       _recorder =
-           recorder ??
-           (activeStore == null
-               ? null
-               : GeolocatorActivityLocationRecorder(
-                   store: activeStore,
-                   locationService: locationService,
-                   diagnostics: diagnostics,
-                   now: now,
-                 )),
-       _activeStore = activeStore,
-       _sessionIdProvider = sessionIdProvider;
+  }) : _recorder = recorder,
+       _now = now ?? DateTime.now,
+       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
+       _locationService = locationService ?? LocationService();
 
   final DateTime Function() _now;
   final DiagnosticsRecorder _diagnostics;
   final LocationService _locationService;
-  final ActivityLocationRecorder? _recorder;
+  final ActivityLocationRecorder _recorder;
 
-  /// Optional durable store for the active recording. When provided, every
-  /// point and session transition is persisted so the recording can be
-  /// recovered after the app is paused, killed, or restarted. When `null`,
-  /// recording behaves as an in-memory-only foreground session.
-  final ActiveActivityStore? _activeStore;
-  final String Function() _sessionIdProvider;
-  ActiveActivitySession? _activeSession;
-  Future<void> _storeChain = Future<void>.value();
   final StreamController<ActivityRecordingState> _stateController =
       StreamController<ActivityRecordingState>.broadcast();
 
   ActivityRecordingState _state = ActivityRecordingState();
-  StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<ActivityRecorderEvent>? _recorderSubscription;
   Timer? _elapsedTimer;
   DateTime? _recordingSegmentStartedAt;
@@ -180,28 +140,23 @@ class ActivityRecordingService {
       },
     );
     _startElapsedTimer();
-    if (_recorder != null) {
-      _startRecorderEvents();
-      try {
-        await _recorder.start(
-          ActivityRecorderStartRequest(
-            localSessionId: _sessionIdProvider(),
-            activityType: activityType,
-            startedAt: startedAt,
-            backgroundConfig: _backgroundConfig,
-          ),
-        );
-      } catch (error, stackTrace) {
-        _diagnostics.recordErrorSync(
-          error,
-          stackTrace,
-          source: DiagnosticsSources.activityRecorder,
-        );
-        _fail(ActivityRecordingErrorKeys.locationStreamFailed);
-      }
-    } else {
-      _beginActiveSession(activityType, startedAt);
-      _startLocationStream();
+    _startRecorderEvents();
+    try {
+      await _recorder.start(
+        ActivityRecorderStartRequest(
+          localSessionId: _defaultSessionId(),
+          activityType: activityType,
+          startedAt: startedAt,
+          backgroundConfig: _backgroundConfig,
+        ),
+      );
+    } catch (error, stackTrace) {
+      _diagnostics.recordErrorSync(
+        error,
+        stackTrace,
+        source: DiagnosticsSources.activityRecorder,
+      );
+      _fail(ActivityRecordingErrorKeys.locationStreamFailed);
     }
   }
 
@@ -241,9 +196,6 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
     _cancelElapsedTimer();
-    final cancelPositionSubscription = _recorder == null
-        ? _cancelPositionSubscription()
-        : null;
     _emit(
       _state.copyWith(
         status: ActivityRecordingStatus.paused,
@@ -258,23 +210,10 @@ class ActivityRecordingService {
         'segmentCount': _state.segments.length,
       },
     );
-    if (_recorder != null) {
-      await _runRecorderCommand(
-        _recorder.pause,
-        ActivityRecordingErrorKeys.localSaveFailed,
-      );
-    } else {
-      _updateActiveSession(
-        (session) => session.copyWith(
-          status: ActiveActivityStatus.paused,
-          elapsedDurationSeconds: elapsedDurationSeconds,
-          currentSegmentIndex: _currentSegmentIndex,
-          pausedAt: _now(),
-        ),
-        save: true,
-      );
-      await cancelPositionSubscription;
-    }
+    await _runRecorderCommand(
+      _recorder.pause,
+      ActivityRecordingErrorKeys.localSaveFailed,
+    );
   }
 
   Future<void> resume() async {
@@ -302,22 +241,10 @@ class ActivityRecordingService {
       },
     );
     _startElapsedTimer();
-    if (_recorder != null) {
-      await _runRecorderCommand(
-        _recorder.resume,
-        ActivityRecordingErrorKeys.localSaveFailed,
-      );
-    } else {
-      _updateActiveSession(
-        (session) => session.copyWith(
-          status: ActiveActivityStatus.recording,
-          currentSegmentIndex: _currentSegmentIndex,
-          resumedAt: _now(),
-        ),
-        save: true,
-      );
-      _startLocationStream();
-    }
+    await _runRecorderCommand(
+      _recorder.resume,
+      ActivityRecordingErrorKeys.localSaveFailed,
+    );
   }
 
   Future<void> stop() async {
@@ -330,9 +257,7 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
     _cancelElapsedTimer();
-    if (_recorder == null) {
-      await _cancelPositionSubscription();
-    }
+    await _finalizeStateFromStore();
     if (_state.points.isEmpty) {
       _recordBreadcrumb(
         DiagnosticsEvents.activityStopFailed,
@@ -349,11 +274,7 @@ class ActivityRecordingService {
           elapsedDurationSeconds: elapsedDurationSeconds,
         ),
       );
-      if (_recorder != null) {
-        await _recorder.discard();
-      } else {
-        _clearActiveSession();
-      }
+      await _recorder.discard();
       return;
     }
 
@@ -377,22 +298,10 @@ class ActivityRecordingService {
         endedAt: _now(),
       ),
     );
-    if (_recorder != null) {
-      await _runRecorderCommand(
-        _recorder.stop,
-        ActivityRecordingErrorKeys.localSaveFailed,
-      );
-    } else {
-      _updateActiveSession(
-        (session) => session.copyWith(
-          status: ActiveActivityStatus.completed,
-          elapsedDurationSeconds: elapsedDurationSeconds,
-          currentSegmentIndex: _currentSegmentIndex,
-          endedAt: _now(),
-        ),
-        complete: true,
-      );
-    }
+    await _runRecorderCommand(
+      _recorder.stop,
+      ActivityRecordingErrorKeys.localSaveFailed,
+    );
   }
 
   Future<void> discard() async {
@@ -402,22 +311,15 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = 0;
     _lastBreadcrumbPointCount = 0;
     _backgroundConfig = null;
-    if (_recorder != null) {
-      final discarded = await _runRecorderCommand(
-        _recorder.discard,
-        ActivityRecordingErrorKeys.localSaveFailed,
-      );
-      if (!discarded) {
-        return;
-      }
-    } else {
-      await _cancelPositionSubscription();
+    final discarded = await _runRecorderCommand(
+      _recorder.discard,
+      ActivityRecordingErrorKeys.localSaveFailed,
+    );
+    if (!discarded) {
+      return;
     }
     _emit(ActivityRecordingState());
     _recordBreadcrumb(DiagnosticsEvents.activityDiscarded);
-    if (_recorder == null) {
-      _clearActiveSession();
-    }
   }
 
   void dispose() {
@@ -426,8 +328,6 @@ class ActivityRecordingService {
     }
     _isDisposed = true;
     _cancelElapsedTimer();
-    _positionSubscription?.cancel();
-    _positionSubscription = null;
     _recorderSubscription?.cancel();
     _recorderSubscription = null;
     _disposeRecorderWithoutThrow();
@@ -463,48 +363,6 @@ class ActivityRecordingService {
         (segmentSeconds < 0 ? 0 : segmentSeconds);
   }
 
-  void _startLocationStream() {
-    if (_positionSubscription != null) {
-      return;
-    }
-
-    try {
-      _positionSubscription = _locationService
-          .getPositionStream(
-            background: _backgroundConfig,
-            distanceFilter: LocationDistanceFilters.recordingMeters,
-          )
-          .listen(
-            _recordPosition,
-            onError: _handlePositionError,
-            onDone: _handlePositionStreamDone,
-          );
-    } catch (error, stackTrace) {
-      _diagnostics.recordErrorSync(
-        error,
-        stackTrace,
-        source: DiagnosticsSources.activityLocationStream,
-      );
-      _fail(ActivityRecordingErrorKeys.locationStreamFailed);
-    }
-  }
-
-  Future<void> _cancelPositionSubscription() async {
-    final subscription = _positionSubscription;
-    _positionSubscription = null;
-    await subscription?.cancel();
-  }
-
-  void _recordPosition(Position position) {
-    if (_state.status != ActivityRecordingStatus.recording) {
-      return;
-    }
-    final trackPoint = ActivityTrackPoint.fromPosition(position);
-    _emit(_state.addPoint(trackPoint));
-    _persistRecordedPoint(trackPoint);
-    _recordPointMilestoneIfNeeded(pointCount: _state.points.length);
-  }
-
   void _recordPointMilestoneIfNeeded({required int pointCount}) {
     if (pointCount == 1 || pointCount - _lastBreadcrumbPointCount >= 25) {
       _lastBreadcrumbPointCount = pointCount;
@@ -519,27 +377,8 @@ class ActivityRecordingService {
     }
   }
 
-  void _handlePositionError(Object error, StackTrace stackTrace) {
-    _diagnostics.recordErrorSync(
-      error,
-      stackTrace,
-      source: DiagnosticsSources.activityLocationStream,
-    );
-    _fail(ActivityRecordingErrorKeys.locationStreamFailed);
-  }
-
-  void _handlePositionStreamDone() {
-    _recordBreadcrumb(
-      DiagnosticsEvents.activityLocationStreamDone,
-      details: {
-        'status': _state.status.name,
-        'pointCount': _state.points.length,
-      },
-    );
-  }
-
   void _startRecorderEvents() {
-    if (_recorder == null || _recorderSubscription != null) {
+    if (_recorderSubscription != null) {
       return;
     }
     _recorderSubscription = _recorder.events.listen(
@@ -562,7 +401,7 @@ class ActivityRecordingService {
       case ActivityRecorderEventType.resumed:
       case ActivityRecorderEventType.stopped:
       case ActivityRecorderEventType.recoverableStateChanged:
-        _activeSession = event.session;
+        break;
       case ActivityRecorderEventType.pointBatchAvailable:
         _recordRecordedPoints(event.points);
       case ActivityRecorderEventType.failed:
@@ -593,27 +432,36 @@ class ActivityRecordingService {
   }
 
   void _discardRecorderWithoutThrow() {
-    final recorder = _recorder;
-    if (recorder == null) {
-      return;
-    }
     unawaited(
-      recorder.discard().catchError((Object error, StackTrace stackTrace) {
+      _recorder.discard().catchError((Object error, StackTrace stackTrace) {
         _recordRecorderError(error, stackTrace);
       }),
     );
   }
 
   void _disposeRecorderWithoutThrow() {
-    final recorder = _recorder;
-    if (recorder == null) {
-      return;
-    }
     unawaited(
-      recorder.dispose().catchError((Object error, StackTrace stackTrace) {
+      _recorder.dispose().catchError((Object error, StackTrace stackTrace) {
         _recordRecorderError(error, stackTrace);
       }),
     );
+  }
+
+  /// Rebuilds the in-memory recording state from the durable store before
+  /// completion so points persisted while the app was backgrounded (with a
+  /// detached event sink) are included in the finalized activity.
+  Future<void> _finalizeStateFromStore() async {
+    try {
+      final recordedPoints = await _recorder.drain();
+      if (recordedPoints.isEmpty) {
+        return;
+      }
+      final segments = _segmentsFromRecorded(recordedPoints);
+      _lastBreadcrumbPointCount = recordedPoints.length;
+      _emit(_state.copyWith(segments: segments));
+    } catch (error, stackTrace) {
+      _recordRecorderError(error, stackTrace);
+    }
   }
 
   void _recordRecordedPoints(List<RecordedActivityPoint> points) {
@@ -690,11 +538,7 @@ class ActivityRecordingService {
   void _fail(String errorKey) {
     _cancelElapsedTimer();
     _recordingSegmentStartedAt = null;
-    if (_recorder != null) {
-      _discardRecorderWithoutThrow();
-    } else {
-      unawaited(_cancelPositionSubscription());
-    }
+    _discardRecorderWithoutThrow();
     _recordBreadcrumb(
       DiagnosticsEvents.activityFailed,
       details: {'reason': errorKey, 'pointCount': _state.points.length},
@@ -705,9 +549,6 @@ class ActivityRecordingService {
         lastErrorKey: errorKey,
       ),
     );
-    if (_recorder == null) {
-      _clearActiveSession();
-    }
   }
 
   void _emit(ActivityRecordingState state) {
@@ -722,128 +563,27 @@ class ActivityRecordingService {
     _diagnostics.recordBreadcrumbSync(event, details: details);
   }
 
-  int get _currentSegmentIndex {
-    return _state.segments.isEmpty ? 0 : _state.segments.length - 1;
-  }
-
-  void _beginActiveSession(ActivityType activityType, DateTime startedAt) {
-    final store = _activeStore;
-    if (store == null) {
-      return;
-    }
-    final session = ActiveActivitySession(
-      localSessionId: _sessionIdProvider(),
-      activityType: activityType,
-      status: ActiveActivityStatus.recording,
-      startedAt: startedAt,
-    );
-    _activeSession = session;
-    _enqueueStore(() async {
-      await store.clear();
-      await store.saveSession(session);
-    });
-  }
-
-  void _persistRecordedPoint(ActivityTrackPoint point) {
-    final store = _activeStore;
-    if (store == null || _activeSession == null) {
-      return;
-    }
-    final recorded = RecordedActivityPoint.fromTrackPoint(
-      point,
-      segmentIndex: _currentSegmentIndex,
-    );
-    _enqueueStore(() => store.appendPoints([recorded]));
-  }
-
-  void _updateActiveSession(
-    ActiveActivitySession Function(ActiveActivitySession session) update, {
-    bool save = false,
-    bool complete = false,
-  }) {
-    final store = _activeStore;
-    final session = _activeSession;
-    if (store == null || session == null) {
-      return;
-    }
-    final updated = update(session);
-    _activeSession = updated;
-    if (complete) {
-      _enqueueStore(() => store.complete(updated));
-    } else if (save) {
-      _enqueueStore(() => store.saveSession(updated));
-    }
-  }
-
-  void _clearActiveSession() {
-    final store = _activeStore;
-    _activeSession = null;
-    if (store == null) {
-      return;
-    }
-    _enqueueStore(() => store.clear());
-  }
-
-  void _enqueueStore(Future<void> Function() action) {
-    _storeChain = _storeChain.then((_) => action()).catchError((
-      Object error,
-      StackTrace stackTrace,
-    ) {
-      _recordBreadcrumb(
-        DiagnosticsEvents.activityRecorderFailed,
-        details: const {'reason': 'persistenceFailed'},
-      );
-    });
-  }
-
-  /// Attempts to restore a recoverable active recording from the durable store.
+  /// Attempts to restore a recoverable active recording from the recorder.
   ///
   /// Returns `true` when a non-empty recording was recovered and the service
   /// state was restored as a paused recording the user can resume or save.
-  /// Empty or non-recoverable sessions are cleared and `false` is returned.
+  /// Empty or non-recoverable sessions are discarded and `false` is returned.
   Future<bool> recoverActiveSession() async {
     _ensureNotDisposed();
-    if (_recorder != null) {
-      if (_state.isActive) {
-        return false;
-      }
-      _startRecorderEvents();
-      final session = await _recorder.recoverActiveSession();
-      if (session == null || !session.isActive) {
-        if (session != null) {
-          await _recorder.discard();
-        }
-        return false;
-      }
-      final recordedPoints = await _recorder.drain();
-      if (recordedPoints.isEmpty) {
-        await _recorder.discard();
-        _recordBreadcrumb(
-          DiagnosticsEvents.activityActiveSessionRecovered,
-          details: {'pointCount': 0, 'recovered': false},
-        );
-        return false;
-      }
-
-      return _recoverFromSessionAndPoints(session, recordedPoints);
-    }
-
-    final store = _activeStore;
-    if (store == null || _state.isActive) {
+    if (_state.isActive) {
       return false;
     }
-
-    final session = await store.loadSession();
+    _startRecorderEvents();
+    final session = await _recorder.recoverActiveSession();
     if (session == null || !session.isActive) {
       if (session != null) {
-        await store.clear();
+        await _recorder.discard();
       }
       return false;
     }
-
-    final recordedPoints = await store.readPoints();
+    final recordedPoints = await _recorder.drain();
     if (recordedPoints.isEmpty) {
-      await store.clear();
+      await _recorder.discard();
       _recordBreadcrumb(
         DiagnosticsEvents.activityActiveSessionRecovered,
         details: {'pointCount': 0, 'recovered': false},
@@ -859,7 +599,6 @@ class ActivityRecordingService {
     List<RecordedActivityPoint> recordedPoints,
   ) {
     final segments = _segmentsFromRecorded(recordedPoints);
-    _activeSession = session.copyWith(status: ActiveActivityStatus.paused);
     _elapsedBeforeCurrentSegmentSeconds = session.elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
     _lastBreadcrumbPointCount = recordedPoints.length;
