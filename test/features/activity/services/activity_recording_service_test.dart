@@ -340,7 +340,24 @@ void main() {
         service.state.lastErrorKey,
         ActivityRecordingErrorKeys.emptyRecording,
       );
+      expect(recorder.stopCount, 1);
       expect(recorder.discardCount, 1);
+    });
+
+    test('stop drains points persisted while stopping', () async {
+      final recorder = _ControllableRecorder(
+        pointsPersistedOnStop: [_point(latitude: 41.1, longitude: -8.6)],
+      );
+      final service = _buildService(recorder: recorder);
+      addTearDown(service.dispose);
+
+      await service.start(activityType: ActivityType.walk);
+      await service.stop();
+
+      expect(service.state.status, ActivityRecordingStatus.completed);
+      expect(service.state.points, hasLength(1));
+      expect(service.state.points.single.latitude, 41.1);
+      expect(recorder.stopCount, 1);
     });
 
     test('duplicate start keeps current recording', () async {
@@ -557,11 +574,14 @@ RecordedActivityPoint _point({
 /// Lets tests drive recorder events (point batches, failures, stream errors)
 /// and durable drains independently of any platform location stream.
 class _ControllableRecorder implements ActivityLocationRecorder {
-  _ControllableRecorder();
+  _ControllableRecorder({
+    List<RecordedActivityPoint> pointsPersistedOnStop = const [],
+  }) : _pointsPersistedOnStop = pointsPersistedOnStop;
 
   final StreamController<ActivityRecorderEvent> _controller =
       StreamController<ActivityRecorderEvent>.broadcast();
   final List<RecordedActivityPoint> _drained = [];
+  final List<RecordedActivityPoint> _pointsPersistedOnStop;
   ActivityRecorderStartRequest? lastStartRequest;
   int startCount = 0;
   int pauseCount = 0;
@@ -591,6 +611,7 @@ class _ControllableRecorder implements ActivityLocationRecorder {
   @override
   Future<void> stop() async {
     stopCount += 1;
+    _drained.addAll(_pointsPersistedOnStop);
   }
 
   @override

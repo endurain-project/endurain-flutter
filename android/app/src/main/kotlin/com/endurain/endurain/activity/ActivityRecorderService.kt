@@ -41,6 +41,7 @@ class ActivityRecorderService : Service() {
     private var lastPointEpochMillis: Long? = null
     private var activeNotificationTitle: String? = null
     private var activeNotificationText: String? = null
+    private var resumedFromPause = false
 
     override fun onCreate() {
         super.onCreate()
@@ -66,6 +67,7 @@ class ActivityRecorderService : Service() {
         val text = intent.getStringExtra(EXTRA_TEXT) ?: defaultText()
         activeNotificationTitle = title
         activeNotificationText = text
+        resumedFromPause = false
         if (!hasAnyLocationPermission()) {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
@@ -81,6 +83,7 @@ class ActivityRecorderService : Service() {
 
     private fun handleResume() {
         val session = store.loadSession()
+        resumedFromPause = session != null
         if (!hasAnyLocationPermission()) {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
@@ -106,6 +109,7 @@ class ActivityRecorderService : Service() {
 
     private fun handleStop() {
         stopCollection()
+        resumedFromPause = false
         stopForegroundCompat()
         stopSelf()
     }
@@ -227,7 +231,13 @@ class ActivityRecorderService : Service() {
         val nowMillis = if (location.time > 0) location.time else System.currentTimeMillis()
         var segmentIndex = session.currentSegmentIndex
         val previous = lastPointEpochMillis
-        if (previous != null && nowMillis - previous > MAX_TIME_GAP_MILLIS) {
+        if (resumedFromPause) {
+            if (previous != null) {
+                segmentIndex += 1
+                store.saveSession(session.copy(currentSegmentIndex = segmentIndex))
+            }
+            resumedFromPause = false
+        } else if (previous != null && nowMillis - previous > MAX_TIME_GAP_MILLIS) {
             // Large time gap: start a new segment to avoid bridging a false line.
             segmentIndex += 1
             store.saveSession(session.copy(currentSegmentIndex = segmentIndex))

@@ -257,6 +257,21 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
     _cancelElapsedTimer();
+
+    _emit(
+      _state.copyWith(
+        status: ActivityRecordingStatus.stopping,
+        elapsedDurationSeconds: elapsedDurationSeconds,
+      ),
+    );
+    final stopped = await _runRecorderCommand(
+      _recorder.stop,
+      ActivityRecordingErrorKeys.localSaveFailed,
+    );
+    if (!stopped) {
+      return;
+    }
+
     await _finalizeStateFromStore();
     if (_state.points.isEmpty) {
       _recordBreadcrumb(
@@ -278,12 +293,6 @@ class ActivityRecordingService {
       return;
     }
 
-    _emit(
-      _state.copyWith(
-        status: ActivityRecordingStatus.stopping,
-        elapsedDurationSeconds: elapsedDurationSeconds,
-      ),
-    );
     _recordBreadcrumb(
       DiagnosticsEvents.activityStopped,
       details: {
@@ -297,10 +306,6 @@ class ActivityRecordingService {
         status: ActivityRecordingStatus.completed,
         endedAt: _now(),
       ),
-    );
-    await _runRecorderCommand(
-      _recorder.stop,
-      ActivityRecordingErrorKeys.localSaveFailed,
     );
   }
 

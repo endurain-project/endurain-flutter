@@ -235,40 +235,43 @@ void main() {
         ActivityRecordingErrorKeys.emptyRecording,
       );
       expect(recorder.discardCount, 1);
-      expect(recorder.stopCount, 0);
-    });
-
-    test('completes from the store after recovering a paused session', () async {
-      final recorder = _StoreBackedRecorder(
-        recoverableSession: ActiveActivitySession(
-          localSessionId: 'session_1',
-          activityType: ActivityType.ride,
-          status: ActiveActivityStatus.paused,
-          startedAt: DateTime.utc(2026, 6, 3, 9),
-          elapsedDurationSeconds: 120,
-        ),
-        points: [
-          _point(segmentIndex: 0, latitude: 41.0),
-          _point(segmentIndex: 1, latitude: 41.2),
-        ],
-      );
-      final service = buildService(recorder);
-      addTearDown(service.dispose);
-
-      final recovered = await service.recoverActiveSession();
-      expect(recovered, isTrue);
-      expect(service.state.status, ActivityRecordingStatus.paused);
-      expect(service.state.points, hasLength(2));
-
-      await service.resume();
-      await service.stop();
-      await pumpEventQueue();
-
-      expect(service.state.status, ActivityRecordingStatus.completed);
-      expect(service.state.points, hasLength(2));
-      expect(service.state.segments, hasLength(2));
       expect(recorder.stopCount, 1);
     });
+
+    test(
+      'completes from the store after recovering a paused session',
+      () async {
+        final recorder = _StoreBackedRecorder(
+          recoverableSession: ActiveActivitySession(
+            localSessionId: 'session_1',
+            activityType: ActivityType.ride,
+            status: ActiveActivityStatus.paused,
+            startedAt: DateTime.utc(2026, 6, 3, 9),
+            elapsedDurationSeconds: 120,
+          ),
+          points: [
+            _point(segmentIndex: 0, latitude: 41.0),
+            _point(segmentIndex: 1, latitude: 41.2),
+          ],
+        );
+        final service = buildService(recorder);
+        addTearDown(service.dispose);
+
+        final recovered = await service.recoverActiveSession();
+        expect(recovered, isTrue);
+        expect(service.state.status, ActivityRecordingStatus.paused);
+        expect(service.state.points, hasLength(2));
+
+        await service.resume();
+        await service.stop();
+        await pumpEventQueue();
+
+        expect(service.state.status, ActivityRecordingStatus.completed);
+        expect(service.state.points, hasLength(2));
+        expect(service.state.segments, hasLength(2));
+        expect(recorder.stopCount, 1);
+      },
+    );
   });
 }
 
