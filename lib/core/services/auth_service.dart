@@ -234,8 +234,8 @@ class AuthService {
 
   /// Refresh access token using refresh token
   Future<bool> refreshToken() async {
-    final serverUrl = await _storage.getServerUrl();
-    final refreshToken = await _storage.getRefreshToken();
+    final serverUrl = await _sessionStore.getServerUrl();
+    final refreshToken = await _sessionStore.getRefreshToken();
 
     if (serverUrl == null || serverUrl.isEmpty || refreshToken == null) {
       return _clearSessionAfterRefreshFailure();
@@ -289,8 +289,8 @@ class AuthService {
   /// Returns true if server logout succeeded, false if it failed
   /// Local tokens are always cleared regardless of server response
   Future<bool> logout() async {
-    final serverUrl = await _storage.getServerUrl();
-    final refreshToken = await _storage.getRefreshToken();
+    final serverUrl = await _sessionStore.getServerUrl();
+    final refreshToken = await _sessionStore.getRefreshToken();
 
     bool serverLogoutSuccess = true;
 

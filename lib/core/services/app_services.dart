@@ -42,6 +42,7 @@ class AppServices {
   );
   late final ApiClient apiClient = ApiClient(
     storage: secureStorage,
+    sessionStore: authSession,
     authService: auth,
   );
   late final ActivityUploadService activityUpload = ActivityUploadService(

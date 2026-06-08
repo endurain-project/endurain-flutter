@@ -5,6 +5,7 @@ import 'package:http/testing.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 
 void main() {
@@ -577,5 +578,66 @@ void main() {
       expect(await storage.getAccessToken(), isNull);
       expect(await storage.getRefreshToken(), isNull);
     });
+
+    test(
+      'refreshToken reads server URL and refresh token from session store',
+      () async {
+        // sessionStorage is the session store's backing; rawStorage is the
+        // _storage field — they are distinct to prove the session store path
+        // is used, not the raw storage path.
+        final sessionStorage = SecureStorageService();
+        await sessionStorage.setServerUrl('https://session.test');
+        await sessionStorage.setRefreshToken('refresh-from-store');
+        final sessionStore = AuthSessionStore(storage: sessionStorage);
+        final rawStorage = SecureStorageService();
+        final service = AuthService(
+          storage: rawStorage,
+          sessionStore: sessionStore,
+          httpClient: MockClient((request) async {
+            expect(request.url.origin, 'https://session.test');
+            expect(
+              request.headers[ApiConstants.authorizationHeader],
+              'Bearer refresh-from-store',
+            );
+            return http.Response(
+              '{"access_token":"access-2","refresh_token":"refresh-2",'
+              '"session_id":"session-2","expires_in":3600}',
+              200,
+            );
+          }),
+        );
+
+        final refreshed = await service.refreshToken();
+
+        expect(refreshed, isTrue);
+      },
+    );
+
+    test(
+      'logout reads server URL and refresh token from session store',
+      () async {
+        final sessionStorage = SecureStorageService();
+        await sessionStorage.setServerUrl('https://session.test');
+        await sessionStorage.setRefreshToken('refresh-from-store');
+        final sessionStore = AuthSessionStore(storage: sessionStorage);
+        final rawStorage = SecureStorageService();
+        final service = AuthService(
+          storage: rawStorage,
+          sessionStore: sessionStore,
+          httpClient: MockClient((request) async {
+            expect(request.url.origin, 'https://session.test');
+            expect(
+              request.headers[ApiConstants.authorizationHeader],
+              'Bearer refresh-from-store',
+            );
+            return http.Response('', 200);
+          }),
+        );
+
+        final serverLogoutSucceeded = await service.logout();
+
+        expect(serverLogoutSucceeded, isTrue);
+      },
+    );
   });
 }

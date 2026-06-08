@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/api_response.dart';
@@ -10,17 +11,20 @@ import 'package:endurain/core/models/app_exception.dart';
 class ApiClient {
   ApiClient({
     SecureStorageService? storage,
+    AuthSessionStore? sessionStore,
     AuthService? authService,
     http.Client? httpClient,
     MultipartUploadAdapter? uploadAdapter,
-  }) : _storage = storage ?? SecureStorageService(),
+  }) : _sessionStore =
+           sessionStore ??
+           AuthSessionStore(storage: storage ?? SecureStorageService()),
        _httpClient = httpClient ?? http.Client(),
        _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter(),
        _authService =
            authService ??
            AuthService(storage: storage ?? SecureStorageService());
 
-  final SecureStorageService _storage;
+  final AuthSessionStore _sessionStore;
   final AuthService _authService;
   final http.Client _httpClient;
   final MultipartUploadAdapter _uploadAdapter;
@@ -84,7 +88,7 @@ class ApiClient {
     String filePath,
     String fieldName,
   ) async {
-    final serverUrl = await _storage.getServerUrl();
+    final serverUrl = await _sessionStore.getServerUrl();
     if (serverUrl == null || serverUrl.isEmpty) {
       throw const AppException(AppErrorCode.serverUrlNotConfigured);
     }
@@ -114,7 +118,7 @@ class ApiClient {
         throw const AppException(AppErrorCode.sessionExpired);
       }
 
-      final newAccessToken = await _storage.getAccessToken();
+      final newAccessToken = await _sessionStore.getAccessToken();
       if (newAccessToken == null || newAccessToken.isEmpty) {
         throw const AppException(AppErrorCode.sessionExpired);
       }
@@ -166,7 +170,7 @@ class ApiClient {
     String endpoint, {
     Map<String, dynamic>? body,
   }) async {
-    final serverUrl = await _storage.getServerUrl();
+    final serverUrl = await _sessionStore.getServerUrl();
     if (serverUrl == null || serverUrl.isEmpty) {
       throw const AppException(AppErrorCode.serverUrlNotConfigured);
     }
@@ -195,7 +199,7 @@ class ApiClient {
       final refreshed = await _authService.refreshToken();
       if (refreshed) {
         // Retry the request with new token
-        final newAccessToken = await _storage.getAccessToken();
+        final newAccessToken = await _sessionStore.getAccessToken();
         headers[ApiConstants.authorizationHeader] = 'Bearer $newAccessToken';
         response = await _executeRequest(method, url, headers, body: body);
       } else {
@@ -207,14 +211,14 @@ class ApiClient {
   }
 
   Future<String?> _getValidAccessToken() async {
-    final accessToken = await _storage.getAccessToken();
+    final accessToken = await _sessionStore.getAccessToken();
     if (accessToken == null || accessToken.isEmpty) {
       return accessToken;
     }
 
-    if (await _storage.isAccessTokenExpiringSoon()) {
+    if (await _sessionStore.isAccessTokenExpiringSoon()) {
       await _authService.refreshToken();
-      return _storage.getAccessToken();
+      return _sessionStore.getAccessToken();
     }
 
     return accessToken;

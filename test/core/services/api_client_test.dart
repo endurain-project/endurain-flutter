@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/multipart_upload_adapter.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 
@@ -473,6 +474,34 @@ void main() {
           ),
         ),
       );
+    });
+    test('reads server URL and access token from injected session store',
+        () async {
+      final storage = SecureStorageService();
+      await storage.setServerUrl('https://session.test');
+      await storage.setAccessToken('access-from-store');
+      final sessionStore = AuthSessionStore(storage: storage);
+
+      // No storage passed directly — all reads come from sessionStore.
+      final client = ApiClient(
+        sessionStore: sessionStore,
+        authService: AuthService(storage: storage),
+        httpClient: MockClient((request) async {
+          expect(request.url.origin, 'https://session.test');
+          expect(
+            request.headers['Authorization'],
+            'Bearer access-from-store',
+          );
+          return http.Response('{"ok":true}', 200);
+        }),
+      );
+
+      final data = await client.getJsonObject(
+        '/api/profile',
+        failureCode: AppErrorCode.loginFailed,
+      );
+
+      expect(data, {'ok': true});
     });
   });
 }

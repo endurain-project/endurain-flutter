@@ -6,6 +6,8 @@ class AuthSessionStore {
 
   final SecureStorageService _storage;
 
+  Future<String?> getServerUrl() => _storage.getServerUrl();
+
   Future<String?> getAccessToken() => _storage.getAccessToken();
 
   Future<String?> getRefreshToken() => _storage.getRefreshToken();

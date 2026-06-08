@@ -50,5 +50,19 @@ void main() {
       expect(await storage.getSessionId(), isNull);
       expect(await storage.getAccessTokenExpiresAt(), isNull);
     });
+
+    test('returns the stored server URL', () async {
+      final storage = SecureStorageService();
+      final store = AuthSessionStore(storage: storage);
+      await storage.setServerUrl('https://example.test');
+
+      expect(await store.getServerUrl(), 'https://example.test');
+    });
+
+    test('returns null server URL when not set', () async {
+      final store = AuthSessionStore(storage: SecureStorageService());
+
+      expect(await store.getServerUrl(), isNull);
+    });
   });
 }
