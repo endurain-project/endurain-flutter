@@ -15,7 +15,8 @@ void main() {
   });
 
   group('ServerSettingsService', () {
-    test('parses settings and persists tile configuration', () async {
+    test('parses and returns server settings without persisting tile config',
+        () async {
       final storage = SecureStorageService();
       final service = ServerSettingsService(
         storage: storage,
@@ -37,12 +38,15 @@ void main() {
 
       expect(settings.ssoEnabled, isTrue);
       expect(settings.localLoginEnabled, isFalse);
-      expect(
-        await storage.getTileServerUrl(),
-        'https://tiles.test/{z}/{x}/{y}.png',
-      );
-      expect(await storage.getTileServerAttribution(), 'OpenStreetMap');
-      expect(await storage.getMapBackgroundColor(), '#102030');
+      expect(settings.tileserverUrl, 'https://tiles.test/{z}/{x}/{y}.png');
+      expect(settings.tileserverAttribution, 'OpenStreetMap');
+      expect(settings.mapBackgroundColor, '#102030');
+
+      // The service must NOT write tile preferences — only callers with an
+      // explicit MapSettingsRepository may do so.
+      expect(await storage.getTileServerUrl(), isNull);
+      expect(await storage.getTileServerAttribution(), isNull);
+      expect(await storage.getMapBackgroundColor(), isNull);
     });
 
     test('falls back to the stored server URL', () async {

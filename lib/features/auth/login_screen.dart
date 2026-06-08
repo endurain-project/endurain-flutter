@@ -14,6 +14,7 @@ import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/features/auth/auth_coordinator.dart';
 import 'package:endurain/features/auth/login_controller.dart';
+import 'package:endurain/features/map/map_settings_repository.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 
@@ -72,6 +73,9 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
             widget.serverSettingsService ?? services.serverSettings,
       ),
       appLinksService: widget.appLinksService ?? services.appLinks,
+      mapSettingsRepository: MapSettingsRepository(
+        storage: services.secureStorage,
+      ),
     );
   }
 

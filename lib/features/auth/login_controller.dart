@@ -6,16 +6,20 @@ import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_links_service.dart';
 import 'package:endurain/features/auth/auth_coordinator.dart';
+import 'package:endurain/features/map/map_settings_repository.dart';
 
 class LoginController extends ChangeNotifier {
   LoginController({
     required AuthCoordinator authCoordinator,
     AppLinksService? appLinksService,
+    MapSettingsRepository? mapSettingsRepository,
   }) : _authCoordinator = authCoordinator,
-       _appLinksService = appLinksService ?? DefaultAppLinksService();
+       _appLinksService = appLinksService ?? DefaultAppLinksService(),
+       _mapSettingsRepository = mapSettingsRepository;
 
   final AuthCoordinator _authCoordinator;
   final AppLinksService _appLinksService;
+  final MapSettingsRepository? _mapSettingsRepository;
 
   final formKey = GlobalKey<FormState>();
   final serverUrlController = TextEditingController();
@@ -55,6 +59,7 @@ class LoginController extends ChangeNotifier {
     try {
       final serverUrl = serverUrlController.text.trim();
       final settings = await _authCoordinator.getServerSettings(serverUrl);
+      await _mapSettingsRepository?.saveFromServerSettings(settings);
 
       List<IdentityProvider> providers = [];
       if (settings.ssoEnabled) {
