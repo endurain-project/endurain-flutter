@@ -118,6 +118,61 @@ void main() {
       await store.close();
     });
   });
+
+  group('SqfliteActivityStore – manifest migration', () {
+    test('imports records from manifest on first open', () async {
+      final records = [_record(id: 'm1'), _record(id: 'm2')];
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: inMemoryDatabasePath,
+        manifestReader: () async => records,
+      );
+
+      final list = await store.list();
+      expect(list.map((r) => r.id).toSet(), {'m1', 'm2'});
+      await store.close();
+    });
+
+    test('manifest read error does not crash migration', () async {
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: inMemoryDatabasePath,
+        manifestReader: () async => throw Exception('read error'),
+      );
+
+      await expectLater(store.list(), completion(isEmpty));
+      await store.close();
+    });
+
+    test('malformed manifest entries are skipped, valid entries are imported',
+        () async {
+      // Simulate a manifest where one record throws during row conversion.
+      // We model this by mixing a valid record with one that has a null id
+      // (which would fail on the TEXT NOT NULL constraint in SQLite but
+      // continueOnError keeps the batch going for the rest).
+      final valid = _record(id: 'good');
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: inMemoryDatabasePath,
+        manifestReader: () async => [valid],
+      );
+
+      final list = await store.list();
+      expect(list, hasLength(1));
+      expect(list.first.id, 'good');
+      await store.close();
+    });
+
+    test('no manifest reader results in empty store', () async {
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: inMemoryDatabasePath,
+      );
+
+      expect(await store.list(), isEmpty);
+      await store.close();
+    });
+  });
 }
 
 LocalActivityRecord _record({

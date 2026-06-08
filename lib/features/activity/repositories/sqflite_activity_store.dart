@@ -21,8 +21,10 @@ class SqfliteActivityStore implements LocalActivityStore {
   SqfliteActivityStore({
     DatabaseFactory? databaseFactory,
     String? databasePath,
+    Future<List<LocalActivityRecord>> Function()? manifestReader,
   }) : _factory = databaseFactory ?? _platformFactory(),
-       _path = databasePath;
+       _path = databasePath,
+       _manifestReader = manifestReader;
 
   static const int _schemaVersion = 1;
   static const String _dbFileName = 'activity.db';
@@ -31,6 +33,7 @@ class SqfliteActivityStore implements LocalActivityStore {
 
   final DatabaseFactory _factory;
   final String? _path;
+  final Future<List<LocalActivityRecord>> Function()? _manifestReader;
   Database? _db;
 
   static DatabaseFactory _platformFactory() {
@@ -76,6 +79,7 @@ class SqfliteActivityStore implements LocalActivityStore {
               server_activity_id               TEXT
             )
           ''');
+          await _migrateFromManifest(db);
         },
       ),
     );
@@ -124,6 +128,27 @@ class SqfliteActivityStore implements LocalActivityStore {
   Future<void> close() async {
     await _db?.close();
     _db = null;
+  }
+
+  Future<void> _migrateFromManifest(Database db) async {
+    final reader = _manifestReader;
+    if (reader == null) return;
+    List<LocalActivityRecord> records;
+    try {
+      records = await reader();
+    } catch (_) {
+      return;
+    }
+    if (records.isEmpty) return;
+    final batch = db.batch();
+    for (final record in records) {
+      batch.insert(
+        _tableActivity,
+        _toRow(record),
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
+    await batch.commit(noResult: true, continueOnError: true);
   }
 
   Map<String, Object?> _toRow(LocalActivityRecord r) {
