@@ -91,6 +91,20 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       return;
     }
 
+    if (_controller.serverUrlIsHttp && mounted) {
+      final l10n = AppLocalizations.of(context)!;
+      final confirmed = await DialogUtils.showConfirmDialog(
+        context,
+        title: l10n.warnHttpServerUrlTitle,
+        message: l10n.warnHttpServerUrlMessage,
+        confirmText: l10n.warnHttpServerUrlConfirm,
+        isDestructive: true,
+      );
+      if (!confirmed || !mounted) {
+        return;
+      }
+    }
+
     final autoRedirectProvider = await _controller.submitServerUrl();
     if (autoRedirectProvider != null) {
       await Future<void>.delayed(const Duration(milliseconds: 100));

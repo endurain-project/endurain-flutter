@@ -745,6 +745,18 @@
   "@serverUrlHint": {
     "description": "Texto de dica do campo de URL do servidor - Usado em: login_screen.dart"
   },
+  "warnHttpServerUrlTitle": "Ligação não segura",
+  "@warnHttpServerUrlTitle": {
+    "description": "Warning dialog title shown when user enters an http:// server URL - Used in: login_screen.dart"
+  },
+  "warnHttpServerUrlMessage": "O URL do servidor utiliza HTTP simples. As suas credenciais e dados serão transmitidos sem encriptação. Continue apenas se compreender e aceitar o risco.",
+  "@warnHttpServerUrlMessage": {
+    "description": "Warning dialog body when user enters an http:// server URL - Used in: login_screen.dart"
+  },
+  "warnHttpServerUrlConfirm": "Continuar mesmo assim",
+  "@warnHttpServerUrlConfirm": {
+    "description": "Confirm button for the HTTP server URL warning dialog - Used in: login_screen.dart"
+  },
   "tileServerUrl": "URL do servidor de mapas",
   "@tileServerUrl": {
     "description": "Rótulo do campo de URL do servidor de mapas - Usado em: server_settings_screen.dart"

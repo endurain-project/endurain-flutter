@@ -550,6 +550,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverUrlHint => 'https://example.com';
 
   @override
+  String get warnHttpServerUrlTitle => 'Insecure connection';
+
+  @override
+  String get warnHttpServerUrlMessage =>
+      'This server URL uses plain HTTP. Your login credentials and data will be transmitted without encryption. Continue only if you understand and accept the risk.';
+
+  @override
+  String get warnHttpServerUrlConfirm => 'Continue anyway';
+
+  @override
   String get tileServerUrl => 'Map tile server URL';
 
   @override

@@ -1046,6 +1046,24 @@ abstract class AppLocalizations {
   /// **'https://example.com'**
   String get serverUrlHint;
 
+  /// Warning dialog title shown when user enters an http:// server URL - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Insecure connection'**
+  String get warnHttpServerUrlTitle;
+
+  /// Warning dialog body when user enters an http:// server URL - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server URL uses plain HTTP. Your login credentials and data will be transmitted without encryption. Continue only if you understand and accept the risk.'**
+  String get warnHttpServerUrlMessage;
+
+  /// Confirm button for the HTTP server URL warning dialog - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Continue anyway'**
+  String get warnHttpServerUrlConfirm;
+
   /// Tile server URL field label - Used in: server_settings_screen.dart
   ///
   /// In en, this message translates to:

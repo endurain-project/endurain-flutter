@@ -13,6 +13,7 @@ import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/auth/auth_coordinator.dart';
 import 'package:endurain/features/auth/login_controller.dart';
+import 'package:endurain/features/map/map_settings_repository.dart';
 
 import '../../helpers/fake_app_links_service.dart';
 
@@ -513,6 +514,77 @@ void main() {
       controller.setPasswordVisible(false);
       expect(controller.obscurePassword, isTrue);
 
+      controller.dispose();
+    });
+
+    group('serverUrlIsHttp', () {
+      LoginController _make() => LoginController(
+        authCoordinator: _repository(
+          storage: SecureStorageService(),
+          client: MockClient((_) async => http.Response('{}', 200)),
+        ),
+        appLinksService: const EmptyAppLinksService(),
+      );
+
+      test('is false when URL is https', () {
+        final controller = _make();
+        controller.serverUrlController.text = 'https://example.test';
+        expect(controller.serverUrlIsHttp, isFalse);
+        controller.dispose();
+      });
+
+      test('is true when URL is http', () {
+        final controller = _make();
+        controller.serverUrlController.text = 'http://example.test';
+        expect(controller.serverUrlIsHttp, isTrue);
+        controller.dispose();
+      });
+
+      test('is false for empty or invalid input', () {
+        final controller = _make();
+        controller.serverUrlController.text = '';
+        expect(controller.serverUrlIsHttp, isFalse);
+        controller.serverUrlController.text = 'not-a-url';
+        expect(controller.serverUrlIsHttp, isFalse);
+        controller.dispose();
+      });
+    });
+
+    test('persists map settings from server settings on submitServerUrl',
+        () async {
+      final storage = SecureStorageService();
+      final mapRepo = MapSettingsRepository(storage: storage);
+      final controller = LoginController(
+        authCoordinator: _repository(
+          storage: storage,
+          client: MockClient((request) async {
+            if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+              return http.Response(
+                '{"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
+                '"tileserver_attribution":"OSM",'
+                '"map_background_color":"#001122"}',
+                200,
+              );
+            }
+            if (request.url.path == ApiConstants.idpListEndpoint) {
+              return http.Response('[]', 200);
+            }
+            fail('Unexpected request to ${request.url}');
+          }),
+        ),
+        appLinksService: const EmptyAppLinksService(),
+        mapSettingsRepository: mapRepo,
+      );
+      controller.serverUrlController.text = 'https://example.test';
+
+      await controller.submitServerUrl();
+
+      expect(
+        await mapRepo.getTileServerUrl(),
+        'https://tiles.test/{z}/{x}/{y}.png',
+      );
+      expect(await mapRepo.getTileServerAttribution(), 'OSM');
+      expect(await mapRepo.getMapBackgroundColor(), '#001122');
       controller.dispose();
     });
   });

@@ -41,6 +41,16 @@ class LoginController extends ChangeNotifier {
 
   bool get localLoginEnabled => serverSettings?.localLoginEnabled ?? true;
 
+  /// Returns `true` when the current server URL uses plain HTTP (not HTTPS).
+  ///
+  /// Callers should show a localized warning and ask the user to confirm
+  /// before calling [submitServerUrl].
+  bool get serverUrlIsHttp {
+    final raw = serverUrlController.text.trim();
+    final uri = Uri.tryParse(raw);
+    return uri != null && uri.isScheme('http');
+  }
+
   void startSsoCallbackListener({
     required VoidCallback onLoginSuccess,
     required ValueChanged<Object> onError,

@@ -745,6 +745,18 @@
   "@serverUrlHint": {
     "description": "Server URL field hint text - Used in: login_screen.dart"
   },
+  "warnHttpServerUrlTitle": "Insecure connection",
+  "@warnHttpServerUrlTitle": {
+    "description": "Warning dialog title shown when user enters an http:// server URL - Used in: login_screen.dart"
+  },
+  "warnHttpServerUrlMessage": "This server URL uses plain HTTP. Your login credentials and data will be transmitted without encryption. Continue only if you understand and accept the risk.",
+  "@warnHttpServerUrlMessage": {
+    "description": "Warning dialog body when user enters an http:// server URL - Used in: login_screen.dart"
+  },
+  "warnHttpServerUrlConfirm": "Continue anyway",
+  "@warnHttpServerUrlConfirm": {
+    "description": "Confirm button for the HTTP server URL warning dialog - Used in: login_screen.dart"
+  },
   "tileServerUrl": "Map tile server URL",
   "@tileServerUrl": {
     "description": "Tile server URL field label - Used in: server_settings_screen.dart"

@@ -561,6 +561,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get serverUrlHint => 'https://example.com';
 
   @override
+  String get warnHttpServerUrlTitle => 'Ligação não segura';
+
+  @override
+  String get warnHttpServerUrlMessage =>
+      'O URL do servidor utiliza HTTP simples. As suas credenciais e dados serão transmitidos sem encriptação. Continue apenas se compreender e aceitar o risco.';
+
+  @override
+  String get warnHttpServerUrlConfirm => 'Continuar mesmo assim';
+
+  @override
   String get tileServerUrl => 'URL do servidor de mapas';
 
   @override
