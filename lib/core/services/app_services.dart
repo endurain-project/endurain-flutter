@@ -9,6 +9,7 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/services/url_launcher_service.dart';
+import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -59,6 +60,20 @@ class AppServices {
   );
   late final ActivityRetentionSettingsRepository activityRetentionSettings =
       ActivityRetentionSettingsRepository(storage: secureStorage);
+
+  /// App-lifetime controller for the active activity recording session.
+  ///
+  /// Owned by [AppServices] so it survives tab navigation and can be used by
+  /// non-map screens. Consumers obtain it from the app scope and must NOT
+  /// dispose it — its lifetime is tied to [AppServices].
+  late final ActivityRecordingController activityRecordingController =
+      ActivityRecordingController(
+        recordingService: createActivityRecordingService(),
+        uploadService: activityUpload,
+        localActivityRepository: localActivities,
+        retentionSettingsRepository: activityRetentionSettings,
+      );
+
   final AppLinksService appLinks = DefaultAppLinksService();
   final UrlLauncherService urlLauncher = const UrlLauncherService();
   final PackageInfoService packageInfo = const PackageInfoService();

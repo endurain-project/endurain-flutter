@@ -62,8 +62,11 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       onChanged: _handleControllerChanged,
     );
     _activityController = registerController(
-      widget.activityController,
-      _createActivityController,
+      widget.activityController ??
+          AppScope.servicesOf(context, listen: false).activityRecordingController,
+      // create() is unreachable because we always supply an injected value
+      // above; the controller is owned by AppServices for the app lifetime.
+      () => throw StateError('unreachable: activity controller not in scope'),
       onChanged: _handleControllerChanged,
     );
     _controller.initialize();
@@ -78,18 +81,6 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       locationService: widget.locationService ?? services.location,
       mapSettingsRepository: widget.mapSettings ??
           MapSettingsRepository(storage: services.secureStorage),
-    );
-  }
-
-  ActivityRecordingController _createActivityController() {
-    final services = AppScope.servicesOf(context, listen: false);
-    return ActivityRecordingController(
-      recordingService: services.createActivityRecordingService(
-        locationService: widget.locationService,
-      ),
-      uploadService: services.activityUpload,
-      localActivityRepository: services.localActivities,
-      retentionSettingsRepository: services.activityRetentionSettings,
     );
   }
 
