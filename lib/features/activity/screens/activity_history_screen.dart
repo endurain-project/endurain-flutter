@@ -33,13 +33,15 @@ class ActivityHistoryScreen extends StatefulWidget {
   State<ActivityHistoryScreen> createState() => _ActivityHistoryScreenState();
 }
 
-class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
+class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
+    with WidgetsBindingObserver {
   late final LocalActivityHistoryController _controller;
   late final bool _ownsController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _ownsController = widget.controller == null;
     _controller = widget.controller ?? _createController();
     _controller.load();
@@ -57,7 +59,15 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _controller.retryFailedUploads();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (_ownsController) {
       _controller.dispose();
     }
