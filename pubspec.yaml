@@ -67,6 +67,11 @@ dependencies:
   # SVG support for SSO provider icons
   flutter_svg: ^2.0.16
 
+  # SQLite storage for local activity metadata (Apache 2.0 / MIT, F-Droid safe)
+  # sqflite handles Android/iOS; sqflite_common_ffi adds macOS/desktop support.
+  sqflite: ^2.4.0
+  sqflite_common_ffi: ^2.3.4
+
 dev_dependencies:
   fake_async: ^1.3.3
 

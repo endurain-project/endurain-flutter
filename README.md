@@ -391,6 +391,23 @@ If the SQLite open or migration fails, the app falls back to reading
 `index.json` as before. No data loss occurs because `index.json` is kept
 in place until migration is confirmed complete.
 
+### SQLite package decision
+
+**Chosen: `sqflite` + `sqflite_common_ffi`**
+
+| Package               | License    | Reason                                         |
+|-----------------------|------------|------------------------------------------------|
+| `sqflite`             | Apache 2.0 | De facto Flutter SQLite; Android/iOS native    |
+| `sqflite_common_ffi`  | MIT        | macOS/desktop support and in-process testing   |
+
+Both packages are open-source and contain no proprietary SDKs, making them
+suitable for F-Droid distribution. `sqflite_common_ffi` enables the same API
+on macOS and in unit tests without platform-channel mocks.
+
+`drift` (an ORM built on SQLite) was considered but rejected — the direct SQL
+API of `sqflite` is sufficient for the planned schema and avoids an additional
+code-generation dependency.
+
 ## Contributing
 
 Contributions are welcomed! This mobile app is part of the main Endurain project. Please:
