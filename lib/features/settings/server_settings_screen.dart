@@ -50,7 +50,9 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
     return ServerSettingsRepository(
       storage: storage,
       authService: widget.authService ?? services.auth,
-      mapSettingsRepository: MapSettingsRepository(storage: storage),
+      mapSettingsRepository: MapSettingsRepository(
+        preferences: services.preferences,
+      ),
     );
   }
 

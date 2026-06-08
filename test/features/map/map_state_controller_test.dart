@@ -1,7 +1,8 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/map/map_settings_repository.dart';
 import 'package:endurain/features/map/map_state_controller.dart';
 
@@ -10,14 +11,26 @@ import '../../helpers/fake_location_platform_adapter.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() {
-    FlutterSecureStorage.setMockInitialValues(<String, String>{});
+  late Directory tempDir;
+
+  setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp('map_state_ctrl_test_');
   });
+
+  tearDown(() => tempDir.deleteSync(recursive: true));
+
+  MapSettingsRepository makeSettings() {
+    return MapSettingsRepository(
+      preferences: AppPreferencesStore(
+        supportDirectoryProvider: () async => tempDir,
+      ),
+    );
+  }
 
   group('MapStateController', () {
     test('loads tile settings and current location', () async {
-      final storage = SecureStorageService();
-      await storage.setTileServerUrl(
+      final settings = makeSettings();
+      await settings.saveTileServerUrl(
         'https://tiles.example.test/{z}/{x}/{y}.png',
       );
       final platform = FakeLocationPlatformAdapter(
@@ -29,7 +42,7 @@ void main() {
       );
       final controller = MapStateController(
         locationService: LocationService(platformAdapter: platform),
-        mapSettingsRepository: MapSettingsRepository(storage: storage),
+        mapSettingsRepository: settings,
       );
 
       await controller.initialize();
@@ -51,9 +64,7 @@ void main() {
       );
       final controller = MapStateController(
         locationService: LocationService(platformAdapter: platform),
-        mapSettingsRepository: MapSettingsRepository(
-          storage: SecureStorageService(),
-        ),
+        mapSettingsRepository: makeSettings(),
       );
 
       await controller.initialize();
@@ -75,9 +86,7 @@ void main() {
       );
       final controller = MapStateController(
         locationService: LocationService(platformAdapter: platform),
-        mapSettingsRepository: MapSettingsRepository(
-          storage: SecureStorageService(),
-        ),
+        mapSettingsRepository: makeSettings(),
       );
 
       await controller.initialize();
@@ -96,9 +105,7 @@ void main() {
         locationService: LocationService(
           platformAdapter: FakeLocationPlatformAdapter(),
         ),
-        mapSettingsRepository: MapSettingsRepository(
-          storage: SecureStorageService(),
-        ),
+        mapSettingsRepository: makeSettings(),
       );
 
       expect(controller.isLocationLocked, isTrue);

@@ -80,7 +80,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     return MapStateController(
       locationService: widget.locationService ?? services.location,
       mapSettingsRepository: widget.mapSettings ??
-          MapSettingsRepository(storage: services.secureStorage),
+          MapSettingsRepository(preferences: services.preferences),
     );
   }
 

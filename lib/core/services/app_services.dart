@@ -1,5 +1,6 @@
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/app_links_service.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
@@ -28,6 +29,7 @@ class AppServices {
 
   final DiagnosticsService diagnostics = DiagnosticsService();
   final SecureStorageService secureStorage = SecureStorageService();
+  final AppPreferencesStore preferences = AppPreferencesStore();
   late final AuthSessionStore authSession = AuthSessionStore(
     storage: secureStorage,
   );

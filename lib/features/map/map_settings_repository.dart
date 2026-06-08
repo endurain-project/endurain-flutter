@@ -1,15 +1,19 @@
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/server_settings.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 
 class MapSettingsRepository {
-  const MapSettingsRepository({required SecureStorageService storage})
-    : _storage = storage;
+  const MapSettingsRepository({required AppPreferencesStore preferences})
+    : _preferences = preferences;
 
-  final SecureStorageService _storage;
+  static const _tileServerUrlKey = 'tile_server_url';
+  static const _tileServerAttributionKey = 'tile_server_attribution';
+  static const _mapBackgroundColorKey = 'map_background_color';
+
+  final AppPreferencesStore _preferences;
 
   Future<String> getTileServerUrl() async {
-    final tileUrl = await _storage.getTileServerUrl();
+    final tileUrl = await _preferences.read(key: _tileServerUrlKey);
     if (tileUrl == null || tileUrl.isEmpty) {
       return MapConstants.defaultTileServerUrl;
     }
@@ -17,23 +21,23 @@ class MapSettingsRepository {
   }
 
   Future<void> saveTileServerUrl(String url) {
-    return _storage.setTileServerUrl(url);
+    return _preferences.write(key: _tileServerUrlKey, value: url);
   }
 
   Future<String?> getTileServerAttribution() {
-    return _storage.getTileServerAttribution();
+    return _preferences.read(key: _tileServerAttributionKey);
   }
 
   Future<void> saveTileServerAttribution(String attribution) {
-    return _storage.setTileServerAttribution(attribution);
+    return _preferences.write(key: _tileServerAttributionKey, value: attribution);
   }
 
   Future<String?> getMapBackgroundColor() {
-    return _storage.getMapBackgroundColor();
+    return _preferences.read(key: _mapBackgroundColorKey);
   }
 
   Future<void> saveMapBackgroundColor(String color) {
-    return _storage.setMapBackgroundColor(color);
+    return _preferences.write(key: _mapBackgroundColorKey, value: color);
   }
 
   /// Persists any map-related fields from [settings] that have non-empty

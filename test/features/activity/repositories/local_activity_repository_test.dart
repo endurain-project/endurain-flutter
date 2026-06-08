@@ -5,7 +5,6 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
-import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

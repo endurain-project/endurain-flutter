@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart' as core;
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
@@ -552,8 +554,16 @@ void main() {
 
     test('persists map settings from server settings on submitServerUrl',
         () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'login_ctrl_test_',
+      );
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
       final storage = SecureStorageService();
-      final mapRepo = MapSettingsRepository(storage: storage);
+      final prefs = AppPreferencesStore(
+        supportDirectoryProvider: () async => tempDir,
+      );
+      final mapRepo = MapSettingsRepository(preferences: prefs);
       final controller = LoginController(
         authCoordinator: _repository(
           storage: storage,

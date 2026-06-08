@@ -1,21 +1,30 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/server_settings.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/features/map/map_settings_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() {
-    FlutterSecureStorage.setMockInitialValues(<String, String>{});
+  late Directory tempDir;
+  late AppPreferencesStore prefs;
+  late MapSettingsRepository repository;
+
+  setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp('map_settings_repo_test_');
+    prefs = AppPreferencesStore(
+      supportDirectoryProvider: () async => tempDir,
+    );
+    repository = MapSettingsRepository(preferences: prefs);
   });
+
+  tearDown(() => tempDir.deleteSync(recursive: true));
 
   group('MapSettingsRepository', () {
     test('uses the default tile server when none is stored', () async {
-      final repository = MapSettingsRepository(storage: SecureStorageService());
-
       expect(
         await repository.getTileServerUrl(),
         MapConstants.defaultTileServerUrl,
@@ -23,8 +32,6 @@ void main() {
     });
 
     test('saves and loads the configured tile server', () async {
-      final repository = MapSettingsRepository(storage: SecureStorageService());
-
       await repository.saveTileServerUrl(
         'https://tiles.example.test/{z}/{x}/{y}.png',
       );
@@ -37,9 +44,6 @@ void main() {
 
     group('saveFromServerSettings', () {
       test('persists non-empty tile URL, attribution, and map color', () async {
-        final storage = SecureStorageService();
-        final repository = MapSettingsRepository(storage: storage);
-
         final settings = ServerSettings.fromJson({
           'tileserver_url': 'https://tiles.test/{z}/{x}/{y}.png',
           'tileserver_attribution': 'OpenStreetMap',
@@ -60,9 +64,6 @@ void main() {
       });
 
       test('does not overwrite stored values when fields are null', () async {
-        final storage = SecureStorageService();
-        final repository = MapSettingsRepository(storage: storage);
-
         await repository.saveTileServerUrl(
           'https://tiles.previous.test/{z}/{x}/{y}.png',
         );
@@ -81,9 +82,6 @@ void main() {
 
       test('does not overwrite stored values when fields are empty strings',
           () async {
-        final storage = SecureStorageService();
-        final repository = MapSettingsRepository(storage: storage);
-
         await repository.saveTileServerUrl(
           'https://tiles.previous.test/{z}/{x}/{y}.png',
         );

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
@@ -17,11 +16,11 @@ import 'package:endurain/shared/adaptive/adaptive_floating_action_button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
 import '../../helpers/fake_location_platform_adapter.dart';
+import '../../helpers/fake_preferences_store.dart';
 import '../../helpers/in_memory_active_activity_store.dart';
 import '../../helpers/widget_test_app.dart';
 
@@ -33,7 +32,6 @@ void main() {
   setUp(() {
     debugDefaultTargetPlatformOverride = null;
     PlatformUtils.debugIsApplePlatformOverride = false;
-    FlutterSecureStorage.setMockInitialValues(<String, String>{});
   });
 
   tearDown(() {
@@ -351,12 +349,15 @@ void main() {
 Future<MapStateController> _mapController(
   FakeLocationPlatformAdapter platform,
 ) async {
-  final storage = SecureStorageService();
-  await storage.setTileServerUrl('https://tiles.example.test/{z}/{x}/{y}.png');
+  final prefs = FakePreferencesStore();
+  await prefs.write(
+    key: 'tile_server_url',
+    value: 'https://tiles.example.test/{z}/{x}/{y}.png',
+  );
 
   final controller = MapStateController(
     locationService: LocationService(platformAdapter: platform),
-    mapSettingsRepository: MapSettingsRepository(storage: storage),
+    mapSettingsRepository: MapSettingsRepository(preferences: prefs),
   );
   controller.tileServerUrl = 'https://tiles.example.test/{z}/{x}/{y}.png';
   return controller;

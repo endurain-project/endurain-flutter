@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/fake_preferences_store.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -29,13 +31,17 @@ void main() {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://endurain.example.test');
       await storage.setUsername('joao');
-      await storage.setTileServerUrl(
-        'https://tiles.example.test/{z}/{x}/{y}.png',
+      final prefs = FakePreferencesStore();
+      await prefs.write(
+        key: 'tile_server_url',
+        value: 'https://tiles.example.test/{z}/{x}/{y}.png',
       );
 
       await tester.pumpWidget(
         _SettingsTestApp(
-          child: ServerSettingsScreen(repository: _repository(storage)),
+          child: ServerSettingsScreen(
+            repository: _repository(storage, prefs),
+          ),
         ),
       );
 
@@ -53,10 +59,13 @@ void main() {
 
     testWidgets('validates and saves tile server settings', (tester) async {
       final storage = SecureStorageService();
+      final prefs = FakePreferencesStore();
 
       await tester.pumpWidget(
         _SettingsTestApp(
-          child: ServerSettingsScreen(repository: _repository(storage)),
+          child: ServerSettingsScreen(
+            repository: _repository(storage, prefs),
+          ),
         ),
       );
 
@@ -73,16 +82,19 @@ void main() {
       await tester.tap(find.text(l10n.save));
       await tester.pumpAndSettle();
 
-      expect(await storage.getTileServerUrl(), tileServerUrl);
+      expect(await prefs.read(key: 'tile_server_url'), tileServerUrl);
     });
   });
 }
 
-ServerSettingsRepository _repository(SecureStorageService storage) {
+ServerSettingsRepository _repository(
+  SecureStorageService storage,
+  FakePreferencesStore prefs,
+) {
   return ServerSettingsRepository(
     storage: storage,
     authService: AuthService(storage: storage),
-    mapSettingsRepository: MapSettingsRepository(storage: storage),
+    mapSettingsRepository: MapSettingsRepository(preferences: prefs),
   );
 }
 
