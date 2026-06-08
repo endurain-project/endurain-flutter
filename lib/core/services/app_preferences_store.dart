@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -22,6 +23,19 @@ class AppPreferencesStore {
   static const String _fileName = 'preferences.json';
 
   final Future<Directory> Function() _supportDirectoryProvider;
+  Future<void> _writeLock = Future.value();
+
+  Future<T> _serialized<T>(Future<T> Function() action) {
+    final completer = Completer<T>();
+    _writeLock = _writeLock.then((_) async {
+      try {
+        completer.complete(await action());
+      } catch (e, s) {
+        completer.completeError(e, s);
+      }
+    });
+    return completer.future;
+  }
 
   /// Returns the stored value for [key], or `null` when absent.
   Future<String?> read({required String key}) async {
@@ -30,19 +44,20 @@ class AppPreferencesStore {
   }
 
   /// Persists [value] for [key], creating the file if necessary.
-  Future<void> write({required String key, required String value}) async {
-    final map = await _load();
-    map[key] = value;
-    await _save(map);
-  }
+  Future<void> write({required String key, required String value}) =>
+      _serialized(() async {
+        final map = await _load();
+        map[key] = value;
+        await _save(map);
+      });
 
   /// Removes [key] from the store. Silently succeeds when absent.
-  Future<void> delete({required String key}) async {
+  Future<void> delete({required String key}) => _serialized(() async {
     final map = await _load();
     if (map.remove(key) != null) {
       await _save(map);
     }
-  }
+  });
 
   // ---------------------------------------------------------------------------
 
