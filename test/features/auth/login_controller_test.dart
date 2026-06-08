@@ -553,7 +553,7 @@ void main() {
       });
 
       test(
-        'is false when allowInsecureTransport is false, even for http URL',
+        'is false when transportMode is managed, even for http URL',
         () {
           final controller = LoginController(
             authCoordinator: _repository(
@@ -561,7 +561,7 @@ void main() {
               client: MockClient((_) async => http.Response('{}', 200)),
             ),
             appLinksService: const EmptyAppLinksService(),
-            config: const AppConfig(allowInsecureTransport: false),
+            config: const AppConfig(transportMode: AppTransportMode.managed),
           );
           controller.serverUrlController.text = 'http://example.test';
           expect(controller.serverUrlIsHttp, isFalse);

@@ -6,13 +6,20 @@ void main() {
     test('defaults match self-hosted behavior', () {
       const config = AppConfig.defaults;
       expect(config.apiBasePath, AppConfig.defaultApiBasePath);
+      expect(config.transportMode, AppTransportMode.selfHosted);
       expect(config.allowInsecureTransport, isTrue);
     });
 
-    test('custom values are preserved', () {
+    test('managed mode has allowInsecureTransport false', () {
+      const config = AppConfig(transportMode: AppTransportMode.managed);
+      expect(config.transportMode, AppTransportMode.managed);
+      expect(config.allowInsecureTransport, isFalse);
+    });
+
+    test('custom apiBasePath is preserved', () {
       const config = AppConfig(
         apiBasePath: '/api/v2',
-        allowInsecureTransport: false,
+        transportMode: AppTransportMode.managed,
       );
       expect(config.apiBasePath, '/api/v2');
       expect(config.allowInsecureTransport, isFalse);

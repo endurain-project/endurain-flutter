@@ -1,3 +1,18 @@
+/// Describes the transport security policy in effect for a build.
+///
+/// - [selfHosted]: the default mode for private-network and self-hosted
+///   deployments. Plain `http://` connections are permitted, and the user
+///   receives a localized warning before proceeding.
+/// - [managed]: a stricter mode intended for SaaS or managed enterprise builds.
+///   Plain `http://` connections are rejected before any network call is made.
+enum AppTransportMode {
+  /// Self-hosted mode: `http://` is warned and allowed.
+  selfHosted,
+
+  /// Managed/SaaS mode: `http://` is rejected before any network call.
+  managed,
+}
+
 /// Compile-time environment configuration for the Endurain mobile client.
 ///
 /// [AppConfig.defaults] provides production-safe values for self-hosted
@@ -10,7 +25,7 @@
 class AppConfig {
   const AppConfig({
     this.apiBasePath = defaultApiBasePath,
-    this.allowInsecureTransport = true,
+    this.transportMode = AppTransportMode.selfHosted,
   });
 
   /// Base path prefix for all Endurain API endpoints.
@@ -22,16 +37,24 @@ class AppConfig {
   /// every service that builds endpoint strings.
   final String apiBasePath;
 
+  /// The transport security policy for this build.
+  ///
+  /// Use [AppTransportMode.selfHosted] (the default) for self-hosted
+  /// deployments where plain-HTTP connections are warned and allowed.
+  /// Use [AppTransportMode.managed] in SaaS or enterprise builds where
+  /// plain-HTTP must be rejected before any network call.
+  final AppTransportMode transportMode;
+
   /// Whether the app permits connections to `http://` server URLs.
   ///
-  /// Defaults to `true` to support self-hosted deployments on local networks.
-  /// Set to `false` in managed or SaaS builds where plain-HTTP transport must
-  /// be refused rather than warned about.
+  /// Derived from [transportMode]: `true` in [AppTransportMode.selfHosted]
+  /// and `false` in [AppTransportMode.managed].
   ///
   /// The login flow checks this flag: when `false`, an `http://` server URL is
   /// rejected as a validation error; when `true` (default), the user receives
   /// a localized warning and can confirm before proceeding.
-  final bool allowInsecureTransport;
+  bool get allowInsecureTransport =>
+      transportMode == AppTransportMode.selfHosted;
 
   /// The current Endurain API version path prefix.
   static const String defaultApiBasePath = '/api/v1';
