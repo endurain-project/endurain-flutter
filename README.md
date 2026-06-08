@@ -328,7 +328,7 @@ lib/
 │   ├── theme/                # Theme configuration and tokens
 │   └── utils/                # Validators, dialogs, error localization, platform helpers
 ├── features/
-│   ├── activity/             # Recording controllers, models, services, and widgets
+│   ├── activity/             # Recording controllers, models, repositories, services, screens, and widgets
 │   ├── auth/                 # Login, MFA, SSO, and session controllers
 │   ├── map/                  # Map screen, map settings, and location state
 │   └── settings/             # Settings and server configuration screens
@@ -348,50 +348,48 @@ tool/
 
 ## Local Activity Storage Design
 
-Activities are recorded and saved on-device for upload to the server.
+Activities are recorded and saved on-device for upload to the server. Metadata
+is stored in SQLite (via `SqfliteActivityStore`), while GPX tracks remain as
+files on disk.
 
-### Current layout (JSON manifest)
+### Current layout (SQLite metadata + GPX files)
 
 Completed recordings are stored under the app's private support directory:
 
 ```
 <support-dir>/
-├── index.json                 # JSON array of LocalActivityRecord objects (schema v1)
+├── activity.db                # SQLite database (metadata, schema v1)
 └── gpx/
     └── <activity-id>.gpx      # Raw GPX 1.1 file for each recording
 ```
 
-`index.json` is read and written atomically via a rename-on-write pattern.
-Each entry in the array contains: `id`, `activityType`, timing, distance,
-`pointCount`, `gpxFileName`, `uploadStatus`, and upload timestamps.
-
-### Target layout (SQLite — planned)
-
-A future migration will move the metadata store to SQLite for better
-concurrent safety, range queries, and row-level updates without rewriting
-the entire file:
+The database holds two tables:
 
 | Table                  | Purpose                                                  |
 |------------------------|----------------------------------------------------------|
 | `schema_version`       | Single-row version counter used to gate migrations.      |
 | `local_activity`       | One row per activity, all metadata columns.              |
 
-GPX files will remain on disk under `gpx/` — only the metadata moves.
+Each `local_activity` row contains: `id`, `activity_type`, timing, distance,
+`point_count`, `gpx_file_name`, `upload_status`, upload timestamps, and the
+`server_activity_id`. GPX files live on disk under `gpx/` — only the metadata
+is stored in the database.
 
-### Migration plan (schema v1 → SQLite)
+### Schema migrations
 
-1. On first SQLite open, detect an existing `index.json` manifest.
-2. Import all valid records into the `local_activity` table.
-3. Leave `index.json` on disk until the import succeeds (rollback safety).
-4. Remove `index.json` after a successful import.
-5. Malformed or partially-corrupt manifest entries are skipped with a
-   diagnostics breadcrumb; valid entries are not affected.
+Schema changes are applied through an ordered, append-only migration map keyed
+by target version. Fresh installs (`onCreate`) and upgrades (`onUpgrade`) run
+the same migration steps, so the schema is produced by exactly one code path.
+To evolve the schema, append a new migration and bump the schema version —
+shipped migrations are never edited.
 
-### Rollback/failure behavior
+### Legacy JSON manifest migration
 
-If the SQLite open or migration fails, the app falls back to reading
-`index.json` as before. No data loss occurs because `index.json` is kept
-in place until migration is confirmed complete.
+Earlier builds stored metadata in a JSON `index.json` manifest. On the first
+SQLite open, `SqfliteActivityStore` imports any existing manifest records into
+the `local_activity` table (conflict-ignore on duplicate ids) via an injected
+manifest reader. If the manifest read fails or is empty, the import is skipped
+without affecting the new database. GPX files are untouched by this migration.
 
 ### SQLite package decision
 
@@ -407,7 +405,7 @@ suitable for F-Droid distribution. `sqflite_common_ffi` enables the same API
 on macOS and in unit tests without platform-channel mocks.
 
 `drift` (an ORM built on SQLite) was considered but rejected — the direct SQL
-API of `sqflite` is sufficient for the planned schema and avoids an additional
+API of `sqflite` is sufficient for the current schema and avoids an additional
 code-generation dependency.
 
 ## Contributing
