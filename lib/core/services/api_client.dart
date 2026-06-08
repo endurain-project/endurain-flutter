@@ -97,11 +97,16 @@ class ApiClient {
   }
 
   /// Upload a file with multipart/form-data
+  ///
+  /// When [idempotencyKey] is provided it is sent as the
+  /// [ApiConstants.idempotencyKeyHeader] so a server that honors it can
+  /// de-duplicate retried uploads of the same activity.
   Future<http.StreamedResponse> uploadFile(
     String endpoint,
     String filePath,
-    String fieldName,
-  ) async {
+    String fieldName, {
+    String? idempotencyKey,
+  }) async {
     final serverUrl = await _sessionStore.getServerUrl();
     if (serverUrl == null || serverUrl.isEmpty) {
       throw const AppException(AppErrorCode.serverUrlNotConfigured);
@@ -116,6 +121,8 @@ class ApiClient {
     final headers = {
       ApiConstants.authorizationHeader: 'Bearer $accessToken',
       ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
+      if (idempotencyKey != null && idempotencyKey.isNotEmpty)
+        ApiConstants.idempotencyKeyHeader: idempotencyKey,
     };
 
     http.StreamedResponse response = await _uploadAdapter

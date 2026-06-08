@@ -52,6 +52,10 @@ class LocalActivityRepository {
     required int limit,
   }) => _store.listPage(offset: offset, limit: limit);
 
+  Future<List<LocalActivityRecord>> listByUploadStatus(
+    Set<LocalActivityUploadStatus> statuses,
+  ) => _store.listByUploadStatus(statuses);
+
   Future<int> count() => _store.count();
 
   Future<void> delete(String id) async {

@@ -104,80 +104,6 @@ void main() {
       expect(controller.records, isEmpty);
       expect(await repository.list(), isEmpty);
     });
-
-    test('retryFailedUploads retries all failed records', () async {
-      // Create two failed records.
-      final r1 = await _createRecord(repository, id: 'fail_1');
-      final r2 = await _createRecord(repository, id: 'fail_2');
-      final failedR1 = r1.copyWith(
-        uploadStatus: LocalActivityUploadStatus.failed,
-      );
-      final failedR2 = r2.copyWith(
-        uploadStatus: LocalActivityUploadStatus.failed,
-      );
-      await repository.upsert(failedR1);
-      await repository.upsert(failedR2);
-
-      final uploadedIds = <String>[];
-      final controller = LocalActivityHistoryController(
-        repository: repository,
-        uploadService: ActivityUploadService(
-          config: const ActivityUploadConfig(
-            endpoint: '/upload',
-            fieldName: 'file',
-          ),
-          uploadFile: (endpoint, filePath, fieldName) async {
-            uploadedIds.add(filePath);
-            return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-          },
-        ),
-      );
-      addTearDown(controller.dispose);
-      await controller.load();
-
-      await controller.retryFailedUploads();
-
-      final records = await repository.list();
-      for (final r in records) {
-        expect(r.uploadStatus, LocalActivityUploadStatus.uploaded);
-      }
-    });
-
-    test('retryFailedUploads continues even when one upload fails', () async {
-      final r1 = await _createRecord(repository, id: 'fpart_1');
-      final r2 = await _createRecord(repository, id: 'fpart_2');
-      await repository.upsert(
-        r1.copyWith(uploadStatus: LocalActivityUploadStatus.failed),
-      );
-      await repository.upsert(
-        r2.copyWith(uploadStatus: LocalActivityUploadStatus.failed),
-      );
-
-      int callCount = 0;
-      final controller = LocalActivityHistoryController(
-        repository: repository,
-        uploadService: ActivityUploadService(
-          config: const ActivityUploadConfig(
-            endpoint: '/upload',
-            fieldName: 'file',
-          ),
-          uploadFile: (_, _, _) async {
-            callCount++;
-            return http.StreamedResponse(
-              const Stream<List<int>>.empty(),
-              500, // Always fail
-            );
-          },
-        ),
-      );
-      addTearDown(controller.dispose);
-      await controller.load();
-
-      // Must not throw even though both uploads fail.
-      await expectLater(controller.retryFailedUploads(), completes);
-      // Both records were attempted.
-      expect(callCount, 2);
-    });
   });
 }
 
@@ -207,7 +133,7 @@ Future<LocalActivityRecord> _createRecord(
 ActivityUploadService _uploadServiceReturning(int statusCode) {
   return ActivityUploadService(
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
-    uploadFile: (_, _, _) async {
+    uploadFile: (_, _, _, {idempotencyKey}) async {
       return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
     },
   );

@@ -359,9 +359,8 @@ class _ErrorHistoryController extends LocalActivityHistoryController {
   bool get isLoading => false;
 
   @override
-  AppException? get error => const AppException(
-    AppErrorCode.activityLocalLoadFailed,
-  );
+  AppException? get error =>
+      const AppException(AppErrorCode.activityLocalLoadFailed);
 
   @override
   bool get hasMore => false;

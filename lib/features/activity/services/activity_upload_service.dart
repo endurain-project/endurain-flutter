@@ -15,8 +15,9 @@ typedef ActivityFileUploader =
     Future<http.StreamedResponse> Function(
       String endpoint,
       String filePath,
-      String fieldName,
-    );
+      String fieldName, {
+      String? idempotencyKey,
+    });
 
 /// Controls how many times [ActivityUploadService.performUploadAttempt]
 /// retries transient failures and how long it waits between attempts.
@@ -69,10 +70,15 @@ class ActivityUploadRequest {
   const ActivityUploadRequest({
     required this.filePath,
     required this.activityType,
+    this.idempotencyKey,
   });
 
   final String filePath;
   final ActivityType activityType;
+
+  /// Stable key sent with the upload so the server can de-duplicate retried
+  /// uploads of the same activity. Typically the local activity id.
+  final String? idempotencyKey;
 }
 
 class ActivityUploadService {
@@ -103,6 +109,7 @@ class ActivityUploadService {
         config.endpoint,
         request.filePath,
         config.fieldName,
+        idempotencyKey: request.idempotencyKey,
       );
     } on AppException {
       rethrow;
@@ -167,6 +174,7 @@ class ActivityUploadService {
           ActivityUploadRequest(
             filePath: filePath,
             activityType: updated.activityType,
+            idempotencyKey: updated.id,
           ),
         );
 

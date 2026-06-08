@@ -41,12 +41,21 @@ void main() {
           endpoint: '/api/v1/activities/import/gpx',
           fieldName: 'file',
         ),
-        uploadFile: (uploadEndpoint, uploadPath, uploadFieldName) async {
-          endpoint = uploadEndpoint;
-          filePath = uploadPath;
-          fieldName = uploadFieldName;
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              uploadEndpoint,
+              uploadPath,
+              uploadFieldName, {
+              idempotencyKey,
+            }) async {
+              endpoint = uploadEndpoint;
+              filePath = uploadPath;
+              fieldName = uploadFieldName;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
 
       await service.uploadGpx(
@@ -59,6 +68,30 @@ void main() {
       expect(endpoint, '/api/v1/activities/import/gpx');
       expect(filePath, '/tmp/activity.gpx');
       expect(fieldName, 'file');
+    });
+
+    test('forwards the idempotency key to the uploader', () async {
+      String? capturedKey;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile: (_, _, _, {idempotencyKey}) async {
+          capturedKey = idempotencyKey;
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+        },
+      );
+
+      await service.uploadGpx(
+        const ActivityUploadRequest(
+          filePath: '/tmp/activity.gpx',
+          activityType: ActivityType.run,
+          idempotencyKey: 'activity-123',
+        ),
+      );
+
+      expect(capturedKey, 'activity-123');
     });
 
     test('blocks upload when the server contract is missing', () async {
@@ -126,7 +159,8 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _) async => throw const FormatException('offline'),
+        uploadFile: (_, _, _, {idempotencyKey}) async =>
+            throw const FormatException('offline'),
       );
 
       await expectLater(
@@ -228,6 +262,28 @@ void main() {
       expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
     });
 
+    test('uses the record id as the idempotency key', () async {
+      final record = await _createRecord(repository, id: 'svc_idem');
+      final keys = <String?>[];
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile: (_, _, _, {idempotencyKey}) async {
+          keys.add(idempotencyKey);
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+        },
+      );
+
+      await service.performUploadAttempt(
+        record: record,
+        repository: repository,
+      );
+
+      expect(keys, ['svc_idem']);
+    });
+
     test('5xx is not retried when maxAttempts is 1 (default)', () async {
       final record = await _createRecord(repository, id: 'svc_no_retry');
       final service = _serviceReturningStatus(500); // default: maxAttempts=1
@@ -268,7 +324,7 @@ void main() {
           maxAttempts: 3,
           delay: (_) async {},
         ),
-        uploadFile: (_, _, _) async {
+        uploadFile: (_, _, _, {idempotencyKey}) async {
           return http.StreamedResponse(const Stream<List<int>>.empty(), 401);
         },
       );
@@ -301,7 +357,7 @@ void main() {
           maxAttempts: 3,
           delay: (_) async => delayCalls++,
         ),
-        uploadFile: (_, _, _) async {
+        uploadFile: (_, _, _, {idempotencyKey}) async {
           return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
         },
       );
@@ -333,7 +389,7 @@ class _ReadPathThrowingRepository extends LocalActivityRepository {
 ActivityUploadService _serviceReturningStatus(int statusCode) {
   return ActivityUploadService(
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
-    uploadFile: (_, _, _) async {
+    uploadFile: (_, _, _, {idempotencyKey}) async {
       return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
     },
   );
@@ -347,7 +403,7 @@ ActivityUploadService _serviceWithResponses(List<int> statusCodes) {
       maxAttempts: statusCodes.length,
       delay: (_) async {},
     ),
-    uploadFile: (_, _, _) async {
+    uploadFile: (_, _, _, {idempotencyKey}) async {
       final code = statusCodes[callCount++];
       return http.StreamedResponse(const Stream<List<int>>.empty(), code);
     },

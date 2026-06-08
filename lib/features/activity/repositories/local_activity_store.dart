@@ -14,6 +14,13 @@ abstract interface class LocalActivityStore {
     required int limit,
   });
 
+  /// Returns every record whose [LocalActivityRecord.uploadStatus] is in
+  /// [statuses], ordered oldest-first so the durable upload queue retries
+  /// activities in the order they were recorded.
+  Future<List<LocalActivityRecord>> listByUploadStatus(
+    Set<LocalActivityUploadStatus> statuses,
+  );
+
   /// Returns the total number of stored records.
   Future<int> count();
 }

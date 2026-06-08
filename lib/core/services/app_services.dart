@@ -20,6 +20,7 @@ import 'package:endurain/features/activity/repositories/local_activity_repositor
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
+import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
@@ -79,6 +80,15 @@ class AppServices {
   );
   late final ActivityRetentionSettingsRepository activityRetentionSettings =
       ActivityRetentionSettingsRepository(storage: secureStorage);
+
+  /// App-lifetime durable upload queue. Drains locally-stored activities whose
+  /// upload has not yet succeeded; triggered on app-resume (see `app.dart`).
+  late final ActivityUploadQueue activityUploadQueue = ActivityUploadQueue(
+    repository: localActivities,
+    uploadService: activityUpload,
+    retentionSettingsRepository: activityRetentionSettings,
+    diagnostics: diagnostics,
+  );
 
   /// App-lifetime controller for the active activity recording session.
   ///

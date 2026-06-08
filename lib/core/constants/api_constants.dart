@@ -9,6 +9,12 @@ class ApiConstants {
   static const String contentTypeFormUrlEncoded =
       'application/x-www-form-urlencoded';
 
+  /// Header used to make activity uploads idempotent. The client sends a stable
+  /// key (the local activity id) that stays constant across retries of the same
+  /// activity, so a server that honors it can de-duplicate repeated uploads
+  /// caused by automatic retry. Servers that ignore it are unaffected.
+  static const String idempotencyKeyHeader = 'Idempotency-Key';
+
   // Request timeouts
   static const Duration defaultRequestTimeout = Duration(seconds: 30);
   static const Duration defaultUploadTimeout = Duration(seconds: 120);

@@ -225,9 +225,58 @@ void main() {
       await store.close();
     });
   });
+
+  group('SqfliteActivityStore – listByUploadStatus', () {
+    test('returns matching records oldest-first', () async {
+      final store = makeStore();
+      await store.upsert(
+        _record(
+          id: 'older',
+          endedAt: DateTime.utc(2026, 6, 1),
+          uploadStatus: LocalActivityUploadStatus.failed,
+        ),
+      );
+      await store.upsert(
+        _record(
+          id: 'newer',
+          endedAt: DateTime.utc(2026, 6, 3),
+          uploadStatus: LocalActivityUploadStatus.pending,
+        ),
+      );
+      await store.upsert(
+        _record(
+          id: 'done',
+          endedAt: DateTime.utc(2026, 6, 2),
+          uploadStatus: LocalActivityUploadStatus.uploaded,
+        ),
+      );
+
+      final result = await store.listByUploadStatus({
+        LocalActivityUploadStatus.pending,
+        LocalActivityUploadStatus.failed,
+      });
+
+      expect(result.map((r) => r.id).toList(), ['older', 'newer']);
+      await store.close();
+    });
+
+    test('returns empty list for empty status set', () async {
+      final store = makeStore();
+      await store.upsert(
+        _record(id: 'x', uploadStatus: LocalActivityUploadStatus.failed),
+      );
+
+      expect(await store.listByUploadStatus(const {}), isEmpty);
+      await store.close();
+    });
+  });
 }
 
-LocalActivityRecord _record({required String id, DateTime? endedAt}) {
+LocalActivityRecord _record({
+  required String id,
+  DateTime? endedAt,
+  LocalActivityUploadStatus uploadStatus = LocalActivityUploadStatus.pending,
+}) {
   final ended = endedAt ?? DateTime.utc(2026, 6, 2, 10);
   return LocalActivityRecord(
     id: id,
@@ -238,7 +287,7 @@ LocalActivityRecord _record({required String id, DateTime? endedAt}) {
     distanceMeters: 1200,
     pointCount: 8,
     gpxFileName: '$id.gpx',
-    uploadStatus: LocalActivityUploadStatus.pending,
+    uploadStatus: uploadStatus,
     createdAt: ended,
     updatedAt: ended,
   );

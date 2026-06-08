@@ -66,7 +66,9 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Direct GPX upload to the Endurain activity import endpoint after a recording completes
 - Completed activity retention in private app storage (SQLite metadata store + GPX files), including local summary metadata, GPX availability, and upload state
 - Non-destructive post-upload flow with `Done`, `View history`, retry, and explicit delete actions
-- Local activity history and details screens for completed recordings saved on the device, with incremental pagination and resume-triggered upload retry
+- Durable upload recovery: a finished activity is always saved locally first, and any upload that did not reach the server (e.g. recorded with no connectivity) is retried automatically by an app-lifetime upload queue on app resume — no need to reopen the history screen
+- Forward-compatible upload de-duplication: each upload carries the local activity id as an `Idempotency-Key` request header. This is fully optional on the server — Endurain servers that do not recognize the header simply ignore it and uploads work unchanged, while a server that adopts it can de-duplicate automatically retried uploads with no app changes
+- Local activity history and details screens for completed recordings saved on the device, with incremental pagination
 
 ✅ **Settings**
 - Server configuration management

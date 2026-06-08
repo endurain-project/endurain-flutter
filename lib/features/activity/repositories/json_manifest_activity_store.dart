@@ -77,6 +77,22 @@ class JsonManifestActivityStore implements LocalActivityStore {
   @override
   Future<int> count() async => (await list()).length;
 
+  @override
+  Future<List<LocalActivityRecord>> listByUploadStatus(
+    Set<LocalActivityUploadStatus> statuses,
+  ) async {
+    if (statuses.isEmpty) {
+      return const <LocalActivityRecord>[];
+    }
+    final all = await list();
+    final matching = all
+        .where((record) => statuses.contains(record.uploadStatus))
+        .toList();
+    // Oldest-first so the upload queue retries in recording order.
+    matching.sort((left, right) => left.endedAt.compareTo(right.endedAt));
+    return matching;
+  }
+
   Future<List<LocalActivityRecord>> _readRecords() async {
     final file = await _manifestFile();
     if (!file.existsSync()) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
@@ -8,6 +10,7 @@ import 'package:endurain/features/activity/repositories/activity_retention_setti
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
+import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -22,12 +25,14 @@ class ActivityHistoryScreen extends StatefulWidget {
     this.repository,
     this.uploadService,
     this.retentionSettingsRepository,
+    this.uploadQueue,
   });
 
   final LocalActivityHistoryController? controller;
   final LocalActivityRepository? repository;
   final ActivityUploadService? uploadService;
   final ActivityRetentionSettingsRepository? retentionSettingsRepository;
+  final ActivityUploadQueue? uploadQueue;
 
   @override
   State<ActivityHistoryScreen> createState() => _ActivityHistoryScreenState();
@@ -37,6 +42,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
     with WidgetsBindingObserver {
   late final LocalActivityHistoryController _controller;
   late final bool _ownsController;
+  ActivityUploadQueue? _uploadQueue;
 
   @override
   void initState() {
@@ -44,6 +50,11 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
     WidgetsBinding.instance.addObserver(this);
     _ownsController = widget.controller == null;
     _controller = widget.controller ?? _createController();
+    _uploadQueue =
+        widget.uploadQueue ??
+        (_ownsController
+            ? AppScope.servicesOf(context, listen: false).activityUploadQueue
+            : null);
     _controller.load();
   }
 
@@ -61,8 +72,19 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _controller.retryFailedUploads();
+      unawaited(_drainQueueAndRefresh());
     }
+  }
+
+  Future<void> _drainQueueAndRefresh() async {
+    final queue = _uploadQueue;
+    if (queue != null) {
+      await queue.drain();
+    }
+    if (!mounted) {
+      return;
+    }
+    await _controller.refresh();
   }
 
   @override

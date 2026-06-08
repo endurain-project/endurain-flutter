@@ -60,10 +60,45 @@ void main() {
       final page = await store.listPage(offset: 5, limit: 2);
       expect(page, isEmpty);
     });
+
+    test('listByUploadStatus returns matching records oldest-first', () async {
+      await store.upsert(
+        _record(
+          id: 'older',
+          endedAt: DateTime.utc(2026, 6, 1),
+          uploadStatus: LocalActivityUploadStatus.failed,
+        ),
+      );
+      await store.upsert(
+        _record(
+          id: 'newer',
+          endedAt: DateTime.utc(2026, 6, 3),
+          uploadStatus: LocalActivityUploadStatus.pending,
+        ),
+      );
+      await store.upsert(
+        _record(
+          id: 'done',
+          endedAt: DateTime.utc(2026, 6, 2),
+          uploadStatus: LocalActivityUploadStatus.uploaded,
+        ),
+      );
+
+      final result = await store.listByUploadStatus({
+        LocalActivityUploadStatus.pending,
+        LocalActivityUploadStatus.failed,
+      });
+
+      expect(result.map((r) => r.id).toList(), ['older', 'newer']);
+    });
   });
 }
 
-LocalActivityRecord _record({required String id, DateTime? endedAt}) {
+LocalActivityRecord _record({
+  required String id,
+  DateTime? endedAt,
+  LocalActivityUploadStatus uploadStatus = LocalActivityUploadStatus.pending,
+}) {
   final ended = endedAt ?? DateTime.utc(2026, 6, 2, 10);
   return LocalActivityRecord(
     id: id,
@@ -74,7 +109,7 @@ LocalActivityRecord _record({required String id, DateTime? endedAt}) {
     distanceMeters: 1200,
     pointCount: 8,
     gpxFileName: '$id.gpx',
-    uploadStatus: LocalActivityUploadStatus.pending,
+    uploadStatus: uploadStatus,
     createdAt: ended,
     updatedAt: ended,
   );

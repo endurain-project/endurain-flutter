@@ -604,7 +604,7 @@ RecordedActivityPoint _recordedPoint({
 ActivityUploadService _uploadServiceReturning(int statusCode) {
   return ActivityUploadService(
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
-    uploadFile: (_, _, _) async {
+    uploadFile: (_, _, _, {idempotencyKey}) async {
       return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
     },
   );
@@ -618,7 +618,7 @@ ActivityUploadService _uploadServiceWithResponses(List<int> statusCodes) {
       maxAttempts: statusCodes.length,
       delay: (_) async {},
     ),
-    uploadFile: (_, _, _) async {
+    uploadFile: (_, _, _, {idempotencyKey}) async {
       final code = statusCodes[callCount++];
       return http.StreamedResponse(const Stream<List<int>>.empty(), code);
     },

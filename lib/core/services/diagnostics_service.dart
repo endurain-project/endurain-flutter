@@ -187,6 +187,10 @@ class DiagnosticsEvents {
   static const String activityPointBatchDrained =
       'activity.point_batch_drained';
   static const String activityTrackingStall = 'activity.tracking_stall';
+  static const String activityUploadQueueDrainStarted =
+      'activity.upload_queue_drain_started';
+  static const String activityUploadQueueDrainFinished =
+      'activity.upload_queue_drain_finished';
 }
 
 class DiagnosticsService implements DiagnosticsStore {

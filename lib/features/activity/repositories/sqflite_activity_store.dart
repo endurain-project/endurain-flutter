@@ -147,6 +147,25 @@ class SqfliteActivityStore implements LocalActivityStore {
     return result.first['c'] as int? ?? 0;
   }
 
+  @override
+  Future<List<LocalActivityRecord>> listByUploadStatus(
+    Set<LocalActivityUploadStatus> statuses,
+  ) async {
+    if (statuses.isEmpty) {
+      return const <LocalActivityRecord>[];
+    }
+    final db = await _open();
+    final values = statuses.map((status) => status.toJson()).toList();
+    final placeholders = List.filled(values.length, '?').join(', ');
+    final rows = await db.query(
+      _tableActivity,
+      where: 'upload_status IN ($placeholders)',
+      whereArgs: values,
+      orderBy: 'ended_at ASC',
+    );
+    return rows.map(_fromRow).toList();
+  }
+
   Future<void> close() async {
     await _db?.close();
     _db = null;

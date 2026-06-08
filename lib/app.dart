@@ -66,6 +66,10 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     );
     if (state == AppLifecycleState.resumed) {
       unawaited(_sessionController.revalidate());
+      // Durably retry any activity uploads that did not reach the server
+      // (e.g. recorded with no connectivity). Best-effort; errors are handled
+      // and recorded inside the queue.
+      unawaited(_services.activityUploadQueue.drain());
     }
   }
 
