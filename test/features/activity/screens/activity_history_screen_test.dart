@@ -1,3 +1,4 @@
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -297,7 +298,7 @@ class _LoadedEmptyHistoryController extends LocalActivityHistoryController {
   bool get isLoading => false;
 
   @override
-  Object? get error => null;
+  AppException? get error => null;
 
   @override
   bool get hasMore => false;
@@ -330,7 +331,7 @@ class _LoadedHistoryController extends LocalActivityHistoryController {
   bool get isLoading => false;
 
   @override
-  Object? get error => null;
+  AppException? get error => null;
 
   @override
   bool get hasMore => hasMorePages;
@@ -358,7 +359,9 @@ class _ErrorHistoryController extends LocalActivityHistoryController {
   bool get isLoading => false;
 
   @override
-  Object? get error => StateError('load failed');
+  AppException? get error => const AppException(
+    AppErrorCode.activityLocalLoadFailed,
+  );
 
   @override
   bool get hasMore => false;
@@ -383,7 +386,7 @@ class _LoadingHistoryController extends LocalActivityHistoryController {
   bool get isLoading => true;
 
   @override
-  Object? get error => null;
+  AppException? get error => null;
 
   @override
   bool get hasMore => false;

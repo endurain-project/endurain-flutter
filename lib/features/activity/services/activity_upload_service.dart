@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
@@ -206,9 +209,14 @@ class ActivityUploadService {
   /// Returns true if [error] represents a failure worth retrying (5xx
   /// response or network-level I/O error). Auth failures, missing GPX, and
   /// configuration errors are not transient.
+  ///
+  /// An unexpected non-[AppException] (e.g. a `TypeError`/`StateError` from a
+  /// programming bug) is only retried when it is a known I/O/network failure;
+  /// genuine bugs fail fast instead of burning the retry budget and masking
+  /// the defect.
   static bool _isTransient(Object error) {
     if (error is! AppException) {
-      return true;
+      return _isTransientIoError(error);
     }
     if (error.code != AppErrorCode.activityUploadFailed) {
       return false;
@@ -223,6 +231,14 @@ class ActivityUploadService {
       return true;
     }
     return false;
+  }
+
+  /// Whether [error] is a known transient I/O/network failure.
+  static bool _isTransientIoError(Object error) {
+    return error is SocketException ||
+        error is http.ClientException ||
+        error is TimeoutException ||
+        error is HttpException;
   }
 
   /// Maps any exception to a typed [AppErrorCode] safe for persistence.

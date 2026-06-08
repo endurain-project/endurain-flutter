@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
@@ -23,6 +24,7 @@ class ActivityRecordingController extends ChangeNotifier {
     LocalActivityRepository? localActivityRepository,
     LocalActivitySummaryBuilder? localActivitySummaryBuilder,
     ActivityRetentionSettingsRepository? retentionSettingsRepository,
+    DiagnosticsRecorder? diagnostics,
     String Function()? localActivityIdProvider,
     DateTime Function()? now,
     bool ownsService = true,
@@ -34,6 +36,7 @@ class ActivityRecordingController extends ChangeNotifier {
        _localActivitySummaryBuilder =
            localActivitySummaryBuilder ?? LocalActivitySummaryBuilder(),
        _retentionSettingsRepository = retentionSettingsRepository,
+       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
        _now = now ?? DateTime.now,
        _ownsService = ownsService {
@@ -48,6 +51,7 @@ class ActivityRecordingController extends ChangeNotifier {
   final LocalActivityRepository _localActivityRepository;
   final LocalActivitySummaryBuilder _localActivitySummaryBuilder;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
+  final DiagnosticsRecorder _diagnostics;
   final String Function() _localActivityIdProvider;
   final DateTime Function() _now;
   final bool _ownsService;
@@ -60,7 +64,7 @@ class ActivityRecordingController extends ChangeNotifier {
   String? _completedLocalActivityId;
   LocalActivityRecord? _completedLocalActivityRecord;
   ActivityUploadStatus _uploadStatus = ActivityUploadStatus.idle;
-  Object? _uploadError;
+  AppException? _uploadError;
   Future<void>? _activeUpload;
   BackgroundLocationConfig? _backgroundConfig;
 
@@ -74,7 +78,7 @@ class ActivityRecordingController extends ChangeNotifier {
 
   ActivityUploadStatus get uploadStatus => _uploadStatus;
 
-  Object? get uploadError => _uploadError;
+  AppException? get uploadError => _uploadError;
 
   /// Supplies the localized notification text used to keep location tracking
   /// alive while the app is backgrounded during a recording.
@@ -212,7 +216,14 @@ class ActivityRecordingController extends ChangeNotifier {
       final gpx = _gpxBuilder.build(completedState);
       _completedGpx = gpx;
       return gpx;
-    } catch (_) {
+    } catch (error) {
+      // Sanitized breadcrumb only — record the error type, never coordinates,
+      // so a field report can pinpoint a GPX-generation failure (the one path
+      // that can lose a just-finished workout) without leaking GPS data.
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.activityGpxGenerationFailed,
+        details: {'type': error.runtimeType.toString()},
+      );
       _completedGpx = null;
       _setState(
         completedState.copyWith(
@@ -257,7 +268,10 @@ class ActivityRecordingController extends ChangeNotifier {
     }
   }
 
-  void _failLocalSave(ActivityRecordingState completedState, Object error) {
+  void _failLocalSave(
+    ActivityRecordingState completedState,
+    AppException error,
+  ) {
     _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
@@ -283,8 +297,11 @@ class ActivityRecordingController extends ChangeNotifier {
       _completedLocalActivityRecord = uploaded;
       _setUploadState(ActivityUploadStatus.uploaded);
     } catch (error) {
-      _uploadError = error;
-      _setUploadState(ActivityUploadStatus.failed, error: error);
+      final appError = error is AppException
+          ? error
+          : AppException(AppErrorCode.activityUploadFailed, cause: error);
+      _uploadError = appError;
+      _setUploadState(ActivityUploadStatus.failed, error: appError);
     }
   }
 
@@ -331,7 +348,7 @@ class ActivityRecordingController extends ChangeNotifier {
     _notifyListeners();
   }
 
-  void _setUploadState(ActivityUploadStatus status, {Object? error}) {
+  void _setUploadState(ActivityUploadStatus status, {AppException? error}) {
     _uploadStatus = status;
     _uploadError = error;
     _notifyListeners();

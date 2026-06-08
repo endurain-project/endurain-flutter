@@ -1,3 +1,4 @@
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -17,7 +18,7 @@ class ActivityUploadStatusPanel extends StatelessWidget {
   });
 
   final ActivityUploadStatus status;
-  final Object? error;
+  final AppException? error;
   final VoidCallback? onRetry;
   final VoidCallback? onDone;
   final VoidCallback? onDelete;

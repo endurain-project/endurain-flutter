@@ -26,7 +26,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
   List<LocalActivityRecord> _records = const [];
   Set<String> _busyRecordIds = const {};
   bool _isLoading = false;
-  Object? _error;
+  AppException? _error;
   bool _isDisposed = false;
   bool _hasMore = true;
 
@@ -34,7 +34,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
-  Object? get error => _error;
+  AppException? get error => _error;
 
   bool get hasMore => _hasMore;
 
@@ -62,7 +62,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       _records = page;
       _hasMore = page.length == _pageSize;
     } catch (error) {
-      _error = error;
+      _error = _asAppException(error);
     } finally {
       _isLoading = false;
       _notifyListeners();
@@ -83,7 +83,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       _records = [..._records, ...page];
       _hasMore = page.length == _pageSize;
     } catch (error) {
-      _error = error;
+      _error = _asAppException(error);
     } finally {
       _isLoading = false;
       _notifyListeners();
@@ -158,6 +158,14 @@ class LocalActivityHistoryController extends ChangeNotifier {
     }
     _busyRecordIds = ids;
     _notifyListeners();
+  }
+
+  /// Normalizes any caught error into a typed [AppException] so the controller
+  /// only ever exposes a typed error the UI can localize.
+  AppException _asAppException(Object error) {
+    return error is AppException
+        ? error
+        : AppException(AppErrorCode.activityLocalLoadFailed, cause: error);
   }
 
   void _notifyListeners() {

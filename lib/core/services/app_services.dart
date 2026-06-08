@@ -91,6 +91,7 @@ class AppServices {
         uploadService: activityUpload,
         localActivityRepository: localActivities,
         retentionSettingsRepository: activityRetentionSettings,
+        diagnostics: diagnostics,
       );
 
   final AppLinksService appLinks = DefaultAppLinksService();

@@ -287,7 +287,47 @@ void main() {
       final persisted = await repository.get(record.id);
       expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
     });
+
+    test('unexpected non-IO error fails fast without retrying', () async {
+      final throwingRepo = _ReadPathThrowingRepository(tempDir);
+      final record = await _createRecord(throwingRepo, id: 'svc_bug');
+      var delayCalls = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        retryPolicy: ActivityUploadRetryPolicy(
+          maxAttempts: 3,
+          delay: (_) async => delayCalls++,
+        ),
+        uploadFile: (_, _, _) async {
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+        },
+      );
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: throwingRepo),
+        throwsA(isA<StateError>()),
+      );
+
+      // A programming bug (StateError) is not a transient I/O failure, so it
+      // must not consume the retry budget.
+      expect(delayCalls, 0);
+      final persisted = await throwingRepo.get(record.id);
+      expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+    });
   });
+}
+
+class _ReadPathThrowingRepository extends LocalActivityRepository {
+  _ReadPathThrowingRepository(Directory dir)
+    : super(supportDirectoryProvider: () async => dir);
+
+  @override
+  Future<String> readGpxFilePath(LocalActivityRecord record) {
+    throw StateError('unexpected bug');
+  }
 }
 
 ActivityUploadService _serviceReturningStatus(int statusCode) {

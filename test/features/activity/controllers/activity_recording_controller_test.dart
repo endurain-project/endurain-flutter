@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
@@ -214,9 +215,11 @@ void main() {
     test('surfaces GPX generation failures as recording failures', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final service = _recordingService(adapter: adapter);
+      final diagnostics = _CapturingDiagnosticsRecorder();
       final controller = ActivityRecordingController(
         recordingService: service,
         gpxBuilder: const _ThrowingGpxBuilder(),
+        diagnostics: diagnostics,
       );
       addTearDown(controller.dispose);
 
@@ -232,6 +235,12 @@ void main() {
       );
       expect(controller.completedGpx, isNull);
       expect(controller.uploadStatus, ActivityUploadStatus.idle);
+      // M2: a sanitized breadcrumb (error type only, no coordinates) is
+      // recorded so the failure is observable in a field report.
+      final breadcrumb = diagnostics.breadcrumbs.singleWhere(
+        (entry) => entry.event == DiagnosticsEvents.activityGpxGenerationFailed,
+      );
+      expect(breadcrumb.details['type'], 'StateError');
     });
 
     test('surfaces local save failures before upload starts', () async {
@@ -493,6 +502,27 @@ class _ThrowingGpxBuilder extends ActivityGpxBuilder {
   String build(ActivityRecordingState state, {String? trackName}) {
     throw StateError('GPX generation failed');
   }
+}
+
+class _CapturingDiagnosticsRecorder implements DiagnosticsRecorder {
+  final List<DiagnosticsBreadcrumb> breadcrumbs = [];
+
+  @override
+  void recordBreadcrumbSync(
+    String event, {
+    Map<String, Object?> details = const {},
+  }) {
+    breadcrumbs.add(
+      DiagnosticsBreadcrumb(at: null, event: event, details: details),
+    );
+  }
+
+  @override
+  void recordErrorSync(
+    Object error,
+    StackTrace stackTrace, {
+    String source = DiagnosticsSources.uncaught,
+  }) {}
 }
 
 class _ThrowingLocalActivityRepository extends LocalActivityRepository {

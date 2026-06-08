@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:endurain/core/constants/map_constants.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
@@ -44,7 +45,7 @@ class ActivityRecordingControls extends StatelessWidget {
   final VoidCallback? onResume;
   final VoidCallback? onStop;
   final ActivityUploadStatus uploadStatus;
-  final Object? uploadError;
+  final AppException? uploadError;
   final VoidCallback? onRetryUpload;
   final VoidCallback? onDone;
   final VoidCallback? onDelete;
