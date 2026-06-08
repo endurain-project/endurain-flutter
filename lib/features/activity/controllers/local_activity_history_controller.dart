@@ -131,6 +131,24 @@ class LocalActivityHistoryController extends ChangeNotifier {
     }
   }
 
+  /// Retries every record currently in the loaded list whose upload status is
+  /// [LocalActivityUploadStatus.failed]. Failures are swallowed so that all
+  /// eligible records are attempted even if one fails. Call on app resume.
+  Future<void> retryFailedUploads() async {
+    final failed = _records
+        .where((r) => r.uploadStatus == LocalActivityUploadStatus.failed)
+        .map((r) => r.id)
+        .toList(growable: false);
+    for (final id in failed) {
+      try {
+        await retryUpload(id);
+      } catch (_) {
+        // Best effort: keep retrying the others; failures remain visible
+        // in the list with their persisted error.
+      }
+    }
+  }
+
   void _setBusy(String id, {required bool busy}) {
     final ids = {..._busyRecordIds};
     if (busy) {
