@@ -30,7 +30,10 @@ void main() {
       expect(restored.endedAt, session.endedAt);
       expect(restored.elapsedDurationSeconds, 600);
       expect(restored.currentSegmentIndex, 2);
-      expect(restored.schemaVersion, ActiveActivitySession.currentSchemaVersion);
+      expect(
+        restored.schemaVersion,
+        ActiveActivitySession.currentSchemaVersion,
+      );
     });
 
     test('falls back to failed for an unknown status', () {
@@ -57,7 +60,10 @@ void main() {
       expect(restored.endedAt, isNull);
       expect(restored.elapsedDurationSeconds, 0);
       expect(restored.currentSegmentIndex, 0);
-      expect(restored.schemaVersion, ActiveActivitySession.currentSchemaVersion);
+      expect(
+        restored.schemaVersion,
+        ActiveActivitySession.currentSchemaVersion,
+      );
       expect(restored.isActive, isTrue);
     });
 

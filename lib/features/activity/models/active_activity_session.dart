@@ -108,7 +108,9 @@ class ActiveActivitySession {
   factory ActiveActivitySession.fromJson(Map<dynamic, dynamic> json) {
     final localSessionId = json['localSessionId'];
     if (localSessionId is! String || localSessionId.isEmpty) {
-      throw const FormatException('Missing active session field: localSessionId');
+      throw const FormatException(
+        'Missing active session field: localSessionId',
+      );
     }
     final startedAt = _dateTime(json['startedAt']);
     if (startedAt == null) {

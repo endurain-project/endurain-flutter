@@ -14,8 +14,7 @@ class NativeActivityRecorderChannelContract {
   /// reject or migrate mismatched versions.
   static const int payloadVersion = 1;
 
-  static const String methodChannelName =
-      'endurain/activity_recorder/methods';
+  static const String methodChannelName = 'endurain/activity_recorder/methods';
   static const String eventChannelName = 'endurain/activity_recorder/events';
 
   // Method names.
@@ -49,17 +48,19 @@ class NativeActivityRecorderChannelContract {
 /// widgets. The native side owns background collection and durable persistence;
 /// Dart consumes versioned method results and event payloads only.
 class NativeActivityRecorderChannel implements ActivityLocationRecorder {
-  NativeActivityRecorderChannel({MethodChannel? methodChannel, EventChannel? eventChannel})
-    : _methodChannel =
-          methodChannel ??
-          const MethodChannel(
-            NativeActivityRecorderChannelContract.methodChannelName,
-          ),
-      _eventChannel =
-          eventChannel ??
-          const EventChannel(
-            NativeActivityRecorderChannelContract.eventChannelName,
-          );
+  NativeActivityRecorderChannel({
+    MethodChannel? methodChannel,
+    EventChannel? eventChannel,
+  }) : _methodChannel =
+           methodChannel ??
+           const MethodChannel(
+             NativeActivityRecorderChannelContract.methodChannelName,
+           ),
+       _eventChannel =
+           eventChannel ??
+           const EventChannel(
+             NativeActivityRecorderChannelContract.eventChannelName,
+           );
 
   final MethodChannel _methodChannel;
   final EventChannel _eventChannel;
@@ -157,21 +158,13 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
     );
     switch (type) {
       case NativeActivityRecorderChannelContract.eventStarted:
-        return session == null
-            ? null
-            : ActivityRecorderEvent.started(session);
+        return session == null ? null : ActivityRecorderEvent.started(session);
       case NativeActivityRecorderChannelContract.eventPaused:
-        return session == null
-            ? null
-            : ActivityRecorderEvent.paused(session);
+        return session == null ? null : ActivityRecorderEvent.paused(session);
       case NativeActivityRecorderChannelContract.eventResumed:
-        return session == null
-            ? null
-            : ActivityRecorderEvent.resumed(session);
+        return session == null ? null : ActivityRecorderEvent.resumed(session);
       case NativeActivityRecorderChannelContract.eventStopped:
-        return session == null
-            ? null
-            : ActivityRecorderEvent.stopped(session);
+        return session == null ? null : ActivityRecorderEvent.stopped(session);
       case NativeActivityRecorderChannelContract.eventPointBatchAvailable:
         return ActivityRecorderEvent.pointBatchAvailable(
           _parsePoints(

@@ -25,7 +25,12 @@ void main() {
         switch (call.method) {
           case NativeActivityRecorderChannelContract.drain:
             return <Object?>[
-              {'t': '2026-06-03T09:00:00.000Z', 'lat': 41.0, 'lon': -8.0, 'seg': 0},
+              {
+                't': '2026-06-03T09:00:00.000Z',
+                'lat': 41.0,
+                'lon': -8.0,
+                'seg': 0,
+              },
             ];
           case NativeActivityRecorderChannelContract.recover:
             return <Object?, Object?>{
@@ -71,15 +76,12 @@ void main() {
       await channel.stop();
       await channel.discard();
 
-      expect(
-        calls.map((call) => call.method),
-        [
-          NativeActivityRecorderChannelContract.pause,
-          NativeActivityRecorderChannelContract.resume,
-          NativeActivityRecorderChannelContract.stop,
-          NativeActivityRecorderChannelContract.discard,
-        ],
-      );
+      expect(calls.map((call) => call.method), [
+        NativeActivityRecorderChannelContract.pause,
+        NativeActivityRecorderChannelContract.resume,
+        NativeActivityRecorderChannelContract.stop,
+        NativeActivityRecorderChannelContract.discard,
+      ]);
     });
 
     test('parses drained points', () async {
@@ -143,10 +145,7 @@ void main() {
   });
 }
 
-Future<void> _sendEvent(
-  StandardMethodCodec codec,
-  Object? payload,
-) async {
+Future<void> _sendEvent(StandardMethodCodec codec, Object? payload) async {
   ServicesBinding.instance.channelBuffers.push(
     NativeActivityRecorderChannelContract.eventChannelName,
     codec.encodeSuccessEnvelope(payload),

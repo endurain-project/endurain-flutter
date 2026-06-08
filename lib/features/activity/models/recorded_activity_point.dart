@@ -80,8 +80,8 @@ class RecordedActivityPoint {
       if (headingDegrees != null) 'head': headingDegrees,
       if (headingAccuracyDegrees != null) 'headAcc': headingAccuracyDegrees,
       if (speedMetersPerSecond != null) 'spd': speedMetersPerSecond,
-      if (speedAccuracyMetersPerSecond != null) 'spdAcc':
-          speedAccuracyMetersPerSecond,
+      if (speedAccuracyMetersPerSecond != null)
+        'spdAcc': speedAccuracyMetersPerSecond,
     };
   }
 
