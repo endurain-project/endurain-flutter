@@ -344,6 +344,53 @@ tool/
 └── check_coverage.dart       # LCOV coverage threshold utility
 ```
 
+## Local Activity Storage Design
+
+Activities are recorded and saved on-device for upload to the server.
+
+### Current layout (JSON manifest)
+
+Completed recordings are stored under the app's private support directory:
+
+```
+<support-dir>/
+├── index.json                 # JSON array of LocalActivityRecord objects (schema v1)
+└── gpx/
+    └── <activity-id>.gpx      # Raw GPX 1.1 file for each recording
+```
+
+`index.json` is read and written atomically via a rename-on-write pattern.
+Each entry in the array contains: `id`, `activityType`, timing, distance,
+`pointCount`, `gpxFileName`, `uploadStatus`, and upload timestamps.
+
+### Target layout (SQLite — planned)
+
+A future migration will move the metadata store to SQLite for better
+concurrent safety, range queries, and row-level updates without rewriting
+the entire file:
+
+| Table                  | Purpose                                                  |
+|------------------------|----------------------------------------------------------|
+| `schema_version`       | Single-row version counter used to gate migrations.      |
+| `local_activity`       | One row per activity, all metadata columns.              |
+
+GPX files will remain on disk under `gpx/` — only the metadata moves.
+
+### Migration plan (schema v1 → SQLite)
+
+1. On first SQLite open, detect an existing `index.json` manifest.
+2. Import all valid records into the `local_activity` table.
+3. Leave `index.json` on disk until the import succeeds (rollback safety).
+4. Remove `index.json` after a successful import.
+5. Malformed or partially-corrupt manifest entries are skipped with a
+   diagnostics breadcrumb; valid entries are not affected.
+
+### Rollback/failure behavior
+
+If the SQLite open or migration fails, the app falls back to reading
+`index.json` as before. No data loss occurs because `index.json` is kept
+in place until migration is confirmed complete.
+
 ## Contributing
 
 Contributions are welcomed! This mobile app is part of the main Endurain project. Please:
