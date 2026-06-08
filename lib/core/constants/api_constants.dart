@@ -13,6 +13,9 @@ class ApiConstants {
   static const Duration defaultRequestTimeout = Duration(seconds: 30);
   static const Duration defaultUploadTimeout = Duration(seconds: 120);
 
+  // SSO PKCE flow TTL — flows older than this are rejected on exchange.
+  static const Duration ssoPkceTtl = Duration(minutes: 10);
+
   // Authentication endpoints
   static const String tokenEndpoint = '/api/v1/auth/login';
   static const String mfaVerifyEndpoint = '/api/v1/auth/mfa/verify';

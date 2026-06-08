@@ -518,7 +518,7 @@ void main() {
     });
 
     group('serverUrlIsHttp', () {
-      LoginController _make() => LoginController(
+      LoginController makeController() => LoginController(
         authCoordinator: _repository(
           storage: SecureStorageService(),
           client: MockClient((_) async => http.Response('{}', 200)),
@@ -527,21 +527,21 @@ void main() {
       );
 
       test('is false when URL is https', () {
-        final controller = _make();
+        final controller = makeController();
         controller.serverUrlController.text = 'https://example.test';
         expect(controller.serverUrlIsHttp, isFalse);
         controller.dispose();
       });
 
       test('is true when URL is http', () {
-        final controller = _make();
+        final controller = makeController();
         controller.serverUrlController.text = 'http://example.test';
         expect(controller.serverUrlIsHttp, isTrue);
         controller.dispose();
       });
 
       test('is false for empty or invalid input', () {
-        final controller = _make();
+        final controller = makeController();
         controller.serverUrlController.text = '';
         expect(controller.serverUrlIsHttp, isFalse);
         controller.serverUrlController.text = 'not-a-url';
