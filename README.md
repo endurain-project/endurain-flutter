@@ -64,9 +64,9 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Stop confirmation flow with discard option
 - GPX 1.1 generation from completed tracks
 - Direct GPX upload to the Endurain activity import endpoint after a recording completes
-- Completed activity retention in private app storage, including local summary metadata, GPX availability, and upload state
+- Completed activity retention in private app storage (SQLite metadata store + GPX files), including local summary metadata, GPX availability, and upload state
 - Non-destructive post-upload flow with `Done`, `View history`, retry, and explicit delete actions
-- Local activity history and details screens for completed recordings saved on the device
+- Local activity history and details screens for completed recordings saved on the device, with incremental pagination and resume-triggered upload retry
 
 ✅ **Settings**
 - Server configuration management

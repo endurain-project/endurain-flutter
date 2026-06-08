@@ -9,40 +9,33 @@ letting users browse their history offline and re-upload if needed.
 
 After recording stops and the upload attempt completes:
 
-1. Activity metadata is written to `<support-dir>/activities/index.json`
-   (schema v1 JSON manifest) with `uploadStatus` set to `uploaded`,
-   `pending`, or `failed`.
+1. Activity metadata is written to `<support-dir>/activity.db` (SQLite, schema
+   v1) with `uploadStatus` set to `uploaded`, `pending`, or `failed`.
+   On first open after the migration, any records from the legacy
+   `activities/index.json` JSON manifest are imported automatically.
 2. The GPX file is retained at `<support-dir>/activities/gpx/<id>.gpx`
    unless the user explicitly deletes the activity.
 3. `ActivityRetentionSettingsRepository` (key `activity_retain_uploaded_gpx`)
    controls whether uploaded GPX files are kept. Default is `true`.
 
-## Planned metadata store migration (SQLite)
+## SQLite metadata store (implemented)
 
-The JSON manifest approach rewrites the entire file on every upsert/delete.
-The target store is `SqfliteActivityStore` which is already implemented
-behind the `LocalActivityStore` interface.
-
-### Migration steps (not yet wired)
-
-1. On app first-launch after the SQLite dependency lands, construct
-   `SqfliteActivityStore` with a `manifestReader` pointing at the existing
-   `JsonManifestActivityStore`.
-2. `SqfliteActivityStore.onCreate` imports all valid manifest records into
-   the `local_activity` table (malformed entries are skipped).
-3. After successful open, the caller deletes `index.json` to prevent
-   double-read on next launch.
-4. If the SQLite open fails, `LocalActivityRepository` falls back to
-   `JsonManifestActivityStore`; no data loss occurs.
+`SqfliteActivityStore` is wired as the default backend in `AppServices`. On
+first open it migrates any existing JSON manifest records via the
+`manifestReader` callback. Both `SqfliteActivityStore` and
+`JsonManifestActivityStore` implement the full `LocalActivityStore` interface
+including `listPage(offset, limit)` and `count()` for paginated history loading.
 
 ### Wiring checklist
 
-- [ ] `AppServices.localActivityStore` — choose SQLite or JSON based on
-  availability/migration state.
-- [ ] Pass `manifestReader: () => jsonStore.list()` to `SqfliteActivityStore`.
-- [ ] Delete `index.json` after first successful SQLite open.
-- [ ] Update `LocalActivityRepository` to accept `LocalActivityStore` from DI
-  (already accepts it via constructor).
+- [x] `AppServices.localActivities` — constructs `SqfliteActivityStore` with
+  `manifestReader: () => JsonManifestActivityStore(diagnostics: diagnostics).list()`.
+- [x] `LocalActivityRepository` accepts `LocalActivityStore` from DI.
+- [x] `listPage` / `count` added to the interface and both store implementations.
+- [x] History controller uses `listPage(offset: 0, limit: 20)` for initial load
+  and `loadMore()` to append subsequent pages.
+- [ ] Delete `index.json` after first successful SQLite open (nice-to-have;
+  legacy file is harmless and the manifest reader is idempotent).
 
 ## GPX retention policy
 
