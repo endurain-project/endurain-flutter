@@ -14,30 +14,21 @@ import 'package:endurain/core/services/auth_service.dart';
 class SsoService {
   static const callbackUrl = 'endurain://auth/sso/callback';
 
-  factory SsoService({
+  SsoService({
     SecureStorageService? storage,
     AuthSessionStore? sessionStore,
     http.Client? httpClient,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
-    return SsoService._(
-      storage: resolvedStorage,
-      sessionStore: sessionStore ?? AuthSessionStore(storage: resolvedStorage),
-      httpClient: httpClient ?? http.Client(),
-    );
+    _storage = resolvedStorage;
+    _sessionStore =
+        sessionStore ?? AuthSessionStore(storage: resolvedStorage);
+    _httpClient = httpClient ?? http.Client();
   }
 
-  SsoService._({
-    required SecureStorageService storage,
-    required AuthSessionStore sessionStore,
-    required http.Client httpClient,
-  }) : _storage = storage,
-       _sessionStore = sessionStore,
-       _httpClient = httpClient;
-
-  final SecureStorageService _storage;
-  final AuthSessionStore _sessionStore;
-  final http.Client _httpClient;
+  late final SecureStorageService _storage;
+  late final AuthSessionStore _sessionStore;
+  late final http.Client _httpClient;
 
   // Store PKCE temporarily during SSO flow
   Map<String, String>? _ssoPkce;

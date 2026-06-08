@@ -15,19 +15,21 @@ class ApiClient {
     AuthService? authService,
     http.Client? httpClient,
     MultipartUploadAdapter? uploadAdapter,
-  }) : _sessionStore =
-           sessionStore ??
-           AuthSessionStore(storage: storage ?? SecureStorageService()),
-       _httpClient = httpClient ?? http.Client(),
-       _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter(),
-       _authService =
-           authService ??
-           AuthService(storage: storage ?? SecureStorageService());
+  }) {
+    final resolvedStore =
+        sessionStore ??
+        AuthSessionStore(storage: storage ?? SecureStorageService());
+    _sessionStore = resolvedStore;
+    _authService =
+        authService ?? AuthService(sessionStore: resolvedStore, storage: storage);
+    _httpClient = httpClient ?? http.Client();
+    _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter();
+  }
 
-  final AuthSessionStore _sessionStore;
-  final AuthService _authService;
-  final http.Client _httpClient;
-  final MultipartUploadAdapter _uploadAdapter;
+  late final AuthSessionStore _sessionStore;
+  late final AuthService _authService;
+  late final http.Client _httpClient;
+  late final MultipartUploadAdapter _uploadAdapter;
 
   Future<Map<String, dynamic>> getJsonObject(
     String endpoint, {

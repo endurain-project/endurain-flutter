@@ -9,30 +9,21 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
 
 class AuthService {
-  factory AuthService({
+  AuthService({
     SecureStorageService? storage,
     AuthSessionStore? sessionStore,
     http.Client? httpClient,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
-    return AuthService._(
-      storage: resolvedStorage,
-      sessionStore: sessionStore ?? AuthSessionStore(storage: resolvedStorage),
-      httpClient: httpClient ?? http.Client(),
-    );
+    _storage = resolvedStorage;
+    _sessionStore =
+        sessionStore ?? AuthSessionStore(storage: resolvedStorage);
+    _httpClient = httpClient ?? http.Client();
   }
 
-  AuthService._({
-    required SecureStorageService storage,
-    required AuthSessionStore sessionStore,
-    required http.Client httpClient,
-  }) : _storage = storage,
-       _sessionStore = sessionStore,
-       _httpClient = httpClient;
-
-  final SecureStorageService _storage;
-  final AuthSessionStore _sessionStore;
-  final http.Client _httpClient;
+  late final SecureStorageService _storage;
+  late final AuthSessionStore _sessionStore;
+  late final http.Client _httpClient;
 
   // Store PKCE temporarily during auth flow
   Map<String, String>? _pkce;
