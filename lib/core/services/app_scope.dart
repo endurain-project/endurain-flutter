@@ -12,6 +12,10 @@ class AppScope extends InheritedWidget {
         : context.getElementForInheritedWidgetOfExactType<AppScope>()?.widget
               as AppScope?;
 
+    // Last-resort fallback for contexts not wrapped in an [AppScope] (e.g. some
+    // tests). Production widgets are always built under the root [AppScope], so
+    // this should resolve the scoped services; the global is only a safety net,
+    // never the intended path.
     return scope?.services ?? AppServices.instance;
   }
 

@@ -15,6 +15,16 @@ class StoredServerSettings {
   final String tileServerUrl;
 }
 
+/// Screen-scoped facade for the settings screen.
+///
+/// This intentionally aggregates the few unrelated reads/writes the settings
+/// screen needs — server URL + username (auth-session concern), tile-server URL
+/// (map-display concern), and logout (auth concern) — behind one dependency so
+/// the screen stays thin. It is deliberately NOT a general-purpose repository:
+/// each concern still lives in its own owner (`SecureStorageService`,
+/// `MapSettingsRepository`, `AuthService`); this type only composes them for
+/// one screen. New cross-feature settings should get their own repository
+/// rather than growing this aggregator into a grab-bag.
 class ServerSettingsRepository {
   const ServerSettingsRepository({
     required SecureStorageService storage,

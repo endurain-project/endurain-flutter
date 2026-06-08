@@ -30,6 +30,13 @@ import 'package:flutter/foundation.dart';
 class AppServices {
   AppServices({this.config = AppConfig.defaults});
 
+  /// Composition-root singleton.
+  ///
+  /// Only the app entry point (`main()`/root `App`) and the `AppScope`
+  /// last-resort fallback may read this. Feature code MUST obtain services via
+  /// `AppScope.servicesOf(context)` so a future SaaS build can scope services
+  /// per account/environment and tests can isolate instances. Do not reference
+  /// `AppServices.instance` from feature widgets, controllers, or services.
   static final AppServices instance = AppServices();
 
   final DiagnosticsService diagnostics = DiagnosticsService();

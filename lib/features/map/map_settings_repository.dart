@@ -1,4 +1,5 @@
 import 'package:endurain/core/constants/map_constants.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 
@@ -12,6 +13,16 @@ class MapSettingsRepository {
 
   final AppPreferencesStore _preferences;
 
+  /// Whether [url] is an acceptable tile-server URL to persist: a well-formed
+  /// absolute `http`/`https` URL with a host. Language-free so it can guard the
+  /// repository boundary without depending on localization.
+  static bool isValidTileServerUrl(String url) {
+    final uri = Uri.tryParse(url.trim());
+    return uri != null &&
+        (uri.isScheme('http') || uri.isScheme('https')) &&
+        uri.host.isNotEmpty;
+  }
+
   Future<String> getTileServerUrl() async {
     final tileUrl = await _preferences.read(key: _tileServerUrlKey);
     if (tileUrl == null || tileUrl.isEmpty) {
@@ -20,7 +31,16 @@ class MapSettingsRepository {
     return tileUrl;
   }
 
-  Future<void> saveTileServerUrl(String url) {
+  /// Persists a user-provided tile-server [url].
+  ///
+  /// Validates at the repository boundary so an invalid URL can never be
+  /// stored regardless of caller; throws [AppException] with
+  /// [AppErrorCode.invalidTileServerUrl] when [url] is not a valid http/https
+  /// URL.
+  Future<void> saveTileServerUrl(String url) async {
+    if (!isValidTileServerUrl(url)) {
+      throw const AppException(AppErrorCode.invalidTileServerUrl);
+    }
     return _preferences.write(key: _tileServerUrlKey, value: url);
   }
 
@@ -48,7 +68,7 @@ class MapSettingsRepository {
   /// stored values intact.
   Future<void> saveFromServerSettings(ServerSettings settings) async {
     final url = settings.tileserverUrl;
-    if (url != null && url.isNotEmpty) {
+    if (url != null && url.isNotEmpty && isValidTileServerUrl(url)) {
       await saveTileServerUrl(url);
     }
     final attribution = settings.tileserverAttribution;

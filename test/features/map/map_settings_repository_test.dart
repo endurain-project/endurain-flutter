@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/constants/map_constants.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/features/map/map_settings_repository.dart';
@@ -39,6 +40,44 @@ void main() {
         'https://tiles.example.test/{z}/{x}/{y}.png',
       );
     });
+
+    test('rejects an invalid tile server URL at the boundary', () async {
+      await expectLater(
+        repository.saveTileServerUrl('not a url'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.invalidTileServerUrl,
+          ),
+        ),
+      );
+
+      // Nothing was persisted, so the default still applies.
+      expect(
+        await repository.getTileServerUrl(),
+        MapConstants.defaultTileServerUrl,
+      );
+    });
+
+    test(
+      'skips an invalid server-provided tile URL without throwing',
+      () async {
+        final settings = ServerSettings.fromJson({
+          'tileserver_url': 'not a url',
+          'tileserver_attribution': 'OpenStreetMap',
+        });
+
+        await repository.saveFromServerSettings(settings);
+
+        // Invalid URL skipped; attribution still saved.
+        expect(
+          await repository.getTileServerUrl(),
+          MapConstants.defaultTileServerUrl,
+        );
+        expect(await repository.getTileServerAttribution(), 'OpenStreetMap');
+      },
+    );
 
     group('saveFromServerSettings', () {
       test('persists non-empty tile URL, attribution, and map color', () async {

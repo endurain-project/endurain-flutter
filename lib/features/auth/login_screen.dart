@@ -190,20 +190,15 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
 
     if (localAssets.contains(iconLower)) {
       final assetPath = 'assets/sso/$iconLower.svg';
-      try {
-        return SvgPicture.asset(
-          assetPath,
-          width: 24,
-          height: 24,
-          fit: BoxFit.contain,
-        );
-      } catch (e) {
-        return const AdaptiveIcon(
-          materialIcon: Icons.person_outline,
-          cupertinoIcon: CupertinoIcons.person_circle,
-          size: 24,
-        );
-      }
+      // These SVGs are bundled assets declared in pubspec.yaml and the
+      // [localAssets] allowlist guarantees the file exists, so no synchronous
+      // failure path applies here.
+      return SvgPicture.asset(
+        assetPath,
+        width: 24,
+        height: 24,
+        fit: BoxFit.contain,
+      );
     }
 
     // Try to load from URL

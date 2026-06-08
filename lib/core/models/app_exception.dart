@@ -14,6 +14,7 @@ enum AppErrorCode {
   fetchIdentityProvidersFailed,
   fetchProvidersFailed,
   fetchServerSettingsFailed,
+  invalidTileServerUrl,
   loginError,
   loginFailed,
   mfaVerificationError,
