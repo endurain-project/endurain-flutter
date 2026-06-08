@@ -143,5 +143,32 @@ void main() {
       final result = await service.exchangeSessionForTokens('session-x');
       expect(result.success, isTrue);
     });
+
+    test('rejects exchange when stored server URL changed after flow initiation', () async {
+      final storage = SecureStorageService();
+      final service = SsoService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          fail('No HTTP request should be made after server URL mismatch.');
+        }),
+      );
+
+      // Initiate on server A.
+      await service.initiateOAuth('oidc', serverUrl: 'https://server-a.test');
+
+      // Simulate server URL being changed to server B in storage.
+      await storage.setServerUrl('https://server-b.test');
+
+      await expectLater(
+        service.exchangeSessionForTokens('session-x'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.pkceVerifierMissingRestartLogin,
+          ),
+        ),
+      );
+    });
   });
 }

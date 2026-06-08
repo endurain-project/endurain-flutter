@@ -146,6 +146,11 @@ class SsoService {
   /// Validates that a pending flow exists and has not expired before calling
   /// the token endpoint. Called after the deep-link callback provides a
   /// [sessionId].
+  ///
+  /// The exchange is performed against [_SsoPkceState.serverUrl] — the server
+  /// that initiated the flow — rather than the currently stored server URL.
+  /// If the stored server URL has changed since the flow was initiated the
+  /// callback is rejected to prevent a stale or cross-server token exchange.
   Future<AuthResult> exchangeSessionForTokens(String sessionId) async {
     // Guard before any network or storage access: no pending flow = restart.
     final pending = _pendingPkce;
@@ -158,14 +163,20 @@ class SsoService {
       throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
     }
 
-    final serverUrl = await _urlResolver.resolve();
+    // Reject the callback if the stored server URL no longer matches the
+    // server that initiated this flow.
+    final currentServerUrl = await _urlResolver.resolve();
+    if (currentServerUrl != pending.serverUrl) {
+      _pendingPkce = null;
+      throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
+    }
 
     try {
       final verifier = pending.verifier;
       // Clear state before the network call — one-time exchange.
       _pendingPkce = null;
       return await _exchanger.exchange(
-        serverUrl: serverUrl,
+        serverUrl: pending.serverUrl,
         sessionId: sessionId,
         verifier: verifier,
         failureCode: AppErrorCode.tokenExchangeFailed,
