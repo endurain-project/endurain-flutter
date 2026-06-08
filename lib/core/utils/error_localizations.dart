@@ -78,8 +78,7 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
     AppErrorCode.secureStorageDeleteFailed =>
       l10n.errorSecureStorageDeleteFailed,
     AppErrorCode.secureStorageReadFailed => l10n.errorSecureStorageReadFailed,
-    AppErrorCode.secureStorageWriteFailed =>
-      l10n.errorSecureStorageWriteFailed,
+    AppErrorCode.secureStorageWriteFailed => l10n.errorSecureStorageWriteFailed,
     AppErrorCode.serverUrlNotConfigured => l10n.errorServerUrlNotConfigured,
     AppErrorCode.sessionExpired => l10n.errorSessionExpired,
     AppErrorCode.ssoTokenExchangeError =>

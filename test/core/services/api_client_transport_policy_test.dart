@@ -11,7 +11,9 @@ import 'package:http/http.dart' as http;
 class _AssertNoCallHttpClient extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    fail('HTTP client should not be called; URL was not rejected before network');
+    fail(
+      'HTTP client should not be called; URL was not rejected before network',
+    );
   }
 }
 
@@ -48,19 +50,16 @@ void main() {
       },
     );
 
-    test(
-      'stored http:// URL is accepted in selfHosted mode',
-      () async {
-        final storage = SecureStorageService();
-        await storage.setServerUrl('http://local.test');
+    test('stored http:// URL is accepted in selfHosted mode', () async {
+      final storage = SecureStorageService();
+      await storage.setServerUrl('http://local.test');
 
-        const selfHosted = AppConfig(transportMode: AppTransportMode.selfHosted);
-        final resolver = ServerUrlResolver(storage: storage, config: selfHosted);
+      const selfHosted = AppConfig(transportMode: AppTransportMode.selfHosted);
+      final resolver = ServerUrlResolver(storage: storage, config: selfHosted);
 
-        // Resolving succeeds — the URL is returned without throwing.
-        final url = await resolver.resolve();
-        expect(url, 'http://local.test');
-      },
-    );
+      // Resolving succeeds — the URL is returned without throwing.
+      final url = await resolver.resolve();
+      expect(url, 'http://local.test');
+    });
   });
 }
