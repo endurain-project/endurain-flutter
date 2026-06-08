@@ -338,18 +338,6 @@ abstract class AppLocalizations {
   /// **'Could not complete SSO sign-in: {details}'**
   String errorSsoTokenExchangeErrorWithDetails(String details);
 
-  /// Generic token exchange error - Used in: error_localizations.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Could not complete sign-in'**
-  String get errorTokenExchangeError;
-
-  /// Token exchange error with technical details - Used in: error_localizations.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Could not complete sign-in: {details}'**
-  String errorTokenExchangeErrorWithDetails(String details);
-
   /// Generic token exchange failure - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:

@@ -158,14 +158,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get errorTokenExchangeError => 'Could not complete sign-in';
-
-  @override
-  String errorTokenExchangeErrorWithDetails(String details) {
-    return 'Could not complete sign-in: $details';
-  }
-
-  @override
   String get errorTokenExchangeFailed => 'Token exchange failed';
 
   @override

@@ -166,14 +166,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get errorTokenExchangeError => 'Não foi possível concluir o login';
-
-  @override
-  String errorTokenExchangeErrorWithDetails(String details) {
-    return 'Não foi possível concluir o login: $details';
-  }
-
-  @override
   String get errorTokenExchangeFailed => 'Falha na troca de token';
 
   @override

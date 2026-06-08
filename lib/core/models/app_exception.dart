@@ -30,7 +30,6 @@ enum AppErrorCode {
   serverUrlNotConfigured,
   sessionExpired,
   ssoTokenExchangeError,
-  tokenExchangeError,
   tokenExchangeFailed,
   unexpectedResponseFormat,
   unsupportedHttpMethod,

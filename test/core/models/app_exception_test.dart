@@ -30,14 +30,14 @@ void main() {
 
     test('includes both details and cause when present', () {
       const exception = AppException(
-        AppErrorCode.tokenExchangeError,
+        AppErrorCode.tokenExchangeFailed,
         details: 'context',
         cause: FormatException('bad'),
       );
 
       expect(
         exception.toString(),
-        'tokenExchangeError: context: ${const FormatException('bad')}',
+        'tokenExchangeFailed: context: ${const FormatException('bad')}',
       );
     });
   });

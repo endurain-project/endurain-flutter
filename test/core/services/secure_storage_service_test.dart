@@ -128,15 +128,6 @@ void main() {
       expect(await storage.isAccessTokenExpiringSoon(), isFalse);
     });
 
-    test('reports authentication based on a stored access token', () async {
-      final storage = SecureStorageService();
-
-      expect(await storage.isAuthenticated(), isFalse);
-
-      await storage.setAccessToken('access-1');
-      expect(await storage.isAuthenticated(), isTrue);
-    });
-
     test('round-trips server and username preferences', () async {
       final storage = SecureStorageService();
 

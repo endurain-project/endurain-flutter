@@ -86,10 +86,6 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorSsoTokenExchangeError
           : l10n.errorSsoTokenExchangeErrorWithDetails(details),
-    AppErrorCode.tokenExchangeError =>
-      details == null
-          ? l10n.errorTokenExchangeError
-          : l10n.errorTokenExchangeErrorWithDetails(details),
     AppErrorCode.tokenExchangeFailed =>
       details == null
           ? l10n.errorTokenExchangeFailed

@@ -128,12 +128,6 @@ class SecureStorageService {
     return DateTime.now().toUtc().add(threshold).isAfter(expiresAt);
   }
 
-  // Check if user is authenticated
-  Future<bool> isAuthenticated() async {
-    final accessToken = await getAccessToken();
-    return accessToken != null && accessToken.isNotEmpty;
-  }
-
   // Clear all auth tokens
   Future<void> clearAuthTokens() async {
     await deleteAccessToken();
