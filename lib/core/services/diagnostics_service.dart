@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -414,20 +415,12 @@ class DiagnosticsService implements DiagnosticsStore {
   }
 }
 
-String? _stringValue(Object? value) {
-  return value is String ? value : null;
-}
+String? _stringValue(Object? value) => jsonString(value);
 
-int? _intValue(Object? value) {
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return null;
-}
+int? _intValue(Object? value) => jsonInt(value);
 
+// Intentionally toLocal(): diagnostic timestamps are shown to the user in
+// local time, unlike activity model timestamps which are stored as UTC.
 DateTime? _dateTimeValue(Object? value) {
   if (value is! String) {
     return null;

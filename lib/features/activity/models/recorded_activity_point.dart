@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 
 /// A single location sample persisted to the durable active-recording store.
@@ -89,9 +90,9 @@ class RecordedActivityPoint {
   String toJsonLine() => jsonEncode(toJson());
 
   factory RecordedActivityPoint.fromJson(Map<dynamic, dynamic> json) {
-    final timestamp = _dateTime(json['t']);
-    final latitude = _double(json['lat']);
-    final longitude = _double(json['lon']);
+    final timestamp = jsonDateTime(json['t']);
+    final latitude = jsonDouble(json['lat']);
+    final longitude = jsonDouble(json['lon']);
     if (timestamp == null || latitude == null || longitude == null) {
       throw const FormatException('Invalid recorded activity point');
     }
@@ -106,14 +107,14 @@ class RecordedActivityPoint {
       timestamp: timestamp,
       latitude: latitude,
       longitude: longitude,
-      segmentIndex: _int(json['seg']) ?? 0,
-      elevationMeters: _double(json['ele']),
-      horizontalAccuracyMeters: _double(json['hAcc']),
-      verticalAccuracyMeters: _double(json['vAcc']),
-      headingDegrees: _double(json['head']),
-      headingAccuracyDegrees: _double(json['headAcc']),
-      speedMetersPerSecond: _double(json['spd']),
-      speedAccuracyMetersPerSecond: _double(json['spdAcc']),
+      segmentIndex: jsonInt(json['seg']) ?? 0,
+      elevationMeters: jsonDouble(json['ele']),
+      horizontalAccuracyMeters: jsonDouble(json['hAcc']),
+      verticalAccuracyMeters: jsonDouble(json['vAcc']),
+      headingDegrees: jsonDouble(json['head']),
+      headingAccuracyDegrees: jsonDouble(json['headAcc']),
+      speedMetersPerSecond: jsonDouble(json['spd']),
+      speedAccuracyMetersPerSecond: jsonDouble(json['spdAcc']),
     );
   }
 
@@ -134,29 +135,4 @@ class RecordedActivityPoint {
       return null;
     }
   }
-}
-
-double? _double(Object? value) {
-  if (value is num) {
-    final result = value.toDouble();
-    return result.isFinite ? result : null;
-  }
-  return null;
-}
-
-int? _int(Object? value) {
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return null;
-}
-
-DateTime? _dateTime(Object? value) {
-  if (value is! String) {
-    return null;
-  }
-  return DateTime.tryParse(value)?.toUtc();
 }

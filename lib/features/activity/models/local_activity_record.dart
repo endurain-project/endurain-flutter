@@ -1,4 +1,5 @@
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 
 enum LocalActivityUploadStatus {
@@ -179,33 +180,13 @@ DateTime _requiredDateTime(Object? value, String field) {
   throw FormatException('Invalid local activity field: $field');
 }
 
-String? _stringValue(Object? value) {
-  return value is String ? value : null;
-}
+String? _stringValue(Object? value) => jsonString(value);
 
-int? _intValue(Object? value) {
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return null;
-}
+int? _intValue(Object? value) => jsonInt(value);
 
-double? _doubleValue(Object? value) {
-  if (value is num) {
-    return value.toDouble();
-  }
-  return null;
-}
+double? _doubleValue(Object? value) => jsonDouble(value);
 
-DateTime? _dateTimeValue(Object? value) {
-  if (value is! String) {
-    return null;
-  }
-  return DateTime.tryParse(value)?.toUtc();
-}
+DateTime? _dateTimeValue(Object? value) => jsonDateTime(value);
 
 AppErrorCode? _errorCodeValue(Object? value) {
   if (value is! String) {
