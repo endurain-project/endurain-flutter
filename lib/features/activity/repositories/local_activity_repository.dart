@@ -47,6 +47,13 @@ class LocalActivityRepository {
 
   Future<void> upsert(LocalActivityRecord record) => _store.upsert(record);
 
+  Future<List<LocalActivityRecord>> listPage({
+    required int offset,
+    required int limit,
+  }) => _store.listPage(offset: offset, limit: limit);
+
+  Future<int> count() => _store.count();
+
   Future<void> delete(String id) async {
     final record = await _store.get(id);
     if (record == null) {

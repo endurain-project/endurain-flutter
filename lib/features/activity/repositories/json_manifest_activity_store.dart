@@ -61,6 +61,22 @@ class JsonManifestActivityStore implements LocalActivityStore {
     await _writeRecords(records, AppErrorCode.activityLocalDeleteFailed);
   }
 
+  @override
+  Future<List<LocalActivityRecord>> listPage({
+    required int offset,
+    required int limit,
+  }) async {
+    final all = await list();
+    if (offset >= all.length) {
+      return const <LocalActivityRecord>[];
+    }
+    final end = (offset + limit).clamp(0, all.length);
+    return all.sublist(offset, end);
+  }
+
+  @override
+  Future<int> count() async => (await list()).length;
+
   Future<List<LocalActivityRecord>> _readRecords() async {
     final file = await _manifestFile();
     if (!file.existsSync()) {

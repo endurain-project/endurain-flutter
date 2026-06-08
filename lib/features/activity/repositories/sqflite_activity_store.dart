@@ -123,6 +123,30 @@ class SqfliteActivityStore implements LocalActivityStore {
     await db.delete(_tableActivity, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
+  Future<List<LocalActivityRecord>> listPage({
+    required int offset,
+    required int limit,
+  }) async {
+    final db = await _open();
+    final rows = await db.query(
+      _tableActivity,
+      orderBy: 'ended_at DESC',
+      limit: limit,
+      offset: offset,
+    );
+    return rows.map(_fromRow).toList();
+  }
+
+  @override
+  Future<int> count() async {
+    final db = await _open();
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM $_tableActivity',
+    );
+    return result.first['c'] as int? ?? 0;
+  }
+
   Future<void> close() async {
     await _db?.close();
     _db = null;

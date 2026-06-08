@@ -6,4 +6,14 @@ abstract interface class LocalActivityStore {
   Future<LocalActivityRecord?> get(String id);
   Future<void> upsert(LocalActivityRecord record);
   Future<void> delete(String id);
+
+  /// Returns at most [limit] records ordered newest-first, skipping the
+  /// first [offset] records. Used for incremental history loading.
+  Future<List<LocalActivityRecord>> listPage({
+    required int offset,
+    required int limit,
+  });
+
+  /// Returns the total number of stored records.
+  Future<int> count();
 }
