@@ -72,6 +72,47 @@ class _ThrowingWriteStorage extends Fake implements FlutterSecureStorage {
   }
 }
 
+/// Fake [FlutterSecureStorage] that fails the first [write] (simulating a stale
+/// keychain item with mismatched accessibility) but succeeds on the retry after
+/// the key is deleted.
+class _StaleItemStorage extends Fake implements FlutterSecureStorage {
+  final Map<String, String?> values = {};
+  int writeAttempts = 0;
+  int deleteCalls = 0;
+
+  @override
+  Future<void> write({
+    required String key,
+    required String? value,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    writeAttempts++;
+    if (writeAttempts == 1) {
+      throw Exception('errSecDuplicateItem');
+    }
+    values[key] = value;
+  }
+
+  @override
+  Future<void> delete({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    deleteCalls++;
+    values.remove(key);
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -225,6 +266,17 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('write self-heals by deleting a stale item and retrying', () async {
+      final fake = _StaleItemStorage();
+      final storage = SecureStorageService(storage: fake);
+
+      await storage.write(key: 'k', value: 'v');
+
+      expect(fake.deleteCalls, 1);
+      expect(fake.writeAttempts, 2);
+      expect(fake.values['k'], 'v');
     });
 
     test('delete throws secureStorageDeleteFailed on platform exception', () {

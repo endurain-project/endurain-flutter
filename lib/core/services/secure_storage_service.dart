@@ -51,11 +51,25 @@ class SecureStorageService {
   }
 
   // Write a value
+  //
+  // A first write attempt can fail on Apple platforms when a keychain item for
+  // [key] already exists with a different accessibility class than the one
+  // configured in [_defaultStorage] (e.g. an item persisted by an older build
+  // before `first_unlock_this_device` hardening was adopted). In that case the
+  // platform may surface an `errSecDuplicateItem`-style failure because the
+  // stale item cannot be updated in place. We self-heal by deleting the
+  // existing key and retrying once so upgrading users are not locked out, while
+  // still keeping the hardened accessibility for the rewritten value.
   Future<void> write({required String key, required String value}) async {
     try {
       await _storage.write(key: key, value: value);
-    } catch (e) {
-      throw AppException(AppErrorCode.secureStorageWriteFailed, cause: e);
+    } catch (_) {
+      try {
+        await _storage.delete(key: key);
+        await _storage.write(key: key, value: value);
+      } catch (e) {
+        throw AppException(AppErrorCode.secureStorageWriteFailed, cause: e);
+      }
     }
   }
 
