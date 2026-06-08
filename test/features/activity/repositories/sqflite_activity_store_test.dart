@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
@@ -267,6 +269,58 @@ void main() {
       );
 
       expect(await store.listByUploadStatus(const {}), isEmpty);
+      await store.close();
+    });
+  });
+
+  group('SqfliteActivityStore – schema migration', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('endurain_activity_db');
+    });
+
+    tearDown(() {
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    test('creates the schema and persists data across reopen', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+
+      final first = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      await first.upsert(_record(id: 'persist-1'));
+      await first.close();
+
+      // Reopening the same on-disk database must NOT re-run onCreate or wipe
+      // existing rows — the recorded schema version short-circuits migrations.
+      final second = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      final list = await second.list();
+      expect(list.map((r) => r.id).toList(), ['persist-1']);
+      await second.close();
+    });
+
+    test('records the current schema version in schema_version', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      // Force the database to open by issuing a query.
+      await store.list();
+
+      final db = await databaseFactoryFfi.openDatabase(dbPath);
+      final rows = await db.query('schema_version');
+      expect(rows, hasLength(1));
+      expect(rows.first['version'], 1);
+      await db.close();
       await store.close();
     });
   });

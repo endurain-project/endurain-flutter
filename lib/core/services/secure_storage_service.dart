@@ -4,9 +4,31 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
   SecureStorageService({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? _defaultStorage();
 
   final FlutterSecureStorage _storage;
+
+  /// Builds the production [FlutterSecureStorage] with hardened platform
+  /// options rather than relying on package defaults (which can shift between
+  /// versions):
+  ///
+  /// - **Android:** values are stored via Android Keystore-backed AES ciphers
+  ///   (the flutter_secure_storage v10 default; the former
+  ///   `encryptedSharedPreferences` flag is deprecated and migrated
+  ///   automatically).
+  /// - **Apple (iOS/macOS):** `first_unlock_this_device` keychain
+  ///   accessibility so tokens are unreadable before the first device unlock
+  ///   after boot and never sync to iCloud Keychain or device backups.
+  static FlutterSecureStorage _defaultStorage() {
+    return const FlutterSecureStorage(
+      iOptions: IOSOptions(
+        accessibility: KeychainAccessibility.first_unlock_this_device,
+      ),
+      mOptions: MacOsOptions(
+        accessibility: KeychainAccessibility.first_unlock_this_device,
+      ),
+    );
+  }
 
   // Keys for stored values
   static const _serverUrlKey = 'server_url';
