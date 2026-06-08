@@ -14,20 +14,23 @@ import 'package:endurain/core/services/auth_service.dart';
 
 /// Holds in-process state for a pending SSO PKCE flow.
 ///
-/// Bound to a specific server URL and IdP slug so that a stale callback
-/// from a different server or a replayed session ID cannot be exchanged.
-/// [createdAt] anchors the TTL check in [SsoService.exchangeSessionForTokens].
+/// Bound to a specific server URL so that a stale callback from a different
+/// server cannot be exchanged. [createdAt] anchors the TTL check in
+/// [SsoService.exchangeSessionForTokens].
+///
+/// Note: the IdP slug is not stored here because the current callback
+/// contract does not echo the IdP identifier, making client-side verification
+/// impossible. If a future backend version includes a flow or IdP identifier
+/// in the callback, add it here and verify it in [SsoService.exchangeSessionForTokens].
 class _SsoPkceState {
   _SsoPkceState({
     required this.verifier,
     required this.serverUrl,
-    required this.idpSlug,
     required this.createdAt,
   });
 
   final String verifier;
   final String serverUrl;
-  final String idpSlug;
   final DateTime createdAt;
 
   bool isExpired(DateTime now, Duration ttl) =>
@@ -111,9 +114,9 @@ class SsoService {
 
   /// Initiate OAuth flow with PKCE.
   ///
-  /// Binds the generated PKCE state to [serverUrl] and [idpSlug] and records
-  /// the creation time for TTL enforcement. Starting a new flow discards any
-  /// previously pending state.
+  /// Binds the generated PKCE state to [serverUrl] and records the creation
+  /// time for TTL enforcement. Starting a new flow discards any previously
+  /// pending state.
   ///
   /// Returns the system browser URL to open.
   Future<String> initiateOAuth(String idpSlug, {String? serverUrl}) async {
@@ -125,7 +128,6 @@ class SsoService {
     _pendingPkce = _SsoPkceState(
       verifier: pkce['verifier']!,
       serverUrl: url,
-      idpSlug: idpSlug,
       createdAt: _now(),
     );
 
