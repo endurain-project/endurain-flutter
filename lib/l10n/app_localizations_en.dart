@@ -570,6 +570,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override
+  String get tileServerHostWarningTitle => 'Different tile server host';
+
+  @override
+  String get tileServerHostWarningMessage =>
+      'The tile server host is different from your Endurain server host. Tiles will be loaded from a third-party server. Do you want to continue?';
+
+  @override
   String get savedSuccessfully => 'Settings saved successfully';
 
   @override

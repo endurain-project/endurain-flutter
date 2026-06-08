@@ -80,6 +80,97 @@ void main() {
 
       expect(await prefs.read(key: 'tile_server_url'), tileServerUrl);
     });
+
+    testWidgets(
+      'saves without warning when tile host matches server host',
+      (tester) async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://endurain.example.test');
+        final prefs = FakePreferencesStore();
+        const sameTileUrl =
+            'https://endurain.example.test/tiles/{z}/{x}/{y}.png';
+
+        await tester.pumpWidget(
+          _SettingsTestApp(
+            child: ServerSettingsScreen(
+              repository: _repository(storage, prefs),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextFormField), sameTileUrl);
+        await tester.tap(find.text(l10n.save));
+        await tester.pumpAndSettle();
+
+        // No warning dialog visible — save succeeds directly.
+        expect(find.text(l10n.tileServerHostWarningTitle), findsNothing);
+        expect(await prefs.read(key: 'tile_server_url'), sameTileUrl);
+      },
+    );
+
+    testWidgets(
+      'shows warning dialog when tile host differs from server host',
+      (tester) async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://endurain.example.test');
+        final prefs = FakePreferencesStore();
+        const differentTileUrl =
+            'https://tiles.other.test/{z}/{x}/{y}.png';
+
+        await tester.pumpWidget(
+          _SettingsTestApp(
+            child: ServerSettingsScreen(
+              repository: _repository(storage, prefs),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextFormField), differentTileUrl);
+        await tester.tap(find.text(l10n.save));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.tileServerHostWarningTitle), findsOneWidget);
+        expect(find.text(l10n.tileServerHostWarningMessage), findsOneWidget);
+        // Cancel — value should not be saved.
+        await tester.tap(find.text(l10n.cancel));
+        await tester.pumpAndSettle();
+
+        expect(await prefs.read(key: 'tile_server_url'), isNull);
+      },
+    );
+
+    testWidgets(
+      'saves when user confirms tile host warning',
+      (tester) async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://endurain.example.test');
+        final prefs = FakePreferencesStore();
+        const differentTileUrl =
+            'https://tiles.other.test/{z}/{x}/{y}.png';
+
+        await tester.pumpWidget(
+          _SettingsTestApp(
+            child: ServerSettingsScreen(
+              repository: _repository(storage, prefs),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextFormField), differentTileUrl);
+        await tester.tap(find.text(l10n.save));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.tileServerHostWarningTitle), findsOneWidget);
+        // Confirm — value should be saved.
+        await tester.tap(find.text(l10n.save).last);
+        await tester.pumpAndSettle();
+
+        expect(await prefs.read(key: 'tile_server_url'), differentTileUrl);
+      },
+    );
   });
 }
 

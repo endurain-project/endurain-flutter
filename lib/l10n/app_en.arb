@@ -769,6 +769,14 @@
   "@tileServerUrlHint": {
     "description": "Tile server URL field hint text"
   },
+  "tileServerHostWarningTitle": "Different tile server host",
+  "@tileServerHostWarningTitle": {
+    "description": "Title for tile server host mismatch warning dialog - Used in: server_settings_screen.dart"
+  },
+  "tileServerHostWarningMessage": "The tile server host is different from your Endurain server host. Tiles will be loaded from a third-party server. Do you want to continue?",
+  "@tileServerHostWarningMessage": {
+    "description": "Body of tile server host mismatch warning dialog - Used in: server_settings_screen.dart"
+  },
   "savedSuccessfully": "Settings saved successfully",
   "@savedSuccessfully": {
     "description": "Settings save success message - Used in: server_settings_screen.dart"

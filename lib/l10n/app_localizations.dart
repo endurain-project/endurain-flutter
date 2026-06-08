@@ -1082,6 +1082,18 @@ abstract class AppLocalizations {
   /// **'https://tile.openstreetmap.org/...'**
   String get tileServerUrlHint;
 
+  /// Title for tile server host mismatch warning dialog - Used in: server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Different tile server host'**
+  String get tileServerHostWarningTitle;
+
+  /// Body of tile server host mismatch warning dialog - Used in: server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The tile server host is different from your Endurain server host. Tiles will be loaded from a third-party server. Do you want to continue?'**
+  String get tileServerHostWarningMessage;
+
   /// Settings save success message - Used in: server_settings_screen.dart
   ///
   /// In en, this message translates to:

@@ -83,9 +83,14 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
     }
 
     final l10n = AppLocalizations.of(context)!;
+    final tileUrl = _tileServerUrlController.text.trim();
+
+    if (!await _confirmTileHostIfNeeded(tileUrl, l10n)) {
+      return;
+    }
 
     try {
-      await _repository.saveTileServerUrl(_tileServerUrlController.text.trim());
+      await _repository.saveTileServerUrl(tileUrl);
 
       if (mounted) {
         await DialogUtils.showSuccessDialog(
@@ -99,6 +104,36 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
         await DialogUtils.showErrorDialog(context, e);
       }
     }
+  }
+
+  /// Returns true when saving may proceed. Shows a warning dialog and returns
+  /// false if the tile server host differs from the Endurain server host and
+  /// the user does not confirm.
+  Future<bool> _confirmTileHostIfNeeded(
+    String tileUrl,
+    AppLocalizations l10n,
+  ) async {
+    final serverHost = Uri.tryParse(_serverUrl)?.host;
+    final tileHost = Uri.tryParse(tileUrl)?.host;
+
+    if (serverHost == null ||
+        tileHost == null ||
+        serverHost.isEmpty ||
+        tileHost.isEmpty ||
+        serverHost == tileHost) {
+      return true;
+    }
+
+    if (!mounted) {
+      return false;
+    }
+
+    return DialogUtils.showConfirmDialog(
+      context,
+      title: l10n.tileServerHostWarningTitle,
+      message: l10n.tileServerHostWarningMessage,
+      confirmText: l10n.save,
+    );
   }
 
   Future<void> _handleLogout() async {
