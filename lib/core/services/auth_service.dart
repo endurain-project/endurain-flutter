@@ -7,22 +7,25 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
+import 'package:endurain/core/utils/server_url_resolver.dart';
 
 class AuthService {
   AuthService({
     SecureStorageService? storage,
     AuthSessionStore? sessionStore,
+    ServerUrlResolver? urlResolver,
     http.Client? httpClient,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
-    _storage = resolvedStorage;
     _sessionStore =
         sessionStore ?? AuthSessionStore(storage: resolvedStorage);
+    _urlResolver =
+        urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
     _httpClient = httpClient ?? http.Client();
   }
 
-  late final SecureStorageService _storage;
   late final AuthSessionStore _sessionStore;
+  late final ServerUrlResolver _urlResolver;
   late final http.Client _httpClient;
 
   // Store PKCE temporarily during auth flow
@@ -35,20 +38,7 @@ class AuthService {
     String password, {
     String? serverUrl,
   }) async {
-    // Use provided serverUrl or get from storage
-    String? url = serverUrl;
-    if (url == null || url.isEmpty) {
-      url = await _storage.getServerUrl();
-    }
-
-    if (url == null || url.isEmpty) {
-      throw const AppException(AppErrorCode.serverUrlNotConfigured);
-    }
-
-    // Save server URL if provided
-    if (serverUrl != null && serverUrl.isNotEmpty) {
-      await _storage.setServerUrl(serverUrl);
-    }
+    final url = await _urlResolver.resolve(serverUrl: serverUrl, save: true);
 
     // Generate PKCE parameters
     _pkce = PkceUtils.generatePkce();
@@ -107,10 +97,7 @@ class AuthService {
 
   /// Verify MFA code after initial login using PKCE flow
   Future<AuthResult> verifyMfa(String username, String mfaCode) async {
-    final serverUrl = await _storage.getServerUrl();
-    if (serverUrl == null || serverUrl.isEmpty) {
-      throw const AppException(AppErrorCode.serverUrlNotConfigured);
-    }
+    final serverUrl = await _urlResolver.resolve();
 
     if (_pkce == null || _pkce!['verifier'] == null) {
       throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);

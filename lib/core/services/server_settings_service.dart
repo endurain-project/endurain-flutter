@@ -4,30 +4,27 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_response.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/utils/server_url_resolver.dart';
 
 /// Service for fetching and managing server settings
 class ServerSettingsService {
   ServerSettingsService({
     SecureStorageService? storage,
+    ServerUrlResolver? urlResolver,
     http.Client? httpClient,
   }) : _storage = storage ?? SecureStorageService(),
+       _urlResolver =
+           urlResolver ??
+           ServerUrlResolver(storage: storage ?? SecureStorageService()),
        _httpClient = httpClient ?? http.Client();
 
   final SecureStorageService _storage;
+  final ServerUrlResolver _urlResolver;
   final http.Client _httpClient;
 
   /// Fetch server settings from the server
   Future<ServerSettings> getServerSettings({String? serverUrl}) async {
-    // Use provided serverUrl or get from storage
-    String? url = serverUrl;
-    if (url == null || url.isEmpty) {
-      url = await _storage.getServerUrl();
-    }
-
-    if (url == null || url.isEmpty) {
-      throw const AppException(AppErrorCode.serverUrlNotConfigured);
-    }
-
+    final url = await _urlResolver.resolve(serverUrl: serverUrl);
     final apiUrl = Uri.parse('$url${ApiConstants.serverSettingsEndpoint}');
 
     try {

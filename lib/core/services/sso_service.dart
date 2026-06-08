@@ -8,6 +8,7 @@ import 'package:endurain/core/services/api_response.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
+import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/core/services/auth_service.dart';
 
 /// Service for SSO/OAuth authentication
@@ -17,17 +18,19 @@ class SsoService {
   SsoService({
     SecureStorageService? storage,
     AuthSessionStore? sessionStore,
+    ServerUrlResolver? urlResolver,
     http.Client? httpClient,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
-    _storage = resolvedStorage;
     _sessionStore =
         sessionStore ?? AuthSessionStore(storage: resolvedStorage);
+    _urlResolver =
+        urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
     _httpClient = httpClient ?? http.Client();
   }
 
-  late final SecureStorageService _storage;
   late final AuthSessionStore _sessionStore;
+  late final ServerUrlResolver _urlResolver;
   late final http.Client _httpClient;
 
   // Store PKCE temporarily during SSO flow
@@ -37,16 +40,7 @@ class SsoService {
   Future<List<IdentityProvider>> getEnabledProviders({
     String? serverUrl,
   }) async {
-    // Use provided serverUrl or get from storage
-    String? url = serverUrl;
-    if (url == null || url.isEmpty) {
-      url = await _storage.getServerUrl();
-    }
-
-    if (url == null || url.isEmpty) {
-      throw const AppException(AppErrorCode.serverUrlNotConfigured);
-    }
-
+    final url = await _urlResolver.resolve(serverUrl: serverUrl);
     final apiUrl = Uri.parse('$url${ApiConstants.idpListEndpoint}');
 
     try {
@@ -87,19 +81,7 @@ class SsoService {
   /// Initiate OAuth flow with PKCE
   /// Returns the system browser URL to open
   Future<String> initiateOAuth(String idpSlug, {String? serverUrl}) async {
-    // Use provided serverUrl or get from storage
-    String? url = serverUrl;
-    if (url == null || url.isEmpty) {
-      url = await _storage.getServerUrl();
-    }
-
-    if (url == null || url.isEmpty) {
-      throw const AppException(AppErrorCode.serverUrlNotConfigured);
-    }
-
-    if (serverUrl != null && serverUrl.isNotEmpty) {
-      await _storage.setServerUrl(serverUrl);
-    }
+    final url = await _urlResolver.resolve(serverUrl: serverUrl, save: true);
 
     // Generate PKCE parameters
     _ssoPkce = PkceUtils.generatePkce();
@@ -120,10 +102,7 @@ class SsoService {
   /// Exchange session ID for tokens using PKCE code verifier
   /// Called after the deep-link callback provides a session_id
   Future<AuthResult> exchangeSessionForTokens(String sessionId) async {
-    final serverUrl = await _storage.getServerUrl();
-    if (serverUrl == null || serverUrl.isEmpty) {
-      throw const AppException(AppErrorCode.serverUrlNotConfigured);
-    }
+    final serverUrl = await _urlResolver.resolve();
 
     if (_ssoPkce == null || _ssoPkce!['verifier'] == null) {
       throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
