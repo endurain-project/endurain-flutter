@@ -64,14 +64,30 @@ class ApiResponse {
     try {
       final data = json.decode(response.body);
       if (data is Map) {
-        return data['detail']?.toString() ??
+        final raw = data['detail']?.toString() ??
             data['message']?.toString() ??
             data['error']?.toString();
+        return _bounded(raw);
       }
     } catch (_) {
-      return response.body;
+      // Body is not JSON — return a bounded, sanitized snippet so a
+      // misbehaving server cannot surface arbitrary HTML or large responses.
+      return _bounded(response.body);
     }
 
-    return response.body;
+    // JSON body but not a map (e.g. an array): do not surface raw content.
+    return null;
+  }
+
+  // Maximum character length returned as an error detail. Long or HTML bodies
+  // are truncated to prevent arbitrary server text reaching the UI.
+  static const int _maxDetailLength = 200;
+
+  static String? _bounded(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.length <= _maxDetailLength) return trimmed;
+    return '${trimmed.substring(0, _maxDetailLength)}\u2026';
   }
 }

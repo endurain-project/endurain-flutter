@@ -47,5 +47,64 @@ void main() {
 
       expect(error.details, 'Server unavailable');
     });
+
+    group('errorDetail — bounding and sanitisation', () {
+      test('returns null for an empty body', () {
+        final response = http.Response('', 500);
+        expect(ApiResponse.errorDetail(response), isNull);
+      });
+
+      test('returns short JSON detail as-is', () {
+        final response = http.Response('{"detail":"bad request"}', 400);
+        expect(ApiResponse.errorDetail(response), 'bad request');
+      });
+
+      test('truncates a JSON detail field longer than 200 characters', () {
+        final long = 'A' * 250;
+        final response = http.Response('{"detail":"$long"}', 400);
+        final detail = ApiResponse.errorDetail(response);
+        expect(detail, isNotNull);
+        // Truncated to 200 chars + ellipsis character
+        expect(detail!.length, 201);
+        expect(detail.endsWith('\u2026'), isTrue);
+      });
+
+      test('truncates a non-JSON body longer than 200 characters', () {
+        final html =
+            '<html><body>${'x' * 300}</body></html>';
+        final response = http.Response(html, 502);
+        final detail = ApiResponse.errorDetail(response);
+        expect(detail, isNotNull);
+        expect(detail!.length, 201);
+        expect(detail.endsWith('\u2026'), isTrue);
+      });
+
+      test('returns null when JSON body is a non-map (array, etc.)', () {
+        final response = http.Response('[1,2,3]', 400);
+        expect(ApiResponse.errorDetail(response), isNull);
+      });
+
+      test('returns null when JSON map has no recognised error key', () {
+        final response = http.Response('{"status":"unknown"}', 400);
+        expect(ApiResponse.errorDetail(response), isNull);
+      });
+
+      test('prefers "detail" key over "message" and "error"', () {
+        final response = http.Response(
+          '{"detail":"from detail","message":"from message","error":"from error"}',
+          400,
+        );
+        expect(ApiResponse.errorDetail(response), 'from detail');
+      });
+
+      test('falls back to "message" when "detail" is absent', () {
+        final response = http.Response(
+          '{"message":"from message","error":"from error"}',
+          400,
+        );
+        expect(ApiResponse.errorDetail(response), 'from message');
+      });
+    });
   });
 }
+
