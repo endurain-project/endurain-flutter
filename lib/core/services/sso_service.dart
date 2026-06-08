@@ -109,7 +109,7 @@ class SsoService {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(AppErrorCode.fetchIdentityProvidersFailed, cause: e);
+      throw AppException(AppErrorCode.fetchProvidersFailed, cause: e);
     }
   }
 

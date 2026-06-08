@@ -72,15 +72,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not save the activity locally';
 
   @override
-  String get errorFetchIdentityProvidersFailed =>
-      'Could not load identity providers';
-
-  @override
-  String errorFetchIdentityProvidersFailedWithDetails(String details) {
-    return 'Could not load identity providers: $details';
-  }
-
-  @override
   String get errorFetchProvidersFailed => 'Could not load sign-in providers';
 
   @override

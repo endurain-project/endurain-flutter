@@ -11,7 +11,6 @@ enum AppErrorCode {
   activityLocalSaveFailed,
   activityUploadFailed,
   activityUploadNotConfigured,
-  fetchIdentityProvidersFailed,
   fetchProvidersFailed,
   fetchServerSettingsFailed,
   invalidTileServerUrl,

@@ -81,20 +81,6 @@
   "@errorActivityLocalSaveFailed": {
     "description": "Local activity save error without exposing file paths - Used in: error_localizations.dart"
   },
-  "errorFetchIdentityProvidersFailed": "Could not load identity providers",
-  "@errorFetchIdentityProvidersFailed": {
-    "description": "Generic identity provider loading error - Used in: error_localizations.dart"
-  },
-  "errorFetchIdentityProvidersFailedWithDetails": "Could not load identity providers: {details}",
-  "@errorFetchIdentityProvidersFailedWithDetails": {
-    "description": "Identity provider loading error with server or technical details - Used in: error_localizations.dart",
-    "placeholders": {
-      "details": {
-        "type": "String",
-        "example": "Connection refused"
-      }
-    }
-  },
   "errorFetchProvidersFailed": "Could not load sign-in providers",
   "@errorFetchProvidersFailed": {
     "description": "Generic sign-in provider loading error - Used in: error_localizations.dart"

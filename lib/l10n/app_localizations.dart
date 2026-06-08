@@ -206,18 +206,6 @@ abstract class AppLocalizations {
   /// **'Could not save the activity locally'**
   String get errorActivityLocalSaveFailed;
 
-  /// Generic identity provider loading error - Used in: error_localizations.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load identity providers'**
-  String get errorFetchIdentityProvidersFailed;
-
-  /// Identity provider loading error with server or technical details - Used in: error_localizations.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load identity providers: {details}'**
-  String errorFetchIdentityProvidersFailedWithDetails(String details);
-
   /// Generic sign-in provider loading error - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:

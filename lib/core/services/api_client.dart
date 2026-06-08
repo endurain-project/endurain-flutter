@@ -10,6 +10,15 @@ import 'package:endurain/core/services/multipart_upload_adapter.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 
+/// Authenticated HTTP surface for the Endurain API.
+///
+/// This is the bearer-token counterpart to [BaseHttpClient]: every request
+/// resolves the stored server URL, attaches a valid access token (refreshing
+/// it on expiry or a 401 and retrying once), and fails with a typed
+/// [AppException] when no session is available. Use [ApiClient] for endpoints
+/// that require authentication (activity upload, user-scoped resources); use
+/// [BaseHttpClient] directly for the unauthenticated auth/SSO/server-settings
+/// calls that establish a session in the first place.
 class ApiClient {
   ApiClient({
     SecureStorageService? storage,

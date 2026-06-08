@@ -74,15 +74,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível guardar a atividade localmente';
 
   @override
-  String get errorFetchIdentityProvidersFailed =>
-      'Não foi possível carregar os provedores de identidade';
-
-  @override
-  String errorFetchIdentityProvidersFailedWithDetails(String details) {
-    return 'Não foi possível carregar os provedores de identidade: $details';
-  }
-
-  @override
   String get errorFetchProvidersFailed =>
       'Não foi possível carregar os provedores de login';
 

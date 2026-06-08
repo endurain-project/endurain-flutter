@@ -81,20 +81,6 @@
   "@errorActivityLocalSaveFailed": {
     "description": "Erro ao guardar atividade local sem expor caminhos de ficheiros - Usado em: error_localizations.dart"
   },
-  "errorFetchIdentityProvidersFailed": "Não foi possível carregar os provedores de identidade",
-  "@errorFetchIdentityProvidersFailed": {
-    "description": "Erro genérico ao carregar provedores de identidade - Usado em: error_localizations.dart"
-  },
-  "errorFetchIdentityProvidersFailedWithDetails": "Não foi possível carregar os provedores de identidade: {details}",
-  "@errorFetchIdentityProvidersFailedWithDetails": {
-    "description": "Erro ao carregar provedores de identidade com detalhes técnicos ou do servidor - Usado em: error_localizations.dart",
-    "placeholders": {
-      "details": {
-        "type": "String",
-        "example": "Ligação recusada"
-      }
-    }
-  },
   "errorFetchProvidersFailed": "Não foi possível carregar os provedores de login",
   "@errorFetchProvidersFailed": {
     "description": "Erro genérico ao carregar provedores de login - Usado em: error_localizations.dart"

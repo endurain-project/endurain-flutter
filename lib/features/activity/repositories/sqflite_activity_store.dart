@@ -286,11 +286,13 @@ class SqfliteActivityStore implements LocalActivityStore {
     );
   }
 
+  /// Lookup of [AppErrorCode] by its `name`, built once instead of scanning
+  /// `AppErrorCode.values` on every row read.
+  static final Map<String, AppErrorCode> _errorCodesByName = {
+    for (final code in AppErrorCode.values) code.name: code,
+  };
+
   AppErrorCode? _errorCode(Object? value) {
-    if (value is! String) return null;
-    for (final code in AppErrorCode.values) {
-      if (code.name == value) return code;
-    }
-    return null;
+    return value is String ? _errorCodesByName[value] : null;
   }
 }

@@ -41,10 +41,6 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
           : l10n.errorActivityUploadFailedWithDetails(details),
     AppErrorCode.activityUploadNotConfigured =>
       l10n.errorActivityUploadNotConfigured,
-    AppErrorCode.fetchIdentityProvidersFailed =>
-      details == null
-          ? l10n.errorFetchIdentityProvidersFailed
-          : l10n.errorFetchIdentityProvidersFailedWithDetails(details),
     AppErrorCode.fetchProvidersFailed =>
       details == null
           ? l10n.errorFetchProvidersFailed
