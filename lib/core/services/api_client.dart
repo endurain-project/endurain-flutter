@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:endurain/core/services/auth_session_store.dart';
@@ -15,6 +16,8 @@ class ApiClient {
     AuthService? authService,
     http.Client? httpClient,
     MultipartUploadAdapter? uploadAdapter,
+    Duration? requestTimeout,
+    Duration? uploadTimeout,
   }) {
     final resolvedStore =
         sessionStore ??
@@ -24,12 +27,17 @@ class ApiClient {
         authService ?? AuthService(sessionStore: resolvedStore, storage: storage);
     _httpClient = httpClient ?? http.Client();
     _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter();
+    _requestTimeout =
+        requestTimeout ?? ApiConstants.defaultRequestTimeout;
+    _uploadTimeout = uploadTimeout ?? ApiConstants.defaultUploadTimeout;
   }
 
   late final AuthSessionStore _sessionStore;
   late final AuthService _authService;
   late final http.Client _httpClient;
   late final MultipartUploadAdapter _uploadAdapter;
+  late final Duration _requestTimeout;
+  late final Duration _uploadTimeout;
 
   Future<Map<String, dynamic>> getJsonObject(
     String endpoint, {
@@ -106,12 +114,17 @@ class ApiClient {
       ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
     };
 
-    http.StreamedResponse response = await _uploadAdapter.uploadFile(
-      url: url,
-      headers: headers,
-      filePath: filePath,
-      fieldName: fieldName,
-    );
+    http.StreamedResponse response = await _uploadAdapter
+        .uploadFile(
+          url: url,
+          headers: headers,
+          filePath: filePath,
+          fieldName: fieldName,
+        )
+        .timeout(
+          _uploadTimeout,
+          onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+        );
 
     if (response.statusCode == 401) {
       await response.stream.drain<void>();
@@ -126,12 +139,18 @@ class ApiClient {
       }
 
       headers[ApiConstants.authorizationHeader] = 'Bearer $newAccessToken';
-      response = await _uploadAdapter.uploadFile(
-        url: url,
-        headers: headers,
-        filePath: filePath,
-        fieldName: fieldName,
-      );
+      response = await _uploadAdapter
+          .uploadFile(
+            url: url,
+            headers: headers,
+            filePath: filePath,
+            fieldName: fieldName,
+          )
+          .timeout(
+            _uploadTimeout,
+            onTimeout: () =>
+                throw const AppException(AppErrorCode.requestTimeout),
+          );
     }
 
     return response;
@@ -144,26 +163,31 @@ class ApiClient {
     Map<String, String> headers, {
     Map<String, dynamic>? body,
   }) async {
+    Future<http.Response> request;
     switch (method) {
       case 'GET':
-        return _httpClient.get(url, headers: headers);
+        request = _httpClient.get(url, headers: headers);
       case 'POST':
-        return _httpClient.post(
+        request = _httpClient.post(
           url,
           headers: headers,
           body: body != null ? json.encode(body) : null,
         );
       case 'PUT':
-        return _httpClient.put(
+        request = _httpClient.put(
           url,
           headers: headers,
           body: body != null ? json.encode(body) : null,
         );
       case 'DELETE':
-        return _httpClient.delete(url, headers: headers);
+        request = _httpClient.delete(url, headers: headers);
       default:
         throw AppException(AppErrorCode.unsupportedHttpMethod, details: method);
     }
+    return request.timeout(
+      _requestTimeout,
+      onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+    );
   }
 
   /// Make an HTTP request with automatic token refresh

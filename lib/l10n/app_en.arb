@@ -245,6 +245,10 @@
       }
     }
   },
+  "errorRequestTimeout": "The request timed out. Check your connection and try again.",
+  "@errorRequestTimeout": {
+    "description": "Error shown when an API request or upload exceeds the time limit - Used in: error_localizations.dart"
+  },
   "errorUnexpectedResponseFormat": "The server returned an unexpected response",
   "@errorUnexpectedResponseFormat": {
     "description": "Error for unsupported API response shape - Used in: error_localizations.dart"

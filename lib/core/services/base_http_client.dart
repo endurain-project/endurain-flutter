@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -20,10 +21,14 @@ import 'package:endurain/core/services/api_response.dart';
 ///
 /// Bearer-token refresh and injection belong in `ApiClient`, not here.
 class BaseHttpClient {
-  BaseHttpClient({http.Client? httpClient})
-    : _client = httpClient ?? http.Client();
+  BaseHttpClient({
+    http.Client? httpClient,
+    Duration? timeout,
+  }) : _client = httpClient ?? http.Client(),
+       _timeout = timeout ?? ApiConstants.defaultRequestTimeout;
 
   final http.Client _client;
+  final Duration _timeout;
 
   static const Map<String, String> _defaultHeaders = {
     ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
@@ -38,7 +43,12 @@ class BaseHttpClient {
     Uri url, {
     Map<String, String>? extraHeaders,
   }) {
-    return _client.get(url, headers: _mergeHeaders(extraHeaders));
+    return _client
+        .get(url, headers: _mergeHeaders(extraHeaders))
+        .timeout(
+          _timeout,
+          onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+        );
   }
 
   Future<http.Response> post(
@@ -46,11 +56,16 @@ class BaseHttpClient {
     Map<String, String>? extraHeaders,
     Object? body,
   }) {
-    return _client.post(
-      url,
-      headers: _mergeHeaders(extraHeaders),
-      body: body,
-    );
+    return _client
+        .post(
+          url,
+          headers: _mergeHeaders(extraHeaders),
+          body: body,
+        )
+        .timeout(
+          _timeout,
+          onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+        );
   }
 
   // ---------------------------------------------------------------------------
@@ -92,11 +107,11 @@ class BaseHttpClient {
 
   /// Makes a POST request with a JSON body and returns the decoded JSON object.
   ///
-  /// [body] is JSON-encoded automatically when it is a [Map]. Pass a
-  /// pre-encoded [String] or form-encoded body via [rawBody] and set
-  /// [extraHeaders] to the appropriate Content-Type if needed.
+  /// [jsonBody] is encoded automatically. Pass a pre-encoded [String] or
+  /// form-encoded body via [rawBody] and set [extraHeaders] to the appropriate
+  /// Content-Type if needed.
   ///
-  /// Throws [AppException] with [failureCode] on non-200 responses.
+  /// Throws `AppException` with [failureCode] on non-200 responses.
   Future<Map<String, dynamic>> postJsonObject(
     Uri url, {
     Map<String, String>? extraHeaders,

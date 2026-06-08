@@ -22,6 +22,7 @@ enum AppErrorCode {
   notAuthenticated,
   pkceVerifierMissing,
   pkceVerifierMissingRestartLogin,
+  requestTimeout,
   serverUrlNotConfigured,
   sessionExpired,
   ssoTokenExchangeError,

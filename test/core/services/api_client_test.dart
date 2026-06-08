@@ -503,6 +503,36 @@ void main() {
 
       expect(data, {'ok': true});
     });
+
+    test('throws requestTimeout when the request exceeds the timeout', () async {
+      final storage = SecureStorageService();
+      await storage.setServerUrl('https://example.test');
+      await storage.setAccessToken('access-1');
+
+      final client = ApiClient(
+        storage: storage,
+        authService: AuthService(storage: storage),
+        httpClient: MockClient((_) async {
+          await Future<void>.delayed(const Duration(seconds: 10));
+          return http.Response('{}', 200);
+        }),
+        requestTimeout: const Duration(milliseconds: 1),
+      );
+
+      await expectLater(
+        client.getJsonObject(
+          '/api/profile',
+          failureCode: AppErrorCode.loginFailed,
+        ),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.requestTimeout,
+          ),
+        ),
+      );
+    });
   });
 }
 

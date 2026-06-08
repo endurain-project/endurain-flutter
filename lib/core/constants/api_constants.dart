@@ -9,6 +9,10 @@ class ApiConstants {
   static const String contentTypeFormUrlEncoded =
       'application/x-www-form-urlencoded';
 
+  // Request timeouts
+  static const Duration defaultRequestTimeout = Duration(seconds: 30);
+  static const Duration defaultUploadTimeout = Duration(seconds: 120);
+
   // Authentication endpoints
   static const String tokenEndpoint = '/api/v1/auth/login';
   static const String mfaVerifyEndpoint = '/api/v1/auth/mfa/verify';

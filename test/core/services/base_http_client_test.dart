@@ -232,5 +232,55 @@ void main() {
         expect(response.body, 'OK');
       });
     });
+
+    group('timeout', () {
+      test('throws requestTimeout when GET exceeds the configured duration',
+          () async {
+        final client = BaseHttpClient(
+          httpClient: MockClient(
+            (_) async {
+              await Future<void>.delayed(const Duration(seconds: 10));
+              return http.Response('{}', 200);
+            },
+          ),
+          timeout: const Duration(milliseconds: 1),
+        );
+
+        await expectLater(
+          client.get(Uri.parse('https://example.test/slow')),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.requestTimeout,
+            ),
+          ),
+        );
+      });
+
+      test('throws requestTimeout when POST exceeds the configured duration',
+          () async {
+        final client = BaseHttpClient(
+          httpClient: MockClient(
+            (_) async {
+              await Future<void>.delayed(const Duration(seconds: 10));
+              return http.Response('{}', 200);
+            },
+          ),
+          timeout: const Duration(milliseconds: 1),
+        );
+
+        await expectLater(
+          client.post(Uri.parse('https://example.test/slow')),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.requestTimeout,
+            ),
+          ),
+        );
+      });
+    });
   });
 }

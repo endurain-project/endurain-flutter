@@ -174,6 +174,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get errorRequestTimeout =>
+      'The request timed out. Check your connection and try again.';
+
+  @override
   String get errorUnexpectedResponseFormat =>
       'The server returned an unexpected response';
 

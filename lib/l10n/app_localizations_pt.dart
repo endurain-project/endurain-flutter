@@ -182,6 +182,10 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get errorRequestTimeout =>
+      'O pedido expirou. Verifique a sua ligação e tente novamente.';
+
+  @override
   String get errorUnexpectedResponseFormat =>
       'O servidor devolveu uma resposta inesperada';
 

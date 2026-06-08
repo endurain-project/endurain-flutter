@@ -245,6 +245,10 @@
       }
     }
   },
+  "errorRequestTimeout": "O pedido expirou. Verifique a sua ligação e tente novamente.",
+  "@errorRequestTimeout": {
+    "description": "Error shown when an API request or upload exceeds the time limit - Used in: error_localizations.dart"
+  },
   "errorUnexpectedResponseFormat": "O servidor devolveu uma resposta inesperada",
   "@errorUnexpectedResponseFormat": {
     "description": "Erro para formato de resposta de API não suportado - Usado em: error_localizations.dart"

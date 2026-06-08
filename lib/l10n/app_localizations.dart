@@ -362,6 +362,12 @@ abstract class AppLocalizations {
   /// **'Token exchange failed: {details}'**
   String errorTokenExchangeFailedWithDetails(String details);
 
+  /// Error shown when an API request or upload exceeds the time limit - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The request timed out. Check your connection and try again.'**
+  String get errorRequestTimeout;
+
   /// Error for unsupported API response shape - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
