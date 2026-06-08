@@ -30,4 +30,20 @@ class AuthSessionController extends ChangeNotifier {
     isLoading = false;
     notifyListeners();
   }
+
+  /// Re-checks the active session when the app resumes from background.
+  ///
+  /// Does nothing when unauthenticated, so it is safe to call on every
+  /// [AppLifecycleState.resumed] event. On success the state is updated
+  /// (authenticated or unauthenticated) and listeners are notified.
+  Future<void> revalidate() async {
+    if (!isAuthenticated) {
+      return;
+    }
+    final stillAuthenticated = await _authService.isAuthenticated();
+    if (isAuthenticated != stillAuthenticated) {
+      isAuthenticated = stillAuthenticated;
+      notifyListeners();
+    }
+  }
 }

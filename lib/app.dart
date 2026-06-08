@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:endurain/core/navigation/app_routes.dart';
 import 'package:endurain/core/services/app_scope.dart';
@@ -62,6 +64,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       DiagnosticsEvents.appLifecycleChanged,
       details: {'state': state.name},
     );
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_sessionController.revalidate());
+    }
   }
 
   void _handleSessionChanged() {

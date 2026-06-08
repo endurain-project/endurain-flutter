@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/auth/auth_session_controller.dart';
 
@@ -41,5 +42,66 @@ void main() {
       expect(controller.isLoading, isFalse);
       controller.dispose();
     });
+
+    group('revalidate', () {
+      test('does nothing when unauthenticated', () async {
+        final controller = AuthSessionController(
+          authService: _FakeAuthService(authenticated: false),
+        );
+        controller.markUnauthenticated();
+        var notified = false;
+        controller.addListener(() => notified = true);
+
+        await controller.revalidate();
+
+        expect(notified, isFalse);
+        expect(controller.isAuthenticated, isFalse);
+        controller.dispose();
+      });
+
+      test('keeps authenticated state when session is still valid', () async {
+        final controller = AuthSessionController(
+          authService: _FakeAuthService(authenticated: true),
+        );
+        controller.markAuthenticated();
+        var notified = false;
+        controller.addListener(() => notified = true);
+
+        await controller.revalidate();
+
+        // State unchanged → no notification expected.
+        expect(notified, isFalse);
+        expect(controller.isAuthenticated, isTrue);
+        controller.dispose();
+      });
+
+      test('marks unauthenticated when session expires on resume', () async {
+        final controller = AuthSessionController(
+          authService: _FakeAuthService(authenticated: false),
+        );
+        controller.markAuthenticated();
+        var notified = false;
+        controller.addListener(() => notified = true);
+
+        await controller.revalidate();
+
+        expect(notified, isTrue);
+        expect(controller.isAuthenticated, isFalse);
+        controller.dispose();
+      });
+    });
   });
+}
+
+class _FakeAuthService extends AuthService {
+  _FakeAuthService({required this.authenticated})
+    : super(
+        storage: SecureStorageService(),
+        sessionStore: AuthSessionStore(storage: SecureStorageService()),
+      );
+
+  final bool authenticated;
+
+  @override
+  Future<bool> isAuthenticated() async => authenticated;
 }
