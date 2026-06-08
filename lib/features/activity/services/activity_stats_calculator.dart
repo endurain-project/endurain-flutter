@@ -1,5 +1,5 @@
 import 'package:endurain/features/activity/models/activity_recording_stats.dart';
-import 'package:endurain/features/activity/models/activity_track_point.dart';
+import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:latlong2/latlong.dart';
 
 class ActivityStatsCalculator {
@@ -8,8 +8,12 @@ class ActivityStatsCalculator {
 
   final Distance _distance;
 
-  ActivityRecordingStats calculate(List<ActivityTrackPoint> points) {
-    if (points.isEmpty) {
+  /// Calculates stats from [segments], computing distance only within each
+  /// segment so that gaps between pause-and-resume boundaries are not counted.
+  ///
+  /// Passing an empty list returns zero stats.
+  ActivityRecordingStats calculate(List<ActivityTrackSegment> segments) {
+    if (segments.isEmpty) {
       return const ActivityRecordingStats(
         distanceMeters: 0,
         durationSeconds: 0,
@@ -20,30 +24,38 @@ class ActivityStatsCalculator {
     var durationSeconds = 0;
     double? currentSpeedMetersPerSecond;
 
-    for (var index = 1; index < points.length; index += 1) {
-      final previous = points[index - 1];
-      final current = points[index];
-      final pairDistanceMeters = _distance.as(
-        LengthUnit.Meter,
-        LatLng(previous.latitude, previous.longitude),
-        LatLng(current.latitude, current.longitude),
-      );
-      distanceMeters += pairDistanceMeters;
+    for (final segment in segments) {
+      final points = segment.points;
+      for (var index = 1; index < points.length; index += 1) {
+        final previous = points[index - 1];
+        final current = points[index];
+        final pairDistanceMeters = _distance.as(
+          LengthUnit.Meter,
+          LatLng(previous.latitude, previous.longitude),
+          LatLng(current.latitude, current.longitude),
+        );
+        distanceMeters += pairDistanceMeters;
 
-      final pairDurationSeconds = current.timestamp
-          .difference(previous.timestamp)
-          .inSeconds;
-      if (pairDurationSeconds > 0) {
-        durationSeconds += pairDurationSeconds;
-        if (current.speedMetersPerSecond == null) {
-          currentSpeedMetersPerSecond =
-              pairDistanceMeters / pairDurationSeconds;
+        final pairDurationSeconds = current.timestamp
+            .difference(previous.timestamp)
+            .inSeconds;
+        if (pairDurationSeconds > 0) {
+          durationSeconds += pairDurationSeconds;
+          if (current.speedMetersPerSecond == null) {
+            currentSpeedMetersPerSecond =
+                pairDistanceMeters / pairDurationSeconds;
+          }
         }
       }
     }
 
-    currentSpeedMetersPerSecond =
-        points.last.speedMetersPerSecond ?? currentSpeedMetersPerSecond;
+    // Use the speed from the very last point across all segments.
+    final lastSegment = segments.last;
+    if (lastSegment.points.isNotEmpty) {
+      currentSpeedMetersPerSecond =
+          lastSegment.points.last.speedMetersPerSecond ??
+          currentSpeedMetersPerSecond;
+    }
 
     final averageSpeedMetersPerSecond = durationSeconds > 0
         ? distanceMeters / durationSeconds
@@ -57,3 +69,4 @@ class ActivityStatsCalculator {
     );
   }
 }
+

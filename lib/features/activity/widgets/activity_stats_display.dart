@@ -23,7 +23,7 @@ class ActivityStatsDisplay extends StatelessWidget {
     }
 
     final l10n = AppLocalizations.of(context)!;
-    final stats = calculator.calculate(state.points);
+    final stats = calculator.calculate(state.segments);
     final durationSeconds = stats.durationSeconds > state.elapsedDurationSeconds
         ? stats.durationSeconds
         : state.elapsedDurationSeconds;

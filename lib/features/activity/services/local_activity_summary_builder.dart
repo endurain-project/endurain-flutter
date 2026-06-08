@@ -30,7 +30,7 @@ class LocalActivitySummaryBuilder {
       endedAt = startedAt;
     }
 
-    final stats = _statsCalculator.calculate(points);
+    final stats = _statsCalculator.calculate(state.segments);
     final elapsedDurationSeconds = state.elapsedDurationSeconds < 0
         ? 0
         : state.elapsedDurationSeconds;
