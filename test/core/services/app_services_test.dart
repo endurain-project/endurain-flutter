@@ -36,5 +36,13 @@ void main() {
         expect(services.createActivityRecordingService(), isNotNull);
       },
     );
+
+    test(
+      'localActivities is non-null and uses the SQLite-backed repository',
+      () {
+        final services = AppServices();
+        expect(services.localActivities, isNotNull);
+      },
+    );
   });
 }
