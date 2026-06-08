@@ -39,9 +39,9 @@ class AppServices {
   /// - the `AppScope.servicesOf` fallback for contexts not wrapped in a scope,
   /// - tests that build `App()` without supplying services.
   ///
-  /// Feature code MUST obtain services via `AppScope.servicesOf(context)` so a
-  /// future SaaS build can scope services per account/environment and tests can
-  /// isolate instances. Do not reference `AppServices.instance` from feature
+  /// Feature code MUST obtain services via `AppScope.servicesOf(context)` so
+  /// future managed, multi-environment, or account-scoped builds can isolate
+  /// service instances. Do not reference `AppServices.instance` from feature
   /// widgets, controllers, or services.
   static final AppServices instance = AppServices();
 

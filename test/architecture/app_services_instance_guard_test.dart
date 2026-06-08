@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// The composition root (`main`) constructs its own `AppServices` and injects
 /// it into the root `App`, which exposes it through `AppScope`. Feature code,
 /// services, controllers, and widgets MUST obtain services via
-/// `AppScope.servicesOf(context)` so a future SaaS build can scope services per
-/// account/environment and tests can isolate instances.
+/// `AppScope.servicesOf(context)` so future managed, multi-environment, or
+/// account-scoped builds can isolate service instances.
 ///
 /// This test fails if `AppServices.instance` is referenced anywhere in `lib/`
 /// outside the small allowlist below, catching accidental reintroduction of

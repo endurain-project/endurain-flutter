@@ -3,22 +3,22 @@
 /// - [selfHosted]: the default mode for private-network and self-hosted
 ///   deployments. Plain `http://` connections are permitted, and the user
 ///   receives a localized warning before proceeding.
-/// - [managed]: a stricter mode intended for SaaS or managed enterprise builds.
+/// - [managed]: a stricter mode intended for managed deployments.
 ///   Plain `http://` connections are rejected before any network call is made.
 enum AppTransportMode {
   /// Self-hosted mode: `http://` is warned and allowed.
   selfHosted,
 
-  /// Managed/SaaS mode: `http://` is rejected before any network call.
+  /// Managed mode: `http://` is rejected before any network call.
   managed,
 }
 
 /// Compile-time environment configuration for the Endurain mobile client.
 ///
 /// [AppConfig.defaults] provides production-safe values for self-hosted
-/// deployments. A stricter managed or SaaS build can instantiate [AppConfig]
-/// with different values and pass it to `AppServices` before calling any
-/// feature code.
+/// deployments. A stricter managed build can instantiate [AppConfig] with
+/// different values and pass it to `AppServices` before calling any feature
+/// code.
 ///
 /// All service defaults must remain identical to the current self-hosted
 /// behavior when [AppConfig.defaults] is used.
@@ -42,7 +42,7 @@ class AppConfig {
   ///
   /// Use [AppTransportMode.selfHosted] (the default) for self-hosted
   /// deployments where plain-HTTP connections are warned and allowed.
-  /// Use [AppTransportMode.managed] in SaaS or enterprise builds where
+  /// Use [AppTransportMode.managed] in managed builds where
   /// plain-HTTP must be rejected before any network call.
   final AppTransportMode transportMode;
 
