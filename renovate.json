@@ -2,6 +2,15 @@
   "extends": [
     "config:recommended"
   ],
+  "minimumReleaseAge": "30 days",
+  "dependencyDashboard": true,
+  "pinDigests": true,
+  "hostRules": [
+    {
+      "matchHost": "data.forgejo.org",
+      "hostType": "github"
+    }
+  ],
   "timezone": "Etc/UTC",
   "labels": [
     "dependencies"
@@ -31,6 +40,18 @@
         "dependencies",
         "major-update"
       ]
+    },
+    {
+      "matchCategories": [
+        "security"
+      ],
+      "labels": [
+        "dependencies",
+        "security"
+      ],
+      "prPriority": 10,
+      "groupName": "security updates",
+      "dependencyDashboardApproval": false
     }
   ]
 }

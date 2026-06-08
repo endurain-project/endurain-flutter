@@ -2,6 +2,13 @@ name: Dependency updates
 
 on:
   workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run (no changes)"
+        required: false
+        default: false
+        type: boolean
+
   schedule:
     - cron: '0 4 * * *'
 
@@ -22,16 +29,32 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: https://data.forgejo.org/actions/checkout@v6
+        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
 
+      # These env vars are set via $FORGEJO_ENV instead of the Docker env: block
+      # so that --env CLI overrides (e.g., forgejo-runner exec) pass through
+      # to the container. The if [ -z ... ] guard preserves any pre-existing value.
+      - name: Set dry-run mode
+        if: ${{ inputs.dry-run == true }}
+        run: echo "RENOVATE_DRY_RUN=full" >> "$FORGEJO_ENV"
+
+      - name: Set repository
+        run: |
+          if [ -z "${RENOVATE_REPOSITORIES:-}" ]; then
+            echo "RENOVATE_REPOSITORIES=${{ forgejo.repository }}" >> "$FORGEJO_ENV"
+          fi
+      - name: Set LOG_LEVEL
+        run: |
+          if [ -z "${LOG_LEVEL:-}" ]; then
+            echo "LOG_LEVEL=info" >> "$FORGEJO_ENV"
+          fi
+
       - name: Run Renovate
-        uses: docker://ghcr.io/renovatebot/renovate:latest
+        uses: docker://ghcr.io/renovatebot/renovate@sha256:38aac6e29e09288bc3fb3b95ba9445962508a1081013144d5b6ec5a6735707b9 # 43.168.5
         env:
-          LOG_LEVEL: info
           RENOVATE_CONFIG_FILE: renovate.json
           RENOVATE_ENDPOINT: https://codeberg.org/api/v1/
           RENOVATE_PLATFORM: forgejo
-          RENOVATE_REPOSITORIES: ${{ forgejo.repository }}
           RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
