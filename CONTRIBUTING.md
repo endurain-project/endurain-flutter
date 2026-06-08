@@ -59,7 +59,17 @@ Before opening a PR, run the same checks as CI:
 dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test --coverage
-dart run tool/check_coverage.dart --min-line-coverage 75 --exclude 'lib/l10n/app_localizations*.dart'
+dart run tool/check_coverage.dart \
+  --min-line-coverage 80 \
+  --min-file-line-coverage 60 \
+  --exclude 'lib/l10n/app_localizations*.dart' \
+  --exclude 'lib/core/theme/app_theme_tokens.dart' \
+  --exclude 'lib/core/navigation/app_routes.dart' \
+  --exclude 'lib/shared/widgets/app_bottom_nav.dart' \
+  --exclude 'lib/core/services/location_platform_adapter.dart' \
+  --exclude 'lib/core/services/multipart_upload_adapter.dart' \
+  --exclude 'lib/core/services/package_info_service.dart' \
+  --exclude 'lib/core/services/url_launcher_service.dart'
 ```
 
 ## Getting Started

@@ -172,11 +172,15 @@ flutter devices
 flutter run -d <android-device-id>
 ```
 
-The Android app module has been migrated to Flutter's Built-in Kotlin Gradle
-support. Current Android builds can still show upstream plugin warnings for
-dependencies that have not completed that migration yet, such as endorsed or
-transitive platform plugins. If the debug build succeeds, track those warnings
-with dependency updates rather than editing files in the local pub cache.
+The Android build scripts use Kotlin DSL (`.kts` files). Flutter's Built-in
+Kotlin Gradle flag (`android.builtInKotlin`) is not yet enabled because
+`package_info_plus` and `url_launcher_android` still self-apply KGP and are not
+compatible with the built-in Kotlin path. The Kotlin plugin is applied
+explicitly at version 2.2.20 in `settings.gradle.kts` instead. Once those
+plugins ship compatible releases, the explicit declaration can be removed and
+the flag enabled. Current Android builds can still show upstream plugin warnings
+for these dependencies; if the debug build succeeds, track them with dependency
+updates rather than editing files in the local pub cache.
 
 ## SSO/OAuth Callback
 
@@ -220,8 +224,17 @@ Collect coverage and check a minimum line coverage threshold:
 
 ```bash
 flutter test --coverage
-dart run tool/check_coverage.dart --min-line-coverage 75 \
-  --exclude "lib/l10n/app_localizations*.dart"
+dart run tool/check_coverage.dart \
+  --min-line-coverage 80 \
+  --min-file-line-coverage 60 \
+  --exclude "lib/l10n/app_localizations*.dart" \
+  --exclude "lib/core/theme/app_theme_tokens.dart" \
+  --exclude "lib/core/navigation/app_routes.dart" \
+  --exclude "lib/shared/widgets/app_bottom_nav.dart" \
+  --exclude "lib/core/services/location_platform_adapter.dart" \
+  --exclude "lib/core/services/multipart_upload_adapter.dart" \
+  --exclude "lib/core/services/package_info_service.dart" \
+  --exclude "lib/core/services/url_launcher_service.dart"
 ```
 
 Regenerate localization classes after changing ARB files:
