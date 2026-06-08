@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:endurain/core/config/api_endpoints.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -15,6 +17,17 @@ void main() {
       const config = ActivityUploadConfig.endurain();
 
       expect(config.endpoint, ApiConstants.activityUploadEndpoint);
+      expect(config.fieldName, ApiConstants.activityUploadFieldName);
+      expect(config.isConfigured, isTrue);
+    });
+
+    test('fromEndpoints uses the config apiBasePath', () {
+      const v2Config = AppConfig(apiBasePath: '/api/v2');
+      final config = ActivityUploadConfig.fromEndpoints(
+        const ApiEndpoints(v2Config),
+      );
+
+      expect(config.endpoint, '/api/v2/activities/create/upload');
       expect(config.fieldName, ApiConstants.activityUploadFieldName);
       expect(config.isConfigured, isTrue);
     });

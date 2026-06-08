@@ -1,3 +1,4 @@
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/app_links_service.dart';
@@ -30,6 +31,7 @@ class AppServices {
 
   final DiagnosticsService diagnostics = DiagnosticsService();
   final AppConfig config;
+  late final ApiEndpoints _endpoints = ApiEndpoints(config);
   late final SecureStorageService secureStorage = SecureStorageService();
   late final AppPreferencesStore preferences = AppPreferencesStore();
   late final AuthSessionStore authSession = AuthSessionStore(
@@ -39,15 +41,18 @@ class AppServices {
     storage: secureStorage,
     sessionStore: authSession,
     config: config,
+    endpoints: _endpoints,
   );
   late final SsoService sso = SsoService(
     storage: secureStorage,
     sessionStore: authSession,
     config: config,
+    endpoints: _endpoints,
   );
   late final ServerSettingsService serverSettings = ServerSettingsService(
     storage: secureStorage,
     config: config,
+    endpoints: _endpoints,
   );
   late final ApiClient apiClient = ApiClient(
     storage: secureStorage,
@@ -56,7 +61,7 @@ class AppServices {
   );
   late final ActivityUploadService activityUpload = ActivityUploadService(
     apiClient: apiClient,
-    config: const ActivityUploadConfig.endurain(),
+    config: ActivityUploadConfig.fromEndpoints(_endpoints),
   );
   final LocationService location = LocationService();
   late final LocalActivityGpxStorage localActivityGpxStorage =

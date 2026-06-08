@@ -1,3 +1,4 @@
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_client.dart';
@@ -22,6 +23,15 @@ class ActivityUploadConfig {
   const ActivityUploadConfig.endurain()
     : endpoint = ApiConstants.activityUploadEndpoint,
       fieldName = ApiConstants.activityUploadFieldName;
+
+  /// Build from [ApiEndpoints] so a custom `AppConfig.apiBasePath` is
+  /// reflected in the upload endpoint path.
+  factory ActivityUploadConfig.fromEndpoints(ApiEndpoints endpoints) {
+    return ActivityUploadConfig(
+      endpoint: endpoints.activityUploadEndpoint,
+      fieldName: ApiConstants.activityUploadFieldName,
+    );
+  }
 
   final String endpoint;
   final String fieldName;
