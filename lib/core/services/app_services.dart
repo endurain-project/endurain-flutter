@@ -62,6 +62,7 @@ class AppServices {
   late final ActivityUploadService activityUpload = ActivityUploadService(
     apiClient: apiClient,
     config: ActivityUploadConfig.fromEndpoints(_endpoints),
+    retryPolicy: const ActivityUploadRetryPolicy(maxAttempts: 3),
   );
   final LocationService location = LocationService();
   late final LocalActivityGpxStorage localActivityGpxStorage =
