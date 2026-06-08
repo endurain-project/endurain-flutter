@@ -8,13 +8,11 @@ import 'package:latlong2/latlong.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
-import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
@@ -30,13 +28,13 @@ class MapScreen extends StatefulWidget {
     this.controller,
     this.activityController,
     this.locationService,
-    this.storage,
+    this.mapSettings,
   });
 
   final MapStateController? controller;
   final ActivityRecordingController? activityController;
   final LocationService? locationService;
-  final SecureStorageService? storage;
+  final MapSettingsRepository? mapSettings;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -78,22 +76,16 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     final services = AppScope.servicesOf(context, listen: false);
     return MapStateController(
       locationService: widget.locationService ?? services.location,
-      mapSettingsRepository: MapSettingsRepository(
-        storage: widget.storage ?? services.secureStorage,
-      ),
+      mapSettingsRepository: widget.mapSettings ??
+          MapSettingsRepository(storage: services.secureStorage),
     );
   }
 
   ActivityRecordingController _createActivityController() {
     final services = AppScope.servicesOf(context, listen: false);
-    final locationService = widget.locationService ?? services.location;
     return ActivityRecordingController(
-      recordingService: ActivityRecordingService(
-        diagnostics: services.diagnostics,
-        locationService: locationService,
-        recorder: services.createActivityLocationRecorder(
-          locationService: locationService,
-        ),
+      recordingService: services.createActivityRecordingService(
+        locationService: widget.locationService,
       ),
       uploadService: services.activityUpload,
       localActivityRepository: services.localActivities,

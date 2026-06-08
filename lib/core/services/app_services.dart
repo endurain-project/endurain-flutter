@@ -13,6 +13,7 @@ import 'package:endurain/features/activity/repositories/activity_retention_setti
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
@@ -78,6 +79,22 @@ class AppServices {
       store: FileActiveActivityStore(diagnostics: diagnostics),
       locationService: locationService ?? location,
       diagnostics: diagnostics,
+    );
+  }
+
+  /// Assembles a ready-to-use [ActivityRecordingService] for the current
+  /// platform, wiring the correct recorder and the shared [LocationService].
+  ///
+  /// Callers (e.g. screen factories) should prefer this over building the
+  /// service and its recorder inline.
+  ActivityRecordingService createActivityRecordingService({
+    LocationService? locationService,
+  }) {
+    final loc = locationService ?? location;
+    return ActivityRecordingService(
+      diagnostics: diagnostics,
+      locationService: loc,
+      recorder: createActivityLocationRecorder(locationService: loc),
     );
   }
 }
