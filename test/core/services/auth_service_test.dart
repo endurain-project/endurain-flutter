@@ -466,6 +466,68 @@ void main() {
       expect(await storage.getRefreshToken(), isNull);
     });
 
+    test(
+      'concurrent refreshToken calls trigger a single network round-trip',
+      () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://example.test');
+        await storage.setAccessToken('access-1');
+        await storage.setRefreshToken('refresh-1');
+        var refreshRequests = 0;
+        final service = AuthService(
+          storage: storage,
+          httpClient: MockClient((request) async {
+            expect(request.url.path, ApiConstants.refreshEndpoint);
+            refreshRequests++;
+            // Yield so all concurrent callers are awaiting before the first
+            // refresh completes.
+            await Future<void>.delayed(Duration.zero);
+            return http.Response(
+              '{"access_token":"access-2","refresh_token":"refresh-2","session_id":"session-2","expires_in":3600}',
+              200,
+            );
+          }),
+        );
+
+        final results = await Future.wait([
+          service.refreshToken(),
+          service.refreshToken(),
+          service.refreshToken(),
+        ]);
+
+        expect(results, everyElement(isTrue));
+        expect(refreshRequests, 1);
+        expect(await storage.getRefreshToken(), 'refresh-2');
+      },
+    );
+
+    test(
+      'refreshToken can run again after an in-flight refresh completes',
+      () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://example.test');
+        await storage.setAccessToken('access-1');
+        await storage.setRefreshToken('refresh-1');
+        var refreshRequests = 0;
+        final service = AuthService(
+          storage: storage,
+          httpClient: MockClient((request) async {
+            refreshRequests++;
+            final next = refreshRequests + 1;
+            return http.Response(
+              '{"access_token":"access-$next","refresh_token":"refresh-$next","session_id":"session-$next","expires_in":3600}',
+              200,
+            );
+          }),
+        );
+
+        expect(await service.refreshToken(), isTrue);
+        expect(await service.refreshToken(), isTrue);
+
+        expect(refreshRequests, 2);
+      },
+    );
+
     test('logout succeeds when the server confirms the logout', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://example.test');

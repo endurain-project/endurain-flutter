@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:endurain/core/services/auth_session_store.dart';
+import 'package:endurain/core/services/base_http_client.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/api_response.dart';
@@ -15,6 +16,7 @@ class ApiClient {
     AuthSessionStore? sessionStore,
     AuthService? authService,
     http.Client? httpClient,
+    BaseHttpClient? baseClient,
     MultipartUploadAdapter? uploadAdapter,
     Duration? requestTimeout,
     Duration? uploadTimeout,
@@ -26,15 +28,17 @@ class ApiClient {
     _authService =
         authService ??
         AuthService(sessionStore: resolvedStore, storage: storage);
-    _httpClient = httpClient ?? http.Client();
-    _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter();
     _requestTimeout = requestTimeout ?? ApiConstants.defaultRequestTimeout;
     _uploadTimeout = uploadTimeout ?? ApiConstants.defaultUploadTimeout;
+    _http =
+        baseClient ??
+        BaseHttpClient(httpClient: httpClient, timeout: _requestTimeout);
+    _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter();
   }
 
   late final AuthSessionStore _sessionStore;
   late final AuthService _authService;
-  late final http.Client _httpClient;
+  late final BaseHttpClient _http;
   late final MultipartUploadAdapter _uploadAdapter;
   late final Duration _requestTimeout;
   late final Duration _uploadTimeout;
@@ -157,40 +161,6 @@ class ApiClient {
     return response;
   }
 
-  /// Execute an HTTP request with the given method, URL, headers, and optional body
-  Future<http.Response> _executeRequest(
-    String method,
-    Uri url,
-    Map<String, String> headers, {
-    Map<String, dynamic>? body,
-  }) async {
-    Future<http.Response> request;
-    switch (method) {
-      case 'GET':
-        request = _httpClient.get(url, headers: headers);
-      case 'POST':
-        request = _httpClient.post(
-          url,
-          headers: headers,
-          body: body != null ? json.encode(body) : null,
-        );
-      case 'PUT':
-        request = _httpClient.put(
-          url,
-          headers: headers,
-          body: body != null ? json.encode(body) : null,
-        );
-      case 'DELETE':
-        request = _httpClient.delete(url, headers: headers);
-      default:
-        throw AppException(AppErrorCode.unsupportedHttpMethod, details: method);
-    }
-    return request.timeout(
-      _requestTimeout,
-      onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
-    );
-  }
-
   /// Make an HTTP request with automatic token refresh
   Future<http.Response> _makeRequest(
     String method,
@@ -208,17 +178,17 @@ class ApiClient {
     }
 
     final url = Uri.parse('$serverUrl$endpoint');
+    final encodedBody = body != null ? json.encode(body) : null;
     final headers = {
       ApiConstants.authorizationHeader: 'Bearer $accessToken',
-      ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
       ApiConstants.contentTypeHeader: ApiConstants.contentTypeJson,
     };
 
-    http.Response response = await _executeRequest(
+    http.Response response = await _http.send(
       method,
       url,
-      headers,
-      body: body,
+      extraHeaders: headers,
+      body: encodedBody,
     );
 
     // If token expired (401), try to refresh and retry once
@@ -228,7 +198,12 @@ class ApiClient {
         // Retry the request with new token
         final newAccessToken = await _sessionStore.getAccessToken();
         headers[ApiConstants.authorizationHeader] = 'Bearer $newAccessToken';
-        response = await _executeRequest(method, url, headers, body: body);
+        response = await _http.send(
+          method,
+          url,
+          extraHeaders: headers,
+          body: encodedBody,
+        );
       } else {
         throw const AppException(AppErrorCode.sessionExpired);
       }

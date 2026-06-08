@@ -38,13 +38,7 @@ class BaseHttpClient {
   // ---------------------------------------------------------------------------
 
   Future<http.Response> get(Uri url, {Map<String, String>? extraHeaders}) {
-    return _client
-        .get(url, headers: _mergeHeaders(extraHeaders))
-        .timeout(
-          _timeout,
-          onTimeout: () =>
-              throw const AppException(AppErrorCode.requestTimeout),
-        );
+    return send('GET', url, extraHeaders: extraHeaders);
   }
 
   Future<http.Response> post(
@@ -52,13 +46,42 @@ class BaseHttpClient {
     Map<String, String>? extraHeaders,
     Object? body,
   }) {
-    return _client
-        .post(url, headers: _mergeHeaders(extraHeaders), body: body)
-        .timeout(
-          _timeout,
-          onTimeout: () =>
-              throw const AppException(AppErrorCode.requestTimeout),
-        );
+    return send('POST', url, extraHeaders: extraHeaders, body: body);
+  }
+
+  /// Sends a request with the given [method], merging the shared default
+  /// headers, applying the configured timeout, and converting a timeout into
+  /// an [AppException] with [AppErrorCode.requestTimeout].
+  ///
+  /// Returns the raw [http.Response]; status checking and JSON decoding are the
+  /// caller's responsibility (or use the high-level helpers below).
+  ///
+  /// Throws [AppException] with [AppErrorCode.unsupportedHttpMethod] for an
+  /// unrecognized [method].
+  Future<http.Response> send(
+    String method,
+    Uri url, {
+    Map<String, String>? extraHeaders,
+    Object? body,
+  }) {
+    final headers = _mergeHeaders(extraHeaders);
+    final Future<http.Response> request;
+    switch (method) {
+      case 'GET':
+        request = _client.get(url, headers: headers);
+      case 'POST':
+        request = _client.post(url, headers: headers, body: body);
+      case 'PUT':
+        request = _client.put(url, headers: headers, body: body);
+      case 'DELETE':
+        request = _client.delete(url, headers: headers);
+      default:
+        throw AppException(AppErrorCode.unsupportedHttpMethod, details: method);
+    }
+    return request.timeout(
+      _timeout,
+      onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+    );
   }
 
   // ---------------------------------------------------------------------------

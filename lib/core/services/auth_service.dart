@@ -44,6 +44,10 @@ class AuthService {
   // Store PKCE temporarily during auth flow
   Map<String, String>? _pkce;
 
+  // Tracks an in-progress refresh so concurrent callers share a single
+  // network round-trip (see [refreshToken]).
+  Future<bool>? _inFlightRefresh;
+
   /// Login with username and password using PKCE flow
   /// Returns AuthResult with MFA status or session ID for token exchange
   Future<AuthResult> login(
@@ -163,8 +167,20 @@ class AuthService {
     );
   }
 
-  /// Refresh access token using refresh token
-  Future<bool> refreshToken() async {
+  /// Refresh access token using refresh token.
+  ///
+  /// Refresh is single-flight: concurrent callers share the same in-progress
+  /// future and only the first triggers a network round-trip. Because the
+  /// server rotates the refresh token on every refresh, allowing parallel
+  /// refreshes would let one rotation invalidate the token the others are
+  /// using and spuriously clear the session.
+  Future<bool> refreshToken() {
+    return _inFlightRefresh ??= _refreshToken().whenComplete(() {
+      _inFlightRefresh = null;
+    });
+  }
+
+  Future<bool> _refreshToken() async {
     final serverUrl = await _sessionStore.getServerUrl();
     final refreshToken = await _sessionStore.getRefreshToken();
 
