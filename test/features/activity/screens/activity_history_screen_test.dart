@@ -178,47 +178,45 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('ActivityHistoryScreen – Phase 8: load more', () {
-    testWidgets(
-      'load-more button is visible when hasMore is true',
-      (tester) async {
-        final controller = _LoadedHistoryController(
-          records: [_pendingRecord],
-          hasMorePages: true,
-        );
-        addTearDown(controller.dispose);
+    testWidgets('load-more button is visible when hasMore is true', (
+      tester,
+    ) async {
+      final controller = _LoadedHistoryController(
+        records: [_pendingRecord],
+        hasMorePages: true,
+      );
+      addTearDown(controller.dispose);
 
-        await tester.pumpWidget(
-          AdaptiveApp(
-            title: 'Test',
-            home: ActivityHistoryScreen(controller: controller),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityHistoryScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.text(l10n.activityHistoryLoadMore), findsOneWidget);
-      },
-    );
+      expect(find.text(l10n.activityHistoryLoadMore), findsOneWidget);
+    });
 
-    testWidgets(
-      'load-more button is hidden when hasMore is false',
-      (tester) async {
-        final controller = _LoadedHistoryController(
-          records: [_pendingRecord],
-          hasMorePages: false,
-        );
-        addTearDown(controller.dispose);
+    testWidgets('load-more button is hidden when hasMore is false', (
+      tester,
+    ) async {
+      final controller = _LoadedHistoryController(
+        records: [_pendingRecord],
+        hasMorePages: false,
+      );
+      addTearDown(controller.dispose);
 
-        await tester.pumpWidget(
-          AdaptiveApp(
-            title: 'Test',
-            home: ActivityHistoryScreen(controller: controller),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityHistoryScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.text(l10n.activityHistoryLoadMore), findsNothing);
-      },
-    );
+      expect(find.text(l10n.activityHistoryLoadMore), findsNothing);
+    });
 
     testWidgets('tapping load-more calls loadMore on controller', (
       tester,
