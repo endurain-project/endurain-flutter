@@ -177,7 +177,9 @@ class ActivityRecorderService : Service() {
             // Required no-op overrides for older API levels.
             override fun onProviderEnabled(provider: String) {}
 
-            override fun onProviderDisabled(provider: String) {}
+            override fun onProviderDisabled(provider: String) {
+                handleProviderAvailabilityChanged()
+            }
 
             @Deprecated("Deprecated in Android API 29")
             override fun onStatusChanged(
@@ -240,6 +242,39 @@ class ActivityRecorderService : Service() {
             // Best effort; nothing to recover here.
         }
         locationListener = null
+    }
+
+    /**
+     * Called when a location provider is disabled mid-recording.
+     *
+     * Re-checks permissions and all available providers. If at least one
+     * provider is still enabled no action is taken — the existing listener
+     * registrations continue. If no usable provider remains, the session is
+     * persisted as failed and the service is stopped.
+     */
+    private fun handleProviderAvailabilityChanged() {
+        val manager = locationManager ?: return
+        val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+        val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (!hasFine && !hasCoarse) {
+            persistFailure()
+            ActivityRecorderCoordinator.emitFailed(
+                ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
+            )
+            stopCollection()
+            stopSelf()
+            return
+        }
+        val remaining = selectProviders(manager, hasFine, hasCoarse)
+        if (remaining.isNotEmpty()) {
+            return
+        }
+        persistFailure()
+        ActivityRecorderCoordinator.emitFailed(
+            ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
+        )
+        stopCollection()
+        stopSelf()
     }
 
     private fun onLocationFix(location: Location) {
