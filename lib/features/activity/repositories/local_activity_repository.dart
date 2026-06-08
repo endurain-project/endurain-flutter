@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -141,13 +142,10 @@ class LocalActivityRepository {
 
   Future<File> _manifestFile({bool create = false}) async {
     final supportDirectory = await _supportDirectoryProvider();
-    final rootDirectory = Directory(
-      '${supportDirectory.path}${Platform.pathSeparator}'
-      '${LocalActivityGpxStorage.rootDirectoryName}',
+    final rootDirectory = activityStorageRoot(
+      supportDirectory,
+      create: create,
     );
-    if (create && !rootDirectory.existsSync()) {
-      rootDirectory.createSync(recursive: true);
-    }
     return File(
       '${rootDirectory.path}${Platform.pathSeparator}$_manifestFileName',
     );

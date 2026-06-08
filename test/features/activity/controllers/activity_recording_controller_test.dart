@@ -17,6 +17,7 @@ import 'package:endurain/features/activity/repositories/file_active_activity_sto
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
+import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -110,7 +111,7 @@ void main() {
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final activeDirectory = Directory(
           '${tempDirectory.path}${Platform.pathSeparator}'
-          '${FileActiveActivityStore.rootDirectoryName}'
+          '$activityStorageRootDir'
           '${Platform.pathSeparator}'
           '${FileActiveActivityStore.activeDirectoryName}',
         )..createSync(recursive: true);

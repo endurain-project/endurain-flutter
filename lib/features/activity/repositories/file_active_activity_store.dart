@@ -6,6 +6,7 @@ import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
+import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// File-backed [ActiveActivityStore] using app-private support storage.
@@ -28,7 +29,6 @@ class FileActiveActivityStore implements ActiveActivityStore {
            supportDirectoryProvider ?? getApplicationSupportDirectory,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
-  static const String rootDirectoryName = 'activity_records';
   static const String activeDirectoryName = 'active';
   static const String sessionFileName = 'session.json';
   static const String pointsFileName = 'points.jsonl';
@@ -179,9 +179,9 @@ class FileActiveActivityStore implements ActiveActivityStore {
 
   Future<Directory> _activeDirectory({bool create = false}) async {
     final supportDirectory = await _supportDirectoryProvider();
+    final root = activityStorageRoot(supportDirectory);
     final directory = Directory(
-      '${supportDirectory.path}${Platform.pathSeparator}'
-      '$rootDirectoryName${Platform.pathSeparator}$activeDirectoryName',
+      '${root.path}${Platform.pathSeparator}$activeDirectoryName',
     );
     if (create && !directory.existsSync()) {
       directory.createSync(recursive: true);

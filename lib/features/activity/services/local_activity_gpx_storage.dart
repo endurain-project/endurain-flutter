@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:path_provider/path_provider.dart';
 
 class LocalActivityGpxStorage {
@@ -9,7 +10,6 @@ class LocalActivityGpxStorage {
   }) : _supportDirectoryProvider =
            supportDirectoryProvider ?? getApplicationSupportDirectory;
 
-  static const String rootDirectoryName = 'activity_records';
   static const String gpxDirectoryName = 'gpx';
   static const String fileExtension = '.gpx';
 
@@ -71,11 +71,9 @@ class LocalActivityGpxStorage {
 
   Future<Directory> _gpxDirectory({bool create = false}) async {
     final supportDirectory = await _supportDirectoryProvider();
-    final rootDirectory = Directory(
-      '${supportDirectory.path}${Platform.pathSeparator}$rootDirectoryName',
-    );
+    final root = activityStorageRoot(supportDirectory);
     final gpxDirectory = Directory(
-      '${rootDirectory.path}${Platform.pathSeparator}$gpxDirectoryName',
+      '${root.path}${Platform.pathSeparator}$gpxDirectoryName',
     );
     if (create && !gpxDirectory.existsSync()) {
       gpxDirectory.createSync(recursive: true);
