@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/api_response.dart';
+import 'package:endurain/core/services/base_http_client.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
@@ -14,6 +13,7 @@ class AuthService {
     SecureStorageService? storage,
     AuthSessionStore? sessionStore,
     ServerUrlResolver? urlResolver,
+    BaseHttpClient? baseClient,
     http.Client? httpClient,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
@@ -21,12 +21,12 @@ class AuthService {
         sessionStore ?? AuthSessionStore(storage: resolvedStorage);
     _urlResolver =
         urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
-    _httpClient = httpClient ?? http.Client();
+    _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
   }
 
   late final AuthSessionStore _sessionStore;
   late final ServerUrlResolver _urlResolver;
-  late final http.Client _httpClient;
+  late final BaseHttpClient _http;
 
   // Store PKCE temporarily during auth flow
   Map<String, String>? _pkce;
@@ -48,44 +48,38 @@ class AuthService {
     );
 
     try {
-      final response = await _httpClient.post(
+      final data = await _http.postJsonObject(
         apiUrl,
-        headers: {
+        extraHeaders: {
           ApiConstants.contentTypeHeader:
               ApiConstants.contentTypeFormUrlEncoded,
-          ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
         },
-        body: {'username': username, 'password': password},
+        rawBody: {'username': username, 'password': password},
+        failureCode: AppErrorCode.loginFailed,
       );
 
-      if (response.statusCode == 200) {
-        final data = ApiResponse.decodeJsonObject(response);
+      // Check if MFA is required
+      if (data['mfa_required'] == true) {
+        // Store username for MFA verification
+        await _sessionStore.saveLoginUsername(username);
 
-        // Check if MFA is required
-        if (data['mfa_required'] == true) {
-          // Store username for MFA verification
-          await _sessionStore.saveLoginUsername(username);
-
-          return AuthResult(
-            success: true,
-            mfaRequired: true,
-            username: data['username'] as String?,
-            message: data['message'] as String?,
-          );
-        }
-
-        // PKCE flow returns session_id for token exchange
-        final sessionId = ApiResponse.optionalString(data, 'session_id');
-
-        if (sessionId != null) {
-          // Exchange session for tokens
-          return await _exchangeSessionForTokens(url, sessionId, username);
-        }
-
-        throw const AppException(AppErrorCode.noSessionIdReceived);
-      } else {
-        throw ApiResponse.failure(response, AppErrorCode.loginFailed);
+        return AuthResult(
+          success: true,
+          mfaRequired: true,
+          username: data['username'] as String?,
+          message: data['message'] as String?,
+        );
       }
+
+      // PKCE flow returns session_id for token exchange
+      final sessionId = ApiResponse.optionalString(data, 'session_id');
+
+      if (sessionId != null) {
+        // Exchange session for tokens
+        return await _exchangeSessionForTokens(url, sessionId, username);
+      }
+
+      throw const AppException(AppErrorCode.noSessionIdReceived);
     } on AppException {
       _pkce = null;
       rethrow;
@@ -109,34 +103,25 @@ class AuthService {
     );
 
     try {
-      final response = await _httpClient.post(
+      final data = await _http.postJsonObject(
         url,
-        headers: {
-          ApiConstants.contentTypeHeader: ApiConstants.contentTypeJson,
-          ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
-        },
-        body: jsonEncode({'username': username, 'mfa_code': mfaCode}),
+        jsonBody: {'username': username, 'mfa_code': mfaCode},
+        failureCode: AppErrorCode.mfaVerificationFailed,
       );
 
-      if (response.statusCode == 200) {
-        final data = ApiResponse.decodeJsonObject(response);
+      // PKCE flow returns session_id for token exchange
+      final sessionId = ApiResponse.optionalString(data, 'session_id');
 
-        // PKCE flow returns session_id for token exchange
-        final sessionId = ApiResponse.optionalString(data, 'session_id');
-
-        if (sessionId != null) {
-          // Exchange session for tokens
-          return await _exchangeSessionForTokens(
-            serverUrl,
-            sessionId,
-            username,
-          );
-        }
-
-        throw const AppException(AppErrorCode.noSessionIdReceived);
-      } else {
-        throw ApiResponse.failure(response, AppErrorCode.mfaVerificationFailed);
+      if (sessionId != null) {
+        // Exchange session for tokens
+        return await _exchangeSessionForTokens(
+          serverUrl,
+          sessionId,
+          username,
+        );
       }
+
+      throw const AppException(AppErrorCode.noSessionIdReceived);
     } on AppException {
       _pkce = null;
       rethrow;
@@ -161,48 +146,39 @@ class AuthService {
     );
 
     try {
-      final response = await _httpClient.post(
+      final verifier = _pkce!['verifier'];
+      // Clear verifier before the network call — one-time exchange.
+      _pkce = null;
+      final data = await _http.postJsonObject(
         url,
-        headers: {
-          ApiConstants.contentTypeHeader: ApiConstants.contentTypeJson,
-          ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
-        },
-        body: jsonEncode({'code_verifier': _pkce!['verifier']}),
+        jsonBody: {'code_verifier': verifier},
+        failureCode: AppErrorCode.tokenExchangeFailed,
       );
 
-      // Clear verifier after use (one-time exchange)
-      _pkce = null;
+      // Store tokens
+      final accessToken = ApiResponse.requiredString(data, 'access_token');
+      final refreshToken = ApiResponse.requiredString(data, 'refresh_token');
+      final returnedSessionId = ApiResponse.requiredString(
+        data,
+        'session_id',
+      );
+      final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
 
-      if (response.statusCode == 200) {
-        final data = ApiResponse.decodeJsonObject(response);
+      await _sessionStore.saveSession(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        sessionId: returnedSessionId,
+        username: username,
+        expiresInSeconds: expiresIn,
+      );
 
-        // Store tokens
-        final accessToken = ApiResponse.requiredString(data, 'access_token');
-        final refreshToken = ApiResponse.requiredString(data, 'refresh_token');
-        final returnedSessionId = ApiResponse.requiredString(
-          data,
-          'session_id',
-        );
-        final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
-
-        await _sessionStore.saveSession(
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          sessionId: returnedSessionId,
-          username: username,
-          expiresInSeconds: expiresIn,
-        );
-
-        return AuthResult(
-          success: true,
-          mfaRequired: false,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          sessionId: returnedSessionId,
-        );
-      } else {
-        throw ApiResponse.failure(response, AppErrorCode.tokenExchangeFailed);
-      }
+      return AuthResult(
+        success: true,
+        mfaRequired: false,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        sessionId: returnedSessionId,
+      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -222,11 +198,10 @@ class AuthService {
     final url = Uri.parse('$serverUrl${ApiConstants.refreshEndpoint}');
 
     try {
-      final response = await _httpClient.post(
+      final response = await _http.post(
         url,
-        headers: {
+        extraHeaders: {
           ApiConstants.authorizationHeader: 'Bearer $refreshToken',
-          ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
         },
       );
 
@@ -276,12 +251,12 @@ class AuthService {
     if (serverUrl != null && refreshToken != null && refreshToken.isNotEmpty) {
       try {
         final url = Uri.parse('$serverUrl${ApiConstants.logoutEndpoint}');
-        final headers = {
-          ApiConstants.authorizationHeader: 'Bearer $refreshToken',
-          ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
-        };
-        final response = await _httpClient.post(url, headers: headers);
-
+        final response = await _http.post(
+          url,
+          extraHeaders: {
+            ApiConstants.authorizationHeader: 'Bearer $refreshToken',
+          },
+        );
         serverLogoutSuccess = response.statusCode == 200;
       } catch (e) {
         // Server logout failed (network error, server down, token expired)
