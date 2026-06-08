@@ -74,51 +74,16 @@ class LocalActivityHistoryController extends ChangeNotifier {
     }
 
     _setBusy(id, busy: true);
-    LocalActivityRecord updatedRecord = record;
-    final attemptedAt = _now().toUtc();
     try {
-      updatedRecord = record.copyWith(
-        uploadStatus: LocalActivityUploadStatus.pending,
-        updatedAt: attemptedAt,
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: null,
+      await _uploadService.performUploadAttempt(
+        record: record,
+        repository: _repository,
+        retentionRepository: _retentionSettingsRepository,
+        now: _now,
       );
-      await _repository.upsert(updatedRecord);
-      _replaceRecord(updatedRecord);
-
-      if (!_uploadService.isConfigured) {
-        throw const AppException(AppErrorCode.activityUploadNotConfigured);
-      }
-      final filePath = await _repository.readGpxFilePath(updatedRecord);
-      await _uploadService.uploadGpx(
-        ActivityUploadRequest(
-          filePath: filePath,
-          activityType: updatedRecord.activityType,
-        ),
-      );
-
-      final uploadedAt = _now().toUtc();
-      updatedRecord = updatedRecord.copyWith(
-        uploadStatus: LocalActivityUploadStatus.uploaded,
-        updatedAt: uploadedAt,
-        uploadedAt: uploadedAt,
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: null,
-      );
-      await _repository.upsert(updatedRecord);
-      if (!await _shouldRetainUploadedGpx()) {
-        await _repository.deleteGpx(updatedRecord);
-      }
       await load();
-    } catch (error) {
-      final failedRecord = updatedRecord.copyWith(
-        uploadStatus: LocalActivityUploadStatus.failed,
-        updatedAt: _now().toUtc(),
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: _safeUploadErrorCode(error),
-      );
-      await _repository.upsert(failedRecord);
-      _replaceRecord(failedRecord);
+    } catch (_) {
+      await load();
       rethrow;
     } finally {
       _setBusy(id, busy: false);
@@ -138,19 +103,6 @@ class LocalActivityHistoryController extends ChangeNotifier {
     }
   }
 
-  void _replaceRecord(LocalActivityRecord record) {
-    final records = [..._records];
-    final index = records.indexWhere((item) => item.id == record.id);
-    if (index == -1) {
-      records.add(record);
-    } else {
-      records[index] = record;
-    }
-    records.sort((left, right) => right.endedAt.compareTo(left.endedAt));
-    _records = records;
-    _notifyListeners();
-  }
-
   void _setBusy(String id, {required bool busy}) {
     final ids = {..._busyRecordIds};
     if (busy) {
@@ -160,17 +112,6 @@ class LocalActivityHistoryController extends ChangeNotifier {
     }
     _busyRecordIds = ids;
     _notifyListeners();
-  }
-
-  AppErrorCode _safeUploadErrorCode(Object error) {
-    return error is AppException
-        ? error.code
-        : AppErrorCode.activityUploadFailed;
-  }
-
-  Future<bool> _shouldRetainUploadedGpx() async {
-    return await _retentionSettingsRepository?.isRetainUploadedGpxEnabled() ??
-        true;
   }
 
   void _notifyListeners() {

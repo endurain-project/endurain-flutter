@@ -273,57 +273,17 @@ class ActivityRecordingController extends ChangeNotifier {
 
   Future<void> _uploadCompletedGpx() async {
     _setUploadState(ActivityUploadStatus.uploading);
-    LocalActivityRecord? record;
-    DateTime? attemptedAt;
     try {
-      record = await _completedRecordForUpload();
-      attemptedAt = _now().toUtc();
-      record = record.copyWith(
-        uploadStatus: LocalActivityUploadStatus.pending,
-        updatedAt: attemptedAt,
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: null,
+      final record = await _completedRecordForUpload();
+      final uploaded = await _uploadService.performUploadAttempt(
+        record: record,
+        repository: _localActivityRepository,
+        retentionRepository: _retentionSettingsRepository,
+        now: _now,
       );
-      await _localActivityRepository.upsert(record);
-      _completedLocalActivityRecord = record;
-
-      if (!_uploadService.isConfigured) {
-        throw const AppException(AppErrorCode.activityUploadNotConfigured);
-      }
-      final filePath = await _localActivityRepository.readGpxFilePath(record);
-      await _uploadService.uploadGpx(
-        ActivityUploadRequest(
-          filePath: filePath,
-          activityType: _state.activityType ?? _selectedActivityType,
-        ),
-      );
-      final uploadedAt = _now().toUtc();
-      record = record.copyWith(
-        uploadStatus: LocalActivityUploadStatus.uploaded,
-        updatedAt: uploadedAt,
-        uploadedAt: uploadedAt,
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: null,
-      );
-      await _localActivityRepository.upsert(record);
-      _completedLocalActivityRecord = record;
-      if (!await _shouldRetainUploadedGpx()) {
-        try {
-          await _localActivityRepository.deleteGpx(record);
-        } on AppException catch (error) {
-          _setUploadState(ActivityUploadStatus.cleanupFailed, error: error);
-          return;
-        }
-      }
+      _completedLocalActivityRecord = uploaded;
       _setUploadState(ActivityUploadStatus.uploaded);
     } catch (error) {
-      if (record != null) {
-        await _tryMarkUploadFailed(
-          record,
-          error,
-          attemptedAt ?? _now().toUtc(),
-        );
-      }
       _uploadError = error;
       _setUploadState(ActivityUploadStatus.failed, error: error);
     }
@@ -344,37 +304,6 @@ class ActivityRecordingController extends ChangeNotifier {
     }
     _completedLocalActivityRecord = record;
     return record;
-  }
-
-  Future<void> _tryMarkUploadFailed(
-    LocalActivityRecord record,
-    Object error,
-    DateTime attemptedAt,
-  ) async {
-    try {
-      final updatedAt = _now().toUtc();
-      final failedRecord = record.copyWith(
-        uploadStatus: LocalActivityUploadStatus.failed,
-        updatedAt: updatedAt,
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: _safeUploadErrorCode(error),
-      );
-      await _localActivityRepository.upsert(failedRecord);
-      _completedLocalActivityRecord = failedRecord;
-    } catch (_) {
-      return;
-    }
-  }
-
-  AppErrorCode _safeUploadErrorCode(Object error) {
-    return error is AppException
-        ? error.code
-        : AppErrorCode.activityUploadFailed;
-  }
-
-  Future<bool> _shouldRetainUploadedGpx() async {
-    return await _retentionSettingsRepository?.isRetainUploadedGpxEnabled() ??
-        true;
   }
 
   void _setState(ActivityRecordingState state) {
