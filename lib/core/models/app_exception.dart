@@ -23,6 +23,7 @@ enum AppErrorCode {
   pkceVerifierMissing,
   pkceVerifierMissingRestartLogin,
   requestTimeout,
+  secureStorageReadFailed,
   serverUrlNotConfigured,
   sessionExpired,
   ssoTokenExchangeError,

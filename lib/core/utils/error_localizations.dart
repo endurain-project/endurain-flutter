@@ -75,6 +75,7 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
     AppErrorCode.pkceVerifierMissingRestartLogin =>
       l10n.errorPkceVerifierMissingRestartLogin,
     AppErrorCode.requestTimeout => l10n.errorRequestTimeout,
+    AppErrorCode.secureStorageReadFailed => l10n.errorSecureStorageReadFailed,
     AppErrorCode.serverUrlNotConfigured => l10n.errorServerUrlNotConfigured,
     AppErrorCode.sessionExpired => l10n.errorSessionExpired,
     AppErrorCode.ssoTokenExchangeError =>

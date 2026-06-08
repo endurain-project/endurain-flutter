@@ -1,3 +1,4 @@
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
@@ -17,12 +18,15 @@ class SecureStorageService {
   static const _sessionIdKey = 'session_id';
   static const _accessTokenExpiresAtKey = 'access_token_expires_at';
 
-  // Read a value
+  // Read a value. Returns null when the key is absent.
+  // Throws [AppException] with [AppErrorCode.secureStorageReadFailed] when the
+  // platform storage itself is unavailable (e.g. keychain locked, hardware
+  // failure) — a distinct condition from a missing key.
   Future<String?> read({required String key}) async {
     try {
       return await _storage.read(key: key);
     } catch (e) {
-      return null;
+      throw AppException(AppErrorCode.secureStorageReadFailed, cause: e);
     }
   }
 

@@ -178,6 +178,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The request timed out. Check your connection and try again.';
 
   @override
+  String get errorSecureStorageReadFailed =>
+      'Unable to read from secure storage. Your device storage may be unavailable.';
+
+  @override
   String get errorUnexpectedResponseFormat =>
       'The server returned an unexpected response';
 

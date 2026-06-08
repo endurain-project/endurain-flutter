@@ -249,6 +249,10 @@
   "@errorRequestTimeout": {
     "description": "Error shown when an API request or upload exceeds the time limit - Used in: error_localizations.dart"
   },
+  "errorSecureStorageReadFailed": "Unable to read from secure storage. Your device storage may be unavailable.",
+  "@errorSecureStorageReadFailed": {
+    "description": "Error shown when the platform keychain or secure storage fails to read (distinct from a missing key) - Used in: error_localizations.dart"
+  },
   "errorUnexpectedResponseFormat": "The server returned an unexpected response",
   "@errorUnexpectedResponseFormat": {
     "description": "Error for unsupported API response shape - Used in: error_localizations.dart"

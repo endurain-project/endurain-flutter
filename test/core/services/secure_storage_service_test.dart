@@ -1,6 +1,23 @@
+import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+
+/// Fake [FlutterSecureStorage] whose [read] always throws.
+class _ThrowingStorage extends Fake implements FlutterSecureStorage {
+  @override
+  Future<String?> read({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    throw Exception('keychain unavailable');
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -107,6 +124,59 @@ void main() {
 
       expect(await storage.getServerUrl(), isNull);
       expect(await storage.getAccessToken(), isNull);
+    });
+
+    test('read returns null for a missing key', () async {
+      final storage = SecureStorageService();
+
+      expect(await storage.read(key: 'nonexistent_key'), isNull);
+    });
+
+    test('read throws secureStorageReadFailed on platform exception', () async {
+      final storage = SecureStorageService(storage: _ThrowingStorage());
+
+      expect(
+        () => storage.read(key: 'any_key'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageReadFailed,
+          ),
+        ),
+      );
+    });
+
+    test('getAccessToken throws secureStorageReadFailed on platform exception',
+        () async {
+      final storage = SecureStorageService(storage: _ThrowingStorage());
+
+      expect(
+        () => storage.getAccessToken(),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageReadFailed,
+          ),
+        ),
+      );
+    });
+
+    test('getServerUrl throws secureStorageReadFailed on platform exception',
+        () async {
+      final storage = SecureStorageService(storage: _ThrowingStorage());
+
+      expect(
+        () => storage.getServerUrl(),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageReadFailed,
+          ),
+        ),
+      );
     });
   });
 }
