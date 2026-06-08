@@ -1,3 +1,4 @@
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/app_links_service.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
@@ -28,6 +29,7 @@ class AppServices {
   static final AppServices instance = AppServices._();
 
   final DiagnosticsService diagnostics = DiagnosticsService();
+  final AppConfig config = AppConfig.defaults;
   final SecureStorageService secureStorage = SecureStorageService();
   final AppPreferencesStore preferences = AppPreferencesStore();
   late final AuthSessionStore authSession = AuthSessionStore(

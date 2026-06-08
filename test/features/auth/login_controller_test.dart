@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart' as core;
@@ -547,6 +548,21 @@ void main() {
         controller.serverUrlController.text = '';
         expect(controller.serverUrlIsHttp, isFalse);
         controller.serverUrlController.text = 'not-a-url';
+        expect(controller.serverUrlIsHttp, isFalse);
+        controller.dispose();
+      });
+
+      test('is false when allowInsecureTransport is false, even for http URL',
+          () {
+        final controller = LoginController(
+          authCoordinator: _repository(
+            storage: SecureStorageService(),
+            client: MockClient((_) async => http.Response('{}', 200)),
+          ),
+          appLinksService: const EmptyAppLinksService(),
+          config: const AppConfig(allowInsecureTransport: false),
+        );
+        controller.serverUrlController.text = 'http://example.test';
         expect(controller.serverUrlIsHttp, isFalse);
         controller.dispose();
       });

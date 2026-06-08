@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
@@ -13,13 +14,16 @@ class LoginController extends ChangeNotifier {
     required AuthCoordinator authCoordinator,
     AppLinksService? appLinksService,
     MapSettingsRepository? mapSettingsRepository,
+    AppConfig? config,
   }) : _authCoordinator = authCoordinator,
        _appLinksService = appLinksService ?? DefaultAppLinksService(),
-       _mapSettingsRepository = mapSettingsRepository;
+       _mapSettingsRepository = mapSettingsRepository,
+       _config = config ?? AppConfig.defaults;
 
   final AuthCoordinator _authCoordinator;
   final AppLinksService _appLinksService;
   final MapSettingsRepository? _mapSettingsRepository;
+  final AppConfig _config;
 
   final formKey = GlobalKey<FormState>();
   final serverUrlController = TextEditingController();
@@ -41,11 +45,14 @@ class LoginController extends ChangeNotifier {
 
   bool get localLoginEnabled => serverSettings?.localLoginEnabled ?? true;
 
-  /// Returns `true` when the current server URL uses plain HTTP (not HTTPS).
+  /// Returns `true` when the current server URL uses plain HTTP (not HTTPS)
+  /// AND [AppConfig.allowInsecureTransport] permits it.
   ///
-  /// Callers should show a localized warning and ask the user to confirm
-  /// before calling [submitServerUrl].
+  /// When `allowInsecureTransport` is `false`, HTTP URLs are rejected as a
+  /// validation error; this getter returns `false` so the UI does not show a
+  /// "proceed anyway" warning — the submit path will throw instead.
   bool get serverUrlIsHttp {
+    if (!_config.allowInsecureTransport) return false;
     final raw = serverUrlController.text.trim();
     final uri = Uri.tryParse(raw);
     return uri != null && uri.isScheme('http');

@@ -76,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       mapSettingsRepository: MapSettingsRepository(
         preferences: services.preferences,
       ),
+      config: services.config,
     );
   }
 
