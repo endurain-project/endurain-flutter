@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -35,7 +35,7 @@ class ActivityRecordingController extends ChangeNotifier {
            localActivitySummaryBuilder ?? LocalActivitySummaryBuilder(),
        _retentionSettingsRepository = retentionSettingsRepository,
        _localActivityIdProvider =
-           localActivityIdProvider ?? _defaultLocalActivityId,
+           localActivityIdProvider ?? localActivityId,
        _now = now ?? DateTime.now,
        _ownsService = ownsService {
     _stateSubscription = _recordingService.stateStream.listen((state) {
@@ -352,11 +352,5 @@ class ActivityRecordingController extends ChangeNotifier {
       _recordingService.dispose();
     }
     super.dispose();
-  }
-
-  static String _defaultLocalActivityId() {
-    final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
-    final random = Random().nextInt(1 << 32).toRadixString(16);
-    return 'activity_${timestamp}_$random';
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'dart:math';
+
+import 'package:endurain/core/utils/id_generation.dart';
 
 class ActivityGpxFileWriter {
   ActivityGpxFileWriter({
@@ -7,7 +8,7 @@ class ActivityGpxFileWriter {
     String Function()? uniqueSuffixProvider,
   }) : _temporaryDirectoryProvider =
            temporaryDirectoryProvider ?? (() async => Directory.systemTemp),
-       _uniqueSuffixProvider = uniqueSuffixProvider ?? _defaultUniqueSuffix;
+       _uniqueSuffixProvider = uniqueSuffixProvider ?? uniqueSuffix;
 
   static const String filePrefix = 'endurain_activity_';
   static const String fileExtension = '.gpx';
@@ -29,11 +30,5 @@ class ActivityGpxFileWriter {
     if (file.existsSync()) {
       file.deleteSync();
     }
-  }
-
-  static String _defaultUniqueSuffix() {
-    final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
-    final random = Random().nextInt(1 << 32);
-    return '${timestamp}_$random';
   }
 }
