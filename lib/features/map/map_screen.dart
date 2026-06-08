@@ -78,6 +78,14 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     }
   }
 
+  @override
+  void dispose() {
+    // OwnedControllers.dispose() (via super) tears down the registered
+    // controllers; the MapController is owned directly here, so dispose it too.
+    _mapController.dispose();
+    super.dispose();
+  }
+
   MapStateController _createController() {
     final services = AppScope.servicesOf(context, listen: false);
     return MapStateController(
