@@ -215,6 +215,85 @@ void main() {
         expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
       },
     );
+
+    test('5xx is retried and succeeds on second attempt', () async {
+      final record = await _createRecord(repository, id: 'svc_retry_5xx');
+      final service = _serviceWithResponses([500, 201]);
+
+      final result = await service.performUploadAttempt(
+        record: record,
+        repository: repository,
+      );
+
+      expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+    });
+
+    test('5xx is not retried when maxAttempts is 1 (default)', () async {
+      final record = await _createRecord(repository, id: 'svc_no_retry');
+      final service = _serviceReturningStatus(500); // default: maxAttempts=1
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(isA<AppException>()),
+      );
+
+      final persisted = await repository.get(record.id);
+      expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+    });
+
+    test('4xx is not retried even when maxAttempts > 1', () async {
+      final record = await _createRecord(repository, id: 'svc_no_retry_4xx');
+      // maxAttempts=3 but the 422 should not be retried
+      final service = _serviceWithResponses([422, 201, 201]);
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.details,
+            'details',
+            'HTTP 422',
+          ),
+        ),
+      );
+
+      final persisted = await repository.get(record.id);
+      expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+    });
+
+    test('401 is not retried', () async {
+      final record = await _createRecord(repository, id: 'svc_no_retry_401');
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        retryPolicy: ActivityUploadRetryPolicy(
+          maxAttempts: 3,
+          delay: (_) async {},
+        ),
+        uploadFile: (_, _, _) async {
+          return http.StreamedResponse(
+            const Stream<List<int>>.empty(),
+            401,
+          );
+        },
+      );
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.sessionExpired,
+          ),
+        ),
+      );
+
+      final persisted = await repository.get(record.id);
+      expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+    });
   });
 }
 
@@ -223,6 +302,21 @@ ActivityUploadService _serviceReturningStatus(int statusCode) {
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
     uploadFile: (_, _, _) async {
       return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
+    },
+  );
+}
+
+ActivityUploadService _serviceWithResponses(List<int> statusCodes) {
+  var callCount = 0;
+  return ActivityUploadService(
+    config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
+    retryPolicy: ActivityUploadRetryPolicy(
+      maxAttempts: statusCodes.length,
+      delay: (_) async {},
+    ),
+    uploadFile: (_, _, _) async {
+      final code = statusCodes[callCount++];
+      return http.StreamedResponse(const Stream<List<int>>.empty(), code);
     },
   );
 }

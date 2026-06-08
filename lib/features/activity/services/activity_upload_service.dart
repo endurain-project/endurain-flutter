@@ -15,6 +15,27 @@ typedef ActivityFileUploader =
       String fieldName,
     );
 
+/// Controls how many times [ActivityUploadService.performUploadAttempt]
+/// retries transient failures and how long it waits between attempts.
+///
+/// Set [maxAttempts] to `1` (the default) to disable automatic retry and keep
+/// the same single-attempt behaviour as before. Set it to a higher value for
+/// post-recording uploads that benefit from silent recovery.
+///
+/// Inject a no-op [delay] in tests to avoid real sleeps.
+class ActivityUploadRetryPolicy {
+  const ActivityUploadRetryPolicy({
+    this.maxAttempts = 1,
+    Future<void> Function(int attempt)? delay,
+  }) : delay = delay ?? _defaultDelay;
+
+  final int maxAttempts;
+  final Future<void> Function(int attempt) delay;
+
+  static Future<void> _defaultDelay(int attempt) =>
+      Future.delayed(const Duration(seconds: 2));
+}
+
 class ActivityUploadConfig {
   const ActivityUploadConfig({required this.endpoint, required this.fieldName});
 
@@ -56,11 +77,14 @@ class ActivityUploadService {
     ApiClient? apiClient,
     ActivityUploadConfig? config,
     ActivityFileUploader? uploadFile,
+    ActivityUploadRetryPolicy? retryPolicy,
   }) : _config = config,
-       _uploadFile = uploadFile ?? (apiClient ?? ApiClient()).uploadFile;
+       _uploadFile = uploadFile ?? (apiClient ?? ApiClient()).uploadFile,
+       _retryPolicy = retryPolicy ?? const ActivityUploadRetryPolicy();
 
   final ActivityUploadConfig? _config;
   final ActivityFileUploader _uploadFile;
+  final ActivityUploadRetryPolicy _retryPolicy;
 
   bool get isConfigured => _config?.isConfigured ?? false;
 
@@ -102,6 +126,9 @@ class ActivityUploadService {
   /// On failure the record is persisted as [LocalActivityUploadStatus.failed]
   /// and the exception is re-thrown so callers can update UI state.
   ///
+  /// Transient failures (5xx responses and network-level errors) are retried
+  /// up to [ActivityUploadRetryPolicy.maxAttempts] times before giving up.
+  ///
   /// Returns the final [LocalActivityRecord] with an `uploaded` status on
   /// success.
   Future<LocalActivityRecord> performUploadAttempt({
@@ -121,43 +148,81 @@ class ActivityUploadService {
     );
     await repository.upsert(updated);
 
-    try {
-      if (!isConfigured) {
-        throw const AppException(AppErrorCode.activityUploadNotConfigured);
+    final maxAttempts = _retryPolicy.maxAttempts.clamp(1, 1 << 20);
+    Object? lastError;
+
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt > 0) {
+        await _retryPolicy.delay(attempt);
       }
-      final filePath = await repository.readGpxFilePath(updated);
-      await uploadGpx(
-        ActivityUploadRequest(
-          filePath: filePath,
-          activityType: updated.activityType,
-        ),
-      );
+      try {
+        if (!isConfigured) {
+          throw const AppException(AppErrorCode.activityUploadNotConfigured);
+        }
+        final filePath = await repository.readGpxFilePath(updated);
+        await uploadGpx(
+          ActivityUploadRequest(
+            filePath: filePath,
+            activityType: updated.activityType,
+          ),
+        );
 
-      final uploadedAt = clock().toUtc();
-      updated = updated.copyWith(
-        uploadStatus: LocalActivityUploadStatus.uploaded,
-        updatedAt: uploadedAt,
-        uploadedAt: uploadedAt,
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: null,
-      );
-      await repository.upsert(updated);
+        final uploadedAt = clock().toUtc();
+        updated = updated.copyWith(
+          uploadStatus: LocalActivityUploadStatus.uploaded,
+          updatedAt: uploadedAt,
+          uploadedAt: uploadedAt,
+          lastUploadAttemptAt: attemptedAt,
+          lastUploadErrorCode: null,
+        );
+        await repository.upsert(updated);
 
-      if (!await _shouldRetainUploadedGpx(retentionRepository)) {
-        await repository.deleteGpx(updated);
+        if (!await _shouldRetainUploadedGpx(retentionRepository)) {
+          await repository.deleteGpx(updated);
+        }
+
+        return updated;
+      } catch (error) {
+        lastError = error;
+        if (attempt < maxAttempts - 1 && _isTransient(error)) {
+          continue;
+        }
+        final failedRecord = updated.copyWith(
+          uploadStatus: LocalActivityUploadStatus.failed,
+          updatedAt: clock().toUtc(),
+          lastUploadAttemptAt: attemptedAt,
+          lastUploadErrorCode: _safeUploadErrorCode(error),
+        );
+        await repository.upsert(failedRecord);
+        rethrow;
       }
-
-      return updated;
-    } catch (error) {
-      final failedRecord = updated.copyWith(
-        uploadStatus: LocalActivityUploadStatus.failed,
-        updatedAt: clock().toUtc(),
-        lastUploadAttemptAt: attemptedAt,
-        lastUploadErrorCode: _safeUploadErrorCode(error),
-      );
-      await repository.upsert(failedRecord);
-      rethrow;
     }
+
+    // Unreachable: loop always returns or rethrows inside the catch block.
+    // This satisfies Dart's control flow analysis.
+    throw lastError!;
+  }
+
+  /// Returns true if [error] represents a failure worth retrying (5xx
+  /// response or network-level I/O error). Auth failures, missing GPX, and
+  /// configuration errors are not transient.
+  static bool _isTransient(Object error) {
+    if (error is! AppException) {
+      return true;
+    }
+    if (error.code != AppErrorCode.activityUploadFailed) {
+      return false;
+    }
+    // Network-level error (no HTTP status): transient.
+    if (error.cause != null) {
+      return true;
+    }
+    // HTTP 5xx: transient. HTTP 4xx: permanent.
+    final details = error.details;
+    if (details != null && details.startsWith('HTTP 5')) {
+      return true;
+    }
+    return false;
   }
 
   /// Maps any exception to a typed [AppErrorCode] safe for persistence.
