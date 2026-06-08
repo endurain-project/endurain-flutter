@@ -457,35 +457,32 @@ void main() {
       expect(await repository.hasGpx(record), isFalse);
     });
 
-    test(
-      '5xx upload is retried and succeeds on second attempt',
-      () async {
-        final adapter = RecordingLocationPlatformAdapter();
-        final tempDirectory = await Directory.systemTemp.createTemp(
-          'endurain_retry_5xx_',
-        );
-        addTearDown(() => tempDirectory.deleteSync(recursive: true));
-        final repository = _repositoryFor(tempDirectory);
-        final service = _recordingService(adapter: adapter);
-        final controller = ActivityRecordingController(
-          recordingService: service,
-          localActivityRepository: repository,
-          localActivityIdProvider: () => 'retry_5xx',
-          uploadService: _uploadServiceWithResponses([500, 201]),
-        );
-        addTearDown(controller.dispose);
+    test('5xx upload is retried and succeeds on second attempt', () async {
+      final adapter = RecordingLocationPlatformAdapter();
+      final tempDirectory = await Directory.systemTemp.createTemp(
+        'endurain_retry_5xx_',
+      );
+      addTearDown(() => tempDirectory.deleteSync(recursive: true));
+      final repository = _repositoryFor(tempDirectory);
+      final service = _recordingService(adapter: adapter);
+      final controller = ActivityRecordingController(
+        recordingService: service,
+        localActivityRepository: repository,
+        localActivityIdProvider: () => 'retry_5xx',
+        uploadService: _uploadServiceWithResponses([500, 201]),
+      );
+      addTearDown(controller.dispose);
 
-        await controller.start(ActivityType.run);
-        adapter.addPosition(recordingPosition());
-        await pumpEventQueue();
-        await controller.stop();
-        await controller.uploadCompletedGpx();
+      await controller.start(ActivityType.run);
+      adapter.addPosition(recordingPosition());
+      await pumpEventQueue();
+      await controller.stop();
+      await controller.uploadCompletedGpx();
 
-        final records = await repository.list();
-        expect(records.single.uploadStatus, LocalActivityUploadStatus.uploaded);
-        expect(controller.uploadStatus, ActivityUploadStatus.uploaded);
-      },
-    );
+      final records = await repository.list();
+      expect(records.single.uploadStatus, LocalActivityUploadStatus.uploaded);
+      expect(controller.uploadStatus, ActivityUploadStatus.uploaded);
+    });
   });
 }
 

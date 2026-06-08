@@ -45,9 +45,7 @@ void main() {
       });
 
       test('returns false for hosts not in the allowlist', () {
-        const config = AppConfig(
-          allowedTileServerHosts: {'tiles.example.com'},
-        );
+        const config = AppConfig(allowedTileServerHosts: {'tiles.example.com'});
         expect(config.isTileServerHostAllowed('other.host.test'), isFalse);
       });
     });

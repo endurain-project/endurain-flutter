@@ -47,7 +47,8 @@ class SqfliteActivityStore implements LocalActivityStore {
   Future<Database> _open() async {
     if (_db != null) return _db!;
     final path =
-        _path ?? '${await _factory.getDatabasesPath()}${Platform.pathSeparator}$_dbFileName';
+        _path ??
+        '${await _factory.getDatabasesPath()}${Platform.pathSeparator}$_dbFileName';
     _db = await _factory.openDatabase(
       path,
       options: OpenDatabaseOptions(
@@ -89,10 +90,7 @@ class SqfliteActivityStore implements LocalActivityStore {
   @override
   Future<List<LocalActivityRecord>> list() async {
     final db = await _open();
-    final rows = await db.query(
-      _tableActivity,
-      orderBy: 'ended_at DESC',
-    );
+    final rows = await db.query(_tableActivity, orderBy: 'ended_at DESC');
     return rows.map(_fromRow).toList();
   }
 
@@ -175,9 +173,7 @@ class SqfliteActivityStore implements LocalActivityStore {
   LocalActivityRecord _fromRow(Map<String, Object?> row) {
     return LocalActivityRecord(
       id: row['id'] as String,
-      activityType: ActivityType.fromApiValue(
-        jsonString(row['activity_type']),
-      ),
+      activityType: ActivityType.fromApiValue(jsonString(row['activity_type'])),
       startedAt: jsonDateTime(row['started_at'])!,
       endedAt: jsonDateTime(row['ended_at'])!,
       elapsedDurationSeconds: row['elapsed_duration_seconds'] as int,
@@ -186,9 +182,7 @@ class SqfliteActivityStore implements LocalActivityStore {
           (row['average_speed_meters_per_second'] as num?)?.toDouble(),
       pointCount: row['point_count'] as int,
       gpxFileName: row['gpx_file_name'] as String,
-      uploadStatus: LocalActivityUploadStatus.fromJson(
-        row['upload_status'],
-      ),
+      uploadStatus: LocalActivityUploadStatus.fromJson(row['upload_status']),
       createdAt: jsonDateTime(row['created_at'])!,
       updatedAt: jsonDateTime(row['updated_at'])!,
       uploadedAt: jsonDateTime(row['uploaded_at']),

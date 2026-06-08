@@ -33,8 +33,7 @@ class SecureStorageService {
       _storage.write(key: key, value: value);
 
   // Delete a value
-  Future<void> delete({required String key}) =>
-      _storage.delete(key: key);
+  Future<void> delete({required String key}) => _storage.delete(key: key);
 
   // Delete all values
   Future<void> deleteAll() => _storage.deleteAll();

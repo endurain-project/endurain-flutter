@@ -9,20 +9,20 @@ void main() {
     sqfliteFfiInit();
   });
 
-  SqfliteActivityStore _store() => SqfliteActivityStore(
+  SqfliteActivityStore makeStore() => SqfliteActivityStore(
     databaseFactory: databaseFactoryFfi,
     databasePath: inMemoryDatabasePath,
   );
 
   group('SqfliteActivityStore', () {
     test('returns empty list when no records are stored', () async {
-      final store = _store();
+      final store = makeStore();
       expect(await store.list(), isEmpty);
       await store.close();
     });
 
     test('upsert inserts a new record and list returns it', () async {
-      final store = _store();
+      final store = makeStore();
       final record = _record(id: 'a1');
       await store.upsert(record);
 
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('upsert replaces an existing record', () async {
-      final store = _store();
+      final store = makeStore();
       final original = _record(id: 'a1');
       await store.upsert(original);
 
@@ -49,7 +49,7 @@ void main() {
     });
 
     test('list returns records sorted by endedAt descending', () async {
-      final store = _store();
+      final store = makeStore();
       final older = _record(id: 'older', endedAt: DateTime.utc(2026, 6, 1));
       final newer = _record(id: 'newer', endedAt: DateTime.utc(2026, 6, 2));
       await store.upsert(older);
@@ -61,13 +61,13 @@ void main() {
     });
 
     test('get returns null for unknown id', () async {
-      final store = _store();
+      final store = makeStore();
       expect(await store.get('nonexistent'), isNull);
       await store.close();
     });
 
     test('get returns the correct record by id', () async {
-      final store = _store();
+      final store = makeStore();
       await store.upsert(_record(id: 'a'));
       await store.upsert(_record(id: 'b'));
 
@@ -77,7 +77,7 @@ void main() {
     });
 
     test('delete removes a record', () async {
-      final store = _store();
+      final store = makeStore();
       await store.upsert(_record(id: 'a1'));
       await store.delete('a1');
 
@@ -86,13 +86,13 @@ void main() {
     });
 
     test('delete on unknown id does not throw', () async {
-      final store = _store();
+      final store = makeStore();
       await expectLater(store.delete('nonexistent'), completes);
       await store.close();
     });
 
     test('upsert persists all nullable fields', () async {
-      final store = _store();
+      final store = makeStore();
       final now = DateTime.utc(2026, 6, 1, 12);
       final record = _record(id: 'r1').copyWith(
         uploadStatus: LocalActivityUploadStatus.uploaded,
@@ -108,7 +108,7 @@ void main() {
     });
 
     test('null optional fields round-trip as null', () async {
-      final store = _store();
+      final store = makeStore();
       await store.upsert(_record(id: 'r2'));
 
       final retrieved = await store.get('r2');
@@ -144,24 +144,26 @@ void main() {
       await store.close();
     });
 
-    test('malformed manifest entries are skipped, valid entries are imported',
-        () async {
-      // Simulate a manifest where one record throws during row conversion.
-      // We model this by mixing a valid record with one that has a null id
-      // (which would fail on the TEXT NOT NULL constraint in SQLite but
-      // continueOnError keeps the batch going for the rest).
-      final valid = _record(id: 'good');
-      final store = SqfliteActivityStore(
-        databaseFactory: databaseFactoryFfi,
-        databasePath: inMemoryDatabasePath,
-        manifestReader: () async => [valid],
-      );
+    test(
+      'malformed manifest entries are skipped, valid entries are imported',
+      () async {
+        // Simulate a manifest where one record throws during row conversion.
+        // We model this by mixing a valid record with one that has a null id
+        // (which would fail on the TEXT NOT NULL constraint in SQLite but
+        // continueOnError keeps the batch going for the rest).
+        final valid = _record(id: 'good');
+        final store = SqfliteActivityStore(
+          databaseFactory: databaseFactoryFfi,
+          databasePath: inMemoryDatabasePath,
+          manifestReader: () async => [valid],
+        );
 
-      final list = await store.list();
-      expect(list, hasLength(1));
-      expect(list.first.id, 'good');
-      await store.close();
-    });
+        final list = await store.list();
+        expect(list, hasLength(1));
+        expect(list.first.id, 'good');
+        await store.close();
+      },
+    );
 
     test('no manifest reader results in empty store', () async {
       final store = SqfliteActivityStore(
@@ -175,10 +177,7 @@ void main() {
   });
 }
 
-LocalActivityRecord _record({
-  required String id,
-  DateTime? endedAt,
-}) {
+LocalActivityRecord _record({required String id, DateTime? endedAt}) {
   final ended = endedAt ?? DateTime.utc(2026, 6, 2, 10);
   return LocalActivityRecord(
     id: id,

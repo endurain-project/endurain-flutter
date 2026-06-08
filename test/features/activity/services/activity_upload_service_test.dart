@@ -249,11 +249,7 @@ void main() {
       await expectLater(
         service.performUploadAttempt(record: record, repository: repository),
         throwsA(
-          isA<AppException>().having(
-            (e) => e.details,
-            'details',
-            'HTTP 422',
-          ),
+          isA<AppException>().having((e) => e.details, 'details', 'HTTP 422'),
         ),
       );
 
@@ -273,10 +269,7 @@ void main() {
           delay: (_) async {},
         ),
         uploadFile: (_, _, _) async {
-          return http.StreamedResponse(
-            const Stream<List<int>>.empty(),
-            401,
-          );
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 401);
         },
       );
 

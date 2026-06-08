@@ -104,11 +104,6 @@ class ActivitySegmentPolicy {
     RecordedActivityPoint a,
     RecordedActivityPoint b,
   ) {
-    return geoDistanceMeters(
-      a.latitude,
-      a.longitude,
-      b.latitude,
-      b.longitude,
-    );
+    return geoDistanceMeters(a.latitude, a.longitude, b.latitude, b.longitude);
   }
 }
