@@ -1,5 +1,6 @@
 import 'package:endurain/features/activity/models/activity_recording_stats.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
+import 'package:endurain/features/activity/services/geo_distance.dart';
 import 'package:latlong2/latlong.dart';
 
 class ActivityStatsCalculator {
@@ -29,10 +30,12 @@ class ActivityStatsCalculator {
       for (var index = 1; index < points.length; index += 1) {
         final previous = points[index - 1];
         final current = points[index];
-        final pairDistanceMeters = _distance.as(
-          LengthUnit.Meter,
-          LatLng(previous.latitude, previous.longitude),
-          LatLng(current.latitude, current.longitude),
+        final pairDistanceMeters = geoDistanceMeters(
+          previous.latitude,
+          previous.longitude,
+          current.latitude,
+          current.longitude,
+          distance: _distance,
         );
         distanceMeters += pairDistanceMeters;
 

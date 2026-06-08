@@ -1,5 +1,5 @@
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:endurain/features/activity/services/geo_distance.dart';
 
 /// Why the segment policy decided a new track segment is required.
 enum ActivitySegmentBreakReason {
@@ -104,11 +104,11 @@ class ActivitySegmentPolicy {
     RecordedActivityPoint a,
     RecordedActivityPoint b,
   ) {
-    const distance = Distance();
-    return distance.as(
-      LengthUnit.Meter,
-      LatLng(a.latitude, a.longitude),
-      LatLng(b.latitude, b.longitude),
+    return geoDistanceMeters(
+      a.latitude,
+      a.longitude,
+      b.latitude,
+      b.longitude,
     );
   }
 }
