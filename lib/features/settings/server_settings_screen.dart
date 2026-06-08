@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -18,12 +19,14 @@ class ServerSettingsScreen extends StatefulWidget {
     this.storage,
     this.authService,
     this.repository,
+    this.config,
   });
 
   final VoidCallback? onLogout;
   final SecureStorageService? storage;
   final AuthService? authService;
   final ServerSettingsRepository? repository;
+  final AppConfig? config;
 
   @override
   State<ServerSettingsScreen> createState() => _ServerSettingsScreenState();
@@ -33,6 +36,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _tileServerUrlController = TextEditingController();
   late final ServerSettingsRepository _repository;
+  late final AppConfig _config;
   bool _isLoading = true;
   String _serverUrl = '';
   String _username = '';
@@ -41,6 +45,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
   void initState() {
     super.initState();
     _repository = widget.repository ?? _createRepository();
+    _config = widget.config ?? AppConfig.defaults;
     _loadSettings();
   }
 
@@ -108,7 +113,8 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
 
   /// Returns true when saving may proceed. Shows a warning dialog and returns
   /// false if the tile server host differs from the Endurain server host and
-  /// the user does not confirm.
+  /// the user does not confirm. In managed mode with an allowlist, rejects
+  /// out-of-policy hosts outright without offering a confirmation option.
   Future<bool> _confirmTileHostIfNeeded(
     String tileUrl,
     AppLocalizations l10n,
@@ -116,11 +122,22 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
     final serverHost = Uri.tryParse(_serverUrl)?.host;
     final tileHost = Uri.tryParse(tileUrl)?.host;
 
-    if (serverHost == null ||
-        tileHost == null ||
-        serverHost.isEmpty ||
-        tileHost.isEmpty ||
-        serverHost == tileHost) {
+    if (tileHost == null || tileHost.isEmpty) {
+      return true;
+    }
+
+    // Managed policy: reject disallowed hosts without any confirmation.
+    if (!_config.isTileServerHostAllowed(tileHost)) {
+      if (mounted) {
+        await DialogUtils.showErrorDialog(
+          context,
+          l10n.tileServerHostWarningTitle,
+        );
+      }
+      return false;
+    }
+
+    if (serverHost == null || serverHost.isEmpty || serverHost == tileHost) {
       return true;
     }
 

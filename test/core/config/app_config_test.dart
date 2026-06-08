@@ -28,5 +28,28 @@ void main() {
     test('defaultApiBasePath is /api/v1', () {
       expect(AppConfig.defaultApiBasePath, '/api/v1');
     });
+
+    group('isTileServerHostAllowed', () {
+      test('returns true for any host when allowedTileServerHosts is null', () {
+        const config = AppConfig.defaults;
+        expect(config.isTileServerHostAllowed('tiles.example.com'), isTrue);
+        expect(config.isTileServerHostAllowed('any.host.test'), isTrue);
+      });
+
+      test('returns true for hosts in the allowlist', () {
+        const config = AppConfig(
+          allowedTileServerHosts: {'tiles.example.com', 'maps.example.com'},
+        );
+        expect(config.isTileServerHostAllowed('tiles.example.com'), isTrue);
+        expect(config.isTileServerHostAllowed('maps.example.com'), isTrue);
+      });
+
+      test('returns false for hosts not in the allowlist', () {
+        const config = AppConfig(
+          allowedTileServerHosts: {'tiles.example.com'},
+        );
+        expect(config.isTileServerHostAllowed('other.host.test'), isFalse);
+      });
+    });
   });
 }

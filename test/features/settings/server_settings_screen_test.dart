@@ -1,3 +1,4 @@
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
@@ -169,6 +170,40 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(await prefs.read(key: 'tile_server_url'), differentTileUrl);
+      },
+    );
+
+    testWidgets(
+      'rejects tile host not in managed allowlist',
+      (tester) async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://endurain.example.test');
+        final prefs = FakePreferencesStore();
+        const blockedTileUrl = 'https://not-allowed.test/{z}/{x}/{y}.png';
+        const config = AppConfig(
+          allowedTileServerHosts: {'endurain.example.test'},
+        );
+
+        await tester.pumpWidget(
+          _SettingsTestApp(
+            child: ServerSettingsScreen(
+              repository: _repository(storage, prefs),
+              config: config,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextFormField), blockedTileUrl);
+        await tester.tap(find.text(l10n.save));
+        await tester.pumpAndSettle();
+
+        // Error dialog shown, value not saved.
+        expect(find.text(l10n.tileServerHostWarningTitle), findsOneWidget);
+        expect(await prefs.read(key: 'tile_server_url'), isNull);
+        // Dismiss error dialog.
+        await tester.tap(find.text(l10n.ok));
+        await tester.pumpAndSettle();
       },
     );
   });
