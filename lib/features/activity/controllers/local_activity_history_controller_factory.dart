@@ -1,0 +1,19 @@
+import 'package:endurain/core/services/app_services.dart';
+import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
+import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
+import 'package:endurain/features/activity/services/activity_upload_service.dart';
+
+LocalActivityHistoryController createLocalActivityHistoryController({
+  required AppServices services,
+  LocalActivityRepository? repository,
+  ActivityUploadService? uploadService,
+  ActivityRetentionSettingsRepository? retentionSettingsRepository,
+}) {
+  return LocalActivityHistoryController(
+    repository: repository ?? services.localActivities,
+    uploadService: uploadService ?? services.activityUpload,
+    retentionSettingsRepository:
+        retentionSettingsRepository ?? services.activityRetentionSettings,
+  );
+}
