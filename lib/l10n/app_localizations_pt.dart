@@ -486,6 +486,9 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get activityHistoryLoadMore => 'Carregar mais';
+
+  @override
   String get activityHistoryDetailsTitle => 'Detalhes da atividade';
 
   @override

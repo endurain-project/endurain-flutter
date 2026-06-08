@@ -475,6 +475,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get activityHistoryLoadMore => 'Load more';
+
+  @override
   String get activityHistoryDetailsTitle => 'Activity details';
 
   @override

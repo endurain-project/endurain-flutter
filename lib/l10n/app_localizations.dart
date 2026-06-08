@@ -896,6 +896,12 @@ abstract class AppLocalizations {
   /// **'Upload: {status}'**
   String activityHistoryUploadStatus(String status);
 
+  /// Button to load the next page of activities in the history list - Used in: activity_history_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get activityHistoryLoadMore;
+
   /// Local activity details screen title - Used in: activity_details_screen.dart
   ///
   /// In en, this message translates to:

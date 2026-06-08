@@ -643,6 +643,10 @@
       }
     }
   },
+  "activityHistoryLoadMore": "Load more",
+  "@activityHistoryLoadMore": {
+    "description": "Button to load the next page of activities in the history list - Used in: activity_history_screen.dart"
+  },
   "activityHistoryDetailsTitle": "Activity details",
   "@activityHistoryDetailsTitle": {
     "description": "Local activity details screen title - Used in: activity_details_screen.dart"

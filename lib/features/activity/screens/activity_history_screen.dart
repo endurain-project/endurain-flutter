@@ -152,6 +152,17 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                       ),
                   ],
                 ),
+                if (_controller.hasMore) ...[
+                  const SizedBox(height: UIConstants.paddingStandard),
+                  Center(
+                    child: AdaptiveButton(
+                      label: l10n.activityHistoryLoadMore,
+                      onPressed:
+                          _controller.isLoading ? null : _controller.loadMore,
+                    ),
+                  ),
+                  const SizedBox(height: UIConstants.paddingStandard),
+                ],
               ],
             ),
           );

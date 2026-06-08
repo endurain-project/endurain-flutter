@@ -643,6 +643,10 @@
       }
     }
   },
+  "activityHistoryLoadMore": "Carregar mais",
+  "@activityHistoryLoadMore": {
+    "description": "Botão para carregar a próxima página de atividades na lista de histórico - Usado em: activity_history_screen.dart"
+  },
   "activityHistoryDetailsTitle": "Detalhes da atividade",
   "@activityHistoryDetailsTitle": {
     "description": "Título do ecrã de detalhes da atividade local - Usado em: activity_details_screen.dart"

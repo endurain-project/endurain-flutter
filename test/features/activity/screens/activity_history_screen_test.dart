@@ -172,6 +172,79 @@ void main() {
       expect(_findIconButton(tester, l10n.activityDeleteLocal), findsOneWidget);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Phase 8 — load-more affordance
+  // -------------------------------------------------------------------------
+
+  group('ActivityHistoryScreen – Phase 8: load more', () {
+    testWidgets(
+      'load-more button is visible when hasMore is true',
+      (tester) async {
+        final controller = _LoadedHistoryController(
+          records: [_pendingRecord],
+          hasMorePages: true,
+        );
+        addTearDown(controller.dispose);
+
+        await tester.pumpWidget(
+          AdaptiveApp(
+            title: 'Test',
+            home: ActivityHistoryScreen(controller: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.activityHistoryLoadMore), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'load-more button is hidden when hasMore is false',
+      (tester) async {
+        final controller = _LoadedHistoryController(
+          records: [_pendingRecord],
+          hasMorePages: false,
+        );
+        addTearDown(controller.dispose);
+
+        await tester.pumpWidget(
+          AdaptiveApp(
+            title: 'Test',
+            home: ActivityHistoryScreen(controller: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.activityHistoryLoadMore), findsNothing);
+      },
+    );
+
+    testWidgets('tapping load-more calls loadMore on controller', (
+      tester,
+    ) async {
+      var loadMoreCallCount = 0;
+      final controller = _LoadedHistoryController(
+        records: [_pendingRecord],
+        hasMorePages: true,
+        loadMoreCallback: () async => loadMoreCallCount++,
+      );
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityHistoryScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.activityHistoryLoadMore));
+      await tester.pumpAndSettle();
+
+      expect(loadMoreCallCount, 1);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -229,20 +302,28 @@ class _LoadedEmptyHistoryController extends LocalActivityHistoryController {
   Object? get error => null;
 
   @override
+  bool get hasMore => false;
+
+  @override
   Future<void> load() async {}
 }
 
 class _LoadedHistoryController extends LocalActivityHistoryController {
-  _LoadedHistoryController({required List<LocalActivityRecord> records})
-    : _records = records,
-      super(
-        repository: LocalActivityRepository(
-          supportDirectoryProvider: () async => throw StateError('unused'),
-        ),
-        uploadService: ActivityUploadService(),
-      );
+  _LoadedHistoryController({
+    required List<LocalActivityRecord> records,
+    this.hasMorePages = false,
+    this.loadMoreCallback,
+  }) : _records = records,
+       super(
+         repository: LocalActivityRepository(
+           supportDirectoryProvider: () async => throw StateError('unused'),
+         ),
+         uploadService: ActivityUploadService(),
+       );
 
   final List<LocalActivityRecord> _records;
+  final bool hasMorePages;
+  final Future<void> Function()? loadMoreCallback;
 
   @override
   List<LocalActivityRecord> get records => _records;
@@ -254,7 +335,13 @@ class _LoadedHistoryController extends LocalActivityHistoryController {
   Object? get error => null;
 
   @override
+  bool get hasMore => hasMorePages;
+
+  @override
   Future<void> load() async {}
+
+  @override
+  Future<void> loadMore() async => loadMoreCallback?.call();
 }
 
 class _ErrorHistoryController extends LocalActivityHistoryController {
@@ -274,6 +361,9 @@ class _ErrorHistoryController extends LocalActivityHistoryController {
 
   @override
   Object? get error => StateError('load failed');
+
+  @override
+  bool get hasMore => false;
 
   @override
   Future<void> load() async {}
@@ -296,6 +386,9 @@ class _LoadingHistoryController extends LocalActivityHistoryController {
 
   @override
   Object? get error => null;
+
+  @override
+  bool get hasMore => false;
 
   @override
   Future<void> load() async {}
