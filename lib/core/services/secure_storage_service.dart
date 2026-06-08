@@ -29,31 +29,15 @@ class SecureStorageService {
   }
 
   // Write a value
-  Future<void> write({required String key, required String value}) async {
-    try {
-      await _storage.write(key: key, value: value);
-    } catch (e) {
-      rethrow;
-    }
-  }
+  Future<void> write({required String key, required String value}) =>
+      _storage.write(key: key, value: value);
 
   // Delete a value
-  Future<void> delete({required String key}) async {
-    try {
-      await _storage.delete(key: key);
-    } catch (e) {
-      rethrow;
-    }
-  }
+  Future<void> delete({required String key}) =>
+      _storage.delete(key: key);
 
   // Delete all values
-  Future<void> deleteAll() async {
-    try {
-      await _storage.deleteAll();
-    } catch (e) {
-      rethrow;
-    }
-  }
+  Future<void> deleteAll() => _storage.deleteAll();
 
   // Server-specific methods
   Future<String?> getServerUrl() => read(key: _serverUrlKey);
