@@ -69,6 +69,7 @@ class ActivityRecorderService : Service() {
         activeNotificationText = text
         resumedFromPause = false
         if (!hasAnyLocationPermission()) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
@@ -85,6 +86,7 @@ class ActivityRecorderService : Service() {
         val session = store.loadSession()
         resumedFromPause = session != null
         if (!hasAnyLocationPermission()) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
@@ -122,6 +124,7 @@ class ActivityRecorderService : Service() {
             return
         }
         if (!hasAnyLocationPermission()) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
@@ -143,6 +146,7 @@ class ActivityRecorderService : Service() {
         stopCollection()
         val manager = locationManager
         if (manager == null) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
             )
@@ -151,6 +155,7 @@ class ActivityRecorderService : Service() {
         val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
         val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
         if (!hasFine && !hasCoarse) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
@@ -158,6 +163,7 @@ class ActivityRecorderService : Service() {
         }
         val providers = selectProviders(manager, hasFine, hasCoarse)
         if (providers.isEmpty()) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
             )
@@ -203,6 +209,7 @@ class ActivityRecorderService : Service() {
         }
         if (!registeredProvider) {
             locationListener = null
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 if (permissionFailure) {
                     ActivityRecorderCoordinator.REASON_PERMISSION_LOST
@@ -210,6 +217,18 @@ class ActivityRecorderService : Service() {
                     ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE
                 },
             )
+        }
+    }
+
+    /**
+     * Persists [ActiveActivitySessionData.STATUS_FAILED] for any active session
+     * so Flutter sees a non-recoverable state on re-attach even if the failure
+     * event was dropped while Flutter was detached.
+     */
+    private fun persistFailure() {
+        val session = store.loadSession() ?: return
+        if (session.isActive) {
+            store.saveSession(session.copy(status = ActiveActivitySessionData.STATUS_FAILED))
         }
     }
 
@@ -261,6 +280,7 @@ class ActivityRecorderService : Service() {
         try {
             store.appendPoints(listOf(point))
         } catch (_: Exception) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERSISTENCE_FAILED,
             )
@@ -352,12 +372,14 @@ class ActivityRecorderService : Service() {
             startForegroundCompat(title, text)
             true
         } catch (_: SecurityException) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
             stopSelf()
             false
         } catch (_: RuntimeException) {
+            persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED,
             )

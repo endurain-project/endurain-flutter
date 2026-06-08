@@ -146,6 +146,9 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
   }
 
   @override
+  // Intentional no-op: the EventChannel is a system broadcast owned by the
+  // Android/iOS service; unsubscribing here would break other Flutter isolates
+  // that share the same channel. The native service manages its own lifecycle.
   Future<void> dispose() async {}
 
   ActivityRecorderEvent? _parseEvent(Object? payload) {

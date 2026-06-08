@@ -163,6 +163,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         // recording. Only a hard denial is surfaced; report stream trouble
         // without leaking error specifics.
         if let clError = error as? CLError, clError.code == .denied {
+            persistFailure()
             ActivityRecorderCoordinator.shared.emitFailed(
                 ActivityRecorderCoordinator.reasonPermissionLost
             )
@@ -176,11 +177,13 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         switch currentAuthorizationStatus() {
         case .denied, .restricted:
             stopCollection()
+            persistFailure()
             ActivityRecorderCoordinator.shared.emitFailed(
                 ActivityRecorderCoordinator.reasonPermissionLost
             )
         case .authorizedWhenInUse:
             stopCollection()
+            persistFailure()
             ActivityRecorderCoordinator.shared.emitFailed(
                 ActivityRecorderCoordinator.reasonPermissionLost
             )
@@ -193,6 +196,16 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     }
 
     // MARK: - Helpers
+
+    /// Persists `statusFailed` for any active session so Flutter sees a
+    /// non-recoverable state on re-attach even if the failure event was dropped
+    /// while Flutter was suspended.
+    private func persistFailure() {
+        guard let session = store.loadSession(), session.isActive else {
+            return
+        }
+        store.saveSession(session.copyWith(status: ActiveActivitySessionData.statusFailed))
+    }
 
     private func currentAuthorizationStatus() -> CLAuthorizationStatus {
         if #available(iOS 14.0, *) {
