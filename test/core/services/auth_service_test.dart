@@ -2,6 +2,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/auth_service.dart';
@@ -639,5 +640,26 @@ void main() {
         expect(serverLogoutSucceeded, isTrue);
       },
     );
+
+    test('rejects http serverUrl in managed mode before making any request', () async {
+      final service = AuthService(
+        storage: SecureStorageService(),
+        httpClient: MockClient((request) async {
+          fail('No HTTP request should be made with http:// in managed mode.');
+        }),
+        config: const AppConfig(transportMode: AppTransportMode.managed),
+      );
+
+      await expectLater(
+        service.login('joao', 'secret', serverUrl: 'http://example.test'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.serverUrlNotConfigured,
+          ),
+        ),
+      );
+    });
   });
 }

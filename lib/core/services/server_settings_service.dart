@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/base_http_client.dart';
@@ -17,9 +18,13 @@ class ServerSettingsService {
     ServerUrlResolver? urlResolver,
     BaseHttpClient? baseClient,
     http.Client? httpClient,
+    AppConfig config = AppConfig.defaults,
   }) : _urlResolver =
            urlResolver ??
-           ServerUrlResolver(storage: storage ?? SecureStorageService()),
+           ServerUrlResolver(
+             storage: storage ?? SecureStorageService(),
+             config: config,
+           ),
        _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
 
   final ServerUrlResolver _urlResolver;

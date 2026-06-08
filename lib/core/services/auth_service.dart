@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/api_response.dart';
 import 'package:endurain/core/services/base_http_client.dart';
@@ -16,10 +17,12 @@ class AuthService {
     ServerUrlResolver? urlResolver,
     BaseHttpClient? baseClient,
     http.Client? httpClient,
+    AppConfig config = AppConfig.defaults,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
     _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
-    _urlResolver = urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
+    _urlResolver = urlResolver ??
+        ServerUrlResolver(storage: resolvedStorage, config: config);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
     _exchanger = PkceTokenExchanger(sessionStore: _sessionStore, http: _http);
   }
