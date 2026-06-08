@@ -8,13 +8,10 @@ import 'package:endurain/core/services/app_preferences_store.dart';
 /// operations that do not complete under `testWidgets`'s controlled event
 /// loop.
 class FakePreferencesStore extends AppPreferencesStore {
-  FakePreferencesStore()
-    : super(supportDirectoryProvider: _unsupported);
+  FakePreferencesStore() : super(supportDirectoryProvider: _unsupported);
 
   static Future<Directory> _unsupported() {
-    throw UnsupportedError(
-      'FakePreferencesStore does not use the file system',
-    );
+    throw UnsupportedError('FakePreferencesStore does not use the file system');
   }
 
   final Map<String, String> _map = {};

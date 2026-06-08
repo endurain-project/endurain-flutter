@@ -15,38 +15,40 @@ void main() {
   });
 
   group('ServerSettingsService', () {
-    test('parses and returns server settings without persisting tile config',
-        () async {
-      final storage = SecureStorageService();
-      final service = ServerSettingsService(
-        storage: storage,
-        httpClient: MockClient((request) async {
-          expect(request.url.path, ApiConstants.serverSettingsEndpoint);
-          return http.Response(
-            '{"sso_enabled":true,"local_login_enabled":false,'
-            '"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
-            '"tileserver_attribution":"OpenStreetMap",'
-            '"map_background_color":"#102030"}',
-            200,
-          );
-        }),
-      );
+    test(
+      'parses and returns server settings without persisting tile config',
+      () async {
+        final storage = SecureStorageService();
+        final service = ServerSettingsService(
+          storage: storage,
+          httpClient: MockClient((request) async {
+            expect(request.url.path, ApiConstants.serverSettingsEndpoint);
+            return http.Response(
+              '{"sso_enabled":true,"local_login_enabled":false,'
+              '"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
+              '"tileserver_attribution":"OpenStreetMap",'
+              '"map_background_color":"#102030"}',
+              200,
+            );
+          }),
+        );
 
-      final settings = await service.getServerSettings(
-        serverUrl: 'https://example.test',
-      );
+        final settings = await service.getServerSettings(
+          serverUrl: 'https://example.test',
+        );
 
-      expect(settings.ssoEnabled, isTrue);
-      expect(settings.localLoginEnabled, isFalse);
-      expect(settings.tileserverUrl, 'https://tiles.test/{z}/{x}/{y}.png');
-      expect(settings.tileserverAttribution, 'OpenStreetMap');
-      expect(settings.mapBackgroundColor, '#102030');
+        expect(settings.ssoEnabled, isTrue);
+        expect(settings.localLoginEnabled, isFalse);
+        expect(settings.tileserverUrl, 'https://tiles.test/{z}/{x}/{y}.png');
+        expect(settings.tileserverAttribution, 'OpenStreetMap');
+        expect(settings.mapBackgroundColor, '#102030');
 
-      // The service must NOT write tile preferences — only callers with an
-      // explicit MapSettingsRepository may do so.
-      // (Tile methods are no longer in SecureStorageService — just verify the
-      // settings values were returned without attempting to read them back.)
-    });
+        // The service must NOT write tile preferences — only callers with an
+        // explicit MapSettingsRepository may do so.
+        // (Tile methods are no longer in SecureStorageService — just verify the
+        // settings values were returned without attempting to read them back.)
+      },
+    );
 
     test('falls back to the stored server URL', () async {
       final storage = SecureStorageService();

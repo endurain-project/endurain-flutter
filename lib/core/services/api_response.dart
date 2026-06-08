@@ -64,7 +64,8 @@ class ApiResponse {
     try {
       final data = json.decode(response.body);
       if (data is Map) {
-        final raw = data['detail']?.toString() ??
+        final raw =
+            data['detail']?.toString() ??
             data['message']?.toString() ??
             data['error']?.toString();
         return _bounded(raw);

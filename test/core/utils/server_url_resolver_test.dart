@@ -40,48 +40,54 @@ void main() {
       expect(url, 'https://provided.test');
     });
 
-    test('throws serverUrlNotConfigured when neither source has a URL',
-        () async {
-      final resolver = ServerUrlResolver(storage: SecureStorageService());
+    test(
+      'throws serverUrlNotConfigured when neither source has a URL',
+      () async {
+        final resolver = ServerUrlResolver(storage: SecureStorageService());
 
-      await expectLater(
-        resolver.resolve(),
-        throwsA(
-          isA<AppException>().having(
-            (e) => e.code,
-            'code',
-            AppErrorCode.serverUrlNotConfigured,
+        await expectLater(
+          resolver.resolve(),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.serverUrlNotConfigured,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
-    test('treats an empty provided URL as absent and falls back to storage',
-        () async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://stored.test');
-      final resolver = ServerUrlResolver(storage: storage);
+    test(
+      'treats an empty provided URL as absent and falls back to storage',
+      () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://stored.test');
+        final resolver = ServerUrlResolver(storage: storage);
 
-      final url = await resolver.resolve(serverUrl: '');
+        final url = await resolver.resolve(serverUrl: '');
 
-      expect(url, 'https://stored.test');
-    });
+        expect(url, 'https://stored.test');
+      },
+    );
 
-    test('throws when provided URL is empty and storage is also empty',
-        () async {
-      final resolver = ServerUrlResolver(storage: SecureStorageService());
+    test(
+      'throws when provided URL is empty and storage is also empty',
+      () async {
+        final resolver = ServerUrlResolver(storage: SecureStorageService());
 
-      await expectLater(
-        resolver.resolve(serverUrl: ''),
-        throwsA(
-          isA<AppException>().having(
-            (e) => e.code,
-            'code',
-            AppErrorCode.serverUrlNotConfigured,
+        await expectLater(
+          resolver.resolve(serverUrl: ''),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.serverUrlNotConfigured,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('persists the provided URL to storage when save is true', () async {
       final storage = SecureStorageService();
@@ -101,16 +107,18 @@ void main() {
       expect(await storage.getServerUrl(), isNull);
     });
 
-    test('does not overwrite storage when no URL is provided and save is true',
-        () async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://stored.test');
-      final resolver = ServerUrlResolver(storage: storage);
+    test(
+      'does not overwrite storage when no URL is provided and save is true',
+      () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://stored.test');
+        final resolver = ServerUrlResolver(storage: storage);
 
-      await resolver.resolve(save: true);
+        await resolver.resolve(save: true);
 
-      // Stored value should be unchanged — there is nothing new to write.
-      expect(await storage.getServerUrl(), 'https://stored.test');
-    });
+        // Stored value should be unchanged — there is nothing new to write.
+        expect(await storage.getServerUrl(), 'https://stored.test');
+      },
+    );
   });
 }

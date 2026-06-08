@@ -29,7 +29,10 @@ class MapSettingsRepository {
   }
 
   Future<void> saveTileServerAttribution(String attribution) {
-    return _preferences.write(key: _tileServerAttributionKey, value: attribution);
+    return _preferences.write(
+      key: _tileServerAttributionKey,
+      value: attribution,
+    );
   }
 
   Future<String?> getMapBackgroundColor() {

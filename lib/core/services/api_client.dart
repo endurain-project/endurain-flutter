@@ -24,11 +24,11 @@ class ApiClient {
         AuthSessionStore(storage: storage ?? SecureStorageService());
     _sessionStore = resolvedStore;
     _authService =
-        authService ?? AuthService(sessionStore: resolvedStore, storage: storage);
+        authService ??
+        AuthService(sessionStore: resolvedStore, storage: storage);
     _httpClient = httpClient ?? http.Client();
     _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter();
-    _requestTimeout =
-        requestTimeout ?? ApiConstants.defaultRequestTimeout;
+    _requestTimeout = requestTimeout ?? ApiConstants.defaultRequestTimeout;
     _uploadTimeout = uploadTimeout ?? ApiConstants.defaultUploadTimeout;
   }
 
@@ -123,7 +123,8 @@ class ApiClient {
         )
         .timeout(
           _uploadTimeout,
-          onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+          onTimeout: () =>
+              throw const AppException(AppErrorCode.requestTimeout),
         );
 
     if (response.statusCode == 401) {

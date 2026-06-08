@@ -2,7 +2,7 @@
 ///
 /// [AppConfig.defaults] provides production-safe values for self-hosted
 /// deployments. A stricter managed or SaaS build can instantiate [AppConfig]
-/// with different values and pass it to [AppServices] before calling any
+/// with different values and pass it to `AppServices` before calling any
 /// feature code.
 ///
 /// All service defaults must remain identical to the current self-hosted

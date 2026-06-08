@@ -10,10 +10,10 @@ import 'package:path_provider/path_provider.dart';
 /// <app-support>/preferences.json
 /// ```
 ///
-/// Unlike [SecureStorageService], this store does not use the platform keychain
+/// Unlike `SecureStorageService`, this store does not use the platform keychain
 /// and is suitable for display settings (map tile URL, attribution, color) that
 /// do not require hardware-backed encryption. Secret credentials (tokens,
-/// passwords) must remain in [SecureStorageService].
+/// passwords) must remain in `SecureStorageService`.
 class AppPreferencesStore {
   AppPreferencesStore({Future<Directory> Function()? supportDirectoryProvider})
     : _supportDirectoryProvider =

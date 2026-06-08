@@ -70,8 +70,7 @@ void main() {
       });
 
       test('truncates a non-JSON body longer than 200 characters', () {
-        final html =
-            '<html><body>${'x' * 300}</body></html>';
+        final html = '<html><body>${'x' * 300}</body></html>';
         final response = http.Response(html, 502);
         final detail = ApiResponse.errorDetail(response);
         expect(detail, isNotNull);
@@ -107,4 +106,3 @@ void main() {
     });
   });
 }
-

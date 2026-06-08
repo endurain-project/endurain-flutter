@@ -132,36 +132,40 @@ void main() {
       );
     });
 
-    test('getAccessToken throws secureStorageReadFailed on platform exception',
-        () async {
-      final storage = SecureStorageService(storage: _ThrowingStorage());
+    test(
+      'getAccessToken throws secureStorageReadFailed on platform exception',
+      () async {
+        final storage = SecureStorageService(storage: _ThrowingStorage());
 
-      expect(
-        () => storage.getAccessToken(),
-        throwsA(
-          isA<AppException>().having(
-            (e) => e.code,
-            'code',
-            AppErrorCode.secureStorageReadFailed,
+        expect(
+          () => storage.getAccessToken(),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.secureStorageReadFailed,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
-    test('getServerUrl throws secureStorageReadFailed on platform exception',
-        () async {
-      final storage = SecureStorageService(storage: _ThrowingStorage());
+    test(
+      'getServerUrl throws secureStorageReadFailed on platform exception',
+      () async {
+        final storage = SecureStorageService(storage: _ThrowingStorage());
 
-      expect(
-        () => storage.getServerUrl(),
-        throwsA(
-          isA<AppException>().having(
-            (e) => e.code,
-            'code',
-            AppErrorCode.secureStorageReadFailed,
+        expect(
+          () => storage.getServerUrl(),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.secureStorageReadFailed,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   });
 }

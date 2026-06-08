@@ -8,8 +8,9 @@ void main() {
     final calculator = ActivityStatsCalculator();
 
     // Convenience: wrap flat points in one segment (single-segment tests).
-    List<ActivityTrackSegment> oneSegment(List<ActivityTrackPoint> pts) =>
-        [ActivityTrackSegment(points: pts)];
+    List<ActivityTrackSegment> oneSegment(List<ActivityTrackPoint> pts) => [
+      ActivityTrackSegment(points: pts),
+    ];
 
     test('returns zero stats for an empty segment list', () {
       final stats = calculator.calculate([]);
@@ -78,66 +79,58 @@ void main() {
     // Multi-segment regression: distance between segments must NOT be counted.
     // -------------------------------------------------------------------------
 
-    test(
-      'does not count the gap between two segments as distance',
-      () {
-        // Segment 1: walk ~111m east over 60s.
-        // Segment 2: resume 5° away (teleportation during pause), walk ~111m east.
-        final seg1 = ActivityTrackSegment(
-          points: [
-            _point(latitude: 0, longitude: 0, seconds: 0),
-            _point(latitude: 0, longitude: 0.001, seconds: 60),
-          ],
-        );
-        final seg2 = ActivityTrackSegment(
-          points: [
-            // 5° longitude jump that should NOT be counted.
-            _point(latitude: 0, longitude: 5, seconds: 120),
-            _point(latitude: 0, longitude: 5.001, seconds: 180),
-          ],
-        );
+    test('does not count the gap between two segments as distance', () {
+      // Segment 1: walk ~111m east over 60s.
+      // Segment 2: resume 5° away (teleportation during pause), walk ~111m east.
+      final seg1 = ActivityTrackSegment(
+        points: [
+          _point(latitude: 0, longitude: 0, seconds: 0),
+          _point(latitude: 0, longitude: 0.001, seconds: 60),
+        ],
+      );
+      final seg2 = ActivityTrackSegment(
+        points: [
+          // 5° longitude jump that should NOT be counted.
+          _point(latitude: 0, longitude: 5, seconds: 120),
+          _point(latitude: 0, longitude: 5.001, seconds: 180),
+        ],
+      );
 
-        final stats = calculator.calculate([seg1, seg2]);
+      final stats = calculator.calculate([seg1, seg2]);
 
-        // Only ~222m total (two 111m legs), NOT ~555km (including the 5° gap).
-        expect(stats.distanceMeters, closeTo(222, 1));
-        expect(stats.durationSeconds, 120);
-      },
-    );
+      // Only ~222m total (two 111m legs), NOT ~555km (including the 5° gap).
+      expect(stats.distanceMeters, closeTo(222, 1));
+      expect(stats.durationSeconds, 120);
+    });
 
-    test(
-      'accumulates distance from multiple segments correctly',
-      () {
-        final seg1 = ActivityTrackSegment(
+    test('accumulates distance from multiple segments correctly', () {
+      final seg1 = ActivityTrackSegment(
+        points: [
+          _point(latitude: 0, longitude: 0, seconds: 0),
+          _point(latitude: 0, longitude: 0.001, seconds: 30),
+        ],
+      );
+      final seg2 = ActivityTrackSegment(
+        points: [
+          _point(latitude: 10, longitude: 10, seconds: 60),
+          _point(latitude: 10, longitude: 10.001, seconds: 90),
+        ],
+      );
+
+      final single = calculator.calculate([
+        ActivityTrackSegment(
           points: [
             _point(latitude: 0, longitude: 0, seconds: 0),
             _point(latitude: 0, longitude: 0.001, seconds: 30),
           ],
-        );
-        final seg2 = ActivityTrackSegment(
-          points: [
-            _point(latitude: 10, longitude: 10, seconds: 60),
-            _point(latitude: 10, longitude: 10.001, seconds: 90),
-          ],
-        );
+        ),
+      ]);
 
-        final single = calculator.calculate(
-          [
-            ActivityTrackSegment(
-              points: [
-                _point(latitude: 0, longitude: 0, seconds: 0),
-                _point(latitude: 0, longitude: 0.001, seconds: 30),
-              ],
-            ),
-          ],
-        );
+      final stats = calculator.calculate([seg1, seg2]);
 
-        final stats = calculator.calculate([seg1, seg2]);
-
-        // Distance should be double that of a single-segment walk of the same length.
-        expect(stats.distanceMeters, closeTo(single.distanceMeters * 2, 1));
-      },
-    );
+      // Distance should be double that of a single-segment walk of the same length.
+      expect(stats.distanceMeters, closeTo(single.distanceMeters * 2, 1));
+    });
   });
 }
 

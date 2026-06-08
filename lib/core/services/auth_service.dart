@@ -18,15 +18,10 @@ class AuthService {
     http.Client? httpClient,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
-    _sessionStore =
-        sessionStore ?? AuthSessionStore(storage: resolvedStorage);
-    _urlResolver =
-        urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
+    _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
+    _urlResolver = urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
-    _exchanger = PkceTokenExchanger(
-      sessionStore: _sessionStore,
-      http: _http,
-    );
+    _exchanger = PkceTokenExchanger(sessionStore: _sessionStore, http: _http);
   }
 
   late final AuthSessionStore _sessionStore;
@@ -120,11 +115,7 @@ class AuthService {
 
       if (sessionId != null) {
         // Exchange session for tokens
-        return await _exchangeSessionForTokens(
-          serverUrl,
-          sessionId,
-          username,
-        );
+        return await _exchangeSessionForTokens(serverUrl, sessionId, username);
       }
 
       throw const AppException(AppErrorCode.noSessionIdReceived);

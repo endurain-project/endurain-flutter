@@ -121,8 +121,7 @@ class LocalActivityRecord {
       'uploadStatus': uploadStatus.toJson(),
       'createdAt': createdAt.toUtcIso8601(),
       'updatedAt': updatedAt.toUtcIso8601(),
-      if (uploadedAt != null)
-        'uploadedAt': uploadedAt!.toUtcIso8601(),
+      if (uploadedAt != null) 'uploadedAt': uploadedAt!.toUtcIso8601(),
       if (lastUploadAttemptAt != null)
         'lastUploadAttemptAt': lastUploadAttemptAt!.toUtcIso8601(),
       if (lastUploadErrorCode != null)

@@ -552,67 +552,71 @@ void main() {
         controller.dispose();
       });
 
-      test('is false when allowInsecureTransport is false, even for http URL',
-          () {
+      test(
+        'is false when allowInsecureTransport is false, even for http URL',
+        () {
+          final controller = LoginController(
+            authCoordinator: _repository(
+              storage: SecureStorageService(),
+              client: MockClient((_) async => http.Response('{}', 200)),
+            ),
+            appLinksService: const EmptyAppLinksService(),
+            config: const AppConfig(allowInsecureTransport: false),
+          );
+          controller.serverUrlController.text = 'http://example.test';
+          expect(controller.serverUrlIsHttp, isFalse);
+          controller.dispose();
+        },
+      );
+    });
+
+    test(
+      'persists map settings from server settings on submitServerUrl',
+      () async {
+        final tempDir = await Directory.systemTemp.createTemp(
+          'login_ctrl_test_',
+        );
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        final storage = SecureStorageService();
+        final prefs = AppPreferencesStore(
+          supportDirectoryProvider: () async => tempDir,
+        );
+        final mapRepo = MapSettingsRepository(preferences: prefs);
         final controller = LoginController(
           authCoordinator: _repository(
-            storage: SecureStorageService(),
-            client: MockClient((_) async => http.Response('{}', 200)),
+            storage: storage,
+            client: MockClient((request) async {
+              if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+                return http.Response(
+                  '{"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
+                  '"tileserver_attribution":"OSM",'
+                  '"map_background_color":"#001122"}',
+                  200,
+                );
+              }
+              if (request.url.path == ApiConstants.idpListEndpoint) {
+                return http.Response('[]', 200);
+              }
+              fail('Unexpected request to ${request.url}');
+            }),
           ),
           appLinksService: const EmptyAppLinksService(),
-          config: const AppConfig(allowInsecureTransport: false),
+          mapSettingsRepository: mapRepo,
         );
-        controller.serverUrlController.text = 'http://example.test';
-        expect(controller.serverUrlIsHttp, isFalse);
+        controller.serverUrlController.text = 'https://example.test';
+
+        await controller.submitServerUrl();
+
+        expect(
+          await mapRepo.getTileServerUrl(),
+          'https://tiles.test/{z}/{x}/{y}.png',
+        );
+        expect(await mapRepo.getTileServerAttribution(), 'OSM');
+        expect(await mapRepo.getMapBackgroundColor(), '#001122');
         controller.dispose();
-      });
-    });
-
-    test('persists map settings from server settings on submitServerUrl',
-        () async {
-      final tempDir = await Directory.systemTemp.createTemp(
-        'login_ctrl_test_',
-      );
-      addTearDown(() => tempDir.deleteSync(recursive: true));
-
-      final storage = SecureStorageService();
-      final prefs = AppPreferencesStore(
-        supportDirectoryProvider: () async => tempDir,
-      );
-      final mapRepo = MapSettingsRepository(preferences: prefs);
-      final controller = LoginController(
-        authCoordinator: _repository(
-          storage: storage,
-          client: MockClient((request) async {
-            if (request.url.path == ApiConstants.serverSettingsEndpoint) {
-              return http.Response(
-                '{"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
-                '"tileserver_attribution":"OSM",'
-                '"map_background_color":"#001122"}',
-                200,
-              );
-            }
-            if (request.url.path == ApiConstants.idpListEndpoint) {
-              return http.Response('[]', 200);
-            }
-            fail('Unexpected request to ${request.url}');
-          }),
-        ),
-        appLinksService: const EmptyAppLinksService(),
-        mapSettingsRepository: mapRepo,
-      );
-      controller.serverUrlController.text = 'https://example.test';
-
-      await controller.submitServerUrl();
-
-      expect(
-        await mapRepo.getTileServerUrl(),
-        'https://tiles.test/{z}/{x}/{y}.png',
-      );
-      expect(await mapRepo.getTileServerAttribution(), 'OSM');
-      expect(await mapRepo.getMapBackgroundColor(), '#001122');
-      controller.dispose();
-    });
+      },
+    );
   });
 }
 

@@ -45,16 +45,11 @@ class SsoService {
     DateTime Function()? now,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
-    _sessionStore =
-        sessionStore ?? AuthSessionStore(storage: resolvedStorage);
-    _urlResolver =
-        urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
+    _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
+    _urlResolver = urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
     _now = now ?? DateTime.now;
-    _exchanger = PkceTokenExchanger(
-      sessionStore: _sessionStore,
-      http: _http,
-    );
+    _exchanger = PkceTokenExchanger(sessionStore: _sessionStore, http: _http);
   }
 
   late final AuthSessionStore _sessionStore;

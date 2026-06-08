@@ -12,8 +12,7 @@ void main() {
         String? capturedHeader;
         final client = BaseHttpClient(
           httpClient: MockClient((request) async {
-            capturedHeader =
-                request.headers[ApiConstants.clientTypeHeader];
+            capturedHeader = request.headers[ApiConstants.clientTypeHeader];
             return http.Response('{}', 200);
           }),
         );
@@ -30,8 +29,7 @@ void main() {
         String? capturedHeader;
         final client = BaseHttpClient(
           httpClient: MockClient((request) async {
-            capturedHeader =
-                request.headers[ApiConstants.clientTypeHeader];
+            capturedHeader = request.headers[ApiConstants.clientTypeHeader];
             return http.Response('{}', 200);
           }),
         );
@@ -59,8 +57,10 @@ void main() {
           failureCode: AppErrorCode.fetchServerSettingsFailed,
         );
 
-        expect(captured[ApiConstants.clientTypeHeader],
-            ApiConstants.clientTypeValue);
+        expect(
+          captured[ApiConstants.clientTypeHeader],
+          ApiConstants.clientTypeValue,
+        );
         expect(captured['X-Custom'], 'value');
       });
     });
@@ -107,9 +107,7 @@ void main() {
     group('getJson', () {
       test('returns JSON list on 200', () async {
         final client = BaseHttpClient(
-          httpClient: MockClient(
-            (_) async => http.Response('[1,2,3]', 200),
-          ),
+          httpClient: MockClient((_) async => http.Response('[1,2,3]', 200)),
         );
 
         final result = await client.getJson(
@@ -122,9 +120,7 @@ void main() {
 
       test('throws with failureCode on non-200 response', () async {
         final client = BaseHttpClient(
-          httpClient: MockClient(
-            (_) async => http.Response('', 500),
-          ),
+          httpClient: MockClient((_) async => http.Response('', 500)),
         );
 
         await expectLater(
@@ -189,8 +185,7 @@ void main() {
         );
 
         expect(capturedBody, 'username=alice&password=secret');
-        expect(capturedContentType,
-            ApiConstants.contentTypeFormUrlEncoded);
+        expect(capturedContentType, ApiConstants.contentTypeFormUrlEncoded);
       });
 
       test('throws with failureCode on non-200 response', () async {
@@ -219,9 +214,7 @@ void main() {
     group('low-level get/post', () {
       test('returns raw response for caller inspection', () async {
         final client = BaseHttpClient(
-          httpClient: MockClient(
-            (_) async => http.Response('OK', 204),
-          ),
+          httpClient: MockClient((_) async => http.Response('OK', 204)),
         );
 
         final response = await client.get(
@@ -234,53 +227,53 @@ void main() {
     });
 
     group('timeout', () {
-      test('throws requestTimeout when GET exceeds the configured duration',
-          () async {
-        final client = BaseHttpClient(
-          httpClient: MockClient(
-            (_) async {
+      test(
+        'throws requestTimeout when GET exceeds the configured duration',
+        () async {
+          final client = BaseHttpClient(
+            httpClient: MockClient((_) async {
               await Future<void>.delayed(const Duration(seconds: 10));
               return http.Response('{}', 200);
-            },
-          ),
-          timeout: const Duration(milliseconds: 1),
-        );
+            }),
+            timeout: const Duration(milliseconds: 1),
+          );
 
-        await expectLater(
-          client.get(Uri.parse('https://example.test/slow')),
-          throwsA(
-            isA<AppException>().having(
-              (e) => e.code,
-              'code',
-              AppErrorCode.requestTimeout,
+          await expectLater(
+            client.get(Uri.parse('https://example.test/slow')),
+            throwsA(
+              isA<AppException>().having(
+                (e) => e.code,
+                'code',
+                AppErrorCode.requestTimeout,
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
 
-      test('throws requestTimeout when POST exceeds the configured duration',
-          () async {
-        final client = BaseHttpClient(
-          httpClient: MockClient(
-            (_) async {
+      test(
+        'throws requestTimeout when POST exceeds the configured duration',
+        () async {
+          final client = BaseHttpClient(
+            httpClient: MockClient((_) async {
               await Future<void>.delayed(const Duration(seconds: 10));
               return http.Response('{}', 200);
-            },
-          ),
-          timeout: const Duration(milliseconds: 1),
-        );
+            }),
+            timeout: const Duration(milliseconds: 1),
+          );
 
-        await expectLater(
-          client.post(Uri.parse('https://example.test/slow')),
-          throwsA(
-            isA<AppException>().having(
-              (e) => e.code,
-              'code',
-              AppErrorCode.requestTimeout,
+          await expectLater(
+            client.post(Uri.parse('https://example.test/slow')),
+            throwsA(
+              isA<AppException>().having(
+                (e) => e.code,
+                'code',
+                AppErrorCode.requestTimeout,
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
     });
   });
 }

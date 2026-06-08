@@ -15,9 +15,7 @@ void main() {
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('map_settings_repo_test_');
-    prefs = AppPreferencesStore(
-      supportDirectoryProvider: () async => tempDir,
-    );
+    prefs = AppPreferencesStore(supportDirectoryProvider: () async => tempDir);
     repository = MapSettingsRepository(preferences: prefs);
   });
 
@@ -56,10 +54,7 @@ void main() {
           await repository.getTileServerUrl(),
           'https://tiles.test/{z}/{x}/{y}.png',
         );
-        expect(
-          await repository.getTileServerAttribution(),
-          'OpenStreetMap',
-        );
+        expect(await repository.getTileServerAttribution(), 'OpenStreetMap');
         expect(await repository.getMapBackgroundColor(), '#102030');
       });
 
@@ -80,25 +75,27 @@ void main() {
         );
       });
 
-      test('does not overwrite stored values when fields are empty strings',
-          () async {
-        await repository.saveTileServerUrl(
-          'https://tiles.previous.test/{z}/{x}/{y}.png',
-        );
+      test(
+        'does not overwrite stored values when fields are empty strings',
+        () async {
+          await repository.saveTileServerUrl(
+            'https://tiles.previous.test/{z}/{x}/{y}.png',
+          );
 
-        final settings = ServerSettings.fromJson({
-          'tileserver_url': '',
-          'tileserver_attribution': '',
-          'map_background_color': '',
-        });
+          final settings = ServerSettings.fromJson({
+            'tileserver_url': '',
+            'tileserver_attribution': '',
+            'map_background_color': '',
+          });
 
-        await repository.saveFromServerSettings(settings);
+          await repository.saveFromServerSettings(settings);
 
-        expect(
-          await repository.getTileServerUrl(),
-          'https://tiles.previous.test/{z}/{x}/{y}.png',
-        );
-      });
+          expect(
+            await repository.getTileServerUrl(),
+            'https://tiles.previous.test/{z}/{x}/{y}.png',
+          );
+        },
+      );
     });
   });
 }

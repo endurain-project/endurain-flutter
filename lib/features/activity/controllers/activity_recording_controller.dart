@@ -34,8 +34,7 @@ class ActivityRecordingController extends ChangeNotifier {
        _localActivitySummaryBuilder =
            localActivitySummaryBuilder ?? LocalActivitySummaryBuilder(),
        _retentionSettingsRepository = retentionSettingsRepository,
-       _localActivityIdProvider =
-           localActivityIdProvider ?? localActivityId,
+       _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
        _now = now ?? DateTime.now,
        _ownsService = ownsService {
     _stateSubscription = _recordingService.stateStream.listen((state) {

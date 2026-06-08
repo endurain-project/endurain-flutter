@@ -39,9 +39,7 @@ void main() {
 
       await tester.pumpWidget(
         _SettingsTestApp(
-          child: ServerSettingsScreen(
-            repository: _repository(storage, prefs),
-          ),
+          child: ServerSettingsScreen(repository: _repository(storage, prefs)),
         ),
       );
 
@@ -63,9 +61,7 @@ void main() {
 
       await tester.pumpWidget(
         _SettingsTestApp(
-          child: ServerSettingsScreen(
-            repository: _repository(storage, prefs),
-          ),
+          child: ServerSettingsScreen(repository: _repository(storage, prefs)),
         ),
       );
 

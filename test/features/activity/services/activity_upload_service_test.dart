@@ -144,66 +144,64 @@ void main() {
       if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
     });
 
-    test('marks record uploaded and retains GPX by default on success',
-        () async {
-      final record = await _createRecord(repository, id: 'svc_success');
-      final now = DateTime.utc(2026, 6, 8, 10, 0);
-      final service = _serviceReturningStatus(201);
+    test(
+      'marks record uploaded and retains GPX by default on success',
+      () async {
+        final record = await _createRecord(repository, id: 'svc_success');
+        final now = DateTime.utc(2026, 6, 8, 10, 0);
+        final service = _serviceReturningStatus(201);
 
-      final result = await service.performUploadAttempt(
-        record: record,
-        repository: repository,
-        now: () => now,
-      );
+        final result = await service.performUploadAttempt(
+          record: record,
+          repository: repository,
+          now: () => now,
+        );
 
-      expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
-      expect(result.uploadedAt, now);
-      expect(result.lastUploadErrorCode, isNull);
-      expect(await repository.hasGpx(result), isTrue);
-    });
+        expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+        expect(result.uploadedAt, now);
+        expect(result.lastUploadErrorCode, isNull);
+        expect(await repository.hasGpx(result), isTrue);
+      },
+    );
 
     test('marks record failed and rethrows on upload error', () async {
       final record = await _createRecord(repository, id: 'svc_fail');
       final service = _serviceReturningStatus(500);
 
       await expectLater(
-        service.performUploadAttempt(
-          record: record,
-          repository: repository,
-        ),
+        service.performUploadAttempt(record: record, repository: repository),
         throwsA(isA<AppException>()),
       );
 
       final persisted = await repository.get(record.id);
       expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
-      expect(
-        persisted.lastUploadErrorCode,
-        AppErrorCode.activityUploadFailed,
-      );
+      expect(persisted.lastUploadErrorCode, AppErrorCode.activityUploadFailed);
     });
 
-    test('throws activityUploadNotConfigured when service is not configured',
-        () async {
-      final record = await _createRecord(repository, id: 'svc_not_configured');
-      final service = ActivityUploadService(); // no config
+    test(
+      'throws activityUploadNotConfigured when service is not configured',
+      () async {
+        final record = await _createRecord(
+          repository,
+          id: 'svc_not_configured',
+        );
+        final service = ActivityUploadService(); // no config
 
-      await expectLater(
-        service.performUploadAttempt(
-          record: record,
-          repository: repository,
-        ),
-        throwsA(
-          isA<AppException>().having(
-            (e) => e.code,
-            'code',
-            AppErrorCode.activityUploadNotConfigured,
+        await expectLater(
+          service.performUploadAttempt(record: record, repository: repository),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.activityUploadNotConfigured,
+            ),
           ),
-        ),
-      );
+        );
 
-      final persisted = await repository.get(record.id);
-      expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
-    });
+        final persisted = await repository.get(record.id);
+        expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+      },
+    );
   });
 }
 

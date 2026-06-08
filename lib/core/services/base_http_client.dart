@@ -21,11 +21,9 @@ import 'package:endurain/core/services/api_response.dart';
 ///
 /// Bearer-token refresh and injection belong in `ApiClient`, not here.
 class BaseHttpClient {
-  BaseHttpClient({
-    http.Client? httpClient,
-    Duration? timeout,
-  }) : _client = httpClient ?? http.Client(),
-       _timeout = timeout ?? ApiConstants.defaultRequestTimeout;
+  BaseHttpClient({http.Client? httpClient, Duration? timeout})
+    : _client = httpClient ?? http.Client(),
+      _timeout = timeout ?? ApiConstants.defaultRequestTimeout;
 
   final http.Client _client;
   final Duration _timeout;
@@ -39,15 +37,13 @@ class BaseHttpClient {
   // full control over the response, e.g. logout which accepts any status).
   // ---------------------------------------------------------------------------
 
-  Future<http.Response> get(
-    Uri url, {
-    Map<String, String>? extraHeaders,
-  }) {
+  Future<http.Response> get(Uri url, {Map<String, String>? extraHeaders}) {
     return _client
         .get(url, headers: _mergeHeaders(extraHeaders))
         .timeout(
           _timeout,
-          onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+          onTimeout: () =>
+              throw const AppException(AppErrorCode.requestTimeout),
         );
   }
 
@@ -57,14 +53,11 @@ class BaseHttpClient {
     Object? body,
   }) {
     return _client
-        .post(
-          url,
-          headers: _mergeHeaders(extraHeaders),
-          body: body,
-        )
+        .post(url, headers: _mergeHeaders(extraHeaders), body: body)
         .timeout(
           _timeout,
-          onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
+          onTimeout: () =>
+              throw const AppException(AppErrorCode.requestTimeout),
         );
   }
 

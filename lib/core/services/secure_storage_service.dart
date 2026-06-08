@@ -90,10 +90,8 @@ class SecureStorageService {
     return DateTime.tryParse(value);
   }
 
-  Future<void> setAccessTokenExpiresAt(DateTime expiresAt) => write(
-    key: _accessTokenExpiresAtKey,
-    value: expiresAt.toUtcIso8601(),
-  );
+  Future<void> setAccessTokenExpiresAt(DateTime expiresAt) =>
+      write(key: _accessTokenExpiresAtKey, value: expiresAt.toUtcIso8601());
 
   Future<void> deleteAccessTokenExpiresAt() =>
       delete(key: _accessTokenExpiresAtKey);

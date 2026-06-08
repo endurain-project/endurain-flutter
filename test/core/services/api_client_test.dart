@@ -475,64 +475,69 @@ void main() {
         ),
       );
     });
-    test('reads server URL and access token from injected session store',
-        () async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://session.test');
-      await storage.setAccessToken('access-from-store');
-      final sessionStore = AuthSessionStore(storage: storage);
+    test(
+      'reads server URL and access token from injected session store',
+      () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://session.test');
+        await storage.setAccessToken('access-from-store');
+        final sessionStore = AuthSessionStore(storage: storage);
 
-      // No storage passed directly — all reads come from sessionStore.
-      final client = ApiClient(
-        sessionStore: sessionStore,
-        authService: AuthService(storage: storage),
-        httpClient: MockClient((request) async {
-          expect(request.url.origin, 'https://session.test');
-          expect(
-            request.headers['Authorization'],
-            'Bearer access-from-store',
-          );
-          return http.Response('{"ok":true}', 200);
-        }),
-      );
+        // No storage passed directly — all reads come from sessionStore.
+        final client = ApiClient(
+          sessionStore: sessionStore,
+          authService: AuthService(storage: storage),
+          httpClient: MockClient((request) async {
+            expect(request.url.origin, 'https://session.test');
+            expect(
+              request.headers['Authorization'],
+              'Bearer access-from-store',
+            );
+            return http.Response('{"ok":true}', 200);
+          }),
+        );
 
-      final data = await client.getJsonObject(
-        '/api/profile',
-        failureCode: AppErrorCode.loginFailed,
-      );
-
-      expect(data, {'ok': true});
-    });
-
-    test('throws requestTimeout when the request exceeds the timeout', () async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-
-      final client = ApiClient(
-        storage: storage,
-        authService: AuthService(storage: storage),
-        httpClient: MockClient((_) async {
-          await Future<void>.delayed(const Duration(seconds: 10));
-          return http.Response('{}', 200);
-        }),
-        requestTimeout: const Duration(milliseconds: 1),
-      );
-
-      await expectLater(
-        client.getJsonObject(
+        final data = await client.getJsonObject(
           '/api/profile',
           failureCode: AppErrorCode.loginFailed,
-        ),
-        throwsA(
-          isA<AppException>().having(
-            (e) => e.code,
-            'code',
-            AppErrorCode.requestTimeout,
+        );
+
+        expect(data, {'ok': true});
+      },
+    );
+
+    test(
+      'throws requestTimeout when the request exceeds the timeout',
+      () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://example.test');
+        await storage.setAccessToken('access-1');
+
+        final client = ApiClient(
+          storage: storage,
+          authService: AuthService(storage: storage),
+          httpClient: MockClient((_) async {
+            await Future<void>.delayed(const Duration(seconds: 10));
+            return http.Response('{}', 200);
+          }),
+          requestTimeout: const Duration(milliseconds: 1),
+        );
+
+        await expectLater(
+          client.getJsonObject(
+            '/api/profile',
+            failureCode: AppErrorCode.loginFailed,
           ),
-        ),
-      );
-    });
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.requestTimeout,
+            ),
+          ),
+        );
+      },
+    );
   });
 }
 

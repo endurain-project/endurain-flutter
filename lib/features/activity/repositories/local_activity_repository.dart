@@ -142,10 +142,7 @@ class LocalActivityRepository {
 
   Future<File> _manifestFile({bool create = false}) async {
     final supportDirectory = await _supportDirectoryProvider();
-    final rootDirectory = activityStorageRoot(
-      supportDirectory,
-      create: create,
-    );
+    final rootDirectory = activityStorageRoot(supportDirectory, create: create);
     return File(
       '${rootDirectory.path}${Platform.pathSeparator}$_manifestFileName',
     );

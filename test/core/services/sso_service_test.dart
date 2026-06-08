@@ -101,7 +101,9 @@ void main() {
       await service.initiateOAuth('oidc', serverUrl: 'https://example.test');
 
       // Advance time past the TTL.
-      currentTime = baseTime.add(ApiConstants.ssoPkceTtl + const Duration(seconds: 1));
+      currentTime = baseTime.add(
+        ApiConstants.ssoPkceTtl + const Duration(seconds: 1),
+      );
 
       await expectLater(
         service.exchangeSessionForTokens('session-x'),
