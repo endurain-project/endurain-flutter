@@ -2,8 +2,8 @@ import 'package:http/http.dart' as http;
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/api_response.dart';
 import 'package:endurain/core/services/base_http_client.dart';
+import 'package:endurain/core/services/pkce_token_exchanger.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
@@ -51,12 +51,17 @@ class SsoService {
         urlResolver ?? ServerUrlResolver(storage: resolvedStorage);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
     _now = now ?? DateTime.now;
+    _exchanger = PkceTokenExchanger(
+      sessionStore: _sessionStore,
+      http: _http,
+    );
   }
 
   late final AuthSessionStore _sessionStore;
   late final ServerUrlResolver _urlResolver;
   late final BaseHttpClient _http;
   late final DateTime Function() _now;
+  late final PkceTokenExchanger _exchanger;
 
   // Pending SSO PKCE flow state; cleared on successful exchange, error, or
   // explicit cancellation via [clearPkce].
@@ -149,42 +154,15 @@ class SsoService {
 
     final serverUrl = await _urlResolver.resolve();
 
-    final url = Uri.parse(
-      '$serverUrl${ApiConstants.idpSessionTokenExchangeEndpoint}/$sessionId/tokens',
-    );
-
     try {
       final verifier = pending.verifier;
       // Clear state before the network call — one-time exchange.
       _pendingPkce = null;
-      final data = await _http.postJsonObject(
-        url,
-        jsonBody: {'code_verifier': verifier},
+      return await _exchanger.exchange(
+        serverUrl: serverUrl,
+        sessionId: sessionId,
+        verifier: verifier,
         failureCode: AppErrorCode.tokenExchangeFailed,
-      );
-
-      // Store tokens
-      final accessToken = ApiResponse.requiredString(data, 'access_token');
-      final refreshToken = ApiResponse.requiredString(data, 'refresh_token');
-      final returnedSessionId = ApiResponse.requiredString(
-        data,
-        'session_id',
-      );
-      final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
-
-      await _sessionStore.saveSession(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        sessionId: returnedSessionId,
-        expiresInSeconds: expiresIn,
-      );
-
-      return AuthResult(
-        success: true,
-        mfaRequired: false,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        sessionId: returnedSessionId,
       );
     } on AppException {
       _pendingPkce = null;
