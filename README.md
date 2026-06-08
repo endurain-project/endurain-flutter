@@ -200,6 +200,29 @@ endurain://auth/sso/callback?session_id=...
 
 Register this callback URL in the Endurain server or identity provider configuration used for mobile SSO.
 
+For production deployments that control a public domain, verified HTTPS
+callbacks are the preferred mobile best practice. Android App Links and iOS
+Universal Links let the operating system verify that the domain is allowed to
+open the Endurain app, reducing custom-scheme hijacking and misrouting risk.
+PKCE still protects the current custom-scheme flow, but verified links provide
+a stronger OS-level ownership check.
+
+Using verified callbacks requires both app and server/domain configuration:
+
+- Configure the mobile app to accept the HTTPS callback path with Android
+  `android:autoVerify="true"` App Links and iOS Associated Domains.
+- Serve Android Digital Asset Links from
+  `https://<your-domain>/.well-known/assetlinks.json`.
+- Serve the Apple App Site Association file from
+  `https://<your-domain>/.well-known/apple-app-site-association`.
+- Add the HTTPS callback URL to the Endurain server and identity-provider
+  allowed redirect/callback URL configuration.
+
+Keeping both callback styles during migration is recommended: continue to
+support `endurain://auth/sso/callback` for existing deployments while adding a
+verified HTTPS callback for domains that can publish the required `.well-known`
+files.
+
 ## Local Diagnostics
 
 The app keeps a local diagnostics report to help investigate field issues when a tethered Flutter or Xcode console is not available. Open **Settings > Diagnostics** after relaunching the app to review recent events, captured Flutter/Dart errors, and the raw privacy-filtered report.
