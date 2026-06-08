@@ -30,13 +30,19 @@ import 'package:flutter/foundation.dart';
 class AppServices {
   AppServices({this.config = AppConfig.defaults});
 
-  /// Composition-root singleton.
+  /// Last-resort fallback instance.
   ///
-  /// Only the app entry point (`main()`/root `App`) and the `AppScope`
-  /// last-resort fallback may read this. Feature code MUST obtain services via
-  /// `AppScope.servicesOf(context)` so a future SaaS build can scope services
-  /// per account/environment and tests can isolate instances. Do not reference
-  /// `AppServices.instance` from feature widgets, controllers, or services.
+  /// Production does NOT use this: the composition root (`main()`) constructs
+  /// its own [AppServices] and injects it into the root `App`, which exposes it
+  /// through `AppScope`. This global only exists as a safety net for two paths
+  /// that can run without an injected instance:
+  /// - the `AppScope.servicesOf` fallback for contexts not wrapped in a scope,
+  /// - tests that build `App()` without supplying services.
+  ///
+  /// Feature code MUST obtain services via `AppScope.servicesOf(context)` so a
+  /// future SaaS build can scope services per account/environment and tests can
+  /// isolate instances. Do not reference `AppServices.instance` from feature
+  /// widgets, controllers, or services.
   static final AppServices instance = AppServices();
 
   final DiagnosticsService diagnostics = DiagnosticsService();

@@ -35,6 +35,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    // Production always injects `services` from the composition root (`main`).
+    // The `AppServices.instance` fallback is only reached by tests that build
+    // `App()` without supplying services.
     _services = widget.services ?? AppServices.instance;
     WidgetsBinding.instance.addObserver(this);
     _ownsSessionController = widget.sessionController == null;
