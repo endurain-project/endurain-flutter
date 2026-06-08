@@ -1,6 +1,5 @@
-import 'dart:math' as math;
-
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:latlong2/latlong.dart';
 
 /// Why the segment policy decided a new track segment is required.
 enum ActivitySegmentBreakReason {
@@ -105,20 +104,11 @@ class ActivitySegmentPolicy {
     RecordedActivityPoint a,
     RecordedActivityPoint b,
   ) {
-    const earthRadiusMeters = 6371000.0;
-    final lat1 = _toRadians(a.latitude);
-    final lat2 = _toRadians(b.latitude);
-    final dLat = _toRadians(b.latitude - a.latitude);
-    final dLon = _toRadians(b.longitude - a.longitude);
-    final h =
-        math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(lat1) *
-            math.cos(lat2) *
-            math.sin(dLon / 2) *
-            math.sin(dLon / 2);
-    final c = 2 * math.atan2(math.sqrt(h), math.sqrt(1 - h));
-    return earthRadiusMeters * c;
+    const distance = Distance();
+    return distance.as(
+      LengthUnit.Meter,
+      LatLng(a.latitude, a.longitude),
+      LatLng(b.latitude, b.longitude),
+    );
   }
-
-  static double _toRadians(double degrees) => degrees * math.pi / 180;
 }
