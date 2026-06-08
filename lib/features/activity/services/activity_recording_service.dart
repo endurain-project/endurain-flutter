@@ -474,15 +474,28 @@ class ActivityRecordingService {
       return;
     }
 
-    for (final recordedPoint in points) {
-      var nextState = _state;
-      while (nextState.segments.length <= recordedPoint.segmentIndex) {
-        nextState = nextState.startNewSegment();
-      }
-
-      _emit(nextState.addPoint(recordedPoint.toTrackPoint()));
-      _recordPointMilestoneIfNeeded(pointCount: _state.points.length);
+    // Apply the whole batch with a single state emission. A background drain
+    // can deliver hundreds of points at once; emitting once per point would
+    // rebuild the immutable segment list and notify listeners O(n) times.
+    final segmentPoints = <List<ActivityTrackPoint>>[
+      for (final segment in _state.segments) [...segment.points],
+    ];
+    if (segmentPoints.isEmpty) {
+      segmentPoints.add(<ActivityTrackPoint>[]);
     }
+
+    for (final recordedPoint in points) {
+      while (segmentPoints.length <= recordedPoint.segmentIndex) {
+        segmentPoints.add(<ActivityTrackPoint>[]);
+      }
+      segmentPoints.last.add(recordedPoint.toTrackPoint());
+    }
+
+    final segments = [
+      for (final pts in segmentPoints) ActivityTrackSegment(points: pts),
+    ];
+    _emit(_state.copyWith(segments: segments));
+    _recordPointMilestoneIfNeeded(pointCount: _state.points.length);
   }
 
   String _errorKeyForRecorderFailure(ActivityRecorderFailureReason? reason) {

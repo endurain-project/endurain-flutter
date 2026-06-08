@@ -202,6 +202,30 @@ void main() {
       );
     });
 
+    test('emits a single state update for a multi-point batch', () async {
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
+      addTearDown(service.dispose);
+
+      await service.start(activityType: ActivityType.run);
+      final states = <ActivityRecordingState>[];
+      final subscription = service.stateStream.listen(states.add);
+      addTearDown(subscription.cancel);
+
+      recorder.emitPoints([
+        for (var i = 0; i < 10; i += 1)
+          _point(latitude: 41 + i * 0.01, longitude: -8),
+      ]);
+      await pumpEventQueue();
+
+      // The whole 10-point batch must produce exactly one emission, not one
+      // per point.
+      expect(states, hasLength(1));
+      expect(states.single.points, hasLength(10));
+      expect(service.state.points, hasLength(10));
+      expect(service.state.segments, hasLength(1));
+    });
+
     test('updates elapsed duration while recording without GPS points', () {
       fakeAsync((async) {
         var now = DateTime.utc(2026, 5, 30, 10);
