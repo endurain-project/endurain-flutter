@@ -186,8 +186,16 @@ class AppLocalizationsPt extends AppLocalizations {
       'O pedido expirou. Verifique a sua ligação e tente novamente.';
 
   @override
+  String get errorSecureStorageDeleteFailed =>
+      'Não foi possível eliminar do armazenamento seguro. O armazenamento do seu dispositivo pode estar indisponível.';
+
+  @override
   String get errorSecureStorageReadFailed =>
       'Não foi possível ler o armazenamento seguro. O armazenamento do seu dispositivo pode estar indisponível.';
+
+  @override
+  String get errorSecureStorageWriteFailed =>
+      'Não foi possível escrever no armazenamento seguro. O armazenamento do seu dispositivo pode estar indisponível.';
 
   @override
   String get errorUnexpectedResponseFormat =>

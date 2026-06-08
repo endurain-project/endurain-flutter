@@ -178,8 +178,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'The request timed out. Check your connection and try again.';
 
   @override
+  String get errorSecureStorageDeleteFailed =>
+      'Unable to delete from secure storage. Your device storage may be unavailable.';
+
+  @override
   String get errorSecureStorageReadFailed =>
       'Unable to read from secure storage. Your device storage may be unavailable.';
+
+  @override
+  String get errorSecureStorageWriteFailed =>
+      'Unable to write to secure storage. Your device storage may be unavailable.';
 
   @override
   String get errorUnexpectedResponseFormat =>

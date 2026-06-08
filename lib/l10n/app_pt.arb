@@ -249,9 +249,17 @@
   "@errorRequestTimeout": {
     "description": "Error shown when an API request or upload exceeds the time limit - Used in: error_localizations.dart"
   },
+  "errorSecureStorageDeleteFailed": "Não foi possível eliminar do armazenamento seguro. O armazenamento do seu dispositivo pode estar indisponível.",
+  "@errorSecureStorageDeleteFailed": {
+    "description": "Error shown when the platform keychain or secure storage fails to delete - Used in: error_localizations.dart"
+  },
   "errorSecureStorageReadFailed": "Não foi possível ler o armazenamento seguro. O armazenamento do seu dispositivo pode estar indisponível.",
   "@errorSecureStorageReadFailed": {
     "description": "Error shown when the platform keychain or secure storage fails to read (distinct from a missing key) - Used in: error_localizations.dart"
+  },
+  "errorSecureStorageWriteFailed": "Não foi possível escrever no armazenamento seguro. O armazenamento do seu dispositivo pode estar indisponível.",
+  "@errorSecureStorageWriteFailed": {
+    "description": "Error shown when the platform keychain or secure storage fails to write - Used in: error_localizations.dart"
   },
   "errorUnexpectedResponseFormat": "O servidor devolveu uma resposta inesperada",
   "@errorUnexpectedResponseFormat": {

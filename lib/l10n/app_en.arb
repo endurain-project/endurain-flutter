@@ -249,9 +249,17 @@
   "@errorRequestTimeout": {
     "description": "Error shown when an API request or upload exceeds the time limit - Used in: error_localizations.dart"
   },
+  "errorSecureStorageDeleteFailed": "Unable to delete from secure storage. Your device storage may be unavailable.",
+  "@errorSecureStorageDeleteFailed": {
+    "description": "Error shown when the platform keychain or secure storage fails to delete - Used in: error_localizations.dart"
+  },
   "errorSecureStorageReadFailed": "Unable to read from secure storage. Your device storage may be unavailable.",
   "@errorSecureStorageReadFailed": {
     "description": "Error shown when the platform keychain or secure storage fails to read (distinct from a missing key) - Used in: error_localizations.dart"
+  },
+  "errorSecureStorageWriteFailed": "Unable to write to secure storage. Your device storage may be unavailable.",
+  "@errorSecureStorageWriteFailed": {
+    "description": "Error shown when the platform keychain or secure storage fails to write - Used in: error_localizations.dart"
   },
   "errorUnexpectedResponseFormat": "The server returned an unexpected response",
   "@errorUnexpectedResponseFormat": {

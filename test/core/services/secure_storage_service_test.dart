@@ -19,6 +19,59 @@ class _ThrowingStorage extends Fake implements FlutterSecureStorage {
   }
 }
 
+/// Fake [FlutterSecureStorage] whose [write] always throws.
+class _ThrowingWriteStorage extends Fake implements FlutterSecureStorage {
+  @override
+  Future<String?> read({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async => null;
+
+  @override
+  Future<void> write({
+    required String key,
+    required String? value,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    throw Exception('keychain write failed');
+  }
+
+  @override
+  Future<void> delete({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    throw Exception('keychain delete failed');
+  }
+
+  @override
+  Future<void> deleteAll({
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    throw Exception('keychain deleteAll failed');
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -162,6 +215,54 @@ void main() {
               (e) => e.code,
               'code',
               AppErrorCode.secureStorageReadFailed,
+            ),
+          ),
+        );
+      },
+    );
+
+    test('write throws secureStorageWriteFailed on platform exception', () {
+      final storage = SecureStorageService(storage: _ThrowingWriteStorage());
+
+      expect(
+        () => storage.write(key: 'k', value: 'v'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageWriteFailed,
+          ),
+        ),
+      );
+    });
+
+    test('delete throws secureStorageDeleteFailed on platform exception', () {
+      final storage = SecureStorageService(storage: _ThrowingWriteStorage());
+
+      expect(
+        () => storage.delete(key: 'k'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageDeleteFailed,
+          ),
+        ),
+      );
+    });
+
+    test(
+      'deleteAll throws secureStorageDeleteFailed on platform exception',
+      () {
+        final storage = SecureStorageService(storage: _ThrowingWriteStorage());
+
+        expect(
+          () => storage.deleteAll(),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.secureStorageDeleteFailed,
             ),
           ),
         );

@@ -368,11 +368,23 @@ abstract class AppLocalizations {
   /// **'The request timed out. Check your connection and try again.'**
   String get errorRequestTimeout;
 
+  /// Error shown when the platform keychain or secure storage fails to delete - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to delete from secure storage. Your device storage may be unavailable.'**
+  String get errorSecureStorageDeleteFailed;
+
   /// Error shown when the platform keychain or secure storage fails to read (distinct from a missing key) - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
   /// **'Unable to read from secure storage. Your device storage may be unavailable.'**
   String get errorSecureStorageReadFailed;
+
+  /// Error shown when the platform keychain or secure storage fails to write - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to write to secure storage. Your device storage may be unavailable.'**
+  String get errorSecureStorageWriteFailed;
 
   /// Error for unsupported API response shape - Used in: error_localizations.dart
   ///
