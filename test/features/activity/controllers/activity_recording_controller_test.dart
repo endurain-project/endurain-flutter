@@ -265,6 +265,46 @@ void main() {
     });
 
     test(
+      'localSaveFailed is terminal: stopping/completed transitions are ignored',
+      () async {
+        // Arrange: controller whose repository always throws on write, so
+        // stop() results in failed/localSaveFailed.
+        final adapter = RecordingLocationPlatformAdapter();
+        final service = _recordingService(adapter: adapter);
+        final controller = ActivityRecordingController(
+          recordingService: service,
+          localActivityRepository: _ThrowingLocalActivityRepository(),
+          uploadService: _uploadServiceReturning(201),
+        );
+        addTearDown(controller.dispose);
+
+        await controller.start(ActivityType.run);
+        adapter.addPosition(recordingPosition());
+        await pumpEventQueue();
+        await controller.stop();
+
+        // Pre-condition: terminal state reached.
+        expect(controller.state.status, ActivityRecordingStatus.failed);
+        expect(
+          controller.state.lastErrorKey,
+          ActivityRecordingErrorKeys.localSaveFailed,
+        );
+
+        // Act: attempt to push the state back to stopping or completed —
+        // this exercises the _setState guard directly by trying an upload.
+        await controller.uploadCompletedGpx();
+
+        // Assert: state must remain failed/localSaveFailed; upload attempt
+        // should have bailed immediately without changing the status.
+        expect(controller.state.status, ActivityRecordingStatus.failed);
+        expect(
+          controller.state.lastErrorKey,
+          ActivityRecordingErrorKeys.localSaveFailed,
+        );
+      },
+    );
+
+    test(
       'marks retained record uploaded and keeps GPX after successful upload',
       () async {
         final adapter = RecordingLocationPlatformAdapter();

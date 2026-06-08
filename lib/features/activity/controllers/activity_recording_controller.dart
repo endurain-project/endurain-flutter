@@ -306,6 +306,16 @@ class ActivityRecordingController extends ChangeNotifier {
     return record;
   }
 
+  /// Updates the recorded state and notifies listeners.
+  ///
+  /// **Invariant — localSaveFailed is terminal:**
+  /// Once the state has transitioned to `failed` with error key
+  /// `localSaveFailed`, no caller may silently move it back to `stopping` or
+  /// `completed`. The GPX data is lost and recovery from that state is
+  /// undefined; forcing those transitions would show misleading UI (e.g. a
+  /// "completed" banner with no persisted activity). The guard below enforces
+  /// this boundary. Any new caller that needs to override this must explicitly
+  /// handle the save-failed path rather than relying on status transitions.
   void _setState(ActivityRecordingState state) {
     if (_state.status == ActivityRecordingStatus.failed &&
         _state.lastErrorKey == ActivityRecordingErrorKeys.localSaveFailed &&
