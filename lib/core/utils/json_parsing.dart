@@ -6,6 +6,15 @@
 /// DateTime values are always normalised to UTC.
 library;
 
+/// Extension that exposes a concise UTC ISO-8601 serialization for [DateTime].
+extension DateTimeUtcIso on DateTime {
+  /// Returns the UTC ISO-8601 representation of this instant.
+  ///
+  /// Equivalent to `toUtc().toIso8601String()`. Used wherever model
+  /// serialization requires a stable, timezone-free timestamp.
+  String toUtcIso8601() => toUtc().toIso8601String();
+}
+
 /// Returns [value] if it is a non-null [String]; otherwise `null`.
 String? jsonString(Object? value) {
   return value is String ? value : null;

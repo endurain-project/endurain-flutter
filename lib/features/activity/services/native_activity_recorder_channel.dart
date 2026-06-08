@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
@@ -84,7 +85,7 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
         'version': NativeActivityRecorderChannelContract.payloadVersion,
         'localSessionId': request.localSessionId,
         'activityType': request.activityType.apiValue,
-        'startedAt': request.startedAt.toUtc().toIso8601String(),
+        'startedAt': request.startedAt.toUtcIso8601(),
         if (request.backgroundConfig != null) ...{
           'notificationTitle': request.backgroundConfig!.notificationTitle,
           'notificationText': request.backgroundConfig!.notificationText,

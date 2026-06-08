@@ -110,8 +110,8 @@ class LocalActivityRecord {
     return {
       'id': id,
       'activityType': activityType.apiValue,
-      'startedAt': startedAt.toUtc().toIso8601String(),
-      'endedAt': endedAt.toUtc().toIso8601String(),
+      'startedAt': startedAt.toUtcIso8601(),
+      'endedAt': endedAt.toUtcIso8601(),
       'elapsedDurationSeconds': elapsedDurationSeconds,
       'distanceMeters': distanceMeters,
       if (averageSpeedMetersPerSecond != null)
@@ -119,12 +119,12 @@ class LocalActivityRecord {
       'pointCount': pointCount,
       'gpxFileName': gpxFileName,
       'uploadStatus': uploadStatus.toJson(),
-      'createdAt': createdAt.toUtc().toIso8601String(),
-      'updatedAt': updatedAt.toUtc().toIso8601String(),
+      'createdAt': createdAt.toUtcIso8601(),
+      'updatedAt': updatedAt.toUtcIso8601(),
       if (uploadedAt != null)
-        'uploadedAt': uploadedAt!.toUtc().toIso8601String(),
+        'uploadedAt': uploadedAt!.toUtcIso8601(),
       if (lastUploadAttemptAt != null)
-        'lastUploadAttemptAt': lastUploadAttemptAt!.toUtc().toIso8601String(),
+        'lastUploadAttemptAt': lastUploadAttemptAt!.toUtcIso8601(),
       if (lastUploadErrorCode != null)
         'lastUploadErrorCode': lastUploadErrorCode!.name,
       if (serverActivityId != null) 'serverActivityId': serverActivityId,

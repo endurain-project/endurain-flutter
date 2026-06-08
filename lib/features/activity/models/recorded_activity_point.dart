@@ -71,7 +71,7 @@ class RecordedActivityPoint {
 
   Map<String, Object?> toJson() {
     return {
-      't': timestamp.toUtc().toIso8601String(),
+      't': timestamp.toUtcIso8601(),
       'lat': latitude,
       'lon': longitude,
       'seg': segmentIndex,

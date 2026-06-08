@@ -233,7 +233,7 @@ class DiagnosticsService implements DiagnosticsStore {
     final payload = _readPayloadSync();
     final breadcrumbs = _listFromPayload(payload, 'breadcrumbs');
     breadcrumbs.add({
-      'at': _now().toUtc().toIso8601String(),
+      'at': _now().toUtcIso8601(),
       'event': _sanitize(event),
       if (details.isNotEmpty) 'details': _sanitizeDetails(details),
     });
@@ -263,7 +263,7 @@ class DiagnosticsService implements DiagnosticsStore {
     final payload = _readPayloadSync();
     final errors = _listFromPayload(payload, 'errors');
     errors.add({
-      'at': _now().toUtc().toIso8601String(),
+      'at': _now().toUtcIso8601(),
       'source': _sanitize(source),
       'type': _sanitize(error.runtimeType.toString()),
       'message': _sanitize(error.toString(), maxLength: 800),
@@ -337,7 +337,7 @@ class DiagnosticsService implements DiagnosticsStore {
       return;
     }
 
-    payload['lastUpdatedAt'] = _now().toUtc().toIso8601String();
+    payload['lastUpdatedAt'] = _now().toUtcIso8601();
     file.writeAsStringSync(
       const JsonEncoder.withIndent('  ').convert(payload),
       flush: true,
@@ -378,7 +378,7 @@ class DiagnosticsService implements DiagnosticsStore {
       null => null,
       bool() => value,
       num() => value,
-      DateTime() => value.toUtc().toIso8601String(),
+      DateTime() => value.toUtcIso8601(),
       String() => _sanitize(value),
       _ => _sanitize(value.toString()),
     };

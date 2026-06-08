@@ -1,4 +1,5 @@
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
@@ -112,7 +113,7 @@ class SecureStorageService {
 
   Future<void> setAccessTokenExpiresAt(DateTime expiresAt) => write(
     key: _accessTokenExpiresAtKey,
-    value: expiresAt.toUtc().toIso8601String(),
+    value: expiresAt.toUtcIso8601(),
   );
 
   Future<void> deleteAccessTokenExpiresAt() =>

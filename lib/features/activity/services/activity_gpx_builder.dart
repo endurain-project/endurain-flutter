@@ -1,3 +1,4 @@
+import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
@@ -94,7 +95,7 @@ class ActivityGpxBuilder {
   }
 
   String _formatTimestamp(DateTime timestamp) {
-    return timestamp.toUtc().toIso8601String();
+    return timestamp.toUtcIso8601();
   }
 
   DateTime? _metadataTime(ActivityRecordingState state) {

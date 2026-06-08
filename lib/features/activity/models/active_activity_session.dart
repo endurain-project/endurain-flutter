@@ -1,3 +1,4 @@
+import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 
 /// Lifecycle status of an active (in-progress or recoverable) recording.
@@ -96,10 +97,10 @@ class ActiveActivitySession {
       'localSessionId': localSessionId,
       'activityType': activityType.apiValue,
       'status': status.toJson(),
-      'startedAt': startedAt.toUtc().toIso8601String(),
-      if (resumedAt != null) 'resumedAt': resumedAt!.toUtc().toIso8601String(),
-      if (pausedAt != null) 'pausedAt': pausedAt!.toUtc().toIso8601String(),
-      if (endedAt != null) 'endedAt': endedAt!.toUtc().toIso8601String(),
+      'startedAt': startedAt.toUtcIso8601(),
+      if (resumedAt != null) 'resumedAt': resumedAt!.toUtcIso8601(),
+      if (pausedAt != null) 'pausedAt': pausedAt!.toUtcIso8601(),
+      if (endedAt != null) 'endedAt': endedAt!.toUtcIso8601(),
       'elapsedDurationSeconds': elapsedDurationSeconds,
       'currentSegmentIndex': currentSegmentIndex,
     };
