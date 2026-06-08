@@ -10,8 +10,9 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/widgets/app_bottom_nav.dart';
 
 class App extends StatefulWidget {
-  const App({super.key, this.authService, this.sessionController});
+  const App({super.key, this.services, this.authService, this.sessionController});
 
+  final AppServices? services;
   final AuthService? authService;
   final AuthSessionController? sessionController;
 
@@ -27,7 +28,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _services = AppServices.instance;
+    _services = widget.services ?? AppServices.instance;
     WidgetsBinding.instance.addObserver(this);
     _ownsSessionController = widget.sessionController == null;
     _sessionController =

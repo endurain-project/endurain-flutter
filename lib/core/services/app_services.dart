@@ -24,27 +24,30 @@ import 'package:endurain/features/activity/services/native_activity_recorder_cha
 import 'package:flutter/foundation.dart';
 
 class AppServices {
-  AppServices._();
+  AppServices({this.config = AppConfig.defaults});
 
-  static final AppServices instance = AppServices._();
+  static final AppServices instance = AppServices();
 
   final DiagnosticsService diagnostics = DiagnosticsService();
-  final AppConfig config = AppConfig.defaults;
-  final SecureStorageService secureStorage = SecureStorageService();
-  final AppPreferencesStore preferences = AppPreferencesStore();
+  final AppConfig config;
+  late final SecureStorageService secureStorage = SecureStorageService();
+  late final AppPreferencesStore preferences = AppPreferencesStore();
   late final AuthSessionStore authSession = AuthSessionStore(
     storage: secureStorage,
   );
   late final AuthService auth = AuthService(
     storage: secureStorage,
     sessionStore: authSession,
+    config: config,
   );
   late final SsoService sso = SsoService(
     storage: secureStorage,
     sessionStore: authSession,
+    config: config,
   );
   late final ServerSettingsService serverSettings = ServerSettingsService(
     storage: secureStorage,
+    config: config,
   );
   late final ApiClient apiClient = ApiClient(
     storage: secureStorage,
