@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
@@ -120,5 +121,64 @@ void main() {
         expect(await storage.getServerUrl(), 'https://stored.test');
       },
     );
+
+    group('managed transport mode', () {
+      const managed = AppConfig(transportMode: AppTransportMode.managed);
+
+      test('allows https in managed mode', () async {
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: managed,
+        );
+        final url = await resolver.resolve(
+          serverUrl: 'https://example.test',
+        );
+        expect(url, 'https://example.test');
+      });
+
+      test('rejects http provided URL in managed mode', () async {
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: managed,
+        );
+        await expectLater(
+          resolver.resolve(serverUrl: 'http://example.test'),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.serverUrlNotConfigured,
+            ),
+          ),
+        );
+      });
+
+      test('rejects stored http URL in managed mode', () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('http://stored.test');
+        final resolver = ServerUrlResolver(
+          storage: storage,
+          config: managed,
+        );
+        await expectLater(
+          resolver.resolve(),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.serverUrlNotConfigured,
+            ),
+          ),
+        );
+      });
+
+      test('allows http in self-hosted mode (default)', () async {
+        final resolver = ServerUrlResolver(storage: SecureStorageService());
+        final url = await resolver.resolve(
+          serverUrl: 'http://local.test',
+        );
+        expect(url, 'http://local.test');
+      });
+    });
   });
 }
