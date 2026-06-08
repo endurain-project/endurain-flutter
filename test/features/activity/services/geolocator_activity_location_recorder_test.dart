@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
@@ -11,13 +13,27 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 
 class _InMemoryActiveStore implements ActiveActivityStore {
+  _InMemoryActiveStore({this.appendGate});
+
+  final Completer<void>? appendGate;
   ActiveActivitySession? session;
   final List<RecordedActivityPoint> points = [];
   int clearCount = 0;
+  int activeAppends = 0;
+  int maxActiveAppends = 0;
 
   @override
   Future<void> appendPoints(List<RecordedActivityPoint> newPoints) async {
-    points.addAll(newPoints);
+    activeAppends += 1;
+    if (activeAppends > maxActiveAppends) {
+      maxActiveAppends = activeAppends;
+    }
+    try {
+      await appendGate?.future;
+      points.addAll(newPoints);
+    } finally {
+      activeAppends -= 1;
+    }
   }
 
   @override
@@ -119,6 +135,42 @@ void main() {
       expect(store.points, hasLength(2));
       expect(store.points.first.segmentIndex, 0);
       expect(store.points.last.segmentIndex, 1);
+    });
+
+    test('serializes rapid position events before segment decisions', () async {
+      final appendGate = Completer<void>();
+      await recorder.dispose();
+      store = _InMemoryActiveStore(appendGate: appendGate);
+      recorder = GeolocatorActivityLocationRecorder(
+        store: store,
+        locationService: LocationService(platformAdapter: adapter),
+        diagnostics: diagnostics,
+        now: () => now,
+      );
+
+      await recorder.start(request());
+      adapter.addPosition(
+        recordingPosition(latitude: 41.1, longitude: -8.6, timestamp: now),
+      );
+      adapter.addPosition(
+        recordingPosition(
+          latitude: 41.2,
+          longitude: -8.7,
+          timestamp: now.add(const Duration(minutes: 2)),
+        ),
+      );
+      await pumpEventQueue();
+
+      expect(store.activeAppends, 1);
+      expect(store.maxActiveAppends, 1);
+
+      appendGate.complete();
+      await pumpEventQueue();
+
+      expect(store.points, hasLength(2));
+      expect(store.points.first.segmentIndex, 0);
+      expect(store.points.last.segmentIndex, 1);
+      expect(store.maxActiveAppends, 1);
     });
 
     test('stop completes the stored session', () async {

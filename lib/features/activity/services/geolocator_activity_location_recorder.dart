@@ -42,6 +42,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       StreamController<ActivityRecorderEvent>.broadcast();
 
   StreamSubscription<Position>? _positionSubscription;
+  Future<void> _positionQueue = Future<void>.value();
   ActiveActivitySession? _session;
   BackgroundLocationConfig? _backgroundConfig;
   RecordedActivityPoint? _lastPoint;
@@ -53,6 +54,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
 
   @override
   Future<void> start(ActivityRecorderStartRequest request) async {
+    await _waitForPendingPositions();
     final session = ActiveActivitySession(
       localSessionId: request.localSessionId,
       activityType: request.activityType,
@@ -80,6 +82,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       return;
     }
     await _cancelStream();
+    await _waitForPendingPositions();
     final pausedAt = _now();
     final paused = session.copyWith(
       status: ActiveActivityStatus.paused,
@@ -101,6 +104,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     if (session == null) {
       return;
     }
+    await _waitForPendingPositions();
     _resumedFromPause = true;
     final resumedAt = _now();
     final resumed = session.copyWith(
@@ -125,6 +129,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       return;
     }
     await _cancelStream();
+    await _waitForPendingPositions();
     final endedAt = _now();
     final completed = session.copyWith(
       status: ActiveActivityStatus.completed,
@@ -143,6 +148,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   @override
   Future<void> discard() async {
     await _cancelStream();
+    await _waitForPendingPositions();
     _session = null;
     _lastPoint = null;
     _resumedFromPause = false;
@@ -153,6 +159,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
 
   @override
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0}) async {
+    await _waitForPendingPositions();
     final points = await _store.readPoints(sinceOffset: sinceOffset);
     _diagnostics.recordBreadcrumbSync(
       DiagnosticsEvents.activityPointBatchDrained,
@@ -163,6 +170,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
 
   @override
   Future<ActiveActivitySession?> recoverActiveSession() async {
+    await _waitForPendingPositions();
     final session = await _store.loadSession();
     _session = session;
     if (session != null) {
@@ -182,6 +190,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     _disposed = true;
     await _positionSubscription?.cancel();
     _positionSubscription = null;
+    await _waitForPendingPositions();
     await _eventController.close();
   }
 
@@ -216,7 +225,16 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     await subscription?.cancel();
   }
 
-  Future<void> _onPosition(Position position) async {
+  void _onPosition(Position position) {
+    _positionQueue = _positionQueue
+        .then((_) => _handlePosition(position))
+        .catchError(_handlePositionError);
+  }
+
+  Future<void> _handlePosition(Position position) async {
+    if (_disposed) {
+      return;
+    }
     final session = _session;
     if (session == null || session.status != ActiveActivityStatus.recording) {
       return;
@@ -268,6 +286,21 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     }
     _lastPoint = point;
     _emit(ActivityRecorderEvent.pointBatchAvailable([point]));
+  }
+
+  Future<void> _waitForPendingPositions() => _positionQueue;
+
+  void _handlePositionError(Object error, StackTrace stackTrace) {
+    _diagnostics.recordErrorSync(
+      error,
+      stackTrace,
+      source: DiagnosticsSources.activityRecorder,
+    );
+    _emit(
+      const ActivityRecorderEvent.failed(
+        ActivityRecorderFailureReason.persistenceFailed,
+      ),
+    );
   }
 
   void _onStreamError(Object error, StackTrace stackTrace) {

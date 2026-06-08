@@ -170,6 +170,32 @@ void main() {
       expect(points.single.segmentIndex, 1);
     });
 
+    test('serializes concurrent file operations', () async {
+      var activeProviderCalls = 0;
+      var maxActiveProviderCalls = 0;
+      final serializedStore = FileActiveActivityStore(
+        supportDirectoryProvider: () async {
+          activeProviderCalls += 1;
+          if (activeProviderCalls > maxActiveProviderCalls) {
+            maxActiveProviderCalls = activeProviderCalls;
+          }
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          activeProviderCalls -= 1;
+          return tempDirectory;
+        },
+      );
+
+      await Future.wait([
+        serializedStore.saveSession(session()),
+        serializedStore.appendPoints([point(second: 0)]),
+        serializedStore.readPoints(),
+        serializedStore.pointCount(),
+        serializedStore.replacePoints([point(segmentIndex: 1, second: 5)]),
+      ]);
+
+      expect(maxActiveProviderCalls, 1);
+    });
+
     test('complete persists final session metadata', () async {
       await store.complete(
         session().copyWith(

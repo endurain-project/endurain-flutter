@@ -35,129 +35,142 @@ class FileActiveActivityStore implements ActiveActivityStore {
 
   final Future<Directory> Function() _supportDirectoryProvider;
   final DiagnosticsRecorder _diagnostics;
+  Future<void> _operationQueue = Future<void>.value();
 
   @override
-  Future<void> saveSession(ActiveActivitySession session) async {
-    try {
-      final file = await _sessionFile(create: true);
-      await file.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(session.toJson()),
-        flush: true,
-      );
-    } catch (error) {
-      throw _wrapWrite(error);
-    }
-  }
-
-  @override
-  Future<ActiveActivitySession?> loadSession() async {
-    final file = await _sessionFile();
-    if (!file.existsSync()) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(await file.readAsString());
-      if (decoded is! Map) {
-        throw const FormatException('Active session root is not an object');
+  Future<void> saveSession(ActiveActivitySession session) {
+    return _serialized(() async {
+      try {
+        final file = await _sessionFile(create: true);
+        await file.writeAsString(
+          const JsonEncoder.withIndent('  ').convert(session.toJson()),
+          flush: true,
+        );
+      } catch (error) {
+        throw _wrapWrite(error);
       }
-      return ActiveActivitySession.fromJson(decoded);
-    } on AppException {
-      rethrow;
-    } catch (error) {
-      _diagnostics.recordBreadcrumbSync(
-        DiagnosticsEvents.activityActiveSessionRecovered,
-        details: {'reason': error.runtimeType.toString()},
-      );
-      return null;
-    }
+    });
   }
 
   @override
-  Future<void> appendPoints(List<RecordedActivityPoint> points) async {
+  Future<ActiveActivitySession?> loadSession() {
+    return _serialized(() async {
+      final file = await _sessionFile();
+      if (!file.existsSync()) {
+        return null;
+      }
+      try {
+        final decoded = jsonDecode(await file.readAsString());
+        if (decoded is! Map) {
+          throw const FormatException('Active session root is not an object');
+        }
+        return ActiveActivitySession.fromJson(decoded);
+      } on AppException {
+        rethrow;
+      } catch (error) {
+        _diagnostics.recordBreadcrumbSync(
+          DiagnosticsEvents.activityActiveSessionRecovered,
+          details: {'reason': error.runtimeType.toString()},
+        );
+        return null;
+      }
+    });
+  }
+
+  @override
+  Future<void> appendPoints(List<RecordedActivityPoint> points) {
     if (points.isEmpty) {
-      return;
+      return Future<void>.value();
     }
-    try {
-      final file = await _pointsFile(create: true);
-      final buffer = StringBuffer();
-      for (final point in points) {
-        buffer.writeln(point.toJsonLine());
+    return _serialized(() async {
+      try {
+        final file = await _pointsFile(create: true);
+        final buffer = StringBuffer();
+        for (final point in points) {
+          buffer.writeln(point.toJsonLine());
+        }
+        await file.writeAsString(
+          buffer.toString(),
+          mode: FileMode.append,
+          flush: true,
+        );
+      } catch (error) {
+        throw _wrapWrite(error);
       }
-      await file.writeAsString(
-        buffer.toString(),
-        mode: FileMode.append,
-        flush: true,
-      );
-    } catch (error) {
-      throw _wrapWrite(error);
-    }
+    });
   }
 
   @override
-  Future<List<RecordedActivityPoint>> readPoints({int sinceOffset = 0}) async {
-    final file = await _pointsFile();
-    if (!file.existsSync()) {
-      return const <RecordedActivityPoint>[];
-    }
-    try {
-      final lines = const LineSplitter().convert(await file.readAsString());
-      final points = <RecordedActivityPoint>[];
-      var index = 0;
-      for (final line in lines) {
-        if (line.trim().isEmpty) {
-          continue;
-        }
-        final point = RecordedActivityPoint.tryParseLine(line);
-        if (point == null) {
-          _diagnostics.recordBreadcrumbSync(
-            DiagnosticsEvents.activityActiveSessionRecovered,
-            details: {'reason': 'malformedPoint'},
-          );
-          continue;
-        }
-        if (index >= sinceOffset) {
-          points.add(point);
-        }
-        index++;
+  Future<List<RecordedActivityPoint>> readPoints({int sinceOffset = 0}) {
+    return _serialized(() async {
+      final file = await _pointsFile();
+      if (!file.existsSync()) {
+        return const <RecordedActivityPoint>[];
       }
-      return points;
-    } catch (error) {
-      throw _wrapRead(error);
-    }
+      try {
+        final lines = const LineSplitter().convert(await file.readAsString());
+        final points = <RecordedActivityPoint>[];
+        var index = 0;
+        for (final line in lines) {
+          if (line.trim().isEmpty) {
+            continue;
+          }
+          final point = RecordedActivityPoint.tryParseLine(line);
+          if (point == null) {
+            _diagnostics.recordBreadcrumbSync(
+              DiagnosticsEvents.activityActiveSessionRecovered,
+              details: {'reason': 'malformedPoint'},
+            );
+            continue;
+          }
+          if (index >= sinceOffset) {
+            points.add(point);
+          }
+          index++;
+        }
+        return points;
+      } catch (error) {
+        throw _wrapRead(error);
+      }
+    });
   }
 
   @override
-  Future<int> pointCount() async {
-    final file = await _pointsFile();
-    if (!file.existsSync()) {
-      return 0;
-    }
-    try {
-      final lines = const LineSplitter().convert(await file.readAsString());
-      var count = 0;
-      for (final line in lines) {
-        if (RecordedActivityPoint.tryParseLine(line) != null) {
-          count++;
-        }
+  Future<int> pointCount() {
+    return _serialized(() async {
+      final file = await _pointsFile();
+      if (!file.existsSync()) {
+        return 0;
       }
-      return count;
-    } catch (error) {
-      throw _wrapRead(error);
-    }
+      try {
+        final lines = const LineSplitter().convert(await file.readAsString());
+        var count = 0;
+        for (final line in lines) {
+          if (RecordedActivityPoint.tryParseLine(line) != null) {
+            count++;
+          }
+        }
+        return count;
+      } catch (error) {
+        throw _wrapRead(error);
+      }
+    });
   }
 
   @override
-  Future<void> replacePoints(List<RecordedActivityPoint> points) async {
-    try {
-      final file = await _pointsFile(create: true);
-      final buffer = StringBuffer();
-      for (final point in points) {
-        buffer.writeln(point.toJsonLine());
+  Future<void> replacePoints(List<RecordedActivityPoint> points) {
+    return _serialized(() async {
+      try {
+        final file = await _pointsFile(create: true);
+        final buffer = StringBuffer();
+        for (final point in points) {
+          buffer.writeln(point.toJsonLine());
+        }
+        await file.writeAsString(buffer.toString(), flush: true);
+      } catch (error) {
+        throw _wrapWrite(error);
       }
-      await file.writeAsString(buffer.toString(), flush: true);
-    } catch (error) {
-      throw _wrapWrite(error);
-    }
+    });
   }
 
   @override
@@ -166,15 +179,23 @@ class FileActiveActivityStore implements ActiveActivityStore {
   }
 
   @override
-  Future<void> clear() async {
-    try {
-      final directory = await _activeDirectory();
-      if (directory.existsSync()) {
-        directory.deleteSync(recursive: true);
+  Future<void> clear() {
+    return _serialized(() async {
+      try {
+        final directory = await _activeDirectory();
+        if (directory.existsSync()) {
+          directory.deleteSync(recursive: true);
+        }
+      } catch (error) {
+        throw _wrapWrite(error);
       }
-    } catch (error) {
-      throw _wrapWrite(error);
-    }
+    });
+  }
+
+  Future<T> _serialized<T>(Future<T> Function() action) {
+    final result = _operationQueue.then((_) => action());
+    _operationQueue = result.then<void>((_) {}, onError: (_, _) {});
+    return result;
   }
 
   Future<Directory> _activeDirectory({bool create = false}) async {
