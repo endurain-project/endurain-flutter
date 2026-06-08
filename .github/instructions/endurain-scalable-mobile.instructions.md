@@ -1,16 +1,9 @@
 ---
 description: "Use when changing Endurain Flutter features, architecture, adaptive UI, localization, tests, platform integrations, security, release configuration, or mobile best practices. Preserves the scaling rationale from the refactors."
 name: "Endurain Scalable Mobile Guidelines"
-applyTo: "lib/**, test/**, android/**, ios/**, macos/**, devdocs/**, pubspec.yaml, l10n.yaml, analysis_options.yaml"
+applyTo: "lib/**, test/**, android/**, ios/**, macos/**, pubspec.yaml, l10n.yaml, analysis_options.yaml"
 ---
 # Endurain Scalable Mobile Guidelines
-
-Keep new work aligned with the current scaling rationale in `devdocs/`:
-
-- `devdocs/l10n_i18n_scaling_rationale.md`
-- `devdocs/adaptive_ui_scaling_rationale.md`
-- `devdocs/codebase_scaling_recommendations.md`
-- `devdocs/feature_creation_guide.md`
 
 ## Architecture
 
@@ -27,8 +20,7 @@ Keep new work aligned with the current scaling rationale in `devdocs/`:
 **Decision (2026-06-08):** Keep `ChangeNotifier` + `AppScope` `InheritedWidget` +
 `AppServices` global singleton. Do **not** migrate to Riverpod or Provider until
 there is a concrete multi-account or multi-environment requirement that the
-current approach cannot satisfy. This decision is revisable; record the reason
-in `devdocs/codebase_scaling_recommendations.md` if it is revisited.
+current approach cannot satisfy.
 
 **When to create each layer:**
 - **Service** — when the unit isolates exactly one platform API, one HTTP
@@ -99,4 +91,4 @@ in `devdocs/codebase_scaling_recommendations.md` if it is revisited.
 
 ## Documentation
 
-- Update `devdocs/feature_creation_guide.md` or the relevant rationale doc when introducing a new architecture pattern, adapter, route pattern, release convention, or test helper.
+- Document new architecture patterns, adapter contracts, route conventions, release steps, and test helpers in a comment or README adjacent to where the code lives, or update this instruction file directly.
