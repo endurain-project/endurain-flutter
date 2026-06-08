@@ -1,4 +1,4 @@
-import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_response.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
@@ -15,11 +15,14 @@ class PkceTokenExchanger {
   const PkceTokenExchanger({
     required AuthSessionStore sessionStore,
     required BaseHttpClient http,
+    ApiEndpoints? endpoints,
   }) : _sessionStore = sessionStore,
-       _http = http;
+       _http = http,
+       _endpoints = endpoints ?? const ApiEndpoints();
 
   final AuthSessionStore _sessionStore;
   final BaseHttpClient _http;
+  final ApiEndpoints _endpoints;
 
   /// Exchanges [sessionId] for bearer tokens using the PKCE [verifier].
   ///
@@ -35,7 +38,7 @@ class PkceTokenExchanger {
     required AppErrorCode failureCode,
   }) async {
     final url = Uri.parse(
-      '$serverUrl${ApiConstants.idpSessionTokenExchangeEndpoint}/$sessionId/tokens',
+      '$serverUrl${_endpoints.idpSessionTokenExchangeEndpoint}/$sessionId/tokens',
     );
 
     try {

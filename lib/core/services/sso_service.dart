@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/models/identity_provider.dart';
@@ -45,6 +46,7 @@ class SsoService {
     http.Client? httpClient,
     DateTime Function()? now,
     AppConfig config = AppConfig.defaults,
+    ApiEndpoints? endpoints,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
     _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
@@ -52,13 +54,19 @@ class SsoService {
         ServerUrlResolver(storage: resolvedStorage, config: config);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
     _now = now ?? DateTime.now;
-    _exchanger = PkceTokenExchanger(sessionStore: _sessionStore, http: _http);
+    _endpoints = endpoints ?? ApiEndpoints(config);
+    _exchanger = PkceTokenExchanger(
+      sessionStore: _sessionStore,
+      http: _http,
+      endpoints: _endpoints,
+    );
   }
 
   late final AuthSessionStore _sessionStore;
   late final ServerUrlResolver _urlResolver;
   late final BaseHttpClient _http;
   late final DateTime Function() _now;
+  late final ApiEndpoints _endpoints;
   late final PkceTokenExchanger _exchanger;
 
   // Pending SSO PKCE flow state; cleared on successful exchange, error, or
@@ -70,7 +78,7 @@ class SsoService {
     String? serverUrl,
   }) async {
     final url = await _urlResolver.resolve(serverUrl: serverUrl);
-    final apiUrl = Uri.parse('$url${ApiConstants.idpListEndpoint}');
+    final apiUrl = Uri.parse('$url${_endpoints.idpListEndpoint}');
 
     try {
       final data = await _http.getJson(
@@ -122,7 +130,7 @@ class SsoService {
     );
 
     // Build OAuth URL with PKCE challenge
-    final oauthUrl = Uri.parse('$url${ApiConstants.idpLoginEndpoint}/$idpSlug')
+    final oauthUrl = Uri.parse('$url${_endpoints.idpLoginEndpoint}/$idpSlug')
         .replace(
           queryParameters: {
             'code_challenge': pkce['challenge'],

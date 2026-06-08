@@ -7,7 +7,7 @@ import 'package:endurain/core/config/app_config.dart';
 /// deployment only requires changing [AppConfig.apiBasePath] in one place.
 ///
 /// Header names, timeouts, and multipart field names remain in
-/// [ApiConstants].
+/// `ApiConstants`.
 class ApiEndpoints {
   const ApiEndpoints([this._config = AppConfig.defaults]);
 

@@ -1,10 +1,10 @@
 import 'package:http/http.dart' as http;
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/base_http_client.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 
 /// Service for fetching server settings.
@@ -19,16 +19,19 @@ class ServerSettingsService {
     BaseHttpClient? baseClient,
     http.Client? httpClient,
     AppConfig config = AppConfig.defaults,
+    ApiEndpoints? endpoints,
   }) : _urlResolver =
            urlResolver ??
            ServerUrlResolver(
              storage: storage ?? SecureStorageService(),
              config: config,
            ),
-       _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
+       _http = baseClient ?? BaseHttpClient(httpClient: httpClient),
+       _endpoints = endpoints ?? ApiEndpoints(config);
 
   final ServerUrlResolver _urlResolver;
   final BaseHttpClient _http;
+  final ApiEndpoints _endpoints;
 
   /// Fetches settings from the server and returns them.
   ///
@@ -37,7 +40,7 @@ class ServerSettingsService {
   /// returned value.
   Future<ServerSettings> getServerSettings({String? serverUrl}) async {
     final url = await _urlResolver.resolve(serverUrl: serverUrl);
-    final apiUrl = Uri.parse('$url${ApiConstants.serverSettingsEndpoint}');
+    final apiUrl = Uri.parse('$url${_endpoints.serverSettingsEndpoint}');
 
     try {
       final data = await _http.getJsonObject(

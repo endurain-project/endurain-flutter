@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/api_response.dart';
@@ -18,18 +19,25 @@ class AuthService {
     BaseHttpClient? baseClient,
     http.Client? httpClient,
     AppConfig config = AppConfig.defaults,
+    ApiEndpoints? endpoints,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
     _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
     _urlResolver = urlResolver ??
         ServerUrlResolver(storage: resolvedStorage, config: config);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
-    _exchanger = PkceTokenExchanger(sessionStore: _sessionStore, http: _http);
+    _endpoints = endpoints ?? ApiEndpoints(config);
+    _exchanger = PkceTokenExchanger(
+      sessionStore: _sessionStore,
+      http: _http,
+      endpoints: _endpoints,
+    );
   }
 
   late final AuthSessionStore _sessionStore;
   late final ServerUrlResolver _urlResolver;
   late final BaseHttpClient _http;
+  late final ApiEndpoints _endpoints;
   late final PkceTokenExchanger _exchanger;
 
   // Store PKCE temporarily during auth flow
@@ -48,7 +56,7 @@ class AuthService {
     _pkce = PkceUtils.generatePkce();
 
     final apiUrl = Uri.parse(
-      '$url${ApiConstants.tokenEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
+      '$url${_endpoints.tokenEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
     );
 
     try {
@@ -103,7 +111,7 @@ class AuthService {
 
     // MFA verification with PKCE uses query parameters
     final url = Uri.parse(
-      '$serverUrl${ApiConstants.mfaVerifyEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
+      '$serverUrl${_endpoints.mfaVerifyEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
     );
 
     try {
@@ -163,7 +171,7 @@ class AuthService {
       return _clearSessionAfterRefreshFailure();
     }
 
-    final url = Uri.parse('$serverUrl${ApiConstants.refreshEndpoint}');
+    final url = Uri.parse('$serverUrl${_endpoints.refreshEndpoint}');
 
     try {
       final response = await _http.post(
@@ -218,7 +226,7 @@ class AuthService {
     // Call server-side logout if we have credentials
     if (serverUrl != null && refreshToken != null && refreshToken.isNotEmpty) {
       try {
-        final url = Uri.parse('$serverUrl${ApiConstants.logoutEndpoint}');
+        final url = Uri.parse('$serverUrl${_endpoints.logoutEndpoint}');
         final response = await _http.post(
           url,
           extraHeaders: {

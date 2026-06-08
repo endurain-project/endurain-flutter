@@ -2,6 +2,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
@@ -660,6 +661,33 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('uses custom apiBasePath from ApiEndpoints', () async {
+      const v2Config = AppConfig(apiBasePath: '/api/v2');
+      final requests = <http.Request>[];
+      final service = AuthService(
+        storage: SecureStorageService(),
+        httpClient: MockClient((request) async {
+          requests.add(request);
+          if (request.url.path == '/api/v2/auth/login') {
+            return http.Response('{"session_id":"session-1"}', 200);
+          }
+          if (request.url.path == '/api/v2/public/idp/session/session-1/tokens') {
+            return http.Response(
+              '{"access_token":"a","refresh_token":"r","session_id":"s2","expires_in":3600}',
+              200,
+            );
+          }
+          fail('Unexpected path: ${request.url.path}');
+        }),
+        config: v2Config,
+        endpoints: const ApiEndpoints(v2Config),
+      );
+
+      await service.login('joao', 'secret', serverUrl: 'https://example.test');
+
+      expect(requests.first.url.path, '/api/v2/auth/login');
     });
   });
 }
