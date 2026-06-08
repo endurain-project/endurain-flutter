@@ -175,6 +175,56 @@ void main() {
       await store.close();
     });
   });
+
+  group('SqfliteActivityStore – pagination', () {
+    test('count returns 0 for empty store', () async {
+      final store = makeStore();
+      expect(await store.count(), 0);
+      await store.close();
+    });
+
+    test('count returns total number of records', () async {
+      final store = makeStore();
+      await store.upsert(_record(id: 'p1', endedAt: DateTime.utc(2026, 6, 3)));
+      await store.upsert(_record(id: 'p2', endedAt: DateTime.utc(2026, 6, 2)));
+      await store.upsert(_record(id: 'p3', endedAt: DateTime.utc(2026, 6, 1)));
+      expect(await store.count(), 3);
+      await store.close();
+    });
+
+    test('listPage returns first page in newest-first order', () async {
+      final store = makeStore();
+      await store.upsert(_record(id: 'p1', endedAt: DateTime.utc(2026, 6, 3)));
+      await store.upsert(_record(id: 'p2', endedAt: DateTime.utc(2026, 6, 2)));
+      await store.upsert(_record(id: 'p3', endedAt: DateTime.utc(2026, 6, 1)));
+
+      final page = await store.listPage(offset: 0, limit: 2);
+      expect(page.map((r) => r.id).toList(), ['p1', 'p2']);
+      await store.close();
+    });
+
+    test('listPage with offset returns remaining records', () async {
+      final store = makeStore();
+      await store.upsert(_record(id: 'p1', endedAt: DateTime.utc(2026, 6, 3)));
+      await store.upsert(_record(id: 'p2', endedAt: DateTime.utc(2026, 6, 2)));
+      await store.upsert(_record(id: 'p3', endedAt: DateTime.utc(2026, 6, 1)));
+
+      final page = await store.listPage(offset: 2, limit: 2);
+      expect(page.map((r) => r.id).toList(), ['p3']);
+      await store.close();
+    });
+
+    test('listPage beyond last record returns empty list', () async {
+      final store = makeStore();
+      await store.upsert(_record(id: 'p1', endedAt: DateTime.utc(2026, 6, 3)));
+      await store.upsert(_record(id: 'p2', endedAt: DateTime.utc(2026, 6, 2)));
+      await store.upsert(_record(id: 'p3', endedAt: DateTime.utc(2026, 6, 1)));
+
+      final page = await store.listPage(offset: 5, limit: 2);
+      expect(page, isEmpty);
+      await store.close();
+    });
+  });
 }
 
 LocalActivityRecord _record({required String id, DateTime? endedAt}) {
