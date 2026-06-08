@@ -76,9 +76,7 @@ void main() {
     });
 
     testWidgets('uploaded record shows cloud-done icon', (tester) async {
-      final controller = _LoadedHistoryController(
-        records: [_uploadedRecord],
-      );
+      final controller = _LoadedHistoryController(records: [_uploadedRecord]);
       addTearDown(controller.dispose);
 
       await tester.pumpWidget(
@@ -116,9 +114,7 @@ void main() {
       expect(find.text(l10n.activityHistoryRefresh), findsOneWidget);
     });
 
-    testWidgets('loading state shows AdaptiveLoadingIndicator', (
-      tester,
-    ) async {
+    testWidgets('loading state shows AdaptiveLoadingIndicator', (tester) async {
       final controller = _LoadingHistoryController();
       addTearDown(controller.dispose);
 
@@ -157,16 +153,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(_findIconButton(tester, l10n.activityRetryUpload), findsOneWidget);
-      expect(
-        _findIconButton(tester, l10n.activityDeleteLocal),
-        findsOneWidget,
-      );
+      expect(_findIconButton(tester, l10n.activityDeleteLocal), findsOneWidget);
     });
 
     testWidgets('uploaded record hides retry button', (tester) async {
-      final controller = _LoadedHistoryController(
-        records: [_uploadedRecord],
-      );
+      final controller = _LoadedHistoryController(records: [_uploadedRecord]);
       addTearDown(controller.dispose);
 
       await tester.pumpWidget(
@@ -177,14 +168,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        _findIconButton(tester, l10n.activityRetryUpload),
-        findsNothing,
-      );
-      expect(
-        _findIconButton(tester, l10n.activityDeleteLocal),
-        findsOneWidget,
-      );
+      expect(_findIconButton(tester, l10n.activityRetryUpload), findsNothing);
+      expect(_findIconButton(tester, l10n.activityDeleteLocal), findsOneWidget);
     });
   });
 }
@@ -321,9 +306,7 @@ class _LoadingHistoryController extends LocalActivityHistoryController {
 // ---------------------------------------------------------------------------
 
 Finder _findIconButton(WidgetTester tester, String tooltip) {
-  return find.byWidgetPredicate(
-    (w) => w is IconButton && w.tooltip == tooltip,
-  );
+  return find.byWidgetPredicate((w) => w is IconButton && w.tooltip == tooltip);
 }
 
 Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {

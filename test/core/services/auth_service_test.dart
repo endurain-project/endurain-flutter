@@ -642,26 +642,31 @@ void main() {
       },
     );
 
-    test('rejects http serverUrl in managed mode before making any request', () async {
-      final service = AuthService(
-        storage: SecureStorageService(),
-        httpClient: MockClient((request) async {
-          fail('No HTTP request should be made with http:// in managed mode.');
-        }),
-        config: const AppConfig(transportMode: AppTransportMode.managed),
-      );
+    test(
+      'rejects http serverUrl in managed mode before making any request',
+      () async {
+        final service = AuthService(
+          storage: SecureStorageService(),
+          httpClient: MockClient((request) async {
+            fail(
+              'No HTTP request should be made with http:// in managed mode.',
+            );
+          }),
+          config: const AppConfig(transportMode: AppTransportMode.managed),
+        );
 
-      await expectLater(
-        service.login('joao', 'secret', serverUrl: 'http://example.test'),
-        throwsA(
-          isA<AppException>().having(
-            (e) => e.code,
-            'code',
-            AppErrorCode.serverUrlNotConfigured,
+        await expectLater(
+          service.login('joao', 'secret', serverUrl: 'http://example.test'),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.serverUrlNotConfigured,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('uses custom apiBasePath from ApiEndpoints', () async {
       const v2Config = AppConfig(apiBasePath: '/api/v2');
@@ -673,7 +678,8 @@ void main() {
           if (request.url.path == '/api/v2/auth/login') {
             return http.Response('{"session_id":"session-1"}', 200);
           }
-          if (request.url.path == '/api/v2/public/idp/session/session-1/tokens') {
+          if (request.url.path ==
+              '/api/v2/public/idp/session/session-1/tokens') {
             return http.Response(
               '{"access_token":"a","refresh_token":"r","session_id":"s2","expires_in":3600}',
               200,

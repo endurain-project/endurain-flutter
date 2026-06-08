@@ -164,10 +164,7 @@ void main() {
 
       await tester.pumpWidget(_loginScreen(controller: controller));
 
-      await tester.enterText(
-        find.byType(TextFormField),
-        'http://example.test',
-      );
+      await tester.enterText(find.byType(TextFormField), 'http://example.test');
       await tester.tap(find.text(l10n.next));
       await tester.pump();
 

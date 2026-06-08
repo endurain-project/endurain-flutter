@@ -31,9 +31,7 @@ final _baseRecord = LocalActivityRecord(
 
 void main() {
   group('ActivityDetailsScreen – Phase 14: loading/missing states', () {
-    testWidgets('loading state shows AdaptiveLoadingIndicator', (
-      tester,
-    ) async {
+    testWidgets('loading state shows AdaptiveLoadingIndicator', (tester) async {
       final controller = _LoadingController();
       addTearDown(controller.dispose);
 
@@ -141,15 +139,15 @@ void main() {
     });
 
     testWidgets('shows GPX available when hasGpx is true', (tester) async {
-      final controller = _LoadedController(record: _baseRecord, hasGpxValue: true);
+      final controller = _LoadedController(
+        record: _baseRecord,
+        hasGpxValue: true,
+      );
       addTearDown(controller.dispose);
 
       await _pumpDetails(tester, controller);
 
-      expect(
-        find.text(_l10n.activityHistoryGpxAvailable),
-        findsOneWidget,
-      );
+      expect(find.text(_l10n.activityHistoryGpxAvailable), findsOneWidget);
     });
 
     testWidgets('shows GPX missing when hasGpx is false', (tester) async {
@@ -158,10 +156,7 @@ void main() {
 
       await _pumpDetails(tester, controller);
 
-      expect(
-        find.text(_l10n.activityHistoryGpxMissing),
-        findsOneWidget,
-      );
+      expect(find.text(_l10n.activityHistoryGpxMissing), findsOneWidget);
     });
   });
 
@@ -170,52 +165,45 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('ActivityDetailsScreen – Phase 16: actions section', () {
-    testWidgets(
-      'retry and delete actions shown for pending upload',
-      (tester) async {
-        final controller = _LoadedController(record: _baseRecord);
-        addTearDown(controller.dispose);
+    testWidgets('retry and delete actions shown for pending upload', (
+      tester,
+    ) async {
+      final controller = _LoadedController(record: _baseRecord);
+      addTearDown(controller.dispose);
 
-        await _pumpDetails(tester, controller);
+      await _pumpDetails(tester, controller);
 
-        expect(find.text(_l10n.activityRetryUpload), findsOneWidget);
-        expect(find.text(_l10n.activityDeleteLocal), findsOneWidget);
-      },
-    );
+      expect(find.text(_l10n.activityRetryUpload), findsOneWidget);
+      expect(find.text(_l10n.activityDeleteLocal), findsOneWidget);
+    });
 
-    testWidgets(
-      'retry action hidden for uploaded record',
-      (tester) async {
-        final record = LocalActivityRecord(
-          id: _baseRecord.id,
-          activityType: _baseRecord.activityType,
-          startedAt: _baseRecord.startedAt,
-          endedAt: _baseRecord.endedAt,
-          elapsedDurationSeconds: _baseRecord.elapsedDurationSeconds,
-          distanceMeters: _baseRecord.distanceMeters,
-          pointCount: _baseRecord.pointCount,
-          gpxFileName: _baseRecord.gpxFileName,
-          uploadStatus: LocalActivityUploadStatus.uploaded,
-          createdAt: _baseRecord.createdAt,
-          updatedAt: _baseRecord.updatedAt,
-        );
-        final controller = _LoadedController(record: record);
-        addTearDown(controller.dispose);
+    testWidgets('retry action hidden for uploaded record', (tester) async {
+      final record = LocalActivityRecord(
+        id: _baseRecord.id,
+        activityType: _baseRecord.activityType,
+        startedAt: _baseRecord.startedAt,
+        endedAt: _baseRecord.endedAt,
+        elapsedDurationSeconds: _baseRecord.elapsedDurationSeconds,
+        distanceMeters: _baseRecord.distanceMeters,
+        pointCount: _baseRecord.pointCount,
+        gpxFileName: _baseRecord.gpxFileName,
+        uploadStatus: LocalActivityUploadStatus.uploaded,
+        createdAt: _baseRecord.createdAt,
+        updatedAt: _baseRecord.updatedAt,
+      );
+      final controller = _LoadedController(record: record);
+      addTearDown(controller.dispose);
 
-        await _pumpDetails(tester, controller);
+      await _pumpDetails(tester, controller);
 
-        expect(find.text(_l10n.activityRetryUpload), findsNothing);
-        expect(find.text(_l10n.activityDeleteLocal), findsOneWidget);
-      },
-    );
+      expect(find.text(_l10n.activityRetryUpload), findsNothing);
+      expect(find.text(_l10n.activityDeleteLocal), findsOneWidget);
+    });
 
     testWidgets(
       'busy state shows loading indicator in actions and hides buttons',
       (tester) async {
-        final controller = _LoadedController(
-          record: _baseRecord,
-          busy: true,
-        );
+        final controller = _LoadedController(record: _baseRecord, busy: true);
         addTearDown(controller.dispose);
 
         await tester.pumpWidget(
@@ -329,8 +317,7 @@ class _LoadedController extends LocalActivityHistoryController {
   bool get isLoading => false;
 
   @override
-  LocalActivityRecord? recordById(String id) =>
-      id == record.id ? record : null;
+  LocalActivityRecord? recordById(String id) => id == record.id ? record : null;
 
   @override
   bool isBusy(String id) => _busy && id == record.id;

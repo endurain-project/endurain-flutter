@@ -53,7 +53,8 @@ class SsoService {
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
     _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
-    _urlResolver = urlResolver ??
+    _urlResolver =
+        urlResolver ??
         ServerUrlResolver(storage: resolvedStorage, config: config);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
     _now = now ?? DateTime.now;

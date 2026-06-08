@@ -29,9 +29,12 @@ void main() {
       expect(services.activityRecordingController, isNotNull);
     });
 
-    test('createActivityRecordingService returns a service without throwing', () {
-      final services = AppServices();
-      expect(services.createActivityRecordingService(), isNotNull);
-    });
+    test(
+      'createActivityRecordingService returns a service without throwing',
+      () {
+        final services = AppServices();
+        expect(services.createActivityRecordingService(), isNotNull);
+      },
+    );
   });
 }

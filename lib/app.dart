@@ -10,7 +10,12 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/widgets/app_bottom_nav.dart';
 
 class App extends StatefulWidget {
-  const App({super.key, this.services, this.authService, this.sessionController});
+  const App({
+    super.key,
+    this.services,
+    this.authService,
+    this.sessionController,
+  });
 
   final AppServices? services;
   final AuthService? authService;

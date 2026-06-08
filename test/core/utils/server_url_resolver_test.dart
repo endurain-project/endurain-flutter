@@ -130,9 +130,7 @@ void main() {
           storage: SecureStorageService(),
           config: managed,
         );
-        final url = await resolver.resolve(
-          serverUrl: 'https://example.test',
-        );
+        final url = await resolver.resolve(serverUrl: 'https://example.test');
         expect(url, 'https://example.test');
       });
 
@@ -156,10 +154,7 @@ void main() {
       test('rejects stored http URL in managed mode', () async {
         final storage = SecureStorageService();
         await storage.setServerUrl('http://stored.test');
-        final resolver = ServerUrlResolver(
-          storage: storage,
-          config: managed,
-        );
+        final resolver = ServerUrlResolver(storage: storage, config: managed);
         await expectLater(
           resolver.resolve(),
           throwsA(
@@ -174,9 +169,7 @@ void main() {
 
       test('allows http in self-hosted mode (default)', () async {
         final resolver = ServerUrlResolver(storage: SecureStorageService());
-        final url = await resolver.resolve(
-          serverUrl: 'http://local.test',
-        );
+        final url = await resolver.resolve(serverUrl: 'http://local.test');
         expect(url, 'http://local.test');
       });
     });

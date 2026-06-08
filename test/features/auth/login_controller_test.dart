@@ -552,22 +552,19 @@ void main() {
         controller.dispose();
       });
 
-      test(
-        'is false when transportMode is managed, even for http URL',
-        () {
-          final controller = LoginController(
-            authCoordinator: _repository(
-              storage: SecureStorageService(),
-              client: MockClient((_) async => http.Response('{}', 200)),
-            ),
-            appLinksService: const EmptyAppLinksService(),
-            config: const AppConfig(transportMode: AppTransportMode.managed),
-          );
-          controller.serverUrlController.text = 'http://example.test';
-          expect(controller.serverUrlIsHttp, isFalse);
-          controller.dispose();
-        },
-      );
+      test('is false when transportMode is managed, even for http URL', () {
+        final controller = LoginController(
+          authCoordinator: _repository(
+            storage: SecureStorageService(),
+            client: MockClient((_) async => http.Response('{}', 200)),
+          ),
+          appLinksService: const EmptyAppLinksService(),
+          config: const AppConfig(transportMode: AppTransportMode.managed),
+        );
+        controller.serverUrlController.text = 'http://example.test';
+        expect(controller.serverUrlIsHttp, isFalse);
+        controller.dispose();
+      });
     });
 
     test(

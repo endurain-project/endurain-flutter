@@ -206,6 +206,40 @@ Diagnostics are stored only in the app's private support directory and are never
 
 iOS `.ips` crash reports remain separate system-generated native crash reports. The local diagnostics report complements them by preserving app-side context from before the crash.
 
+## Manual QA Checklists
+
+### Android: Active Recording — Location Provider Loss
+
+Native Kotlin unit coverage is not available for the `onProviderDisabled`
+path. Use these steps to validate the behavior manually on a physical or
+emulated Android device.
+
+**Prerequisites:** A running Endurain server, a connected Android device with
+GPS and network location enabled, and developer options active.
+
+1. Open the app and start an activity recording.
+2. Verify the foreground-service notification appears and that the recording
+   status is active.
+3. Background the app (press Home or the recents button).
+4. Open the device Settings and disable **all** location providers (both GPS
+   and network/Wi-Fi scanning). On most devices this is under
+   *Location > App permissions* or by toggling the master location switch.
+5. Wait approximately 5–10 seconds for the service to detect the provider
+   change.
+6. Return to the app.
+
+**Expected results:**
+- The recording shows a non-recoverable failed state (not an active or paused
+  state).
+- No "resume recording" option is offered.
+- After fully restarting the app (force-stop and reopen), no phantom active
+  session is restored from the saved session file.
+- The local activity history shows the completed (or failed) entry with the
+  points collected before providers were disabled.
+
+**Recovery path:** Re-enable location providers, then start a new recording
+as normal.
+
 ## Development Workflow
 
 Run static analysis:

@@ -50,22 +50,14 @@ void main() {
 
       test('accepts https', () {
         expect(
-          Validators.validateUrl(
-            'https://example.test',
-            l10n,
-            config: managed,
-          ),
+          Validators.validateUrl('https://example.test', l10n, config: managed),
           isNull,
         );
       });
 
       test('rejects http', () {
         expect(
-          Validators.validateUrl(
-            'http://example.test',
-            l10n,
-            config: managed,
-          ),
+          Validators.validateUrl('http://example.test', l10n, config: managed),
           l10n.invalidUrl,
         );
       });
