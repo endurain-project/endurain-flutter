@@ -16,6 +16,8 @@ class LocalActivityHistoryController extends ChangeNotifier {
        _retentionSettingsRepository = retentionSettingsRepository,
        _now = now ?? DateTime.now;
 
+  static const int _pageSize = 20;
+
   final LocalActivityRepository _repository;
   final ActivityUploadService _uploadService;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
@@ -26,12 +28,15 @@ class LocalActivityHistoryController extends ChangeNotifier {
   bool _isLoading = false;
   Object? _error;
   bool _isDisposed = false;
+  bool _hasMore = true;
 
   List<LocalActivityRecord> get records => List.unmodifiable(_records);
 
   bool get isLoading => _isLoading;
 
   Object? get error => _error;
+
+  bool get hasMore => _hasMore;
 
   bool isBusy(String id) => _busyRecordIds.contains(id);
 
@@ -53,7 +58,30 @@ class LocalActivityHistoryController extends ChangeNotifier {
     _error = null;
     _notifyListeners();
     try {
-      _records = await _repository.list();
+      final page = await _repository.listPage(offset: 0, limit: _pageSize);
+      _records = page;
+      _hasMore = page.length == _pageSize;
+    } catch (error) {
+      _error = error;
+    } finally {
+      _isLoading = false;
+      _notifyListeners();
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoading || !_hasMore) {
+      return;
+    }
+    _isLoading = true;
+    _notifyListeners();
+    try {
+      final page = await _repository.listPage(
+        offset: _records.length,
+        limit: _pageSize,
+      );
+      _records = [..._records, ...page];
+      _hasMore = page.length == _pageSize;
     } catch (error) {
       _error = error;
     } finally {
