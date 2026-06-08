@@ -466,6 +466,46 @@ void main() {
       expect(await repository.hasGpx(record), isFalse);
     });
 
+    test(
+      'cleanup failure keeps upload successful and shows cleanup state',
+      () async {
+        final adapter = RecordingLocationPlatformAdapter();
+        final tempDirectory = await Directory.systemTemp.createTemp(
+          'endurain_cleanup_failed_',
+        );
+        addTearDown(() => tempDirectory.deleteSync(recursive: true));
+        final repository = _DeleteGpxThrowingRepository(tempDirectory);
+        final service = _recordingService(adapter: adapter);
+        final controller = ActivityRecordingController(
+          recordingService: service,
+          localActivityRepository: repository,
+          localActivityIdProvider: () => 'cleanup_failed',
+          uploadService: _uploadServiceReturning(201),
+          retentionSettingsRepository: _FakeRetentionSettings(enabled: false),
+        );
+        addTearDown(controller.dispose);
+
+        await controller.start(ActivityType.run);
+        adapter.addPosition(recordingPosition());
+        await pumpEventQueue();
+        await controller.stop();
+        await controller.uploadCompletedGpx();
+
+        final record = (await repository.list()).single;
+        expect(controller.uploadStatus, ActivityUploadStatus.cleanupFailed);
+        expect(
+          controller.uploadError?.code,
+          AppErrorCode.activityGpxCleanupFailed,
+        );
+        expect(record.uploadStatus, LocalActivityUploadStatus.uploaded);
+        expect(
+          record.lastUploadErrorCode,
+          AppErrorCode.activityGpxCleanupFailed,
+        );
+        expect(await repository.hasGpx(record), isTrue);
+      },
+    );
+
     test('5xx upload is retried and succeeds on second attempt', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final tempDirectory = await Directory.systemTemp.createTemp(
@@ -532,6 +572,16 @@ class _ThrowingLocalActivityRepository extends LocalActivityRepository {
   @override
   Future<String> writeGpx({required String id, required String gpx}) {
     throw const AppException(AppErrorCode.activityLocalSaveFailed);
+  }
+}
+
+class _DeleteGpxThrowingRepository extends LocalActivityRepository {
+  _DeleteGpxThrowingRepository(Directory dir)
+    : super(supportDirectoryProvider: () async => dir);
+
+  @override
+  Future<void> deleteGpx(LocalActivityRecord record) {
+    throw const AppException(AppErrorCode.activityLocalDeleteFailed);
   }
 }
 

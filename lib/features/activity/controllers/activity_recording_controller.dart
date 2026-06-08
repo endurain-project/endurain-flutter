@@ -295,6 +295,14 @@ class ActivityRecordingController extends ChangeNotifier {
         now: _now,
       );
       _completedLocalActivityRecord = uploaded;
+      if (uploaded.lastUploadErrorCode ==
+          AppErrorCode.activityGpxCleanupFailed) {
+        _setUploadState(
+          ActivityUploadStatus.cleanupFailed,
+          error: const AppException(AppErrorCode.activityGpxCleanupFailed),
+        );
+        return;
+      }
       _setUploadState(ActivityUploadStatus.uploaded);
     } catch (error) {
       final appError = error is AppException

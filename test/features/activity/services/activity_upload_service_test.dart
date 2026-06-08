@@ -6,6 +6,7 @@ import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -211,6 +212,32 @@ void main() {
       },
     );
 
+    test('keeps record uploaded when post-upload GPX cleanup fails', () async {
+      final cleanupThrowingRepository = _DeleteGpxThrowingRepository(tempDir);
+      final record = await _createRecord(
+        cleanupThrowingRepository,
+        id: 'svc_cleanup_failed',
+      );
+      final service = _serviceReturningStatus(201);
+
+      final result = await service.performUploadAttempt(
+        record: record,
+        repository: cleanupThrowingRepository,
+        retentionRepository: const _FakeRetentionSettings(enabled: false),
+      );
+
+      expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+      expect(result.lastUploadErrorCode, AppErrorCode.activityGpxCleanupFailed);
+      expect(await cleanupThrowingRepository.hasGpx(result), isTrue);
+
+      final persisted = await cleanupThrowingRepository.get(record.id);
+      expect(persisted!.uploadStatus, LocalActivityUploadStatus.uploaded);
+      expect(
+        persisted.lastUploadErrorCode,
+        AppErrorCode.activityGpxCleanupFailed,
+      );
+    });
+
     test('marks record failed and rethrows on upload error', () async {
       final record = await _createRecord(repository, id: 'svc_fail');
       final service = _serviceReturningStatus(500);
@@ -384,6 +411,28 @@ class _ReadPathThrowingRepository extends LocalActivityRepository {
   Future<String> readGpxFilePath(LocalActivityRecord record) {
     throw StateError('unexpected bug');
   }
+}
+
+class _DeleteGpxThrowingRepository extends LocalActivityRepository {
+  _DeleteGpxThrowingRepository(Directory dir)
+    : super(supportDirectoryProvider: () async => dir);
+
+  @override
+  Future<void> deleteGpx(LocalActivityRecord record) {
+    throw const AppException(AppErrorCode.activityLocalDeleteFailed);
+  }
+}
+
+class _FakeRetentionSettings implements ActivityRetentionSettingsRepository {
+  const _FakeRetentionSettings({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  Future<bool> isRetainUploadedGpxEnabled() async => enabled;
+
+  @override
+  Future<void> setRetainUploadedGpxEnabled(bool enabled) async {}
 }
 
 ActivityUploadService _serviceReturningStatus(int statusCode) {

@@ -140,7 +140,9 @@ class ActivityUploadService {
   /// up to [ActivityUploadRetryPolicy.maxAttempts] times before giving up.
   ///
   /// Returns the final [LocalActivityRecord] with an `uploaded` status on
-  /// success.
+  /// success. If the server upload succeeds but post-upload GPX cleanup fails,
+  /// the record remains `uploaded` and carries
+  /// [AppErrorCode.activityGpxCleanupFailed] in [LocalActivityRecord.lastUploadErrorCode].
   Future<LocalActivityRecord> performUploadAttempt({
     required LocalActivityRecord record,
     required LocalActivityRepository repository,
@@ -188,8 +190,17 @@ class ActivityUploadService {
         );
         await repository.upsert(updated);
 
-        if (!await _shouldRetainUploadedGpx(retentionRepository)) {
-          await repository.deleteGpx(updated);
+        final cleanupError = await _cleanupUploadedGpx(
+          record: updated,
+          repository: repository,
+          retentionRepository: retentionRepository,
+        );
+        if (cleanupError != null) {
+          updated = updated.copyWith(
+            updatedAt: clock().toUtc(),
+            lastUploadErrorCode: cleanupError.code,
+          );
+          await repository.upsert(updated);
         }
 
         return updated;
@@ -260,5 +271,23 @@ class ActivityUploadService {
     ActivityRetentionSettingsRepository? repo,
   ) async {
     return await repo?.isRetainUploadedGpxEnabled() ?? true;
+  }
+
+  static Future<AppException?> _cleanupUploadedGpx({
+    required LocalActivityRecord record,
+    required LocalActivityRepository repository,
+    ActivityRetentionSettingsRepository? retentionRepository,
+  }) async {
+    try {
+      if (await _shouldRetainUploadedGpx(retentionRepository)) {
+        return null;
+      }
+      await repository.deleteGpx(record);
+      return null;
+    } on AppException catch (error) {
+      return AppException(AppErrorCode.activityGpxCleanupFailed, cause: error);
+    } catch (error) {
+      return AppException(AppErrorCode.activityGpxCleanupFailed, cause: error);
+    }
   }
 }
