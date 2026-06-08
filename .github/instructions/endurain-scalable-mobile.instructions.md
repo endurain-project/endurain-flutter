@@ -22,6 +22,39 @@ Keep new work aligned with the current scaling rationale in `devdocs/`:
 - Wire shared dependencies through `AppServices`, `AppScope`, and constructor injection instead of creating new service instances inside widgets.
 - Add abstractions only when they remove real duplication or protect a boundary that is already repeated.
 
+## State Management and Dependency Injection
+
+**Decision (2026-06-08):** Keep `ChangeNotifier` + `AppScope` `InheritedWidget` +
+`AppServices` global singleton. Do **not** migrate to Riverpod or Provider until
+there is a concrete multi-account or multi-environment requirement that the
+current approach cannot satisfy. This decision is revisable; record the reason
+in `devdocs/codebase_scaling_recommendations.md` if it is revisited.
+
+**When to create each layer:**
+- **Service** — when the unit isolates exactly one platform API, one HTTP
+  endpoint family, or one storage concern. Services must be constructable with
+  mock/fake collaborators in unit tests.
+- **Repository** — when a feature needs to compose two or more services, own
+  domain caching, or return a typed result that hides storage keys from the
+  caller. Repositories are feature-local unless the same composition is needed
+  in two features.
+- **Controller** (`ChangeNotifier`) — one per screen/route that owns mutable UI
+  state, loading flags, stream subscriptions, and async transitions. Dispose
+  streams and subscriptions in `dispose()`.
+- **Long-lived controller** — hoist to `AppServices` (not the screen) when the
+  controller must survive tab navigation or be shared across screens. The active
+  recording controller is the canonical example.
+
+**DI rules:**
+- Inject collaborators through constructors. Default parameters use `??
+  Collaborator()` so tests can supply fakes without a service locator.
+- Screens and controllers obtain shared services via
+  `AppScope.servicesOf(context, listen: false)`, never by calling
+  `AppServices.instance` directly inside widget code.
+- `AppConfig` (in `AppServices.config`) is the single home for build-time
+  environment knobs (API base path, transport policy, feature flags). Add new
+  flags there; do not scatter `const bool kFeatureX = true` across files.
+
 ## API, Auth, And Security
 
 - Use typed `ApiClient` helpers and `ApiResponse` parsing instead of passing raw HTTP responses into features.
