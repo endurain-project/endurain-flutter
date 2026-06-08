@@ -268,7 +268,8 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
           materialIcon: Icons.dns,
           cupertinoIcon: CupertinoIcons.globe,
         ),
-        validator: (value) => Validators.validateUrl(value, l10n),
+        validator: (value) =>
+            Validators.validateUrl(value, l10n, config: _controller.config),
         onFieldSubmitted: (_) => _handleServerUrlNext(),
       ),
       const SizedBox(height: UIConstants.paddingLarge),

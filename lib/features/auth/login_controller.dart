@@ -45,6 +45,9 @@ class LoginController extends ChangeNotifier {
 
   bool get localLoginEnabled => serverSettings?.localLoginEnabled ?? true;
 
+  /// The transport and build configuration for this controller.
+  AppConfig get config => _config;
+
   /// Returns `true` when the current server URL uses plain HTTP (not HTTPS)
   /// AND [AppConfig.allowInsecureTransport] permits it.
   ///

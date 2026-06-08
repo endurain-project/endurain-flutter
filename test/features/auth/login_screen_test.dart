@@ -1,3 +1,4 @@
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -151,6 +152,29 @@ void main() {
 
       controller.dispose();
     });
+    testWidgets('managed mode rejects http URL without showing HTTP warning', (
+      tester,
+    ) async {
+      final controller = _controller(
+        client: MockClient((request) async {
+          fail('Network should not be called for http:// in managed mode.');
+        }),
+        config: const AppConfig(transportMode: AppTransportMode.managed),
+      );
+
+      await tester.pumpWidget(_loginScreen(controller: controller));
+
+      await tester.enterText(
+        find.byType(TextFormField),
+        'http://example.test',
+      );
+      await tester.tap(find.text(l10n.next));
+      await tester.pump();
+
+      expect(find.text(l10n.invalidUrl), findsOneWidget);
+
+      controller.dispose();
+    });
   });
 }
 
@@ -166,7 +190,10 @@ Widget _loginScreen({
   );
 }
 
-LoginController _controller({required http.Client client}) {
+LoginController _controller({
+  required http.Client client,
+  AppConfig config = AppConfig.defaults,
+}) {
   final storage = SecureStorageService();
   return LoginController(
     authCoordinator: AuthCoordinator(
@@ -178,6 +205,7 @@ LoginController _controller({required http.Client client}) {
       ),
     ),
     appLinksService: const EmptyAppLinksService(),
+    config: config,
   );
 }
 
