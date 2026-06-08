@@ -15,7 +15,9 @@ import 'package:endurain/core/services/url_launcher_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
+import 'package:endurain/features/activity/repositories/json_manifest_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
+import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
@@ -70,6 +72,10 @@ class AppServices {
   late final LocalActivityRepository localActivities = LocalActivityRepository(
     gpxStorage: localActivityGpxStorage,
     diagnostics: diagnostics,
+    store: SqfliteActivityStore(
+      manifestReader: () =>
+          JsonManifestActivityStore(diagnostics: diagnostics).list(),
+    ),
   );
   late final ActivityRetentionSettingsRepository activityRetentionSettings =
       ActivityRetentionSettingsRepository(storage: secureStorage);
