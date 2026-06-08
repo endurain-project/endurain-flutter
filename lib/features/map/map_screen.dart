@@ -93,6 +93,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       return;
     }
 
+    _controller.setRecordingActive(_activityController.state.isActive);
     setState(() {});
     _syncMapToLocationState();
   }

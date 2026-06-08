@@ -116,6 +116,24 @@ class MapStateController extends ChangeNotifier {
     _notifyListeners();
   }
 
+  /// Pauses or resumes the map position stream based on whether an activity
+  /// recording is currently active.
+  ///
+  /// Call with [isRecording] = true when recording starts so the map no longer
+  /// maintains its own GPS subscription (the native recorder owns the durable
+  /// stream). Call with [isRecording] = false when recording stops to resume
+  /// map position updates.
+  void setRecordingActive(bool isRecording) {
+    if (isRecording) {
+      _positionSubscription?.cancel();
+      _positionSubscription = null;
+      return;
+    }
+    if (_positionSubscription == null && hasLocationPermission) {
+      _startPositionUpdates();
+    }
+  }
+
   void _notifyListeners() {
     if (!_isDisposed) {
       notifyListeners();
