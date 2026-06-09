@@ -1,27 +1,22 @@
 import 'dart:io';
 
-import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
-import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
   group('LocalActivityRepository', () {
     late Directory tempDirectory;
-    late _FakeDiagnostics diagnostics;
     late LocalActivityRepository repository;
 
     setUp(() async {
       tempDirectory = await Directory.systemTemp.createTemp(
         'endurain_activity_repo_',
       );
-      diagnostics = _FakeDiagnostics();
-      repository = LocalActivityRepository(
-        supportDirectoryProvider: () async => tempDirectory,
-        diagnostics: diagnostics,
-      );
+      repository = createTestLocalActivityRepository(tempDirectory);
     });
 
     tearDown(() {
@@ -30,7 +25,7 @@ void main() {
       }
     });
 
-    test('returns an empty list when manifest is missing', () async {
+    test('returns an empty list when the store is empty', () async {
       expect(await repository.list(), isEmpty);
     });
 
@@ -71,24 +66,6 @@ void main() {
       expect(await repository.list(), isEmpty);
       expect(await repository.hasGpx(record), isFalse);
     });
-
-    test('recovers malformed manifest as empty list with breadcrumb', () async {
-      final rootDirectory = Directory(
-        '${tempDirectory.path}${Platform.pathSeparator}'
-        '$activityStorageRootDir',
-      )..createSync(recursive: true);
-      File(
-        '${rootDirectory.path}${Platform.pathSeparator}index.json',
-      ).writeAsStringSync('not-json');
-
-      final records = await repository.list();
-
-      expect(records, isEmpty);
-      expect(
-        diagnostics.events,
-        contains(DiagnosticsEvents.activityLocalManifestRecovered),
-      );
-    });
   });
 }
 
@@ -112,23 +89,4 @@ LocalActivityRecord _record({
     createdAt: ended,
     updatedAt: ended,
   );
-}
-
-class _FakeDiagnostics implements DiagnosticsRecorder {
-  final List<String> events = [];
-
-  @override
-  void recordBreadcrumbSync(
-    String event, {
-    Map<String, Object?> details = const {},
-  }) {
-    events.add(event);
-  }
-
-  @override
-  void recordErrorSync(
-    Object error,
-    StackTrace stackTrace, {
-    String source = DiagnosticsSources.uncaught,
-  }) {}
 }

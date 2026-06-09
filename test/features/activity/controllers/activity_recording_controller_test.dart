@@ -26,6 +26,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../helpers/in_memory_active_activity_store.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
+import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
   group('ActivityRecordingController', () {
@@ -577,7 +578,10 @@ class _ThrowingLocalActivityRepository extends LocalActivityRepository {
 
 class _DeleteGpxThrowingRepository extends LocalActivityRepository {
   _DeleteGpxThrowingRepository(Directory dir)
-    : super(supportDirectoryProvider: () async => dir);
+    : super(
+        supportDirectoryProvider: () async => dir,
+        store: createTestActivityStore(dir),
+      );
 
   @override
   Future<void> deleteGpx(LocalActivityRecord record) {
@@ -616,9 +620,7 @@ ActivityRecordingService _recordingService({
 }
 
 LocalActivityRepository _repositoryFor(Directory directory) {
-  return LocalActivityRepository(
-    supportDirectoryProvider: () async => directory,
-  );
+  return createTestLocalActivityRepository(directory);
 }
 
 ActivityRecordingController _controllerWithActiveStore(

@@ -32,9 +32,8 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
-# Ignore only scratch/review files in devdocs, not tracked design docs
-devdocs/local_*
-devdocs/code_review_*
+# Ignore dev docs, which are generated locally and not published to pub.dev
+devdocs/
 
 # Generated localization files (can be regenerated)
 # Uncomment if you want to commit generated l10n files:

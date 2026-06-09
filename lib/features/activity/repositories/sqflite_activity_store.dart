@@ -21,10 +21,8 @@ class SqfliteActivityStore implements LocalActivityStore {
   SqfliteActivityStore({
     DatabaseFactory? databaseFactory,
     String? databasePath,
-    Future<List<LocalActivityRecord>> Function()? manifestReader,
   }) : _factory = databaseFactory ?? _platformFactory(),
-       _path = databasePath,
-       _manifestReader = manifestReader;
+       _path = databasePath;
 
   static const int _schemaVersion = 1;
   static const String _dbFileName = 'activity.db';
@@ -33,7 +31,6 @@ class SqfliteActivityStore implements LocalActivityStore {
 
   final DatabaseFactory _factory;
   final String? _path;
-  final Future<List<LocalActivityRecord>> Function()? _manifestReader;
   Database? _db;
 
   /// Ordered schema migrations keyed by the version they upgrade the database
@@ -73,7 +70,6 @@ class SqfliteActivityStore implements LocalActivityStore {
           // Fresh install: run every migration from 1..version so the schema
           // is produced by the same steps an upgrade would apply.
           await _runMigrations(db, from: 0, to: version);
-          await _migrateFromManifest(db);
         },
         onUpgrade: (db, oldVersion, newVersion) async {
           await _runMigrations(db, from: oldVersion, to: newVersion);
@@ -220,27 +216,6 @@ class SqfliteActivityStore implements LocalActivityStore {
   Future<void> close() async {
     await _db?.close();
     _db = null;
-  }
-
-  Future<void> _migrateFromManifest(Database db) async {
-    final reader = _manifestReader;
-    if (reader == null) return;
-    List<LocalActivityRecord> records;
-    try {
-      records = await reader();
-    } catch (_) {
-      return;
-    }
-    if (records.isEmpty) return;
-    final batch = db.batch();
-    for (final record in records) {
-      batch.insert(
-        _tableActivity,
-        _toRow(record),
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
-    }
-    await batch.commit(noResult: true, continueOnError: true);
   }
 
   Map<String, Object?> _toRow(LocalActivityRecord r) {

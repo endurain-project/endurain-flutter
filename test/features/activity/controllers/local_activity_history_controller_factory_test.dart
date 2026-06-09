@@ -10,6 +10,8 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/sqlite_local_activity_repository.dart';
+
 void main() {
   group('createLocalActivityHistoryController', () {
     late Directory tempDirectory;
@@ -121,9 +123,7 @@ class _FakeRetentionSettings implements ActivityRetentionSettingsRepository {
 }
 
 LocalActivityRepository _repositoryFor(Directory directory) {
-  return LocalActivityRepository(
-    supportDirectoryProvider: () async => directory,
-  );
+  return createTestLocalActivityRepository(directory);
 }
 
 Future<LocalActivityRecord> _createRecord(

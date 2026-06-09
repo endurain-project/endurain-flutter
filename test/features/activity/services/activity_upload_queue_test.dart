@@ -9,6 +9,8 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/sqlite_local_activity_repository.dart';
+
 void main() {
   group('ActivityUploadQueue', () {
     late Directory tempDirectory;
@@ -18,9 +20,7 @@ void main() {
       tempDirectory = await Directory.systemTemp.createTemp(
         'endurain_upload_queue_',
       );
-      repository = LocalActivityRepository(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      repository = createTestLocalActivityRepository(tempDirectory);
     });
 
     tearDown(() {

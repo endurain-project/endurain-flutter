@@ -188,7 +188,7 @@ abstract class AppLocalizations {
   /// **'The local GPX file is not available'**
   String get errorActivityLocalGpxMissing;
 
-  /// Local activity manifest load error without exposing file paths - Used in: error_localizations.dart
+  /// Local activity load error without exposing file paths - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
   /// **'Could not load local activities'**

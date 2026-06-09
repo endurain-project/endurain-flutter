@@ -89,6 +89,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 ## Roadmap
 
 🚧 **Next Activity Milestones**
+- Wire a connectivity provider into the upload queue so failed uploads retry the moment connectivity is restored (the queue already accepts a connectivity signal; only the provider wiring remains)
 - Add a richer local post-recording summary for completed activities before or after upload
 - Add manual GPX export/share
 - Add server-synced activity history and details once the server exposes stable imported activity metadata
@@ -380,13 +381,14 @@ files on disk.
 Completed recordings are stored under the app's private support directory:
 
 ```
-<support-dir>/
-├── activity.db                # SQLite database (metadata, schema v1)
-└── gpx/
-    └── <activity-id>.gpx      # Raw GPX 1.1 file for each recording
+<app-support>/
+└── activity_records/
+    └── gpx/
+        └── <activity-id>.gpx      # Raw GPX 1.1 file for each recording
 ```
 
-The database holds two tables:
+Activity metadata lives in a SQLite database (`activity.db`, schema v1) under
+the platform databases directory. The database holds two tables:
 
 | Table                  | Purpose                                                  |
 |------------------------|----------------------------------------------------------|
@@ -405,14 +407,6 @@ by target version. Fresh installs (`onCreate`) and upgrades (`onUpgrade`) run
 the same migration steps, so the schema is produced by exactly one code path.
 To evolve the schema, append a new migration and bump the schema version —
 shipped migrations are never edited.
-
-### Legacy JSON manifest migration
-
-Earlier builds stored metadata in a JSON `index.json` manifest. On the first
-SQLite open, `SqfliteActivityStore` imports any existing manifest records into
-the `local_activity` table (conflict-ignore on duplicate ids) via an injected
-manifest reader. If the manifest read fails or is empty, the import is skipped
-without affecting the new database. GPX files are untouched by this migration.
 
 ### SQLite package decision
 

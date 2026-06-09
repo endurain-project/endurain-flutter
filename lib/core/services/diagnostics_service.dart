@@ -172,8 +172,6 @@ class DiagnosticsEvents {
   static const String activityFailed = 'activity.failed';
   static const String activityGpxGenerationFailed =
       'activity.gpx_generation_failed';
-  static const String activityLocalManifestRecovered =
-      'activity.local_manifest_recovered';
   static const String activityPointMilestone = 'activity.point_milestone';
   static const String activityLocationStreamDone =
       'activity.location_stream_done';

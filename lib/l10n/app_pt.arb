@@ -71,7 +71,7 @@
   },
   "errorActivityLocalLoadFailed": "Não foi possível carregar atividades locais",
   "@errorActivityLocalLoadFailed": {
-    "description": "Erro ao carregar o manifesto de atividades locais sem expor caminhos de ficheiros - Usado em: error_localizations.dart"
+    "description": "Erro ao carregar atividades locais sem expor caminhos de ficheiros - Usado em: error_localizations.dart"
   },
   "errorActivityLocalRecordInvalid": "Não foi possível guardar esta atividade",
   "@errorActivityLocalRecordInvalid": {

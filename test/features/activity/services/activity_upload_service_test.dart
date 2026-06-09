@@ -12,6 +12,8 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/sqlite_local_activity_repository.dart';
+
 void main() {
   group('ActivityUploadService', () {
     test('default Endurain config targets the upload contract', () {
@@ -183,9 +185,7 @@ void main() {
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('endurain_upload_svc_');
-      repository = LocalActivityRepository(
-        supportDirectoryProvider: () async => tempDir,
-      );
+      repository = createTestLocalActivityRepository(tempDir);
     });
 
     tearDown(() {

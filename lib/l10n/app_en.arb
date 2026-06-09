@@ -71,7 +71,7 @@
   },
   "errorActivityLocalLoadFailed": "Could not load local activities",
   "@errorActivityLocalLoadFailed": {
-    "description": "Local activity manifest load error without exposing file paths - Used in: error_localizations.dart"
+    "description": "Local activity load error without exposing file paths - Used in: error_localizations.dart"
   },
   "errorActivityLocalRecordInvalid": "Could not save this activity",
   "@errorActivityLocalRecordInvalid": {

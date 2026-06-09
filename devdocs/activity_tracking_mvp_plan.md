@@ -20,26 +20,37 @@ on-device, with graceful failure handling and optional server sync.
 - **GPX generation**: track points serialized to GPX 1.1 on recording
   completion.
 - **Local storage** (`LocalActivityRepository` → `SqfliteActivityStore`):
-  SQLite-backed store at `<support-dir>/activity.db` (schema v1). On first
-  open, existing JSON manifest records are migrated automatically via the
-  `manifestReader` callback injected by `AppServices`.
-- **Pagination API** (`listPage(offset, limit)` / `count()`): both
-  `SqfliteActivityStore` (SQL-level limit/offset) and
-  `JsonManifestActivityStore` (in-memory fallback) implement the interface.
+  SQLite-backed store at `activity.db` (schema v1) under the platform
+  databases directory. `SqfliteActivityStore` is the single metadata backend.
+- **Pagination API** (`listPage(offset, limit)` / `count()`): the
+  `SqfliteActivityStore` implements SQL-level limit/offset paging.
   `LocalActivityRepository` exposes the same API. The history controller
   loads 20 records per page with a "Load more" button in the UI.
 - **Upload service** (`ActivityUploadService`): multipart GPX upload with
   bounded transient retry (3 attempts, 2-second back-off).
 - **History UI** (`LocalActivityHistoryController`, `ActivityHistoryScreen`,
-  `ActivityDetailsScreen`): list, detail, retry, and delete. History screen
-  calls `retryFailedUploads()` when the app resumes.
-- **Resume-triggered retry** (`retryFailedUploads()`): on
-  `AppLifecycleState.resumed`, `ActivityHistoryScreen` retries all records
-  with `uploadStatus == failed` in a best-effort loop.
+  `ActivityDetailsScreen`): list, detail, retry, and delete.
+- **App-lifetime upload queue** (`ActivityUploadQueue`): durable, single-flight
+  queue owned by `AppServices`. It scans local records whose `uploadStatus` is
+  `pending` or `failed` and drains them via `ActivityUploadService`. A finished
+  activity is always persisted locally first (GPX + metadata), so an activity
+  recorded with no connectivity is uploaded later without the user having to
+  open the history screen and tap retry.
+- **Resume-triggered drain**: on `AppLifecycleState.resumed`, the root `App`
+  (`lib/app.dart`) calls `activityUploadQueue.drain()`. `ActivityHistoryScreen`
+  also drains the queue on resume while it is visible. Concurrent calls share
+  the same in-progress run, so resume and screen-visibility cannot start two
+  overlapping drains.
+- **Connectivity-triggered drain (hook ready)**: `ActivityUploadQueue` accepts
+  an optional injected `connectivitySignal` stream and drains when it emits
+  `true`. The hook is wired in the class but no real connectivity provider is
+  passed yet (see Remaining work).
 
 ## Remaining work
 
-- **Connectivity-triggered retry**: re-attempt failed uploads when the app
-  foregrounds with a network connection (durable queue, not yet implemented).
+- **Wire a connectivity provider**: pass a real `connectivitySignal` stream
+  (e.g. from a FOSS `connectivity_plus`-style source) into `ActivityUploadQueue`
+  in `AppServices` so failed uploads retry the moment connectivity is restored
+  while the app is foregrounded, not only on app-resume.
 - **Server-synced history**: pull server activities and merge with local
   records once server API is ready.

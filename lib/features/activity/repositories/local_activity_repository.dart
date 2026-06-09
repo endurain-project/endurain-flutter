@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
-import 'package:endurain/features/activity/repositories/json_manifest_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_store.dart';
+import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 
 /// Facade that combines metadata storage (delegated to [LocalActivityStore])
@@ -19,12 +19,7 @@ class LocalActivityRepository {
            LocalActivityGpxStorage(
              supportDirectoryProvider: supportDirectoryProvider,
            ),
-       _store =
-           store ??
-           JsonManifestActivityStore(
-             supportDirectoryProvider: supportDirectoryProvider,
-             diagnostics: diagnostics,
-           );
+       _store = store ?? SqfliteActivityStore();
 
   final LocalActivityGpxStorage _gpxStorage;
   final LocalActivityStore _store;
