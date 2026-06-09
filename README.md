@@ -90,7 +90,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 
 🚧 **Next Activity Milestones**
 - Add a richer local post-recording summary for completed activities before or after upload
-- Add manual GPX export/share
+- ~~Add manual GPX export/share~~ ✅ Done — share GPX from the activity details screen
 - Add server-synced activity history and details once the server exposes stable imported activity metadata
 - Improve activity import feedback once the server exposes richer post-upload status and metadata
 - Expand activity statistics as server/mobile contracts mature
@@ -106,6 +106,7 @@ the current on-device storage design behind activity recording and retention.
 - **Map Provider:** OpenStreetMap with `flutter_map` ^8.2.2 and `latlong2` ^0.9.1
 - **Location Services:** `geolocator` ^14.0.2, including position streams and movement heading
 - **Connectivity:** `connectivity_plus` ^7.1.1 to retry pending activity uploads when the network returns
+- **File Sharing:** `share_plus` ^10.1.4 (BSD-3-Clause, F-Droid safe) for the OS share sheet used by GPX file export
 - **Secure Storage:** `flutter_secure_storage` ^10.0.0
 - **HTTP Client:** `http` ^1.2.2 for Endurain API communication and multipart uploads
 - **SSO/OAuth:** `app_links` ^7.0.0 for deep-link callbacks, `url_launcher` ^6.3.1 for the system browser OAuth flow, and `flutter_svg` ^2.0.16 for provider icons
@@ -293,7 +294,8 @@ dart run tool/check_coverage.dart \
   --exclude "lib/core/services/location_platform_adapter.dart" \
   --exclude "lib/core/services/multipart_upload_adapter.dart" \
   --exclude "lib/core/services/package_info_service.dart" \
-  --exclude "lib/core/services/url_launcher_service.dart"
+  --exclude "lib/core/services/url_launcher_service.dart" \
+  --exclude "lib/core/services/share_service.dart"
 ```
 
 Regenerate localization classes after changing ARB files:
