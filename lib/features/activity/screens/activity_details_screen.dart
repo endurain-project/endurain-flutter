@@ -76,6 +76,21 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
     }
   }
 
+  Future<void> _export(LocalActivityRecord record) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await _controller.exportGpx(
+        record.id,
+        subject: l10n.activityExportGpxSubject,
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      await DialogUtils.showErrorDialog(context, error);
+    }
+  }
+
   Future<void> _delete(LocalActivityRecord record) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await DialogUtils.showConfirmDialog(
@@ -124,14 +139,23 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
             children: [
               _SummarySection(record: record, controller: _controller),
               const SizedBox(height: UIConstants.paddingStandard),
-              _ActionsSection(
-                record: record,
-                isBusy: _controller.isBusy(record.id),
-                onRetry:
-                    record.uploadStatus == LocalActivityUploadStatus.uploaded
-                    ? null
-                    : () => _retry(record),
-                onDelete: () => _delete(record),
+              FutureBuilder<bool>(
+                future: _controller.hasGpx(record),
+                builder: (context, snapshot) {
+                  return _ActionsSection(
+                    record: record,
+                    isBusy: _controller.isBusy(record.id),
+                    onRetry:
+                        record.uploadStatus ==
+                                LocalActivityUploadStatus.uploaded
+                            ? null
+                            : () => _retry(record),
+                    onExport: (snapshot.data ?? false)
+                        ? () => _export(record)
+                        : null,
+                    onDelete: () => _delete(record),
+                  );
+                },
               ),
             ],
           );
@@ -225,12 +249,14 @@ class _ActionsSection extends StatelessWidget {
     required this.record,
     required this.isBusy,
     required this.onRetry,
+    required this.onExport,
     required this.onDelete,
   });
 
   final LocalActivityRecord record;
   final bool isBusy;
   final VoidCallback? onRetry;
+  final VoidCallback? onExport;
   final VoidCallback onDelete;
 
   @override
@@ -254,6 +280,15 @@ class _ActionsSection extends StatelessWidget {
               ),
               title: l10n.activityRetryUpload,
               onTap: onRetry,
+            ),
+          if (onExport != null)
+            AdaptiveListTile(
+              leading: const AdaptiveIcon(
+                materialIcon: Icons.ios_share,
+                cupertinoIcon: CupertinoIcons.share,
+              ),
+              title: l10n.activityExportGpx,
+              onTap: onExport,
             ),
           AdaptiveListTile(
             leading: const AdaptiveIcon(
