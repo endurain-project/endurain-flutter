@@ -15,24 +15,6 @@ import 'package:endurain/features/activity/services/activity_location_recorder.d
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
-class ActivityRecordingErrorKeys {
-  const ActivityRecordingErrorKeys._();
-
-  static const String invalidTransition = 'activityRecordingInvalidTransition';
-  static const String locationStreamFailed = 'activityLocationStreamFailed';
-  static const String emptyRecording = 'activityRecordingEmpty';
-  static const String gpxGenerationFailed = 'activityGpxGenerationFailed';
-  static const String localSaveFailed = 'activityLocalSaveFailed';
-  static const String locationServiceDisabled =
-      'activityLocationServiceDisabled';
-  static const String locationPermissionDenied =
-      'activityLocationPermissionDenied';
-  static const String locationPermissionDeniedForever =
-      'activityLocationPermissionDeniedForever';
-  static const String backgroundPermissionRequired =
-      'activityBackgroundPermissionRequired';
-}
-
 class ActivityRecordingService {
   ActivityRecordingService({
     required ActivityLocationRecorder recorder,
