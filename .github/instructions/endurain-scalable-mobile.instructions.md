@@ -1,7 +1,7 @@
 ---
 description: "Use when changing Endurain Flutter features, architecture, adaptive UI, localization, tests, platform integrations, security, release configuration, or mobile best practices. Preserves the scaling rationale from the refactors."
 name: "Endurain Scalable Mobile Guidelines"
-applyTo: "lib/**, test/**, android/**, ios/**, macos/**, pubspec.yaml, l10n.yaml, analysis_options.yaml"
+applyTo: "lib/**, test/**, android/**, ios/**, pubspec.yaml, l10n.yaml, analysis_options.yaml"
 ---
 # Endurain Scalable Mobile Guidelines
 
@@ -69,7 +69,7 @@ current approach cannot satisfy.
 
 - Use shared adaptive primitives from `lib/shared/adaptive/` before adding platform branches.
 - Android should render through Flutter Material or Material 3 widgets.
-- iOS and macOS should render through Flutter Cupertino widgets where supported.
+- iOS should render through Flutter Cupertino widgets where supported.
 - Do not hand-roll platform visual effects, custom glass/blur surfaces, or platform-lookalike widgets when native Flutter families do not expose that behavior.
 - Add a new adaptive primitive only when the pattern repeats across features.
 
@@ -78,7 +78,7 @@ current approach cannot satisfy.
 - Put plugin calls behind injectable adapters before they appear in controllers or screens.
 - Handle permissions, denial states, unavailable services, and platform exceptions gracefully.
 - Keep permission declarations aligned with actual behavior. Do not request or describe background location until background activity tracking exists.
-- Keep release identifiers production-looking and consistent across Android, iOS, and macOS.
+- Keep release identifiers production-looking and consistent across Android and iOS.
 - Do not sign Android release builds with debug keys.
 
 ## Testing And Validation

@@ -3,7 +3,7 @@
 ## Tech Stack
 - **Flutter**: 3.38+ (stable channel)
 - **Dart**: 3.10+
-- **Platforms**: Android, iOS, macOS
+- **Platforms**: Android, iOS
 - **State Management**: setState (basic) - may evolve to Provider/Riverpod
 - **Map Provider**: OpenStreetMap (flutter_map + latlong2)
 - **Secure Storage**: flutter_secure_storage

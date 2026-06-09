@@ -55,11 +55,9 @@ app.*.map.json
 *.keystore
 key.properties
 
-# iOS/macOS signing and provisioning
+# iOS signing and provisioning
 **/ios/Runner.xcworkspace/xcuserdata/
-**/macos/Runner.xcworkspace/xcuserdata/
 **/ios/Pods/
-**/macos/Pods/
 *.mobileprovision
 *.p12
 *.cer

@@ -405,7 +405,10 @@ void main() {
 
 class _ReadPathThrowingRepository extends LocalActivityRepository {
   _ReadPathThrowingRepository(Directory dir)
-    : super(supportDirectoryProvider: () async => dir);
+    : super(
+        supportDirectoryProvider: () async => dir,
+        store: createTestActivityStore(dir),
+      );
 
   @override
   Future<String> readGpxFilePath(LocalActivityRecord record) {
@@ -415,7 +418,10 @@ class _ReadPathThrowingRepository extends LocalActivityRepository {
 
 class _DeleteGpxThrowingRepository extends LocalActivityRepository {
   _DeleteGpxThrowingRepository(Directory dir)
-    : super(supportDirectoryProvider: () async => dir);
+    : super(
+        supportDirectoryProvider: () async => dir,
+        store: createTestActivityStore(dir),
+      );
 
   @override
   Future<void> deleteGpx(LocalActivityRecord record) {

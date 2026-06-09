@@ -14,7 +14,7 @@ on-device, with graceful failure handling and optional server sync.
 - **Native iOS recorder** (`CoreLocationActivityRecorder.swift`): mirrors
   Android behaviour using `CLLocationManager` authorization callbacks.
 - **Geolocator fallback** (`GeolocatorActivityLocationRecorder`): used when
-  native recorder is unavailable (macOS, test environments).
+  native recorder is unavailable (test/host environments).
 - **Controller** (`ActivityRecordingController`): owns the recording lifecycle,
   drives upload on stop, persists activity metadata to local storage.
 - **GPX generation**: track points serialized to GPX 1.1 on recording

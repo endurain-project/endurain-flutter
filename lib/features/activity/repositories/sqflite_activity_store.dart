@@ -5,8 +5,7 @@ import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_store.dart';
-import 'package:sqflite/sqflite.dart' show databaseFactorySqflitePlugin;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
 
 /// SQLite-backed [LocalActivityStore] implemented with sqflite.
 ///
@@ -49,13 +48,7 @@ class SqfliteActivityStore implements LocalActivityStore {
     1: _migrateToV1,
   };
 
-  static DatabaseFactory _platformFactory() {
-    if (Platform.isAndroid || Platform.isIOS) {
-      return databaseFactorySqflitePlugin;
-    }
-    sqfliteFfiInit();
-    return databaseFactoryFfi;
-  }
+  static DatabaseFactory _platformFactory() => databaseFactorySqflitePlugin;
 
   Future<Database> _open() async {
     if (_db != null) return _db!;

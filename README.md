@@ -11,7 +11,7 @@
   Visit Endurain's [Mastodon profile](https://fosstodon.org/@endurain) and [Discord server](https://discord.gg/6VUjUq2uZR).
 
   <p>
-    <i>Cross-platform mobile app for iOS, Android, and macOS</i>
+    <i>Cross-platform mobile app for iOS and Android</i>
   </p>
 </div>
 
@@ -52,7 +52,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Auto-centering map when location is locked
 - Configurable map tile server
 - Directional compass heading indicator
-- Platform-adaptive UI (Cupertino for iOS/macOS, Material for Android)
+- Platform-adaptive UI (Cupertino for iOS, Material for Android)
 
 ✅ **Activity Recording**
 - Activity type selection for running, riding, walking, hiking, and other activities
@@ -101,7 +101,7 @@ See the [Activity Tracking MVP Plan](devdocs/activity_tracking_mvp_plan.md) and 
 ## Tech Stack
 
 - **Framework:** Flutter 3.38+ (Dart 3.10+)
-- **Platforms:** iOS, Android, macOS
+- **Platforms:** iOS, Android
 - **State Management:** Stateful widgets plus focused `ChangeNotifier` controllers
 - **Map Provider:** OpenStreetMap with `flutter_map` 8.2.x and `latlong2`
 - **Location Services:** `geolocator` 14.x, including position streams and movement heading
@@ -120,7 +120,7 @@ See the [Activity Tracking MVP Plan](devdocs/activity_tracking_mvp_plan.md) and 
 
 - Flutter SDK 3.38 or higher
 - Dart SDK 3.10.3 or higher
-- Xcode (for iOS/macOS development)
+- Xcode (for iOS development)
 - Android Studio (for Android development)
 - A running Endurain server instance
 
@@ -149,9 +149,6 @@ flutter run -d ios
 
 # For Android
 flutter run -d android
-
-# For macOS
-flutter run -d macos
 ```
 
 ### Android Device Setup
@@ -332,12 +329,6 @@ flutter build apk --release
 flutter build appbundle --release
 ```
 
-### macOS
-
-```bash
-flutter build macos --release
-```
-
 ## Project Structure
 
 ```
@@ -410,16 +401,17 @@ shipped migrations are never edited.
 
 ### SQLite package decision
 
-**Chosen: `sqflite` + `sqflite_common_ffi`**
+**Chosen: `sqflite` (with `sqflite_common_ffi` for tests only)**
 
 | Package               | License    | Reason                                         |
 |-----------------------|------------|------------------------------------------------|
 | `sqflite`             | Apache 2.0 | De facto Flutter SQLite; Android/iOS native    |
-| `sqflite_common_ffi`  | MIT        | macOS/desktop support and in-process testing   |
+| `sqflite_common_ffi`  | MIT        | In-process SQLite for unit tests (dev only)    |
 
 Both packages are open-source and contain no proprietary SDKs, making them
-suitable for F-Droid distribution. `sqflite_common_ffi` enables the same API
-on macOS and in unit tests without platform-channel mocks.
+suitable for F-Droid distribution. `sqflite` provides the shipped Android/iOS
+implementation, while `sqflite_common_ffi` is a `dev_dependency` that runs the
+same API in-process during unit tests without platform-channel mocks.
 
 `drift` (an ORM built on SQLite) was considered but rejected — the direct SQL
 API of `sqflite` is sufficient for the current schema and avoids an additional

@@ -120,8 +120,8 @@ class AppServices {
   /// Builds the active-recording recorder for the current platform.
   ///
   /// Android and iOS use the native background-capable recorder. Other
-  /// platforms (such as macOS) fall back to the geolocator recorder backed by
-  /// the durable [FileActiveActivityStore].
+  /// environments (such as the test/host runtime) fall back to the geolocator
+  /// recorder backed by the durable [FileActiveActivityStore].
   ActivityLocationRecorder createActivityLocationRecorder({
     LocationService? locationService,
   }) {
