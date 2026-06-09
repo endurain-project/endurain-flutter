@@ -1,4 +1,4 @@
-name: Lint, Format, and Test
+name: CI
 
 on:
   push:
@@ -21,8 +21,8 @@ concurrency:
 
 jobs:
 
-  flutter:
-    name: Flutter
+  format:
+    name: Format
     runs-on: codeberg-small
     steps:
       - name: Checkout code
@@ -30,31 +30,38 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Install Flutter
-        run: |
-          set -euo pipefail
-          install_dir="$PWD/.ci/flutter-sdk"
-          archive_path="$PWD/.ci/$FLUTTER_ARCHIVE"
-
-          mkdir -p "$install_dir"
-          curl --fail --location --show-error \
-            --output "$archive_path" \
-            "$FLUTTER_STORAGE_URL/$FLUTTER_ARCHIVE"
-          echo "$FLUTTER_SHA256  $archive_path" | sha256sum --check -
-          tar -xf "$archive_path" -C "$install_dir" --strip-components=1
-          echo "$install_dir/bin" >> "$FORGEJO_PATH"
-
-      - name: Check Flutter version
-        run: flutter --version | grep "Flutter $FLUTTER_VERSION"
-
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Set up Flutter
+        uses: ./.forgejo/actions/setup-flutter
 
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
 
+  analyze:
+    name: Analyze
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout code
+        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.forgejo/actions/setup-flutter
+
       - name: Analyze Dart code
         run: flutter analyze
+
+  test:
+    name: Test
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout code
+        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.forgejo/actions/setup-flutter
 
       - name: Run tests with coverage
         run: flutter test --coverage
