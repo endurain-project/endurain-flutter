@@ -15,7 +15,7 @@ permissions:
 env:
   # Flutter version, used for the builder-image tag. Keep in sync with
   # docker/flutter-build/Dockerfile and build-image.yml.
-  FLUTTER_VERSION: 3.38.10
+  FLUTTER_VERSION: 3.44.1
   # Prebuilt Flutter + Android + JDK image (see build-image.yml).
   CI_IMAGE_BASE: codeberg.org/${{ forgejo.repository }}-ci
 

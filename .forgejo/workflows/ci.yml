@@ -13,7 +13,7 @@ permissions:
 env:
   # Flutter version, used for the builder-image tag and the pub cache key. Keep
   # in sync with docker/flutter-build/Dockerfile and build-image.yml.
-  FLUTTER_VERSION: 3.38.10
+  FLUTTER_VERSION: 3.44.1
   # Prebuilt Flutter + Android + JDK image (see build-image.yml). The Flutter and
   # Android SDKs are baked in, so the jobs only restore the pub cache.
   CI_IMAGE_BASE: codeberg.org/${{ forgejo.repository }}-ci

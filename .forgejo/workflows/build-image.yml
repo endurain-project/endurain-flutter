@@ -33,7 +33,7 @@ env:
   # codeberg.org/endurain-project/endurain-flutter-ci.
   IMAGE_NAME: codeberg.org/${{ forgejo.repository }}-ci
   # Image tag. Bump together with the Dockerfile FLUTTER_VERSION arg.
-  IMAGE_TAG: "3.38.10"
+  IMAGE_TAG: "3.44.1"
 
 jobs:
 
@@ -62,6 +62,5 @@ jobs:
             --network host \
             --file docker/flutter-build/Dockerfile \
             --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
-            --tag "${IMAGE_NAME}:latest" \
             --push \
             docker/flutter-build
