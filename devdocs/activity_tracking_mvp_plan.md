@@ -41,16 +41,14 @@ on-device, with graceful failure handling and optional server sync.
   also drains the queue on resume while it is visible. Concurrent calls share
   the same in-progress run, so resume and screen-visibility cannot start two
   overlapping drains.
-- **Connectivity-triggered drain (hook ready)**: `ActivityUploadQueue` accepts
-  an optional injected `connectivitySignal` stream and drains when it emits
-  `true`. The hook is wired in the class but no real connectivity provider is
-  passed yet (see Remaining work).
+- **Connectivity-triggered drain**: `ActivityUploadQueue` listens to a
+  `connectivitySignal` stream and drains when it emits `true`. `AppServices`
+  wires this to `ConnectivityService` (a thin `connectivity_plus` wrapper), so
+  failed uploads retry the moment connectivity is restored while the app is
+  foregrounded — not only on app-resume. Platform errors from the connectivity
+  plugin are swallowed, degrading to resume-only draining rather than crashing.
 
 ## Remaining work
 
-- **Wire a connectivity provider**: pass a real `connectivitySignal` stream
-  (e.g. from a FOSS `connectivity_plus`-style source) into `ActivityUploadQueue`
-  in `AppServices` so failed uploads retry the moment connectivity is restored
-  while the app is foregrounded, not only on app-resume.
 - **Server-synced history**: pull server activities and merge with local
   records once server API is ready.

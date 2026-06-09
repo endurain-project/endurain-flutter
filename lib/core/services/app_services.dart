@@ -5,6 +5,7 @@ import 'package:endurain/core/services/app_links_service.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/connectivity_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/package_info_service.dart';
@@ -80,6 +81,7 @@ class AppServices {
     retryPolicy: const ActivityUploadRetryPolicy(maxAttempts: 3),
   );
   final LocationService location = LocationService();
+  final ConnectivityService connectivity = ConnectivityService();
   late final LocalActivityGpxStorage localActivityGpxStorage =
       LocalActivityGpxStorage();
   late final LocalActivityRepository localActivities = LocalActivityRepository(
@@ -91,12 +93,14 @@ class AppServices {
       ActivityRetentionSettingsRepository(storage: secureStorage);
 
   /// App-lifetime durable upload queue. Drains locally-stored activities whose
-  /// upload has not yet succeeded; triggered on app-resume (see `app.dart`).
+  /// upload has not yet succeeded; triggered on app-resume (see `app.dart`)
+  /// and whenever connectivity is restored (via [connectivity]).
   late final ActivityUploadQueue activityUploadQueue = ActivityUploadQueue(
     repository: localActivities,
     uploadService: activityUpload,
     retentionSettingsRepository: activityRetentionSettings,
     diagnostics: diagnostics,
+    connectivitySignal: connectivity.onOnlineChanged,
   );
 
   /// App-lifetime controller for the active activity recording session.

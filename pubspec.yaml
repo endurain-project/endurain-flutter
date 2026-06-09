@@ -73,6 +73,10 @@ dependencies:
   # sqflite provides the native Android/iOS implementation.
   sqflite: ^2.4.0
 
+  # Network connectivity signal (BSD-3-Clause, F-Droid safe). Drives the
+  # activity upload queue to retry failed uploads when connectivity returns.
+  connectivity_plus: ^7.1.1
+
 dev_dependencies:
   fake_async: ^1.3.3
 

@@ -66,7 +66,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Direct GPX upload to the Endurain activity import endpoint after a recording completes
 - Completed activity retention in private app storage (SQLite metadata store + GPX files), including local summary metadata, GPX availability, and upload state
 - Non-destructive post-upload flow with `Done`, `View history`, retry, and explicit delete actions
-- Durable upload recovery: a finished activity is always saved locally first, and any upload that did not reach the server (e.g. recorded with no connectivity) is retried automatically by an app-lifetime upload queue on app resume — no need to reopen the history screen
+- Durable upload recovery: a finished activity is always saved locally first, and any upload that did not reach the server (e.g. recorded with no connectivity) is retried automatically by an app-lifetime upload queue — on app resume and the moment network connectivity is restored — with no need to reopen the history screen
 - Forward-compatible upload de-duplication: each upload carries the local activity id as an `Idempotency-Key` request header. This is fully optional on the server — Endurain servers that do not recognize the header simply ignore it and uploads work unchanged, while a server that adopts it can de-duplicate automatically retried uploads with no app changes
 - Local activity history and details screens for completed recordings saved on the device, with incremental pagination
 
@@ -89,7 +89,6 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 ## Roadmap
 
 🚧 **Next Activity Milestones**
-- Wire a connectivity provider into the upload queue so failed uploads retry the moment connectivity is restored (the queue already accepts a connectivity signal; only the provider wiring remains)
 - Add a richer local post-recording summary for completed activities before or after upload
 - Add manual GPX export/share
 - Add server-synced activity history and details once the server exposes stable imported activity metadata
@@ -105,6 +104,7 @@ See the [Activity Tracking MVP Plan](devdocs/activity_tracking_mvp_plan.md) and 
 - **State Management:** Stateful widgets plus focused `ChangeNotifier` controllers
 - **Map Provider:** OpenStreetMap with `flutter_map` 8.2.x and `latlong2`
 - **Location Services:** `geolocator` 14.x, including position streams and movement heading
+- **Connectivity:** `connectivity_plus` 7.x to retry pending activity uploads when the network returns
 - **Secure Storage:** `flutter_secure_storage` 10.x
 - **HTTP Client:** `http` package for Endurain API communication and multipart uploads
 - **SSO/OAuth:** `app_links` for deep-link callbacks, `url_launcher` for system browser OAuth flow, `flutter_svg` for provider icons
