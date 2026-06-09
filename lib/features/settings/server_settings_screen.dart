@@ -209,10 +209,10 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
                         subtitle: _username,
                       ),
                       AdaptiveListTile(
-                        leading: const AdaptiveIcon(
+                        leading: AdaptiveIcon(
                           materialIcon: Icons.logout,
                           cupertinoIcon: CupertinoIcons.square_arrow_right,
-                          color: Colors.red,
+                          color: Theme.of(context).colorScheme.error,
                         ),
                         title: l10n.logout,
                         destructive: true,
