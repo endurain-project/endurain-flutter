@@ -12,6 +12,7 @@ import 'package:endurain/core/services/package_info_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
+import 'package:endurain/core/services/share_service.dart';
 import 'package:endurain/core/services/url_launcher_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -119,6 +120,7 @@ class AppServices {
 
   final AppLinksService appLinks = DefaultAppLinksService();
   final UrlLauncherService urlLauncher = const UrlLauncherService();
+  final ShareService share = const ShareService();
   final PackageInfoService packageInfo = const PackageInfoService();
 
   /// Builds the active-recording recorder for the current platform.
