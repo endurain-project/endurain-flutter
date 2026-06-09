@@ -12,6 +12,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/fake_share_service.dart';
+
 void main() {
   final l10n = AppLocalizationsEn();
 
@@ -289,6 +291,7 @@ class _LoadedEmptyHistoryController extends LocalActivityHistoryController {
           supportDirectoryProvider: () async => throw StateError('unused'),
         ),
         uploadService: ActivityUploadService(),
+        shareService: FakeShareService(),
       );
 
   @override
@@ -318,6 +321,7 @@ class _LoadedHistoryController extends LocalActivityHistoryController {
            supportDirectoryProvider: () async => throw StateError('unused'),
          ),
          uploadService: ActivityUploadService(),
+         shareService: FakeShareService(),
        );
 
   final List<LocalActivityRecord> _records;
@@ -350,6 +354,7 @@ class _ErrorHistoryController extends LocalActivityHistoryController {
           supportDirectoryProvider: () async => throw StateError('unused'),
         ),
         uploadService: ActivityUploadService(),
+        shareService: FakeShareService(),
       );
 
   @override
@@ -376,6 +381,7 @@ class _LoadingHistoryController extends LocalActivityHistoryController {
           supportDirectoryProvider: () async => throw StateError('unused'),
         ),
         uploadService: ActivityUploadService(),
+        shareService: FakeShareService(),
       );
 
   @override

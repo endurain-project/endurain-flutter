@@ -8,6 +8,8 @@ import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/fake_share_service.dart';
+
 final _l10n = AppLocalizationsEn();
 
 final _baseRecord = LocalActivityRecord(
@@ -225,6 +227,30 @@ void main() {
         expect(find.byType(AdaptiveLoadingIndicator), findsOneWidget);
       },
     );
+
+    testWidgets('share tile visible when hasGpx is true', (tester) async {
+      final controller = _LoadedController(
+        record: _baseRecord,
+        hasGpxValue: true,
+      );
+      addTearDown(controller.dispose);
+
+      await _pumpDetails(tester, controller);
+
+      expect(find.text(_l10n.activityExportGpx), findsOneWidget);
+    });
+
+    testWidgets('share tile hidden when hasGpx is false', (tester) async {
+      final controller = _LoadedController(
+        record: _baseRecord,
+        hasGpxValue: false,
+      );
+      addTearDown(controller.dispose);
+
+      await _pumpDetails(tester, controller);
+
+      expect(find.text(_l10n.activityExportGpx), findsNothing);
+    });
   });
 }
 
@@ -259,6 +285,7 @@ class _LoadingController extends LocalActivityHistoryController {
           supportDirectoryProvider: () async => throw StateError('unused'),
         ),
         uploadService: ActivityUploadService(),
+        shareService: FakeShareService(),
       );
 
   @override
@@ -281,6 +308,7 @@ class _MissingController extends LocalActivityHistoryController {
           supportDirectoryProvider: () async => throw StateError('unused'),
         ),
         uploadService: ActivityUploadService(),
+        shareService: FakeShareService(),
       );
 
   @override
@@ -307,6 +335,7 @@ class _LoadedController extends LocalActivityHistoryController {
            supportDirectoryProvider: () async => throw StateError('unused'),
          ),
          uploadService: ActivityUploadService(),
+         shareService: FakeShareService(),
        );
 
   final LocalActivityRecord record;

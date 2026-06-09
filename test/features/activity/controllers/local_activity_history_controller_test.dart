@@ -109,6 +109,88 @@ void main() {
       expect(controller.records, isEmpty);
       expect(await repository.list(), isEmpty);
     });
+
+    group('exportGpx', () {
+      test('shares GPX path with subject', () async {
+        final record = await _createRecord(repository, id: 'export_ok');
+        final shareService = FakeShareService();
+        final controller = LocalActivityHistoryController(
+          repository: repository,
+          uploadService: _uploadServiceReturning(201),
+          shareService: shareService,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.exportGpx(record.id, subject: 'My GPX');
+
+        expect(shareService.calls, hasLength(1));
+        expect(shareService.calls.single.subject, 'My GPX');
+        expect(shareService.calls.single.paths, hasLength(1));
+        expect(shareService.calls.single.paths.single, endsWith('.gpx'));
+      });
+
+      test('throws activityLocalActivityNotFound for unknown id', () async {
+        final shareService = FakeShareService();
+        final controller = LocalActivityHistoryController(
+          repository: repository,
+          uploadService: _uploadServiceReturning(201),
+          shareService: shareService,
+        );
+        addTearDown(controller.dispose);
+
+        await expectLater(
+          controller.exportGpx('non-existent'),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.activityLocalActivityNotFound,
+            ),
+          ),
+        );
+        expect(shareService.calls, isEmpty);
+      });
+
+      test('rethrows activityLocalGpxMissing when GPX file absent', () async {
+        // Create record without a GPX file on disk (gpxFileName points to
+        // a nonexistent file).
+        final record = LocalActivityRecord(
+          id: 'no_gpx',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 2, 10),
+          endedAt: DateTime.utc(2026, 6, 2, 10, 30),
+          elapsedDurationSeconds: 1800,
+          distanceMeters: 5000,
+          averageSpeedMetersPerSecond: 2.7,
+          pointCount: 0,
+          gpxFileName: 'missing.gpx',
+          uploadStatus: LocalActivityUploadStatus.pending,
+          createdAt: DateTime.utc(2026, 6, 2, 10, 31),
+          updatedAt: DateTime.utc(2026, 6, 2, 10, 31),
+        );
+        await repository.upsert(record);
+
+        final shareService = FakeShareService();
+        final controller = LocalActivityHistoryController(
+          repository: repository,
+          uploadService: _uploadServiceReturning(201),
+          shareService: shareService,
+        );
+        addTearDown(controller.dispose);
+
+        await expectLater(
+          controller.exportGpx(record.id),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.activityLocalGpxMissing,
+            ),
+          ),
+        );
+        expect(shareService.calls, isEmpty);
+      });
+    });
   });
 }
 
