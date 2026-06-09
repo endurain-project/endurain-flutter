@@ -20,7 +20,6 @@ enum AppErrorCode {
   mfaVerificationFailed,
   noSessionIdReceived,
   notAuthenticated,
-  pkceVerifierMissing,
   pkceVerifierMissingRestartLogin,
   requestTimeout,
   secureStorageDeleteFailed,

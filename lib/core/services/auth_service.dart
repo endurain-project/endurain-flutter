@@ -151,7 +151,7 @@ class AuthService {
     String username,
   ) async {
     if (_pkce == null || _pkce!['verifier'] == null) {
-      throw const AppException(AppErrorCode.pkceVerifierMissing);
+      throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
     }
 
     final verifier = _pkce!['verifier']!;

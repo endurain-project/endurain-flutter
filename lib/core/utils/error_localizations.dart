@@ -68,7 +68,6 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
           : l10n.errorMfaVerificationFailedWithDetails(details),
     AppErrorCode.noSessionIdReceived => l10n.errorNoSessionIdReceived,
     AppErrorCode.notAuthenticated => l10n.errorNotAuthenticated,
-    AppErrorCode.pkceVerifierMissing => l10n.errorPkceVerifierMissing,
     AppErrorCode.pkceVerifierMissingRestartLogin =>
       l10n.errorPkceVerifierMissingRestartLogin,
     AppErrorCode.requestTimeout => l10n.errorRequestTimeout,
