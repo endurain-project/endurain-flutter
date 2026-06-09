@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -36,7 +37,7 @@ class ActivityRecordingState {
   final DateTime? startedAt;
   final DateTime? endedAt;
   final String? localActivityId;
-  final String? lastErrorKey;
+  final ActivityRecordingError? lastErrorKey;
   final int elapsedDurationSeconds;
   final List<ActivityTrackPoint> _points;
   final List<ActivityTrackSegment> _segments;
@@ -75,7 +76,7 @@ class ActivityRecordingState {
           : localActivityId as String?,
       lastErrorKey: identical(lastErrorKey, _unset)
           ? this.lastErrorKey
-          : lastErrorKey as String?,
+          : lastErrorKey as ActivityRecordingError?,
       elapsedDurationSeconds:
           elapsedDurationSeconds ?? this.elapsedDurationSeconds,
       points: points ?? _points,

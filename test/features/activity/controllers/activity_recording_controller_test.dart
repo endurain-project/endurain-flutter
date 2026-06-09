@@ -1,3 +1,4 @@
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -232,7 +233,7 @@ void main() {
       expect(controller.state.status, ActivityRecordingStatus.failed);
       expect(
         controller.state.lastErrorKey,
-        ActivityRecordingErrorKeys.gpxGenerationFailed,
+        ActivityRecordingError.gpxGenerationFailed,
       );
       expect(controller.completedGpx, isNull);
       expect(controller.uploadStatus, ActivityUploadStatus.idle);
@@ -262,7 +263,7 @@ void main() {
       expect(controller.state.status, ActivityRecordingStatus.failed);
       expect(
         controller.state.lastErrorKey,
-        ActivityRecordingErrorKeys.localSaveFailed,
+        ActivityRecordingError.localSaveFailed,
       );
       expect(controller.uploadStatus, ActivityUploadStatus.failed);
       expect(
@@ -298,7 +299,7 @@ void main() {
         expect(controller.state.status, ActivityRecordingStatus.failed);
         expect(
           controller.state.lastErrorKey,
-          ActivityRecordingErrorKeys.localSaveFailed,
+          ActivityRecordingError.localSaveFailed,
         );
 
         // Act: attempt to push the state back to stopping or completed —
@@ -310,7 +311,7 @@ void main() {
         expect(controller.state.status, ActivityRecordingStatus.failed);
         expect(
           controller.state.lastErrorKey,
-          ActivityRecordingErrorKeys.localSaveFailed,
+          ActivityRecordingError.localSaveFailed,
         );
       },
     );

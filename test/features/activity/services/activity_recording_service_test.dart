@@ -1,3 +1,4 @@
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'dart:async';
 
 import 'package:endurain/core/services/diagnostics_service.dart';
@@ -112,7 +113,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.backgroundPermissionRequired,
+        ActivityRecordingError.backgroundPermissionRequired,
       );
       expect(recorder.startCount, 0);
     });
@@ -134,7 +135,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.locationServiceDisabled,
+        ActivityRecordingError.locationServiceDisabled,
       );
       expect(recorder.startCount, 0);
     });
@@ -156,7 +157,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.locationPermissionDenied,
+        ActivityRecordingError.locationPermissionDenied,
       );
       expect(adapter.requestPermissionCalled, isTrue);
       expect(recorder.startCount, 0);
@@ -175,7 +176,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.locationPermissionDeniedForever,
+        ActivityRecordingError.locationPermissionDeniedForever,
       );
       expect(recorder.startCount, 0);
     });
@@ -362,7 +363,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.emptyRecording,
+        ActivityRecordingError.emptyRecording,
       );
       expect(recorder.stopCount, 1);
       expect(recorder.discardCount, 1);
@@ -410,7 +411,7 @@ void main() {
         expect(service.state.status, ActivityRecordingStatus.failed);
         expect(
           service.state.lastErrorKey,
-          ActivityRecordingErrorKeys.invalidTransition,
+          ActivityRecordingError.invalidTransition,
         );
       },
     );
@@ -424,7 +425,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.invalidTransition,
+        ActivityRecordingError.invalidTransition,
       );
     });
 
@@ -504,7 +505,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.locationStreamFailed,
+        ActivityRecordingError.locationStreamFailed,
       );
       expect(recorder.discardCount, greaterThanOrEqualTo(1));
       expect(
@@ -525,7 +526,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.locationPermissionDenied,
+        ActivityRecordingError.locationPermissionDenied,
       );
     });
 

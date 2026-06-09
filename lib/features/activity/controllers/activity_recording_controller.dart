@@ -4,6 +4,7 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/utils/id_generation.dart';
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -228,7 +229,7 @@ class ActivityRecordingController extends ChangeNotifier {
       _setState(
         completedState.copyWith(
           status: ActivityRecordingStatus.failed,
-          lastErrorKey: ActivityRecordingErrorKeys.gpxGenerationFailed,
+          lastErrorKey: ActivityRecordingError.gpxGenerationFailed,
         ),
       );
       return null;
@@ -279,7 +280,7 @@ class ActivityRecordingController extends ChangeNotifier {
     _setState(
       completedState.copyWith(
         status: ActivityRecordingStatus.failed,
-        lastErrorKey: ActivityRecordingErrorKeys.localSaveFailed,
+        lastErrorKey: ActivityRecordingError.localSaveFailed,
       ),
     );
   }
@@ -342,7 +343,7 @@ class ActivityRecordingController extends ChangeNotifier {
   /// handle the save-failed path rather than relying on status transitions.
   void _setState(ActivityRecordingState state) {
     if (_state.status == ActivityRecordingStatus.failed &&
-        _state.lastErrorKey == ActivityRecordingErrorKeys.localSaveFailed &&
+        _state.lastErrorKey == ActivityRecordingError.localSaveFailed &&
         (state.status == ActivityRecordingStatus.stopping ||
             state.status == ActivityRecordingStatus.completed)) {
       return;

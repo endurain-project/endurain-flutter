@@ -1,3 +1,4 @@
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'dart:async';
 
 import 'package:endurain/core/services/location_service.dart';
@@ -232,7 +233,7 @@ void main() {
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
         service.state.lastErrorKey,
-        ActivityRecordingErrorKeys.emptyRecording,
+        ActivityRecordingError.emptyRecording,
       );
       expect(recorder.discardCount, 1);
       expect(recorder.stopCount, 1);

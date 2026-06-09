@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
@@ -13,18 +14,6 @@ import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
-
-enum ActivityRecordingError {
-  invalidTransition,
-  locationStreamFailed,
-  emptyRecording,
-  gpxGenerationFailed,
-  localSaveFailed,
-  locationServiceDisabled,
-  locationPermissionDenied,
-  locationPermissionDeniedForever,
-  backgroundPermissionRequired,
-}
 
 class ActivityRecordingErrorKeys {
   const ActivityRecordingErrorKeys._();
@@ -98,7 +87,7 @@ class ActivityRecordingService {
       _recordBreadcrumb(
         DiagnosticsEvents.activityStartFailed,
         details: {
-          'reason': locationErrorKey,
+          'reason': locationErrorKey.name,
           'activityType': activityType.name,
         },
       );
@@ -119,7 +108,7 @@ class ActivityRecordingService {
       _recordBreadcrumb(
         DiagnosticsEvents.activityStartFailed,
         details: {
-          'reason': backgroundErrorKey,
+          'reason': backgroundErrorKey.name,
           'activityType': activityType.name,
         },
       );
@@ -168,7 +157,7 @@ class ActivityRecordingService {
         stackTrace,
         source: DiagnosticsSources.activityRecorder,
       );
-      _fail(ActivityRecordingErrorKeys.locationStreamFailed);
+      _fail(ActivityRecordingError.locationStreamFailed);
     }
   }
 
@@ -224,7 +213,7 @@ class ActivityRecordingService {
     );
     await _runRecorderCommand(
       _recorder.pause,
-      ActivityRecordingErrorKeys.localSaveFailed,
+      ActivityRecordingError.localSaveFailed,
     );
   }
 
@@ -255,7 +244,7 @@ class ActivityRecordingService {
     _startElapsedTimer();
     await _runRecorderCommand(
       _recorder.resume,
-      ActivityRecordingErrorKeys.localSaveFailed,
+      ActivityRecordingError.localSaveFailed,
     );
   }
 
@@ -278,7 +267,7 @@ class ActivityRecordingService {
     );
     final stopped = await _runRecorderCommand(
       _recorder.stop,
-      ActivityRecordingErrorKeys.localSaveFailed,
+      ActivityRecordingError.localSaveFailed,
     );
     if (!stopped) {
       return;
@@ -289,7 +278,7 @@ class ActivityRecordingService {
       _recordBreadcrumb(
         DiagnosticsEvents.activityStopFailed,
         details: {
-          'reason': ActivityRecordingErrorKeys.emptyRecording,
+          'reason': ActivityRecordingError.emptyRecording.name,
           'elapsedSeconds': elapsedDurationSeconds,
         },
       );
@@ -297,7 +286,7 @@ class ActivityRecordingService {
         _state.copyWith(
           status: ActivityRecordingStatus.failed,
           endedAt: _now(),
-          lastErrorKey: ActivityRecordingErrorKeys.emptyRecording,
+          lastErrorKey: ActivityRecordingError.emptyRecording,
           elapsedDurationSeconds: elapsedDurationSeconds,
         ),
       );
@@ -330,7 +319,7 @@ class ActivityRecordingService {
     _backgroundConfig = null;
     final discarded = await _runRecorderCommand(
       _recorder.discard,
-      ActivityRecordingErrorKeys.localSaveFailed,
+      ActivityRecordingError.localSaveFailed,
     );
     if (!discarded) {
       return;
@@ -406,7 +395,7 @@ class ActivityRecordingService {
           stackTrace,
           source: DiagnosticsSources.activityRecorder,
         );
-        _fail(ActivityRecordingErrorKeys.locationStreamFailed);
+        _fail(ActivityRecordingError.locationStreamFailed);
       },
     );
   }
@@ -428,7 +417,7 @@ class ActivityRecordingService {
 
   Future<bool> _runRecorderCommand(
     Future<void> Function() command,
-    String errorKey,
+    ActivityRecordingError errorKey,
   ) async {
     try {
       await command();
@@ -510,23 +499,25 @@ class ActivityRecordingService {
     _recordPointMilestoneIfNeeded(pointCount: _state.points.length);
   }
 
-  String _errorKeyForRecorderFailure(ActivityRecorderFailureReason? reason) {
+  ActivityRecordingError _errorKeyForRecorderFailure(
+    ActivityRecorderFailureReason? reason,
+  ) {
     return switch (reason) {
       ActivityRecorderFailureReason.locationUnavailable =>
-        ActivityRecordingErrorKeys.locationServiceDisabled,
+        ActivityRecordingError.locationServiceDisabled,
       ActivityRecorderFailureReason.permissionLost =>
-        ActivityRecordingErrorKeys.locationPermissionDenied,
+        ActivityRecordingError.locationPermissionDenied,
       ActivityRecorderFailureReason.persistenceFailed =>
-        ActivityRecordingErrorKeys.localSaveFailed,
+        ActivityRecordingError.localSaveFailed,
       ActivityRecorderFailureReason.unsupportedPlatform ||
       ActivityRecorderFailureReason.locationStreamFailed ||
-      null => ActivityRecordingErrorKeys.locationStreamFailed,
+      null => ActivityRecordingError.locationStreamFailed,
     };
   }
 
-  Future<String?> _locationErrorKey() async {
+  Future<ActivityRecordingError?> _locationErrorKey() async {
     if (!await _locationService.isLocationServiceEnabled()) {
-      return ActivityRecordingErrorKeys.locationServiceDisabled;
+      return ActivityRecordingError.locationServiceDisabled;
     }
 
     var permission = await _locationService.checkPermission();
@@ -537,15 +528,15 @@ class ActivityRecordingService {
     return switch (permission) {
       LocationPermission.always || LocationPermission.whileInUse => null,
       LocationPermission.denied =>
-        ActivityRecordingErrorKeys.locationPermissionDenied,
+        ActivityRecordingError.locationPermissionDenied,
       LocationPermission.deniedForever =>
-        ActivityRecordingErrorKeys.locationPermissionDeniedForever,
+        ActivityRecordingError.locationPermissionDeniedForever,
       LocationPermission.unableToDetermine =>
-        ActivityRecordingErrorKeys.locationPermissionDenied,
+        ActivityRecordingError.locationPermissionDenied,
     };
   }
 
-  Future<String?> _backgroundTrackingErrorKey() async {
+  Future<ActivityRecordingError?> _backgroundTrackingErrorKey() async {
     if (!_requiresAppleBackgroundPermission) {
       return null;
     }
@@ -553,7 +544,7 @@ class ActivityRecordingService {
     final permission = await _locationService.checkPermission();
     return permission == LocationPermission.always
         ? null
-        : ActivityRecordingErrorKeys.backgroundPermissionRequired;
+        : ActivityRecordingError.backgroundPermissionRequired;
   }
 
   bool get _requiresAppleBackgroundPermission {
@@ -562,16 +553,16 @@ class ActivityRecordingService {
   }
 
   void _failInvalidTransition() {
-    _fail(ActivityRecordingErrorKeys.invalidTransition);
+    _fail(ActivityRecordingError.invalidTransition);
   }
 
-  void _fail(String errorKey) {
+  void _fail(ActivityRecordingError errorKey) {
     _cancelElapsedTimer();
     _recordingSegmentStartedAt = null;
     _discardRecorderWithoutThrow();
     _recordBreadcrumb(
       DiagnosticsEvents.activityFailed,
-      details: {'reason': errorKey, 'pointCount': _state.points.length},
+      details: {'reason': errorKey.name, 'pointCount': _state.points.length},
     );
     _emit(
       _state.copyWith(

@@ -1,9 +1,9 @@
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
-import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
@@ -264,7 +264,7 @@ void main() {
           child: ActivityRecordingControls(
             state: ActivityRecordingState(
               status: ActivityRecordingStatus.failed,
-              lastErrorKey: ActivityRecordingErrorKeys.emptyRecording,
+              lastErrorKey: ActivityRecordingError.emptyRecording,
             ),
             selectedActivityType: ActivityType.run,
             onActivityTypeChanged: null,
@@ -291,7 +291,7 @@ void main() {
             state: ActivityRecordingState(
               status: ActivityRecordingStatus.failed,
               lastErrorKey:
-                  ActivityRecordingErrorKeys.locationPermissionDeniedForever,
+                  ActivityRecordingError.locationPermissionDeniedForever,
             ),
             selectedActivityType: ActivityType.run,
             onActivityTypeChanged: null,
@@ -325,7 +325,7 @@ void main() {
             state: ActivityRecordingState(
               status: ActivityRecordingStatus.failed,
               lastErrorKey:
-                  ActivityRecordingErrorKeys.backgroundPermissionRequired,
+                  ActivityRecordingError.backgroundPermissionRequired,
             ),
             selectedActivityType: ActivityType.run,
             onActivityTypeChanged: null,

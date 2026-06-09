@@ -1,3 +1,4 @@
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
@@ -40,7 +41,7 @@ void main() {
         activityType: ActivityType.ride,
         startedAt: DateTime.utc(2026),
         endedAt: DateTime.utc(2026, 5, 30),
-        lastErrorKey: 'activityRecordingFailed',
+        lastErrorKey: ActivityRecordingError.localSaveFailed,
       );
 
       final updated = state.copyWith(

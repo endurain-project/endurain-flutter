@@ -3,10 +3,10 @@ import 'dart:math' as math;
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
-import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/widgets/activity_stats_display.dart';
 import 'package:endurain/features/activity/widgets/activity_type_picker.dart';
 import 'package:endurain/features/activity/widgets/activity_upload_status_panel.dart';
@@ -114,14 +114,14 @@ class ActivityRecordingControls extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                         if (state.lastErrorKey ==
-                            ActivityRecordingErrorKeys
+                            ActivityRecordingError
                                 .backgroundPermissionRequired)
                           ...[],
                         if (state.lastErrorKey ==
-                                ActivityRecordingErrorKeys
+                                ActivityRecordingError
                                     .locationPermissionDeniedForever ||
                             state.lastErrorKey ==
-                                ActivityRecordingErrorKeys
+                                ActivityRecordingError
                                     .backgroundPermissionRequired) ...[
                           const SizedBox(height: 8),
                           AdaptiveButton(
@@ -256,22 +256,23 @@ class ActivityRecordingControls extends StatelessWidget {
     }
 
     return switch (state.lastErrorKey) {
-      ActivityRecordingErrorKeys.emptyRecording => l10n.activityRecordingEmpty,
-      ActivityRecordingErrorKeys.gpxGenerationFailed =>
+      ActivityRecordingError.emptyRecording => l10n.activityRecordingEmpty,
+      ActivityRecordingError.gpxGenerationFailed =>
         l10n.activityGpxGenerationFailed,
-      ActivityRecordingErrorKeys.localSaveFailed =>
+      ActivityRecordingError.localSaveFailed =>
         l10n.activityLocalSaveFailed,
-      ActivityRecordingErrorKeys.locationPermissionDenied =>
+      ActivityRecordingError.locationPermissionDenied =>
         l10n.activityLocationPermissionDenied,
-      ActivityRecordingErrorKeys.locationPermissionDeniedForever =>
+      ActivityRecordingError.locationPermissionDeniedForever =>
         l10n.activityLocationPermissionDeniedForever,
-      ActivityRecordingErrorKeys.backgroundPermissionRequired =>
+      ActivityRecordingError.backgroundPermissionRequired =>
         l10n.activityBackgroundPermissionRequired,
-      ActivityRecordingErrorKeys.locationServiceDisabled =>
+      ActivityRecordingError.locationServiceDisabled =>
         l10n.activityLocationServiceDisabled,
-      ActivityRecordingErrorKeys.locationStreamFailed =>
+      ActivityRecordingError.locationStreamFailed =>
         l10n.activityLocationStreamFailed,
-      _ => l10n.activityRecordingFailed,
+      ActivityRecordingError.invalidTransition => l10n.activityRecordingFailed,
+      null => l10n.activityRecordingFailed,
     };
   }
 
