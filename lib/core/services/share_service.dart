@@ -12,12 +12,14 @@ class ShareService {
     String? subject,
     Rect? sharePositionOrigin,
   }) async {
-    await Share.shareXFiles(
-      paths
-          .map((path) => XFile(path, mimeType: 'application/gpx+xml'))
-          .toList(),
-      subject: subject,
-      sharePositionOrigin: sharePositionOrigin,
+    await SharePlus.instance.share(
+      ShareParams(
+        files: paths
+            .map((path) => XFile(path, mimeType: 'application/gpx+xml'))
+            .toList(),
+        subject: subject,
+        sharePositionOrigin: sharePositionOrigin,
+      ),
     );
   }
 }

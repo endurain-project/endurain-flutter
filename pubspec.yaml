@@ -44,14 +44,14 @@ dependencies:
   flutter_secure_storage: ^10.0.0
 
   # Map with OpenStreetMap
-  flutter_map: ^8.2.2
+  flutter_map: ^8.3.0
   latlong2: ^0.9.1
 
   # Location services
   geolocator: ^14.0.2
 
   # Package info for app version
-  package_info_plus: ^9.0.0
+  package_info_plus: ^10.1.0
 
   # Local app-support storage for privacy-safe diagnostics
   path_provider: ^2.1.5
@@ -79,7 +79,7 @@ dependencies:
 
   # OS share sheet for GPX file export (BSD-3-Clause, F-Droid safe).
   # Platform channels only — no Google Play Services / Firebase dependency.
-  share_plus: ^10.1.4
+  share_plus: ^13.1.0
 
 dev_dependencies:
   fake_async: ^1.3.3
