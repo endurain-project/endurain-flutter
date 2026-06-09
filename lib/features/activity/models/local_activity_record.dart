@@ -140,24 +140,24 @@ class LocalActivityRecord {
     return LocalActivityRecord(
       id: id,
       activityType: ActivityType.fromApiValue(
-        _stringValue(json['activityType']),
+        jsonString(json['activityType']),
       ),
       startedAt: startedAt,
       endedAt: endedAt,
-      elapsedDurationSeconds: _intValue(json['elapsedDurationSeconds']) ?? 0,
-      distanceMeters: _doubleValue(json['distanceMeters']) ?? 0,
-      averageSpeedMetersPerSecond: _doubleValue(
+      elapsedDurationSeconds: jsonInt(json['elapsedDurationSeconds']) ?? 0,
+      distanceMeters: jsonDouble(json['distanceMeters']) ?? 0,
+      averageSpeedMetersPerSecond: jsonDouble(
         json['averageSpeedMetersPerSecond'],
       ),
-      pointCount: _intValue(json['pointCount']) ?? 0,
+      pointCount: jsonInt(json['pointCount']) ?? 0,
       gpxFileName: _requiredString(json['gpxFileName'], 'gpxFileName'),
       uploadStatus: LocalActivityUploadStatus.fromJson(json['uploadStatus']),
       createdAt: createdAt,
       updatedAt: updatedAt,
-      uploadedAt: _dateTimeValue(json['uploadedAt']),
-      lastUploadAttemptAt: _dateTimeValue(json['lastUploadAttemptAt']),
+      uploadedAt: jsonDateTime(json['uploadedAt']),
+      lastUploadAttemptAt: jsonDateTime(json['lastUploadAttemptAt']),
       lastUploadErrorCode: _errorCodeValue(json['lastUploadErrorCode']),
-      serverActivityId: _stringValue(json['serverActivityId']),
+      serverActivityId: jsonString(json['serverActivityId']),
     );
   }
 
@@ -172,19 +172,11 @@ String _requiredString(Object? value, String field) {
 }
 
 DateTime _requiredDateTime(Object? value, String field) {
-  final parsed = _dateTimeValue(value);
+  final parsed = jsonDateTime(value);
   if (parsed != null) {
     return parsed;
   }
   throw FormatException('Invalid local activity field: $field');
 }
-
-String? _stringValue(Object? value) => jsonString(value);
-
-int? _intValue(Object? value) => jsonInt(value);
-
-double? _doubleValue(Object? value) => jsonDouble(value);
-
-DateTime? _dateTimeValue(Object? value) => jsonDateTime(value);
 
 AppErrorCode? _errorCodeValue(Object? value) => appErrorCodeByName(value);
