@@ -85,6 +85,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text(l10n.diagnosticsErrorTitle('StateError')), findsOneWidget);
+    await _scrollToDiagnosticsActions(tester, l10n);
     expect(find.text(l10n.diagnosticsCopy), findsOneWidget);
     expect(find.text(l10n.diagnosticsClear), findsOneWidget);
     expect(find.textContaining('"breadcrumbs"'), findsOneWidget);
@@ -137,6 +138,18 @@ void main() {
       expect(rawReportWidth, greaterThanOrEqualTo(copyTileWidth - 0.5));
     },
   );
+}
+
+Future<void> _scrollToDiagnosticsActions(
+  WidgetTester tester,
+  AppLocalizationsEn l10n,
+) async {
+  await tester.scrollUntilVisible(
+    find.text(l10n.diagnosticsActions),
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
 }
 
 void _useIosDarkMode(WidgetTester tester) {
