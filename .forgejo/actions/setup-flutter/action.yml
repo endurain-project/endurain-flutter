@@ -1,44 +1,13 @@
-name: Set up Flutter
+name: Set up Flutter dependencies
 description: >-
-  Install the pinned Flutter SDK (verified by SHA256), expose it on PATH and
-  fetch project dependencies. Shared by the CI jobs so the install logic lives
-  in a single place. The SDK and pub cache are restored across runs to keep
-  feedback fast.
+  Restore the pub cache and fetch project dependencies with the lockfile
+  enforced. The Flutter and Android SDKs are provided by the CI builder image
+  (docker/flutter-build/Dockerfile), so this action no longer downloads the
+  Flutter SDK itself.
 
 runs:
   using: composite
   steps:
-    - name: Restore Flutter SDK cache
-      id: cache-flutter
-      uses: https://data.forgejo.org/actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-      with:
-        path: .ci/flutter-sdk
-        key: flutter-sdk-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
-
-    - name: Install Flutter
-      if: steps.cache-flutter.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        install_dir="$PWD/.ci/flutter-sdk"
-        archive_path="$PWD/.ci/$FLUTTER_ARCHIVE"
-
-        mkdir -p "$install_dir"
-        curl --fail --location --show-error \
-          --output "$archive_path" \
-          "$FLUTTER_STORAGE_URL/$FLUTTER_ARCHIVE"
-        echo "$FLUTTER_SHA256  $archive_path" | sha256sum --check -
-        tar -xf "$archive_path" -C "$install_dir" --strip-components=1
-        rm -f "$archive_path"
-
-    - name: Add Flutter to PATH
-      shell: bash
-      run: echo "$PWD/.ci/flutter-sdk/bin" >> "$FORGEJO_PATH"
-
-    - name: Check Flutter version
-      shell: bash
-      run: flutter --version | grep "Flutter $FLUTTER_VERSION"
-
     - name: Restore pub cache
       uses: https://data.forgejo.org/actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:

@@ -13,10 +13,11 @@ permissions:
   contents: write
 
 env:
+  # Flutter version, used for the builder-image tag. Keep in sync with
+  # docker/flutter-build/Dockerfile and build-image.yml.
   FLUTTER_VERSION: 3.38.10
-  FLUTTER_ARCHIVE: flutter_linux_3.38.10-stable.tar.xz
-  FLUTTER_SHA256: 385e2629a0a585a835f351ca1605d2c7996377ce2fa16e68296e8fc9a78ccf7a
-  FLUTTER_STORAGE_URL: https://storage.googleapis.com/flutter_infra_release/releases/stable/linux
+  # Prebuilt Flutter + Android + JDK image (see build-image.yml).
+  CI_IMAGE_BASE: codeberg.org/${{ forgejo.repository }}-ci
 
 concurrency:
   group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
@@ -26,82 +27,17 @@ jobs:
 
   build-android:
     name: Build Android APK
-    runs-on: codeberg-medium
-    env:
-      # Bump these together when upgrading the Android toolchain. The SHA256 is
-      # verified against the downloaded archive (Google only publishes SHA1 in
-      # its manifest, so the value was cross-checked against that SHA1).
-      ANDROID_CMDLINE_TOOLS_VERSION: "14742923"
-      ANDROID_CMDLINE_TOOLS_SHA256: 04453066b540409d975c676d781da1477479dde3761310f1a7eb92a1dfb15af7
-      # SDK component versions must satisfy the Flutter-derived compileSdk /
-      # build-tools. Validate on the first run and bump if the build reports a
-      # different required version.
-      ANDROID_PLATFORM: android-36
-      ANDROID_BUILD_TOOLS: "36.0.0"
+    runs-on: local-runner
+    container:
+      image: ${{ env.CI_IMAGE_BASE }}:${{ env.FLUTTER_VERSION }}
     steps:
       - name: Checkout code
         uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
 
-      - name: Install JDK and build tools
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! command -v javac >/dev/null 2>&1 || ! command -v unzip >/dev/null 2>&1; then
-            apt-get update
-            apt-get install -y --no-install-recommends \
-              openjdk-17-jdk-headless unzip
-          fi
-          java -version
-
-      - name: Set Android SDK path
-        shell: bash
-        run: echo "ANDROID_SDK_ROOT=$PWD/.ci/android-sdk" >> "$FORGEJO_ENV"
-
       - name: Set up Flutter
         uses: ./.forgejo/actions/setup-flutter
-
-      - name: Restore Android SDK cache
-        id: cache-android
-        uses: https://data.forgejo.org/actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        with:
-          path: .ci/android-sdk
-          key: >-
-            android-sdk-${{ env.ANDROID_CMDLINE_TOOLS_VERSION }}-${{
-            env.ANDROID_PLATFORM }}-${{ env.ANDROID_BUILD_TOOLS }}
-
-      - name: Set up Android SDK
-        if: steps.cache-android.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          tools_zip="$PWD/.ci/android-cmdline-tools.zip"
-          tmp_dir="$PWD/.ci/android-cmdline-tools-tmp"
-          tools_dir="$ANDROID_SDK_ROOT/cmdline-tools/latest"
-
-          mkdir -p "$tmp_dir" "$tools_dir"
-          curl --fail --location --show-error \
-            --output "$tools_zip" \
-            "https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS_VERSION}_latest.zip"
-          echo "$ANDROID_CMDLINE_TOOLS_SHA256  $tools_zip" | sha256sum --check -
-          unzip -q "$tools_zip" -d "$tmp_dir"
-          mv "$tmp_dir/cmdline-tools/"* "$tools_dir/"
-          rm -rf "$tmp_dir" "$tools_zip"
-
-          sdkmanager="$tools_dir/bin/sdkmanager"
-          yes | "$sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null
-          "$sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" \
-            "platform-tools" \
-            "platforms;${ANDROID_PLATFORM}" \
-            "build-tools;${ANDROID_BUILD_TOOLS}"
-
-      - name: Point Flutter at the Android SDK
-        shell: bash
-        run: |
-          set -euo pipefail
-          flutter config --android-sdk "$ANDROID_SDK_ROOT"
-          yes | flutter doctor --android-licenses >/dev/null || true
 
       - name: Build release APK
         shell: bash

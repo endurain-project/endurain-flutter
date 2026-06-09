@@ -11,10 +11,12 @@ permissions:
   contents: read
 
 env:
+  # Flutter version, used for the builder-image tag and the pub cache key. Keep
+  # in sync with docker/flutter-build/Dockerfile and build-image.yml.
   FLUTTER_VERSION: 3.38.10
-  FLUTTER_ARCHIVE: flutter_linux_3.38.10-stable.tar.xz
-  FLUTTER_SHA256: 385e2629a0a585a835f351ca1605d2c7996377ce2fa16e68296e8fc9a78ccf7a
-  FLUTTER_STORAGE_URL: https://storage.googleapis.com/flutter_infra_release/releases/stable/linux
+  # Prebuilt Flutter + Android + JDK image (see build-image.yml). The Flutter and
+  # Android SDKs are baked in, so the jobs only restore the pub cache.
+  CI_IMAGE_BASE: codeberg.org/${{ forgejo.repository }}-ci
 
 concurrency:
   group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
@@ -27,7 +29,9 @@ jobs:
 
   format:
     name: Format
-    runs-on: codeberg-medium
+    runs-on: local-runner
+    container:
+      image: ${{ env.CI_IMAGE_BASE }}:${{ env.FLUTTER_VERSION }}
     steps:
       - name: Checkout code
         uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -42,7 +46,9 @@ jobs:
 
   analyze:
     name: Analyze
-    runs-on: codeberg-medium
+    runs-on: local-runner
+    container:
+      image: ${{ env.CI_IMAGE_BASE }}:${{ env.FLUTTER_VERSION }}
     steps:
       - name: Checkout code
         uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -57,7 +63,9 @@ jobs:
 
   test:
     name: Test
-    runs-on: codeberg-medium
+    runs-on: local-runner
+    container:
+      image: ${{ env.CI_IMAGE_BASE }}:${{ env.FLUTTER_VERSION }}
     steps:
       - name: Checkout code
         uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

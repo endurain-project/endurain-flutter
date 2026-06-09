@@ -1,0 +1,67 @@
+name: Build CI builder image
+
+# Builds and publishes the Flutter + Android + JDK image used by the CI and
+# release-build workflows. Follows the same patterns as the main Endurain
+# repository's docker-publish workflow: build on a docker-capable self-hosted
+# runner, log in to the Codeberg registry with TOKEN_FOR_ACTIONS and push with
+# buildx.
+#
+# Run this (manually, or by changing the Dockerfile on master) whenever the
+# toolchain is upgraded, so ci.yml / build.yml pick up the new image. A single
+# linux/amd64 image is enough: it only has to run on the CI runner, and the APK
+# it produces is host-architecture independent.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - docker/flutter-build/Dockerfile
+      - .forgejo/workflows/build-image.yml
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
+  cancel-in-progress: false
+
+env:
+  # Published next to the repository, e.g.
+  # codeberg.org/endurain-project/endurain-flutter-ci.
+  IMAGE_NAME: codeberg.org/${{ forgejo.repository }}-ci
+  # Image tag. Bump together with the Dockerfile FLUTTER_VERSION arg.
+  IMAGE_TAG: "3.38.10"
+
+jobs:
+
+  build-image:
+    name: Build and push builder image
+    runs-on: local-runner
+    steps:
+      - name: Checkout code
+        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Login to Codeberg registry with Docker
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.TOKEN_FOR_ACTIONS }}
+        run: |
+          echo "${REGISTRY_PASSWORD}" | docker login \
+            --username "${{ forgejo.repository_owner }}" \
+            --password-stdin \
+            codeberg.org
+
+      - name: Build and push image
+        run: |
+          set -eu
+          docker buildx build \
+            --network host \
+            --file docker/flutter-build/Dockerfile \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --tag "${IMAGE_NAME}:latest" \
+            --push \
+            docker/flutter-build
