@@ -123,21 +123,24 @@ void main() {
       expect(batch.points.single.latitude, 41.1);
     });
 
-    test('drops low-accuracy fixes instead of recording ghost points', () async {
-      await recorder.start(request());
-      adapter.addPosition(recordingPosition(latitude: 41.1, longitude: -8.6));
-      await pumpEventQueue();
+    test(
+      'drops low-accuracy fixes instead of recording ghost points',
+      () async {
+        await recorder.start(request());
+        adapter.addPosition(recordingPosition(latitude: 41.1, longitude: -8.6));
+        await pumpEventQueue();
 
-      // A coarse fix far off the track (e.g. network-provider triangulation)
-      // must be rejected rather than persisted.
-      adapter.addPosition(
-        recordingPosition(latitude: 42.5, longitude: -9.9, accuracy: 1500),
-      );
-      await pumpEventQueue();
+        // A coarse fix far off the track (e.g. network-provider triangulation)
+        // must be rejected rather than persisted.
+        adapter.addPosition(
+          recordingPosition(latitude: 42.5, longitude: -9.9, accuracy: 1500),
+        );
+        await pumpEventQueue();
 
-      expect(store.points, hasLength(1));
-      expect(store.points.single.latitude, 41.1);
-    });
+        expect(store.points, hasLength(1));
+        expect(store.points.single.latitude, 41.1);
+      },
+    );
 
     test('starts a new segment after resume', () async {
       await recorder.start(request());

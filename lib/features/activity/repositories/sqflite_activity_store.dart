@@ -17,11 +17,9 @@ import 'package:sqflite/sqflite.dart';
 /// )
 /// ```
 class SqfliteActivityStore implements LocalActivityStore {
-  SqfliteActivityStore({
-    DatabaseFactory? databaseFactory,
-    String? databasePath,
-  }) : _factory = databaseFactory ?? _platformFactory(),
-       _path = databasePath;
+  SqfliteActivityStore({DatabaseFactory? databaseFactory, String? databasePath})
+    : _factory = databaseFactory ?? _platformFactory(),
+      _path = databasePath;
 
   static const int _schemaVersion = 1;
   static const String _dbFileName = 'activity.db';
