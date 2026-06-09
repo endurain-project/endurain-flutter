@@ -59,7 +59,15 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            // Use the real upload key when a keystore is configured (via
+            // key.properties or the ANDROID_* env vars). Fall back to the debug
+            // signing config when none is present so keyless builds - notably
+            // CI release-build verification - still produce a valid APK.
+            signingConfig = if (releaseStoreFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
