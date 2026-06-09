@@ -284,7 +284,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
               width: LocationMarkerConstants.markerSize,
               height: LocationMarkerConstants.markerSize,
               alignment: Alignment.center,
-              child: _LocationMarker(heading: _controller.heading),
+              child: _LocationMarker(heading: _displayHeading),
             ),
           ],
         ),
@@ -303,6 +303,14 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     }
     final lastPoint = points.last;
     return LatLng(lastPoint.latitude, lastPoint.longitude);
+  }
+
+  double get _displayHeading {
+    final points = _activityController.state.points;
+    if (points.isEmpty) {
+      return _controller.heading;
+    }
+    return points.last.headingDegrees ?? _controller.heading;
   }
 
   @override

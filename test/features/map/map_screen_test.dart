@@ -120,6 +120,47 @@ void main() {
       await platform.close();
     });
 
+    testWidgets('updates marker cone heading while recording', (tester) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(
+          latitude: 41.1579,
+          longitude: -8.6291,
+          heading: 5,
+        ),
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            controller: mapController,
+            activityController: activityController,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await activityController.start(ActivityType.run);
+      platform.addPosition(
+        testPosition(latitude: 41.11, longitude: -8.61, heading: 25),
+      );
+      await tester.pump();
+
+      expect(_markerHeading(tester), closeTo(25, 0.0001));
+
+      platform.addPosition(
+        testPosition(latitude: 41.12, longitude: -8.62, heading: 140),
+      );
+      await tester.pump();
+
+      expect(_markerHeading(tester), closeTo(140, 0.0001));
+
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
     testWidgets('renders separate polylines without bridging a paused gap', (
       tester,
     ) async {
@@ -391,4 +432,11 @@ ActivityRecordingController _activityController(
 
 class _MapTestApp extends TestMaterialApp {
   const _MapTestApp({required super.child});
+}
+
+double _markerHeading(WidgetTester tester) {
+  final markerLayer = tester.widget<MarkerLayer>(find.byType(MarkerLayer));
+  final marker = markerLayer.markers.single;
+  final dynamic markerChild = marker.child;
+  return markerChild.heading as double;
 }
