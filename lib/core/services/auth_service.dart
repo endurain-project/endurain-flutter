@@ -48,6 +48,24 @@ class AuthService {
   // network round-trip (see [refreshToken]).
   Future<bool>? _inFlightRefresh;
 
+  /// Runs [action], always clearing the in-flight PKCE verifier afterwards.
+  /// Re-throws [AppException]s unchanged; wraps any other error in an
+  /// [AppException] with [fallbackCode].
+  Future<T> _withPkceCleanup<T>(
+    Future<T> Function() action, {
+    required AppErrorCode fallbackCode,
+  }) async {
+    try {
+      return await action();
+    } on AppException {
+      _pkce = null;
+      rethrow;
+    } catch (e) {
+      _pkce = null;
+      throw AppException(fallbackCode, cause: e);
+    }
+  }
+
   /// Login with username and password using PKCE flow
   /// Returns AuthResult with MFA status or session ID for token exchange
   Future<AuthResult> login(
@@ -64,46 +82,43 @@ class AuthService {
       '$url${_endpoints.tokenEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
     );
 
-    try {
-      final data = await _http.postJsonObject(
-        apiUrl,
-        extraHeaders: {
-          ApiConstants.contentTypeHeader:
-              ApiConstants.contentTypeFormUrlEncoded,
-        },
-        rawBody: {'username': username, 'password': password},
-        failureCode: AppErrorCode.loginFailed,
-      );
-
-      // Check if MFA is required
-      if (data['mfa_required'] == true) {
-        // Store username for MFA verification
-        await _sessionStore.saveLoginUsername(username);
-
-        return AuthResult(
-          success: true,
-          mfaRequired: true,
-          username: data['username'] as String?,
-          message: data['message'] as String?,
+    return _withPkceCleanup(
+      () async {
+        final data = await _http.postJsonObject(
+          apiUrl,
+          extraHeaders: {
+            ApiConstants.contentTypeHeader:
+                ApiConstants.contentTypeFormUrlEncoded,
+          },
+          rawBody: {'username': username, 'password': password},
+          failureCode: AppErrorCode.loginFailed,
         );
-      }
 
-      // PKCE flow returns session_id for token exchange
-      final sessionId = ApiResponse.optionalString(data, 'session_id');
+        // Check if MFA is required
+        if (data['mfa_required'] == true) {
+          // Store username for MFA verification
+          await _sessionStore.saveLoginUsername(username);
 
-      if (sessionId != null) {
-        // Exchange session for tokens
-        return await _exchangeSessionForTokens(url, sessionId, username);
-      }
+          return AuthResult(
+            success: true,
+            mfaRequired: true,
+            username: data['username'] as String?,
+            message: data['message'] as String?,
+          );
+        }
 
-      throw const AppException(AppErrorCode.noSessionIdReceived);
-    } on AppException {
-      _pkce = null;
-      rethrow;
-    } catch (e) {
-      _pkce = null; // Clear verifier on error
-      throw AppException(AppErrorCode.loginError, cause: e);
-    }
+        // PKCE flow returns session_id for token exchange
+        final sessionId = ApiResponse.optionalString(data, 'session_id');
+
+        if (sessionId != null) {
+          // Exchange session for tokens
+          return _exchangeSessionForTokens(url, sessionId, username);
+        }
+
+        throw const AppException(AppErrorCode.noSessionIdReceived);
+      },
+      fallbackCode: AppErrorCode.loginError,
+    );
   }
 
   /// Verify MFA code after initial login using PKCE flow
@@ -119,29 +134,26 @@ class AuthService {
       '$serverUrl${_endpoints.mfaVerifyEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
     );
 
-    try {
-      final data = await _http.postJsonObject(
-        url,
-        jsonBody: {'username': username, 'mfa_code': mfaCode},
-        failureCode: AppErrorCode.mfaVerificationFailed,
-      );
+    return _withPkceCleanup(
+      () async {
+        final data = await _http.postJsonObject(
+          url,
+          jsonBody: {'username': username, 'mfa_code': mfaCode},
+          failureCode: AppErrorCode.mfaVerificationFailed,
+        );
 
-      // PKCE flow returns session_id for token exchange
-      final sessionId = ApiResponse.optionalString(data, 'session_id');
+        // PKCE flow returns session_id for token exchange
+        final sessionId = ApiResponse.optionalString(data, 'session_id');
 
-      if (sessionId != null) {
-        // Exchange session for tokens
-        return await _exchangeSessionForTokens(serverUrl, sessionId, username);
-      }
+        if (sessionId != null) {
+          // Exchange session for tokens
+          return _exchangeSessionForTokens(serverUrl, sessionId, username);
+        }
 
-      throw const AppException(AppErrorCode.noSessionIdReceived);
-    } on AppException {
-      _pkce = null;
-      rethrow;
-    } catch (e) {
-      _pkce = null; // Clear verifier on error
-      throw AppException(AppErrorCode.mfaVerificationError, cause: e);
-    }
+        throw const AppException(AppErrorCode.noSessionIdReceived);
+      },
+      fallbackCode: AppErrorCode.mfaVerificationError,
+    );
   }
 
   /// Exchange session ID for tokens using PKCE code verifier
