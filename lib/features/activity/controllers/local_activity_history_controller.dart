@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/share_service.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -96,13 +98,21 @@ class LocalActivityHistoryController extends ChangeNotifier {
 
   Future<void> refresh() => load();
 
-  Future<void> exportGpx(String id, {String? subject}) async {
+  Future<void> exportGpx(
+    String id, {
+    String? subject,
+    Rect? sharePositionOrigin,
+  }) async {
     final record = await _repository.get(id);
     if (record == null) {
       throw const AppException(AppErrorCode.activityLocalActivityNotFound);
     }
     final path = await _repository.readGpxFilePath(record);
-    await _shareService.shareFiles([path], subject: subject);
+    await _shareService.shareFiles(
+      [path],
+      subject: subject,
+      sharePositionOrigin: sharePositionOrigin,
+    );
   }
 
   Future<void> retryUpload(String id) async {    if (_busyRecordIds.contains(id)) {

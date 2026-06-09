@@ -78,10 +78,19 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
 
   Future<void> _export(LocalActivityRecord record) async {
     final l10n = AppLocalizations.of(context)!;
+    // iOS UIActivityViewController requires a non-zero anchor rect.
+    // Use the screen centre as a safe fallback for all device sizes.
+    final screenSize = MediaQuery.of(context).size;
+    final origin = Rect.fromCenter(
+      center: screenSize.center(Offset.zero),
+      width: 1,
+      height: 1,
+    );
     try {
       await _controller.exportGpx(
         record.id,
         subject: l10n.activityExportGpxSubject,
+        sharePositionOrigin: origin,
       );
     } catch (error) {
       if (!mounted) {
