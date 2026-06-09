@@ -69,6 +69,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Durable upload recovery: a finished activity is always saved locally first, and any upload that did not reach the server (e.g. recorded with no connectivity) is retried automatically by an app-lifetime upload queue — on app resume and the moment network connectivity is restored — with no need to reopen the history screen
 - Forward-compatible upload de-duplication: each upload carries the local activity id as an `Idempotency-Key` request header. This is fully optional on the server — Endurain servers that do not recognize the header simply ignore it and uploads work unchanged, while a server that adopts it can de-duplicate automatically retried uploads with no app changes
 - Local activity history and details screens for completed recordings saved on the device, with incremental pagination
+- Manual GPX export/share from the activity details screen via the OS share sheet
 
 ✅ **Settings**
 - Server configuration management
@@ -90,7 +91,6 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 
 🚧 **Next Activity Milestones**
 - Add a richer local post-recording summary for completed activities before or after upload
-- ~~Add manual GPX export/share~~ ✅ Done — share GPX from the activity details screen
 - Add server-synced activity history and details once the server exposes stable imported activity metadata
 - Improve activity import feedback once the server exposes richer post-upload status and metadata
 - Expand activity statistics as server/mobile contracts mature
