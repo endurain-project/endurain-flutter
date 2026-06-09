@@ -231,10 +231,7 @@ void main() {
       await pumpEventQueue();
 
       expect(service.state.status, ActivityRecordingStatus.failed);
-      expect(
-        service.state.lastErrorKey,
-        ActivityRecordingError.emptyRecording,
-      );
+      expect(service.state.lastErrorKey, ActivityRecordingError.emptyRecording);
       expect(recorder.discardCount, 1);
       expect(recorder.stopCount, 1);
     });

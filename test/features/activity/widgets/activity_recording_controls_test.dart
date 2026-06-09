@@ -324,8 +324,7 @@ void main() {
           child: ActivityRecordingControls(
             state: ActivityRecordingState(
               status: ActivityRecordingStatus.failed,
-              lastErrorKey:
-                  ActivityRecordingError.backgroundPermissionRequired,
+              lastErrorKey: ActivityRecordingError.backgroundPermissionRequired,
             ),
             selectedActivityType: ActivityType.run,
             onActivityTypeChanged: null,

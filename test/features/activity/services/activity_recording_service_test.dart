@@ -361,10 +361,7 @@ void main() {
       await service.stop();
 
       expect(service.state.status, ActivityRecordingStatus.failed);
-      expect(
-        service.state.lastErrorKey,
-        ActivityRecordingError.emptyRecording,
-      );
+      expect(service.state.lastErrorKey, ActivityRecordingError.emptyRecording);
       expect(recorder.stopCount, 1);
       expect(recorder.discardCount, 1);
     });

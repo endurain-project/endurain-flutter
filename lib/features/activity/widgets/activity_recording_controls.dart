@@ -114,8 +114,7 @@ class ActivityRecordingControls extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                         if (state.lastErrorKey ==
-                            ActivityRecordingError
-                                .backgroundPermissionRequired)
+                            ActivityRecordingError.backgroundPermissionRequired)
                           ...[],
                         if (state.lastErrorKey ==
                                 ActivityRecordingError
@@ -259,8 +258,7 @@ class ActivityRecordingControls extends StatelessWidget {
       ActivityRecordingError.emptyRecording => l10n.activityRecordingEmpty,
       ActivityRecordingError.gpxGenerationFailed =>
         l10n.activityGpxGenerationFailed,
-      ActivityRecordingError.localSaveFailed =>
-        l10n.activityLocalSaveFailed,
+      ActivityRecordingError.localSaveFailed => l10n.activityLocalSaveFailed,
       ActivityRecordingError.locationPermissionDenied =>
         l10n.activityLocationPermissionDenied,
       ActivityRecordingError.locationPermissionDeniedForever =>

@@ -139,9 +139,7 @@ class LocalActivityRecord {
 
     return LocalActivityRecord(
       id: id,
-      activityType: ActivityType.fromApiValue(
-        jsonString(json['activityType']),
-      ),
+      activityType: ActivityType.fromApiValue(jsonString(json['activityType'])),
       startedAt: startedAt,
       endedAt: endedAt,
       elapsedDurationSeconds: jsonInt(json['elapsedDurationSeconds']) ?? 0,

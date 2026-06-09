@@ -82,43 +82,40 @@ class AuthService {
       '$url${_endpoints.tokenEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
     );
 
-    return _withPkceCleanup(
-      () async {
-        final data = await _http.postJsonObject(
-          apiUrl,
-          extraHeaders: {
-            ApiConstants.contentTypeHeader:
-                ApiConstants.contentTypeFormUrlEncoded,
-          },
-          rawBody: {'username': username, 'password': password},
-          failureCode: AppErrorCode.loginFailed,
+    return _withPkceCleanup(() async {
+      final data = await _http.postJsonObject(
+        apiUrl,
+        extraHeaders: {
+          ApiConstants.contentTypeHeader:
+              ApiConstants.contentTypeFormUrlEncoded,
+        },
+        rawBody: {'username': username, 'password': password},
+        failureCode: AppErrorCode.loginFailed,
+      );
+
+      // Check if MFA is required
+      if (data['mfa_required'] == true) {
+        // Store username for MFA verification
+        await _sessionStore.saveLoginUsername(username);
+
+        return AuthResult(
+          success: true,
+          mfaRequired: true,
+          username: data['username'] as String?,
+          message: data['message'] as String?,
         );
+      }
 
-        // Check if MFA is required
-        if (data['mfa_required'] == true) {
-          // Store username for MFA verification
-          await _sessionStore.saveLoginUsername(username);
+      // PKCE flow returns session_id for token exchange
+      final sessionId = ApiResponse.optionalString(data, 'session_id');
 
-          return AuthResult(
-            success: true,
-            mfaRequired: true,
-            username: data['username'] as String?,
-            message: data['message'] as String?,
-          );
-        }
+      if (sessionId != null) {
+        // Exchange session for tokens
+        return _exchangeSessionForTokens(url, sessionId, username);
+      }
 
-        // PKCE flow returns session_id for token exchange
-        final sessionId = ApiResponse.optionalString(data, 'session_id');
-
-        if (sessionId != null) {
-          // Exchange session for tokens
-          return _exchangeSessionForTokens(url, sessionId, username);
-        }
-
-        throw const AppException(AppErrorCode.noSessionIdReceived);
-      },
-      fallbackCode: AppErrorCode.loginError,
-    );
+      throw const AppException(AppErrorCode.noSessionIdReceived);
+    }, fallbackCode: AppErrorCode.loginError);
   }
 
   /// Verify MFA code after initial login using PKCE flow
@@ -134,26 +131,23 @@ class AuthService {
       '$serverUrl${_endpoints.mfaVerifyEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
     );
 
-    return _withPkceCleanup(
-      () async {
-        final data = await _http.postJsonObject(
-          url,
-          jsonBody: {'username': username, 'mfa_code': mfaCode},
-          failureCode: AppErrorCode.mfaVerificationFailed,
-        );
+    return _withPkceCleanup(() async {
+      final data = await _http.postJsonObject(
+        url,
+        jsonBody: {'username': username, 'mfa_code': mfaCode},
+        failureCode: AppErrorCode.mfaVerificationFailed,
+      );
 
-        // PKCE flow returns session_id for token exchange
-        final sessionId = ApiResponse.optionalString(data, 'session_id');
+      // PKCE flow returns session_id for token exchange
+      final sessionId = ApiResponse.optionalString(data, 'session_id');
 
-        if (sessionId != null) {
-          // Exchange session for tokens
-          return _exchangeSessionForTokens(serverUrl, sessionId, username);
-        }
+      if (sessionId != null) {
+        // Exchange session for tokens
+        return _exchangeSessionForTokens(serverUrl, sessionId, username);
+      }
 
-        throw const AppException(AppErrorCode.noSessionIdReceived);
-      },
-      fallbackCode: AppErrorCode.mfaVerificationError,
-    );
+      throw const AppException(AppErrorCode.noSessionIdReceived);
+    }, fallbackCode: AppErrorCode.mfaVerificationError);
   }
 
   /// Exchange session ID for tokens using PKCE code verifier
