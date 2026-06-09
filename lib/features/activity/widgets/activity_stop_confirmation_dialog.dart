@@ -1,3 +1,4 @@
+import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
@@ -82,48 +83,12 @@ Future<ActivityStopAction> _showStopDialog(
       ActivityStopAction.cancel;
 }
 
-Future<bool> _showDiscardDialog(
-  BuildContext context,
-  AppLocalizations l10n,
-) async {
-  if (PlatformUtils.isApplePlatform) {
-    return await showCupertinoDialog<bool>(
-          context: context,
-          builder: (context) => CupertinoAlertDialog(
-            title: Text(l10n.activityDiscardConfirmTitle),
-            content: Text(l10n.activityDiscardConfirmMessage),
-            actions: [
-              CupertinoDialogAction(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.cancel),
-              ),
-              CupertinoDialogAction(
-                isDestructiveAction: true,
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(l10n.activityDiscard),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
-
-  return await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l10n.activityDiscardConfirmTitle),
-          content: Text(l10n.activityDiscardConfirmMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(l10n.activityDiscard),
-            ),
-          ],
-        ),
-      ) ??
-      false;
+Future<bool> _showDiscardDialog(BuildContext context, AppLocalizations l10n) {
+  return DialogUtils.showConfirmDialog(
+    context,
+    title: l10n.activityDiscardConfirmTitle,
+    message: l10n.activityDiscardConfirmMessage,
+    confirmText: l10n.activityDiscard,
+    isDestructive: true,
+  );
 }
