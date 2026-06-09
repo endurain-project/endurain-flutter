@@ -30,9 +30,17 @@ ARG ANDROID_CMDLINE_TOOLS_SHA256=04453066b540409d975c676d781da1477479dde3761310f
 ARG ANDROID_PLATFORM=android-36
 ARG ANDROID_BUILD_TOOLS=36.0.0
 
+# Node.js runtime. Forgejo/act runs JavaScript actions (actions/checkout,
+# actions/cache) by exec'ing `node` inside this image, so the runtime must be
+# baked in. The SHA256 is published in the release's SHASUMS256.txt.
+ARG NODE_VERSION=22.20.0
+ARG NODE_ARCHIVE=node-v22.20.0-linux-x64.tar.xz
+ARG NODE_SHA256=00bbd05e306ea68b6e13e17360d0e2f680b493ef95f2fea1c4296ff7437530bc
+
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV FLUTTER_HOME=/opt/flutter
-ENV PATH="${FLUTTER_HOME}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${PATH}"
+ENV NODE_HOME=/opt/node
+ENV PATH="${FLUTTER_HOME}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${NODE_HOME}/bin:${PATH}"
 
 # --- OS dependencies --------------------------------------------------------
 RUN set -eu; \
@@ -44,6 +52,18 @@ RUN set -eu; \
         unzip \
         xz-utils; \
     rm -rf /var/lib/apt/lists/*
+
+# --- Node.js ----------------------------------------------------------------
+RUN set -eu; \
+    archive_path="/tmp/${NODE_ARCHIVE}"; \
+    curl --fail --location --show-error \
+        --output "${archive_path}" \
+        "https://nodejs.org/dist/v${NODE_VERSION}/${NODE_ARCHIVE}"; \
+    echo "${NODE_SHA256}  ${archive_path}" | sha256sum --check -; \
+    mkdir -p "${NODE_HOME}"; \
+    tar -xf "${archive_path}" -C "${NODE_HOME}" --strip-components=1; \
+    rm -f "${archive_path}"; \
+    node --version | grep "v${NODE_VERSION}"
 
 # --- Android SDK ------------------------------------------------------------
 RUN set -eu; \
