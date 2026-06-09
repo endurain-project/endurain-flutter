@@ -8,12 +8,13 @@ Position recordingPosition({
   double latitude = 41,
   double longitude = -8,
   DateTime? timestamp,
+  double accuracy = 5,
 }) {
   return Position(
     latitude: latitude,
     longitude: longitude,
     timestamp: timestamp ?? DateTime.utc(2026),
-    accuracy: 5,
+    accuracy: accuracy,
     altitude: 10,
     altitudeAccuracy: 1,
     heading: 90,

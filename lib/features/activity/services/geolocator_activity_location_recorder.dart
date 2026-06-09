@@ -241,6 +241,13 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     }
 
     final trackPoint = ActivityTrackPoint.fromPosition(position);
+    // Drop low-accuracy fixes before they enter the track, matching the native
+    // recorder. This removes "ghost" points from coarse providers rather than
+    // merely splitting them into a new segment.
+    final accuracy = trackPoint.horizontalAccuracyMeters;
+    if (accuracy != null && accuracy > _segmentPolicy.maxAccuracyMeters) {
+      return;
+    }
     var segmentIndex = session.currentSegmentIndex;
     final candidate = RecordedActivityPoint.fromTrackPoint(
       trackPoint,

@@ -175,7 +175,9 @@ class ActivityRecorderService : Service() {
             }
 
             // Required no-op overrides for older API levels.
-            override fun onProviderEnabled(provider: String) {}
+            override fun onProviderEnabled(provider: String) {
+                handleProviderAvailabilityChanged()
+            }
 
             override fun onProviderDisabled(provider: String) {
                 handleProviderAvailabilityChanged()
@@ -245,12 +247,13 @@ class ActivityRecorderService : Service() {
     }
 
     /**
-     * Called when a location provider is disabled mid-recording.
+     * Called when a location provider is enabled or disabled mid-recording.
      *
-     * Re-checks permissions and all available providers. If at least one
-     * provider is still enabled no action is taken — the existing listener
-     * registrations continue. If no usable provider remains, the session is
-     * persisted as failed and the service is stopped.
+     * Re-checks permissions and the available providers. Because collection now
+     * subscribes to a single preferred provider (GPS, with network as
+     * fallback), a provider toggle may require switching providers, so the
+     * listener is re-registered via [beginCollection]. If no usable provider
+     * remains, the session is persisted as failed and the service is stopped.
      */
     private fun handleProviderAvailabilityChanged() {
         val manager = locationManager ?: return
@@ -266,20 +269,28 @@ class ActivityRecorderService : Service() {
             return
         }
         val remaining = selectProviders(manager, hasFine, hasCoarse)
-        if (remaining.isNotEmpty()) {
+        if (remaining.isEmpty()) {
+            persistFailure()
+            ActivityRecorderCoordinator.emitFailed(
+                ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
+            )
+            stopCollection()
+            stopSelf()
             return
         }
-        persistFailure()
-        ActivityRecorderCoordinator.emitFailed(
-            ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
-        )
-        stopCollection()
-        stopSelf()
+        // Re-subscribe so a GPS<->network provider switch takes effect.
+        beginCollection()
     }
 
     private fun onLocationFix(location: Location) {
         val session = store.loadSession() ?: return
         if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return
+        }
+        // Drop low-accuracy fixes (e.g. network-provider triangulation) before
+        // they enter the track. Without this, ghost points far from the real
+        // route are persisted and bridged into the recorded line.
+        if (location.hasAccuracy() && location.accuracy > MAX_ACCURACY_METERS) {
             return
         }
         val nowMillis = if (location.time > 0) location.time else System.currentTimeMillis()
@@ -324,21 +335,30 @@ class ActivityRecorderService : Service() {
         ActivityRecorderCoordinator.emitPointBatch(listOf(point))
     }
 
+    /**
+     * Selects a single location provider, preferring GPS for its precision.
+     *
+     * The network provider is used only as a fallback when GPS is unavailable.
+     * Subscribing to both simultaneously interleaves a precise GPS stream with
+     * low-accuracy WiFi/cell triangulation, which surfaces as "ghost" points
+     * hundreds of meters to kilometers off the real track (the network fixes
+     * also lack altitude). Picking one provider avoids that artifact; the
+     * accuracy gate in [onLocationFix] guards the remaining fallback case.
+     */
     private fun selectProviders(
         manager: LocationManager,
         hasFine: Boolean,
         hasCoarse: Boolean,
     ): List<String> {
         val gpsEnabled = isProviderEnabled(manager, LocationManager.GPS_PROVIDER)
-        val networkEnabled = isProviderEnabled(manager, LocationManager.NETWORK_PROVIDER)
-        val providers = ArrayList<String>()
         if (hasFine && gpsEnabled) {
-            providers.add(LocationManager.GPS_PROVIDER)
+            return listOf(LocationManager.GPS_PROVIDER)
         }
+        val networkEnabled = isProviderEnabled(manager, LocationManager.NETWORK_PROVIDER)
         if ((hasFine || hasCoarse) && networkEnabled) {
-            providers.add(LocationManager.NETWORK_PROVIDER)
+            return listOf(LocationManager.NETWORK_PROVIDER)
         }
-        return providers
+        return emptyList()
     }
 
     private fun isProviderEnabled(manager: LocationManager, provider: String): Boolean {
@@ -504,6 +524,7 @@ class ActivityRecorderService : Service() {
         private const val MIN_UPDATE_INTERVAL_MS = 1000L
         private const val MIN_UPDATE_DISTANCE_METERS = 3f
         private const val MAX_TIME_GAP_MILLIS = 30_000L
+        private const val MAX_ACCURACY_METERS = 100f
 
         private fun baseIntent(context: Context, action: String): Intent {
             return Intent(context, ActivityRecorderService::class.java).setAction(action)
