@@ -115,7 +115,8 @@ class LocalActivityHistoryController extends ChangeNotifier {
     );
   }
 
-  Future<void> retryUpload(String id) async {    if (_busyRecordIds.contains(id)) {
+  Future<void> retryUpload(String id) async {
+    if (_busyRecordIds.contains(id)) {
       return;
     }
     final record = await _repository.get(id);

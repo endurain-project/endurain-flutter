@@ -110,7 +110,10 @@ void main() {
       expect(find.byType(PolylineLayer), findsOneWidget);
       final layer = tester.widget<PolylineLayer>(find.byType(PolylineLayer));
       expect(layer.polylines, hasLength(1));
-      expect(layer.polylines.single.color, LocationMarkerConstants.activityBlue);
+      expect(
+        layer.polylines.single.color,
+        LocationMarkerConstants.activityBlue,
+      );
 
       activityController.dispose();
       mapController.dispose();

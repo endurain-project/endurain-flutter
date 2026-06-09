@@ -156,9 +156,9 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                     isBusy: _controller.isBusy(record.id),
                     onRetry:
                         record.uploadStatus ==
-                                LocalActivityUploadStatus.uploaded
-                            ? null
-                            : () => _retry(record),
+                            LocalActivityUploadStatus.uploaded
+                        ? null
+                        : () => _retry(record),
                     onExport: (snapshot.data ?? false)
                         ? () => _export(record)
                         : null,
