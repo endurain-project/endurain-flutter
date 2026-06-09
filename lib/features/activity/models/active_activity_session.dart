@@ -113,43 +113,24 @@ class ActiveActivitySession {
         'Missing active session field: localSessionId',
       );
     }
-    final startedAt = _dateTime(json['startedAt']);
+    final startedAt = jsonDateTime(json['startedAt']);
     if (startedAt == null) {
       throw const FormatException('Invalid active session field: startedAt');
     }
 
     return ActiveActivitySession(
       localSessionId: localSessionId,
-      activityType: ActivityType.fromApiValue(_string(json['activityType'])),
+      activityType: ActivityType.fromApiValue(jsonString(json['activityType'])),
       status: ActiveActivityStatus.fromJson(json['status']),
       startedAt: startedAt,
-      resumedAt: _dateTime(json['resumedAt']),
-      pausedAt: _dateTime(json['pausedAt']),
-      endedAt: _dateTime(json['endedAt']),
-      elapsedDurationSeconds: _int(json['elapsedDurationSeconds']) ?? 0,
-      currentSegmentIndex: _int(json['currentSegmentIndex']) ?? 0,
-      schemaVersion: _int(json['schemaVersion']) ?? currentSchemaVersion,
+      resumedAt: jsonDateTime(json['resumedAt']),
+      pausedAt: jsonDateTime(json['pausedAt']),
+      endedAt: jsonDateTime(json['endedAt']),
+      elapsedDurationSeconds: jsonInt(json['elapsedDurationSeconds']) ?? 0,
+      currentSegmentIndex: jsonInt(json['currentSegmentIndex']) ?? 0,
+      schemaVersion: jsonInt(json['schemaVersion']) ?? currentSchemaVersion,
     );
   }
 
   static const Object _unset = Object();
-}
-
-String? _string(Object? value) => value is String ? value : null;
-
-int? _int(Object? value) {
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return null;
-}
-
-DateTime? _dateTime(Object? value) {
-  if (value is! String) {
-    return null;
-  }
-  return DateTime.tryParse(value)?.toUtc();
 }
