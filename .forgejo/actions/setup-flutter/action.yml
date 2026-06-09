@@ -49,4 +49,4 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: flutter pub get
+      run: flutter pub get --enforce-lockfile
