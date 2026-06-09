@@ -1,5 +1,8 @@
 import 'dart:async';
 
+// See devdocs/activity_recorder_architecture.md for how the recording types
+// relate (controller -> service -> recorder; session=durable, state=ephemeral).
+
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';

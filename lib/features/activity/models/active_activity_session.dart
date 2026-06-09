@@ -1,3 +1,6 @@
+// See devdocs/activity_recorder_architecture.md for how the recording types
+// relate (controller -> service -> recorder; session=durable, state=ephemeral).
+
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 
