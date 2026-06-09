@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+
+import 'package:endurain/core/theme/app_theme_tokens.dart';
+
 /// Map configuration constants
 class MapConstants {
   // Default location (Lisbon, Portugal)
@@ -31,7 +35,7 @@ class LocationMarkerConstants {
   static const double coneArcRadiusMultiplier = 5.0;
 
   // Colors
-  static const int markerBlue = 0xFF4285F4; // Google Blue
+  static const Color activityBlue = AppThemeTokens.primarySeed;
   static const double coneOpacity = 0.3;
 
   // Floating map controls

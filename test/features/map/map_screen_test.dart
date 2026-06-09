@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
@@ -107,6 +108,9 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PolylineLayer), findsOneWidget);
+      final layer = tester.widget<PolylineLayer>(find.byType(PolylineLayer));
+      expect(layer.polylines, hasLength(1));
+      expect(layer.polylines.single.color, LocationMarkerConstants.activityBlue);
 
       activityController.dispose();
       mapController.dispose();

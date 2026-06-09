@@ -265,7 +265,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
                 LatLng(point.latitude, point.longitude),
             ],
             strokeWidth: ActivityRouteConstants.strokeWidth,
-            color: Theme.of(context).colorScheme.primary,
+            color: LocationMarkerConstants.activityBlue,
           ),
         )
         .toList(growable: false);
@@ -389,7 +389,7 @@ class _LocationMarkerPainter extends CustomPainter {
 
     // Draw directional cone (pointing upward when heading is 0)
     final conePaint = Paint()
-      ..color = Colors.blue.withValues(
+      ..color = LocationMarkerConstants.activityBlue.withValues(
         alpha: LocationMarkerConstants.coneOpacity,
       )
       ..style = PaintingStyle.fill;
@@ -427,7 +427,7 @@ class _LocationMarkerPainter extends CustomPainter {
 
     // Draw blue dot
     final dotPaint = Paint()
-      ..color = const Color(LocationMarkerConstants.markerBlue)
+      ..color = LocationMarkerConstants.activityBlue
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(center, radius, dotPaint);
