@@ -103,19 +103,19 @@ the current on-device storage design behind activity recording and retention.
 - **Framework:** Flutter 3.38+ (Dart 3.10+)
 - **Platforms:** iOS, Android
 - **State Management:** Stateful widgets plus focused `ChangeNotifier` controllers
-- **Map Provider:** OpenStreetMap with `flutter_map` ^8.2.2 and `latlong2` ^0.9.1
-- **Location Services:** `geolocator` ^14.0.2, including position streams and movement heading
-- **Connectivity:** `connectivity_plus` ^7.1.1 to retry pending activity uploads when the network returns
-- **File Sharing:** `share_plus` ^10.1.4 (BSD-3-Clause, F-Droid safe) for the OS share sheet used by GPX file export
-- **Secure Storage:** `flutter_secure_storage` ^10.0.0
-- **HTTP Client:** `http` ^1.2.2 for Endurain API communication and multipart uploads
-- **SSO/OAuth:** `app_links` ^7.0.0 for deep-link callbacks, `url_launcher` ^6.3.1 for the system browser OAuth flow, and `flutter_svg` ^2.0.16 for provider icons
-- **App Metadata:** `package_info_plus` ^9.0.0
-- **Local App Files:** `path_provider` ^2.1.5 for private app-support diagnostics and retained activity GPX storage
-- **Security:** `crypto` ^3.0.6 for PKCE challenge generation
+- **Map Provider:** OpenStreetMap with `flutter_map` and `latlong2`
+- **Location Services:** `geolocator`, including position streams and movement heading
+- **Connectivity:** `connectivity_plus` to retry pending activity uploads when the network returns
+- **File Sharing:** `share_plus` (BSD-3-Clause, F-Droid safe) for the OS share sheet used by GPX file export
+- **Secure Storage:** `flutter_secure_storage`
+- **HTTP Client:** `http` for Endurain API communication and multipart uploads
+- **SSO/OAuth:** `app_links` for deep-link callbacks, `url_launcher` for the system browser OAuth flow, and `flutter_svg` for provider icons
+- **App Metadata:** `package_info_plus`
+- **Local App Files:** `path_provider` for private app-support diagnostics and retained activity GPX storage
+- **Security:** `crypto` for PKCE challenge generation
 - **Localization:** Flutter gen-l10n from ARB files with English and Portuguese locales
-- **SQLite:** `sqflite` ^2.4.0 for on-device metadata storage and `sqflite_common_ffi` ^2.3.4 for test-only in-process coverage
-- **Quality:** `flutter_lints` ^6.0.0 with strict casts, strict inference, strict raw types, and additional lint rules
+- **SQLite:** `sqflite` for on-device metadata storage and `sqflite_common_ffi` for test-only in-process coverage
+- **Quality:** `flutter_lints` with strict casts, strict inference, strict raw types, and additional lint rules
 
 ## Getting Started
 
