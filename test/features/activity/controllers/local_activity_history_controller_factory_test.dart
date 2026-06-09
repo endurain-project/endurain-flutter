@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:endurain/core/services/app_services.dart';
+import 'package:endurain/core/services/share_service.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller_factory.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -10,6 +11,7 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/fake_share_service.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
@@ -91,6 +93,9 @@ class _FakeAppServices extends AppServices {
   @override
   ActivityRetentionSettingsRepository get activityRetentionSettings =>
       _retentionSettingsRepository;
+
+  @override
+  ShareService get share => FakeShareService();
 }
 
 class _ThrowingAppServices extends AppServices {

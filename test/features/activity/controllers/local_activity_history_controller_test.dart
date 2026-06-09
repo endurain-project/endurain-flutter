@@ -9,6 +9,7 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/fake_share_service.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
@@ -33,6 +34,7 @@ void main() {
       final controller = LocalActivityHistoryController(
         repository: repository,
         uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
       );
       addTearDown(controller.dispose);
 
@@ -48,6 +50,7 @@ void main() {
       final controller = LocalActivityHistoryController(
         repository: repository,
         uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
       );
       addTearDown(controller.dispose);
       await controller.load();
@@ -66,6 +69,7 @@ void main() {
       final controller = LocalActivityHistoryController(
         repository: repository,
         uploadService: _uploadServiceReturning(500),
+        shareService: FakeShareService(),
       );
       addTearDown(controller.dispose);
       await controller.load();
@@ -95,6 +99,7 @@ void main() {
       final controller = LocalActivityHistoryController(
         repository: repository,
         uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
       );
       addTearDown(controller.dispose);
       await controller.load();
