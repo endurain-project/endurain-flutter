@@ -95,7 +95,8 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Improve activity import feedback once the server exposes richer post-upload status and metadata
 - Expand activity statistics as server/mobile contracts mature
 
-See the [Activity Tracking MVP Plan](devdocs/activity_tracking_mvp_plan.md) and [Completed Activity Local Retention Plan](devdocs/activity_local_retention_plan.md) for implementation notes and remaining activity work.
+See [Local Activity Storage Design](#local-activity-storage-design) below for
+the current on-device storage design behind activity recording and retention.
 
 ## Tech Stack
 
@@ -391,10 +392,13 @@ the platform databases directory. The database holds two tables:
 | `schema_version`       | Single-row version counter used to gate migrations.      |
 | `local_activity`       | One row per activity, all metadata columns.              |
 
-Each `local_activity` row contains: `id`, `activity_type`, timing, distance,
-`point_count`, `gpx_file_name`, `upload_status`, upload timestamps, and the
-`server_activity_id`. GPX files live on disk under `gpx/` — only the metadata
-is stored in the database.
+Each `local_activity` row contains: `id`, `activity_type`, `started_at`,
+`ended_at`, `elapsed_duration_seconds`, `distance_meters`,
+`average_speed_meters_per_second`, `point_count`, `gpx_file_name`,
+`upload_status`, `created_at`, `updated_at`, `uploaded_at`,
+`last_upload_attempt_at`, `last_upload_error_code`, and `server_activity_id`.
+GPX files live on disk under `gpx/` — only the metadata is stored in the
+database.
 
 ### Schema migrations
 
