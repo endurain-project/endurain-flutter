@@ -415,6 +415,14 @@
   "@activityDeleteLocal": {
     "description": "Ação destrutiva para apagar atividade local e GPX retidos - Usado em: activity_upload_status_panel.dart, map_screen.dart, activity_history_screen.dart, activity_details_screen.dart"
   },
+  "activityExportGpx": "Partilhar ficheiro GPX",
+  "@activityExportGpx": {
+    "description": "Action that opens the OS share sheet with the activity GPX file. Used in: activity_details_screen.dart"
+  },
+  "activityExportGpxSubject": "Atividade Endurain GPX",
+  "@activityExportGpxSubject": {
+    "description": "Subject line used when sharing a GPX file. Used in: activity_details_screen.dart"
+  },
   "activityDeleteLocalConfirmTitle": "Apagar atividade local?",
   "@activityDeleteLocalConfirmTitle": {
     "description": "Título do diálogo de confirmação para apagar atividade local retida - Usado em: map_screen.dart, activity_history_screen.dart, activity_details_screen.dart"

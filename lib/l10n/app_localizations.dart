@@ -614,6 +614,18 @@ abstract class AppLocalizations {
   /// **'Delete local copy'**
   String get activityDeleteLocal;
 
+  /// Action that opens the OS share sheet with the activity GPX file. Used in: activity_details_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Share GPX file'**
+  String get activityExportGpx;
+
+  /// Subject line used when sharing a GPX file. Used in: activity_details_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Endurain activity GPX'**
+  String get activityExportGpxSubject;
+
   /// Confirmation dialog title for deleting a retained local activity - Used in: map_screen.dart, activity_history_screen.dart, activity_details_screen.dart
   ///
   /// In en, this message translates to:

@@ -313,6 +313,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityDeleteLocal => 'Delete local copy';
 
   @override
+  String get activityExportGpx => 'Share GPX file';
+
+  @override
+  String get activityExportGpxSubject => 'Endurain activity GPX';
+
+  @override
   String get activityDeleteLocalConfirmTitle => 'Delete local activity?';
 
   @override
