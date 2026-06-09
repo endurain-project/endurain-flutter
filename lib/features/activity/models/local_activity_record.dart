@@ -187,14 +187,4 @@ double? _doubleValue(Object? value) => jsonDouble(value);
 
 DateTime? _dateTimeValue(Object? value) => jsonDateTime(value);
 
-AppErrorCode? _errorCodeValue(Object? value) {
-  if (value is! String) {
-    return null;
-  }
-  for (final code in AppErrorCode.values) {
-    if (code.name == value) {
-      return code;
-    }
-  }
-  return null;
-}
+AppErrorCode? _errorCodeValue(Object? value) => appErrorCodeByName(value);
