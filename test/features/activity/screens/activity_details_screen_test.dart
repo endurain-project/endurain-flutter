@@ -167,15 +167,15 @@ void main() {
   // Phase 16 — action section
   // -------------------------------------------------------------------------
 
-Future<void> _scrollToActionsSection(WidgetTester tester) async {
-  final actionsHeader = find.text(_l10n.activityHistoryActions);
-  await tester.scrollUntilVisible(
-    actionsHeader,
-    200,
-    scrollable: find.byType(Scrollable).first,
-  );
-  await tester.pump(const Duration(milliseconds: 100));
-}
+  Future<void> scrollToActionsSection(WidgetTester tester) async {
+    final actionsHeader = find.text(_l10n.activityHistoryActions);
+    await tester.scrollUntilVisible(
+      actionsHeader,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 
   group('ActivityDetailsScreen – Phase 16: actions section', () {
     testWidgets('retry and delete actions shown for pending upload', (
@@ -185,7 +185,7 @@ Future<void> _scrollToActionsSection(WidgetTester tester) async {
       addTearDown(controller.dispose);
 
       await _pumpDetails(tester, controller);
-      await _scrollToActionsSection(tester);
+      await scrollToActionsSection(tester);
 
       expect(find.text(_l10n.activityRetryUpload), findsOneWidget);
       expect(find.text(_l10n.activityDeleteLocal), findsOneWidget);
@@ -209,7 +209,7 @@ Future<void> _scrollToActionsSection(WidgetTester tester) async {
       addTearDown(controller.dispose);
 
       await _pumpDetails(tester, controller);
-      await _scrollToActionsSection(tester);
+      await scrollToActionsSection(tester);
 
       expect(find.text(_l10n.activityRetryUpload), findsNothing);
       expect(find.text(_l10n.activityDeleteLocal), findsOneWidget);
@@ -234,7 +234,7 @@ Future<void> _scrollToActionsSection(WidgetTester tester) async {
         for (var i = 0; i < 5; i++) {
           await tester.pump(const Duration(milliseconds: 100));
         }
-        await _scrollToActionsSection(tester);
+        await scrollToActionsSection(tester);
 
         expect(find.text(_l10n.activityRetryUpload), findsNothing);
         expect(find.text(_l10n.activityDeleteLocal), findsNothing);
@@ -250,7 +250,7 @@ Future<void> _scrollToActionsSection(WidgetTester tester) async {
       addTearDown(controller.dispose);
 
       await _pumpDetails(tester, controller);
-      await _scrollToActionsSection(tester);
+      await scrollToActionsSection(tester);
 
       expect(find.text(_l10n.activityExportGpx), findsOneWidget);
     });
@@ -263,7 +263,7 @@ Future<void> _scrollToActionsSection(WidgetTester tester) async {
       addTearDown(controller.dispose);
 
       await _pumpDetails(tester, controller);
-      await _scrollToActionsSection(tester);
+      await scrollToActionsSection(tester);
 
       expect(find.text(_l10n.activityExportGpx), findsNothing);
     });
