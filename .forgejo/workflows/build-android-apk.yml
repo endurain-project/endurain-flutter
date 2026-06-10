@@ -46,15 +46,25 @@ jobs:
         # daemon on the memory-constrained 8 GB runner. arm64-v8a covers
         # essentially all modern devices and keeps the output as app-release.apk.
         #
-        # GRADLE_OPTS enforces JVM memory limits at the process level (bypasses
-        # any gradle.properties parsing issues). --no-daemon is passed explicitly
-        # to avoid long-lived daemon processes in ephemeral CI containers.
+        # Memory tuning for ~8GB runner:
+        # - GRADLE_OPTS: caps main Gradle JVM to 1GB
+        # - KOTLIN_DAEMON_JVM_OPTIONS: disables separate Kotlin daemon (uses in-process)
+        # - JAVA_TOOL_OPTIONS: fallback JVM limits
+        # - --split-debug-info: reduces gen_snapshot memory by externalizing debug symbols
         env:
-          GRADLE_OPTS: -Xmx1024m -XX:MaxMetaspaceSize=512m -Dorg.gradle.daemon=false
+          GRADLE_OPTS: >-
+            -Xmx1024m
+            -XX:MaxMetaspaceSize=384m
+            -Dorg.gradle.daemon=false
+            -Dorg.gradle.workers.max=1
+            -Dkotlin.compiler.execution.strategy=in-process
+          KOTLIN_DAEMON_JVM_OPTIONS: -Xmx512m
+          JAVA_TOOL_OPTIONS: -Xmx1024m
         run: |
-          cd android && ./gradlew --stop || true
-          cd ..
-          flutter build apk --release --target-platform android-arm64
+          # Stop any stale Gradle daemons
+          pkill -f 'GradleDaemon' || true
+          # Build with split debug info to reduce gen_snapshot memory
+          flutter build apk --release --target-platform android-arm64 --split-debug-info=build/debug-info
 
       # For manual builds there is no release to attach to, so keep the APK as a
       # workflow-run artifact for download/inspection.
