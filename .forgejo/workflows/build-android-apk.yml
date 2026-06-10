@@ -45,7 +45,16 @@ jobs:
         # AOT compiler, ~1.5-3 GB each) once per ABI, which OOM-kills the Gradle
         # daemon on the memory-constrained 8 GB runner. arm64-v8a covers
         # essentially all modern devices and keeps the output as app-release.apk.
-        run: flutter build apk --release --target-platform android-arm64
+        #
+        # GRADLE_OPTS enforces JVM memory limits at the process level (bypasses
+        # any gradle.properties parsing issues). --no-daemon is passed explicitly
+        # to avoid long-lived daemon processes in ephemeral CI containers.
+        env:
+          GRADLE_OPTS: -Xmx1024m -XX:MaxMetaspaceSize=512m -Dorg.gradle.daemon=false
+        run: |
+          cd android && ./gradlew --stop || true
+          cd ..
+          flutter build apk --release --target-platform android-arm64
 
       # For manual builds there is no release to attach to, so keep the APK as a
       # workflow-run artifact for download/inspection.
