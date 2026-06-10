@@ -120,7 +120,7 @@ class AppServices {
 
   final AppLinksService appLinks = DefaultAppLinksService();
   final UrlLauncherService urlLauncher = const UrlLauncherService();
-  final ShareService share = const ShareService();
+  final ShareService share = ShareService();
   final PackageInfoService packageInfo = const PackageInfoService();
 
   /// Builds the active-recording recorder for the current platform.
