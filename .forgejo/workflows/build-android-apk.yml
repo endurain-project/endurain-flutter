@@ -41,7 +41,11 @@ jobs:
 
       - name: Build release APK
         shell: bash
-        run: flutter build apk --release
+        # Build for arm64-v8a only. A fat APK runs gen_snapshot (the native Dart
+        # AOT compiler, ~1.5-3 GB each) once per ABI, which OOM-kills the Gradle
+        # daemon on the memory-constrained 8 GB runner. arm64-v8a covers
+        # essentially all modern devices and keeps the output as app-release.apk.
+        run: flutter build apk --release --target-platform android-arm64
 
       # For manual builds there is no release to attach to, so keep the APK as a
       # workflow-run artifact for download/inspection.
