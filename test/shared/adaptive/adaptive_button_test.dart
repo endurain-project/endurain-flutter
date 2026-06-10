@@ -93,12 +93,12 @@ void main() {
     PlatformUtils.debugIsApplePlatformOverride = true;
 
     await tester.pumpWidget(
-      AdaptiveApp(
+      const AdaptiveApp(
         title: 'Test',
         home: AdaptiveButton(
           label: 'Delete',
           destructive: true,
-          onPressed: () {},
+          onPressed: null,
         ),
       ),
     );
@@ -111,9 +111,9 @@ void main() {
     PlatformUtils.debugIsApplePlatformOverride = false;
 
     await tester.pumpWidget(
-      AdaptiveApp(
+      const AdaptiveApp(
         title: 'Test',
-        home: const Center(
+        home: Center(
           child: AdaptiveButton(label: 'Wide', onPressed: null, expand: true),
         ),
       ),
@@ -129,9 +129,9 @@ void main() {
     PlatformUtils.debugIsApplePlatformOverride = true;
 
     await tester.pumpWidget(
-      AdaptiveApp(
+      const AdaptiveApp(
         title: 'Test',
-        home: const AdaptiveButton(label: 'Disabled', onPressed: null),
+        home: AdaptiveButton(label: 'Disabled', onPressed: null),
       ),
     );
 
