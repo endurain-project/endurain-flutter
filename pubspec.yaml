@@ -99,7 +99,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   # Generate app icons for all platforms
-  flutter_launcher_icons: ^0.14.1
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
