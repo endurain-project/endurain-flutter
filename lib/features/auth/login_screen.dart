@@ -233,7 +233,10 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
                   const SizedBox(height: 40),
                   Center(
                     child: Image.asset(
-                      'assets/logo/logo.png',
+                      MediaQuery.platformBrightnessOf(context) ==
+                              Brightness.dark
+                          ? 'assets/logo/brand_logo_dark_theme.png'
+                          : 'assets/logo/brand_logo_light_theme.png',
                       width: 120,
                       height: 120,
                     ),
