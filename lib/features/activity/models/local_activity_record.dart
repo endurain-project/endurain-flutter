@@ -154,7 +154,7 @@ class LocalActivityRecord {
       updatedAt: updatedAt,
       uploadedAt: jsonDateTime(json['uploadedAt']),
       lastUploadAttemptAt: jsonDateTime(json['lastUploadAttemptAt']),
-      lastUploadErrorCode: _errorCodeValue(json['lastUploadErrorCode']),
+      lastUploadErrorCode: appErrorCodeByName(json['lastUploadErrorCode']),
       serverActivityId: jsonString(json['serverActivityId']),
     );
   }
@@ -176,5 +176,3 @@ DateTime _requiredDateTime(Object? value, String field) {
   }
   throw FormatException('Invalid local activity field: $field');
 }
-
-AppErrorCode? _errorCodeValue(Object? value) => appErrorCodeByName(value);

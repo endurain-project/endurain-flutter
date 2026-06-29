@@ -21,7 +21,7 @@ class ActivityRecordingState {
     this.startedAt,
     this.endedAt,
     this.localActivityId,
-    this.lastErrorKey,
+    this.lastError,
     this.elapsedDurationSeconds = 0,
     List<ActivityTrackPoint> points = const [],
     List<ActivityTrackSegment> segments = const [],
@@ -37,7 +37,7 @@ class ActivityRecordingState {
   final DateTime? startedAt;
   final DateTime? endedAt;
   final String? localActivityId;
-  final ActivityRecordingError? lastErrorKey;
+  final ActivityRecordingError? lastError;
   final int elapsedDurationSeconds;
   final List<ActivityTrackPoint> _points;
   final List<ActivityTrackSegment> _segments;
@@ -57,7 +57,7 @@ class ActivityRecordingState {
     Object? startedAt = _unset,
     Object? endedAt = _unset,
     Object? localActivityId = _unset,
-    Object? lastErrorKey = _unset,
+    Object? lastError = _unset,
     int? elapsedDurationSeconds,
     List<ActivityTrackPoint>? points,
     List<ActivityTrackSegment>? segments,
@@ -74,9 +74,9 @@ class ActivityRecordingState {
       localActivityId: identical(localActivityId, _unset)
           ? this.localActivityId
           : localActivityId as String?,
-      lastErrorKey: identical(lastErrorKey, _unset)
-          ? this.lastErrorKey
-          : lastErrorKey as ActivityRecordingError?,
+      lastError: identical(lastError, _unset)
+          ? this.lastError
+          : lastError as ActivityRecordingError?,
       elapsedDurationSeconds:
           elapsedDurationSeconds ?? this.elapsedDurationSeconds,
       points: points ?? _points,

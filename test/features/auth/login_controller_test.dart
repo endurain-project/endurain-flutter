@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart' as core;
 import 'package:endurain/core/services/app_preferences_store.dart';
@@ -34,13 +34,14 @@ void main() {
         authCoordinator: _repository(
           storage: storage,
           client: MockClient((request) async {
-            if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+            if (request.url.path ==
+                ApiEndpoints.defaults.serverSettingsEndpoint) {
               return http.Response(
                 '{"sso_enabled":true,"local_login_enabled":true}',
                 200,
               );
             }
-            if (request.url.path == ApiConstants.idpListEndpoint) {
+            if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
               return http.Response(
                 '[{"id":1,"slug":"keycloak","name":"Keycloak","icon":"keycloak"}]',
                 200,
@@ -68,7 +69,7 @@ void main() {
         authCoordinator: _repository(
           storage: storage,
           client: MockClient((request) async {
-            expect(request.url.path, ApiConstants.tokenEndpoint);
+            expect(request.url.path, ApiEndpoints.defaults.tokenEndpoint);
             return http.Response(
               '{"mfa_required":true,"username":"joao","message":"MFA required"}',
               200,
@@ -98,7 +99,7 @@ void main() {
           client: MockClient((request) async {
             expect(
               request.url.path,
-              '${ApiConstants.idpSessionTokenExchangeEndpoint}/session-1/tokens',
+              '${ApiEndpoints.defaults.idpSessionTokenExchangeEndpoint}/session-1/tokens',
             );
             return http.Response(
               '{"access_token":"access-1","refresh_token":"refresh-1","session_id":"session-2","expires_in":3600}',
@@ -195,13 +196,14 @@ void main() {
         authCoordinator: _repository(
           storage: SecureStorageService(),
           client: MockClient((request) async {
-            if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+            if (request.url.path ==
+                ApiEndpoints.defaults.serverSettingsEndpoint) {
               return http.Response(
                 '{"sso_enabled":true,"sso_auto_redirect":true,"local_login_enabled":true}',
                 200,
               );
             }
-            if (request.url.path == ApiConstants.idpListEndpoint) {
+            if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
               return http.Response(
                 '[{"id":1,"slug":"keycloak","name":"Keycloak","icon":"keycloak"}]',
                 200,
@@ -225,7 +227,8 @@ void main() {
         authCoordinator: _repository(
           storage: SecureStorageService(),
           client: MockClient((request) async {
-            if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+            if (request.url.path ==
+                ApiEndpoints.defaults.serverSettingsEndpoint) {
               return http.Response('{"sso_enabled":true}', 200);
             }
             return http.Response('{"detail":"boom"}', 500);
@@ -287,7 +290,7 @@ void main() {
 
       expect(oauthUrl, isNotNull);
       final parsed = Uri.parse(oauthUrl!);
-      expect(parsed.path, '${ApiConstants.idpLoginEndpoint}/keycloak');
+      expect(parsed.path, '${ApiEndpoints.defaults.idpLoginEndpoint}/keycloak');
       expect(parsed.queryParameters['code_challenge'], isNotEmpty);
       expect(parsed.queryParameters['code_challenge_method'], 'S256');
       expect(controller.isLoading, isFalse);
@@ -336,7 +339,7 @@ void main() {
         authCoordinator: _repository(
           storage: storage,
           client: MockClient((request) async {
-            if (request.url.path == ApiConstants.tokenEndpoint) {
+            if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
               return http.Response('{"session_id":"session-1"}', 200);
             }
             return http.Response(
@@ -395,13 +398,13 @@ void main() {
         authCoordinator: _repository(
           storage: storage,
           client: MockClient((request) async {
-            if (request.url.path == ApiConstants.tokenEndpoint) {
+            if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
               return http.Response(
                 '{"mfa_required":true,"username":"joao"}',
                 200,
               );
             }
-            if (request.url.path == ApiConstants.mfaVerifyEndpoint) {
+            if (request.url.path == ApiEndpoints.defaults.mfaVerifyEndpoint) {
               return http.Response('{"session_id":"session-1"}', 200);
             }
             return http.Response(
@@ -584,7 +587,8 @@ void main() {
           authCoordinator: _repository(
             storage: storage,
             client: MockClient((request) async {
-              if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+              if (request.url.path ==
+                  ApiEndpoints.defaults.serverSettingsEndpoint) {
                 return http.Response(
                   '{"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
                   '"tileserver_attribution":"OSM",'
@@ -592,7 +596,7 @@ void main() {
                   200,
                 );
               }
-              if (request.url.path == ApiConstants.idpListEndpoint) {
+              if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
                 return http.Response('[]', 200);
               }
               fail('Unexpected request to ${request.url}');

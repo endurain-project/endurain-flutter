@@ -22,22 +22,7 @@ class ApiConstants {
   // SSO PKCE flow TTL — flows older than this are rejected on exchange.
   static const Duration ssoPkceTtl = Duration(minutes: 10);
 
-  // Authentication endpoints
-  static const String tokenEndpoint = '/api/v1/auth/login';
-  static const String mfaVerifyEndpoint = '/api/v1/auth/mfa/verify';
-  static const String refreshEndpoint = '/api/v1/auth/refresh';
-  static const String logoutEndpoint = '/api/v1/auth/logout';
-  // SSO/OAuth endpoints
-  static const String idpListEndpoint = '/api/v1/public/idp';
-  static const String idpLoginEndpoint = '/api/v1/public/idp/login';
-  static const String idpSessionTokenExchangeEndpoint =
-      '/api/v1/public/idp/session';
-
-  // Server settings public endpoints
-  static const String serverSettingsEndpoint = '/api/v1/public/server_settings';
-
-  // Activity endpoints
-  static const String activityUploadEndpoint =
-      '/api/v1/activities/create/upload';
+  // Multipart field name for activity uploads. Endpoint paths live in
+  // ApiEndpoints, which derives them from AppConfig.apiBasePath.
   static const String activityUploadFieldName = 'file';
 }

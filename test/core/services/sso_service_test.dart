@@ -1,3 +1,4 @@
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -22,7 +23,7 @@ void main() {
         httpClient: MockClient((request) async {
           expect(
             request.url.path,
-            '${ApiConstants.idpSessionTokenExchangeEndpoint}/session-1/tokens',
+            '${ApiEndpoints.defaults.idpSessionTokenExchangeEndpoint}/session-1/tokens',
           );
           return http.Response(
             '{"access_token":"access-1","session_id":"session-2","expires_in":3600}',

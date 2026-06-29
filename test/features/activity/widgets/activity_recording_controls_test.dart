@@ -264,7 +264,7 @@ void main() {
           child: ActivityRecordingControls(
             state: ActivityRecordingState(
               status: ActivityRecordingStatus.failed,
-              lastErrorKey: ActivityRecordingError.emptyRecording,
+              lastError: ActivityRecordingError.emptyRecording,
             ),
             selectedActivityType: ActivityType.run,
             onActivityTypeChanged: null,
@@ -290,8 +290,7 @@ void main() {
           child: ActivityRecordingControls(
             state: ActivityRecordingState(
               status: ActivityRecordingStatus.failed,
-              lastErrorKey:
-                  ActivityRecordingError.locationPermissionDeniedForever,
+              lastError: ActivityRecordingError.locationPermissionDeniedForever,
             ),
             selectedActivityType: ActivityType.run,
             onActivityTypeChanged: null,
@@ -324,7 +323,7 @@ void main() {
           child: ActivityRecordingControls(
             state: ActivityRecordingState(
               status: ActivityRecordingStatus.failed,
-              lastErrorKey: ActivityRecordingError.backgroundPermissionRequired,
+              lastError: ActivityRecordingError.backgroundPermissionRequired,
             ),
             selectedActivityType: ActivityType.run,
             onActivityTypeChanged: null,

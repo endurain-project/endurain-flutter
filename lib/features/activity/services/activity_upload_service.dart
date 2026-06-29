@@ -43,12 +43,6 @@ class ActivityUploadRetryPolicy {
 class ActivityUploadConfig {
   const ActivityUploadConfig({required this.endpoint, required this.fieldName});
 
-  /// Default contract matching the Endurain server upload endpoint
-  /// (`POST /api/v1/activities/create/upload` with a `file` multipart field).
-  const ActivityUploadConfig.endurain()
-    : endpoint = ApiConstants.activityUploadEndpoint,
-      fieldName = ApiConstants.activityUploadFieldName;
-
   /// Build from [ApiEndpoints] so a custom `AppConfig.apiBasePath` is
   /// reflected in the upload endpoint path.
   factory ActivityUploadConfig.fromEndpoints(ApiEndpoints endpoints) {

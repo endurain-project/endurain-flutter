@@ -232,7 +232,7 @@ void main() {
 
       expect(controller.state.status, ActivityRecordingStatus.failed);
       expect(
-        controller.state.lastErrorKey,
+        controller.state.lastError,
         ActivityRecordingError.gpxGenerationFailed,
       );
       expect(controller.completedGpx, isNull);
@@ -262,7 +262,7 @@ void main() {
 
       expect(controller.state.status, ActivityRecordingStatus.failed);
       expect(
-        controller.state.lastErrorKey,
+        controller.state.lastError,
         ActivityRecordingError.localSaveFailed,
       );
       expect(controller.uploadStatus, ActivityUploadStatus.failed);
@@ -298,7 +298,7 @@ void main() {
         // Pre-condition: terminal state reached.
         expect(controller.state.status, ActivityRecordingStatus.failed);
         expect(
-          controller.state.lastErrorKey,
+          controller.state.lastError,
           ActivityRecordingError.localSaveFailed,
         );
 
@@ -310,7 +310,7 @@ void main() {
         // should have bailed immediately without changing the status.
         expect(controller.state.status, ActivityRecordingStatus.failed);
         expect(
-          controller.state.lastErrorKey,
+          controller.state.lastError,
           ActivityRecordingError.localSaveFailed,
         );
       },

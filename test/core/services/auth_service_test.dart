@@ -26,14 +26,14 @@ void main() {
         httpClient: MockClient((request) async {
           requests.add(request);
 
-          if (request.url.path == ApiConstants.tokenEndpoint) {
+          if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             expect(request.bodyFields['username'], 'joao');
             expect(request.bodyFields['password'], 'secret');
             return http.Response('{"session_id":"session-1"}', 200);
           }
 
           if (request.url.path ==
-              '${ApiConstants.idpSessionTokenExchangeEndpoint}/session-1/tokens') {
+              '${ApiEndpoints.defaults.idpSessionTokenExchangeEndpoint}/session-1/tokens') {
             return http.Response(
               '{"access_token":"access-1","refresh_token":"refresh-1","session_id":"session-2","expires_in":3600}',
               200,
@@ -137,12 +137,12 @@ void main() {
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
-          if (request.url.path == ApiConstants.tokenEndpoint) {
+          if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             return http.Response('{"session_id":"session-1"}', 200);
           }
 
           if (request.url.path ==
-              '${ApiConstants.idpSessionTokenExchangeEndpoint}/session-1/tokens') {
+              '${ApiEndpoints.defaults.idpSessionTokenExchangeEndpoint}/session-1/tokens') {
             return http.Response(
               '{"access_token":"access-1","session_id":"session-2","expires_in":3600}',
               200,
@@ -178,7 +178,7 @@ void main() {
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
-          expect(request.url.path, ApiConstants.refreshEndpoint);
+          expect(request.url.path, ApiEndpoints.defaults.refreshEndpoint);
           return http.Response(
             '{"access_token":"access-2","session_id":"session-2","expires_in":3600}',
             200,
@@ -203,7 +203,7 @@ void main() {
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
-          expect(request.url.path, ApiConstants.logoutEndpoint);
+          expect(request.url.path, ApiEndpoints.defaults.logoutEndpoint);
           return http.Response('', 500);
         }),
       );
@@ -244,7 +244,7 @@ void main() {
         storage: storage,
         httpClient: MockClient((request) async {
           expect(request.url.origin, 'https://stored.test');
-          if (request.url.path == ApiConstants.tokenEndpoint) {
+          if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             return http.Response('{"session_id":"session-1"}', 200);
           }
           return http.Response(
@@ -304,17 +304,17 @@ void main() {
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
-          if (request.url.path == ApiConstants.tokenEndpoint) {
+          if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             return http.Response(
               '{"mfa_required":true,"username":"joao"}',
               200,
             );
           }
-          if (request.url.path == ApiConstants.mfaVerifyEndpoint) {
+          if (request.url.path == ApiEndpoints.defaults.mfaVerifyEndpoint) {
             return http.Response('{"session_id":"session-1"}', 200);
           }
           if (request.url.path ==
-              '${ApiConstants.idpSessionTokenExchangeEndpoint}/session-1/tokens') {
+              '${ApiEndpoints.defaults.idpSessionTokenExchangeEndpoint}/session-1/tokens') {
             return http.Response(
               '{"access_token":"access-1","refresh_token":"refresh-1","session_id":"session-2","expires_in":3600}',
               200,
@@ -379,7 +379,7 @@ void main() {
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
-          if (request.url.path == ApiConstants.tokenEndpoint) {
+          if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             return http.Response('{"mfa_required":true}', 200);
           }
           return http.Response('{"detail":"Invalid code"}', 401);
@@ -414,7 +414,7 @@ void main() {
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
-          expect(request.url.path, ApiConstants.refreshEndpoint);
+          expect(request.url.path, ApiEndpoints.defaults.refreshEndpoint);
           expect(request.headers['Authorization'], 'Bearer refresh-1');
           return http.Response(
             '{"access_token":"access-2","refresh_token":"refresh-2","session_id":"session-2","expires_in":3600}',
@@ -447,7 +447,7 @@ void main() {
       expect(await storage.getAccessToken(), isNull);
     });
 
-    test('refreshToken clears the session on transport errors', () async {
+    test('refreshToken keeps the session on transport errors', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://example.test');
       await storage.setAccessToken('access-1');
@@ -461,9 +461,30 @@ void main() {
 
       final refreshed = await service.refreshToken();
 
+      // Transient transport failure must not log the user out: the refresh
+      // token is still valid and a later attempt should succeed.
       expect(refreshed, isFalse);
-      expect(await storage.getAccessToken(), isNull);
-      expect(await storage.getRefreshToken(), isNull);
+      expect(await storage.getAccessToken(), 'access-1');
+      expect(await storage.getRefreshToken(), 'refresh-1');
+    });
+
+    test('refreshToken keeps the session on a 5xx server error', () async {
+      final storage = SecureStorageService();
+      await storage.setServerUrl('https://example.test');
+      await storage.setAccessToken('access-1');
+      await storage.setRefreshToken('refresh-1');
+      final service = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          return http.Response('{"detail":"temporarily down"}', 503);
+        }),
+      );
+
+      final refreshed = await service.refreshToken();
+
+      expect(refreshed, isFalse);
+      expect(await storage.getAccessToken(), 'access-1');
+      expect(await storage.getRefreshToken(), 'refresh-1');
     });
 
     test(
@@ -477,7 +498,7 @@ void main() {
         final service = AuthService(
           storage: storage,
           httpClient: MockClient((request) async {
-            expect(request.url.path, ApiConstants.refreshEndpoint);
+            expect(request.url.path, ApiEndpoints.defaults.refreshEndpoint);
             refreshRequests++;
             // Yield so all concurrent callers are awaiting before the first
             // refresh completes.
@@ -536,7 +557,7 @@ void main() {
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
-          expect(request.url.path, ApiConstants.logoutEndpoint);
+          expect(request.url.path, ApiEndpoints.defaults.logoutEndpoint);
           return http.Response('', 200);
         }),
       );

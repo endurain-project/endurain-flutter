@@ -112,7 +112,7 @@ void main() {
 
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
-        service.state.lastErrorKey,
+        service.state.lastError,
         ActivityRecordingError.backgroundPermissionRequired,
       );
       expect(recorder.startCount, 0);
@@ -134,7 +134,7 @@ void main() {
 
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
-        service.state.lastErrorKey,
+        service.state.lastError,
         ActivityRecordingError.locationServiceDisabled,
       );
       expect(recorder.startCount, 0);
@@ -156,7 +156,7 @@ void main() {
 
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
-        service.state.lastErrorKey,
+        service.state.lastError,
         ActivityRecordingError.locationPermissionDenied,
       );
       expect(adapter.requestPermissionCalled, isTrue);
@@ -175,7 +175,7 @@ void main() {
 
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
-        service.state.lastErrorKey,
+        service.state.lastError,
         ActivityRecordingError.locationPermissionDeniedForever,
       );
       expect(recorder.startCount, 0);
@@ -361,7 +361,7 @@ void main() {
       await service.stop();
 
       expect(service.state.status, ActivityRecordingStatus.failed);
-      expect(service.state.lastErrorKey, ActivityRecordingError.emptyRecording);
+      expect(service.state.lastError, ActivityRecordingError.emptyRecording);
       expect(recorder.stopCount, 1);
       expect(recorder.discardCount, 1);
     });
@@ -407,7 +407,7 @@ void main() {
 
         expect(service.state.status, ActivityRecordingStatus.failed);
         expect(
-          service.state.lastErrorKey,
+          service.state.lastError,
           ActivityRecordingError.invalidTransition,
         );
       },
@@ -420,10 +420,7 @@ void main() {
       await service.resume();
 
       expect(service.state.status, ActivityRecordingStatus.failed);
-      expect(
-        service.state.lastErrorKey,
-        ActivityRecordingError.invalidTransition,
-      );
+      expect(service.state.lastError, ActivityRecordingError.invalidTransition);
     });
 
     test('pausing twice is idempotent', () async {
@@ -435,7 +432,7 @@ void main() {
       await service.pause();
 
       expect(service.state.status, ActivityRecordingStatus.paused);
-      expect(service.state.lastErrorKey, isNull);
+      expect(service.state.lastError, isNull);
     });
 
     test('resuming while already recording is a no-op', () async {
@@ -447,7 +444,7 @@ void main() {
       await service.resume();
 
       expect(service.state.status, ActivityRecordingStatus.recording);
-      expect(service.state.lastErrorKey, isNull);
+      expect(service.state.lastError, isNull);
       expect(recorder.resumeCount, 0);
     });
 
@@ -458,7 +455,7 @@ void main() {
       await service.stop();
 
       expect(service.state.status, ActivityRecordingStatus.idle);
-      expect(service.state.lastErrorKey, isNull);
+      expect(service.state.lastError, isNull);
     });
 
     test('operations after dispose throw a guarded state error', () async {
@@ -501,7 +498,7 @@ void main() {
 
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
-        service.state.lastErrorKey,
+        service.state.lastError,
         ActivityRecordingError.locationStreamFailed,
       );
       expect(recorder.discardCount, greaterThanOrEqualTo(1));
@@ -522,7 +519,7 @@ void main() {
 
       expect(service.state.status, ActivityRecordingStatus.failed);
       expect(
-        service.state.lastErrorKey,
+        service.state.lastError,
         ActivityRecordingError.locationPermissionDenied,
       );
     });

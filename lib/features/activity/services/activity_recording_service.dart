@@ -77,7 +77,7 @@ class ActivityRecordingService {
         ActivityRecordingState(
           status: ActivityRecordingStatus.failed,
           activityType: activityType,
-          lastErrorKey: locationErrorKey,
+          lastError: locationErrorKey,
         ),
       );
       return;
@@ -98,7 +98,7 @@ class ActivityRecordingService {
         ActivityRecordingState(
           status: ActivityRecordingStatus.failed,
           activityType: activityType,
-          lastErrorKey: backgroundErrorKey,
+          lastError: backgroundErrorKey,
         ),
       );
       return;
@@ -268,7 +268,7 @@ class ActivityRecordingService {
         _state.copyWith(
           status: ActivityRecordingStatus.failed,
           endedAt: _now(),
-          lastErrorKey: ActivityRecordingError.emptyRecording,
+          lastError: ActivityRecordingError.emptyRecording,
           elapsedDurationSeconds: elapsedDurationSeconds,
         ),
       );
@@ -549,7 +549,7 @@ class ActivityRecordingService {
     _emit(
       _state.copyWith(
         status: ActivityRecordingStatus.failed,
-        lastErrorKey: errorKey,
+        lastError: errorKey,
       ),
     );
   }

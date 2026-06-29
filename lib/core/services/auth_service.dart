@@ -196,15 +196,24 @@ class AuthService {
 
     final url = Uri.parse('$serverUrl${_endpoints.refreshEndpoint}');
 
+    final http.Response response;
     try {
-      final response = await _http.post(
+      response = await _http.post(
         url,
         extraHeaders: {
           ApiConstants.authorizationHeader: 'Bearer $refreshToken',
         },
       );
+    } catch (_) {
+      // Transport-level failure (no connectivity, timeout, DNS). This is
+      // transient: the refresh token is almost certainly still valid, so keep
+      // the session and let the next attempt retry rather than logging the
+      // user out on a flaky network.
+      return false;
+    }
 
-      if (response.statusCode == 200) {
+    if (response.statusCode == 200) {
+      try {
         final data = ApiResponse.decodeJsonObject(response);
         final newAccessToken = ApiResponse.requiredString(data, 'access_token');
         final newRefreshToken = ApiResponse.requiredString(
@@ -224,12 +233,22 @@ class AuthService {
           expiresInSeconds: expiresIn,
         );
         return true;
+      } catch (_) {
+        // 200 with a malformed body is a definitive contract failure, not a
+        // transient blip: the stored tokens cannot be trusted. Clear them.
+        return _clearSessionAfterRefreshFailure();
       }
+    }
 
-      return _clearSessionAfterRefreshFailure();
-    } catch (e) {
+    // The server explicitly rejected the refresh token (e.g. revoked, expired,
+    // rotated away): clear the session and force re-login.
+    if (response.statusCode == 401 || response.statusCode == 403) {
       return _clearSessionAfterRefreshFailure();
     }
+
+    // Other non-success statuses (5xx, 429, 408, ...) are transient: keep the
+    // session so a temporary server problem does not log the user out.
+    return false;
   }
 
   Future<bool> _clearSessionAfterRefreshFailure() async {
@@ -285,13 +304,10 @@ class AuthService {
       return false;
     }
 
-    final refreshed = await refreshToken();
-    if (refreshed) {
-      return true;
-    }
-
-    await _sessionStore.clear();
-    return false;
+    // refreshToken() clears the session itself on a definitive rejection and
+    // keeps it on a transient failure, so do not clear here — that would log
+    // the user out on a temporary network/server blip.
+    return refreshToken();
   }
 }
 

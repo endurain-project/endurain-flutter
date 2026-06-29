@@ -41,20 +41,20 @@ void main() {
         activityType: ActivityType.ride,
         startedAt: DateTime.utc(2026),
         endedAt: DateTime.utc(2026, 5, 30),
-        lastErrorKey: ActivityRecordingError.localSaveFailed,
+        lastError: ActivityRecordingError.localSaveFailed,
       );
 
       final updated = state.copyWith(
         activityType: null,
         startedAt: null,
         endedAt: null,
-        lastErrorKey: null,
+        lastError: null,
       );
 
       expect(updated.activityType, isNull);
       expect(updated.startedAt, isNull);
       expect(updated.endedAt, isNull);
-      expect(updated.lastErrorKey, isNull);
+      expect(updated.lastError, isNull);
     });
 
     test('does not expose mutable point lists', () {

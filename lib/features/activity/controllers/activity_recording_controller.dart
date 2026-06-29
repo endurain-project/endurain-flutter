@@ -232,7 +232,7 @@ class ActivityRecordingController extends ChangeNotifier {
       _setState(
         completedState.copyWith(
           status: ActivityRecordingStatus.failed,
-          lastErrorKey: ActivityRecordingError.gpxGenerationFailed,
+          lastError: ActivityRecordingError.gpxGenerationFailed,
         ),
       );
       return null;
@@ -283,7 +283,7 @@ class ActivityRecordingController extends ChangeNotifier {
     _setState(
       completedState.copyWith(
         status: ActivityRecordingStatus.failed,
-        lastErrorKey: ActivityRecordingError.localSaveFailed,
+        lastError: ActivityRecordingError.localSaveFailed,
       ),
     );
   }
@@ -346,7 +346,7 @@ class ActivityRecordingController extends ChangeNotifier {
   /// handle the save-failed path rather than relying on status transitions.
   void _setState(ActivityRecordingState state) {
     if (_state.status == ActivityRecordingStatus.failed &&
-        _state.lastErrorKey == ActivityRecordingError.localSaveFailed &&
+        _state.lastError == ActivityRecordingError.localSaveFailed &&
         (state.status == ActivityRecordingStatus.stopping ||
             state.status == ActivityRecordingStatus.completed)) {
       return;

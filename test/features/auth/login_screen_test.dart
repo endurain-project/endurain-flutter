@@ -1,5 +1,5 @@
 import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
@@ -78,13 +78,14 @@ void main() {
     testWidgets('shows MFA step and validates empty MFA code', (tester) async {
       final controller = _controller(
         client: MockClient((request) async {
-          if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+          if (request.url.path ==
+              ApiEndpoints.defaults.serverSettingsEndpoint) {
             return http.Response(
               '{"sso_enabled":false,"local_login_enabled":true}',
               200,
             );
           }
-          if (request.url.path == ApiConstants.tokenEndpoint) {
+          if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             return http.Response(
               '{"mfa_required":true,"username":"joao","message":"MFA required"}',
               200,
@@ -208,13 +209,13 @@ LoginController _controller({
 
 MockClient _authOptionsClient() {
   return MockClient((request) async {
-    if (request.url.path == ApiConstants.serverSettingsEndpoint) {
+    if (request.url.path == ApiEndpoints.defaults.serverSettingsEndpoint) {
       return http.Response(
         '{"sso_enabled":true,"local_login_enabled":true}',
         200,
       );
     }
-    if (request.url.path == ApiConstants.idpListEndpoint) {
+    if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
       return http.Response(
         '[{"id":1,"slug":"keycloak","name":"Keycloak","icon":""}]',
         200,

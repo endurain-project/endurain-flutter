@@ -113,13 +113,13 @@ class ActivityRecordingControls extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodySmall,
                           textAlign: TextAlign.center,
                         ),
-                        if (state.lastErrorKey ==
+                        if (state.lastError ==
                             ActivityRecordingError.backgroundPermissionRequired)
                           ...[],
-                        if (state.lastErrorKey ==
+                        if (state.lastError ==
                                 ActivityRecordingError
                                     .locationPermissionDeniedForever ||
-                            state.lastErrorKey ==
+                            state.lastError ==
                                 ActivityRecordingError
                                     .backgroundPermissionRequired) ...[
                           const SizedBox(height: 8),
@@ -254,7 +254,7 @@ class ActivityRecordingControls extends StatelessWidget {
       return null;
     }
 
-    return switch (state.lastErrorKey) {
+    return switch (state.lastError) {
       ActivityRecordingError.emptyRecording => l10n.activityRecordingEmpty,
       ActivityRecordingError.gpxGenerationFailed =>
         l10n.activityGpxGenerationFailed,

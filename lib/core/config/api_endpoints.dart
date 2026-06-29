@@ -11,6 +11,10 @@ import 'package:endurain/core/config/app_config.dart';
 class ApiEndpoints {
   const ApiEndpoints([this._config = AppConfig.defaults]);
 
+  /// Shared instance for the default [AppConfig]. Tests and call sites that do
+  /// not need a custom base path can reuse this instead of allocating one.
+  static const ApiEndpoints defaults = ApiEndpoints();
+
   final AppConfig _config;
 
   String get _base => _config.apiBasePath;

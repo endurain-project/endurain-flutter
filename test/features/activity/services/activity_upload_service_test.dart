@@ -17,9 +17,9 @@ import '../../../helpers/sqlite_local_activity_repository.dart';
 void main() {
   group('ActivityUploadService', () {
     test('default Endurain config targets the upload contract', () {
-      const config = ActivityUploadConfig.endurain();
+      final config = ActivityUploadConfig.fromEndpoints(ApiEndpoints.defaults);
 
-      expect(config.endpoint, ApiConstants.activityUploadEndpoint);
+      expect(config.endpoint, ApiEndpoints.defaults.activityUploadEndpoint);
       expect(config.fieldName, ApiConstants.activityUploadFieldName);
       expect(config.isConfigured, isTrue);
     });
