@@ -6,6 +6,12 @@ import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 
+/// Ephemeral UI/recording status used by [ActivityRecordingState], the live
+/// state pushed to the controller/screen during a session. The durable,
+/// persisted counterpart is `ActiveActivityStatus` in
+/// `active_activity_session.dart` (which has no `idle` — sessions only exist
+/// once recording has begun); both intentionally stay separate so the
+/// ephemeral UI model and the recoverable persisted model can evolve apart.
 enum ActivityRecordingStatus {
   idle,
   recording,

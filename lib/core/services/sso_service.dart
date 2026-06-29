@@ -41,6 +41,19 @@ class _SsoPkceState {
 class SsoService {
   static const callbackUrl = 'endurain://auth/sso/callback';
 
+  /// Parsed form of [callbackUrl], the single source of truth for the SSO
+  /// deep-link contract. Use [matchesCallback] instead of hardcoding the
+  /// scheme/host/path anywhere else.
+  static final Uri _callbackUri = Uri.parse(callbackUrl);
+
+  /// Returns `true` when [uri] is the SSO callback deep link, matched by
+  /// scheme, host, and path. Query parameters (`session_id`, `error`) are not
+  /// inspected here. Keeps the callback contract defined once in [callbackUrl].
+  static bool matchesCallback(Uri uri) =>
+      uri.scheme == _callbackUri.scheme &&
+      uri.host == _callbackUri.host &&
+      uri.path == _callbackUri.path;
+
   SsoService({
     SecureStorageService? storage,
     AuthSessionStore? sessionStore,

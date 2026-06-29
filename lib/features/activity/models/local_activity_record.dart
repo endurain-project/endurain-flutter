@@ -132,11 +132,11 @@ class LocalActivityRecord {
   }
 
   factory LocalActivityRecord.fromJson(Map<dynamic, dynamic> json) {
-    final id = _requiredString(json['id'], 'id');
-    final startedAt = _requiredDateTime(json['startedAt'], 'startedAt');
-    final endedAt = _requiredDateTime(json['endedAt'], 'endedAt');
-    final createdAt = _requiredDateTime(json['createdAt'], 'createdAt');
-    final updatedAt = _requiredDateTime(json['updatedAt'], 'updatedAt');
+    final id = jsonRequiredString(json['id'], 'id');
+    final startedAt = jsonRequiredDateTime(json['startedAt'], 'startedAt');
+    final endedAt = jsonRequiredDateTime(json['endedAt'], 'endedAt');
+    final createdAt = jsonRequiredDateTime(json['createdAt'], 'createdAt');
+    final updatedAt = jsonRequiredDateTime(json['updatedAt'], 'updatedAt');
 
     return LocalActivityRecord(
       id: id,
@@ -149,7 +149,7 @@ class LocalActivityRecord {
         json['averageSpeedMetersPerSecond'],
       ),
       pointCount: jsonInt(json['pointCount']) ?? 0,
-      gpxFileName: _requiredString(json['gpxFileName'], 'gpxFileName'),
+      gpxFileName: jsonRequiredString(json['gpxFileName'], 'gpxFileName'),
       uploadStatus: LocalActivityUploadStatus.fromJson(json['uploadStatus']),
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -159,19 +159,4 @@ class LocalActivityRecord {
       serverActivityId: jsonString(json['serverActivityId']),
     );
   }
-}
-
-String _requiredString(Object? value, String field) {
-  if (value is String && value.isNotEmpty) {
-    return value;
-  }
-  throw FormatException('Missing local activity field: $field');
-}
-
-DateTime _requiredDateTime(Object? value, String field) {
-  final parsed = jsonDateTime(value);
-  if (parsed != null) {
-    return parsed;
-  }
-  throw FormatException('Invalid local activity field: $field');
 }

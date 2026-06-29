@@ -44,3 +44,24 @@ DateTime? jsonDateTime(Object? value) {
   if (value is! String) return null;
   return DateTime.tryParse(value)?.toUtc();
 }
+
+/// Returns [value] as a non-empty [String], throwing [FormatException] when
+/// the field is missing or empty. Use for required identifiers/paths during
+/// model deserialization; [field] names the offending field in the message.
+String jsonRequiredString(Object? value, String field) {
+  if (value is String && value.isNotEmpty) {
+    return value;
+  }
+  throw FormatException('Missing required field: $field');
+}
+
+/// Returns [value] as a UTC [DateTime], throwing [FormatException] when it is
+/// missing or not a valid ISO-8601 string. Use for required timestamps during
+/// model deserialization; [field] names the offending field in the message.
+DateTime jsonRequiredDateTime(Object? value, String field) {
+  final parsed = jsonDateTime(value);
+  if (parsed != null) {
+    return parsed;
+  }
+  throw FormatException('Invalid required field: $field');
+}

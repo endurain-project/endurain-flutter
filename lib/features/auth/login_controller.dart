@@ -6,6 +6,7 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_links_service.dart';
+import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/auth/auth_coordinator.dart';
 import 'package:endurain/features/map/map_settings_repository.dart';
 
@@ -192,9 +193,7 @@ class LoginController extends ChangeNotifier {
   }
 
   Future<void> _handleSsoCallbackUri(Uri uri) async {
-    if (uri.scheme != 'endurain' ||
-        uri.host != 'auth' ||
-        uri.path != '/sso/callback') {
+    if (!SsoService.matchesCallback(uri)) {
       return;
     }
 

@@ -8,7 +8,11 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 /// Lifecycle status of an active (in-progress or recoverable) recording.
 ///
 /// This is intentionally independent from any UI display strings so the model
-/// can be persisted and recovered without coupling to localization.
+/// can be persisted and recovered without coupling to localization. The
+/// ephemeral UI counterpart is `ActivityRecordingStatus` in
+/// `activity_recording_state.dart` (which adds an `idle` value for the
+/// pre-recording screen); they are kept separate so the durable session model
+/// and the live UI model can evolve independently.
 enum ActiveActivityStatus {
   recording,
   paused,
@@ -17,12 +21,14 @@ enum ActiveActivityStatus {
   failed;
 
   static ActiveActivityStatus fromJson(Object? value) {
-    for (final status in values) {
-      if (status.name == value) {
-        return status;
-      }
-    }
-    return ActiveActivityStatus.failed;
+    return switch (value) {
+      'recording' => ActiveActivityStatus.recording,
+      'paused' => ActiveActivityStatus.paused,
+      'stopping' => ActiveActivityStatus.stopping,
+      'completed' => ActiveActivityStatus.completed,
+      'failed' => ActiveActivityStatus.failed,
+      _ => ActiveActivityStatus.failed,
+    };
   }
 
   String toJson() => name;
