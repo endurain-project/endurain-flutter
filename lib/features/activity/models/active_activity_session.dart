@@ -1,6 +1,7 @@
 // See devdocs/activity_recorder_architecture.md for how the recording types
 // relate (controller -> service -> recorder; session=durable, state=ephemeral).
 
+import 'package:endurain/core/utils/copy_with.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 
@@ -68,9 +69,9 @@ class ActiveActivitySession {
     ActivityType? activityType,
     ActiveActivityStatus? status,
     DateTime? startedAt,
-    Object? resumedAt = _unset,
-    Object? pausedAt = _unset,
-    Object? endedAt = _unset,
+    Object? resumedAt = kUnset,
+    Object? pausedAt = kUnset,
+    Object? endedAt = kUnset,
     int? elapsedDurationSeconds,
     int? currentSegmentIndex,
     int? schemaVersion,
@@ -80,13 +81,13 @@ class ActiveActivitySession {
       activityType: activityType ?? this.activityType,
       status: status ?? this.status,
       startedAt: startedAt ?? this.startedAt,
-      resumedAt: identical(resumedAt, _unset)
+      resumedAt: identical(resumedAt, kUnset)
           ? this.resumedAt
           : resumedAt as DateTime?,
-      pausedAt: identical(pausedAt, _unset)
+      pausedAt: identical(pausedAt, kUnset)
           ? this.pausedAt
           : pausedAt as DateTime?,
-      endedAt: identical(endedAt, _unset) ? this.endedAt : endedAt as DateTime?,
+      endedAt: identical(endedAt, kUnset) ? this.endedAt : endedAt as DateTime?,
       elapsedDurationSeconds:
           elapsedDurationSeconds ?? this.elapsedDurationSeconds,
       currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
@@ -134,6 +135,4 @@ class ActiveActivitySession {
       schemaVersion: jsonInt(json['schemaVersion']) ?? currentSchemaVersion,
     );
   }
-
-  static const Object _unset = Object();
 }

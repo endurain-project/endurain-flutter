@@ -174,22 +174,35 @@ class SsoService {
       throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
     }
 
-    try {
-      final verifier = pending.verifier;
-      // Clear state before the network call — one-time exchange.
-      _pendingPkce = null;
-      return await _exchanger.exchange(
+    final verifier = pending.verifier;
+    // Clear state before the network call — one-time exchange.
+    _pendingPkce = null;
+    return _withPkceCleanup(
+      () => _exchanger.exchange(
         serverUrl: pending.serverUrl,
         sessionId: sessionId,
         verifier: verifier,
         failureCode: AppErrorCode.tokenExchangeFailed,
-      );
+      ),
+      fallbackCode: AppErrorCode.ssoTokenExchangeError,
+    );
+  }
+
+  /// Runs [action], always clearing the pending PKCE flow afterwards.
+  /// Re-throws [AppException]s unchanged; wraps any other error in an
+  /// [AppException] with [fallbackCode]. Mirrors `AuthService._withPkceCleanup`.
+  Future<T> _withPkceCleanup<T>(
+    Future<T> Function() action, {
+    required AppErrorCode fallbackCode,
+  }) async {
+    try {
+      return await action();
     } on AppException {
       _pendingPkce = null;
       rethrow;
     } catch (e) {
       _pendingPkce = null;
-      throw AppException(AppErrorCode.ssoTokenExchangeError, cause: e);
+      throw AppException(fallbackCode, cause: e);
     }
   }
 

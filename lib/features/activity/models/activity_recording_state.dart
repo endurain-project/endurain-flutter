@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:endurain/core/utils/copy_with.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
@@ -53,28 +54,28 @@ class ActivityRecordingState {
 
   ActivityRecordingState copyWith({
     ActivityRecordingStatus? status,
-    Object? activityType = _unset,
-    Object? startedAt = _unset,
-    Object? endedAt = _unset,
-    Object? localActivityId = _unset,
-    Object? lastError = _unset,
+    Object? activityType = kUnset,
+    Object? startedAt = kUnset,
+    Object? endedAt = kUnset,
+    Object? localActivityId = kUnset,
+    Object? lastError = kUnset,
     int? elapsedDurationSeconds,
     List<ActivityTrackPoint>? points,
     List<ActivityTrackSegment>? segments,
   }) {
     return ActivityRecordingState(
       status: status ?? this.status,
-      activityType: identical(activityType, _unset)
+      activityType: identical(activityType, kUnset)
           ? this.activityType
           : activityType as ActivityType?,
-      startedAt: identical(startedAt, _unset)
+      startedAt: identical(startedAt, kUnset)
           ? this.startedAt
           : startedAt as DateTime?,
-      endedAt: identical(endedAt, _unset) ? this.endedAt : endedAt as DateTime?,
-      localActivityId: identical(localActivityId, _unset)
+      endedAt: identical(endedAt, kUnset) ? this.endedAt : endedAt as DateTime?,
+      localActivityId: identical(localActivityId, kUnset)
           ? this.localActivityId
           : localActivityId as String?,
-      lastError: identical(lastError, _unset)
+      lastError: identical(lastError, kUnset)
           ? this.lastError
           : lastError as ActivityRecordingError?,
       elapsedDurationSeconds:
@@ -99,8 +100,6 @@ class ActivityRecordingState {
   ActivityRecordingState startNewSegment() {
     return copyWith(segments: [..._segments, ActivityTrackSegment()]);
   }
-
-  static const Object _unset = Object();
 
   static List<ActivityTrackSegment> _segmentsFromPoints(
     List<ActivityTrackPoint> points,

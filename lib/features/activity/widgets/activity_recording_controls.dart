@@ -253,25 +253,8 @@ class ActivityRecordingControls extends StatelessWidget {
     if (state.status != ActivityRecordingStatus.failed) {
       return null;
     }
-
-    return switch (state.lastError) {
-      ActivityRecordingError.emptyRecording => l10n.activityRecordingEmpty,
-      ActivityRecordingError.gpxGenerationFailed =>
-        l10n.activityGpxGenerationFailed,
-      ActivityRecordingError.localSaveFailed => l10n.activityLocalSaveFailed,
-      ActivityRecordingError.locationPermissionDenied =>
-        l10n.activityLocationPermissionDenied,
-      ActivityRecordingError.locationPermissionDeniedForever =>
-        l10n.activityLocationPermissionDeniedForever,
-      ActivityRecordingError.backgroundPermissionRequired =>
-        l10n.activityBackgroundPermissionRequired,
-      ActivityRecordingError.locationServiceDisabled =>
-        l10n.activityLocationServiceDisabled,
-      ActivityRecordingError.locationStreamFailed =>
-        l10n.activityLocationStreamFailed,
-      ActivityRecordingError.invalidTransition => l10n.activityRecordingFailed,
-      null => l10n.activityRecordingFailed,
-    };
+    return state.lastError?.localizedMessage(l10n) ??
+        l10n.activityRecordingFailed;
   }
 
   Widget _controlButton({

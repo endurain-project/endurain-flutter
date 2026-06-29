@@ -1,4 +1,5 @@
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/utils/copy_with.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 
@@ -63,16 +64,16 @@ class LocalActivityRecord {
     DateTime? endedAt,
     int? elapsedDurationSeconds,
     double? distanceMeters,
-    Object? averageSpeedMetersPerSecond = _unset,
+    Object? averageSpeedMetersPerSecond = kUnset,
     int? pointCount,
     String? gpxFileName,
     LocalActivityUploadStatus? uploadStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? uploadedAt = _unset,
-    Object? lastUploadAttemptAt = _unset,
-    Object? lastUploadErrorCode = _unset,
-    Object? serverActivityId = _unset,
+    Object? uploadedAt = kUnset,
+    Object? lastUploadAttemptAt = kUnset,
+    Object? lastUploadErrorCode = kUnset,
+    Object? serverActivityId = kUnset,
   }) {
     return LocalActivityRecord(
       id: id ?? this.id,
@@ -83,7 +84,7 @@ class LocalActivityRecord {
           elapsedDurationSeconds ?? this.elapsedDurationSeconds,
       distanceMeters: distanceMeters ?? this.distanceMeters,
       averageSpeedMetersPerSecond:
-          identical(averageSpeedMetersPerSecond, _unset)
+          identical(averageSpeedMetersPerSecond, kUnset)
           ? this.averageSpeedMetersPerSecond
           : averageSpeedMetersPerSecond as double?,
       pointCount: pointCount ?? this.pointCount,
@@ -91,16 +92,16 @@ class LocalActivityRecord {
       uploadStatus: uploadStatus ?? this.uploadStatus,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      uploadedAt: identical(uploadedAt, _unset)
+      uploadedAt: identical(uploadedAt, kUnset)
           ? this.uploadedAt
           : uploadedAt as DateTime?,
-      lastUploadAttemptAt: identical(lastUploadAttemptAt, _unset)
+      lastUploadAttemptAt: identical(lastUploadAttemptAt, kUnset)
           ? this.lastUploadAttemptAt
           : lastUploadAttemptAt as DateTime?,
-      lastUploadErrorCode: identical(lastUploadErrorCode, _unset)
+      lastUploadErrorCode: identical(lastUploadErrorCode, kUnset)
           ? this.lastUploadErrorCode
           : lastUploadErrorCode as AppErrorCode?,
-      serverActivityId: identical(serverActivityId, _unset)
+      serverActivityId: identical(serverActivityId, kUnset)
           ? this.serverActivityId
           : serverActivityId as String?,
     );
@@ -158,8 +159,6 @@ class LocalActivityRecord {
       serverActivityId: jsonString(json['serverActivityId']),
     );
   }
-
-  static const Object _unset = Object();
 }
 
 String _requiredString(Object? value, String field) {

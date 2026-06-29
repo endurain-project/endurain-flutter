@@ -76,21 +76,6 @@ class LocationService {
     );
   }
 
-  /// Get device heading/bearing (0-360 degrees, 0 = North)
-  /// Returns null if heading is unavailable
-  Future<double?> getHeading() async {
-    try {
-      final position = await _platformAdapter.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-      return position.heading;
-    } catch (e) {
-      return null;
-    }
-  }
-
   /// Open app settings (useful when permission is permanently denied)
   Future<bool> openAppSettings() async {
     return _platformAdapter.openAppSettings();
