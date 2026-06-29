@@ -1,5 +1,6 @@
-// See devdocs/activity_recorder_architecture.md for how the recording types
-// relate (controller -> service -> recorder; session=durable, state=ephemeral).
+// Recording type relationships (controller -> service -> recorder):
+// the durable session model survives app restarts; the ephemeral state model
+// drives the live UI.
 
 import 'package:endurain/core/utils/copy_with.dart';
 import 'package:endurain/core/utils/json_parsing.dart';

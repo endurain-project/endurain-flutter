@@ -21,27 +21,55 @@ void main() {
 
     group('validateUrl (self-hosted, default)', () {
       test('rejects null or empty', () {
-        expect(Validators.validateUrl(null, l10n), l10n.requiredField);
-        expect(Validators.validateUrl('', l10n), l10n.requiredField);
+        expect(
+          Validators.validateUrl(null, l10n, config: AppConfig.defaults),
+          l10n.requiredField,
+        );
+        expect(
+          Validators.validateUrl('', l10n, config: AppConfig.defaults),
+          l10n.requiredField,
+        );
       });
 
       test('rejects non-http/https schemes', () {
         expect(
-          Validators.validateUrl('endurain.example.test', l10n),
+          Validators.validateUrl(
+            'endurain.example.test',
+            l10n,
+            config: AppConfig.defaults,
+          ),
           l10n.invalidUrl,
         );
         expect(
-          Validators.validateUrl('ftp://example.test', l10n),
+          Validators.validateUrl(
+            'ftp://example.test',
+            l10n,
+            config: AppConfig.defaults,
+          ),
           l10n.invalidUrl,
         );
       });
 
       test('accepts https', () {
-        expect(Validators.validateUrl('https://example.test', l10n), isNull);
+        expect(
+          Validators.validateUrl(
+            'https://example.test',
+            l10n,
+            config: AppConfig.defaults,
+          ),
+          isNull,
+        );
       });
 
       test('accepts http in self-hosted mode', () {
-        expect(Validators.validateUrl('http://localhost:8080', l10n), isNull);
+        expect(
+          Validators.validateUrl(
+            'http://localhost:8080',
+            l10n,
+            config: AppConfig.defaults,
+          ),
+          isNull,
+        );
       });
     });
 

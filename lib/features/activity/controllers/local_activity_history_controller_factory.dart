@@ -18,5 +18,6 @@ LocalActivityHistoryController createLocalActivityHistoryController({
     shareService: shareService ?? services.share,
     retentionSettingsRepository:
         retentionSettingsRepository ?? services.activityRetentionSettings,
+    diagnostics: services.diagnostics,
   );
 }

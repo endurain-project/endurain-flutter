@@ -28,6 +28,11 @@ int? jsonInt(Object? value) {
   return null;
 }
 
+/// Returns [value] if it is a [bool]; otherwise `null`.
+bool? jsonBool(Object? value) {
+  return value is bool ? value : null;
+}
+
 /// Returns [value] as a finite double.
 /// Returns `null` for non-numeric values or non-finite results (NaN, ±Inf).
 double? jsonDouble(Object? value) {
@@ -51,6 +56,18 @@ DateTime? jsonDateTime(Object? value) {
 String jsonRequiredString(Object? value, String field) {
   if (value is String && value.isNotEmpty) {
     return value;
+  }
+  throw FormatException('Missing required field: $field');
+}
+
+/// Returns [value] as an [int] (coercing [num] via truncation), throwing
+/// [FormatException] when it is missing or non-numeric. Use for required
+/// integer fields during model deserialization; [field] names the offending
+/// field in the message.
+int jsonRequiredInt(Object? value, String field) {
+  final parsed = jsonInt(value);
+  if (parsed != null) {
+    return parsed;
   }
   throw FormatException('Missing required field: $field');
 }

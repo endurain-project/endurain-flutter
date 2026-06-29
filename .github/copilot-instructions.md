@@ -1,7 +1,7 @@
 # Copilot Instructions for Endurain Mobile
 
 ## Tech Stack
-- **Flutter**: 3.38+ (stable channel)
+- **Flutter**: 3.44+ (stable channel; CI pins 3.44.1)
 - **Dart**: 3.10+
 - **Platforms**: Android, iOS
 - **State Management**: setState (basic) - may evolve to Provider/Riverpod
@@ -135,6 +135,11 @@ Update with actual versions used:
 ## Common Patterns
 
 ### Navigation
+Top-level, auth-guarded routing uses `go_router` in
+`lib/core/navigation/app_router.dart`: the router redirects between the splash,
+login, and home destinations based on `AuthSessionController` state. Add new
+top-level destinations there. Use `Navigator.push` for sub-navigation within a
+destination:
 ```dart
 Navigator.push(
   context,

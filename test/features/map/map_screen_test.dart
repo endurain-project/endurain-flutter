@@ -407,7 +407,6 @@ Future<MapStateController> _mapController(
     locationService: LocationService(platformAdapter: platform),
     mapSettingsRepository: MapSettingsRepository(preferences: prefs),
   );
-  controller.tileServerUrl = 'https://tiles.example.test/{z}/{x}/{y}.png';
   return controller;
 }
 

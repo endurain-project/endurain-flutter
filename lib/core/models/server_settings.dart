@@ -1,4 +1,6 @@
-/// Model representing server settings fetched from the server
+// Model representing server settings fetched from the server
+import 'package:endurain/core/utils/json_parsing.dart';
+
 class ServerSettings {
   const ServerSettings({
     required this.units,
@@ -38,25 +40,25 @@ class ServerSettings {
 
   factory ServerSettings.fromJson(Map<String, dynamic> json) {
     return ServerSettings(
-      units: json['units'] as String? ?? 'metric',
-      publicShareableLinks: json['public_shareable_links'] as bool? ?? false,
+      units: jsonString(json['units']) ?? 'metric',
+      publicShareableLinks: jsonBool(json['public_shareable_links']) ?? false,
       publicShareableLinksUserInfo:
-          json['public_shareable_links_user_info'] as bool? ?? false,
-      loginPhotoSet: json['login_photo_set'] as bool? ?? false,
-      currency: json['currency'] as String? ?? 'euro',
-      numRecordsPerPage: json['num_records_per_page'] as int? ?? 25,
-      signupEnabled: json['signup_enabled'] as bool? ?? false,
-      ssoEnabled: json['sso_enabled'] as bool? ?? false,
-      localLoginEnabled: json['local_login_enabled'] as bool? ?? true,
-      ssoAutoRedirect: json['sso_auto_redirect'] as bool? ?? false,
-      tileserverUrl: json['tileserver_url'] as String?,
-      tileserverAttribution: json['tileserver_attribution'] as String?,
-      mapBackgroundColor: json['map_background_color'] as String?,
-      passwordType: json['password_type'] as String? ?? 'strict',
+          jsonBool(json['public_shareable_links_user_info']) ?? false,
+      loginPhotoSet: jsonBool(json['login_photo_set']) ?? false,
+      currency: jsonString(json['currency']) ?? 'euro',
+      numRecordsPerPage: jsonInt(json['num_records_per_page']) ?? 25,
+      signupEnabled: jsonBool(json['signup_enabled']) ?? false,
+      ssoEnabled: jsonBool(json['sso_enabled']) ?? false,
+      localLoginEnabled: jsonBool(json['local_login_enabled']) ?? true,
+      ssoAutoRedirect: jsonBool(json['sso_auto_redirect']) ?? false,
+      tileserverUrl: jsonString(json['tileserver_url']),
+      tileserverAttribution: jsonString(json['tileserver_attribution']),
+      mapBackgroundColor: jsonString(json['map_background_color']),
+      passwordType: jsonString(json['password_type']) ?? 'strict',
       passwordLengthRegularUsers:
-          json['password_length_regular_users'] as int? ?? 8,
+          jsonInt(json['password_length_regular_users']) ?? 8,
       passwordLengthAdminUsers:
-          json['password_length_admin_users'] as int? ?? 12,
+          jsonInt(json['password_length_admin_users']) ?? 12,
     );
   }
 

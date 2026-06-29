@@ -496,14 +496,42 @@ void main() {
         authCoordinator: _repository(
           storage: SecureStorageService(),
           client: MockClient((request) async {
-            return http.Response('{}', 200);
+            if (request.url.path ==
+                ApiEndpoints.defaults.serverSettingsEndpoint) {
+              return http.Response(
+                '{"sso_enabled":true,"local_login_enabled":true}',
+                200,
+              );
+            }
+            if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
+              return http.Response(
+                '[{"id":1,"slug":"keycloak","name":"Keycloak","icon":"keycloak"}]',
+                200,
+              );
+            }
+            if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
+              return http.Response(
+                '{"mfa_required":true,"username":"joao","message":"MFA"}',
+                200,
+              );
+            }
+            fail('Unexpected request to ${request.url}');
           }),
         ),
         appLinksService: const EmptyAppLinksService(),
       );
 
-      controller.isStep2 = true;
-      controller.showMfaInput = true;
+      controller.serverUrlController.text = 'https://example.test';
+      await controller.submitServerUrl();
+      expect(controller.isStep2, isTrue);
+      expect(controller.availableIdPs, isNotEmpty);
+      expect(controller.serverSettings, isNotNull);
+
+      controller.usernameController.text = 'joao';
+      controller.passwordController.text = 'secret';
+      await controller.submitLogin();
+      expect(controller.showMfaInput, isTrue);
+
       controller.mfaCodeController.text = '123456';
 
       controller.backToServerStep();

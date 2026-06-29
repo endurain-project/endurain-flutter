@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/share_service.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -15,11 +16,13 @@ class LocalActivityHistoryController extends ChangeNotifier {
     required ShareService shareService,
     ActivityRetentionSettingsRepository? retentionSettingsRepository,
     DateTime Function()? now,
+    DiagnosticsRecorder? diagnostics,
   }) : _repository = repository,
        _uploadService = uploadService,
        _shareService = shareService,
        _retentionSettingsRepository = retentionSettingsRepository,
-       _now = now ?? DateTime.now;
+       _now = now ?? DateTime.now,
+       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
   static const int _pageSize = 20;
 
@@ -28,6 +31,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
   final ShareService _shareService;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
   final DateTime Function() _now;
+  final DiagnosticsRecorder _diagnostics;
 
   List<LocalActivityRecord> _records = const [];
   Set<String> _busyRecordIds = const {};
@@ -134,6 +138,10 @@ class LocalActivityHistoryController extends ChangeNotifier {
       );
       await load();
     } catch (_) {
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.activityUploadRetryFailed,
+        details: {'id': id},
+      );
       await load();
       rethrow;
     } finally {

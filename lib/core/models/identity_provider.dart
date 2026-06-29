@@ -1,4 +1,6 @@
-/// Identity Provider model for SSO/OAuth authentication
+// Identity Provider model for SSO/OAuth authentication
+import 'package:endurain/core/utils/json_parsing.dart';
+
 class IdentityProvider {
   final int id;
   final String slug;
@@ -15,10 +17,10 @@ class IdentityProvider {
   /// Create IdentityProvider from JSON
   factory IdentityProvider.fromJson(Map<String, dynamic> json) {
     return IdentityProvider(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      slug: json['slug'] as String,
-      icon: json['icon'] as String?,
+      id: jsonRequiredInt(json['id'], 'id'),
+      name: jsonRequiredString(json['name'], 'name'),
+      slug: jsonRequiredString(json['slug'], 'slug'),
+      icon: jsonString(json['icon']),
     );
   }
 

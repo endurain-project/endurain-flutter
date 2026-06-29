@@ -7,27 +7,30 @@ class AuthSessionController extends ChangeNotifier {
 
   final AuthService _authService;
 
-  bool isLoading = true;
-  bool isAuthenticated = false;
+  bool _isLoading = true;
+  bool _isAuthenticated = false;
+
+  bool get isLoading => _isLoading;
+  bool get isAuthenticated => _isAuthenticated;
 
   Future<void> initialize() async {
-    isLoading = true;
+    _isLoading = true;
     notifyListeners();
 
-    isAuthenticated = await _authService.isAuthenticated();
-    isLoading = false;
+    _isAuthenticated = await _authService.isAuthenticated();
+    _isLoading = false;
     notifyListeners();
   }
 
   void markAuthenticated() {
-    isAuthenticated = true;
-    isLoading = false;
+    _isAuthenticated = true;
+    _isLoading = false;
     notifyListeners();
   }
 
   void markUnauthenticated() {
-    isAuthenticated = false;
-    isLoading = false;
+    _isAuthenticated = false;
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -37,12 +40,12 @@ class AuthSessionController extends ChangeNotifier {
   /// app-resumed lifecycle event. On success the state is updated
   /// (authenticated or unauthenticated) and listeners are notified.
   Future<void> revalidate() async {
-    if (!isAuthenticated) {
+    if (!_isAuthenticated) {
       return;
     }
     final stillAuthenticated = await _authService.isAuthenticated();
-    if (isAuthenticated != stillAuthenticated) {
-      isAuthenticated = stillAuthenticated;
+    if (_isAuthenticated != stillAuthenticated) {
+      _isAuthenticated = stillAuthenticated;
       notifyListeners();
     }
   }

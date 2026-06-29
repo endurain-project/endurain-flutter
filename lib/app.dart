@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:endurain/core/navigation/app_routes.dart';
+import 'package:go_router/go_router.dart';
+import 'package:endurain/core/navigation/app_router.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/auth/auth_session_controller.dart';
-import 'package:endurain/features/auth/login_screen.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:endurain/shared/widgets/app_bottom_nav.dart';
 
 class App extends StatefulWidget {
   const App({
@@ -31,6 +30,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   late final AppServices _services;
   late final AuthSessionController _sessionController;
   late final bool _ownsSessionController;
+  late final GoRouter _router;
 
   @override
   void initState() {
@@ -46,14 +46,20 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         AuthSessionController(
           authService: widget.authService ?? _services.auth,
         );
-    _sessionController.addListener(_handleSessionChanged);
+    // The router redirects declaratively off the session state; no manual
+    // listener/setState is needed here (see `app_router.dart`).
+    _router = buildAppRouter(
+      session: _sessionController,
+      onLoginSuccess: _onLoginSuccess,
+      onLogout: _onLogout,
+    );
     _sessionController.initialize();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _sessionController.removeListener(_handleSessionChanged);
+    _router.dispose();
     if (_ownsSessionController) {
       _sessionController.dispose();
     }
@@ -76,12 +82,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     }
   }
 
-  void _handleSessionChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   void _onLoginSuccess() {
     _sessionController.markAuthenticated();
   }
@@ -92,24 +92,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final route = _sessionController.isLoading
-        ? AppRoutes.loading
-        : _sessionController.isAuthenticated
-        ? AppRoutes.home
-        : AppRoutes.login;
-
     return AppScope(
       services: _services,
-      child: AdaptiveApp(title: 'Endurain', home: _buildRoute(route)),
+      child: AdaptiveApp.router(title: 'Endurain', routerConfig: _router),
     );
-  }
-
-  Widget _buildRoute(String route) {
-    return switch (route) {
-      AppRoutes.loading => const Center(child: AdaptiveLoadingIndicator()),
-      AppRoutes.home => AppBottomNav(onLogout: _onLogout),
-      AppRoutes.login => LoginScreen(onLoginSuccess: _onLoginSuccess),
-      _ => const Center(child: AdaptiveLoadingIndicator()),
-    };
   }
 }

@@ -21,9 +21,9 @@ env:
 concurrency:
   group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
   # Cancel superseded runs while iterating on a PR, but never cancel a run on
-  # master: every commit that lands on the always-deployable branch must be
+  # main: every commit that lands on the always-deployable branch must be
   # verified end-to-end.
-  cancel-in-progress: ${{ forgejo.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ forgejo.ref != 'refs/heads/main' }}
 
 jobs:
 

@@ -27,6 +27,7 @@ class AppConfig {
     this.apiBasePath = defaultApiBasePath,
     this.transportMode = AppTransportMode.selfHosted,
     this.allowedTileServerHosts,
+    this.cloudBaseUrl,
   });
 
   /// Base path prefix for all Endurain API endpoints.
@@ -55,6 +56,16 @@ class AppConfig {
   /// Managed builds can set this to restrict users to approved tile servers.
   final Set<String>? allowedTileServerHosts;
 
+  /// Optional origin of the managed ("SaaS") Endurain service for this build.
+  ///
+  /// When set (e.g. `https://app.endurain.example`), connections whose host
+  /// matches this origin are always treated as managed: plain `http://` is
+  /// rejected regardless of [transportMode], so the cloud service can never be
+  /// reached over insecure transport. When `null` (the self-hosted default),
+  /// every URL follows the build-wide [transportMode]. This is the seam a
+  /// future server picker uses to pre-fill the managed origin.
+  final String? cloudBaseUrl;
+
   /// Returns `true` when [host] is acceptable as a tile server for this build.
   ///
   /// Always returns `true` when [allowedTileServerHosts] is `null` (the
@@ -75,6 +86,34 @@ class AppConfig {
   /// a localized warning and can confirm before proceeding.
   bool get allowInsecureTransport =>
       transportMode == AppTransportMode.selfHosted;
+
+  /// Whether plain `http://` is permitted when connecting to [url].
+  ///
+  /// Connections to the managed [cloudBaseUrl] origin are always strict
+  /// (returns `false`); every other host follows the build-wide
+  /// [allowInsecureTransport] policy. Use this per-URL check at transport
+  /// enforcement points (URL resolution, form validation) so the managed
+  /// cloud origin stays secure even in self-hosted builds.
+  bool allowInsecureTransportFor(String url) {
+    if (_isManagedOrigin(url)) {
+      return false;
+    }
+    return allowInsecureTransport;
+  }
+
+  /// Whether [url] targets the managed [cloudBaseUrl] origin (host match).
+  bool _isManagedOrigin(String url) {
+    final cloud = cloudBaseUrl;
+    if (cloud == null) {
+      return false;
+    }
+    final target = Uri.tryParse(url);
+    final cloudUri = Uri.tryParse(cloud);
+    if (target == null || cloudUri == null || !target.hasAuthority) {
+      return false;
+    }
+    return target.host.toLowerCase() == cloudUri.host.toLowerCase();
+  }
 
   /// The current Endurain API version path prefix.
   static const String defaultApiBasePath = '/api/v1';

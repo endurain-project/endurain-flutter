@@ -49,5 +49,50 @@ void main() {
         expect(config.isTileServerHostAllowed('other.host.test'), isFalse);
       });
     });
+
+    group('allowInsecureTransportFor', () {
+      test('follows the self-hosted policy when no cloud origin is set', () {
+        const config = AppConfig.defaults;
+        expect(config.allowInsecureTransportFor('http://local.test'), isTrue);
+        expect(config.allowInsecureTransportFor('https://local.test'), isTrue);
+      });
+
+      test('follows the managed policy when no cloud origin is set', () {
+        const config = AppConfig(transportMode: AppTransportMode.managed);
+        expect(config.allowInsecureTransportFor('http://local.test'), isFalse);
+      });
+
+      test('always rejects http to the managed cloud origin', () {
+        const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
+        // Self-hosted build, but the managed origin must stay strict.
+        expect(config.transportMode, AppTransportMode.selfHosted);
+        expect(
+          config.allowInsecureTransportFor('http://app.endurain.test'),
+          isFalse,
+        );
+      });
+
+      test('still allows http to self-hosted origins when cloud is set', () {
+        const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
+        expect(
+          config.allowInsecureTransportFor('http://my-nas.local:8080'),
+          isTrue,
+        );
+      });
+
+      test('matches the cloud origin host case-insensitively', () {
+        const config = AppConfig(cloudBaseUrl: 'https://App.Endurain.Test');
+        expect(
+          config.allowInsecureTransportFor('http://app.endurain.test/login'),
+          isFalse,
+        );
+      });
+
+      test('falls back to the build policy for unparseable targets', () {
+        const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
+        // No authority => cannot match the cloud origin; self-hosted allows it.
+        expect(config.allowInsecureTransportFor('not a url'), isTrue);
+      });
+    });
   });
 }

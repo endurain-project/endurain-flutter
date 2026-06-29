@@ -21,7 +21,7 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 class ServerUrlResolver {
   const ServerUrlResolver({
     required SecureStorageService storage,
-    AppConfig config = AppConfig.defaults,
+    required AppConfig config,
   }) : _storage = storage,
        _config = config;
 
@@ -40,7 +40,7 @@ class ServerUrlResolver {
       throw const AppException(AppErrorCode.serverUrlNotConfigured);
     }
 
-    if (!_config.allowInsecureTransport) {
+    if (!_config.allowInsecureTransportFor(url)) {
       final uri = Uri.tryParse(url);
       if (uri != null && uri.isScheme('http')) {
         throw const AppException(AppErrorCode.serverUrlNotConfigured);

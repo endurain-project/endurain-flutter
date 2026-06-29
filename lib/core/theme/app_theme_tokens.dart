@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Raw design tokens ported from the Endurain brand & UX guidelines
-/// (`devdocs/UX_guidelines_web.md`).
+/// Raw design tokens for the Endurain brand & UX guidelines.
 ///
 /// This is the single source of truth for brand colors, radii and border
 /// widths. Never hardcode hex values in widgets — reference these tokens or,

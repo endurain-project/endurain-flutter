@@ -6,6 +6,7 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_links_service.dart';
+import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/auth/auth_coordinator.dart';
 import 'package:endurain/features/map/map_settings_repository.dart';
@@ -16,15 +17,18 @@ class LoginController extends ChangeNotifier {
     AppLinksService? appLinksService,
     MapSettingsRepository? mapSettingsRepository,
     AppConfig? config,
+    DiagnosticsRecorder? diagnostics,
   }) : _authCoordinator = authCoordinator,
        _appLinksService = appLinksService ?? DefaultAppLinksService(),
        _mapSettingsRepository = mapSettingsRepository,
-       _config = config ?? AppConfig.defaults;
+       _config = config ?? AppConfig.defaults,
+       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
   final AuthCoordinator _authCoordinator;
   final AppLinksService _appLinksService;
   final MapSettingsRepository? _mapSettingsRepository;
   final AppConfig _config;
+  final DiagnosticsRecorder _diagnostics;
 
   final formKey = GlobalKey<FormState>();
   final serverUrlController = TextEditingController();
@@ -36,28 +40,36 @@ class LoginController extends ChangeNotifier {
   VoidCallback? _onLoginSuccess;
   ValueChanged<Object>? _onError;
 
-  bool isLoading = false;
-  bool obscurePassword = true;
-  bool showMfaInput = false;
-  bool isStep2 = false;
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _showMfaInput = false;
+  bool _isStep2 = false;
   String? _mfaUsername;
-  List<IdentityProvider> availableIdPs = [];
-  ServerSettings? serverSettings;
+  List<IdentityProvider> _availableIdPs = const [];
+  ServerSettings? _serverSettings;
 
-  bool get localLoginEnabled => serverSettings?.localLoginEnabled ?? true;
+  bool get isLoading => _isLoading;
+  bool get obscurePassword => _obscurePassword;
+  bool get showMfaInput => _showMfaInput;
+  bool get isStep2 => _isStep2;
+  List<IdentityProvider> get availableIdPs => List.unmodifiable(_availableIdPs);
+  ServerSettings? get serverSettings => _serverSettings;
+
+  bool get localLoginEnabled => _serverSettings?.localLoginEnabled ?? true;
 
   /// The transport and build configuration for this controller.
   AppConfig get config => _config;
 
   /// Returns `true` when the current server URL uses plain HTTP (not HTTPS)
-  /// AND [AppConfig.allowInsecureTransport] permits it.
+  /// AND the transport policy permits insecure transport for that URL.
   ///
-  /// When `allowInsecureTransport` is `false`, HTTP URLs are rejected as a
-  /// validation error; this getter returns `false` so the UI does not show a
-  /// "proceed anyway" warning — the submit path will throw instead.
+  /// Evaluated per-URL via [AppConfig.allowInsecureTransportFor], so the
+  /// managed cloud origin (and any managed build) yields `false`: the UI then
+  /// hides the "proceed anyway" warning and the submit path rejects the URL
+  /// instead.
   bool get serverUrlIsHttp {
-    if (!_config.allowInsecureTransport) return false;
     final raw = serverUrlController.text.trim();
+    if (!_config.allowInsecureTransportFor(raw)) return false;
     final uri = Uri.tryParse(raw);
     return uri != null && uri.isScheme('http');
   }
@@ -82,18 +94,25 @@ class LoginController extends ChangeNotifier {
       final settings = await _authCoordinator.getServerSettings(serverUrl);
       await _mapSettingsRepository?.saveFromServerSettings(settings);
 
-      List<IdentityProvider> providers = [];
+      List<IdentityProvider> providers = const [];
       if (settings.ssoEnabled) {
         try {
           providers = await _authCoordinator.getEnabledProviders(serverUrl);
-        } catch (_) {
-          providers = [];
+        } catch (error) {
+          // SSO discovery is best-effort: the server settings already loaded,
+          // so fall back to local login. Record a sanitized breadcrumb so the
+          // failure is observable in diagnostics.
+          providers = const [];
+          _diagnostics.recordBreadcrumbSync(
+            DiagnosticsEvents.ssoProvidersFetchFailed,
+            details: {'error': error.runtimeType.toString()},
+          );
         }
       }
 
-      serverSettings = settings;
-      availableIdPs = providers;
-      isStep2 = true;
+      _serverSettings = settings;
+      _availableIdPs = providers;
+      _isStep2 = true;
       _setLoading(false);
 
       if (settings.ssoEnabled &&
@@ -137,7 +156,7 @@ class LoginController extends ChangeNotifier {
       );
 
       if (result.mfaRequired) {
-        showMfaInput = true;
+        _showMfaInput = true;
         _mfaUsername = result.username;
         _setLoading(false);
       } else {
@@ -171,20 +190,20 @@ class LoginController extends ChangeNotifier {
   }
 
   void backToServerStep() {
-    isStep2 = false;
-    availableIdPs = [];
-    serverSettings = null;
+    _isStep2 = false;
+    _availableIdPs = const [];
+    _serverSettings = null;
     notifyListeners();
   }
 
   void backFromMfa() {
-    showMfaInput = false;
+    _showMfaInput = false;
     mfaCodeController.clear();
     notifyListeners();
   }
 
   void setPasswordVisible(bool visible) {
-    obscurePassword = !visible;
+    _obscurePassword = !visible;
     notifyListeners();
   }
 
@@ -227,7 +246,7 @@ class LoginController extends ChangeNotifier {
   }
 
   void _setLoading(bool value) {
-    isLoading = value;
+    _isLoading = value;
     notifyListeners();
   }
 

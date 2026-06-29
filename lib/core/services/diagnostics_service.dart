@@ -189,6 +189,11 @@ class DiagnosticsEvents {
       'activity.upload_queue_drain_started';
   static const String activityUploadQueueDrainFinished =
       'activity.upload_queue_drain_finished';
+  static const String activityUploadQueueRecordFailed =
+      'activity.upload_queue_record_failed';
+  static const String activityUploadRetryFailed =
+      'activity.upload_retry_failed';
+  static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
 }
 
 class DiagnosticsService implements DiagnosticsStore {

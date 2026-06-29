@@ -100,9 +100,10 @@ the current on-device storage design behind activity recording and retention.
 
 ## Tech Stack
 
-- **Framework:** Flutter 3.38+ (Dart 3.10+)
+- **Framework:** Flutter 3.44+ (Dart 3.10+)
 - **Platforms:** iOS, Android
 - **State Management:** Stateful widgets plus focused `ChangeNotifier` controllers
+- **Navigation:** `go_router` (BSD-3-Clause, F-Droid safe) for top-level, auth-guarded routing that redirects off the session state and is ready for deep links
 - **Map Provider:** OpenStreetMap with `flutter_map` and `latlong2`
 - **Location Services:** `geolocator`, including position streams and movement heading
 - **Connectivity:** `connectivity_plus` to retry pending activity uploads when the network returns
@@ -121,7 +122,7 @@ the current on-device storage design behind activity recording and retention.
 
 ### Prerequisites
 
-- Flutter SDK 3.38 or higher
+- Flutter SDK 3.44.1 or higher
 - Dart SDK 3.10.3 or higher
 - Xcode (for iOS development)
 - Android Studio (for Android development)
@@ -343,7 +344,7 @@ lib/
 │   ├── config/               # App configuration and environment helpers
 │   ├── constants/            # App-wide constants (API, UI, map)
 │   ├── models/               # Shared app models and exception types
-│   ├── navigation/           # Route names
+│   ├── navigation/           # Route names and the go_router auth-guard config
 │   ├── services/             # API, auth, storage, links, location, package info
 │   ├── theme/                # Theme configuration and tokens
 │   └── utils/                # Validators, dialogs, error localization, platform helpers

@@ -77,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         preferences: services.preferences,
       ),
       config: services.config,
+      diagnostics: services.diagnostics,
     );
   }
 

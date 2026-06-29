@@ -6,11 +6,10 @@ import 'package:endurain/core/theme/brand_colors.dart';
 
 /// Builds the Material and Cupertino themes from the Endurain brand tokens.
 ///
-/// Colors, radii and typography are derived from `AppThemeTokens` so the
-/// brand & UX guidelines (`devdocs/UX_guidelines_web.md`) stay the single
-/// source of truth. Most chrome reads from the `ColorScheme` semantic roles
-/// (so it flips automatically in dark mode); data/metric accents come from the
-/// [BrandColors] theme extension.
+/// Colors, radii and typography are derived from [AppThemeTokens] — the single
+/// in-repo source of truth for the Endurain brand tokens. Most chrome reads
+/// from the `ColorScheme` semantic roles (so it flips automatically in dark
+/// mode); data/metric accents come from the [BrandColors] theme extension.
 class AppTheme {
   // Material themes for Android
   static ThemeData get lightTheme => _materialTheme(

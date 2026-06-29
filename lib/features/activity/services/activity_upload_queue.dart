@@ -98,8 +98,13 @@ class ActivityUploadQueue {
         uploaded++;
       } catch (_) {
         // Best effort: the record is persisted as failed with its typed error
-        // code; keep draining the rest.
+        // code; keep draining the rest. A per-record breadcrumb makes a
+        // specific failing activity observable, not just the aggregate count.
         failed++;
+        _diagnostics.recordBreadcrumbSync(
+          DiagnosticsEvents.activityUploadQueueRecordFailed,
+          details: {'id': record.id},
+        );
       }
     }
 

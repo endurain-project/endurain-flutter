@@ -227,7 +227,8 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
                     controller: _tileServerUrlController,
                     keyboardType: TextInputType.url,
                     textInputAction: TextInputAction.done,
-                    validator: (value) => Validators.validateUrl(value, l10n),
+                    validator: (value) =>
+                        Validators.validateUrl(value, l10n, config: _config),
                     onFieldSubmitted: (_) => _saveSettings(),
                   ),
                   const SizedBox(height: UIConstants.paddingLarge),

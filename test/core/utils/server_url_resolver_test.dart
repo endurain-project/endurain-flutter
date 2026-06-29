@@ -14,7 +14,10 @@ void main() {
 
   group('ServerUrlResolver', () {
     test('returns the provided URL when non-empty', () async {
-      final resolver = ServerUrlResolver(storage: SecureStorageService());
+      final resolver = ServerUrlResolver(
+        storage: SecureStorageService(),
+        config: AppConfig.defaults,
+      );
 
       final url = await resolver.resolve(serverUrl: 'https://provided.test');
 
@@ -24,7 +27,10 @@ void main() {
     test('falls back to the stored URL when no URL is provided', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://stored.test');
-      final resolver = ServerUrlResolver(storage: storage);
+      final resolver = ServerUrlResolver(
+        storage: storage,
+        config: AppConfig.defaults,
+      );
 
       final url = await resolver.resolve();
 
@@ -34,7 +40,10 @@ void main() {
     test('provided URL takes precedence over the stored URL', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://stored.test');
-      final resolver = ServerUrlResolver(storage: storage);
+      final resolver = ServerUrlResolver(
+        storage: storage,
+        config: AppConfig.defaults,
+      );
 
       final url = await resolver.resolve(serverUrl: 'https://provided.test');
 
@@ -44,7 +53,10 @@ void main() {
     test(
       'throws serverUrlNotConfigured when neither source has a URL',
       () async {
-        final resolver = ServerUrlResolver(storage: SecureStorageService());
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: AppConfig.defaults,
+        );
 
         await expectLater(
           resolver.resolve(),
@@ -64,7 +76,10 @@ void main() {
       () async {
         final storage = SecureStorageService();
         await storage.setServerUrl('https://stored.test');
-        final resolver = ServerUrlResolver(storage: storage);
+        final resolver = ServerUrlResolver(
+          storage: storage,
+          config: AppConfig.defaults,
+        );
 
         final url = await resolver.resolve(serverUrl: '');
 
@@ -75,7 +90,10 @@ void main() {
     test(
       'throws when provided URL is empty and storage is also empty',
       () async {
-        final resolver = ServerUrlResolver(storage: SecureStorageService());
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: AppConfig.defaults,
+        );
 
         await expectLater(
           resolver.resolve(serverUrl: ''),
@@ -92,7 +110,10 @@ void main() {
 
     test('persists the provided URL to storage when save is true', () async {
       final storage = SecureStorageService();
-      final resolver = ServerUrlResolver(storage: storage);
+      final resolver = ServerUrlResolver(
+        storage: storage,
+        config: AppConfig.defaults,
+      );
 
       await resolver.resolve(serverUrl: 'https://new.test', save: true);
 
@@ -101,7 +122,10 @@ void main() {
 
     test('does not write to storage when save is false (default)', () async {
       final storage = SecureStorageService();
-      final resolver = ServerUrlResolver(storage: storage);
+      final resolver = ServerUrlResolver(
+        storage: storage,
+        config: AppConfig.defaults,
+      );
 
       await resolver.resolve(serverUrl: 'https://new.test');
 
@@ -113,7 +137,10 @@ void main() {
       () async {
         final storage = SecureStorageService();
         await storage.setServerUrl('https://stored.test');
-        final resolver = ServerUrlResolver(storage: storage);
+        final resolver = ServerUrlResolver(
+          storage: storage,
+          config: AppConfig.defaults,
+        );
 
         await resolver.resolve(save: true);
 
@@ -168,9 +195,53 @@ void main() {
       });
 
       test('allows http in self-hosted mode (default)', () async {
-        final resolver = ServerUrlResolver(storage: SecureStorageService());
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: AppConfig.defaults,
+        );
         final url = await resolver.resolve(serverUrl: 'http://local.test');
         expect(url, 'http://local.test');
+      });
+    });
+
+    group('managed cloud origin (self-hosted build)', () {
+      const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
+
+      test('rejects http to the managed cloud origin', () async {
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: config,
+        );
+        await expectLater(
+          resolver.resolve(serverUrl: 'http://app.endurain.test'),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.serverUrlNotConfigured,
+            ),
+          ),
+        );
+      });
+
+      test('allows https to the managed cloud origin', () async {
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: config,
+        );
+        final url = await resolver.resolve(
+          serverUrl: 'https://app.endurain.test',
+        );
+        expect(url, 'https://app.endurain.test');
+      });
+
+      test('still allows http to a self-hosted origin', () async {
+        final resolver = ServerUrlResolver(
+          storage: SecureStorageService(),
+          config: config,
+        );
+        final url = await resolver.resolve(serverUrl: 'http://my-nas.local');
+        expect(url, 'http://my-nas.local');
       });
     });
   });

@@ -21,16 +21,24 @@ class MapStateController extends ChangeNotifier {
   bool _initialized = false;
   bool _isDisposed = false;
 
-  LatLng currentLocation = const LatLng(
+  LatLng _currentLocation = const LatLng(
     MapConstants.defaultLatitude,
     MapConstants.defaultLongitude,
   );
-  String tileServerUrl = MapConstants.defaultTileServerUrl;
-  bool isLoadingLocation = false;
-  bool hasLocationPermission = false;
-  bool hasLocationError = false;
-  bool isLocationLocked = true;
-  double heading = 0.0;
+  String _tileServerUrl = MapConstants.defaultTileServerUrl;
+  bool _isLoadingLocation = false;
+  bool _hasLocationPermission = false;
+  bool _hasLocationError = false;
+  bool _isLocationLocked = true;
+  double _heading = 0.0;
+
+  LatLng get currentLocation => _currentLocation;
+  String get tileServerUrl => _tileServerUrl;
+  bool get isLoadingLocation => _isLoadingLocation;
+  bool get hasLocationPermission => _hasLocationPermission;
+  bool get hasLocationError => _hasLocationError;
+  bool get isLocationLocked => _isLocationLocked;
+  double get heading => _heading;
 
   Future<void> initialize() async {
     if (_initialized) {
@@ -42,13 +50,13 @@ class MapStateController extends ChangeNotifier {
   }
 
   Future<void> _loadSettings() async {
-    tileServerUrl = await _mapSettingsRepository.getTileServerUrl();
+    _tileServerUrl = await _mapSettingsRepository.getTileServerUrl();
     _notifyListeners();
   }
 
   Future<void> _loadUserLocation() async {
-    isLoadingLocation = true;
-    hasLocationError = false;
+    _isLoadingLocation = true;
+    _hasLocationError = false;
     _notifyListeners();
 
     final position = await _locationService.getCurrentPosition();
@@ -58,18 +66,18 @@ class MapStateController extends ChangeNotifier {
     }
 
     if (position != null) {
-      currentLocation = LatLng(position.latitude, position.longitude);
+      _currentLocation = LatLng(position.latitude, position.longitude);
       _updateHeading(position);
-      hasLocationPermission = true;
-      hasLocationError = false;
-      isLoadingLocation = false;
+      _hasLocationPermission = true;
+      _hasLocationError = false;
+      _isLoadingLocation = false;
       _notifyListeners();
       _startPositionUpdates();
       return;
     }
 
-    hasLocationPermission = false;
-    isLoadingLocation = false;
+    _hasLocationPermission = false;
+    _isLoadingLocation = false;
     _notifyListeners();
   }
 
@@ -82,17 +90,17 @@ class MapStateController extends ChangeNotifier {
   }
 
   void _handlePositionUpdate(Position position) {
-    currentLocation = LatLng(position.latitude, position.longitude);
+    _currentLocation = LatLng(position.latitude, position.longitude);
     _updateHeading(position);
-    hasLocationPermission = true;
-    hasLocationError = false;
+    _hasLocationPermission = true;
+    _hasLocationError = false;
     _notifyListeners();
   }
 
   void _handlePositionError(Object error, StackTrace stackTrace) {
-    hasLocationPermission = false;
-    hasLocationError = true;
-    isLoadingLocation = false;
+    _hasLocationPermission = false;
+    _hasLocationError = true;
+    _isLoadingLocation = false;
     _notifyListeners();
   }
 
@@ -100,19 +108,19 @@ class MapStateController extends ChangeNotifier {
     if (position.heading.isNaN || position.heading < 0) {
       return;
     }
-    heading = position.heading;
+    _heading = position.heading;
   }
 
   void toggleLocationLock() {
-    isLocationLocked = !isLocationLocked;
+    _isLocationLocked = !_isLocationLocked;
     _notifyListeners();
   }
 
   void unlockLocation() {
-    if (!isLocationLocked) {
+    if (!_isLocationLocked) {
       return;
     }
-    isLocationLocked = false;
+    _isLocationLocked = false;
     _notifyListeners();
   }
 
@@ -129,7 +137,7 @@ class MapStateController extends ChangeNotifier {
       _positionSubscription = null;
       return;
     }
-    if (_positionSubscription == null && hasLocationPermission) {
+    if (_positionSubscription == null && _hasLocationPermission) {
       _startPositionUpdates();
     }
   }

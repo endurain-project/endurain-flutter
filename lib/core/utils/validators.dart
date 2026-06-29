@@ -25,18 +25,19 @@ class Validators {
   static String? validateUrl(
     String? value,
     AppLocalizations l10n, {
-    AppConfig config = AppConfig.defaults,
+    required AppConfig config,
   }) {
     if (value == null || value.trim().isEmpty) {
       return l10n.requiredField;
     }
-    final uri = Uri.tryParse(value.trim());
+    final trimmed = value.trim();
+    final uri = Uri.tryParse(trimmed);
     if (uri == null ||
         !uri.hasScheme ||
         (!uri.isScheme('http') && !uri.isScheme('https'))) {
       return l10n.invalidUrl;
     }
-    if (!config.allowInsecureTransport && uri.isScheme('http')) {
+    if (!config.allowInsecureTransportFor(trimmed) && uri.isScheme('http')) {
       return l10n.invalidUrl;
     }
     return null;
