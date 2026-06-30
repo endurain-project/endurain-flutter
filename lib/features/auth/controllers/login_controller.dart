@@ -8,8 +8,8 @@ import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_links_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
-import 'package:endurain/features/auth/auth_coordinator.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 class LoginController extends ChangeNotifier {
   LoginController({

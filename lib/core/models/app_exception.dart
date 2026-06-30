@@ -13,6 +13,7 @@ enum AppErrorCode {
   activityUploadNotConfigured,
   fetchProvidersFailed,
   fetchServerSettingsFailed,
+  insecureTransportNotAllowed,
   invalidTileServerUrl,
   loginError,
   loginFailed,

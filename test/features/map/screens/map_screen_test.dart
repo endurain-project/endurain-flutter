@@ -9,9 +9,9 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
-import 'package:endurain/features/map/map_screen.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
-import 'package:endurain/features/map/map_state_controller.dart';
+import 'package:endurain/features/map/screens/map_screen.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/map/controllers/map_state_controller.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive_floating_action_button.dart';
 import 'package:flutter/foundation.dart';
@@ -20,10 +20,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
-import '../../helpers/fake_location_platform_adapter.dart';
-import '../../helpers/fake_preferences_store.dart';
-import '../../helpers/in_memory_active_activity_store.dart';
-import '../../helpers/widget_test_app.dart';
+import '../../../helpers/fake_location_platform_adapter.dart';
+import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/in_memory_active_activity_store.dart';
+import '../../../helpers/widget_test_app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

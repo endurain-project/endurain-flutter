@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 class MapStateController extends ChangeNotifier {
   MapStateController({

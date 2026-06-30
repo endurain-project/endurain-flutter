@@ -2,16 +2,16 @@ import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
-import 'package:endurain/features/settings/server_settings_repository.dart';
-import 'package:endurain/features/settings/server_settings_screen.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
+import 'package:endurain/features/settings/screens/server_settings_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../helpers/fake_preferences_store.dart';
+import '../../../helpers/fake_preferences_store.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

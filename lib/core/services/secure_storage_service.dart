@@ -95,12 +95,10 @@ class SecureStorageService {
   Future<String?> getServerUrl() => read(key: _serverUrlKey);
   Future<void> setServerUrl(String url) =>
       write(key: _serverUrlKey, value: url);
-  Future<void> deleteServerUrl() => delete(key: _serverUrlKey);
 
   Future<String?> getUsername() => read(key: _usernameKey);
   Future<void> setUsername(String username) =>
       write(key: _usernameKey, value: username);
-  Future<void> deleteUsername() => delete(key: _usernameKey);
 
   // Token-specific methods
   Future<String?> getAccessToken() => read(key: _accessTokenKey);

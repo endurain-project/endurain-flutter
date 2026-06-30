@@ -5,7 +5,7 @@ import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

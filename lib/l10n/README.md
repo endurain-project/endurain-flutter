@@ -19,7 +19,7 @@ Used by: `core/utils/dialog_utils.dart`, `core/utils/validators.dart`
 - Common actions (save, back)
 
 ### 2. **AUTH**
-Used by: `features/auth/login_screen.dart`
+Used by: `features/auth/screens/login_screen.dart`
 - Login screen (loginTitle, login, username, password)
 - MFA flow (mfaTitle, mfaCode, verify)
 - Logout (logout, logoutConfirmTitle, logoutConfirmMessage)
@@ -36,12 +36,12 @@ Used by: `features/activity/`
 - Recording controls, stats, stop/discard dialogs, upload states, and location errors
 
 ### 5. **MAP**
-Used by: `features/map/map_screen.dart`
+Used by: `features/map/screens/map_screen.dart`
 - Map tab label
 - Location control tooltips
 
 ### 6. **SETTINGS**
-Used by: `features/settings/settings_screen.dart`, `features/settings/server_settings_screen.dart`
+Used by: `features/settings/screens/settings_screen.dart`, `features/settings/screens/server_settings_screen.dart`
 - Settings navigation (settingsTab, settingsScreen)
 - Server configuration (serverUrl, tileServerUrl, loggedIn)
 - Save messages (savedSuccessfully)

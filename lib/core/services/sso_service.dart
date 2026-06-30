@@ -9,6 +9,7 @@ import 'package:endurain/core/services/pkce_token_exchanger.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
+import 'package:endurain/core/utils/run_with_cleanup.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/core/services/auth_service.dart';
 
@@ -201,23 +202,17 @@ class SsoService {
     );
   }
 
-  /// Runs [action], always clearing the pending PKCE flow afterwards.
+  /// Runs [action], always clearing the pending PKCE flow on failure.
   /// Re-throws [AppException]s unchanged; wraps any other error in an
-  /// [AppException] with [fallbackCode]. Mirrors `AuthService._withPkceCleanup`.
+  /// [AppException] with [fallbackCode].
   Future<T> _withPkceCleanup<T>(
     Future<T> Function() action, {
     required AppErrorCode fallbackCode,
-  }) async {
-    try {
-      return await action();
-    } on AppException {
-      _pendingPkce = null;
-      rethrow;
-    } catch (e) {
-      _pendingPkce = null;
-      throw AppException(fallbackCode, cause: e);
-    }
-  }
+  }) => runWithCleanup(
+    action,
+    onCleanup: () => _pendingPkce = null,
+    fallbackCode: fallbackCode,
+  );
 
   /// Clears any pending PKCE flow (e.g. when the user cancels SSO).
   void clearPkce() {

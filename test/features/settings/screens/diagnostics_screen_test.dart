@@ -1,6 +1,6 @@
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/settings/diagnostics_screen.dart';
+import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter/cupertino.dart';

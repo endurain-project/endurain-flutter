@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:endurain/core/navigation/app_routes.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:endurain/features/map/map_screen.dart';
-import 'package:endurain/features/settings/settings_screen.dart';
+import 'package:endurain/features/map/screens/map_screen.dart';
+import 'package:endurain/features/settings/screens/settings_screen.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 
 class AppBottomNav extends StatelessWidget {

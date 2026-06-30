@@ -12,9 +12,9 @@ import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/features/auth/auth_coordinator.dart';
-import 'package:endurain/features/auth/login_controller.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/features/auth/controllers/login_controller.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 

@@ -49,6 +49,8 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorFetchServerSettingsFailed
           : l10n.errorFetchServerSettingsFailedWithDetails(details),
+    AppErrorCode.insecureTransportNotAllowed =>
+      l10n.errorInsecureTransportNotAllowed,
     AppErrorCode.invalidTileServerUrl => l10n.invalidUrl,
     AppErrorCode.loginError =>
       details == null

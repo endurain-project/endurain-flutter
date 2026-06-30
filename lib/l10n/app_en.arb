@@ -185,6 +185,10 @@
   "@errorServerUrlNotConfigured": {
     "description": "Error when no server URL is configured - Used in: error_localizations.dart"
   },
+  "errorInsecureTransportNotAllowed": "This server requires a secure (HTTPS) connection",
+  "@errorInsecureTransportNotAllowed": {
+    "description": "Error when an http:// URL is used for an origin that requires HTTPS (the Endurain Cloud origin) - Used in: error_localizations.dart"
+  },
   "errorSessionExpired": "Your session expired. Please sign in again.",
   "@errorSessionExpired": {
     "description": "Error when token refresh fails - Used in: error_localizations.dart"
@@ -251,7 +255,7 @@
       }
     }
   },
-  "@sectionAuth": "=== AUTH (features/auth/login_screen.dart) ===",
+  "@sectionAuth": "=== AUTH (features/auth/screens/login_screen.dart) ===",
   "loginTitle": "Login",
   "@loginTitle": {
     "description": "Title for login screen"
@@ -695,7 +699,7 @@
   "@activityHistoryGpxMissing": {
     "description": "Local activity details GPX missing status - Used in: activity_details_screen.dart"
   },
-  "@sectionMap": "=== MAP (features/map/map_screen.dart) ===",
+  "@sectionMap": "=== MAP (features/map/screens/map_screen.dart) ===",
   "mapTab": "Map",
   "@mapTab": {
     "description": "Map tab label - Used in: app_bottom_nav.dart"

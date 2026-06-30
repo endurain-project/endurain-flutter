@@ -9,6 +9,7 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
+import 'package:endurain/core/utils/run_with_cleanup.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 
 class AuthService {
@@ -48,23 +49,17 @@ class AuthService {
   // network round-trip (see [refreshToken]).
   Future<bool>? _inFlightRefresh;
 
-  /// Runs [action], always clearing the in-flight PKCE verifier afterwards.
+  /// Runs [action], always clearing the in-flight PKCE verifier on failure.
   /// Re-throws [AppException]s unchanged; wraps any other error in an
   /// [AppException] with [fallbackCode].
   Future<T> _withPkceCleanup<T>(
     Future<T> Function() action, {
     required AppErrorCode fallbackCode,
-  }) async {
-    try {
-      return await action();
-    } on AppException {
-      _pkce = null;
-      rethrow;
-    } catch (e) {
-      _pkce = null;
-      throw AppException(fallbackCode, cause: e);
-    }
-  }
+  }) => runWithCleanup(
+    action,
+    onCleanup: () => _pkce = null,
+    fallbackCode: fallbackCode,
+  );
 
   /// Login with username and password using PKCE flow
   /// Returns AuthResult with MFA status or session ID for token exchange

@@ -29,7 +29,7 @@ void main() {
           'LH:0',
           'LF:100',
           'end_of_record',
-          'SF:lib/features/auth/login_screen.dart',
+          'SF:lib/features/auth/screens/login_screen.dart',
           'LH:75',
           'LF:100',
           'end_of_record',
@@ -70,7 +70,7 @@ void main() {
           'LH:0',
           'LF:100',
           'end_of_record',
-          'SF:lib/features/auth/login_screen.dart',
+          'SF:lib/features/auth/screens/login_screen.dart',
           'LH:75',
           'LF:100',
           'end_of_record',
@@ -79,7 +79,10 @@ void main() {
       );
 
       expect(summary.files, hasLength(1));
-      expect(summary.files.single.path, 'lib/features/auth/login_screen.dart');
+      expect(
+        summary.files.single.path,
+        'lib/features/auth/screens/login_screen.dart',
+      );
     });
 
     test('filesBelow reports offenders sorted by lowest coverage', () {

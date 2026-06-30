@@ -2,7 +2,7 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/core/services/package_info_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/settings/settings_screen.dart';
+import 'package:endurain/features/settings/screens/settings_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter/material.dart';

@@ -1,7 +1,7 @@
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 class StoredServerSettings {
   const StoredServerSettings({

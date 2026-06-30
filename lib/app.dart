@@ -7,7 +7,7 @@ import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/features/auth/auth_session_controller.dart';
+import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 
 class App extends StatefulWidget {

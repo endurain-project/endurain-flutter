@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/features/auth/auth_session_controller.dart';
+import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

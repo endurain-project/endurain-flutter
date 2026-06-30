@@ -144,6 +144,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'O URL do servidor não está configurado';
 
   @override
+  String get errorInsecureTransportNotAllowed =>
+      'Este servidor requer uma ligação segura (HTTPS)';
+
+  @override
   String get errorSessionExpired =>
       'A sua sessão expirou. Inicie sessão novamente.';
 

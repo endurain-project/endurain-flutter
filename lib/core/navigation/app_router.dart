@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:endurain/core/navigation/app_routes.dart';
-import 'package:endurain/features/auth/auth_session_controller.dart';
-import 'package:endurain/features/auth/login_screen.dart';
+import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
+import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/widgets/app_bottom_nav.dart';
 

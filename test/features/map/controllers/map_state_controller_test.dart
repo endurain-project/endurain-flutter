@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
-import 'package:endurain/features/map/map_state_controller.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/map/controllers/map_state_controller.dart';
 
-import '../../helpers/fake_location_platform_adapter.dart';
+import '../../../helpers/fake_location_platform_adapter.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

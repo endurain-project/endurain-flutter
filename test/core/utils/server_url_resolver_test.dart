@@ -174,7 +174,7 @@ void main() {
             isA<AppException>().having(
               (e) => e.code,
               'code',
-              AppErrorCode.serverUrlNotConfigured,
+              AppErrorCode.insecureTransportNotAllowed,
             ),
           ),
         );

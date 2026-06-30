@@ -137,6 +137,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorServerUrlNotConfigured => 'Server URL is not configured';
 
   @override
+  String get errorInsecureTransportNotAllowed =>
+      'This server requires a secure (HTTPS) connection';
+
+  @override
   String get errorSessionExpired =>
       'Your session expired. Please sign in again.';
 

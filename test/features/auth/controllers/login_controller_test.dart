@@ -14,11 +14,11 @@ import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
-import 'package:endurain/features/auth/auth_coordinator.dart';
-import 'package:endurain/features/auth/login_controller.dart';
-import 'package:endurain/features/map/map_settings_repository.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/features/auth/controllers/login_controller.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
-import '../../helpers/fake_app_links_service.dart';
+import '../../../helpers/fake_app_links_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

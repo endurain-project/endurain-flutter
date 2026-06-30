@@ -177,12 +177,6 @@ void main() {
 
       expect(await storage.getServerUrl(), 'https://example.test');
       expect(await storage.getUsername(), 'joao');
-
-      await storage.deleteServerUrl();
-      await storage.deleteUsername();
-
-      expect(await storage.getServerUrl(), isNull);
-      expect(await storage.getUsername(), isNull);
     });
 
     test('deleteAll removes every stored value', () async {

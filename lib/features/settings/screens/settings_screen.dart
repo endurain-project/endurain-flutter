@@ -6,8 +6,8 @@ import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/package_info_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
-import 'package:endurain/features/settings/diagnostics_screen.dart';
-import 'package:endurain/features/settings/server_settings_screen.dart';
+import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
+import 'package:endurain/features/settings/screens/server_settings_screen.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 

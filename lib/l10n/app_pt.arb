@@ -185,6 +185,10 @@
   "@errorServerUrlNotConfigured": {
     "description": "Erro quando não existe URL do servidor configurado - Usado em: error_localizations.dart"
   },
+  "errorInsecureTransportNotAllowed": "Este servidor requer uma ligação segura (HTTPS)",
+  "@errorInsecureTransportNotAllowed": {
+    "description": "Erro quando um URL http:// é usado para uma origem que requer HTTPS (a origem Endurain Cloud) - Usado em: error_localizations.dart"
+  },
   "errorSessionExpired": "A sua sessão expirou. Inicie sessão novamente.",
   "@errorSessionExpired": {
     "description": "Erro quando a renovação do token falha - Usado em: error_localizations.dart"
@@ -251,7 +255,7 @@
       }
     }
   },
-  "@sectionAuth": "=== AUTENTICAÇÃO (features/auth/login_screen.dart) ===",
+  "@sectionAuth": "=== AUTENTICAÇÃO (features/auth/screens/login_screen.dart) ===",
   "loginTitle": "Login",
   "@loginTitle": {
     "description": "Título do ecrã de login"
@@ -695,7 +699,7 @@
   "@activityHistoryGpxMissing": {
     "description": "Estado de GPX em falta nos detalhes da atividade local - Usado em: activity_details_screen.dart"
   },
-  "@sectionMap": "=== MAPA (features/map/map_screen.dart) ===",
+  "@sectionMap": "=== MAPA (features/map/screens/map_screen.dart) ===",
   "mapTab": "Mapa",
   "@mapTab": {
     "description": "Rótulo da aba do mapa - Usado em: app_bottom_nav.dart"

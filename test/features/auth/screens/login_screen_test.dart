@@ -6,9 +6,9 @@ import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/services/url_launcher_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/auth/auth_coordinator.dart';
-import 'package:endurain/features/auth/login_controller.dart';
-import 'package:endurain/features/auth/login_screen.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/features/auth/controllers/login_controller.dart';
+import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -16,9 +16,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-import '../../helpers/fake_app_links_service.dart';
-import '../../helpers/fake_url_launcher_service.dart';
-import '../../helpers/widget_test_app.dart';
+import '../../../helpers/fake_app_links_service.dart';
+import '../../../helpers/fake_url_launcher_service.dart';
+import '../../../helpers/widget_test_app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -11,8 +11,8 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 /// Throws an AppException with serverUrlNotConfigured when neither source
 /// yields a non-empty URL.
 ///
-/// Throws an AppException with [AppErrorCode.serverUrlNotConfigured] if the
-/// resolved URL uses plain `http://` for an origin that requires HTTPS (the
+/// Throws an AppException with [AppErrorCode.insecureTransportNotAllowed] if
+/// the resolved URL uses plain `http://` for an origin that requires HTTPS (the
 /// configured Endurain Cloud origin; see
 /// [AppConfig.allowInsecureTransportFor]). This ensures the cloud service can
 /// never be reached over insecure transport even when a stored HTTP URL is
@@ -45,7 +45,7 @@ class ServerUrlResolver {
     if (!_config.allowInsecureTransportFor(url)) {
       final uri = Uri.tryParse(url);
       if (uri != null && uri.isScheme('http')) {
-        throw const AppException(AppErrorCode.serverUrlNotConfigured);
+        throw const AppException(AppErrorCode.insecureTransportNotAllowed);
       }
     }
 

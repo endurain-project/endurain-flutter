@@ -308,6 +308,12 @@ abstract class AppLocalizations {
   /// **'Server URL is not configured'**
   String get errorServerUrlNotConfigured;
 
+  /// Error when an http:// URL is used for an origin that requires HTTPS (the Endurain Cloud origin) - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server requires a secure (HTTPS) connection'**
+  String get errorInsecureTransportNotAllowed;
+
   /// Error when token refresh fails - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
