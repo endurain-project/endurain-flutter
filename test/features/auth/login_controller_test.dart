@@ -583,14 +583,14 @@ void main() {
         controller.dispose();
       });
 
-      test('is false when transportMode is managed, even for http URL', () {
+      test('is false for an http URL targeting the cloud origin', () {
         final controller = LoginController(
           authCoordinator: _repository(
             storage: SecureStorageService(),
             client: MockClient((_) async => http.Response('{}', 200)),
           ),
           appLinksService: const EmptyAppLinksService(),
-          config: const AppConfig(transportMode: AppTransportMode.managed),
+          config: const AppConfig(cloudBaseUrl: 'https://example.test'),
         );
         controller.serverUrlController.text = 'http://example.test';
         expect(controller.serverUrlIsHttp, isFalse);

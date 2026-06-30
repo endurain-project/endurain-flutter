@@ -11,10 +11,12 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 /// Throws an AppException with serverUrlNotConfigured when neither source
 /// yields a non-empty URL.
 ///
-/// In [AppTransportMode.managed], throws an AppException with
-/// [AppErrorCode.serverUrlNotConfigured] if the resolved URL uses plain
-/// `http://`. This ensures managed builds cannot proceed with insecure
-/// transport even when a stored HTTP URL is present.
+/// Throws an AppException with [AppErrorCode.serverUrlNotConfigured] if the
+/// resolved URL uses plain `http://` for an origin that requires HTTPS (the
+/// configured Endurain Cloud origin; see
+/// [AppConfig.allowInsecureTransportFor]). This ensures the cloud service can
+/// never be reached over insecure transport even when a stored HTTP URL is
+/// present.
 ///
 /// When save is true and a serverUrl was provided, the resolved URL is
 /// written back to storage so it becomes the default for future calls.

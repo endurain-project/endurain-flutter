@@ -153,14 +153,14 @@ void main() {
 
       controller.dispose();
     });
-    testWidgets('managed mode rejects http URL without showing HTTP warning', (
+    testWidgets('rejects http cloud URL without showing HTTP warning', (
       tester,
     ) async {
       final controller = _controller(
         client: MockClient((request) async {
-          fail('Network should not be called for http:// in managed mode.');
+          fail('Network should not be called for http:// to the cloud origin.');
         }),
-        config: const AppConfig(transportMode: AppTransportMode.managed),
+        config: const AppConfig(cloudBaseUrl: 'https://example.test'),
       );
 
       await tester.pumpWidget(_loginScreen(controller: controller));

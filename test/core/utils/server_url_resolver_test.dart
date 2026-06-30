@@ -149,52 +149,8 @@ void main() {
       },
     );
 
-    group('managed transport mode', () {
-      const managed = AppConfig(transportMode: AppTransportMode.managed);
-
-      test('allows https in managed mode', () async {
-        final resolver = ServerUrlResolver(
-          storage: SecureStorageService(),
-          config: managed,
-        );
-        final url = await resolver.resolve(serverUrl: 'https://example.test');
-        expect(url, 'https://example.test');
-      });
-
-      test('rejects http provided URL in managed mode', () async {
-        final resolver = ServerUrlResolver(
-          storage: SecureStorageService(),
-          config: managed,
-        );
-        await expectLater(
-          resolver.resolve(serverUrl: 'http://example.test'),
-          throwsA(
-            isA<AppException>().having(
-              (e) => e.code,
-              'code',
-              AppErrorCode.serverUrlNotConfigured,
-            ),
-          ),
-        );
-      });
-
-      test('rejects stored http URL in managed mode', () async {
-        final storage = SecureStorageService();
-        await storage.setServerUrl('http://stored.test');
-        final resolver = ServerUrlResolver(storage: storage, config: managed);
-        await expectLater(
-          resolver.resolve(),
-          throwsA(
-            isA<AppException>().having(
-              (e) => e.code,
-              'code',
-              AppErrorCode.serverUrlNotConfigured,
-            ),
-          ),
-        );
-      });
-
-      test('allows http in self-hosted mode (default)', () async {
+    group('self-hosted transport (default build)', () {
+      test('allows http in a self-hosted build', () async {
         final resolver = ServerUrlResolver(
           storage: SecureStorageService(),
           config: AppConfig.defaults,
@@ -204,10 +160,10 @@ void main() {
       });
     });
 
-    group('managed cloud origin (self-hosted build)', () {
+    group('cloud origin (self-hosted build)', () {
       const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
 
-      test('rejects http to the managed cloud origin', () async {
+      test('rejects http to the cloud origin', () async {
         final resolver = ServerUrlResolver(
           storage: SecureStorageService(),
           config: config,
@@ -224,7 +180,7 @@ void main() {
         );
       });
 
-      test('allows https to the managed cloud origin', () async {
+      test('allows https to the cloud origin', () async {
         final resolver = ServerUrlResolver(
           storage: SecureStorageService(),
           config: config,

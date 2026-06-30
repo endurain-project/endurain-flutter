@@ -73,20 +73,27 @@ void main() {
       });
     });
 
-    group('validateUrl (managed mode)', () {
-      const managed = AppConfig(transportMode: AppTransportMode.managed);
+    group('validateUrl (cloud origin)', () {
+      const config = AppConfig(cloudBaseUrl: 'https://example.test');
 
-      test('accepts https', () {
+      test('accepts https to the cloud origin', () {
         expect(
-          Validators.validateUrl('https://example.test', l10n, config: managed),
+          Validators.validateUrl('https://example.test', l10n, config: config),
           isNull,
         );
       });
 
-      test('rejects http', () {
+      test('rejects http to the cloud origin', () {
         expect(
-          Validators.validateUrl('http://example.test', l10n, config: managed),
+          Validators.validateUrl('http://example.test', l10n, config: config),
           l10n.invalidUrl,
+        );
+      });
+
+      test('still accepts http to a self-hosted origin', () {
+        expect(
+          Validators.validateUrl('http://my-nas.local', l10n, config: config),
+          isNull,
         );
       });
     });

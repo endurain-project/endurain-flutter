@@ -726,16 +726,16 @@ void main() {
     );
 
     test(
-      'rejects http serverUrl in managed mode before making any request',
+      'rejects http serverUrl to the cloud origin before making any request',
       () async {
         final service = AuthService(
           storage: SecureStorageService(),
           httpClient: MockClient((request) async {
             fail(
-              'No HTTP request should be made with http:// in managed mode.',
+              'No HTTP request should be made with http:// to the cloud origin.',
             );
           }),
-          config: const AppConfig(transportMode: AppTransportMode.managed),
+          config: const AppConfig(cloudBaseUrl: 'https://example.test'),
         );
 
         await expectLater(

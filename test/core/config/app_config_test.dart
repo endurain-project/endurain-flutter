@@ -6,23 +6,15 @@ void main() {
     test('defaults match self-hosted behavior', () {
       const config = AppConfig.defaults;
       expect(config.apiBasePath, AppConfig.defaultApiBasePath);
-      expect(config.transportMode, AppTransportMode.selfHosted);
-      expect(config.allowInsecureTransport, isTrue);
-    });
-
-    test('managed mode has allowInsecureTransport false', () {
-      const config = AppConfig(transportMode: AppTransportMode.managed);
-      expect(config.transportMode, AppTransportMode.managed);
-      expect(config.allowInsecureTransport, isFalse);
+      expect(config.cloudBaseUrl, isNull);
+      // No cloud origin configured => every URL is a self-hosted instance,
+      // so plain http:// is permitted (the login flow warns first).
+      expect(config.allowInsecureTransportFor('http://local.test'), isTrue);
     });
 
     test('custom apiBasePath is preserved', () {
-      const config = AppConfig(
-        apiBasePath: '/api/v2',
-        transportMode: AppTransportMode.managed,
-      );
+      const config = AppConfig(apiBasePath: '/api/v2');
       expect(config.apiBasePath, '/api/v2');
-      expect(config.allowInsecureTransport, isFalse);
     });
 
     test('defaultApiBasePath is /api/v1', () {
@@ -51,21 +43,14 @@ void main() {
     });
 
     group('allowInsecureTransportFor', () {
-      test('follows the self-hosted policy when no cloud origin is set', () {
+      test('allows http to any host when no cloud origin is set', () {
         const config = AppConfig.defaults;
         expect(config.allowInsecureTransportFor('http://local.test'), isTrue);
         expect(config.allowInsecureTransportFor('https://local.test'), isTrue);
       });
 
-      test('follows the managed policy when no cloud origin is set', () {
-        const config = AppConfig(transportMode: AppTransportMode.managed);
-        expect(config.allowInsecureTransportFor('http://local.test'), isFalse);
-      });
-
-      test('always rejects http to the managed cloud origin', () {
+      test('always rejects http to the cloud origin', () {
         const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
-        // Self-hosted build, but the managed origin must stay strict.
-        expect(config.transportMode, AppTransportMode.selfHosted);
         expect(
           config.allowInsecureTransportFor('http://app.endurain.test'),
           isFalse,

@@ -24,16 +24,16 @@ void main() {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
   });
 
-  group('Managed-mode transport policy integration', () {
+  group('Cloud-origin transport policy integration', () {
     test(
-      'stored http:// URL is rejected in managed mode before any network call',
+      'stored http:// cloud URL is rejected before any network call',
       () async {
         final storage = SecureStorageService();
-        await storage.setServerUrl('http://insecure.test');
+        await storage.setServerUrl('http://app.endurain.test');
 
-        const managed = AppConfig(transportMode: AppTransportMode.managed);
+        const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
         final service = ServerSettingsService(
-          urlResolver: ServerUrlResolver(storage: storage, config: managed),
+          urlResolver: ServerUrlResolver(storage: storage, config: config),
           httpClient: _AssertNoCallHttpClient(),
         );
 
@@ -50,14 +50,14 @@ void main() {
       },
     );
 
-    test('stored http:// URL is accepted in selfHosted mode', () async {
+    test('stored http:// self-hosted URL is accepted', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('http://local.test');
 
-      const selfHosted = AppConfig(transportMode: AppTransportMode.selfHosted);
-      final resolver = ServerUrlResolver(storage: storage, config: selfHosted);
+      const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
+      final resolver = ServerUrlResolver(storage: storage, config: config);
 
-      // Resolving succeeds — the URL is returned without throwing.
+      // A self-hosted origin (not the cloud host) may use http://.
       final url = await resolver.resolve();
       expect(url, 'http://local.test');
     });

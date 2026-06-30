@@ -15,14 +15,17 @@ void main() {
     test('default constructor uses AppConfig.defaults', () {
       final services = AppServices();
       expect(services.config, AppConfig.defaults);
-      expect(services.config.transportMode, AppTransportMode.selfHosted);
+      expect(services.config.cloudBaseUrl, isNull);
     });
 
     test('constructor preserves supplied config', () {
-      const managed = AppConfig(transportMode: AppTransportMode.managed);
-      final services = AppServices(config: managed);
-      expect(services.config.transportMode, AppTransportMode.managed);
-      expect(services.config.allowInsecureTransport, isFalse);
+      const custom = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
+      final services = AppServices(config: custom);
+      expect(services.config.cloudBaseUrl, 'https://app.endurain.test');
+      expect(
+        services.config.allowInsecureTransportFor('http://app.endurain.test'),
+        isFalse,
+      );
     });
 
     test('activityRecordingController is an app-lifetime singleton', () {

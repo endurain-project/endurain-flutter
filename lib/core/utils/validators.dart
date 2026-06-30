@@ -17,11 +17,10 @@ class Validators {
 
   /// Validate that a URL is properly formatted.
   ///
-  /// In [AppTransportMode.selfHosted] (the default), both `http://` and
-  /// `https://` URLs are accepted.
-  ///
-  /// In [AppTransportMode.managed], plain `http://` URLs are rejected with
-  /// [AppLocalizations.invalidUrl] before any network call is made.
+  /// Self-hosted instances accept both `http://` and `https://` URLs. For the
+  /// configured Endurain Cloud origin (see
+  /// [AppConfig.allowInsecureTransportFor]), plain `http://` URLs are rejected
+  /// with [AppLocalizations.invalidUrl] before any network call is made.
   static String? validateUrl(
     String? value,
     AppLocalizations l10n, {
