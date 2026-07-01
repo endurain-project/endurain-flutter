@@ -41,7 +41,13 @@ GoRouter buildAppRouter({
         path: AppRoutes.login,
         builder: (context, state) => LoginScreen(
           onLoginSuccess: onLoginSuccess,
-          onContinueOffline: onContinueOffline,
+          // Opting into guest mode does not move the app on its own: the guard
+          // intentionally lets a guest stay on login (so a guest opened from
+          // Settings can connect a server), so navigate to home explicitly.
+          onContinueOffline: () {
+            onContinueOffline();
+            context.go(AppRoutes.home);
+          },
           // A guest reaching login came from the app (e.g. Settings) and can
           // return to it; a first-launch user has nowhere to go back to.
           onCancel: session.isGuest ? () => context.go(AppRoutes.home) : null,
