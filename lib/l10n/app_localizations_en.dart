@@ -195,6 +195,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Login';
 
   @override
+  String get continueWithoutServer => 'Continue without a server';
+
+  @override
   String get logout => 'Logout';
 
   @override
@@ -538,6 +541,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get serverSettings => 'Server';
+
+  @override
+  String get signInConnectServer => 'Sign in or connect a server';
+
+  @override
+  String get signInConnectServerSubtitle =>
+      'Record offline now and sync your activities later';
 
   @override
   String get serverSettingsTitle => 'Server settings';

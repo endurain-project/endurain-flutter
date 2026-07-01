@@ -10,10 +10,11 @@ import 'package:endurain/shared/widgets/app_bottom_nav.dart';
 ///
 /// Routing is driven declaratively by [AuthSessionController]: the session
 /// controller is wired as the router's `refreshListenable`, so every session
-/// change (sign-in, sign-out, revalidation, the initial load completing) re-runs
-/// [resolveRedirect] and moves the app between the splash, login, and home
-/// destinations. Screens never push these top-level destinations imperatively —
-/// they update session state and let the guard react.
+/// change (sign-in, choosing offline/guest mode, sign-out, revalidation, the
+/// initial load completing) re-runs [resolveRedirect] and moves the app between
+/// the splash, login, and home destinations. Screens never push these
+/// top-level destinations imperatively — they update session state and let the
+/// guard react.
 ///
 /// Extending: add new top-level destinations as sibling [GoRoute]s and gate
 /// them inside [resolveRedirect]. When the bottom-navigation tabs need their
@@ -23,15 +24,13 @@ GoRouter buildAppRouter({
   required AuthSessionController session,
   required VoidCallback onLoginSuccess,
   required VoidCallback onLogout,
+  required VoidCallback onContinueOffline,
 }) {
   return GoRouter(
     initialLocation: AppRoutes.loading,
     refreshListenable: session,
-    redirect: (context, state) => resolveRedirect(
-      isLoading: session.isLoading,
-      isAuthenticated: session.isAuthenticated,
-      location: state.matchedLocation,
-    ),
+    redirect: (context, state) =>
+        resolveRedirect(mode: session.mode, location: state.matchedLocation),
     routes: [
       GoRoute(
         path: AppRoutes.loading,
@@ -40,35 +39,48 @@ GoRouter buildAppRouter({
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) =>
-            LoginScreen(onLoginSuccess: onLoginSuccess),
+        builder: (context, state) => LoginScreen(
+          onLoginSuccess: onLoginSuccess,
+          onContinueOffline: onContinueOffline,
+          // A guest reaching login came from the app (e.g. Settings) and can
+          // return to it; a first-launch user has nowhere to go back to.
+          onCancel: session.isGuest ? () => context.go(AppRoutes.home) : null,
+        ),
       ),
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => AppBottomNav(onLogout: onLogout),
+        builder: (context, state) => AppBottomNav(
+          onLogout: onLogout,
+          isGuest: session.isGuest,
+          onSignIn: () => context.go(AppRoutes.login),
+        ),
       ),
     ],
   );
 }
 
-/// Resolves the destination for [location] given the current session flags.
+/// Resolves the destination for [location] given the current session [mode].
 ///
 /// Returns `null` to stay on the current location, or the path to redirect to.
 /// While the session is still loading the app stays on the splash; an
-/// unauthenticated session is pinned to login and an authenticated one to home.
-/// Extracted as a pure function so the guard contract is unit-testable without
-/// a widget tree or services.
+/// unauthenticated session is pinned to login; an authenticated one to home. A
+/// [SessionMode.guest] session lives on home but may also visit login (to
+/// connect a server later). Extracted as a pure function so the guard contract
+/// is unit-testable without a widget tree or services.
 @visibleForTesting
-String? resolveRedirect({
-  required bool isLoading,
-  required bool isAuthenticated,
-  required String location,
-}) {
-  if (isLoading) {
-    return location == AppRoutes.loading ? null : AppRoutes.loading;
+String? resolveRedirect({required SessionMode mode, required String location}) {
+  switch (mode) {
+    case SessionMode.loading:
+      return location == AppRoutes.loading ? null : AppRoutes.loading;
+    case SessionMode.unauthenticated:
+      return location == AppRoutes.login ? null : AppRoutes.login;
+    case SessionMode.guest:
+      // Guests use the app locally and may open login to connect a server.
+      if (location == AppRoutes.login) {
+        return null;
+      }
+      return location == AppRoutes.home ? null : AppRoutes.home;
+    case SessionMode.authenticated:
+      return location == AppRoutes.home ? null : AppRoutes.home;
   }
-  if (!isAuthenticated) {
-    return location == AppRoutes.login ? null : AppRoutes.login;
-  }
-  return location == AppRoutes.home ? null : AppRoutes.home;
 }

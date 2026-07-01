@@ -28,12 +28,14 @@ class ActivityUploadQueue {
     required LocalActivityRepository repository,
     required ActivityUploadService uploadService,
     ActivityRetentionSettingsRepository? retentionSettingsRepository,
+    Future<bool> Function()? isUploadAuthorized,
     DiagnosticsRecorder? diagnostics,
     DateTime Function()? now,
     Stream<bool>? connectivitySignal,
   }) : _repository = repository,
        _uploadService = uploadService,
        _retentionSettingsRepository = retentionSettingsRepository,
+       _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _now = now ?? DateTime.now {
     if (connectivitySignal != null) {
@@ -45,6 +47,8 @@ class ActivityUploadQueue {
     }
   }
 
+  static Future<bool> _alwaysAuthorized() async => true;
+
   static const Set<LocalActivityUploadStatus> _drainableStatuses = {
     LocalActivityUploadStatus.pending,
     LocalActivityUploadStatus.failed,
@@ -53,6 +57,7 @@ class ActivityUploadQueue {
   final LocalActivityRepository _repository;
   final ActivityUploadService _uploadService;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
+  final Future<bool> Function() _isUploadAuthorized;
   final DiagnosticsRecorder _diagnostics;
   final DateTime Function() _now;
 
@@ -72,6 +77,11 @@ class ActivityUploadQueue {
 
   Future<void> _drain() async {
     if (!_uploadService.isConfigured) {
+      return;
+    }
+    // Skip while unauthenticated (e.g. offline guest mode): activities stay
+    // locally persisted as pending and drain once the user signs in.
+    if (!await _isUploadAuthorized()) {
       return;
     }
 

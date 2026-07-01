@@ -15,12 +15,23 @@ class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
     this.onLogout,
+    this.isGuest = false,
+    this.onSignIn,
     this.packageInfoService,
     this.diagnostics,
     this.activityRetentionSettings,
   });
 
   final VoidCallback? onLogout;
+
+  /// Whether the app is running in local-only guest mode (no server session).
+  /// Guests see a "sign in / connect a server" entry instead of server
+  /// settings.
+  final bool isGuest;
+
+  /// Invoked when a guest chooses to connect a server / sign in.
+  final VoidCallback? onSignIn;
+
   final PackageInfoService? packageInfoService;
   final DiagnosticsStore? diagnostics;
   final ActivityRetentionSettingsRepository? activityRetentionSettings;
@@ -90,20 +101,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 AdaptiveListSection(
                   children: [
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.dns,
-                        cupertinoIcon: CupertinoIcons.globe,
+                    if (widget.isGuest)
+                      AdaptiveListTile(
+                        leading: const AdaptiveIcon(
+                          materialIcon: Icons.login,
+                          cupertinoIcon: CupertinoIcons.square_arrow_right,
+                        ),
+                        title: l10n.signInConnectServer,
+                        subtitle: l10n.signInConnectServerSubtitle,
+                        onTap: widget.onSignIn,
+                      )
+                    else
+                      AdaptiveListTile(
+                        leading: const AdaptiveIcon(
+                          materialIcon: Icons.dns,
+                          cupertinoIcon: CupertinoIcons.globe,
+                        ),
+                        title: l10n.serverSettings,
+                        onTap: () {
+                          adaptivePush<void>(
+                            context,
+                            (context) =>
+                                ServerSettingsScreen(onLogout: widget.onLogout),
+                          );
+                        },
                       ),
-                      title: l10n.serverSettings,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) =>
-                              ServerSettingsScreen(onLogout: widget.onLogout),
-                        );
-                      },
-                    ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
                         materialIcon: Icons.history,

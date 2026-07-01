@@ -173,17 +173,56 @@ void main() {
 
       controller.dispose();
     });
+
+    testWidgets('offers offline mode and invokes the callback', (tester) async {
+      final controller = _controller(
+        client: MockClient((request) async {
+          fail('Network should not be called when continuing offline.');
+        }),
+      );
+      var continuedOffline = false;
+
+      await tester.pumpWidget(
+        _loginScreen(
+          controller: controller,
+          onContinueOffline: () => continuedOffline = true,
+        ),
+      );
+
+      await tester.tap(find.text(l10n.continueWithoutServer));
+      await tester.pump();
+
+      expect(continuedOffline, isTrue);
+
+      controller.dispose();
+    });
+
+    testWidgets('hides the offline action when no callback is provided', (
+      tester,
+    ) async {
+      final controller = _controller(client: _authOptionsClient());
+
+      await tester.pumpWidget(_loginScreen(controller: controller));
+
+      expect(find.text(l10n.continueWithoutServer), findsNothing);
+
+      controller.dispose();
+    });
   });
 }
 
 Widget _loginScreen({
   required LoginController controller,
   UrlLauncherService urlLauncherService = const UrlLauncherService(),
+  VoidCallback? onContinueOffline,
+  VoidCallback? onCancel,
 }) {
   return TestMaterialApp(
     child: LoginScreen(
       controller: controller,
       urlLauncherService: urlLauncherService,
+      onContinueOffline: onContinueOffline,
+      onCancel: onCancel,
     ),
   );
 }

@@ -203,6 +203,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get login => 'Entrar';
 
   @override
+  String get continueWithoutServer => 'Continuar sem servidor';
+
+  @override
   String get logout => 'Sair';
 
   @override
@@ -549,6 +552,13 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get serverSettings => 'Servidor';
+
+  @override
+  String get signInConnectServer => 'Iniciar sessão ou ligar a um servidor';
+
+  @override
+  String get signInConnectServerSubtitle =>
+      'Registe offline agora e sincronize as suas atividades mais tarde';
 
   @override
   String get serverSettingsTitle => 'Definições do servidor';

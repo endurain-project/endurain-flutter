@@ -349,6 +349,40 @@ void main() {
       },
     );
 
+    test(
+      'guest mode saves locally as pending without attempting upload',
+      () async {
+        final adapter = RecordingLocationPlatformAdapter();
+        final tempDirectory = await Directory.systemTemp.createTemp(
+          'endurain_guest_no_upload_',
+        );
+        addTearDown(() => tempDirectory.deleteSync(recursive: true));
+        final repository = _repositoryFor(tempDirectory);
+        final service = _recordingService(adapter: adapter);
+        final controller = ActivityRecordingController(
+          recordingService: service,
+          localActivityRepository: repository,
+          localActivityIdProvider: () => 'guest_activity',
+          // A 201 upload service would mark the record uploaded if it were
+          // ever called; the authorization gate must prevent that.
+          uploadService: _uploadServiceReturning(201),
+          isUploadAuthorized: () async => false,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.start(ActivityType.run);
+        adapter.addPosition(recordingPosition());
+        await pumpEventQueue();
+        await controller.stop();
+        await pumpEventQueue();
+
+        final record = (await repository.list()).single;
+        expect(controller.uploadStatus, ActivityUploadStatus.idle);
+        expect(record.uploadStatus, LocalActivityUploadStatus.pending);
+        expect(await repository.hasGpx(record), isTrue);
+      },
+    );
+
     test('marks auth failures with safe local upload error code', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final tempDirectory = await Directory.systemTemp.createTemp(

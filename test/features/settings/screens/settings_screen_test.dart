@@ -45,6 +45,33 @@ void main() {
     expect(find.text(l10n.diagnostics), findsOneWidget);
     expect(find.textContaining('Endurain • 1.2.3'), findsOneWidget);
   });
+
+  testWidgets('SettingsScreen shows a sign-in entry in guest mode', (
+    tester,
+  ) async {
+    var signInTapped = false;
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: SettingsScreen(
+          isGuest: true,
+          onSignIn: () => signInTapped = true,
+          packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
+          activityRetentionSettings: _FakeActivityRetentionSettings(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Guests see the connect-a-server entry instead of server settings.
+    expect(find.text(l10n.signInConnectServer), findsOneWidget);
+    expect(find.text(l10n.serverSettings), findsNothing);
+
+    await tester.tap(find.text(l10n.signInConnectServer));
+    await tester.pumpAndSettle();
+    expect(signInTapped, isTrue);
+  });
 }
 
 class _FakeActivityRetentionSettings

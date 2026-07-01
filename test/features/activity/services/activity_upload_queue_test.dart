@@ -132,6 +132,48 @@ void main() {
       expect(calls, 0);
     });
 
+    test('does not drain while upload is unauthorized (guest mode)', () async {
+      await _createRecord(
+        repository,
+        id: 'q_guest',
+        status: LocalActivityUploadStatus.pending,
+      );
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+        isUploadAuthorized: () async => false,
+      );
+
+      await queue.drain();
+
+      expect(attemptedKeys, isEmpty);
+      final records = await repository.list();
+      expect(records.single.uploadStatus, LocalActivityUploadStatus.pending);
+    });
+
+    test('drains once upload becomes authorized', () async {
+      await _createRecord(
+        repository,
+        id: 'q_authorized',
+        status: LocalActivityUploadStatus.pending,
+      );
+      var authorized = false;
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+        isUploadAuthorized: () async => authorized,
+      );
+
+      await queue.drain();
+      expect(attemptedKeys, isEmpty);
+
+      authorized = true;
+      await queue.drain();
+      expect(attemptedKeys, ['q_authorized']);
+    });
+
     test('concurrent drain calls share a single run', () async {
       await _createRecord(
         repository,

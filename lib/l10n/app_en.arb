@@ -264,6 +264,10 @@
   "@login": {
     "description": "Login button label"
   },
+  "continueWithoutServer": "Continue without a server",
+  "@continueWithoutServer": {
+    "description": "Secondary button to use the app offline without configuring a server - Used in: login_screen.dart"
+  },
   "logout": "Logout",
   "@logout": {
     "description": "Logout button label - Used in: settings_screen.dart, server_settings_screen.dart"
@@ -720,6 +724,14 @@
   "serverSettings": "Server",
   "@serverSettings": {
     "description": "Server settings navigation label - Used in: settings_screen.dart"
+  },
+  "signInConnectServer": "Sign in or connect a server",
+  "@signInConnectServer": {
+    "description": "Settings entry shown in offline guest mode to connect a server and sign in - Used in: settings_screen.dart"
+  },
+  "signInConnectServerSubtitle": "Record offline now and sync your activities later",
+  "@signInConnectServerSubtitle": {
+    "description": "Subtitle for the offline guest sign-in entry - Used in: settings_screen.dart"
   },
   "serverSettingsTitle": "Server settings",
   "@serverSettingsTitle": {

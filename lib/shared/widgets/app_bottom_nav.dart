@@ -7,9 +7,20 @@ import 'package:endurain/features/settings/screens/settings_screen.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 
 class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({super.key, this.onLogout});
+  const AppBottomNav({
+    super.key,
+    this.onLogout,
+    this.isGuest = false,
+    this.onSignIn,
+  });
 
   final VoidCallback? onLogout;
+
+  /// Whether the app is running in local-only guest mode (no server session).
+  final bool isGuest;
+
+  /// Invoked from Settings when a guest wants to connect a server / sign in.
+  final VoidCallback? onSignIn;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +40,11 @@ class AppBottomNav extends StatelessWidget {
           label: l10n.settingsTab,
           materialIcon: Icons.settings,
           cupertinoIcon: CupertinoIcons.settings,
-          builder: (context) => SettingsScreen(onLogout: onLogout),
+          builder: (context) => SettingsScreen(
+            onLogout: onLogout,
+            isGuest: isGuest,
+            onSignIn: onSignIn,
+          ),
         ),
       ],
     );

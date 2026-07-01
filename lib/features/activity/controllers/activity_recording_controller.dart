@@ -29,6 +29,7 @@ class ActivityRecordingController extends ChangeNotifier {
     LocalActivityRepository? localActivityRepository,
     LocalActivitySummaryBuilder? localActivitySummaryBuilder,
     ActivityRetentionSettingsRepository? retentionSettingsRepository,
+    Future<bool> Function()? isUploadAuthorized,
     DiagnosticsRecorder? diagnostics,
     String Function()? localActivityIdProvider,
     DateTime Function()? now,
@@ -41,6 +42,7 @@ class ActivityRecordingController extends ChangeNotifier {
        _localActivitySummaryBuilder =
            localActivitySummaryBuilder ?? LocalActivitySummaryBuilder(),
        _retentionSettingsRepository = retentionSettingsRepository,
+       _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
        _now = now ?? DateTime.now,
@@ -50,12 +52,15 @@ class ActivityRecordingController extends ChangeNotifier {
     });
   }
 
+  static Future<bool> _alwaysAuthorized() async => true;
+
   final ActivityRecordingService _recordingService;
   final ActivityGpxBuilder _gpxBuilder;
   final ActivityUploadService _uploadService;
   final LocalActivityRepository _localActivityRepository;
   final LocalActivitySummaryBuilder _localActivitySummaryBuilder;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
+  final Future<bool> Function() _isUploadAuthorized;
   final DiagnosticsRecorder _diagnostics;
   final String Function() _localActivityIdProvider;
   final DateTime Function() _now;
@@ -153,7 +158,12 @@ class ActivityRecordingController extends ChangeNotifier {
         return;
       }
       _setState(completedState.copyWith(localActivityId: localRecord.id));
-      unawaited(uploadCompletedGpx());
+      // Only attempt an immediate upload when a server session is available.
+      // In offline guest mode the record stays locally persisted as pending
+      // and the upload queue drains it once the user signs in.
+      if (await _isUploadAuthorized()) {
+        unawaited(uploadCompletedGpx());
+      }
       return;
     }
     _completedGpx = null;

@@ -264,6 +264,10 @@
   "@login": {
     "description": "Rótulo do botão de login"
   },
+  "continueWithoutServer": "Continuar sem servidor",
+  "@continueWithoutServer": {
+    "description": "Secondary button to use the app offline without configuring a server - Used in: login_screen.dart"
+  },
   "logout": "Sair",
   "@logout": {
     "description": "Rótulo do botão de logout - Usado em: settings_screen.dart, server_settings_screen.dart"
@@ -720,6 +724,14 @@
   "serverSettings": "Servidor",
   "@serverSettings": {
     "description": "Rótulo de navegação para configurações do servidor - Usado em: settings_screen.dart"
+  },
+  "signInConnectServer": "Iniciar sessão ou ligar a um servidor",
+  "@signInConnectServer": {
+    "description": "Settings entry shown in offline guest mode to connect a server and sign in - Used in: settings_screen.dart"
+  },
+  "signInConnectServerSubtitle": "Registe offline agora e sincronize as suas atividades mais tarde",
+  "@signInConnectServerSubtitle": {
+    "description": "Subtitle for the offline guest sign-in entry - Used in: settings_screen.dart"
   },
   "serverSettingsTitle": "Definições do servidor",
   "@serverSettingsTitle": {

@@ -100,6 +100,7 @@ class AppServices {
     repository: localActivities,
     uploadService: activityUpload,
     retentionSettingsRepository: activityRetentionSettings,
+    isUploadAuthorized: auth.isAuthenticated,
     diagnostics: diagnostics,
     connectivitySignal: connectivity.onOnlineChanged,
   );
@@ -115,6 +116,7 @@ class AppServices {
         uploadService: activityUpload,
         localActivityRepository: localActivities,
         retentionSettingsRepository: activityRetentionSettings,
+        isUploadAuthorized: auth.isAuthenticated,
         diagnostics: diagnostics,
       );
 

@@ -22,6 +22,8 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({
     super.key,
     this.onLoginSuccess,
+    this.onContinueOffline,
+    this.onCancel,
     this.authService,
     this.ssoService,
     this.serverSettingsService,
@@ -31,6 +33,15 @@ class LoginScreen extends StatefulWidget {
   });
 
   final VoidCallback? onLoginSuccess;
+
+  /// Invoked when the user opts to use the app offline without a server.
+  /// When null the "continue without a server" action is hidden.
+  final VoidCallback? onContinueOffline;
+
+  /// Invoked to dismiss the login screen and return to the app. Provided only
+  /// when there is somewhere to return to (i.e. an existing guest session).
+  final VoidCallback? onCancel;
+
   final AuthService? authService;
   final SsoService? ssoService;
   final ServerSettingsService? serverSettingsService;
@@ -166,6 +177,22 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     _controller.backFromMfa();
   }
 
+  /// Leading app-bar control for the current step:
+  /// - back to the server step from the login/SSO step,
+  /// - dismiss to the app from the first step when a guest session can return.
+  Widget? _buildLeading() {
+    if (_controller.showMfaInput) {
+      return null;
+    }
+    if (_controller.isStep2) {
+      return AdaptiveBackButton(onPressed: _goBackToServerStep);
+    }
+    if (widget.onCancel != null) {
+      return AdaptiveBackButton(onPressed: widget.onCancel!);
+    }
+    return null;
+  }
+
   /// Build SSO provider icon widget
   /// Checks for local asset first, then tries URL, with fallback icon
   Widget _buildSsoIcon(IdentityProvider idp) {
@@ -221,9 +248,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
 
     return AdaptiveScaffold(
       title: _controller.showMfaInput ? l10n.mfaTitle : l10n.loginTitle,
-      leading: _controller.isStep2 && !_controller.showMfaInput
-          ? AdaptiveBackButton(onPressed: _goBackToServerStep)
-          : null,
+      leading: _buildLeading(),
       body: _controller.isLoading
           ? const Center(child: AdaptiveLoadingIndicator())
           : Form(
@@ -277,6 +302,15 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         onPressed: _handleServerUrlNext,
         expand: true,
       ),
+      if (widget.onContinueOffline != null) ...[
+        const SizedBox(height: UIConstants.paddingMedium),
+        AdaptiveButton(
+          label: l10n.continueWithoutServer,
+          variant: AdaptiveButtonVariant.secondary,
+          onPressed: widget.onContinueOffline,
+          expand: true,
+        ),
+      ],
     ];
   }
 
