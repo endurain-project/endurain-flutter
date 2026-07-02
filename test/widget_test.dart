@@ -8,8 +8,6 @@ import 'package:endurain/features/auth/controllers/auth_session_controller.dart'
 import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 
-import 'helpers/fake_preferences_store.dart';
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -17,16 +15,15 @@ void main() {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
   });
 
-  testWidgets('App shows login when unauthenticated', (
+  testWidgets('App shows the login screen for a signed-out session', (
     WidgetTester tester,
   ) async {
-    // Inject an in-memory preferences store: real file I/O does not complete
-    // under `pumpAndSettle`, which would otherwise leave the session stuck on
-    // the splash screen.
+    // The app is local-first, so a fresh launch goes straight to the map
+    // (guest). Drive the injected controller into the signed-out state to
+    // assert that the login screen still renders after a user signs out.
     final sessionController = AuthSessionController(
       authService: AuthService(storage: SecureStorageService()),
-      preferences: FakePreferencesStore(),
-    );
+    )..markUnauthenticated();
     addTearDown(sessionController.dispose);
 
     await tester.pumpWidget(App(sessionController: sessionController));

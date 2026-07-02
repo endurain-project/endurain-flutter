@@ -45,7 +45,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         widget.sessionController ??
         AuthSessionController(
           authService: widget.authService ?? _services.auth,
-          preferences: _services.preferences,
         );
     // The router redirects declaratively off the session state; no manual
     // listener/setState is needed here (see `app_router.dart`).
@@ -55,7 +54,11 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       onLogout: _onLogout,
       onContinueOffline: _onContinueOffline,
     );
-    _sessionController.initialize();
+    // Bootstrap the initial session only for controllers we own; an injected
+    // controller (in tests) is set up by whoever supplied it.
+    if (_ownsSessionController) {
+      _sessionController.initialize();
+    }
   }
 
   @override
@@ -96,7 +99,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   }
 
   void _onContinueOffline() {
-    unawaited(_sessionController.continueAsGuest());
+    _sessionController.continueAsGuest();
   }
 
   @override
