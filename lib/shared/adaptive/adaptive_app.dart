@@ -28,7 +28,8 @@ class AdaptiveApp extends StatelessWidget {
   final RouterConfig<Object>? routerConfig;
 
   /// The active locale, or `null` to follow the system locale. Resolved
-  /// against [AppLocalizations.supportedLocales] by the underlying app widget.
+  /// against [appSupportedLocales] via [appLocaleListResolution] by the
+  /// underlying app widget, so any Portuguese variant maps to `pt-PT`.
   final Locale? locale;
 
   @override
@@ -53,6 +54,7 @@ class AdaptiveApp extends StatelessWidget {
           locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: appSupportedLocales,
+          localeListResolutionCallback: appLocaleListResolution,
           routerConfig: router,
         );
       }
@@ -64,6 +66,7 @@ class AdaptiveApp extends StatelessWidget {
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: appSupportedLocales,
+        localeListResolutionCallback: appLocaleListResolution,
         home: home,
       );
     }
@@ -77,6 +80,7 @@ class AdaptiveApp extends StatelessWidget {
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: appSupportedLocales,
+        localeListResolutionCallback: appLocaleListResolution,
         routerConfig: router,
       );
     }
@@ -89,6 +93,7 @@ class AdaptiveApp extends StatelessWidget {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: appSupportedLocales,
+      localeListResolutionCallback: appLocaleListResolution,
       home: home,
     );
   }

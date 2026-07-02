@@ -32,4 +32,44 @@ void main() {
       );
     });
   });
+
+  group('appLocaleListResolution', () {
+    Locale resolve(List<Locale>? preferred) =>
+        appLocaleListResolution(preferred, appSupportedLocales);
+
+    test('maps unqualified Portuguese to pt-PT', () {
+      expect(resolve(const [Locale('pt')]), const Locale('pt', 'PT'));
+    });
+
+    test('maps Brazilian Portuguese to pt-PT', () {
+      expect(resolve(const [Locale('pt', 'BR')]), const Locale('pt', 'PT'));
+    });
+
+    test('keeps European Portuguese as pt-PT', () {
+      expect(resolve(const [Locale('pt', 'PT')]), const Locale('pt', 'PT'));
+    });
+
+    test('serves Portuguese when it leads the preference list', () {
+      expect(
+        resolve(const [Locale('pt', 'BR'), Locale('en')]),
+        const Locale('pt', 'PT'),
+      );
+    });
+
+    test('respects an English-first preference over Portuguese', () {
+      expect(
+        resolve(const [Locale('en', 'US'), Locale('pt', 'BR')]),
+        const Locale('en'),
+      );
+    });
+
+    test('falls back to the first supported locale for other languages', () {
+      expect(resolve(const [Locale('fr')]), const Locale('en'));
+    });
+
+    test('falls back to the first supported locale when none is provided', () {
+      expect(resolve(null), const Locale('en'));
+      expect(resolve(const []), const Locale('en'));
+    });
+  });
 }
