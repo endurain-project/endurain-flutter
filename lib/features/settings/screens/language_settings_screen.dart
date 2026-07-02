@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -53,7 +54,7 @@ class LanguageSettingsScreen extends StatelessWidget {
                     selected: selected == null,
                     onTap: () => _select(context, controller, null),
                   ),
-                  for (final locale in AppLocalizations.supportedLocales)
+                  for (final locale in appSupportedLocales)
                     _LanguageOptionTile(
                       label: languageDisplayName(locale),
                       selected: selected?.languageCode == locale.languageCode,

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/theme/app_theme.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -51,7 +52,7 @@ class AdaptiveApp extends StatelessWidget {
           builder: cupertinoBuilder,
           locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
+          supportedLocales: appSupportedLocales,
           routerConfig: router,
         );
       }
@@ -62,7 +63,7 @@ class AdaptiveApp extends StatelessWidget {
         builder: cupertinoBuilder,
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+        supportedLocales: appSupportedLocales,
         home: home,
       );
     }
@@ -75,7 +76,7 @@ class AdaptiveApp extends StatelessWidget {
         themeMode: ThemeMode.system,
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+        supportedLocales: appSupportedLocales,
         routerConfig: router,
       );
     }
@@ -87,7 +88,7 @@ class AdaptiveApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+      supportedLocales: appSupportedLocales,
       home: home,
     );
   }

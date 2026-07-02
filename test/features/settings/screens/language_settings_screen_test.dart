@@ -91,6 +91,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.locale?.languageCode, 'pt');
+    expect(controller.locale?.countryCode, 'PT');
     // The picker popped back to the host route.
     expect(find.text('Português'), findsNothing);
   });

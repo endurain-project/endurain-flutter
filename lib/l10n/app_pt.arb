@@ -1,6 +1,6 @@
 {
   "@@locale": "pt",
-  "@@context": "Endurain Mobile - Traduções em português organizadas por funcionalidade",
+  "@@context": "Endurain Mobile - Traduções em português europeu (pt-PT) organizadas por funcionalidade; geradas como o locale base 'pt'",
   "@sectionCommon": "=== COMUM / PARTILHADO (core/utils/dialog_utils.dart, core/utils/validators.dart) ===",
   "error": "Erro",
   "@error": {
