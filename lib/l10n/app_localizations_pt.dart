@@ -203,9 +203,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get login => 'Entrar';
 
   @override
-  String get continueWithoutServer => 'Continuar sem servidor';
-
-  @override
   String get logout => 'Sair';
 
   @override

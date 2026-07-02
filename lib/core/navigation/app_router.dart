@@ -24,7 +24,6 @@ GoRouter buildAppRouter({
   required AuthSessionController session,
   required VoidCallback onLoginSuccess,
   required VoidCallback onLogout,
-  required VoidCallback onContinueOffline,
 }) {
   return GoRouter(
     initialLocation: AppRoutes.loading,
@@ -41,16 +40,9 @@ GoRouter buildAppRouter({
         path: AppRoutes.login,
         builder: (context, state) => LoginScreen(
           onLoginSuccess: onLoginSuccess,
-          // Opting into guest mode does not move the app on its own: the guard
-          // intentionally lets a guest stay on login (so a guest opened from
-          // Settings can connect a server), so navigate to home explicitly.
-          onContinueOffline: () {
-            onContinueOffline();
-            context.go(AppRoutes.home);
-          },
-          // A guest reaching login came from the app (e.g. Settings) and can
-          // return to it; a first-launch user has nowhere to go back to.
-          onCancel: session.isGuest ? () => context.go(AppRoutes.home) : null,
+          // The login screen is only ever reached by a guest opening it from
+          // the app (e.g. Settings), so it can always return to the map.
+          onCancel: () => context.go(AppRoutes.home),
         ),
       ),
       GoRoute(
@@ -68,18 +60,16 @@ GoRouter buildAppRouter({
 /// Resolves the destination for [location] given the current session [mode].
 ///
 /// Returns `null` to stay on the current location, or the path to redirect to.
-/// While the session is still loading the app stays on the splash; an
-/// unauthenticated session is pinned to login; an authenticated one to home. A
-/// [SessionMode.guest] session lives on home but may also visit login (to
-/// connect a server later). Extracted as a pure function so the guard contract
-/// is unit-testable without a widget tree or services.
+/// While the session is still loading the app stays on the splash. Both
+/// [SessionMode.guest] and [SessionMode.authenticated] live on home; a guest
+/// may additionally visit login (to connect a server). Extracted as a pure
+/// function so the guard contract is unit-testable without a widget tree or
+/// services.
 @visibleForTesting
 String? resolveRedirect({required SessionMode mode, required String location}) {
   switch (mode) {
     case SessionMode.loading:
       return location == AppRoutes.loading ? null : AppRoutes.loading;
-    case SessionMode.unauthenticated:
-      return location == AppRoutes.login ? null : AppRoutes.login;
     case SessionMode.guest:
       // Guests use the app locally and may open login to connect a server.
       if (location == AppRoutes.login) {

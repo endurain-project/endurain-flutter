@@ -5,17 +5,16 @@ import 'package:endurain/core/services/auth_service.dart';
 ///
 /// The app is local-first: recording and local storage never require a server,
 /// so the app launches straight into local-only [guest] mode. Users connect a
-/// server later (from Settings) to enable uploads and server features.
+/// server later (from Settings) to enable uploads and server features, and
+/// signing out simply drops back to [guest].
 enum SessionMode {
   /// The initial session check is still running (splash).
   loading,
 
-  /// The user signed out and is being shown the login/onboarding screen.
-  unauthenticated,
-
   /// Local-only mode with no server session: activities are recorded and
   /// stored locally and uploads are deferred until sign-in. This is the
-  /// default on launch when no valid server session exists.
+  /// default whenever there is no valid server session (launch, sign-out,
+  /// session expiry).
   guest,
 
   /// A valid server session exists; uploads and server features are enabled.
@@ -52,13 +51,9 @@ class AuthSessionController extends ChangeNotifier {
     _setMode(SessionMode.authenticated);
   }
 
-  /// Shows the login/onboarding screen (e.g. after signing out).
-  void markUnauthenticated() {
-    _setMode(SessionMode.unauthenticated);
-  }
-
-  /// Enters local-only "guest" mode so the user can record activities without
-  /// configuring a server (e.g. via the login screen's offline action).
+  /// Drops to local-only "guest" mode (used on launch, after signing out, and
+  /// when a server session expires). Activities keep recording locally and
+  /// uploads resume once the user signs in again.
   void continueAsGuest() {
     _setMode(SessionMode.guest);
   }
@@ -67,14 +62,15 @@ class AuthSessionController extends ChangeNotifier {
   ///
   /// Only acts on an authenticated session, so it is safe to call on every
   /// app-resumed lifecycle event (guest/loading are left untouched). When the
-  /// session has expired the mode drops to [SessionMode.unauthenticated].
+  /// session has expired the mode drops back to [SessionMode.guest] so the app
+  /// stays usable locally until the user signs in again.
   Future<void> revalidate() async {
     if (_mode != SessionMode.authenticated) {
       return;
     }
     final stillAuthenticated = await _authService.isAuthenticated();
     if (!stillAuthenticated) {
-      _setMode(SessionMode.unauthenticated);
+      _setMode(SessionMode.guest);
     }
   }
 

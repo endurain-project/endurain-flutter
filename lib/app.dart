@@ -52,7 +52,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       session: _sessionController,
       onLoginSuccess: _onLoginSuccess,
       onLogout: _onLogout,
-      onContinueOffline: _onContinueOffline,
     );
     // Bootstrap the initial session only for controllers we own; an injected
     // controller (in tests) is set up by whoever supplied it.
@@ -95,10 +94,8 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   }
 
   void _onLogout() {
-    _sessionController.markUnauthenticated();
-  }
-
-  void _onContinueOffline() {
+    // Local-first: signing out drops back to the map in guest mode rather than
+    // gating the app behind the login screen.
     _sessionController.continueAsGuest();
   }
 

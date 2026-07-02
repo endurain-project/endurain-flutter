@@ -22,7 +22,6 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({
     super.key,
     this.onLoginSuccess,
-    this.onContinueOffline,
     this.onCancel,
     this.authService,
     this.ssoService,
@@ -33,10 +32,6 @@ class LoginScreen extends StatefulWidget {
   });
 
   final VoidCallback? onLoginSuccess;
-
-  /// Invoked when the user opts to use the app offline without a server.
-  /// When null the "continue without a server" action is hidden.
-  final VoidCallback? onContinueOffline;
 
   /// Invoked to dismiss the login screen and return to the app. Provided only
   /// when there is somewhere to return to (i.e. an existing guest session).
@@ -302,15 +297,6 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         onPressed: _handleServerUrlNext,
         expand: true,
       ),
-      if (widget.onContinueOffline != null) ...[
-        const SizedBox(height: UIConstants.paddingMedium),
-        AdaptiveButton(
-          label: l10n.continueWithoutServer,
-          variant: AdaptiveButtonVariant.secondary,
-          onPressed: widget.onContinueOffline,
-          expand: true,
-        ),
-      ],
     ];
   }
 

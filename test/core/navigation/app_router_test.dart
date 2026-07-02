@@ -16,23 +16,6 @@ void main() {
       );
     });
 
-    test('sends an unauthenticated session to login', () {
-      expect(
-        resolveRedirect(
-          mode: SessionMode.unauthenticated,
-          location: AppRoutes.home,
-        ),
-        AppRoutes.login,
-      );
-      expect(
-        resolveRedirect(
-          mode: SessionMode.unauthenticated,
-          location: AppRoutes.login,
-        ),
-        isNull,
-      );
-    });
-
     test('sends an authenticated session to home', () {
       expect(
         resolveRedirect(

@@ -54,7 +54,7 @@ void main() {
       controller.dispose();
     });
 
-    test('marks session authentication state explicitly', () {
+    test('marks authenticated then drops back to guest', () {
       final controller = AuthSessionController(
         authService: AuthService(storage: SecureStorageService()),
       );
@@ -63,29 +63,14 @@ void main() {
       expect(controller.isAuthenticated, isTrue);
       expect(controller.isLoading, isFalse);
 
-      controller.markUnauthenticated();
-      expect(controller.mode, SessionMode.unauthenticated);
+      controller.continueAsGuest();
+      expect(controller.mode, SessionMode.guest);
       expect(controller.isAuthenticated, isFalse);
       expect(controller.isLoading, isFalse);
       controller.dispose();
     });
 
     group('revalidate', () {
-      test('does nothing when unauthenticated', () async {
-        final controller = AuthSessionController(
-          authService: _FakeAuthService(authenticated: false),
-        );
-        controller.markUnauthenticated();
-        var notified = false;
-        controller.addListener(() => notified = true);
-
-        await controller.revalidate();
-
-        expect(notified, isFalse);
-        expect(controller.isAuthenticated, isFalse);
-        controller.dispose();
-      });
-
       test('does nothing in guest mode', () async {
         final controller = AuthSessionController(
           authService: _FakeAuthService(authenticated: false),
@@ -117,7 +102,7 @@ void main() {
         controller.dispose();
       });
 
-      test('marks unauthenticated when session expires on resume', () async {
+      test('drops to guest when the session expires on resume', () async {
         final controller = AuthSessionController(
           authService: _FakeAuthService(authenticated: false),
         );
@@ -128,6 +113,7 @@ void main() {
         await controller.revalidate();
 
         expect(notified, isTrue);
+        expect(controller.isGuest, isTrue);
         expect(controller.isAuthenticated, isFalse);
         controller.dispose();
       });

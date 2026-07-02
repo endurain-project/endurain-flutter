@@ -195,9 +195,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Login';
 
   @override
-  String get continueWithoutServer => 'Continue without a server';
-
-  @override
   String get logout => 'Logout';
 
   @override

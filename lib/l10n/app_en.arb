@@ -264,10 +264,6 @@
   "@login": {
     "description": "Login button label"
   },
-  "continueWithoutServer": "Continue without a server",
-  "@continueWithoutServer": {
-    "description": "Secondary button to use the app offline without configuring a server - Used in: login_screen.dart"
-  },
   "logout": "Logout",
   "@logout": {
     "description": "Logout button label - Used in: settings_screen.dart, server_settings_screen.dart"

@@ -398,12 +398,6 @@ abstract class AppLocalizations {
   /// **'Login'**
   String get login;
 
-  /// Secondary button to use the app offline without configuring a server - Used in: login_screen.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Continue without a server'**
-  String get continueWithoutServer;
-
   /// Logout button label - Used in: settings_screen.dart, server_settings_screen.dart
   ///
   /// In en, this message translates to:
