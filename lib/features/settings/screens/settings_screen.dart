@@ -6,7 +6,9 @@ import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/package_info_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
+import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
+import 'package:endurain/features/settings/screens/language_settings_screen.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -20,6 +22,7 @@ class SettingsScreen extends StatefulWidget {
     this.packageInfoService,
     this.diagnostics,
     this.activityRetentionSettings,
+    this.localeController,
   });
 
   final VoidCallback? onLogout;
@@ -35,6 +38,7 @@ class SettingsScreen extends StatefulWidget {
   final PackageInfoService? packageInfoService;
   final DiagnosticsStore? diagnostics;
   final ActivityRetentionSettingsRepository? activityRetentionSettings;
+  final LocaleController? localeController;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -90,6 +94,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final localeController =
+        widget.localeController ??
+        AppScope.servicesOf(context, listen: false).localeController;
+    final currentLocale = localeController.locale;
+    final languageSubtitle = currentLocale == null
+        ? l10n.languageSystemDefault
+        : languageDisplayName(currentLocale);
 
     return AdaptiveScaffold(
       title: l10n.settingsScreen,
@@ -126,6 +137,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           );
                         },
                       ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
+                        materialIcon: Icons.language,
+                        cupertinoIcon: CupertinoIcons.textformat,
+                      ),
+                      title: l10n.language,
+                      subtitle: languageSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const LanguageSettingsScreen(),
+                        );
+                      },
+                    ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
                         materialIcon: Icons.history,

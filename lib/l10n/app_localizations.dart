@@ -1022,6 +1022,18 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsScreen;
 
+  /// Language settings entry and screen title - Used in: settings_screen.dart, language_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// Language option that follows the device locale - Used in: settings_screen.dart, language_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get languageSystemDefault;
+
   /// Server settings navigation label - Used in: settings_screen.dart
   ///
   /// In en, this message translates to:

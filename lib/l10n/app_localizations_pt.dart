@@ -548,6 +548,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsScreen => 'Configurações';
 
   @override
+  String get language => 'Idioma';
+
+  @override
+  String get languageSystemDefault => 'Predefinição do sistema';
+
+  @override
   String get serverSettings => 'Servidor';
 
   @override

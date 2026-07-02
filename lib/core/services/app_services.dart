@@ -26,6 +26,8 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
+import 'package:endurain/features/settings/controllers/locale_controller.dart';
+import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
 import 'package:flutter/foundation.dart';
 
 class AppServices {
@@ -51,6 +53,13 @@ class AppServices {
   late final ApiEndpoints _endpoints = ApiEndpoints(config);
   late final SecureStorageService secureStorage = SecureStorageService();
   late final AppPreferencesStore preferences = AppPreferencesStore();
+
+  /// App-wide selected language, persisted as a BCP 47 tag. A `null` locale
+  /// follows the system. Owned here so the root `App` can rebuild the
+  /// localized tree when the user switches languages in Settings.
+  late final LocaleController localeController = LocaleController(
+    repository: LocaleSettingsRepository(preferences: preferences),
+  );
   late final AuthSessionStore authSession = AuthSessionStore(
     storage: secureStorage,
   );

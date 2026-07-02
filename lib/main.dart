@@ -23,6 +23,10 @@ Future<void> main() async {
       await diagnostics.initialize();
       diagnostics.recordBreadcrumbSync(DiagnosticsEvents.appStarted);
 
+      // Load the persisted language (BCP 47) before the first frame so the UI
+      // starts in the user's chosen locale rather than flashing the system one.
+      await services.localeController.load();
+
       FlutterError.onError = (details) {
         FlutterError.presentError(details);
         diagnostics.recordFlutterErrorSync(details);

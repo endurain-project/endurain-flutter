@@ -717,6 +717,14 @@
   "@settingsScreen": {
     "description": "Título do ecrã de configurações - Usado em: settings_screen.dart"
   },
+  "language": "Idioma",
+  "@language": {
+    "description": "Language settings entry and screen title - Used in: settings_screen.dart, language_settings_screen.dart"
+  },
+  "languageSystemDefault": "Predefinição do sistema",
+  "@languageSystemDefault": {
+    "description": "Language option that follows the device locale - Used in: settings_screen.dart, language_settings_screen.dart"
+  },
   "serverSettings": "Servidor",
   "@serverSettings": {
     "description": "Rótulo de navegação para configurações do servidor - Usado em: settings_screen.dart"

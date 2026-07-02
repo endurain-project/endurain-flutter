@@ -6,8 +6,12 @@ import 'package:endurain/l10n/app_localizations.dart';
 
 class AdaptiveApp extends StatelessWidget {
   /// Hosts a single [home] widget (used by tests and simple, non-routed apps).
-  const AdaptiveApp({super.key, required this.title, required this.home})
-    : routerConfig = null;
+  const AdaptiveApp({
+    super.key,
+    required this.title,
+    required this.home,
+    this.locale,
+  }) : routerConfig = null;
 
   /// Hosts a declarative [routerConfig] (e.g. a `GoRouter`) so the app gets
   /// auth-guarded, deep-link-ready navigation. Used by the production root.
@@ -15,11 +19,16 @@ class AdaptiveApp extends StatelessWidget {
     super.key,
     required this.title,
     required this.routerConfig,
+    this.locale,
   }) : home = null;
 
   final String title;
   final Widget? home;
   final RouterConfig<Object>? routerConfig;
+
+  /// The active locale, or `null` to follow the system locale. Resolved
+  /// against [AppLocalizations.supportedLocales] by the underlying app widget.
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +49,7 @@ class AdaptiveApp extends StatelessWidget {
           title: title,
           theme: AppTheme.cupertinoLightTheme,
           builder: cupertinoBuilder,
+          locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,
@@ -50,6 +60,7 @@ class AdaptiveApp extends StatelessWidget {
         title: title,
         theme: AppTheme.cupertinoLightTheme,
         builder: cupertinoBuilder,
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: home,
@@ -62,6 +73,7 @@ class AdaptiveApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
@@ -73,6 +85,7 @@ class AdaptiveApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
+      locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: home,

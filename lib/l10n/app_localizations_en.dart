@@ -537,6 +537,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsScreen => 'Settings';
 
   @override
+  String get language => 'Language';
+
+  @override
+  String get languageSystemDefault => 'System default';
+
+  @override
   String get serverSettings => 'Server';
 
   @override
