@@ -1028,10 +1028,10 @@ abstract class AppLocalizations {
   /// **'Server'**
   String get serverSettings;
 
-  /// Settings entry shown in offline guest mode to connect a server and sign in - Used in: settings_screen.dart
+  /// Settings entry shown in offline guest mode to sign in / connect a server - Used in: settings_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Sign in or connect a server'**
+  /// **'Sign in'**
   String get signInConnectServer;
 
   /// Subtitle for the offline guest sign-in entry - Used in: settings_screen.dart

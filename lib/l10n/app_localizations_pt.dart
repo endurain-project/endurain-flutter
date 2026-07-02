@@ -551,7 +551,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get serverSettings => 'Servidor';
 
   @override
-  String get signInConnectServer => 'Iniciar sessão ou ligar a um servidor';
+  String get signInConnectServer => 'Iniciar sessão';
 
   @override
   String get signInConnectServerSubtitle =>

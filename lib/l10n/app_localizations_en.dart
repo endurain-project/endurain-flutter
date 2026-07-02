@@ -540,7 +540,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverSettings => 'Server';
 
   @override
-  String get signInConnectServer => 'Sign in or connect a server';
+  String get signInConnectServer => 'Sign in';
 
   @override
   String get signInConnectServerSubtitle =>

@@ -721,9 +721,9 @@
   "@serverSettings": {
     "description": "Rótulo de navegação para configurações do servidor - Usado em: settings_screen.dart"
   },
-  "signInConnectServer": "Iniciar sessão ou ligar a um servidor",
+  "signInConnectServer": "Iniciar sessão",
   "@signInConnectServer": {
-    "description": "Settings entry shown in offline guest mode to connect a server and sign in - Used in: settings_screen.dart"
+    "description": "Settings entry shown in offline guest mode to sign in / connect a server - Used in: settings_screen.dart"
   },
   "signInConnectServerSubtitle": "Registe offline agora e sincronize as suas atividades mais tarde",
   "@signInConnectServerSubtitle": {

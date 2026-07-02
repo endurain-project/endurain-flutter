@@ -721,9 +721,9 @@
   "@serverSettings": {
     "description": "Server settings navigation label - Used in: settings_screen.dart"
   },
-  "signInConnectServer": "Sign in or connect a server",
+  "signInConnectServer": "Sign in",
   "@signInConnectServer": {
-    "description": "Settings entry shown in offline guest mode to connect a server and sign in - Used in: settings_screen.dart"
+    "description": "Settings entry shown in offline guest mode to sign in / connect a server - Used in: settings_screen.dart"
   },
   "signInConnectServerSubtitle": "Record offline now and sync your activities later",
   "@signInConnectServerSubtitle": {
