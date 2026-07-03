@@ -14,6 +14,12 @@ class AdaptiveListSection extends StatelessWidget {
     if (PlatformUtils.isApplePlatform) {
       final section = CupertinoListSection.insetGrouped(
         margin: EdgeInsets.zero,
+        // The section paints this color across its full bounds, behind the
+        // inset rounded card. Left opaque (the default is an opaque grouped
+        // background that is pure black in dark mode) it shows through the
+        // square area outside the card's corner radius as black "tips". Make
+        // it transparent so the scaffold background shows through instead.
+        backgroundColor: CupertinoColors.transparent,
         children: children,
       );
 
