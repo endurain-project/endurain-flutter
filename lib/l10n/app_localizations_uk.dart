@@ -609,6 +609,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get diagnosticsSubtitle => 'Локальний контекст збоїв';
 
   @override
+  String get sourceCode => 'Вихідний код';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Не вдалося відкрити посилання';
+
+  @override
   String get diagnosticsTitle => 'Діагностика';
 
   @override

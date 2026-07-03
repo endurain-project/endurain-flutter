@@ -570,6 +570,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diagnosticsSubtitle => '本地崩溃上下文';
 
   @override
+  String get sourceCode => '源代码';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => '无法打开链接';
+
+  @override
   String get diagnosticsTitle => '诊断';
 
   @override
@@ -1194,6 +1203,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get diagnosticsSubtitle => '本機當機內容';
+
+  @override
+  String get sourceCode => '原始碼';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => '無法開啟連結';
 
   @override
   String get diagnosticsTitle => '診斷';

@@ -4,6 +4,8 @@ import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/package_info_service.dart';
+import 'package:endurain/core/services/url_launcher_service.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
@@ -12,6 +14,9 @@ import 'package:endurain/features/settings/screens/language_settings_screen.dart
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+
+/// Public source repository for the project, opened from the settings screen.
+const String _sourceCodeUrl = 'https://codeberg.org/endurain-project';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
@@ -23,6 +28,7 @@ class SettingsScreen extends StatefulWidget {
     this.diagnostics,
     this.activityRetentionSettings,
     this.localeController,
+    this.urlLauncherService,
   });
 
   final VoidCallback? onLogout;
@@ -39,6 +45,7 @@ class SettingsScreen extends StatefulWidget {
   final DiagnosticsStore? diagnostics;
   final ActivityRetentionSettingsRepository? activityRetentionSettings;
   final LocaleController? localeController;
+  final UrlLauncherService? urlLauncherService;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -49,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _retainUploadedGpx = true;
   late final PackageInfoService _packageInfoService;
   late final ActivityRetentionSettingsRepository _activityRetentionSettings;
+  late final UrlLauncherService _urlLauncherService;
 
   @override
   void initState() {
@@ -59,8 +67,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _activityRetentionSettings =
         widget.activityRetentionSettings ??
         AppScope.servicesOf(context, listen: false).activityRetentionSettings;
+    _urlLauncherService =
+        widget.urlLauncherService ??
+        AppScope.servicesOf(context, listen: false).urlLauncher;
     _loadVersion();
     _loadActivityRetentionSetting();
+  }
+
+  Future<void> _openSourceCode() async {
+    final l10n = AppLocalizations.of(context)!;
+    final launched = await _urlLauncherService.launchExternalApplication(
+      Uri.parse(_sourceCodeUrl),
+    );
+    if (!launched && mounted) {
+      await DialogUtils.showErrorDialog(context, l10n.openLinkFailed);
+    }
   }
 
   Future<void> _loadVersion() async {
@@ -195,6 +216,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         );
                       },
+                    ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
+                        materialIcon: Icons.code,
+                        cupertinoIcon:
+                            CupertinoIcons.chevron_left_slash_chevron_right,
+                      ),
+                      title: l10n.sourceCode,
+                      subtitle: l10n.sourceCodeSubtitle,
+                      onTap: _openSourceCode,
                     ),
                   ],
                 ),

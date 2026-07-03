@@ -1203,6 +1203,24 @@ abstract class AppLocalizations {
   /// **'Local crash context'**
   String get diagnosticsSubtitle;
 
+  /// Settings entry that opens the project's public source repository - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Source code'**
+  String get sourceCode;
+
+  /// Subtitle showing the destination of the source code entry; the repository host is not translated - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'codeberg.org/endurain-project'**
+  String get sourceCodeSubtitle;
+
+  /// Error shown when an external link cannot be opened in the browser - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link'**
+  String get openLinkFailed;
+
   /// Diagnostics screen title - Used in: diagnostics_screen.dart
   ///
   /// In en, this message translates to:

@@ -608,6 +608,15 @@ class AppLocalizationsEt extends AppLocalizations {
   String get diagnosticsSubtitle => 'Kohalik krahhikontekst';
 
   @override
+  String get sourceCode => 'Lähtekood';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Lingi avamine ebaõnnestus';
+
+  @override
   String get diagnosticsTitle => 'Diagnostika';
 
   @override

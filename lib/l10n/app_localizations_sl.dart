@@ -609,6 +609,15 @@ class AppLocalizationsSl extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokalni kontekst sesutij';
 
   @override
+  String get sourceCode => 'Izvorna koda';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Povezave ni mogoče odpreti';
+
+  @override
   String get diagnosticsTitle => 'Diagnostika';
 
   @override

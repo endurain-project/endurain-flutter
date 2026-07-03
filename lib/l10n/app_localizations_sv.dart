@@ -613,6 +613,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokal kraschkontext';
 
   @override
+  String get sourceCode => 'Källkod';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Det gick inte att öppna länken';
+
+  @override
   String get diagnosticsTitle => 'Diagnostik';
 
   @override

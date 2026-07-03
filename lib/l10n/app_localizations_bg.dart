@@ -612,6 +612,15 @@ class AppLocalizationsBg extends AppLocalizations {
   String get diagnosticsSubtitle => 'Локален контекст на сривове';
 
   @override
+  String get sourceCode => 'Изходен код';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Връзката не може да бъде отворена';
+
+  @override
   String get diagnosticsTitle => 'Диагностика';
 
   @override

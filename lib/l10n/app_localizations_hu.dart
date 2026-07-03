@@ -615,6 +615,15 @@ class AppLocalizationsHu extends AppLocalizations {
   String get diagnosticsSubtitle => 'Helyi összeomlási kontextus';
 
   @override
+  String get sourceCode => 'Forráskód';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'A hivatkozás nem nyitható meg';
+
+  @override
   String get diagnosticsTitle => 'Diagnosztika';
 
   @override

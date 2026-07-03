@@ -614,6 +614,15 @@ class AppLocalizationsFi extends AppLocalizations {
   String get diagnosticsSubtitle => 'Paikallinen kaatumiskonteksti';
 
   @override
+  String get sourceCode => 'Lähdekoodi';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Linkkiä ei voitu avata';
+
+  @override
   String get diagnosticsTitle => 'Diagnostiikka';
 
   @override

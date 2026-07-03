@@ -603,6 +603,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diagnosticsSubtitle => 'Local crash context';
 
   @override
+  String get sourceCode => 'Source code';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Could not open the link';
+
+  @override
   String get diagnosticsTitle => 'Diagnostics';
 
   @override

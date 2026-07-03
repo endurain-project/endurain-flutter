@@ -616,6 +616,15 @@ class AppLocalizationsRo extends AppLocalizations {
   String get diagnosticsSubtitle => 'Context local de blocare';
 
   @override
+  String get sourceCode => 'Cod sursă';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Linkul nu a putut fi deschis';
+
+  @override
   String get diagnosticsTitle => 'Diagnosticare';
 
   @override

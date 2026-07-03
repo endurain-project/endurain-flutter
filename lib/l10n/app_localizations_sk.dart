@@ -612,6 +612,15 @@ class AppLocalizationsSk extends AppLocalizations {
   String get diagnosticsSubtitle => 'Miestny kontext pádov';
 
   @override
+  String get sourceCode => 'Zdrojový kód';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Odkaz sa nepodarilo otvoriť';
+
+  @override
   String get diagnosticsTitle => 'Diagnostika';
 
   @override

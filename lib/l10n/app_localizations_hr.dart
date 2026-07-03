@@ -613,6 +613,15 @@ class AppLocalizationsHr extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokalni kontekst rušenja';
 
   @override
+  String get sourceCode => 'Izvorni kôd';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Poveznicu nije moguće otvoriti';
+
+  @override
   String get diagnosticsTitle => 'Dijagnostika';
 
   @override

@@ -603,6 +603,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get diagnosticsSubtitle => 'Yerel çökme bağlamı';
 
   @override
+  String get sourceCode => 'Kaynak kodu';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Bağlantı açılamadı';
+
+  @override
   String get diagnosticsTitle => 'Tanılama';
 
   @override

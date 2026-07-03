@@ -609,6 +609,15 @@ class AppLocalizationsLv extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokālais avāriju konteksts';
 
   @override
+  String get sourceCode => 'Pirmkods';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Neizdevās atvērt saiti';
+
+  @override
   String get diagnosticsTitle => 'Diagnostika';
 
   @override

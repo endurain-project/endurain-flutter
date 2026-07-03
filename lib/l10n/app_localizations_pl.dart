@@ -615,6 +615,15 @@ class AppLocalizationsPl extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokalny kontekst awarii';
 
   @override
+  String get sourceCode => 'Kod źródłowy';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Nie można otworzyć linku';
+
+  @override
   String get diagnosticsTitle => 'Diagnostyka';
 
   @override

@@ -618,6 +618,15 @@ class AppLocalizationsEl extends AppLocalizations {
   String get diagnosticsSubtitle => 'Τοπικό πλαίσιο σφαλμάτων';
 
   @override
+  String get sourceCode => 'Πηγαίος κώδικας';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Δεν ήταν δυνατό το άνοιγμα του συνδέσμου';
+
+  @override
   String get diagnosticsTitle => 'Διαγνωστικά';
 
   @override

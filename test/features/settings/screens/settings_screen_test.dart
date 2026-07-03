@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/fake_url_launcher_service.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();
@@ -39,6 +40,7 @@ void main() {
           packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
           activityRetentionSettings: _FakeActivityRetentionSettings(),
           localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
         ),
       ),
     );
@@ -57,7 +59,70 @@ void main() {
       tester.getTopLeft(find.byIcon(Icons.dns)).dx,
     );
     expect(find.text(l10n.diagnostics), findsOneWidget);
+    expect(find.text(l10n.sourceCode), findsOneWidget);
+    expect(find.text(l10n.sourceCodeSubtitle), findsOneWidget);
     expect(find.textContaining('Endurain • 1.2.3'), findsOneWidget);
+  });
+
+  testWidgets('SettingsScreen opens the source code repository', (
+    tester,
+  ) async {
+    final localeController = buildLocaleController();
+    addTearDown(localeController.dispose);
+    final launcher = FakeUrlLauncherService(launched: true);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: SettingsScreen(
+          packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
+          activityRetentionSettings: _FakeActivityRetentionSettings(),
+          localeController: localeController,
+          urlLauncherService: launcher,
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text(l10n.sourceCode));
+    await tester.tap(find.text(l10n.sourceCode));
+    await tester.pumpAndSettle();
+
+    expect(launcher.launchedUris, [
+      Uri.parse('https://codeberg.org/endurain-project'),
+    ]);
+  });
+
+  testWidgets('SettingsScreen warns when the source code link fails', (
+    tester,
+  ) async {
+    final localeController = buildLocaleController();
+    addTearDown(localeController.dispose);
+    final launcher = FakeUrlLauncherService(launched: false);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: SettingsScreen(
+          packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
+          activityRetentionSettings: _FakeActivityRetentionSettings(),
+          localeController: localeController,
+          urlLauncherService: launcher,
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text(l10n.sourceCode));
+    await tester.tap(find.text(l10n.sourceCode));
+    await tester.pumpAndSettle();
+
+    expect(launcher.launchedUris, [
+      Uri.parse('https://codeberg.org/endurain-project'),
+    ]);
+    expect(find.text(l10n.openLinkFailed), findsOneWidget);
   });
 
   testWidgets('SettingsScreen shows a sign-in entry in guest mode', (
@@ -76,6 +141,7 @@ void main() {
           packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
           activityRetentionSettings: _FakeActivityRetentionSettings(),
           localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
         ),
       ),
     );

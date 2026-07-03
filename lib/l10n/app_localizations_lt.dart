@@ -604,6 +604,15 @@ class AppLocalizationsLt extends AppLocalizations {
   String get diagnosticsSubtitle => 'Vietinis strigčių kontekstas';
 
   @override
+  String get sourceCode => 'Pradinis kodas';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Nepavyko atidaryti nuorodos';
+
+  @override
   String get diagnosticsTitle => 'Diagnostika';
 
   @override

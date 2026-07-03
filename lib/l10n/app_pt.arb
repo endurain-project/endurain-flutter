@@ -798,6 +798,9 @@
     "description": "Rótulo de navegação para diagnóstico - Usado em: settings_screen.dart"
   },
   "diagnosticsSubtitle": "Contexto local de falhas",
+  "sourceCode": "Código-fonte",
+  "sourceCodeSubtitle": "codeberg.org/endurain-project",
+  "openLinkFailed": "Não foi possível abrir a ligação",
   "@diagnosticsSubtitle": {
     "description": "Subtítulo de navegação para diagnóstico - Usado em: settings_screen.dart"
   },

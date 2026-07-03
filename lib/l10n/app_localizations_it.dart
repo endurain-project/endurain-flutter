@@ -616,6 +616,15 @@ class AppLocalizationsIt extends AppLocalizations {
   String get diagnosticsSubtitle => 'Contesto locale degli arresti anomali';
 
   @override
+  String get sourceCode => 'Codice sorgente';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Impossibile aprire il collegamento';
+
+  @override
   String get diagnosticsTitle => 'Diagnostica';
 
   @override

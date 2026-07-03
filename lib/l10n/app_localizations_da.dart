@@ -609,6 +609,15 @@ class AppLocalizationsDa extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokal nedbrudskontekst';
 
   @override
+  String get sourceCode => 'Kildekode';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Linket kunne ikke åbnes';
+
+  @override
   String get diagnosticsTitle => 'Diagnostik';
 
   @override

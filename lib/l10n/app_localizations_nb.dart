@@ -610,6 +610,15 @@ class AppLocalizationsNb extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokal krasjkontekst';
 
   @override
+  String get sourceCode => 'Kildekode';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Kunne ikke åpne lenken';
+
+  @override
   String get diagnosticsTitle => 'Diagnostikk';
 
   @override

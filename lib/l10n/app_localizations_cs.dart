@@ -611,6 +611,15 @@ class AppLocalizationsCs extends AppLocalizations {
   String get diagnosticsSubtitle => 'Místní kontext pádů';
 
   @override
+  String get sourceCode => 'Zdrojový kód';
+
+  @override
+  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+
+  @override
+  String get openLinkFailed => 'Odkaz se nepodařilo otevřít';
+
+  @override
   String get diagnosticsTitle => 'Diagnostika';
 
   @override
