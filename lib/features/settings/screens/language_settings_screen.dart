@@ -12,16 +12,45 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 
 /// Native names (autonyms) for the supported languages, shown in each
 /// language's own script as is conventional for a language picker. Keyed by
-/// the BCP 47 primary language subtag.
+/// the locale's canonical BCP 47 tag ([Locale.toLanguageTag]) so script/region
+/// variants (e.g. `zh-Hans` vs `zh-Hant`, `pt-PT`) are distinguished.
 const Map<String, String> _languageAutonyms = {
   'en': 'English',
-  'pt': 'Português',
+  'pt-PT': 'Português',
+  'bg': 'Български',
+  'ca': 'Català',
+  'cs': 'Čeština',
+  'da': 'Dansk',
+  'de': 'Deutsch',
+  'el': 'Ελληνικά',
+  'es': 'Español',
+  'et': 'Eesti',
+  'fi': 'Suomi',
+  'fr': 'Français',
+  'gl': 'Galego',
+  'hr': 'Hrvatski',
+  'hu': 'Magyar',
+  'it': 'Italiano',
+  'lt': 'Lietuvių',
+  'lv': 'Latviešu',
+  'nb': 'Norsk bokmål',
+  'nl': 'Nederlands',
+  'pl': 'Polski',
+  'ro': 'Română',
+  'sk': 'Slovenčina',
+  'sl': 'Slovenščina',
+  'sr': 'Српски',
+  'sv': 'Svenska',
+  'tr': 'Türkçe',
+  'uk': 'Українська',
+  'zh-Hans': '简体中文',
+  'zh-Hant': '繁體中文',
 };
 
 /// The picker label for [locale]: its autonym when known, otherwise its BCP 47
 /// tag as a safe fallback.
 String languageDisplayName(Locale locale) =>
-    _languageAutonyms[locale.languageCode] ?? locale.toLanguageTag();
+    _languageAutonyms[locale.toLanguageTag()] ?? locale.toLanguageTag();
 
 /// Lets the user override the app language, following the device locale by
 /// default. Selections are persisted as BCP 47 tags via [LocaleController].
@@ -57,7 +86,9 @@ class LanguageSettingsScreen extends StatelessWidget {
                   for (final locale in appSupportedLocales)
                     _LanguageOptionTile(
                       label: languageDisplayName(locale),
-                      selected: selected?.languageCode == locale.languageCode,
+                      selected:
+                          selected != null &&
+                          selected.toLanguageTag() == locale.toLanguageTag(),
                       onTap: () => _select(context, controller, locale),
                     ),
                 ],

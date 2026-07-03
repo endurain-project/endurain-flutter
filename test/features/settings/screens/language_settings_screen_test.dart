@@ -46,7 +46,7 @@ void main() {
   ) async {
     final controller = buildController();
     addTearDown(controller.dispose);
-    await controller.setLocale(const Locale('pt'));
+    await controller.setLocale(const Locale('pt', 'PT'));
 
     await tester.pumpWidget(
       AdaptiveApp(
@@ -98,7 +98,13 @@ void main() {
 
   test('languageDisplayName returns autonyms and falls back to the tag', () {
     expect(languageDisplayName(const Locale('en')), 'English');
-    expect(languageDisplayName(const Locale('pt')), 'Português');
-    expect(languageDisplayName(const Locale('fr')), 'fr');
+    expect(languageDisplayName(const Locale('pt', 'PT')), 'Português');
+    expect(
+      languageDisplayName(
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+      ),
+      '繁體中文',
+    );
+    expect(languageDisplayName(const Locale('xx')), 'xx');
   });
 }

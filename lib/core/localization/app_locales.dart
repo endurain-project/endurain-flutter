@@ -3,12 +3,14 @@ import 'package:flutter/widgets.dart';
 /// The locales the app officially supports, expressed with their canonical
 /// BCP 47 identity.
 ///
-/// European Portuguese is advertised as `pt-PT` to stay consistent with the
-/// Endurain backend and web client, which exchange locales as BCP 47 tags. The
-/// translated resources are generated from the base `pt` ARB
-/// (`lib/l10n/app_pt.arb`), which Flutter transparently resolves for `pt-PT` at
-/// lookup time — so no redundant region-specific ARB file is needed (a lone
-/// `app_pt_PT.arb` would be collapsed back to `pt` by `gen_l10n` anyway).
+/// Region- and script-qualified identities are advertised here (e.g. European
+/// Portuguese as `pt-PT`, Chinese as `zh-Hans`/`zh-Hant`) to stay consistent
+/// with the Endurain backend and web client, which exchange locales as BCP 47
+/// tags. Translated resources are generated from base-language ARBs
+/// (`lib/l10n/app_pt.arb`, `lib/l10n/app_zh.arb` = Simplified Chinese, …), which
+/// Flutter transparently resolves for the qualified identities at lookup time —
+/// so no redundant region/script ARB files are needed (a lone `app_pt_PT.arb`
+/// or `app_zh_Hans.arb` would be collapsed back to its base by `gen_l10n`).
 ///
 /// This is the list passed to the app widget's `supportedLocales` and offered
 /// in the language picker. Keep its set of language subtags in sync with
@@ -16,6 +18,34 @@ import 'package:flutter/widgets.dart';
 const List<Locale> appSupportedLocales = <Locale>[
   Locale('en'),
   Locale('pt', 'PT'),
+  Locale('bg'),
+  Locale('ca'),
+  Locale('cs'),
+  Locale('da'),
+  Locale('de'),
+  Locale('el'),
+  Locale('es'),
+  Locale('et'),
+  Locale('fi'),
+  Locale('fr'),
+  Locale('gl'),
+  Locale('hr'),
+  Locale('hu'),
+  Locale('it'),
+  Locale('lt'),
+  Locale('lv'),
+  Locale('nb'),
+  Locale('nl'),
+  Locale('pl'),
+  Locale('ro'),
+  Locale('sk'),
+  Locale('sl'),
+  Locale('sr'),
+  Locale('sv'),
+  Locale('tr'),
+  Locale('uk'),
+  Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+  Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
 ];
 
 /// Resolves the device's preferred locales against [appSupportedLocales],

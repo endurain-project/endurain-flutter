@@ -4,76 +4,97 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Guards translation completeness so new strings cannot ship in only one
-/// locale. Compares the message keys (ignoring `@`-prefixed metadata) between
-/// the English and Portuguese ARB catalogs.
+/// locale. Every `app_*.arb` catalog is compared against the English template:
+/// it must define the exact same message keys (ignoring `@`-prefixed metadata),
+/// leave no translation empty, and preserve every `{placeholder}` token.
 void main() {
-  group('ARB translation parity', () {
-    late Map<String, dynamic> en;
-    late Map<String, dynamic> pt;
+  const arbDir = 'lib/l10n';
 
-    setUpAll(() {
-      en = _loadArb('lib/l10n/app_en.arb');
-      pt = _loadArb('lib/l10n/app_pt.arb');
-    });
+  final template =
+      jsonDecode(File('$arbDir/app_en.arb').readAsStringSync())
+          as Map<String, dynamic>;
+  final templateKeys = _messageKeys(template);
+  final templateTokens = {
+    for (final key in templateKeys) key: _tokens(template[key] as String),
+  };
 
-    test('every English key has a Portuguese translation', () {
-      final missing = _messageKeys(en).difference(_messageKeys(pt));
-      expect(
-        missing,
-        isEmpty,
-        reason: 'Missing Portuguese translations for: ${missing.join(', ')}',
-      );
-    });
+  final localeFiles =
+      Directory(arbDir)
+          .listSync()
+          .whereType<File>()
+          .where(
+            (file) =>
+                file.path.endsWith('.arb') && !file.path.endsWith('app_en.arb'),
+          )
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
 
-    test('Portuguese has no keys absent from English', () {
-      final extra = _messageKeys(pt).difference(_messageKeys(en));
-      expect(
-        extra,
-        isEmpty,
-        reason: 'Portuguese defines unknown keys: ${extra.join(', ')}',
-      );
-    });
-
-    test('placeholders match between locales', () {
-      for (final key in _messageKeys(en)) {
-        expect(
-          _placeholders(en, key),
-          _placeholders(pt, key),
-          reason: 'Placeholder mismatch for "$key"',
-        );
-      }
-    });
-
-    test('no Portuguese translation is left empty', () {
-      for (final key in _messageKeys(pt)) {
-        expect(
-          (pt[key] as String).trim(),
-          isNotEmpty,
-          reason: 'Empty Portuguese translation for "$key"',
-        );
-      }
-    });
+  test('translation catalogs exist beyond the English template', () {
+    expect(localeFiles, isNotEmpty);
   });
-}
 
-Map<String, dynamic> _loadArb(String path) {
-  final file = File(path);
-  expect(file.existsSync(), isTrue, reason: 'Missing ARB file: $path');
-  return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+  for (final file in localeFiles) {
+    final name = file.uri.pathSegments.last;
+
+    group(name, () {
+      late Map<String, dynamic> arb;
+      late Set<String> keys;
+
+      setUpAll(() {
+        arb = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+        keys = _messageKeys(arb);
+      });
+
+      test('has every English key', () {
+        final missing = templateKeys.difference(keys);
+        expect(
+          missing,
+          isEmpty,
+          reason: 'Missing translations in $name for: ${missing.join(', ')}',
+        );
+      });
+
+      test('has no keys absent from English', () {
+        final extra = keys.difference(templateKeys);
+        expect(
+          extra,
+          isEmpty,
+          reason: '$name defines unknown keys: ${extra.join(', ')}',
+        );
+      });
+
+      test('leaves no translation empty', () {
+        for (final key in keys) {
+          expect(
+            (arb[key] as String).trim(),
+            isNotEmpty,
+            reason: 'Empty translation for "$key" in $name',
+          );
+        }
+      });
+
+      test('preserves placeholder tokens', () {
+        for (final key in keys.intersection(templateKeys)) {
+          expect(
+            _tokens(arb[key] as String),
+            templateTokens[key],
+            reason: 'Placeholder mismatch for "$key" in $name',
+          );
+        }
+      });
+    });
+  }
 }
 
 Set<String> _messageKeys(Map<String, dynamic> arb) {
   return arb.keys.where((key) => !key.startsWith('@')).toSet();
 }
 
-Set<String> _placeholders(Map<String, dynamic> arb, String key) {
-  final metadata = arb['@$key'];
-  if (metadata is! Map<String, dynamic>) {
-    return <String>{};
-  }
-  final placeholders = metadata['placeholders'];
-  if (placeholders is! Map<String, dynamic>) {
-    return <String>{};
-  }
-  return placeholders.keys.toSet();
+/// The set of ICU `{placeholder}` names referenced by a message. The app only
+/// uses simple placeholders (no plural/select), so a token scan is sufficient
+/// and, unlike reading `@`-metadata, works for lean translation catalogs.
+Set<String> _tokens(String message) {
+  return RegExp(
+    r'\{(\w+)\}',
+  ).allMatches(message).map((match) => match.group(1)!).toSet();
 }

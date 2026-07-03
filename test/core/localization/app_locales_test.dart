@@ -10,6 +10,21 @@ void main() {
       expect(appSupportedLocales, contains(const Locale('pt', 'PT')));
     });
 
+    test('advertises Simplified and Traditional Chinese distinctly', () {
+      expect(
+        appSupportedLocales,
+        contains(
+          const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+        ),
+      );
+      expect(
+        appSupportedLocales,
+        contains(
+          const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+        ),
+      );
+    });
+
     test('Portuguese is region-qualified as pt-PT (BCP 47)', () {
       final portuguese = appSupportedLocales.firstWhere(
         (locale) => locale.languageCode == 'pt',
@@ -63,8 +78,26 @@ void main() {
       );
     });
 
+    test('serves Simplified Chinese for its BCP 47 identity', () {
+      expect(
+        resolve(const [
+          Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+        ]),
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+      );
+    });
+
+    test('serves Traditional Chinese for its BCP 47 identity', () {
+      expect(
+        resolve(const [
+          Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+        ]),
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+      );
+    });
+
     test('falls back to the first supported locale for other languages', () {
-      expect(resolve(const [Locale('fr')]), const Locale('en'));
+      expect(resolve(const [Locale('ja')]), const Locale('en'));
     });
 
     test('falls back to the first supported locale when none is provided', () {

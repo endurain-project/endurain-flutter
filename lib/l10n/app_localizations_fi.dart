@@ -1,0 +1,674 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Finnish (`fi`).
+class AppLocalizationsFi extends AppLocalizations {
+  AppLocalizationsFi([String locale = 'fi']) : super(locale);
+
+  @override
+  String get error => 'Virhe';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get cancel => 'Peruuta';
+
+  @override
+  String get save => 'Tallenna';
+
+  @override
+  String get back => 'Takaisin';
+
+  @override
+  String get requiredField => 'Tämä kenttä on pakollinen';
+
+  @override
+  String get invalidUrl => 'Anna kelvollinen URL-osoite';
+
+  @override
+  String get errorActivityUploadFailed => 'Aktiviteetin lataaminen epäonnistui';
+
+  @override
+  String errorActivityUploadFailedWithDetails(String details) {
+    return 'Aktiviteetin lataaminen epäonnistui: $details';
+  }
+
+  @override
+  String get errorActivityUploadNotConfigured =>
+      'Aktiviteettien lataamista ei ole vielä määritetty';
+
+  @override
+  String get errorActivityGpxCleanupFailed =>
+      'Aktiviteetin väliaikaista tiedostoa ei voitu poistaa';
+
+  @override
+  String get errorActivityGpxFileWriteFailed =>
+      'Aktiviteetin lataustiedostoa ei voitu valmistella';
+
+  @override
+  String get errorActivityLocalActivityNotFound =>
+      'Tätä paikallista aktiviteettia ei löytynyt';
+
+  @override
+  String get errorActivityLocalDeleteFailed =>
+      'Paikallista aktiviteettia ei voitu poistaa';
+
+  @override
+  String get errorActivityLocalGpxMissing =>
+      'Paikallinen GPX-tiedosto ei ole käytettävissä';
+
+  @override
+  String get errorActivityLocalLoadFailed =>
+      'Paikallisia aktiviteetteja ei voitu ladata';
+
+  @override
+  String get errorActivityLocalRecordInvalid =>
+      'Tätä aktiviteettia ei voitu tallentaa';
+
+  @override
+  String get errorActivityLocalSaveFailed =>
+      'Aktiviteettia ei voitu tallentaa paikallisesti';
+
+  @override
+  String get errorFetchProvidersFailed =>
+      'Kirjautumispalveluntarjoajia ei voitu ladata';
+
+  @override
+  String errorFetchProvidersFailedWithDetails(String details) {
+    return 'Kirjautumispalveluntarjoajia ei voitu ladata: $details';
+  }
+
+  @override
+  String get errorFetchServerSettingsFailed =>
+      'Palvelinasetuksia ei voitu ladata';
+
+  @override
+  String errorFetchServerSettingsFailedWithDetails(String details) {
+    return 'Palvelinasetuksia ei voitu ladata: $details';
+  }
+
+  @override
+  String get errorLoginError => 'Kirjautuminen ei onnistunut';
+
+  @override
+  String errorLoginErrorWithDetails(String details) {
+    return 'Kirjautuminen ei onnistunut: $details';
+  }
+
+  @override
+  String get errorLoginFailed => 'Kirjautuminen epäonnistui';
+
+  @override
+  String errorLoginFailedWithDetails(String details) {
+    return 'Kirjautuminen epäonnistui: $details';
+  }
+
+  @override
+  String get errorMfaVerificationError => 'MFA-koodia ei voitu vahvistaa';
+
+  @override
+  String errorMfaVerificationErrorWithDetails(String details) {
+    return 'MFA-koodia ei voitu vahvistaa: $details';
+  }
+
+  @override
+  String get errorMfaVerificationFailed => 'MFA-vahvistus epäonnistui';
+
+  @override
+  String errorMfaVerificationFailedWithDetails(String details) {
+    return 'MFA-vahvistus epäonnistui: $details';
+  }
+
+  @override
+  String get errorNoSessionIdReceived =>
+      'Palvelimelta ei saatu istuntotunnusta';
+
+  @override
+  String get errorNotAuthenticated => 'Et ole kirjautunut sisään';
+
+  @override
+  String get errorPkceVerifierMissing =>
+      'Kirjautumisen vahvistajaa ei löytynyt';
+
+  @override
+  String get errorPkceVerifierMissingRestartLogin =>
+      'Kirjautumisen vahvistajaa ei löytynyt. Aloita kirjautuminen uudelleen.';
+
+  @override
+  String get errorServerUrlNotConfigured =>
+      'Palvelimen URL-osoitetta ei ole määritetty';
+
+  @override
+  String get errorInsecureTransportNotAllowed =>
+      'Tämä palvelin edellyttää suojattua (HTTPS-)yhteyttä';
+
+  @override
+  String get errorSessionExpired =>
+      'Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.';
+
+  @override
+  String get errorSsoTokenExchangeError =>
+      'SSO-kirjautumista ei voitu suorittaa loppuun';
+
+  @override
+  String errorSsoTokenExchangeErrorWithDetails(String details) {
+    return 'SSO-kirjautumista ei voitu suorittaa loppuun: $details';
+  }
+
+  @override
+  String get errorTokenExchangeFailed => 'Tunnusten vaihto epäonnistui';
+
+  @override
+  String errorTokenExchangeFailedWithDetails(String details) {
+    return 'Tunnusten vaihto epäonnistui: $details';
+  }
+
+  @override
+  String get errorRequestTimeout =>
+      'Pyyntö aikakatkaistiin. Tarkista yhteytesi ja yritä uudelleen.';
+
+  @override
+  String get errorSecureStorageDeleteFailed =>
+      'Suojatusta tallennustilasta ei voi poistaa. Laitteen tallennustila ei ehkä ole käytettävissä.';
+
+  @override
+  String get errorSecureStorageReadFailed =>
+      'Suojatusta tallennustilasta ei voi lukea. Laitteen tallennustila ei ehkä ole käytettävissä.';
+
+  @override
+  String get errorSecureStorageWriteFailed =>
+      'Suojattuun tallennustilaan ei voi kirjoittaa. Laitteen tallennustila ei ehkä ole käytettävissä.';
+
+  @override
+  String get errorUnexpectedResponseFormat =>
+      'Palvelin palautti odottamattoman vastauksen';
+
+  @override
+  String get errorUnsupportedHttpMethod => 'HTTP-menetelmää ei tueta';
+
+  @override
+  String errorUnsupportedHttpMethodWithDetails(String details) {
+    return 'HTTP-menetelmää ei tueta: $details';
+  }
+
+  @override
+  String get loginTitle => 'Kirjaudu sisään';
+
+  @override
+  String get login => 'Kirjaudu sisään';
+
+  @override
+  String get logout => 'Kirjaudu ulos';
+
+  @override
+  String get logoutConfirmTitle => 'Kirjaudu ulos';
+
+  @override
+  String get logoutConfirmMessage => 'Haluatko varmasti kirjautua ulos?';
+
+  @override
+  String get logoutServerFailedWarning =>
+      'Palvelimelta ei voitu kirjautua ulos, mutta uloskirjautuminen tehtiin paikallisesti';
+
+  @override
+  String get ssoBrowserLaunchFailed =>
+      'SSO-kirjautumista ei voitu avata järjestelmän selaimessa';
+
+  @override
+  String get ssoMissingSessionId => 'SSO-vastaus ei sisältänyt istuntotunnusta';
+
+  @override
+  String ssoSignInWith(String provider) {
+    return 'Kirjaudu sisään palvelulla $provider';
+  }
+
+  @override
+  String get ssoOrDivider => 'TAI';
+
+  @override
+  String get next => 'Seuraava';
+
+  @override
+  String get username => 'Käyttäjätunnus';
+
+  @override
+  String get usernameHint => 'Anna käyttäjätunnuksesi';
+
+  @override
+  String get password => 'Salasana';
+
+  @override
+  String get passwordHint => 'Anna salasanasi';
+
+  @override
+  String get showPassword => 'Näytä salasana';
+
+  @override
+  String get mfaTitle => 'Kaksivaiheinen todennus';
+
+  @override
+  String get mfaCode => 'MFA-koodi';
+
+  @override
+  String get mfaCodeHint => 'Anna 6-numeroinen koodi';
+
+  @override
+  String get mfaCodeRequired => 'Anna MFA-koodi';
+
+  @override
+  String get verify => 'Vahvista';
+
+  @override
+  String get activityDiscard => 'Hylkää';
+
+  @override
+  String get activityDiscardConfirmMessage =>
+      'Tämä poistaa tämän aktiviteetin tallennetut pisteet.';
+
+  @override
+  String get activityDiscardConfirmTitle => 'Hylätäänkö aktiviteetti?';
+
+  @override
+  String get activityLocationPermissionDenied =>
+      'Aktiviteetin tallentaminen edellyttää sijaintilupaa.';
+
+  @override
+  String get activityLocationPermissionDeniedForever =>
+      'Sijaintilupa on estetty. Avaa asetukset salliaksesi sijainnin käytön.';
+
+  @override
+  String get activityLocationServiceDisabled =>
+      'Sijaintipalvelut on poistettu käytöstä.';
+
+  @override
+  String get activityLocationStreamFailed =>
+      'Sijaintipäivitykset pysähtyivät odottamatta.';
+
+  @override
+  String get activityGpxGenerationFailed =>
+      'Aktiviteetin GPX-tiedostoa ei voitu luoda.';
+
+  @override
+  String get activityLocalSaveFailed =>
+      'Tätä aktiviteettia ei voitu tallentaa tälle laitteelle.';
+
+  @override
+  String get activityOpenSettings => 'Avaa asetukset';
+
+  @override
+  String get activityPause => 'Keskeytä';
+
+  @override
+  String get activityRecordingEmpty => 'Yhtään GPS-pistettä ei tallennettu.';
+
+  @override
+  String get activityRecordingFailed => 'Tallennus epäonnistui.';
+
+  @override
+  String get activityResume => 'Jatka';
+
+  @override
+  String get activityRetryUpload => 'Yritä latausta uudelleen';
+
+  @override
+  String get activityDone => 'Valmis';
+
+  @override
+  String get activityViewHistory => 'Näytä historia';
+
+  @override
+  String get activityDeleteLocal => 'Poista paikallinen kopio';
+
+  @override
+  String get activityExportGpx => 'Jaa GPX-tiedosto';
+
+  @override
+  String get activityExportGpxSubject => 'Endurain-aktiviteetin GPX';
+
+  @override
+  String get activityDeleteLocalConfirmTitle =>
+      'Poistetaanko paikallinen aktiviteetti?';
+
+  @override
+  String get activityDeleteLocalConfirmMessage =>
+      'Tämä poistaa paikallisen aktiviteettitietueen ja GPX-tiedoston tältä laitteelta.';
+
+  @override
+  String get activityStart => 'Aloita';
+
+  @override
+  String get activityBackgroundPermissionTitle =>
+      'Sallitaanko seuranta taustalla?';
+
+  @override
+  String get activityBackgroundPermissionMessage =>
+      'Endurain tarvitsee taustasijainnin asetettuna arvoon Aina, jotta tallennus jatkuu, kun sovellus on taustalla, näyttö on lukittu tai vaihdat sovellusta.';
+
+  @override
+  String get activityBackgroundPermissionContinue => 'Jatka';
+
+  @override
+  String get activityBackgroundPermissionRequired =>
+      'Taustaseuranta iPhonessa ja iPadissa edellyttää, että Sijainti on asetettu arvoon Aina.';
+
+  @override
+  String get activityBackgroundPermissionSettingsTitle =>
+      'Taustaseuranta on pois käytöstä';
+
+  @override
+  String get activityBackgroundPermissionSettingsMessage =>
+      'Jotta tallennus toimii luotettavasti taustalla tai näytön ollessa lukittuna, avaa Asetukset ja aseta Sijainti arvoon Aina Endurainille.';
+
+  @override
+  String get activityTrackingNotificationTitle => 'Tallennetaan aktiviteettia';
+
+  @override
+  String get activityTrackingNotificationText =>
+      'Endurain seuraa sijaintiasi tämän aktiviteetin tallentamiseksi.';
+
+  @override
+  String get activityStatDistance => 'Matka';
+
+  @override
+  String get activityStatDuration => 'Aika';
+
+  @override
+  String get activityStatSpeed => 'Nopeus';
+
+  @override
+  String get activityStop => 'Lopeta';
+
+  @override
+  String get activityStopAndSave => 'Lopeta ja tallenna';
+
+  @override
+  String get activityStopConfirmMessage =>
+      'Valitse, säilytetäänkö tämä tallenne vai hylätäänkö se.';
+
+  @override
+  String get activityStopConfirmTitle => 'Lopetetaanko aktiviteetti?';
+
+  @override
+  String get activityStopping => 'Lopetetaan';
+
+  @override
+  String get activityTypeHike => 'Vaellus';
+
+  @override
+  String get activityTypeLabel => 'Aktiviteetin tyyppi';
+
+  @override
+  String get activityTypeOther => 'Muu';
+
+  @override
+  String get activityTypeRide => 'Pyöräily';
+
+  @override
+  String get activityTypeRun => 'Juoksu';
+
+  @override
+  String get activityTypeWalk => 'Kävely';
+
+  @override
+  String get activityUploadFailed => 'Lataus epäonnistui';
+
+  @override
+  String get activityUploadCleanupFailed =>
+      'Ladattu, mutta siivous epäonnistui';
+
+  @override
+  String get activityUploadReady => 'Valmis ladattavaksi';
+
+  @override
+  String get activityUploaded => 'Ladattu';
+
+  @override
+  String get activityUploading => 'Ladataan';
+
+  @override
+  String get activityUploadStatusPending => 'Odottaa';
+
+  @override
+  String get activityUploadStatusUploaded => 'Ladattu';
+
+  @override
+  String get activityUploadStatusFailed => 'Epäonnistui';
+
+  @override
+  String get activityHistoryTitle => 'Aktiviteettihistoria';
+
+  @override
+  String get activityHistorySettingsSubtitle =>
+      'Tälle laitteelle tallennetut valmiit aktiviteetit';
+
+  @override
+  String get activityRetainUploadedGpx => 'Säilytä ladatut GPX-tiedostot';
+
+  @override
+  String get activityRetainUploadedGpxSubtitle =>
+      'Tallentaa valmiit reittitiedostot sovelluksen yksityiseen tallennustilaan latauksen jälkeen.';
+
+  @override
+  String get activityHistoryEmpty =>
+      'Tälle laitteelle ei ole tallennettu valmiita aktiviteetteja.';
+
+  @override
+  String get activityHistoryLoadFailed =>
+      'Paikallisia aktiviteetteja ei voitu ladata.';
+
+  @override
+  String get activityHistoryRefresh => 'Päivitä';
+
+  @override
+  String get activityHistoryLocalActivities => 'Paikalliset aktiviteetit';
+
+  @override
+  String activityHistoryEntryTitle(String activityType, String endedAt) {
+    return '$activityType • $endedAt';
+  }
+
+  @override
+  String activityHistoryDuration(String duration) {
+    return 'Kesto: $duration';
+  }
+
+  @override
+  String activityHistoryDistance(String distance) {
+    return 'Matka: $distance';
+  }
+
+  @override
+  String activityHistoryUploadStatus(String status) {
+    return 'Lataus: $status';
+  }
+
+  @override
+  String get activityHistoryLoadMore => 'Lataa lisää';
+
+  @override
+  String get activityHistoryDetailsTitle => 'Aktiviteetin tiedot';
+
+  @override
+  String get activityHistoryDetailsMissing =>
+      'Tämä paikallinen aktiviteetti ei ole enää käytettävissä.';
+
+  @override
+  String get activityHistorySummary => 'Yhteenveto';
+
+  @override
+  String get activityHistoryActions => 'Toiminnot';
+
+  @override
+  String get activityHistoryType => 'Tyyppi';
+
+  @override
+  String get activityHistoryStartedAt => 'Aloitettu';
+
+  @override
+  String get activityHistoryEndedAt => 'Päättynyt';
+
+  @override
+  String get activityHistoryDurationLabel => 'Kesto';
+
+  @override
+  String get activityHistoryDistanceLabel => 'Matka';
+
+  @override
+  String get activityHistoryAverageSpeed => 'Keskinopeus';
+
+  @override
+  String get activityHistoryPointCount => 'GPS-pisteet';
+
+  @override
+  String get activityHistoryUploadStatusLabel => 'Lataus';
+
+  @override
+  String get activityHistoryGpxStatus => 'GPX-tiedosto';
+
+  @override
+  String get activityHistoryGpxAvailable => 'Tallennettu tälle laitteelle';
+
+  @override
+  String get activityHistoryGpxMissing => 'Ei käytettävissä tällä laitteella';
+
+  @override
+  String get mapTab => 'Kartta';
+
+  @override
+  String get myLocation => 'Oma sijainti';
+
+  @override
+  String get settingsTab => 'Asetukset';
+
+  @override
+  String get settingsScreen => 'Asetukset';
+
+  @override
+  String get language => 'Kieli';
+
+  @override
+  String get languageSystemDefault => 'Järjestelmän oletus';
+
+  @override
+  String get serverSettings => 'Palvelin';
+
+  @override
+  String get signInConnectServer => 'Kirjaudu sisään';
+
+  @override
+  String get signInConnectServerSubtitle =>
+      'Tallenna offline-tilassa nyt ja synkronoi aktiviteettisi myöhemmin';
+
+  @override
+  String get serverSettingsTitle => 'Palvelinasetukset';
+
+  @override
+  String get loggedIn => 'Kirjautunut sisään';
+
+  @override
+  String get notConfigured => 'Ei määritetty';
+
+  @override
+  String get notLoggedIn => 'Ei kirjautunut sisään';
+
+  @override
+  String get serverUrl => 'Palvelimen URL-osoite';
+
+  @override
+  String get serverUrlHint => 'https://esimerkki.com';
+
+  @override
+  String get warnHttpServerUrlTitle => 'Suojaamaton yhteys';
+
+  @override
+  String get warnHttpServerUrlMessage =>
+      'Tämä palvelimen URL-osoite käyttää salaamatonta HTTP:tä. Kirjautumistietosi ja tietosi lähetetään salaamattomina. Jatka vain, jos ymmärrät ja hyväksyt riskin.';
+
+  @override
+  String get warnHttpServerUrlConfirm => 'Jatka silti';
+
+  @override
+  String get tileServerUrl => 'Karttalaattapalvelimen URL-osoite';
+
+  @override
+  String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
+
+  @override
+  String get tileServerHostWarningTitle => 'Eri laattapalvelimen isäntä';
+
+  @override
+  String get tileServerHostWarningMessage =>
+      'Laattapalvelimen isäntä on eri kuin Endurain-palvelimesi isäntä. Laatat ladataan kolmannen osapuolen palvelimelta. Haluatko jatkaa?';
+
+  @override
+  String get savedSuccessfully => 'Asetukset tallennettu onnistuneesti';
+
+  @override
+  String get diagnostics => 'Diagnostiikka';
+
+  @override
+  String get diagnosticsSubtitle => 'Paikallinen kaatumiskonteksti';
+
+  @override
+  String get diagnosticsTitle => 'Diagnostiikka';
+
+  @override
+  String get diagnosticsEmpty => 'Diagnostiikkatietoja ei ole vielä kerätty.';
+
+  @override
+  String get diagnosticsCopy => 'Kopioi';
+
+  @override
+  String get diagnosticsCopied => 'Diagnostiikka kopioitu';
+
+  @override
+  String get diagnosticsClear => 'Tyhjennä';
+
+  @override
+  String get diagnosticsCleared => 'Diagnostiikka tyhjennetty';
+
+  @override
+  String get diagnosticsSummary => 'Yhteenveto';
+
+  @override
+  String get diagnosticsLastUpdated => 'Viimeksi päivitetty';
+
+  @override
+  String diagnosticsEventsCount(int count) {
+    return 'Tapahtumat: $count';
+  }
+
+  @override
+  String diagnosticsErrorsCount(int count) {
+    return 'Virheet: $count';
+  }
+
+  @override
+  String get diagnosticsEvents => 'Tapahtumat';
+
+  @override
+  String get diagnosticsNoEvents => 'Ei kerättyjä tapahtumia';
+
+  @override
+  String diagnosticsEventTitle(String event) {
+    return 'Tapahtuma: $event';
+  }
+
+  @override
+  String get diagnosticsErrors => 'Virheet';
+
+  @override
+  String diagnosticsErrorTitle(String type) {
+    return 'Virhe: $type';
+  }
+
+  @override
+  String get diagnosticsActions => 'Toiminnot';
+
+  @override
+  String get diagnosticsRawReport => 'Raakaraportti';
+}

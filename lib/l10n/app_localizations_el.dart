@@ -1,0 +1,678 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Modern Greek (`el`).
+class AppLocalizationsEl extends AppLocalizations {
+  AppLocalizationsEl([String locale = 'el']) : super(locale);
+
+  @override
+  String get error => 'Σφάλμα';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get cancel => 'Άκυρο';
+
+  @override
+  String get save => 'Αποθήκευση';
+
+  @override
+  String get back => 'Πίσω';
+
+  @override
+  String get requiredField => 'Αυτό το πεδίο είναι υποχρεωτικό';
+
+  @override
+  String get invalidUrl => 'Εισαγάγετε έγκυρο URL';
+
+  @override
+  String get errorActivityUploadFailed =>
+      'Δεν ήταν δυνατή η μεταφόρτωση της δραστηριότητας';
+
+  @override
+  String errorActivityUploadFailedWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η μεταφόρτωση της δραστηριότητας: $details';
+  }
+
+  @override
+  String get errorActivityUploadNotConfigured =>
+      'Η μεταφόρτωση δραστηριοτήτων δεν έχει ρυθμιστεί ακόμη';
+
+  @override
+  String get errorActivityGpxCleanupFailed =>
+      'Δεν ήταν δυνατή η διαγραφή του προσωρινού αρχείου δραστηριότητας';
+
+  @override
+  String get errorActivityGpxFileWriteFailed =>
+      'Δεν ήταν δυνατή η προετοιμασία του αρχείου μεταφόρτωσης της δραστηριότητας';
+
+  @override
+  String get errorActivityLocalActivityNotFound =>
+      'Δεν ήταν δυνατή η εύρεση αυτής της τοπικής δραστηριότητας';
+
+  @override
+  String get errorActivityLocalDeleteFailed =>
+      'Δεν ήταν δυνατή η διαγραφή της τοπικής δραστηριότητας';
+
+  @override
+  String get errorActivityLocalGpxMissing =>
+      'Το τοπικό αρχείο GPX δεν είναι διαθέσιμο';
+
+  @override
+  String get errorActivityLocalLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των τοπικών δραστηριοτήτων';
+
+  @override
+  String get errorActivityLocalRecordInvalid =>
+      'Δεν ήταν δυνατή η αποθήκευση αυτής της δραστηριότητας';
+
+  @override
+  String get errorActivityLocalSaveFailed =>
+      'Δεν ήταν δυνατή η τοπική αποθήκευση της δραστηριότητας';
+
+  @override
+  String get errorFetchProvidersFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των παρόχων σύνδεσης';
+
+  @override
+  String errorFetchProvidersFailedWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η φόρτωση των παρόχων σύνδεσης: $details';
+  }
+
+  @override
+  String get errorFetchServerSettingsFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων διακομιστή';
+
+  @override
+  String errorFetchServerSettingsFailedWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων διακομιστή: $details';
+  }
+
+  @override
+  String get errorLoginError => 'Δεν ήταν δυνατή η σύνδεση';
+
+  @override
+  String errorLoginErrorWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η σύνδεση: $details';
+  }
+
+  @override
+  String get errorLoginFailed => 'Η σύνδεση απέτυχε';
+
+  @override
+  String errorLoginFailedWithDetails(String details) {
+    return 'Η σύνδεση απέτυχε: $details';
+  }
+
+  @override
+  String get errorMfaVerificationError =>
+      'Δεν ήταν δυνατή η επαλήθευση του κωδικού MFA';
+
+  @override
+  String errorMfaVerificationErrorWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η επαλήθευση του κωδικού MFA: $details';
+  }
+
+  @override
+  String get errorMfaVerificationFailed => 'Η επαλήθευση MFA απέτυχε';
+
+  @override
+  String errorMfaVerificationFailedWithDetails(String details) {
+    return 'Η επαλήθευση MFA απέτυχε: $details';
+  }
+
+  @override
+  String get errorNoSessionIdReceived =>
+      'Δεν ελήφθη αναγνωριστικό συνεδρίας από τον διακομιστή';
+
+  @override
+  String get errorNotAuthenticated => 'Δεν έχετε συνδεθεί';
+
+  @override
+  String get errorPkceVerifierMissing => 'Ο επαληθευτής σύνδεσης δεν βρέθηκε';
+
+  @override
+  String get errorPkceVerifierMissingRestartLogin =>
+      'Ο επαληθευτής σύνδεσης δεν βρέθηκε. Ξεκινήστε ξανά τη σύνδεση.';
+
+  @override
+  String get errorServerUrlNotConfigured =>
+      'Το URL του διακομιστή δεν έχει ρυθμιστεί';
+
+  @override
+  String get errorInsecureTransportNotAllowed =>
+      'Αυτός ο διακομιστής απαιτεί ασφαλή σύνδεση (HTTPS)';
+
+  @override
+  String get errorSessionExpired => 'Η συνεδρία σας έληξε. Συνδεθείτε ξανά.';
+
+  @override
+  String get errorSsoTokenExchangeError =>
+      'Δεν ήταν δυνατή η ολοκλήρωση της σύνδεσης SSO';
+
+  @override
+  String errorSsoTokenExchangeErrorWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η ολοκλήρωση της σύνδεσης SSO: $details';
+  }
+
+  @override
+  String get errorTokenExchangeFailed => 'Η ανταλλαγή διακριτικών απέτυχε';
+
+  @override
+  String errorTokenExchangeFailedWithDetails(String details) {
+    return 'Η ανταλλαγή διακριτικών απέτυχε: $details';
+  }
+
+  @override
+  String get errorRequestTimeout =>
+      'Το αίτημα έληξε. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.';
+
+  @override
+  String get errorSecureStorageDeleteFailed =>
+      'Δεν είναι δυνατή η διαγραφή από τον ασφαλή χώρο αποθήκευσης. Ο χώρος αποθήκευσης της συσκευής ενδέχεται να μην είναι διαθέσιμος.';
+
+  @override
+  String get errorSecureStorageReadFailed =>
+      'Δεν είναι δυνατή η ανάγνωση από τον ασφαλή χώρο αποθήκευσης. Ο χώρος αποθήκευσης της συσκευής ενδέχεται να μην είναι διαθέσιμος.';
+
+  @override
+  String get errorSecureStorageWriteFailed =>
+      'Δεν είναι δυνατή η εγγραφή στον ασφαλή χώρο αποθήκευσης. Ο χώρος αποθήκευσης της συσκευής ενδέχεται να μην είναι διαθέσιμος.';
+
+  @override
+  String get errorUnexpectedResponseFormat =>
+      'Ο διακομιστής επέστρεψε μια μη αναμενόμενη απόκριση';
+
+  @override
+  String get errorUnsupportedHttpMethod => 'Μη υποστηριζόμενη μέθοδος HTTP';
+
+  @override
+  String errorUnsupportedHttpMethodWithDetails(String details) {
+    return 'Μη υποστηριζόμενη μέθοδος HTTP: $details';
+  }
+
+  @override
+  String get loginTitle => 'Σύνδεση';
+
+  @override
+  String get login => 'Σύνδεση';
+
+  @override
+  String get logout => 'Αποσύνδεση';
+
+  @override
+  String get logoutConfirmTitle => 'Αποσύνδεση';
+
+  @override
+  String get logoutConfirmMessage =>
+      'Είστε βέβαιοι ότι θέλετε να αποσυνδεθείτε;';
+
+  @override
+  String get logoutServerFailedWarning =>
+      'Δεν ήταν δυνατή η αποσύνδεση από τον διακομιστή, αλλά έγινε αποσύνδεση τοπικά';
+
+  @override
+  String get ssoBrowserLaunchFailed =>
+      'Δεν ήταν δυνατό το άνοιγμα της σύνδεσης SSO στο πρόγραμμα περιήγησης συστήματος';
+
+  @override
+  String get ssoMissingSessionId =>
+      'Η απόκριση SSO δεν περιείχε αναγνωριστικό συνεδρίας';
+
+  @override
+  String ssoSignInWith(String provider) {
+    return 'Σύνδεση με $provider';
+  }
+
+  @override
+  String get ssoOrDivider => 'Ή';
+
+  @override
+  String get next => 'Επόμενο';
+
+  @override
+  String get username => 'Όνομα χρήστη';
+
+  @override
+  String get usernameHint => 'Εισαγάγετε το όνομα χρήστη σας';
+
+  @override
+  String get password => 'Κωδικός πρόσβασης';
+
+  @override
+  String get passwordHint => 'Εισαγάγετε τον κωδικό πρόσβασής σας';
+
+  @override
+  String get showPassword => 'Εμφάνιση κωδικού πρόσβασης';
+
+  @override
+  String get mfaTitle => 'Έλεγχος ταυτότητας δύο παραγόντων';
+
+  @override
+  String get mfaCode => 'Κωδικός MFA';
+
+  @override
+  String get mfaCodeHint => 'Εισαγάγετε τον 6ψήφιο κωδικό';
+
+  @override
+  String get mfaCodeRequired => 'Εισαγάγετε τον κωδικό MFA';
+
+  @override
+  String get verify => 'Επαλήθευση';
+
+  @override
+  String get activityDiscard => 'Απόρριψη';
+
+  @override
+  String get activityDiscardConfirmMessage =>
+      'Αυτό θα διαγράψει τα καταγεγραμμένα σημεία αυτής της δραστηριότητας.';
+
+  @override
+  String get activityDiscardConfirmTitle => 'Απόρριψη δραστηριότητας;';
+
+  @override
+  String get activityLocationPermissionDenied =>
+      'Απαιτείται άδεια τοποθεσίας για την καταγραφή μιας δραστηριότητας.';
+
+  @override
+  String get activityLocationPermissionDeniedForever =>
+      'Η άδεια τοποθεσίας είναι αποκλεισμένη. Ανοίξτε τις ρυθμίσεις για να επιτρέψετε την πρόσβαση στην τοποθεσία.';
+
+  @override
+  String get activityLocationServiceDisabled =>
+      'Οι υπηρεσίες τοποθεσίας είναι απενεργοποιημένες.';
+
+  @override
+  String get activityLocationStreamFailed =>
+      'Οι ενημερώσεις τοποθεσίας σταμάτησαν απροσδόκητα.';
+
+  @override
+  String get activityGpxGenerationFailed =>
+      'Δεν ήταν δυνατή η δημιουργία του αρχείου GPX της δραστηριότητας.';
+
+  @override
+  String get activityLocalSaveFailed =>
+      'Δεν ήταν δυνατή η αποθήκευση αυτής της δραστηριότητας σε αυτήν τη συσκευή.';
+
+  @override
+  String get activityOpenSettings => 'Άνοιγμα ρυθμίσεων';
+
+  @override
+  String get activityPause => 'Παύση';
+
+  @override
+  String get activityRecordingEmpty => 'Δεν καταγράφηκαν σημεία GPS.';
+
+  @override
+  String get activityRecordingFailed => 'Η καταγραφή απέτυχε.';
+
+  @override
+  String get activityResume => 'Συνέχεια';
+
+  @override
+  String get activityRetryUpload => 'Επανάληψη μεταφόρτωσης';
+
+  @override
+  String get activityDone => 'Τέλος';
+
+  @override
+  String get activityViewHistory => 'Προβολή ιστορικού';
+
+  @override
+  String get activityDeleteLocal => 'Διαγραφή τοπικού αντιγράφου';
+
+  @override
+  String get activityExportGpx => 'Κοινή χρήση αρχείου GPX';
+
+  @override
+  String get activityExportGpxSubject => 'GPX δραστηριότητας Endurain';
+
+  @override
+  String get activityDeleteLocalConfirmTitle =>
+      'Διαγραφή τοπικής δραστηριότητας;';
+
+  @override
+  String get activityDeleteLocalConfirmMessage =>
+      'Αυτό αφαιρεί την εγγραφή τοπικής δραστηριότητας και το αρχείο GPX από αυτήν τη συσκευή.';
+
+  @override
+  String get activityStart => 'Έναρξη';
+
+  @override
+  String get activityBackgroundPermissionTitle =>
+      'Να επιτρέπεται η παρακολούθηση στο παρασκήνιο;';
+
+  @override
+  String get activityBackgroundPermissionMessage =>
+      'Το Endurain χρειάζεται την τοποθεσία στο παρασκήνιο ρυθμισμένη σε «Πάντα», ώστε η καταγραφή να συνεχίζεται όταν η εφαρμογή βρίσκεται στο παρασκήνιο, η οθόνη είναι κλειδωμένη ή αλλάζετε εφαρμογή.';
+
+  @override
+  String get activityBackgroundPermissionContinue => 'Συνέχεια';
+
+  @override
+  String get activityBackgroundPermissionRequired =>
+      'Η παρακολούθηση στο παρασκήνιο σε iPhone και iPad απαιτεί την τοποθεσία ρυθμισμένη σε «Πάντα».';
+
+  @override
+  String get activityBackgroundPermissionSettingsTitle =>
+      'Η παρακολούθηση στο παρασκήνιο είναι απενεργοποιημένη';
+
+  @override
+  String get activityBackgroundPermissionSettingsMessage =>
+      'Για αξιόπιστη καταγραφή στο παρασκήνιο ή με κλειδωμένη οθόνη, ανοίξτε τις Ρυθμίσεις και ορίστε την Τοποθεσία σε «Πάντα» για το Endurain.';
+
+  @override
+  String get activityTrackingNotificationTitle => 'Καταγραφή δραστηριότητας';
+
+  @override
+  String get activityTrackingNotificationText =>
+      'Το Endurain παρακολουθεί την τοποθεσία σας για να καταγράψει αυτήν τη δραστηριότητα.';
+
+  @override
+  String get activityStatDistance => 'Απόσταση';
+
+  @override
+  String get activityStatDuration => 'Χρόνος';
+
+  @override
+  String get activityStatSpeed => 'Ταχύτητα';
+
+  @override
+  String get activityStop => 'Διακοπή';
+
+  @override
+  String get activityStopAndSave => 'Διακοπή και αποθήκευση';
+
+  @override
+  String get activityStopConfirmMessage =>
+      'Επιλέξτε αν θέλετε να διατηρήσετε αυτήν την καταγραφή ή να την απορρίψετε.';
+
+  @override
+  String get activityStopConfirmTitle => 'Τερματισμός δραστηριότητας;';
+
+  @override
+  String get activityStopping => 'Διακοπή';
+
+  @override
+  String get activityTypeHike => 'Πεζοπορία';
+
+  @override
+  String get activityTypeLabel => 'Τύπος δραστηριότητας';
+
+  @override
+  String get activityTypeOther => 'Άλλο';
+
+  @override
+  String get activityTypeRide => 'Ποδηλασία';
+
+  @override
+  String get activityTypeRun => 'Τρέξιμο';
+
+  @override
+  String get activityTypeWalk => 'Περπάτημα';
+
+  @override
+  String get activityUploadFailed => 'Η μεταφόρτωση απέτυχε';
+
+  @override
+  String get activityUploadCleanupFailed =>
+      'Μεταφορτώθηκε, αλλά ο καθαρισμός απέτυχε';
+
+  @override
+  String get activityUploadReady => 'Έτοιμο για μεταφόρτωση';
+
+  @override
+  String get activityUploaded => 'Μεταφορτώθηκε';
+
+  @override
+  String get activityUploading => 'Μεταφόρτωση';
+
+  @override
+  String get activityUploadStatusPending => 'Σε εκκρεμότητα';
+
+  @override
+  String get activityUploadStatusUploaded => 'Μεταφορτώθηκε';
+
+  @override
+  String get activityUploadStatusFailed => 'Απέτυχε';
+
+  @override
+  String get activityHistoryTitle => 'Ιστορικό δραστηριοτήτων';
+
+  @override
+  String get activityHistorySettingsSubtitle =>
+      'Ολοκληρωμένες δραστηριότητες αποθηκευμένες σε αυτήν τη συσκευή';
+
+  @override
+  String get activityRetainUploadedGpx =>
+      'Διατήρηση μεταφορτωμένων αρχείων GPX';
+
+  @override
+  String get activityRetainUploadedGpxSubtitle =>
+      'Αποθηκεύει τα ολοκληρωμένα αρχεία διαδρομής στον ιδιωτικό χώρο αποθήκευσης της εφαρμογής μετά τη μεταφόρτωση.';
+
+  @override
+  String get activityHistoryEmpty =>
+      'Δεν υπάρχουν ολοκληρωμένες δραστηριότητες αποθηκευμένες σε αυτήν τη συσκευή.';
+
+  @override
+  String get activityHistoryLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των τοπικών δραστηριοτήτων.';
+
+  @override
+  String get activityHistoryRefresh => 'Ανανέωση';
+
+  @override
+  String get activityHistoryLocalActivities => 'Τοπικές δραστηριότητες';
+
+  @override
+  String activityHistoryEntryTitle(String activityType, String endedAt) {
+    return '$activityType • $endedAt';
+  }
+
+  @override
+  String activityHistoryDuration(String duration) {
+    return 'Διάρκεια: $duration';
+  }
+
+  @override
+  String activityHistoryDistance(String distance) {
+    return 'Απόσταση: $distance';
+  }
+
+  @override
+  String activityHistoryUploadStatus(String status) {
+    return 'Μεταφόρτωση: $status';
+  }
+
+  @override
+  String get activityHistoryLoadMore => 'Φόρτωση περισσότερων';
+
+  @override
+  String get activityHistoryDetailsTitle => 'Λεπτομέρειες δραστηριότητας';
+
+  @override
+  String get activityHistoryDetailsMissing =>
+      'Αυτή η τοπική δραστηριότητα δεν είναι πλέον διαθέσιμη.';
+
+  @override
+  String get activityHistorySummary => 'Σύνοψη';
+
+  @override
+  String get activityHistoryActions => 'Ενέργειες';
+
+  @override
+  String get activityHistoryType => 'Τύπος';
+
+  @override
+  String get activityHistoryStartedAt => 'Έναρξη';
+
+  @override
+  String get activityHistoryEndedAt => 'Λήξη';
+
+  @override
+  String get activityHistoryDurationLabel => 'Διάρκεια';
+
+  @override
+  String get activityHistoryDistanceLabel => 'Απόσταση';
+
+  @override
+  String get activityHistoryAverageSpeed => 'Μέση ταχύτητα';
+
+  @override
+  String get activityHistoryPointCount => 'Σημεία GPS';
+
+  @override
+  String get activityHistoryUploadStatusLabel => 'Μεταφόρτωση';
+
+  @override
+  String get activityHistoryGpxStatus => 'Αρχείο GPX';
+
+  @override
+  String get activityHistoryGpxAvailable => 'Αποθηκευμένο σε αυτήν τη συσκευή';
+
+  @override
+  String get activityHistoryGpxMissing => 'Μη διαθέσιμο σε αυτήν τη συσκευή';
+
+  @override
+  String get mapTab => 'Χάρτης';
+
+  @override
+  String get myLocation => 'Η τοποθεσία μου';
+
+  @override
+  String get settingsTab => 'Ρυθμίσεις';
+
+  @override
+  String get settingsScreen => 'Ρυθμίσεις';
+
+  @override
+  String get language => 'Γλώσσα';
+
+  @override
+  String get languageSystemDefault => 'Προεπιλογή συστήματος';
+
+  @override
+  String get serverSettings => 'Διακομιστής';
+
+  @override
+  String get signInConnectServer => 'Σύνδεση';
+
+  @override
+  String get signInConnectServerSubtitle =>
+      'Καταγράψτε εκτός σύνδεσης τώρα και συγχρονίστε τις δραστηριότητές σας αργότερα';
+
+  @override
+  String get serverSettingsTitle => 'Ρυθμίσεις διακομιστή';
+
+  @override
+  String get loggedIn => 'Συνδεδεμένος';
+
+  @override
+  String get notConfigured => 'Δεν έχει ρυθμιστεί';
+
+  @override
+  String get notLoggedIn => 'Μη συνδεδεμένος';
+
+  @override
+  String get serverUrl => 'URL διακομιστή';
+
+  @override
+  String get serverUrlHint => 'https://example.com';
+
+  @override
+  String get warnHttpServerUrlTitle => 'Μη ασφαλής σύνδεση';
+
+  @override
+  String get warnHttpServerUrlMessage =>
+      'Αυτό το URL διακομιστή χρησιμοποιεί απλό HTTP. Τα διαπιστευτήρια και τα δεδομένα σας θα μεταδοθούν χωρίς κρυπτογράφηση. Συνεχίστε μόνο αν κατανοείτε και αποδέχεστε τον κίνδυνο.';
+
+  @override
+  String get warnHttpServerUrlConfirm => 'Συνέχεια ούτως ή άλλως';
+
+  @override
+  String get tileServerUrl => 'URL διακομιστή πλακιδίων χάρτη';
+
+  @override
+  String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
+
+  @override
+  String get tileServerHostWarningTitle =>
+      'Διαφορετικός κεντρικός υπολογιστής διακομιστή πλακιδίων';
+
+  @override
+  String get tileServerHostWarningMessage =>
+      'Ο κεντρικός υπολογιστής του διακομιστή πλακιδίων διαφέρει από τον κεντρικό υπολογιστή του διακομιστή Endurain σας. Τα πλακίδια θα φορτωθούν από διακομιστή τρίτου μέρους. Θέλετε να συνεχίσετε;';
+
+  @override
+  String get savedSuccessfully => 'Οι ρυθμίσεις αποθηκεύτηκαν με επιτυχία';
+
+  @override
+  String get diagnostics => 'Διαγνωστικά';
+
+  @override
+  String get diagnosticsSubtitle => 'Τοπικό πλαίσιο σφαλμάτων';
+
+  @override
+  String get diagnosticsTitle => 'Διαγνωστικά';
+
+  @override
+  String get diagnosticsEmpty => 'Δεν έχουν καταγραφεί ακόμη διαγνωστικά.';
+
+  @override
+  String get diagnosticsCopy => 'Αντιγραφή';
+
+  @override
+  String get diagnosticsCopied => 'Τα διαγνωστικά αντιγράφηκαν';
+
+  @override
+  String get diagnosticsClear => 'Εκκαθάριση';
+
+  @override
+  String get diagnosticsCleared => 'Τα διαγνωστικά εκκαθαρίστηκαν';
+
+  @override
+  String get diagnosticsSummary => 'Σύνοψη';
+
+  @override
+  String get diagnosticsLastUpdated => 'Τελευταία ενημέρωση';
+
+  @override
+  String diagnosticsEventsCount(int count) {
+    return 'Συμβάντα: $count';
+  }
+
+  @override
+  String diagnosticsErrorsCount(int count) {
+    return 'Σφάλματα: $count';
+  }
+
+  @override
+  String get diagnosticsEvents => 'Συμβάντα';
+
+  @override
+  String get diagnosticsNoEvents => 'Δεν καταγράφηκαν συμβάντα';
+
+  @override
+  String diagnosticsEventTitle(String event) {
+    return 'Συμβάν: $event';
+  }
+
+  @override
+  String get diagnosticsErrors => 'Σφάλματα';
+
+  @override
+  String diagnosticsErrorTitle(String type) {
+    return 'Σφάλμα: $type';
+  }
+
+  @override
+  String get diagnosticsActions => 'Ενέργειες';
+
+  @override
+  String get diagnosticsRawReport => 'Ακατέργαστη αναφορά';
+}
