@@ -47,10 +47,83 @@ const Map<String, String> _languageAutonyms = {
   'zh-Hant': '繁體中文',
 };
 
+final List<Locale> languagePickerLocales = List<Locale>.unmodifiable(
+  _sortedLanguagePickerLocales(),
+);
+
 /// The picker label for [locale]: its autonym when known, otherwise its BCP 47
 /// tag as a safe fallback.
 String languageDisplayName(Locale locale) =>
     _languageAutonyms[locale.toLanguageTag()] ?? locale.toLanguageTag();
+
+List<Locale> _sortedLanguagePickerLocales() {
+  final locales = List<Locale>.of(appSupportedLocales);
+  locales.sort(_compareLanguagePickerLocales);
+  return locales;
+}
+
+int _compareLanguagePickerLocales(Locale a, Locale b) {
+  final labelComparison = _languageSortKey(a).compareTo(_languageSortKey(b));
+  if (labelComparison != 0) {
+    return labelComparison;
+  }
+  return a.toLanguageTag().compareTo(b.toLanguageTag());
+}
+
+String _languageSortKey(Locale locale) {
+  var key = languageDisplayName(locale).toLowerCase();
+  for (final replacement in _latinSortReplacements.entries) {
+    key = key.replaceAll(replacement.key, replacement.value);
+  }
+  return key;
+}
+
+const Map<String, String> _latinSortReplacements = {
+  'á': 'a',
+  'à': 'a',
+  'â': 'a',
+  'ã': 'a',
+  'ä': 'a',
+  'å': 'a',
+  'ă': 'a',
+  'ą': 'a',
+  'ç': 'c',
+  'č': 'c',
+  'ď': 'd',
+  'é': 'e',
+  'è': 'e',
+  'ê': 'e',
+  'ë': 'e',
+  'ě': 'e',
+  'ę': 'e',
+  'í': 'i',
+  'ì': 'i',
+  'î': 'i',
+  'ï': 'i',
+  'į': 'i',
+  'ľ': 'l',
+  'ĺ': 'l',
+  'ñ': 'n',
+  'ń': 'n',
+  'ó': 'o',
+  'ò': 'o',
+  'ô': 'o',
+  'õ': 'o',
+  'ö': 'o',
+  'ő': 'o',
+  'ř': 'r',
+  'š': 's',
+  'ť': 't',
+  'ú': 'u',
+  'ù': 'u',
+  'û': 'u',
+  'ü': 'u',
+  'ů': 'u',
+  'ű': 'u',
+  'ų': 'u',
+  'ý': 'y',
+  'ž': 'z',
+};
 
 /// Lets the user override the app language, following the device locale by
 /// default. Selections are persisted as BCP 47 tags via [LocaleController].
@@ -83,7 +156,7 @@ class LanguageSettingsScreen extends StatelessWidget {
                     selected: selected == null,
                     onTap: () => _select(context, controller, null),
                   ),
-                  for (final locale in appSupportedLocales)
+                  for (final locale in languagePickerLocales)
                     _LanguageOptionTile(
                       label: languageDisplayName(locale),
                       selected:

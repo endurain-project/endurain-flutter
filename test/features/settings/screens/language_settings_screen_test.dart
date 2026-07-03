@@ -1,3 +1,4 @@
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
@@ -37,8 +38,48 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(l10n.languageSystemDefault), findsOneWidget);
-    expect(find.text('English'), findsOneWidget);
-    expect(find.text('Português'), findsOneWidget);
+    for (final locale in languagePickerLocales) {
+      expect(find.text(languageDisplayName(locale)), findsOneWidget);
+    }
+  });
+
+  test('languagePickerLocales contains every locale in alphabetical order', () {
+    expect(languagePickerLocales.toSet(), appSupportedLocales.toSet());
+    expect(
+      languagePickerLocales.map(languageDisplayName),
+      orderedEquals([
+        'Català',
+        'Čeština',
+        'Dansk',
+        'Deutsch',
+        'Eesti',
+        'English',
+        'Español',
+        'Français',
+        'Galego',
+        'Hrvatski',
+        'Italiano',
+        'Latviešu',
+        'Lietuvių',
+        'Magyar',
+        'Nederlands',
+        'Norsk bokmål',
+        'Polski',
+        'Português',
+        'Română',
+        'Slovenčina',
+        'Slovenščina',
+        'Suomi',
+        'Svenska',
+        'Türkçe',
+        'Ελληνικά',
+        'Български',
+        'Српски',
+        'Українська',
+        '简体中文',
+        '繁體中文',
+      ]),
+    );
   });
 
   testWidgets('marks the active language with a single checkmark', (
@@ -87,6 +128,8 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
+    await tester.drag(find.byType(ListView), const Offset(0, -700));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Português'));
     await tester.pumpAndSettle();
 
