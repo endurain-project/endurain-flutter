@@ -624,6 +624,20 @@ class AppLocalizationsSk extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostika';
 
   @override
+  String get diagnosticsCollection => 'Zhromažďovanie';
+
+  @override
+  String get diagnosticsEnable => 'Zhromažďovať diagnostiku';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Ukladať nedávne udalosti a chyby aplikácie v tomto zariadení';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Zhromažďovanie diagnostiky je vypnuté. Zapnite ho, ak chcete začať zaznamenávať udalosti a chyby aplikácie v tomto zariadení.';
+
+  @override
   String get diagnosticsEmpty =>
       'Zatiaľ neboli zachytené žiadne diagnostické údaje.';
 

@@ -817,6 +817,22 @@
   "@diagnosticsTitle": {
     "description": "Diagnostics screen title - Used in: diagnostics_screen.dart"
   },
+  "diagnosticsCollection": "Collection",
+  "@diagnosticsCollection": {
+    "description": "Diagnostics collection section header - Used in: diagnostics_screen.dart"
+  },
+  "diagnosticsEnable": "Collect diagnostics",
+  "@diagnosticsEnable": {
+    "description": "Toggle label to enable local diagnostics collection - Used in: diagnostics_screen.dart"
+  },
+  "diagnosticsEnableSubtitle": "Store recent app events and errors on this device",
+  "@diagnosticsEnableSubtitle": {
+    "description": "Subtitle explaining what enabling diagnostics collection does - Used in: diagnostics_screen.dart"
+  },
+  "diagnosticsDisabled": "Diagnostics collection is off. Turn it on to start capturing app events and errors on this device.",
+  "@diagnosticsDisabled": {
+    "description": "Message shown when diagnostics collection is disabled - Used in: diagnostics_screen.dart"
+  },
   "diagnosticsEmpty": "No diagnostics have been captured yet.",
   "@diagnosticsEmpty": {
     "description": "Empty state for diagnostics report - Used in: diagnostics_screen.dart"

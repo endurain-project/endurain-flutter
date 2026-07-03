@@ -1227,6 +1227,30 @@ abstract class AppLocalizations {
   /// **'Diagnostics'**
   String get diagnosticsTitle;
 
+  /// Diagnostics collection section header - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get diagnosticsCollection;
+
+  /// Toggle label to enable local diagnostics collection - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Collect diagnostics'**
+  String get diagnosticsEnable;
+
+  /// Subtitle explaining what enabling diagnostics collection does - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Store recent app events and errors on this device'**
+  String get diagnosticsEnableSubtitle;
+
+  /// Message shown when diagnostics collection is disabled - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics collection is off. Turn it on to start capturing app events and errors on this device.'**
+  String get diagnosticsDisabled;
+
   /// Empty state for diagnostics report - Used in: diagnostics_screen.dart
   ///
   /// In en, this message translates to:

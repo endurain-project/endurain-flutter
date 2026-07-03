@@ -621,6 +621,20 @@ class AppLocalizationsDa extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostik';
 
   @override
+  String get diagnosticsCollection => 'Indsamling';
+
+  @override
+  String get diagnosticsEnable => 'Indsaml diagnostik';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Gem seneste app-hændelser og fejl på denne enhed';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Indsamling af diagnostik er slået fra. Slå den til for at begynde at registrere app-hændelser og fejl på denne enhed.';
+
+  @override
   String get diagnosticsEmpty =>
       'Der er endnu ikke indsamlet nogen diagnostik.';
 

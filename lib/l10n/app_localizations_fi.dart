@@ -626,6 +626,20 @@ class AppLocalizationsFi extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostiikka';
 
   @override
+  String get diagnosticsCollection => 'Kerääminen';
+
+  @override
+  String get diagnosticsEnable => 'Kerää diagnostiikkaa';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Tallenna sovelluksen viimeaikaiset tapahtumat ja virheet tähän laitteeseen';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Diagnostiikan kerääminen on pois päältä. Ota se käyttöön, jotta sovelluksen tapahtumia ja virheitä aletaan tallentaa tähän laitteeseen.';
+
+  @override
   String get diagnosticsEmpty => 'Diagnostiikkatietoja ei ole vielä kerätty.';
 
   @override

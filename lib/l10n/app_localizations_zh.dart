@@ -582,6 +582,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diagnosticsTitle => '诊断';
 
   @override
+  String get diagnosticsCollection => '收集';
+
+  @override
+  String get diagnosticsEnable => '收集诊断信息';
+
+  @override
+  String get diagnosticsEnableSubtitle => '在此设备上存储最近的应用事件和错误';
+
+  @override
+  String get diagnosticsDisabled => '诊断信息收集已关闭。开启后即可开始在此设备上记录应用事件和错误。';
+
+  @override
   String get diagnosticsEmpty => '尚未捕获任何诊断信息。';
 
   @override
@@ -1215,6 +1227,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get diagnosticsTitle => '診斷';
+
+  @override
+  String get diagnosticsCollection => '收集';
+
+  @override
+  String get diagnosticsEnable => '收集診斷資訊';
+
+  @override
+  String get diagnosticsEnableSubtitle => '在此裝置上儲存最近的應用程式事件和錯誤';
+
+  @override
+  String get diagnosticsDisabled => '診斷資訊收集已關閉。開啟後即可開始在此裝置上記錄應用程式事件和錯誤。';
 
   @override
   String get diagnosticsEmpty => '尚未擷取任何診斷資料。';

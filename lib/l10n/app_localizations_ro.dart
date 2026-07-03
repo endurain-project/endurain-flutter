@@ -628,6 +628,20 @@ class AppLocalizationsRo extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnosticare';
 
   @override
+  String get diagnosticsCollection => 'Colectare';
+
+  @override
+  String get diagnosticsEnable => 'Colectează diagnostice';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Stochează evenimentele și erorile recente ale aplicației pe acest dispozitiv';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Colectarea diagnosticelor este dezactivată. Activează-o pentru a începe să înregistrezi evenimentele și erorile aplicației pe acest dispozitiv.';
+
+  @override
   String get diagnosticsEmpty =>
       'Nu au fost capturate încă date de diagnosticare.';
 

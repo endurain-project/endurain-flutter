@@ -805,6 +805,10 @@
     "description": "Subtítulo de navegação para diagnóstico - Usado em: settings_screen.dart"
   },
   "diagnosticsTitle": "Diagnóstico",
+  "diagnosticsCollection": "Recolha",
+  "diagnosticsEnable": "Recolher diagnósticos",
+  "diagnosticsEnableSubtitle": "Guardar os eventos e erros recentes da aplicação neste dispositivo",
+  "diagnosticsDisabled": "A recolha de diagnósticos está desativada. Ative-a para começar a registar eventos e erros da aplicação neste dispositivo.",
   "@diagnosticsTitle": {
     "description": "Título do ecrã de diagnóstico - Usado em: diagnostics_screen.dart"
   },

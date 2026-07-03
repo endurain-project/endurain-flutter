@@ -629,6 +629,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnose';
 
   @override
+  String get diagnosticsCollection => 'Erfassung';
+
+  @override
+  String get diagnosticsEnable => 'Diagnose erfassen';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Aktuelle App-Ereignisse und Fehler auf diesem Gerät speichern';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Die Diagnoseerfassung ist deaktiviert. Aktiviere sie, um App-Ereignisse und Fehler auf diesem Gerät zu erfassen.';
+
+  @override
   String get diagnosticsEmpty => 'Es wurden noch keine Diagnosedaten erfasst.';
 
   @override

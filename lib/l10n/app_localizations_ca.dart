@@ -628,6 +628,20 @@ class AppLocalizationsCa extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnòstics';
 
   @override
+  String get diagnosticsCollection => 'Recopilació';
+
+  @override
+  String get diagnosticsEnable => 'Recopila diagnòstics';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Desa els esdeveniments i errors recents de l\'aplicació en aquest dispositiu';
+
+  @override
+  String get diagnosticsDisabled =>
+      'La recopilació de diagnòstics està desactivada. Activa-la per començar a capturar esdeveniments i errors de l\'aplicació en aquest dispositiu.';
+
+  @override
   String get diagnosticsEmpty => 'Encara no s\'ha capturat cap diagnòstic.';
 
   @override

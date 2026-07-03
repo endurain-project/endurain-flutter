@@ -630,6 +630,20 @@ class AppLocalizationsEl extends AppLocalizations {
   String get diagnosticsTitle => 'Διαγνωστικά';
 
   @override
+  String get diagnosticsCollection => 'Συλλογή';
+
+  @override
+  String get diagnosticsEnable => 'Συλλογή διαγνωστικών';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Αποθήκευση πρόσφατων συμβάντων και σφαλμάτων της εφαρμογής σε αυτή τη συσκευή';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Η συλλογή διαγνωστικών είναι απενεργοποιημένη. Ενεργοποιήστε την για να ξεκινήσετε την καταγραφή συμβάντων και σφαλμάτων της εφαρμογής σε αυτή τη συσκευή.';
+
+  @override
   String get diagnosticsEmpty => 'Δεν έχουν καταγραφεί ακόμη διαγνωστικά.';
 
   @override

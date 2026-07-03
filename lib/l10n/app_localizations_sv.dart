@@ -625,6 +625,20 @@ class AppLocalizationsSv extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostik';
 
   @override
+  String get diagnosticsCollection => 'Insamling';
+
+  @override
+  String get diagnosticsEnable => 'Samla in diagnostik';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Lagra appens senaste händelser och fel på den här enheten';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Insamling av diagnostik är avstängd. Slå på den för att börja registrera appens händelser och fel på den här enheten.';
+
+  @override
   String get diagnosticsEmpty => 'Ingen diagnostik har fångats ännu.';
 
   @override

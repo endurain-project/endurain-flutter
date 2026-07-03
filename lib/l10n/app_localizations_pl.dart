@@ -627,6 +627,20 @@ class AppLocalizationsPl extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostyka';
 
   @override
+  String get diagnosticsCollection => 'Zbieranie';
+
+  @override
+  String get diagnosticsEnable => 'Zbieraj dane diagnostyczne';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Przechowuj ostatnie zdarzenia i błędy aplikacji na tym urządzeniu';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Zbieranie danych diagnostycznych jest wyłączone. Włącz je, aby rozpocząć rejestrowanie zdarzeń i błędów aplikacji na tym urządzeniu.';
+
+  @override
   String get diagnosticsEmpty =>
       'Nie przechwycono jeszcze żadnych danych diagnostycznych.';
 

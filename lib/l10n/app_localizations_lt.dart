@@ -616,6 +616,20 @@ class AppLocalizationsLt extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostika';
 
   @override
+  String get diagnosticsCollection => 'Rinkimas';
+
+  @override
+  String get diagnosticsEnable => 'Rinkti diagnostiką';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Saugoti naujausius programos įvykius ir klaidas šiame įrenginyje';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Diagnostikos rinkimas išjungtas. Įjunkite jį, kad pradėtumėte fiksuoti programos įvykius ir klaidas šiame įrenginyje.';
+
+  @override
   String get diagnosticsEmpty => 'Diagnostikos duomenų dar neužfiksuota.';
 
   @override

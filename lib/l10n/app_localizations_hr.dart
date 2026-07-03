@@ -625,6 +625,20 @@ class AppLocalizationsHr extends AppLocalizations {
   String get diagnosticsTitle => 'Dijagnostika';
 
   @override
+  String get diagnosticsCollection => 'Prikupljanje';
+
+  @override
+  String get diagnosticsEnable => 'Prikupljaj dijagnostiku';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Pohrani nedavne događaje i pogreške aplikacije na ovom uređaju';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Prikupljanje dijagnostike je isključeno. Uključite ga da biste počeli bilježiti događaje i pogreške aplikacije na ovom uređaju.';
+
+  @override
   String get diagnosticsEmpty => 'Još nije zabilježena nijedna dijagnostika.';
 
   @override

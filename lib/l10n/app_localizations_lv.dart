@@ -621,6 +621,20 @@ class AppLocalizationsLv extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostika';
 
   @override
+  String get diagnosticsCollection => 'Vākšana';
+
+  @override
+  String get diagnosticsEnable => 'Vākt diagnostiku';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Saglabāt jaunākos lietotnes notikumus un kļūdas šajā ierīcē';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Diagnostikas vākšana ir izslēgta. Ieslēdziet to, lai sāktu reģistrēt lietotnes notikumus un kļūdas šajā ierīcē.';
+
+  @override
   String get diagnosticsEmpty => 'Vēl nav tverti diagnostikas dati.';
 
   @override

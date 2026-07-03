@@ -21,6 +21,7 @@ class DiagnosticsScreen extends StatefulWidget {
 class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
   late final DiagnosticsStore _diagnostics;
   late Future<DiagnosticsReport?> _reportFuture;
+  late bool _enabled;
 
   @override
   void initState() {
@@ -28,7 +29,19 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
     _diagnostics =
         widget.diagnostics ??
         AppScope.servicesOf(context, listen: false).diagnostics;
+    _enabled = _diagnostics.isEnabled;
     _reportFuture = _diagnostics.readReport();
+  }
+
+  Future<void> _setEnabled(bool value) async {
+    await _diagnostics.setEnabled(value);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _enabled = value;
+      _reportFuture = _diagnostics.readReport();
+    });
   }
 
   Future<void> _copyReport(DiagnosticsReport report) async {
@@ -58,58 +71,80 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
 
     return AdaptiveScaffold(
       title: l10n.diagnosticsTitle,
-      body: FutureBuilder<DiagnosticsReport?>(
-        future: _reportFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: AdaptiveLoadingIndicator());
-          }
-
-          final report = snapshot.data;
-          if (report == null || report.isEmpty) {
-            return Center(
-              child: AdaptiveEmptyStateText(message: l10n.diagnosticsEmpty),
-            );
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+      body: ListView(
+        padding: const EdgeInsets.all(UIConstants.paddingStandard),
+        children: [
+          AdaptiveListSection(
+            header: l10n.diagnosticsCollection,
             children: [
-              _DiagnosticsSummarySection(report: report),
-              const SizedBox(height: UIConstants.paddingStandard),
-              _DiagnosticsEventsSection(events: report.breadcrumbs),
-              if (report.errors.isNotEmpty) ...[
-                const SizedBox(height: UIConstants.paddingStandard),
-                _DiagnosticsErrorsSection(errors: report.errors),
-              ],
-              const SizedBox(height: UIConstants.paddingStandard),
-              AdaptiveListSection(
-                header: l10n.diagnosticsActions,
-                children: [
-                  AdaptiveListTile(
-                    leading: const AdaptiveIcon(
-                      materialIcon: Icons.copy,
-                      cupertinoIcon: CupertinoIcons.doc_on_doc,
-                    ),
-                    title: l10n.diagnosticsCopy,
-                    onTap: () => _copyReport(report),
-                  ),
-                  AdaptiveListTile(
-                    leading: const AdaptiveIcon(
-                      materialIcon: Icons.delete_outline,
-                      cupertinoIcon: CupertinoIcons.trash,
-                    ),
-                    title: l10n.diagnosticsClear,
-                    destructive: true,
-                    onTap: _clearReport,
-                  ),
-                ],
+              AdaptiveSwitchListTile(
+                leading: const AdaptiveIcon(
+                  materialIcon: Icons.bug_report,
+                  cupertinoIcon: CupertinoIcons.waveform_path_ecg,
+                ),
+                title: l10n.diagnosticsEnable,
+                subtitle: l10n.diagnosticsEnableSubtitle,
+                value: _enabled,
+                onChanged: _setEnabled,
               ),
-              const SizedBox(height: UIConstants.paddingStandard),
-              _RawReportSection(report: report.rawText),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: UIConstants.paddingStandard),
+          if (!_enabled)
+            AdaptiveEmptyStateText(message: l10n.diagnosticsDisabled)
+          else
+            FutureBuilder<DiagnosticsReport?>(
+              future: _reportFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Center(child: AdaptiveLoadingIndicator());
+                }
+
+                final report = snapshot.data;
+                if (report == null || report.isEmpty) {
+                  return AdaptiveEmptyStateText(message: l10n.diagnosticsEmpty);
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _DiagnosticsSummarySection(report: report),
+                    const SizedBox(height: UIConstants.paddingStandard),
+                    _DiagnosticsEventsSection(events: report.breadcrumbs),
+                    if (report.errors.isNotEmpty) ...[
+                      const SizedBox(height: UIConstants.paddingStandard),
+                      _DiagnosticsErrorsSection(errors: report.errors),
+                    ],
+                    const SizedBox(height: UIConstants.paddingStandard),
+                    AdaptiveListSection(
+                      header: l10n.diagnosticsActions,
+                      children: [
+                        AdaptiveListTile(
+                          leading: const AdaptiveIcon(
+                            materialIcon: Icons.copy,
+                            cupertinoIcon: CupertinoIcons.doc_on_doc,
+                          ),
+                          title: l10n.diagnosticsCopy,
+                          onTap: () => _copyReport(report),
+                        ),
+                        AdaptiveListTile(
+                          leading: const AdaptiveIcon(
+                            materialIcon: Icons.delete_outline,
+                            cupertinoIcon: CupertinoIcons.trash,
+                          ),
+                          title: l10n.diagnosticsClear,
+                          destructive: true,
+                          onTap: _clearReport,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: UIConstants.paddingStandard),
+                    _RawReportSection(report: report.rawText),
+                  ],
+                );
+              },
+            ),
+        ],
       ),
     );
   }

@@ -620,6 +620,20 @@ class AppLocalizationsNl extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostiek';
 
   @override
+  String get diagnosticsCollection => 'Verzameling';
+
+  @override
+  String get diagnosticsEnable => 'Diagnostiek verzamelen';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Recente app-gebeurtenissen en fouten op dit apparaat opslaan';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Het verzamelen van diagnostiek staat uit. Schakel het in om app-gebeurtenissen en fouten op dit apparaat vast te leggen.';
+
+  @override
   String get diagnosticsEmpty =>
       'Er is nog geen diagnostische informatie vastgelegd.';
 

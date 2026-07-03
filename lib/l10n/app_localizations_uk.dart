@@ -621,6 +621,20 @@ class AppLocalizationsUk extends AppLocalizations {
   String get diagnosticsTitle => 'Діагностика';
 
   @override
+  String get diagnosticsCollection => 'Збір';
+
+  @override
+  String get diagnosticsEnable => 'Збирати діагностику';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Зберігати останні події та помилки застосунку на цьому пристрої';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Збір діагностики вимкнено. Увімкніть його, щоб почати фіксувати події та помилки застосунку на цьому пристрої.';
+
+  @override
   String get diagnosticsEmpty => 'Ще не зібрано жодних діагностичних даних.';
 
   @override

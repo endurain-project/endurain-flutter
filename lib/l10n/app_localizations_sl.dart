@@ -621,6 +621,20 @@ class AppLocalizationsSl extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostika';
 
   @override
+  String get diagnosticsCollection => 'Zbiranje';
+
+  @override
+  String get diagnosticsEnable => 'Zbiraj diagnostiko';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Shrani nedavne dogodke in napake aplikacije v tej napravi';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Zbiranje diagnostike je izklopljeno. Vklopite ga, da začnete beležiti dogodke in napake aplikacije v tej napravi.';
+
+  @override
   String get diagnosticsEmpty => 'Zajet ni bil še noben diagnostični podatek.';
 
   @override

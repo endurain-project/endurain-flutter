@@ -623,6 +623,20 @@ class AppLocalizationsCs extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostika';
 
   @override
+  String get diagnosticsCollection => 'Shromažďování';
+
+  @override
+  String get diagnosticsEnable => 'Shromažďovat diagnostiku';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Ukládat nedávné události a chyby aplikace v tomto zařízení';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Shromažďování diagnostiky je vypnuto. Zapněte je, chcete-li začít zaznamenávat události a chyby aplikace v tomto zařízení.';
+
+  @override
   String get diagnosticsEmpty => 'Zatím nebyla zachycena žádná diagnostika.';
 
   @override

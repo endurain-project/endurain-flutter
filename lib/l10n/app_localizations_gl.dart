@@ -627,6 +627,20 @@ class AppLocalizationsGl extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnósticos';
 
   @override
+  String get diagnosticsCollection => 'Recompilación';
+
+  @override
+  String get diagnosticsEnable => 'Recompilar diagnósticos';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Garda os eventos e erros recentes da aplicación neste dispositivo';
+
+  @override
+  String get diagnosticsDisabled =>
+      'A recompilación de diagnósticos está desactivada. Activa esta opción para comezar a capturar eventos e erros da aplicación neste dispositivo.';
+
+  @override
   String get diagnosticsEmpty => 'Aínda non se capturou ningún diagnóstico.';
 
   @override

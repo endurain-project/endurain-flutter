@@ -622,6 +622,20 @@ class AppLocalizationsNb extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostikk';
 
   @override
+  String get diagnosticsCollection => 'Innsamling';
+
+  @override
+  String get diagnosticsEnable => 'Samle inn diagnostikk';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Lagre nylige apphendelser og feil på denne enheten';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Innsamling av diagnostikk er av. Slå den på for å begynne å registrere apphendelser og feil på denne enheten.';
+
+  @override
   String get diagnosticsEmpty => 'Ingen diagnostikk er fanget opp ennå.';
 
   @override

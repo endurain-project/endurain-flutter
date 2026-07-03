@@ -620,6 +620,20 @@ class AppLocalizationsEt extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnostika';
 
   @override
+  String get diagnosticsCollection => 'Kogumine';
+
+  @override
+  String get diagnosticsEnable => 'Kogu diagnostikat';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Salvesta rakenduse hiljutised sündmused ja vead sellesse seadmesse';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Diagnostika kogumine on välja lülitatud. Lülita see sisse, et hakata salvestama rakenduse sündmusi ja vigu sellesse seadmesse.';
+
+  @override
   String get diagnosticsEmpty => 'Diagnostikaandmeid pole veel jäädvustatud.';
 
   @override

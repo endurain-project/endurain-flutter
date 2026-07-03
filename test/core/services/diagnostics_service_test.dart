@@ -27,6 +27,7 @@ void main() {
       );
 
       await service.initialize();
+      await service.setEnabled(true);
       service.recordBreadcrumbSync(
         DiagnosticsEvents.activityStarted,
         details: {
@@ -70,6 +71,7 @@ void main() {
       );
 
       await service.initialize();
+      await service.setEnabled(true);
       service.recordBreadcrumbSync('one');
       service.recordBreadcrumbSync('two');
       service.recordBreadcrumbSync('three');
@@ -138,6 +140,7 @@ void main() {
             supportDirectoryProvider: () async => tempDirectory,
           );
           await service.initialize();
+          await service.setEnabled(true);
 
           service.recordBreadcrumbSync(
             'security.regression',
@@ -164,10 +167,57 @@ void main() {
       );
 
       await service.initialize();
+      await service.setEnabled(true);
       service.recordBreadcrumbSync('captured');
       await service.clearReport();
 
       expect(await service.readReportText(), isNull);
+    });
+
+    test('does not record while disabled by default', () async {
+      final service = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+
+      await service.initialize();
+      expect(service.isEnabled, isFalse);
+      service.recordBreadcrumbSync('ignored');
+      service.recordErrorSync(StateError('ignored'), StackTrace.empty);
+
+      expect(await service.readReport(), isNull);
+    });
+
+    test('disabling discards the stored report', () async {
+      final service = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+
+      await service.initialize();
+      await service.setEnabled(true);
+      service.recordBreadcrumbSync('captured');
+      expect(await service.readReport(), isNotNull);
+
+      await service.setEnabled(false);
+
+      expect(service.isEnabled, isFalse);
+      expect(await service.readReportText(), isNull);
+    });
+
+    test('persists the enabled flag across instances', () async {
+      final first = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+      await first.initialize();
+      await first.setEnabled(true);
+
+      final second = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+      await second.initialize();
+
+      expect(second.isEnabled, isTrue);
+      second.recordBreadcrumbSync('captured-after-restart');
+      expect(await second.readReport(), isNotNull);
     });
   });
 }

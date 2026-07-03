@@ -615,6 +615,20 @@ class AppLocalizationsTr extends AppLocalizations {
   String get diagnosticsTitle => 'Tanılama';
 
   @override
+  String get diagnosticsCollection => 'Toplama';
+
+  @override
+  String get diagnosticsEnable => 'Tanılama verilerini topla';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Son uygulama olaylarını ve hataları bu cihazda sakla';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Tanılama verisi toplama kapalı. Bu cihazda uygulama olaylarını ve hataları kaydetmeye başlamak için açın.';
+
+  @override
   String get diagnosticsEmpty => 'Henüz hiç tanılama verisi yakalanmadı.';
 
   @override

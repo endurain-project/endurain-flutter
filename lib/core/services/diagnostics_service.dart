@@ -21,6 +21,17 @@ abstract class DiagnosticsRecorder {
 abstract class DiagnosticsStore implements DiagnosticsRecorder {
   Future<void> initialize();
 
+  /// Whether local diagnostics collection is currently enabled.
+  ///
+  /// Collection is opt-in and disabled by default, so recording is a no-op
+  /// until the user turns it on. Valid after [initialize] has completed.
+  bool get isEnabled;
+
+  /// Enables or disables local diagnostics collection and persists the choice.
+  ///
+  /// Disabling discards any stored report so it stops occupying device storage.
+  Future<void> setEnabled(bool enabled);
+
   void recordFlutterErrorSync(FlutterErrorDetails details);
 
   Future<DiagnosticsReport?> readReport();
@@ -213,6 +224,7 @@ class DiagnosticsService implements DiagnosticsStore {
 
   File? _reportFile;
   bool _initialized = false;
+  bool _enabled = false;
 
   @override
   Future<void> initialize() async {
@@ -227,7 +239,34 @@ class DiagnosticsService implements DiagnosticsStore {
     _reportFile = File(
       '${directory.path}${Platform.pathSeparator}endurain_diagnostics.json',
     );
+    _enabled = _readPayloadSync()['enabled'] == true;
     _initialized = true;
+  }
+
+  @override
+  bool get isEnabled => _enabled;
+
+  @override
+  Future<void> setEnabled(bool enabled) async {
+    await initialize();
+    if (_enabled == enabled) {
+      return;
+    }
+    _enabled = enabled;
+
+    final file = _reportFile;
+    if (file == null) {
+      return;
+    }
+
+    if (enabled) {
+      final payload = _readPayloadSync();
+      payload['enabled'] = true;
+      _writePayloadSync(payload);
+    } else if (file.existsSync()) {
+      // Discard the stored report so disabled diagnostics free device storage.
+      file.deleteSync();
+    }
   }
 
   @override
@@ -235,7 +274,7 @@ class DiagnosticsService implements DiagnosticsStore {
     String event, {
     Map<String, Object?> details = const {},
   }) {
-    if (!_initialized) {
+    if (!_initialized || !_enabled) {
       return;
     }
 
@@ -265,7 +304,7 @@ class DiagnosticsService implements DiagnosticsStore {
     StackTrace stackTrace, {
     String source = DiagnosticsSources.uncaught,
   }) {
-    if (!_initialized) {
+    if (!_initialized || !_enabled) {
       return;
     }
 
@@ -308,7 +347,15 @@ class DiagnosticsService implements DiagnosticsStore {
   Future<void> clearReport() async {
     await initialize();
     final file = _reportFile;
-    if (file != null && file.existsSync()) {
+    if (file == null) {
+      return;
+    }
+    if (_enabled) {
+      // Keep collection enabled but drop the captured breadcrumbs and errors.
+      final payload = _emptyPayload();
+      payload['enabled'] = true;
+      _writePayloadSync(payload);
+    } else if (file.existsSync()) {
       file.deleteSync();
     }
   }

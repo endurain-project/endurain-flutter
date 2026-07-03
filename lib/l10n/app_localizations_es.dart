@@ -626,6 +626,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnósticos';
 
   @override
+  String get diagnosticsCollection => 'Recopilación';
+
+  @override
+  String get diagnosticsEnable => 'Recopilar diagnósticos';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Guarda los eventos y errores recientes de la aplicación en este dispositivo';
+
+  @override
+  String get diagnosticsDisabled =>
+      'La recopilación de diagnósticos está desactivada. Actívala para empezar a capturar eventos y errores de la aplicación en este dispositivo.';
+
+  @override
   String get diagnosticsEmpty => 'Aún no se ha capturado ningún diagnóstico.';
 
   @override

@@ -624,6 +624,20 @@ class AppLocalizationsBg extends AppLocalizations {
   String get diagnosticsTitle => 'Диагностика';
 
   @override
+  String get diagnosticsCollection => 'Събиране';
+
+  @override
+  String get diagnosticsEnable => 'Събиране на диагностика';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'Съхранявайте последните събития и грешки на приложението на това устройство';
+
+  @override
+  String get diagnosticsDisabled =>
+      'Събирането на диагностика е изключено. Включете го, за да започнете да записвате събития и грешки на приложението на това устройство.';
+
+  @override
   String get diagnosticsEmpty => 'Все още не са събрани диагностични данни.';
 
   @override

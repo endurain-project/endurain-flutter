@@ -14,13 +14,60 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: DiagnosticsScreen(diagnostics: _FakeDiagnosticsStore()),
+        home: DiagnosticsScreen(
+          diagnostics: _FakeDiagnosticsStore(enabled: true),
+        ),
       ),
     );
 
     await tester.pumpAndSettle();
 
     expect(find.text(l10n.diagnosticsTitle), findsOneWidget);
+    expect(find.text(l10n.diagnosticsEmpty), findsOneWidget);
+  });
+
+  testWidgets('DiagnosticsScreen shows the disabled hint by default', (
+    tester,
+  ) async {
+    PlatformUtils.debugIsApplePlatformOverride = false;
+    addTearDown(PlatformUtils.debugResetOverrides);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: DiagnosticsScreen(diagnostics: _FakeDiagnosticsStore()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.diagnosticsEnable), findsOneWidget);
+    expect(find.text(l10n.diagnosticsDisabled), findsOneWidget);
+    expect(find.text(l10n.diagnosticsEmpty), findsNothing);
+  });
+
+  testWidgets('DiagnosticsScreen enables collection from the toggle', (
+    tester,
+  ) async {
+    PlatformUtils.debugIsApplePlatformOverride = false;
+    addTearDown(PlatformUtils.debugResetOverrides);
+    final store = _FakeDiagnosticsStore();
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: DiagnosticsScreen(diagnostics: store),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.diagnosticsDisabled), findsOneWidget);
+
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    expect(store.isEnabled, isTrue);
+    expect(find.text(l10n.diagnosticsDisabled), findsNothing);
     expect(find.text(l10n.diagnosticsEmpty), findsOneWidget);
   });
 
@@ -32,7 +79,9 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: DiagnosticsScreen(diagnostics: _FakeDiagnosticsStore()),
+        home: DiagnosticsScreen(
+          diagnostics: _FakeDiagnosticsStore(enabled: true),
+        ),
       ),
     );
 
@@ -70,7 +119,7 @@ void main() {
       AdaptiveApp(
         title: 'Test',
         home: DiagnosticsScreen(
-          diagnostics: _FakeDiagnosticsStore(report: report),
+          diagnostics: _FakeDiagnosticsStore(report: report, enabled: true),
         ),
       ),
     );
@@ -115,7 +164,7 @@ void main() {
         AdaptiveApp(
           title: 'Test',
           home: DiagnosticsScreen(
-            diagnostics: _FakeDiagnosticsStore(report: report),
+            diagnostics: _FakeDiagnosticsStore(report: report, enabled: true),
           ),
         ),
       );
@@ -176,9 +225,19 @@ void _expectBrightCupertinoText(WidgetTester tester, String text) {
 }
 
 class _FakeDiagnosticsStore implements DiagnosticsStore {
-  _FakeDiagnosticsStore({this.report});
+  _FakeDiagnosticsStore({this.report, bool enabled = false})
+    : _enabled = enabled;
 
   final DiagnosticsReport? report;
+  bool _enabled;
+
+  @override
+  bool get isEnabled => _enabled;
+
+  @override
+  Future<void> setEnabled(bool enabled) async {
+    _enabled = enabled;
+  }
 
   @override
   Future<void> clearReport() async {}

@@ -627,6 +627,20 @@ class AppLocalizationsHu extends AppLocalizations {
   String get diagnosticsTitle => 'Diagnosztika';
 
   @override
+  String get diagnosticsCollection => 'Gyűjtés';
+
+  @override
+  String get diagnosticsEnable => 'Diagnosztika gyűjtése';
+
+  @override
+  String get diagnosticsEnableSubtitle =>
+      'A közelmúltbeli alkalmazásesemények és hibák tárolása ezen az eszközön';
+
+  @override
+  String get diagnosticsDisabled =>
+      'A diagnosztika gyűjtése ki van kapcsolva. Kapcsolja be az alkalmazás eseményeinek és hibáinak rögzítéséhez ezen az eszközön.';
+
+  @override
   String get diagnosticsEmpty => 'Még nem rögzült diagnosztikai adat.';
 
   @override
