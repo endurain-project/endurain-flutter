@@ -46,20 +46,23 @@ jobs:
         # daemon on the memory-constrained 8 GB runner. arm64-v8a covers
         # essentially all modern devices and keeps the output as app-release.apk.
         #
-        # Memory tuning for ~8GB runner:
+        # Memory tuning for a 6 GB, 4-vCPU runner:
         # - GRADLE_OPTS: caps main Gradle JVM to 1GB
-        # - KOTLIN_DAEMON_JVM_OPTIONS: disables separate Kotlin daemon (uses in-process)
-        # - JAVA_TOOL_OPTIONS: fallback JVM limits
+        # - Kotlin compilation runs in-process with one Gradle worker
+        # - JAVA_TOOL_OPTIONS: applies the same limits to lint worker JVMs
         # - --split-debug-info: reduces gen_snapshot memory by externalizing debug symbols
         env:
           GRADLE_OPTS: >-
             -Xmx1024m
-            -XX:MaxMetaspaceSize=384m
+            -XX:MaxMetaspaceSize=512m
+            -XX:ReservedCodeCacheSize=128m
             -Dorg.gradle.daemon=false
             -Dorg.gradle.workers.max=1
             -Dkotlin.compiler.execution.strategy=in-process
-          KOTLIN_DAEMON_JVM_OPTIONS: -Xmx512m
-          JAVA_TOOL_OPTIONS: -Xmx1024m
+          JAVA_TOOL_OPTIONS: >-
+            -Xmx1024m
+            -XX:MaxMetaspaceSize=512m
+            -XX:ReservedCodeCacheSize=128m
         run: |
           # Stop any stale Gradle daemons
           pkill -f 'GradleDaemon' || true
