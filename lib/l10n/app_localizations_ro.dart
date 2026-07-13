@@ -92,6 +92,29 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Nu s-a putut converti antrenamentul în GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Nu s-a putut importa antrenamentul';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Nu s-a putut importa antrenamentul: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Accesul la datele de sănătate a fost interzis';
+
+  @override
+  String get errorHealthReadFailed => 'Nu s-au putut citi datele de sănătate';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Sincronizarea sănătății nu este disponibilă pe acest dispozitiv';
+
+  @override
   String get errorLoginError => 'Autentificarea nu a reușit';
 
   @override
@@ -129,10 +152,6 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Nu sunteți autentificat';
-
-  @override
-  String get errorPkceVerifierMissing =>
-      'Verificatorul de autentificare nu a fost găsit';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -217,10 +236,6 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Autentificarea SSO nu a putut fi deschisă în browserul de sistem';
-
-  @override
-  String get ssoMissingSessionId =>
-      'Răspunsul SSO nu a inclus un ID de sesiune';
 
   @override
   String ssoSignInWith(String provider) {
@@ -380,6 +395,9 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Viteză';
+
+  @override
+  String get activityStatPace => 'Ritm';
 
   @override
   String get activityStop => 'Oprește';
@@ -546,7 +564,66 @@ class AppLocalizationsRo extends AppLocalizations {
   String get settingsTab => 'Setări';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® este o marcă înregistrată a lui João Vitória Silva';
+
+  @override
   String get settingsScreen => 'Setări';
+
+  @override
+  String get deviceAccessTitle => 'Acces la dispozitiv';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Gestionați locația și accesul la datele de sănătate';
+
+  @override
+  String get deviceAccessLocationSection => 'Locație';
+
+  @override
+  String get deviceAccessHealthSection => 'Date de sănătate';
+
+  @override
+  String get deviceAccessLocationTitle => 'Acces la locație';
+
+  @override
+  String get deviceAccessHealthTitle => 'Accesul la datele de sănătate';
+
+  @override
+  String get deviceAccessChecking => 'Se verifică accesul...';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'Serviciile de localizare sunt dezactivate';
+
+  @override
+  String get deviceAccessLocationAlways => 'Permis tot timpul';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Permis în timpul utilizării aplicației';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Blocat în setările sistemului';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Nu este permis';
+
+  @override
+  String get deviceAccessHealthUnavailable =>
+      'Nu este disponibil pe acest dispozitiv';
+
+  @override
+  String get deviceAccessHealthRequired => 'Health Connect este necesar';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Accesul la sănătate configurat';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Accesul necesită atenție';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Nu este conectat';
 
   @override
   String get language => 'Limbă';
@@ -568,6 +645,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get serverSettingsTitle => 'Setările serverului';
 
   @override
+  String connectedToServer(String server) {
+    return 'Conectat la $server';
+  }
+
+  @override
   String get loggedIn => 'Autentificat';
 
   @override
@@ -578,6 +660,9 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get serverUrl => 'URL server';
+
+  @override
+  String get serverProtocol => 'Protocol de server';
 
   @override
   String get serverUrlHint => 'https://exemplu.com';
@@ -697,4 +782,167 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Raport brut';
+
+  @override
+  String get healthSyncSettingsTitle => 'Sincronizarea sănătății';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importați antrenamente de pe platforma dvs. de sănătate';
+
+  @override
+  String get healthSyncScreenTitle => 'Sincronizarea sănătății';
+
+  @override
+  String get healthAccessScreenTitle => 'Acces la sănătate';
+
+  @override
+  String get healthAccessRequestedData => 'Date solicitate';
+
+  @override
+  String get healthAccessWorkouts => 'Antrenamente';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Trasee de antrenament';
+
+  @override
+  String get healthAccessHeartRate => 'Ritmul cardiac';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Distanță, calorii și pași din antrenament';
+
+  @override
+  String get healthAccessAllowed => 'Permis';
+
+  @override
+  String get healthAccessNeedsAttention => 'Necesită atenție';
+
+  @override
+  String get healthAccessManagedBySystem => 'Gestionat în setările sistemului';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit nu dezvăluie ce date poate citi Endurain. Examinați accesul în aplicația Sănătate.';
+
+  @override
+  String get healthAccessReview => 'Examinați accesul la sănătate';
+
+  @override
+  String get healthAccessReviewIos => 'Cum să revizuiți accesul';
+
+  @override
+  String get healthAccessDisconnect => 'Deconectează datele de sănătate';
+
+  @override
+  String get healthAccessDisconnectTitle => 'Deconectați datele de sănătate?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Importul automat și istoricul local al importurilor pentru acest server vor fi resetate. Activitățile existente rămân în istoric.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Deschideți aplicația Sănătate, atingeți fotografia de profil, apoi Aplicații și servicii. Selectați Endurain și actualizați categoriile de date.';
+
+  @override
+  String get healthSyncAuthorize => 'Conectați-vă la datele de sănătate';
+
+  @override
+  String get healthSyncInstallProvider => 'Instalați Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Health Connect este necesar pentru a sincroniza antrenamentele. Instalați-l pentru a continua.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Sincronizarea sănătății nu este disponibilă pe acest dispozitiv.';
+
+  @override
+  String get healthSyncSelectAll => 'Selectați toate';
+
+  @override
+  String get healthSyncClearSelection => 'Clar';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Import selectat ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Au importat $count antrenament(e).';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Fără traseu GPS';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Nu s-au găsit antrenamente în perioada selectată.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Unele antrenamente au fost omise, deoarece accesul la traseul exercițiului nu a fost acordat. Deschideți Health Connect → Permisiuni și permiteți rute de exerciții pentru Endurain.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Unele antrenamente au fost omise, deoarece Endurain nu a putut citi traseele GPS. În aplicația Sănătate, deschideți profilul, apoi Aplicații și servicii, selectați Endurain și permiteți Rute de antrenament.';
+
+  @override
+  String get healthSyncReviewAccess => 'Examinați accesul';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Sincronizare automată la reluare';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Importați automat antrenamente noi când se deschide aplicația.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Aceste antrenamente nu includ o rută GPS, așa că nu pot fi importate. Unele aplicații (cum ar fi Garmin Connect) înregistrează activități în Apple Health fără a partaja traseul. Antrenamentele înregistrate cu Apple Watch includ rute și pot fi importate.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Neimportabil';
+
+  @override
+  String get healthSyncViewAvailable => 'Disponibile';
+
+  @override
+  String get healthSyncViewImported => 'Importate';
+
+  @override
+  String get healthSyncDateRange => 'Perioada antrenamentelor';
+
+  @override
+  String get healthSyncRange30Days => 'Ultimele 30 de zile';
+
+  @override
+  String get healthSyncRange3Months => 'Ultimele 3 luni';
+
+  @override
+  String get healthSyncRange6Months => 'Ultimele 6 luni';
+
+  @override
+  String get healthSyncRangeYear => 'Ultimul an';
+
+  @override
+  String get healthSyncRangeAll => 'Tot istoricul';
+
+  @override
+  String get healthSyncRangeCustom => 'Perioadă personalizată';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Nu există antrenamente importate pentru această conexiune.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Importat: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Restaurează';
 }

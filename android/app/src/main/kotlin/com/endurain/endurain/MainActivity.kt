@@ -1,10 +1,10 @@
 package com.endurain.endurain
 
 import com.endurain.endurain.activity.ActivityRecorderChannel
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private var recorderChannel: ActivityRecorderChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

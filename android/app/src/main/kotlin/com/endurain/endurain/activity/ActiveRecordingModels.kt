@@ -19,6 +19,8 @@ data class ActiveActivitySessionData(
     val activityType: String,
     val status: String,
     val startedAt: String,
+    val connectionOrigin: String? = null,
+    val connectionProfileId: String? = null,
     val resumedAt: String? = null,
     val pausedAt: String? = null,
     val endedAt: String? = null,
@@ -36,6 +38,8 @@ data class ActiveActivitySessionData(
             put("activityType", activityType)
             put("status", status)
             put("startedAt", startedAt)
+            connectionOrigin?.let { put("connectionOrigin", it) }
+            connectionProfileId?.let { put("connectionProfileId", it) }
             resumedAt?.let { put("resumedAt", it) }
             pausedAt?.let { put("pausedAt", it) }
             endedAt?.let { put("endedAt", it) }
@@ -52,6 +56,8 @@ data class ActiveActivitySessionData(
         map["activityType"] = activityType
         map["status"] = status
         map["startedAt"] = startedAt
+        connectionOrigin?.let { map["connectionOrigin"] = it }
+        connectionProfileId?.let { map["connectionProfileId"] = it }
         resumedAt?.let { map["resumedAt"] = it }
         pausedAt?.let { map["pausedAt"] = it }
         endedAt?.let { map["endedAt"] = it }
@@ -61,7 +67,7 @@ data class ActiveActivitySessionData(
     }
 
     companion object {
-        const val SCHEMA_VERSION = 1
+        const val SCHEMA_VERSION = 2
 
         const val STATUS_RECORDING = "recording"
         const val STATUS_PAUSED = "paused"
@@ -80,6 +86,8 @@ data class ActiveActivitySessionData(
                 activityType = json.optString("activityType", ""),
                 status = json.optString("status", STATUS_FAILED),
                 startedAt = startedAt,
+                connectionOrigin = json.optStringOrNull("connectionOrigin"),
+                connectionProfileId = json.optStringOrNull("connectionProfileId"),
                 resumedAt = json.optStringOrNull("resumedAt"),
                 pausedAt = json.optStringOrNull("pausedAt"),
                 endedAt = json.optStringOrNull("endedAt"),

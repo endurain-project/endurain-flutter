@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller_factory.dart';
@@ -261,17 +262,18 @@ class _ActivityRecordTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toLanguageTag();
     const formatter = ActivityStatsFormatter();
     final title = l10n.activityHistoryEntryTitle(
       record.activityType.localizedLabel(l10n),
-      _formatDateTime(record.endedAt),
+      formatLocalDateTime(context, record.endedAt),
     );
     final subtitle = [
       l10n.activityHistoryDuration(
         formatter.formatDuration(record.elapsedDurationSeconds),
       ),
       l10n.activityHistoryDistance(
-        formatter.formatDistance(record.distanceMeters),
+        formatter.formatDistance(record.distanceMeters, locale: locale),
       ),
       l10n.activityHistoryUploadStatus(
         _uploadStatusLabel(l10n, record.uploadStatus),
@@ -405,18 +407,4 @@ String _uploadStatusLabel(
     LocalActivityUploadStatus.uploaded => l10n.activityUploadStatusUploaded,
     LocalActivityUploadStatus.failed => l10n.activityUploadStatusFailed,
   };
-}
-
-String _formatDateTime(DateTime value) {
-  final local = value.toLocal();
-  final date = [
-    local.year.toString().padLeft(4, '0'),
-    local.month.toString().padLeft(2, '0'),
-    local.day.toString().padLeft(2, '0'),
-  ].join('-');
-  final time = [
-    local.hour.toString().padLeft(2, '0'),
-    local.minute.toString().padLeft(2, '0'),
-  ].join(':');
-  return '$date $time';
 }

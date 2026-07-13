@@ -7,6 +7,7 @@ import 'package:endurain/core/services/base_http_client.dart';
 import 'package:endurain/core/services/pkce_token_exchanger.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
 import 'package:endurain/core/utils/run_with_cleanup.dart';
@@ -23,7 +24,9 @@ class AuthService {
     ApiEndpoints? endpoints,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
-    _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
+    _sessionStore =
+        sessionStore ??
+        AuthSessionStore(storage: resolvedStorage, config: config);
     _urlResolver =
         urlResolver ??
         ServerUrlResolver(storage: resolvedStorage, config: config);
@@ -44,10 +47,11 @@ class AuthService {
 
   // Store PKCE temporarily during auth flow
   Map<String, String>? _pkce;
+  String? _pendingLoginOrigin;
 
-  // Tracks an in-progress refresh so concurrent callers share a single
-  // network round-trip (see [refreshToken]).
-  Future<bool>? _inFlightRefresh;
+  // Refreshes are single-flight per session revision. A replacement login may
+  // refresh independently without joining a stale request from the old session.
+  final Map<String, Future<bool>> _inFlightRefreshes = {};
 
   /// Runs [action], always clearing the in-flight PKCE verifier on failure.
   /// Re-throws [AppException]s unchanged; wraps any other error in an
@@ -57,7 +61,10 @@ class AuthService {
     required AppErrorCode fallbackCode,
   }) => runWithCleanup(
     action,
-    onCleanup: () => _pkce = null,
+    onCleanup: () {
+      _pkce = null;
+      _pendingLoginOrigin = null;
+    },
     fallbackCode: fallbackCode,
   );
 
@@ -68,7 +75,8 @@ class AuthService {
     String password, {
     String? serverUrl,
   }) async {
-    final url = await _urlResolver.resolve(serverUrl: serverUrl, save: true);
+    final url = await _urlResolver.resolve(serverUrl: serverUrl);
+    _pendingLoginOrigin = url;
 
     // Generate PKCE parameters
     _pkce = PkceUtils.generatePkce();
@@ -115,7 +123,7 @@ class AuthService {
 
   /// Verify MFA code after initial login using PKCE flow
   Future<AuthResult> verifyMfa(String username, String mfaCode) async {
-    final serverUrl = await _urlResolver.resolve();
+    final serverUrl = _pendingLoginOrigin ?? await _urlResolver.resolve();
 
     if (_pkce == null || _pkce!['verifier'] == null) {
       throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
@@ -158,6 +166,7 @@ class AuthService {
     final verifier = _pkce!['verifier']!;
     // Clear verifier before the network call — one-time exchange.
     _pkce = null;
+    _pendingLoginOrigin = null;
 
     return _exchanger.exchange(
       serverUrl: serverUrl,
@@ -175,19 +184,26 @@ class AuthService {
   /// server rotates the refresh token on every refresh, allowing parallel
   /// refreshes would let one rotation invalidate the token the others are
   /// using and spuriously clear the session.
-  Future<bool> refreshToken() {
-    return _inFlightRefresh ??= _refreshToken().whenComplete(() {
-      _inFlightRefresh = null;
+  Future<bool> refreshToken() async {
+    final session = await _sessionStore.readSession();
+    if (session == null) {
+      await _sessionStore.clear();
+      return false;
+    }
+    final existing = _inFlightRefreshes[session.revision];
+    if (existing != null) {
+      return existing;
+    }
+    final refresh = _refreshToken(session).whenComplete(() {
+      _inFlightRefreshes.remove(session.revision);
     });
+    _inFlightRefreshes[session.revision] = refresh;
+    return refresh;
   }
 
-  Future<bool> _refreshToken() async {
-    final serverUrl = await _sessionStore.getServerUrl();
-    final refreshToken = await _sessionStore.getRefreshToken();
-
-    if (serverUrl == null || serverUrl.isEmpty || refreshToken == null) {
-      return _clearSessionAfterRefreshFailure();
-    }
+  Future<bool> _refreshToken(AuthSession session) async {
+    final serverUrl = await _urlResolver.resolve(serverUrl: session.origin);
+    final refreshToken = session.refreshToken;
 
     final url = Uri.parse('$serverUrl${_endpoints.refreshEndpoint}');
 
@@ -221,24 +237,24 @@ class AuthService {
         );
         final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
 
-        await _sessionStore.saveSession(
+        return _sessionStore.replaceSessionIfCurrent(
+          expected: session,
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
           sessionId: returnedSessionId,
           expiresInSeconds: expiresIn,
         );
-        return true;
       } catch (_) {
         // 200 with a malformed body is a definitive contract failure, not a
         // transient blip: the stored tokens cannot be trusted. Clear them.
-        return _clearSessionAfterRefreshFailure();
+        return _clearSessionAfterRefreshFailure(session);
       }
     }
 
     // The server explicitly rejected the refresh token (e.g. revoked, expired,
     // rotated away): clear the session and force re-login.
     if (response.statusCode == 401 || response.statusCode == 403) {
-      return _clearSessionAfterRefreshFailure();
+      return _clearSessionAfterRefreshFailure(session);
     }
 
     // Other non-success statuses (5xx, 429, 408, ...) are transient: keep the
@@ -246,8 +262,8 @@ class AuthService {
     return false;
   }
 
-  Future<bool> _clearSessionAfterRefreshFailure() async {
-    await _sessionStore.clear();
+  Future<bool> _clearSessionAfterRefreshFailure(AuthSession session) async {
+    await _sessionStore.clearIfProfileCurrent(session);
     return false;
   }
 
@@ -255,19 +271,19 @@ class AuthService {
   /// Returns true if server logout succeeded, false if it failed
   /// Local tokens are always cleared regardless of server response
   Future<bool> logout() async {
-    final serverUrl = await _sessionStore.getServerUrl();
-    final refreshToken = await _sessionStore.getRefreshToken();
+    final session = await _sessionStore.readSession();
 
     bool serverLogoutSuccess = true;
 
     // Call server-side logout if we have credentials
-    if (serverUrl != null && refreshToken != null && refreshToken.isNotEmpty) {
+    if (session != null && session.refreshToken.isNotEmpty) {
       try {
+        final serverUrl = await _urlResolver.resolve(serverUrl: session.origin);
         final url = Uri.parse('$serverUrl${_endpoints.logoutEndpoint}');
         final response = await _http.post(
           url,
           extraHeaders: {
-            ApiConstants.authorizationHeader: 'Bearer $refreshToken',
+            ApiConstants.authorizationHeader: 'Bearer ${session.refreshToken}',
           },
         );
         serverLogoutSuccess = response.statusCode == 200;
@@ -278,31 +294,40 @@ class AuthService {
     }
 
     // Always clear local tokens
-    await _sessionStore.clear();
+    if (session == null) {
+      await _sessionStore.clear();
+    } else {
+      await _sessionStore.clearIfProfileCurrent(session);
+    }
 
     return serverLogoutSuccess;
   }
 
   /// Check if user is authenticated
   Future<bool> isAuthenticated() async {
-    final accessToken = await _sessionStore.getAccessToken();
-    final storedRefreshToken = await _sessionStore.getRefreshToken();
+    final session = await _sessionStore.readSession();
+    if (session == null) {
+      return false;
+    }
 
-    if (accessToken != null &&
-        accessToken.isNotEmpty &&
-        !await _sessionStore.isAccessTokenExpiringSoon()) {
+    if (session.accessToken.isNotEmpty &&
+        !DateTime.now()
+            .toUtc()
+            .add(const Duration(minutes: 2))
+            .isAfter(session.accessTokenExpiresAt)) {
       return true;
     }
 
-    if (storedRefreshToken == null || storedRefreshToken.isEmpty) {
-      await _sessionStore.clear();
+    if (session.refreshToken.isEmpty) {
+      await _sessionStore.clearIfCurrent(session);
       return false;
     }
 
     // refreshToken() clears the session itself on a definitive rejection and
     // keeps it on a transient failure, so do not clear here — that would log
     // the user out on a temporary network/server blip.
-    return refreshToken();
+    final refreshed = await refreshToken();
+    return refreshed || await _sessionStore.readSession() != null;
   }
 }
 

@@ -74,8 +74,14 @@ class ActivityRecorderChannel(context: Context) :
             result.error(ERROR_ARGS, "Missing localSessionId", null)
             return
         }
+        if (store.hasRecoverableData()) {
+            result.error(ERROR_STATE, "A recoverable session already exists", null)
+            return
+        }
         val activityType = call.argument<String>("activityType") ?: ""
         val startedAt = call.argument<String>("startedAt") ?: IsoTime.nowUtc()
+        val connectionOrigin = call.argument<String>("connectionOrigin")
+        val connectionProfileId = call.argument<String>("connectionProfileId")
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
 
@@ -84,9 +90,10 @@ class ActivityRecorderChannel(context: Context) :
             activityType = activityType,
             status = ActiveActivitySessionData.STATUS_RECORDING,
             startedAt = startedAt,
+            connectionOrigin = connectionOrigin,
+            connectionProfileId = connectionProfileId,
             currentSegmentIndex = 0,
         )
-        store.clear()
         store.saveSession(session)
         try {
             ActivityRecorderService.start(appContext, title, text)
@@ -189,7 +196,22 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     private fun handleRecover(result: MethodChannel.Result) {
-        result.success(store.loadSession()?.toMap())
+        val session = store.loadSession()
+        if (session == null || session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            result.success(session?.toMap())
+            return
+        }
+        val nowMillis = System.currentTimeMillis()
+        val paused = session.copy(
+            status = ActiveActivitySessionData.STATUS_PAUSED,
+            pausedAt = IsoTime.format(java.util.Date(nowMillis)),
+            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+        )
+        // Persist the pause before stopping collection so any in-flight fix is
+        // rejected by the service's recording-state guard.
+        store.saveSession(paused)
+        ActivityRecorderService.pause(appContext)
+        result.success(paused.toMap())
     }
 
     /**

@@ -1,4 +1,5 @@
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -23,6 +24,7 @@ class ActivityStatsDisplay extends StatelessWidget {
     }
 
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final stats = calculator.calculate(state.segments);
     final durationSeconds = stats.durationSeconds > state.elapsedDurationSeconds
         ? stats.durationSeconds
@@ -39,14 +41,22 @@ class ActivityStatsDisplay extends StatelessWidget {
         ),
         _StatItem(
           label: l10n.activityStatDistance,
-          value: formatter.formatDistance(stats.distanceMeters),
+          value: formatter.formatDistance(stats.distanceMeters, locale: locale),
         ),
         _StatItem(
-          label: l10n.activityStatSpeed,
-          value: formatter.formatSpeed(
-            stats.currentSpeedMetersPerSecond ??
-                stats.averageSpeedMetersPerSecond,
-          ),
+          label: state.activityType == ActivityType.run
+              ? l10n.activityStatPace
+              : l10n.activityStatSpeed,
+          value: state.activityType == ActivityType.run
+              ? formatter.formatPace(
+                  stats.currentSpeedMetersPerSecond ??
+                      stats.averageSpeedMetersPerSecond,
+                )
+              : formatter.formatSpeed(
+                  stats.currentSpeedMetersPerSecond ??
+                      stats.averageSpeedMetersPerSecond,
+                  locale: locale,
+                ),
         ),
       ],
     );

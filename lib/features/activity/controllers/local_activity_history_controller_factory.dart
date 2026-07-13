@@ -11,6 +11,7 @@ LocalActivityHistoryController createLocalActivityHistoryController({
   ActivityUploadService? uploadService,
   ShareService? shareService,
   ActivityRetentionSettingsRepository? retentionSettingsRepository,
+  Future<void> Function(String localActivityId)? removeImportProvenance,
 }) {
   return LocalActivityHistoryController(
     repository: repository ?? services.localActivities,
@@ -19,5 +20,8 @@ LocalActivityHistoryController createLocalActivityHistoryController({
     retentionSettingsRepository:
         retentionSettingsRepository ?? services.activityRetentionSettings,
     diagnostics: services.diagnostics,
+    removeImportProvenance:
+        removeImportProvenance ??
+        services.healthImportRepository.removeByLocalActivityId,
   );
 }

@@ -4,11 +4,14 @@ import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/package_info_service.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
+import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
+import 'package:endurain/features/settings/screens/device_access_screen.dart';
 import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
@@ -28,6 +31,7 @@ class SettingsScreen extends StatefulWidget {
     this.diagnostics,
     this.activityRetentionSettings,
     this.localeController,
+    this.secureStorage,
     this.urlLauncherService,
   });
 
@@ -45,6 +49,7 @@ class SettingsScreen extends StatefulWidget {
   final DiagnosticsStore? diagnostics;
   final ActivityRetentionSettingsRepository? activityRetentionSettings;
   final LocaleController? localeController;
+  final SecureStorageService? secureStorage;
   final UrlLauncherService? urlLauncherService;
 
   @override
@@ -53,24 +58,26 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String _version = '';
+  String? _serverUrl;
   bool _retainUploadedGpx = true;
   late final PackageInfoService _packageInfoService;
   late final ActivityRetentionSettingsRepository _activityRetentionSettings;
+  late final SecureStorageService _secureStorage;
+  late final bool _healthSyncEnabled;
   late final UrlLauncherService _urlLauncherService;
 
   @override
   void initState() {
     super.initState();
-    _packageInfoService =
-        widget.packageInfoService ??
-        AppScope.servicesOf(context, listen: false).packageInfo;
+    final services = AppScope.servicesOf(context, listen: false);
+    _packageInfoService = widget.packageInfoService ?? services.packageInfo;
     _activityRetentionSettings =
-        widget.activityRetentionSettings ??
-        AppScope.servicesOf(context, listen: false).activityRetentionSettings;
-    _urlLauncherService =
-        widget.urlLauncherService ??
-        AppScope.servicesOf(context, listen: false).urlLauncher;
+        widget.activityRetentionSettings ?? services.activityRetentionSettings;
+    _secureStorage = widget.secureStorage ?? services.secureStorage;
+    _healthSyncEnabled = services.config.healthSyncEnabled;
+    _urlLauncherService = widget.urlLauncherService ?? services.urlLauncher;
     _loadVersion();
+    _loadServerUrl();
     _loadActivityRetentionSetting();
   }
 
@@ -105,6 +112,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _loadServerUrl() async {
+    try {
+      final serverUrl = await _secureStorage.getServerUrl();
+      if (mounted) {
+        setState(() {
+          _serverUrl = serverUrl;
+        });
+      }
+    } catch (_) {
+      // The settings page remains usable if secure storage is temporarily
+      // unavailable; the server details screen exposes storage errors directly.
+    }
+  }
+
   Future<void> _setRetainUploadedGpx(bool value) async {
     setState(() {
       _retainUploadedGpx = value;
@@ -122,6 +143,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final languageSubtitle = currentLocale == null
         ? l10n.languageSystemDefault
         : languageDisplayName(currentLocale);
+    final footerTextStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
 
     return AdaptiveScaffold(
       title: l10n.settingsScreen,
@@ -150,6 +174,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           cupertinoIcon: CupertinoIcons.globe,
                         ),
                         title: l10n.serverSettings,
+                        subtitle: _serverUrl == null || _serverUrl!.isEmpty
+                            ? null
+                            : l10n.connectedToServer(_serverUrl!),
                         onTap: () {
                           adaptivePush<void>(
                             context,
@@ -198,6 +225,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
+                        materialIcon: Icons.admin_panel_settings_outlined,
+                        cupertinoIcon: CupertinoIcons.shield,
+                      ),
+                      title: l10n.deviceAccessTitle,
+                      subtitle: l10n.deviceAccessSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => DeviceAccessScreen(
+                            healthSyncEnabled: _healthSyncEnabled,
+                          ),
+                        );
+                      },
+                    ),
+                    if (_healthSyncEnabled && !widget.isGuest)
+                      AdaptiveListTile(
+                        leading: const AdaptiveIcon(
+                          materialIcon: Icons.monitor_heart,
+                          cupertinoIcon: CupertinoIcons.heart,
+                        ),
+                        title: l10n.healthSyncSettingsTitle,
+                        subtitle: l10n.healthSyncSettingsSubtitle,
+                        onTap: () {
+                          adaptivePush<void>(
+                            context,
+                            (context) => const HealthSyncScreen(),
+                          );
+                        },
+                      ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
                         materialIcon: Icons.bug_report,
                         cupertinoIcon: CupertinoIcons.waveform_path_ecg,
                       ),
@@ -233,12 +291,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: UIConstants.paddingStandard),
-            child: Text(
-              _version,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            padding: const EdgeInsets.fromLTRB(
+              UIConstants.paddingStandard,
+              0,
+              UIConstants.paddingStandard,
+              UIConstants.paddingStandard,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _version,
+                  textAlign: TextAlign.center,
+                  style: footerTextStyle,
+                ),
+                const SizedBox(height: UIConstants.paddingSmall),
+                Text(
+                  l10n.endurainTrademarkNotice,
+                  textAlign: TextAlign.center,
+                  style: footerTextStyle,
+                ),
+              ],
             ),
           ),
         ],

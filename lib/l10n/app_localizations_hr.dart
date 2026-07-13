@@ -92,6 +92,30 @@ class AppLocalizationsHr extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Nije moguće pretvoriti vježbanje u GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Nije moguće uvesti vježbanje';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Nije moguće uvesti vježbu: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Pristup zdravstvenim podacima je odbijen';
+
+  @override
+  String get errorHealthReadFailed =>
+      'Nije moguće pročitati zdravstvene podatke';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Sinkronizacija zdravlja nije dostupna na ovom uređaju';
+
+  @override
   String get errorLoginError => 'Prijava nije uspjela';
 
   @override
@@ -129,9 +153,6 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Niste prijavljeni';
-
-  @override
-  String get errorPkceVerifierMissing => 'Verifikator prijave nije pronađen';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -216,9 +237,6 @@ class AppLocalizationsHr extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Prijavu putem SSO-a nije moguće otvoriti u sistemskom pregledniku';
-
-  @override
-  String get ssoMissingSessionId => 'Odgovor SSO-a nije sadržavao ID sesije';
 
   @override
   String ssoSignInWith(String provider) {
@@ -376,6 +394,9 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Brzina';
+
+  @override
+  String get activityStatPace => 'Tempo';
 
   @override
   String get activityStop => 'Zaustavi';
@@ -543,7 +564,64 @@ class AppLocalizationsHr extends AppLocalizations {
   String get settingsTab => 'Postavke';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® je registrirani žig João Vitória Silve.';
+
+  @override
   String get settingsScreen => 'Postavke';
+
+  @override
+  String get deviceAccessTitle => 'Pristup uređaju';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Upravljanje lokacijom i pristupom zdravstvenim podacima';
+
+  @override
+  String get deviceAccessLocationSection => 'Lokacija';
+
+  @override
+  String get deviceAccessHealthSection => 'Zdravstveni podaci';
+
+  @override
+  String get deviceAccessLocationTitle => 'Pristup lokaciji';
+
+  @override
+  String get deviceAccessHealthTitle => 'Pristup zdravstvenim podacima';
+
+  @override
+  String get deviceAccessChecking => 'Provjera pristupa...';
+
+  @override
+  String get deviceAccessLocationServicesOff => 'Usluge lokacije su isključene';
+
+  @override
+  String get deviceAccessLocationAlways => 'Dopušteno cijelo vrijeme';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Dopušteno tijekom korištenja aplikacije';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Blokirano u postavkama sustava';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Nije dopušteno';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Nije dostupno na ovom uređaju';
+
+  @override
+  String get deviceAccessHealthRequired => 'Potrebno je Health Connect';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Zdravstveni pristup postavljen';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Pristup zahtijeva pažnju';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Nije povezano';
 
   @override
   String get language => 'Jezik';
@@ -565,6 +643,11 @@ class AppLocalizationsHr extends AppLocalizations {
   String get serverSettingsTitle => 'Postavke poslužitelja';
 
   @override
+  String connectedToServer(String server) {
+    return 'Povezan na $server';
+  }
+
+  @override
   String get loggedIn => 'Prijavljeni';
 
   @override
@@ -575,6 +658,9 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get serverUrl => 'URL poslužitelja';
+
+  @override
+  String get serverProtocol => 'Protokol';
 
   @override
   String get serverUrlHint => 'https://primjer.com';
@@ -693,4 +779,168 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Neobrađeno izvješće';
+
+  @override
+  String get healthSyncSettingsTitle => 'Sinkronizacija zdravlja';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Uvezite vježbe sa svoje zdravstvene platforme';
+
+  @override
+  String get healthSyncScreenTitle => 'Sinkronizacija zdravlja';
+
+  @override
+  String get healthAccessScreenTitle => 'Zdravstveni pristup';
+
+  @override
+  String get healthAccessRequestedData => 'Traženi podaci';
+
+  @override
+  String get healthAccessWorkouts => 'Vježbe';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Rute vježbanja';
+
+  @override
+  String get healthAccessHeartRate => 'Otkucaji srca';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Udaljenost, kalorije i koraci vježbanja';
+
+  @override
+  String get healthAccessAllowed => 'Dopušteno';
+
+  @override
+  String get healthAccessNeedsAttention => 'Treba pozornost';
+
+  @override
+  String get healthAccessManagedBySystem => 'Upravlja se u postavkama sustava';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit ne otkriva koje podatke Endurain može čitati. Pregledajte pristup u aplikaciji Zdravlje.';
+
+  @override
+  String get healthAccessReview => 'Pregledajte zdravstveni pristup';
+
+  @override
+  String get healthAccessReviewIos => 'Kako pregledati pristup';
+
+  @override
+  String get healthAccessDisconnect => 'Prekini vezu sa zdravstvenim podacima';
+
+  @override
+  String get healthAccessDisconnectTitle =>
+      'Prekinuti vezu sa zdravstvenim podacima?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Automatski uvoz i lokalna povijest uvoza za ovaj poslužitelj bit će poništeni. Postojeće aktivnosti ostaju u povijesti.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Otvorite aplikaciju Zdravlje, dodirnite svoju profilnu sliku, zatim Aplikacije i usluge. Odaberite Endurain i ažurirajte kategorije podataka.';
+
+  @override
+  String get healthSyncAuthorize => 'Povežite se sa zdravstvenim podacima';
+
+  @override
+  String get healthSyncInstallProvider => 'Instalirajte Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Za sinkronizaciju vježbi potreban je Health Connect. Instalirajte ga za nastavak.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Sinkronizacija zdravlja nije dostupna na ovom uređaju.';
+
+  @override
+  String get healthSyncSelectAll => 'Odaberite sve';
+
+  @override
+  String get healthSyncClearSelection => 'čisto';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Uvezi odabrano ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Uvezeno $count vježbanja.';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Nema GPS rute';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Nije pronađen nijedan trening u odabranom razdoblju.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Neki su treninzi preskočeni jer pristup ruti vježbanja nije dopušten. Otvorite Health Connect → Dozvole i dopustite rute vježbanja za Endurain.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Neki su treninzi preskočeni jer Endurain nije mogao pročitati njihove GPS rute. U aplikaciji Health otvorite svoj profil, zatim Apps and Services, odaberite Endurain i dopustite Workout Routes.';
+
+  @override
+  String get healthSyncReviewAccess => 'Pregledajte pristup';
+
+  @override
+  String get healthSyncAutoSyncTitle =>
+      'Automatska sinkronizacija pri nastavku';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Automatski uvezite nove treninge kada se aplikacija otvori.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Ove vježbe ne uključuju GPS rutu, pa se ne mogu uvesti. Neke aplikacije (kao što je Garmin Connect) bilježe aktivnosti u Apple Health bez dijeljenja rute. Vježbe snimljene Apple Watchom uključuju rute i mogu se uvesti.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Neuvozna';
+
+  @override
+  String get healthSyncViewAvailable => 'Dostupno';
+
+  @override
+  String get healthSyncViewImported => 'Uvezeno';
+
+  @override
+  String get healthSyncDateRange => 'Razdoblje vježbanja';
+
+  @override
+  String get healthSyncRange30Days => 'Zadnjih 30 dana';
+
+  @override
+  String get healthSyncRange3Months => 'Zadnja 3 mjeseca';
+
+  @override
+  String get healthSyncRange6Months => 'Zadnjih 6 mjeseci';
+
+  @override
+  String get healthSyncRangeYear => 'Zadnja godina';
+
+  @override
+  String get healthSyncRangeAll => 'Cijela povijest';
+
+  @override
+  String get healthSyncRangeCustom => 'Prilagođeno razdoblje';
+
+  @override
+  String get healthSyncImportedEmpty => 'Nema uvezenih vježbanja za ovu vezu.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Uvezeno: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Vrati';
 }

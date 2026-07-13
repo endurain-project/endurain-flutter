@@ -49,6 +49,14 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorFetchServerSettingsFailed
           : l10n.errorFetchServerSettingsFailedWithDetails(details),
+    AppErrorCode.healthGpxBuildFailed => l10n.errorHealthGpxBuildFailed,
+    AppErrorCode.healthImportFailed =>
+      details == null
+          ? l10n.errorHealthImportFailed
+          : l10n.errorHealthImportFailedWithDetails(details),
+    AppErrorCode.healthPermissionDenied => l10n.errorHealthPermissionDenied,
+    AppErrorCode.healthReadFailed => l10n.errorHealthReadFailed,
+    AppErrorCode.healthUnavailable => l10n.errorHealthUnavailable,
     AppErrorCode.insecureTransportNotAllowed =>
       l10n.errorInsecureTransportNotAllowed,
     AppErrorCode.invalidTileServerUrl => l10n.invalidUrl,

@@ -110,7 +110,7 @@ void main() {
 
       await recorder.start(request());
       expect(store.session, isNotNull);
-      expect(store.clearCount, 1);
+      expect(store.clearCount, 0);
 
       adapter.addPosition(recordingPosition(latitude: 41.1, longitude: -8.6));
       await pumpEventQueue();
@@ -121,6 +121,20 @@ void main() {
         (event) => event.type == ActivityRecorderEventType.pointBatchAvailable,
       );
       expect(batch.points.single.latitude, 41.1);
+    });
+
+    test('rejects start without clearing an existing session', () async {
+      store.session = ActiveActivitySession(
+        localSessionId: 'existing',
+        activityType: ActivityType.ride,
+        status: ActiveActivityStatus.completed,
+        startedAt: DateTime.utc(2026, 6, 3, 8),
+      );
+
+      await expectLater(recorder.start(request()), throwsStateError);
+
+      expect(store.session?.localSessionId, 'existing');
+      expect(store.clearCount, 0);
     });
 
     test(

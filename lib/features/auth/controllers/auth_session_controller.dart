@@ -22,8 +22,7 @@ enum SessionMode {
 }
 
 class AuthSessionController extends ChangeNotifier {
-  AuthSessionController({required AuthService authService})
-    : _authService = authService;
+  AuthSessionController({required this._authService});
 
   final AuthService _authService;
 

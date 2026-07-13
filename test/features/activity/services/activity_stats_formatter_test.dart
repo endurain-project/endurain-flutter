@@ -16,11 +16,19 @@ void main() {
       expect(formatter.formatDistance(42.4), '42 m');
       expect(formatter.formatDistance(999.6), '1000 m');
       expect(formatter.formatDistance(1200), '1.20 km');
+      expect(formatter.formatDistance(1200, locale: 'pt-PT'), '1,20 km');
     });
 
     test('formats speed only when available', () {
       expect(formatter.formatSpeed(null), '-');
       expect(formatter.formatSpeed(2), '7.2 km/h');
+      expect(formatter.formatSpeed(2, locale: 'pt-PT'), '7,2 km/h');
+    });
+
+    test('formats pace only for positive speeds', () {
+      expect(formatter.formatPace(null), '-');
+      expect(formatter.formatPace(0), '-');
+      expect(formatter.formatPace(2.5), '6:40 min/km');
     });
   });
 }

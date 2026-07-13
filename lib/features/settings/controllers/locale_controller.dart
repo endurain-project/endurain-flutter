@@ -10,8 +10,7 @@ import 'package:endurain/features/settings/repositories/locale_settings_reposito
 /// so the root `App` can listen and rebuild the localized widget tree when the
 /// user changes languages in Settings.
 class LocaleController extends ChangeNotifier {
-  LocaleController({required LocaleSettingsRepository repository})
-    : _repository = repository;
+  LocaleController({required this._repository});
 
   final LocaleSettingsRepository _repository;
 

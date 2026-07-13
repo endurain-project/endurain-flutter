@@ -46,6 +46,8 @@ class ActiveActivitySession {
     required this.activityType,
     required this.status,
     required this.startedAt,
+    this.connectionOrigin,
+    this.connectionProfileId,
     this.resumedAt,
     this.pausedAt,
     this.endedAt,
@@ -54,12 +56,14 @@ class ActiveActivitySession {
     this.schemaVersion = currentSchemaVersion,
   });
 
-  static const int currentSchemaVersion = 1;
+  static const int currentSchemaVersion = 2;
 
   final String localSessionId;
   final ActivityType activityType;
   final ActiveActivityStatus status;
   final DateTime startedAt;
+  final String? connectionOrigin;
+  final String? connectionProfileId;
   final DateTime? resumedAt;
   final DateTime? pausedAt;
   final DateTime? endedAt;
@@ -76,6 +80,8 @@ class ActiveActivitySession {
     ActivityType? activityType,
     ActiveActivityStatus? status,
     DateTime? startedAt,
+    Object? connectionOrigin = kUnset,
+    Object? connectionProfileId = kUnset,
     Object? resumedAt = kUnset,
     Object? pausedAt = kUnset,
     Object? endedAt = kUnset,
@@ -88,6 +94,12 @@ class ActiveActivitySession {
       activityType: activityType ?? this.activityType,
       status: status ?? this.status,
       startedAt: startedAt ?? this.startedAt,
+      connectionOrigin: identical(connectionOrigin, kUnset)
+          ? this.connectionOrigin
+          : connectionOrigin as String?,
+      connectionProfileId: identical(connectionProfileId, kUnset)
+          ? this.connectionProfileId
+          : connectionProfileId as String?,
       resumedAt: identical(resumedAt, kUnset)
           ? this.resumedAt
           : resumedAt as DateTime?,
@@ -109,6 +121,9 @@ class ActiveActivitySession {
       'activityType': activityType.apiValue,
       'status': status.toJson(),
       'startedAt': startedAt.toUtcIso8601(),
+      if (connectionOrigin != null) 'connectionOrigin': connectionOrigin,
+      if (connectionProfileId != null)
+        'connectionProfileId': connectionProfileId,
       if (resumedAt != null) 'resumedAt': resumedAt!.toUtcIso8601(),
       if (pausedAt != null) 'pausedAt': pausedAt!.toUtcIso8601(),
       if (endedAt != null) 'endedAt': endedAt!.toUtcIso8601(),
@@ -134,6 +149,8 @@ class ActiveActivitySession {
       activityType: ActivityType.fromApiValue(jsonString(json['activityType'])),
       status: ActiveActivityStatus.fromJson(json['status']),
       startedAt: startedAt,
+      connectionOrigin: jsonString(json['connectionOrigin']),
+      connectionProfileId: jsonString(json['connectionProfileId']),
       resumedAt: jsonDateTime(json['resumedAt']),
       pausedAt: jsonDateTime(json['pausedAt']),
       endedAt: jsonDateTime(json['endedAt']),

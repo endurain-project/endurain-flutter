@@ -140,6 +140,40 @@ void main() {
     expect(find.textContaining('"breadcrumbs"'), findsOneWidget);
   });
 
+  testWidgets('DiagnosticsScreen confirms when diagnostics are cleared', (
+    tester,
+  ) async {
+    PlatformUtils.debugIsApplePlatformOverride = false;
+    addTearDown(PlatformUtils.debugResetOverrides);
+    final store = _FakeDiagnosticsStore(
+      enabled: true,
+      report: DiagnosticsReport.fromPayload({
+        'schemaVersion': 1,
+        'app': 'Endurain',
+        'lastUpdatedAt': '2026-06-01T12:30:00Z',
+        'breadcrumbs': [
+          {'at': '2026-06-01T12:29:00Z', 'event': DiagnosticsEvents.appStarted},
+        ],
+        'errors': [],
+      }),
+    );
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: DiagnosticsScreen(diagnostics: store),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToDiagnosticsActions(tester, l10n);
+    await tester.tap(find.text(l10n.diagnosticsClear));
+    await tester.pumpAndSettle();
+
+    expect(store.clearReportCallCount, 1);
+    expect(find.text(l10n.diagnosticsCleared), findsOneWidget);
+  });
+
   testWidgets(
     'DiagnosticsScreen raw report spans the same width as other sections on '
     'iOS',
@@ -225,11 +259,11 @@ void _expectBrightCupertinoText(WidgetTester tester, String text) {
 }
 
 class _FakeDiagnosticsStore implements DiagnosticsStore {
-  _FakeDiagnosticsStore({this.report, bool enabled = false})
-    : _enabled = enabled;
+  _FakeDiagnosticsStore({this.report, this._enabled = false});
 
   final DiagnosticsReport? report;
   bool _enabled;
+  int clearReportCallCount = 0;
 
   @override
   bool get isEnabled => _enabled;
@@ -240,7 +274,9 @@ class _FakeDiagnosticsStore implements DiagnosticsStore {
   }
 
   @override
-  Future<void> clearReport() async {}
+  Future<void> clearReport() async {
+    clearReportCallCount++;
+  }
 
   @override
   Future<void> initialize() async {}

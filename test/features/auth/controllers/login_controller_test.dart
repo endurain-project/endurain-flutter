@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,10 +6,11 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
+import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart' as core;
-import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
@@ -19,6 +19,7 @@ import 'package:endurain/features/auth/controllers/login_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 import '../../../helpers/fake_app_links_service.dart';
+import '../../../helpers/fake_preferences_store.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -122,8 +123,9 @@ void main() {
       );
       await loginCompleted.future.timeout(const Duration(seconds: 1));
 
-      expect(await storage.getAccessToken(), 'access-1');
-      expect(await storage.getRefreshToken(), 'refresh-1');
+      final session = await AuthSessionStore(storage: storage).readSession();
+      expect(session?.accessToken, 'access-1');
+      expect(session?.refreshToken, 'refresh-1');
       controller.dispose();
       await appLinks.close();
     });
@@ -361,7 +363,10 @@ void main() {
       await controller.submitLogin();
       await loginCompleted.future.timeout(const Duration(seconds: 1));
 
-      expect(await storage.getAccessToken(), 'access-1');
+      expect(
+        (await AuthSessionStore(storage: storage).readSession())?.accessToken,
+        'access-1',
+      );
       controller.dispose();
     });
 
@@ -430,7 +435,10 @@ void main() {
       await controller.submitMfa();
       await loginCompleted.future.timeout(const Duration(seconds: 1));
 
-      expect(await storage.getAccessToken(), 'access-1');
+      expect(
+        (await AuthSessionStore(storage: storage).readSession())?.accessToken,
+        'access-1',
+      );
       controller.dispose();
     });
 
@@ -598,54 +606,61 @@ void main() {
       });
     });
 
-    test(
-      'persists map settings from server settings on submitServerUrl',
-      () async {
-        final tempDir = await Directory.systemTemp.createTemp(
-          'login_ctrl_test_',
-        );
-        addTearDown(() => tempDir.deleteSync(recursive: true));
+    test('commits map settings only after authentication succeeds', () async {
+      final storage = SecureStorageService();
+      final prefs = FakePreferencesStore();
+      final mapRepo = MapSettingsRepository(preferences: prefs);
+      final controller = LoginController(
+        authCoordinator: _repository(
+          storage: storage,
+          client: MockClient((request) async {
+            if (request.url.path ==
+                ApiEndpoints.defaults.serverSettingsEndpoint) {
+              return http.Response(
+                '{"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
+                '"tileserver_attribution":"OSM",'
+                '"map_background_color":"#001122"}',
+                200,
+              );
+            }
+            if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
+              return http.Response('{"session_id":"session-1"}', 200);
+            }
+            if (request.url.path ==
+                '${ApiEndpoints.defaults.idpSessionTokenExchangeEndpoint}/session-1/tokens') {
+              return http.Response(
+                '{"access_token":"access-1","refresh_token":"refresh-1",'
+                '"session_id":"session-2","expires_in":3600}',
+                200,
+              );
+            }
+            if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
+              return http.Response('[]', 200);
+            }
+            fail('Unexpected request to ${request.url}');
+          }),
+        ),
+        appLinksService: const EmptyAppLinksService(),
+        mapSettingsRepository: mapRepo,
+      );
+      controller.serverUrlController.text = 'https://example.test';
 
-        final storage = SecureStorageService();
-        final prefs = AppPreferencesStore(
-          supportDirectoryProvider: () async => tempDir,
-        );
-        final mapRepo = MapSettingsRepository(preferences: prefs);
-        final controller = LoginController(
-          authCoordinator: _repository(
-            storage: storage,
-            client: MockClient((request) async {
-              if (request.url.path ==
-                  ApiEndpoints.defaults.serverSettingsEndpoint) {
-                return http.Response(
-                  '{"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png",'
-                  '"tileserver_attribution":"OSM",'
-                  '"map_background_color":"#001122"}',
-                  200,
-                );
-              }
-              if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
-                return http.Response('[]', 200);
-              }
-              fail('Unexpected request to ${request.url}');
-            }),
-          ),
-          appLinksService: const EmptyAppLinksService(),
-          mapSettingsRepository: mapRepo,
-        );
-        controller.serverUrlController.text = 'https://example.test';
+      await controller.submitServerUrl();
+      expect(
+        await mapRepo.getTileServerUrl(origin: 'https://example.test'),
+        MapConstants.defaultTileServerUrl,
+      );
 
-        await controller.submitServerUrl();
+      controller.usernameController.text = 'joao';
+      controller.passwordController.text = 'secret';
+      await controller.submitLogin();
 
-        expect(
-          await mapRepo.getTileServerUrl(),
-          'https://tiles.test/{z}/{x}/{y}.png',
-        );
-        expect(await mapRepo.getTileServerAttribution(), 'OSM');
-        expect(await mapRepo.getMapBackgroundColor(), '#001122');
-        controller.dispose();
-      },
-    );
+      expect(
+        await mapRepo.getTileServerUrl(origin: 'https://example.test'),
+        'https://tiles.test/{z}/{x}/{y}.png',
+      );
+      controller.dispose();
+    });
   });
 }
 

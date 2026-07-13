@@ -13,11 +13,10 @@ import 'package:endurain/core/services/base_http_client.dart';
 /// and whether a username is persisted differ between the two flows.
 class PkceTokenExchanger {
   const PkceTokenExchanger({
-    required AuthSessionStore sessionStore,
+    required this._sessionStore,
     required BaseHttpClient http,
     ApiEndpoints? endpoints,
-  }) : _sessionStore = sessionStore,
-       _http = http,
+  }) : _http = http,
        _endpoints = endpoints ?? const ApiEndpoints();
 
   final AuthSessionStore _sessionStore;
@@ -54,6 +53,7 @@ class PkceTokenExchanger {
       final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
 
       await _sessionStore.saveSession(
+        origin: serverUrl,
         accessToken: accessToken,
         refreshToken: refreshToken,
         sessionId: returnedSessionId,

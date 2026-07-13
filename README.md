@@ -36,6 +36,18 @@ Endurain Mobile is the official companion app for [Endurain](https://github.com/
 
 The app is designed with privacy in mind, connecting directly to your self-hosted Endurain server without any third-party services or analytics.
 
+### Self-Hosted First, Managed-Service Ready
+
+The current app ships as a self-hosted client. A managed Endurain service is not available yet, so the server connection screen intentionally presents only the user-provided instance flow.
+
+The core already reserves the correct boundary for a future managed rollout:
+
+- A committed authenticated session binds its credentials to one canonical server origin. A new login candidate never replaces an existing session until the token exchange succeeds.
+- Locally queued activities are bound to the origin active when they are saved. Guest activities remain local until a future explicit destination-assignment flow is added; they are never silently uploaded to a newly selected server.
+- `AppConfig.cloudBaseUrl` is the future official managed origin. It remains unset until the service and its public domain exist. Once configured, managed connections must use HTTPS; self-hosted connections retain the existing explicit HTTP warning path for trusted local deployments.
+
+When the managed service is ready, add a branded server picker that creates an explicit managed connection profile, configure `cloudBaseUrl` with the final HTTPS origin, restrict managed map resources to the approved allowlist, and move managed SSO to Android App Links and iOS Universal Links. Do not add a placeholder cloud endpoint or relax HTTPS before those server-side contracts exist.
+
 ## Current Features
 
 ✅ **Authentication**
@@ -66,7 +78,13 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Direct GPX upload to the Endurain activity import endpoint after a recording completes
 - Completed activity retention in private app storage (SQLite metadata store + GPX files), including local summary metadata, GPX availability, and upload state
 - Non-destructive post-upload flow with `Done`, `View history`, retry, and explicit delete actions
-- Durable upload recovery: a finished activity is always saved locally first, and any upload that did not reach the server (e.g. recorded with no connectivity) is retried automatically by an app-lifetime upload queue — on app resume and the moment network connectivity is restored — with no need to reopen the history screen
+- Durable upload recovery: a finished activity is always saved locally first.
+  Transient network, timeout, and server failures remain eligible for automatic
+  recovery by an app-lifetime upload queue on app resume or restored
+  connectivity. Validation, authentication, configuration, and missing-file
+  failures stay available for explicit manual retry instead of looping on every
+  resume. Drain requests received during an active run trigger a follow-up scan
+  so newly imported activities are not stranded
 - Forward-compatible upload de-duplication: each upload carries the local activity id as an `Idempotency-Key` request header. This is fully optional on the server — Endurain servers that do not recognize the header simply ignore it and uploads work unchanged, while a server that adopts it can de-duplicate automatically retried uploads with no app changes
 - Local activity history and details screens for completed recordings saved on the device, with incremental pagination
 - Manual GPX export/share from the activity details screen via the OS share sheet
@@ -74,17 +92,48 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 ✅ **Settings**
 - Server configuration management
 - Map tile server customization
+- Persisted language selection with a system-default option
 - Local activity history entry point and uploaded-GPX retention preference
+- Device access overview for location and health-data permissions
+- Health sync settings and optional automatic import on app resume
 - Logged-in server and username summary
 - Local diagnostics view with privacy-filtered crash context, recording breadcrumbs, copy, and clear actions
 - Session management with server-side logout attempt and secure local cleanup
 - App version display
 
+✅ **Health Data Sync**
+- Import route-bearing workouts from Apple HealthKit on iOS and Health Connect on Android
+- Review and request access to workouts, workout routes, heart rate, and the
+  distance, calories, and steps that Health Connect uses to summarize workouts
+- Browse the last 30 days by default, or choose three months, six months, one year, all history, or a custom date range; older history is read in 30-day pages so wide searches do not become a single expensive platform query
+- Select one or more eligible workouts, use `Select all` for the currently
+  loaded page set, and commit them through one explicit import action;
+  unavailable workouts remain informational rows without selection controls
+- Review imported workouts for the active connection, including their local upload status, and open records that are still available on the device
+- Restore an imported workout only when its local record is missing. Discovery
+  is read-only and never clears provenance implicitly, so background sync cannot
+  recreate an intentionally deleted activity without that explicit action
+- Convert imported routes to GPX and feed them into the same durable local upload queue used by GPS recording
+- Prevent duplicate imports locally and use stable upload idempotency keys
+- Optionally import new workouts automatically when the app resumes; automatic discovery remains bounded to the default 30-day window
+- Health-derived activity files and databases live in dedicated no-backup
+  storage on Android and iOS; imported data can be deleted from local activity
+  history or reset from Health access settings
+- Import provenance is scoped to the active connection profile, and health UI
+  controllers are route-owned so imported rows and selections cannot survive a
+  logout/login transition. A backend account UUID is still required before
+  separate login profiles can safely share imported history across sign-out and
+  sign-in cycles
+
 ✅ **User Experience**
-- Multi-language support (English, Portuguese)
+- Multi-language support for 30 locales, including English and European Portuguese
 - Dark/light theme support
 - Secure local session storage
 - Shared adaptive widget layer for Material and Cupertino controls
+- Platform-native health controls: Material checkboxes for Android batch
+  selection, whole-row selection with trailing checkmarks on iOS, switches only
+  for immediate settings, accurate sport glyphs on both platforms, and tested
+  dark-mode/200% text layouts
 - Local SSO provider icon assets with remote icon fallback
 
 ## Roadmap
@@ -100,21 +149,22 @@ the current on-device storage design behind activity recording and retention.
 
 ## Tech Stack
 
-- **Framework:** Flutter 3.44+ (Dart 3.10+)
+- **Framework:** Flutter 3.44+ (Dart 3.12+)
 - **Platforms:** iOS, Android
 - **State Management:** Stateful widgets plus focused `ChangeNotifier` controllers
-- **Navigation:** `go_router` (BSD-3-Clause, F-Droid safe) for top-level, auth-guarded routing that redirects off the session state and is ready for deep links
+- **Navigation:** `go_router` for top-level, auth-guarded routing that redirects off the session state and is ready for deep links
 - **Map Provider:** OpenStreetMap with `flutter_map` and `latlong2`
 - **Location Services:** `geolocator`, including position streams and movement heading
 - **Connectivity:** `connectivity_plus` to retry pending activity uploads when the network returns
-- **File Sharing:** `share_plus` (BSD-3-Clause, F-Droid safe) for the OS share sheet used by GPX file export
+- **File Sharing:** `share_plus` for the OS share sheet used by GPX file export
 - **Secure Storage:** `flutter_secure_storage`
 - **HTTP Client:** `http` for Endurain API communication and multipart uploads
 - **SSO/OAuth:** `app_links` for deep-link callbacks, `url_launcher` for the system browser OAuth flow, and `flutter_svg` for provider icons
+- **Health Data:** `health` for Apple HealthKit and Android Health Connect workout import
 - **App Metadata:** `package_info_plus`
 - **Local App Files:** `path_provider` for private app-support diagnostics and retained activity GPX storage
 - **Security:** `crypto` for PKCE challenge generation
-- **Localization:** Flutter gen-l10n from ARB files with English and Portuguese locales
+- **Localization:** Flutter gen-l10n from ARB files with 30 supported locales
 - **SQLite:** `sqflite` for on-device metadata storage and `sqflite_common_ffi` for test-only in-process coverage
 - **Quality:** `flutter_lints` with strict casts, strict inference, strict raw types, and additional lint rules
 
@@ -123,7 +173,7 @@ the current on-device storage design behind activity recording and retention.
 ### Prerequisites
 
 - Flutter SDK 3.44.1 or higher
-- Dart SDK 3.10.3 or higher
+- Dart SDK 3.12.0 or higher
 - Xcode (for iOS development)
 - Android Studio (for Android development)
 - A running Endurain server instance
@@ -185,6 +235,14 @@ plugins ship compatible releases, the explicit declaration can be removed and
 the flag enabled. Current Android builds can still show upstream plugin warnings
 for these dependencies; if the debug build succeeds, track them with dependency
 updates rather than editing files in the local pub cache.
+
+### Android Health Sync Availability
+
+Health sync is optional. Android 14 and later include Health Connect as a
+system component. On earlier Android versions, the user must install the
+separate Health Connect provider before importing workouts. On devices where
+the provider is unavailable, the app keeps GPS recording and manual GPX upload
+available and shows health sync as unavailable.
 
 ## SSO/OAuth Callback
 
@@ -296,7 +354,8 @@ dart run tool/check_coverage.dart \
   --exclude "lib/core/services/multipart_upload_adapter.dart" \
   --exclude "lib/core/services/package_info_service.dart" \
   --exclude "lib/core/services/url_launcher_service.dart" \
-  --exclude "lib/core/services/share_service.dart"
+  --exclude "lib/core/services/share_service.dart" \
+  --exclude "lib/features/health/services/health_package_platform_adapter.dart"
 ```
 
 Regenerate localization classes after changing ARB files:
@@ -351,6 +410,7 @@ lib/
 ├── features/
 │   ├── activity/             # Recording controllers, models, repositories, services, screens, and widgets
 │   ├── auth/                 # Login, MFA, SSO, and session controllers
+│   ├── health/               # HealthKit/Health Connect import, sync, and access screens
 │   ├── map/                  # Map screen, map settings, and location state
 │   └── settings/             # Settings and server configuration screens
 ├── shared/
@@ -420,10 +480,9 @@ shipped migrations are never edited.
 | `sqflite`             | Apache 2.0 | De facto Flutter SQLite; Android/iOS native    |
 | `sqflite_common_ffi`  | MIT        | In-process SQLite for unit tests (dev only)    |
 
-Both packages are open-source and contain no proprietary SDKs, making them
-suitable for F-Droid distribution. `sqflite` provides the shipped Android/iOS
-implementation, while `sqflite_common_ffi` is a `dev_dependency` that runs the
-same API in-process during unit tests without platform-channel mocks.
+`sqflite` provides the shipped Android/iOS implementation, while
+`sqflite_common_ffi` is a `dev_dependency` that runs the same API in-process
+during unit tests without platform-channel mocks.
 
 `drift` (an ORM built on SQLite) was considered but rejected — the direct SQL
 API of `sqflite` is sufficient for the current schema and avoids an additional
@@ -436,14 +495,14 @@ Contributions are welcomed! This mobile app is part of the main Endurain project
 1. Check the [Contributing Guidelines](CONTRIBUTING.md)
 2. Open an issue to discuss changes before submitting a PR
 3. Follow the existing code style and architecture patterns
-4. Ensure all dependencies remain FOSS-compatible
-5. Test on multiple platforms when possible
+4. Test on multiple platforms when possible
 
 ### Development Guidelines
 
 - **Never hardcode strings** - use `AppLocalizations` (l10n)
 - **Use constants** - avoid magic numbers, use files in `core/constants/`
 - **Platform-adaptive UI** - use `PlatformUtils` for platform checks
+- **Open-source first** - prefer well-maintained open-source dependencies when they meet the need; proprietary or store-specific SDKs are acceptable when their product or platform benefit is clear
 - **Follow conventions** - see `.github/copilot-instructions.md`
 
 ## License

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:endurain/core/config/api_endpoints.dart';
@@ -212,6 +213,109 @@ void main() {
       },
     );
 
+    test('originless guest record never reaches the uploader', () async {
+      final record = await _createRecord(
+        repository,
+        id: 'svc_guest',
+        connectionOrigin: null,
+      );
+      var uploadCalls = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile: (_, _, _, {idempotencyKey}) async {
+          uploadCalls++;
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+        },
+      );
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.notAuthenticated,
+          ),
+        ),
+      );
+      expect(uploadCalls, 0);
+    });
+
+    test('concurrent attempts for one record share one upload', () async {
+      final record = await _createRecord(repository, id: 'svc_single_flight');
+      final started = Completer<void>();
+      final finish = Completer<void>();
+      var uploadCalls = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile: (_, _, _, {idempotencyKey}) async {
+          uploadCalls++;
+          if (!started.isCompleted) {
+            started.complete();
+          }
+          await finish.future;
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+        },
+      );
+
+      final first = service.performUploadAttempt(
+        record: record,
+        repository: repository,
+      );
+      await started.future;
+      final second = service.performUploadAttempt(
+        record: record,
+        repository: repository,
+      );
+      finish.complete();
+
+      final results = await Future.wait([first, second]);
+      expect(uploadCalls, 1);
+      expect(
+        results.map((record) => record.uploadStatus),
+        everyElement(LocalActivityUploadStatus.uploaded),
+      );
+    });
+
+    test('stale pending snapshot does not downgrade uploaded state', () async {
+      final stale = await _createRecord(repository, id: 'svc_stale');
+      final uploaded = stale.copyWith(
+        uploadStatus: LocalActivityUploadStatus.uploaded,
+        uploadedAt: DateTime.utc(2026, 6, 8),
+      );
+      await repository.upsert(uploaded);
+      await repository.deleteGpx(uploaded);
+      var uploadCalls = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile: (_, _, _, {idempotencyKey}) async {
+          uploadCalls++;
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+        },
+      );
+
+      final result = await service.performUploadAttempt(
+        record: stale,
+        repository: repository,
+      );
+
+      expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+      expect(uploadCalls, 0);
+      expect(
+        (await repository.get(stale.id))?.uploadStatus,
+        LocalActivityUploadStatus.uploaded,
+      );
+    });
+
     test('keeps record uploaded when post-upload GPX cleanup fails', () async {
       final cleanupThrowingRepository = _DeleteGpxThrowingRepository(tempDir);
       final record = await _createRecord(
@@ -250,6 +354,7 @@ void main() {
       final persisted = await repository.get(record.id);
       expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
       expect(persisted.lastUploadErrorCode, AppErrorCode.activityUploadFailed);
+      expect(persisted.autoRetryEligible, isTrue);
     });
 
     test(
@@ -274,6 +379,7 @@ void main() {
 
         final persisted = await repository.get(record.id);
         expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+        expect(persisted.autoRetryEligible, isFalse);
       },
     );
 
@@ -322,6 +428,7 @@ void main() {
 
       final persisted = await repository.get(record.id);
       expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+      expect(persisted.autoRetryEligible, isTrue);
     });
 
     test('4xx is not retried even when maxAttempts > 1', () async {
@@ -338,6 +445,7 @@ void main() {
 
       final persisted = await repository.get(record.id);
       expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+      expect(persisted.autoRetryEligible, isFalse);
     });
 
     test('401 is not retried', () async {
@@ -369,6 +477,7 @@ void main() {
 
       final persisted = await repository.get(record.id);
       expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+      expect(persisted.autoRetryEligible, isFalse);
     });
 
     test('unexpected non-IO error fails fast without retrying', () async {
@@ -475,6 +584,8 @@ ActivityUploadRequest _request() {
 Future<LocalActivityRecord> _createRecord(
   LocalActivityRepository repository, {
   required String id,
+  String? connectionOrigin = 'https://example.test',
+  String? connectionProfileId = 'profile-1',
 }) async {
   final fileName = await repository.writeGpx(id: id, gpx: '<gpx />');
   final record = LocalActivityRecord(
@@ -489,6 +600,8 @@ Future<LocalActivityRecord> _createRecord(
     uploadStatus: LocalActivityUploadStatus.pending,
     createdAt: DateTime.utc(2026, 6, 2, 10, 31),
     updatedAt: DateTime.utc(2026, 6, 2, 10, 31),
+    connectionOrigin: connectionOrigin,
+    connectionProfileId: connectionProfileId,
   );
   await repository.upsert(record);
   return record;

@@ -37,7 +37,10 @@ class LocalActivityRecord {
     this.uploadedAt,
     this.lastUploadAttemptAt,
     this.lastUploadErrorCode,
-    this.serverActivityId,
+    this.autoRetryEligible = true,
+    this.idempotencyKey,
+    this.connectionOrigin,
+    this.connectionProfileId,
   });
 
   final String id;
@@ -55,7 +58,32 @@ class LocalActivityRecord {
   final DateTime? uploadedAt;
   final DateTime? lastUploadAttemptAt;
   final AppErrorCode? lastUploadErrorCode;
-  final String? serverActivityId;
+
+  /// Whether the durable queue may retry this record without user action.
+  ///
+  /// Network, timeout, and server 5xx failures remain eligible. Permanent
+  /// request, authentication, configuration, and missing-file failures do not.
+  final bool autoRetryEligible;
+
+  /// Stable key used for server-side upload de-duplication.
+  ///
+  /// `null` for GPS recordings, whose [id] is already a stable, persisted
+  /// identity generated once at recording start. Health imports set this to a
+  /// value derived from the source workout's UUID so that re-importing the same
+  /// workout (e.g. after a reinstall that loses the local dedup table) collapses
+  /// to the same server activity. Use [effectiveIdempotencyKey] when uploading.
+  final String? idempotencyKey;
+
+  /// Canonical origin selected when the activity was persisted.
+  ///
+  /// A `null` value means the activity was recorded in guest mode. It remains
+  /// local until a future explicit assignment action chooses its destination.
+  final String? connectionOrigin;
+  final String? connectionProfileId;
+
+  /// The key to send as the upload `Idempotency-Key`: the explicit
+  /// [idempotencyKey] when set, otherwise the stable record [id].
+  String get effectiveIdempotencyKey => idempotencyKey ?? id;
 
   LocalActivityRecord copyWith({
     String? id,
@@ -73,7 +101,10 @@ class LocalActivityRecord {
     Object? uploadedAt = kUnset,
     Object? lastUploadAttemptAt = kUnset,
     Object? lastUploadErrorCode = kUnset,
-    Object? serverActivityId = kUnset,
+    bool? autoRetryEligible,
+    Object? idempotencyKey = kUnset,
+    Object? connectionOrigin = kUnset,
+    Object? connectionProfileId = kUnset,
   }) {
     return LocalActivityRecord(
       id: id ?? this.id,
@@ -101,9 +132,16 @@ class LocalActivityRecord {
       lastUploadErrorCode: identical(lastUploadErrorCode, kUnset)
           ? this.lastUploadErrorCode
           : lastUploadErrorCode as AppErrorCode?,
-      serverActivityId: identical(serverActivityId, kUnset)
-          ? this.serverActivityId
-          : serverActivityId as String?,
+      autoRetryEligible: autoRetryEligible ?? this.autoRetryEligible,
+      idempotencyKey: identical(idempotencyKey, kUnset)
+          ? this.idempotencyKey
+          : idempotencyKey as String?,
+      connectionOrigin: identical(connectionOrigin, kUnset)
+          ? this.connectionOrigin
+          : connectionOrigin as String?,
+      connectionProfileId: identical(connectionProfileId, kUnset)
+          ? this.connectionProfileId
+          : connectionProfileId as String?,
     );
   }
 
@@ -127,7 +165,11 @@ class LocalActivityRecord {
         'lastUploadAttemptAt': lastUploadAttemptAt!.toUtcIso8601(),
       if (lastUploadErrorCode != null)
         'lastUploadErrorCode': lastUploadErrorCode!.name,
-      if (serverActivityId != null) 'serverActivityId': serverActivityId,
+      'autoRetryEligible': autoRetryEligible,
+      if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
+      if (connectionOrigin != null) 'connectionOrigin': connectionOrigin,
+      if (connectionProfileId != null)
+        'connectionProfileId': connectionProfileId,
     };
   }
 
@@ -156,7 +198,12 @@ class LocalActivityRecord {
       uploadedAt: jsonDateTime(json['uploadedAt']),
       lastUploadAttemptAt: jsonDateTime(json['lastUploadAttemptAt']),
       lastUploadErrorCode: appErrorCodeByName(json['lastUploadErrorCode']),
-      serverActivityId: jsonString(json['serverActivityId']),
+      autoRetryEligible: json['autoRetryEligible'] is bool
+          ? json['autoRetryEligible'] as bool
+          : true,
+      idempotencyKey: jsonString(json['idempotencyKey']),
+      connectionOrigin: jsonString(json['connectionOrigin']),
+      connectionProfileId: jsonString(json['connectionProfileId']),
     );
   }
 }

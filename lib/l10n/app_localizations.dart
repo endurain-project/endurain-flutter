@@ -285,6 +285,42 @@ abstract class AppLocalizations {
   /// **'Could not load server settings: {details}'**
   String errorFetchServerSettingsFailedWithDetails(String details);
 
+  /// Health workout GPX conversion error - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not convert workout to GPX'**
+  String get errorHealthGpxBuildFailed;
+
+  /// Generic health workout import error - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not import workout'**
+  String get errorHealthImportFailed;
+
+  /// Health workout import error with details - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not import workout: {details}'**
+  String errorHealthImportFailedWithDetails(String details);
+
+  /// Health authorization denied error - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health data access was denied'**
+  String get errorHealthPermissionDenied;
+
+  /// Health data read error - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read health data'**
+  String get errorHealthReadFailed;
+
+  /// Health platform unavailable error - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health sync is not available on this device'**
+  String get errorHealthUnavailable;
+
   /// Generic login error - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
@@ -344,12 +380,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You are not signed in'**
   String get errorNotAuthenticated;
-
-  /// Error when PKCE verifier is missing - Used in: error_localizations.dart
-  ///
-  /// In en, this message translates to:
-  /// **'The sign-in verifier was not found'**
-  String get errorPkceVerifierMissing;
 
   /// Recoverable PKCE error asking user to restart login - Used in: error_localizations.dart
   ///
@@ -482,12 +512,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open SSO sign-in in the system browser'**
   String get ssoBrowserLaunchFailed;
-
-  /// Error shown when the SSO callback URL lacks a session_id - Used in: login_screen.dart
-  ///
-  /// In en, this message translates to:
-  /// **'SSO callback did not include a session ID'**
-  String get ssoMissingSessionId;
 
   /// SSO provider button label - Used in: login_screen.dart
   ///
@@ -770,6 +794,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Speed'**
   String get activityStatSpeed;
+
+  /// Recording stats pace label for runs - Used in: activity_stats_display.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pace'**
+  String get activityStatPace;
 
   /// Stop recording button label and tooltip - Used in: activity_recording_controls.dart
   ///
@@ -1071,11 +1101,119 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTab;
 
+  /// Registered trademark attribution shown in the settings footer - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Endurain® is a registered trademark of João Vitória Silva'**
+  String get endurainTrademarkNotice;
+
   /// Settings screen title - Used in: settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Settings'**
   String get settingsScreen;
+
+  /// Settings entry and screen title for mobile permissions - Used in: settings_screen.dart, device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Device access'**
+  String get deviceAccessTitle;
+
+  /// Subtitle for the device access settings entry - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Manage location and health data access'**
+  String get deviceAccessSubtitle;
+
+  /// Device access screen section heading - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get deviceAccessLocationSection;
+
+  /// Device access screen section heading - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health data'**
+  String get deviceAccessHealthSection;
+
+  /// Location permission row title - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Location access'**
+  String get deviceAccessLocationTitle;
+
+  /// Health permission row title - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health data access'**
+  String get deviceAccessHealthTitle;
+
+  /// Temporary status while device permissions are checked - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Checking access…'**
+  String get deviceAccessChecking;
+
+  /// Location status when device location services are disabled - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Location services are turned off'**
+  String get deviceAccessLocationServicesOff;
+
+  /// Location permission status - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed all the time'**
+  String get deviceAccessLocationAlways;
+
+  /// Location permission status - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed while using the app'**
+  String get deviceAccessLocationWhileUsing;
+
+  /// Location permission status - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked in system settings'**
+  String get deviceAccessLocationBlocked;
+
+  /// Location permission status - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed'**
+  String get deviceAccessLocationNotAllowed;
+
+  /// Health platform status - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not available on this device'**
+  String get deviceAccessHealthUnavailable;
+
+  /// Health platform status when provider is absent - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health Connect is required'**
+  String get deviceAccessHealthRequired;
+
+  /// Health platform status without claiming individual read grants - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health access set up'**
+  String get deviceAccessHealthSetUp;
+
+  /// Health platform status - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Access needs attention'**
+  String get deviceAccessHealthNeedsAttention;
+
+  /// Health platform status - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected'**
+  String get deviceAccessHealthNotConnected;
 
   /// Language settings entry and screen title - Used in: settings_screen.dart, language_settings_screen.dart
   ///
@@ -1113,6 +1251,12 @@ abstract class AppLocalizations {
   /// **'Server settings'**
   String get serverSettingsTitle;
 
+  /// Server settings subtitle showing the connected server - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to {server}'**
+  String connectedToServer(String server);
+
   /// Logged in section header - Used in: server_settings_screen.dart
   ///
   /// In en, this message translates to:
@@ -1137,10 +1281,16 @@ abstract class AppLocalizations {
   /// **'Server URL'**
   String get serverUrl;
 
-  /// Server URL field hint text - Used in: login_screen.dart
+  /// Server protocol selector label - Used in: login_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'https://example.com'**
+  /// **'Protocol'**
+  String get serverProtocol;
+
+  /// Server address field hint text without a protocol - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'example.com'**
   String get serverUrlHint;
 
   /// Warning dialog title shown when user enters an http:// server URL - Used in: login_screen.dart
@@ -1346,6 +1496,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Raw report'**
   String get diagnosticsRawReport;
+
+  /// Settings tile label and screen title - Used in: settings_screen.dart, health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health sync'**
+  String get healthSyncSettingsTitle;
+
+  /// Settings tile subtitle - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Import workouts from your health platform'**
+  String get healthSyncSettingsSubtitle;
+
+  /// Health sync screen title - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health sync'**
+  String get healthSyncScreenTitle;
+
+  /// Title for health permission details - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health access'**
+  String get healthAccessScreenTitle;
+
+  /// Section heading for health data categories - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Requested data'**
+  String get healthAccessRequestedData;
+
+  /// Health data category - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get healthAccessWorkouts;
+
+  /// Health data category - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Workout routes'**
+  String get healthAccessWorkoutRoutes;
+
+  /// Health data category - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate'**
+  String get healthAccessHeartRate;
+
+  /// Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Workout distance, calories, and steps'**
+  String get healthAccessWorkoutSummary;
+
+  /// Android health data permission status - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get healthAccessAllowed;
+
+  /// Android health data permission status - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get healthAccessNeedsAttention;
+
+  /// HealthKit data permission status - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Managed in system settings'**
+  String get healthAccessManagedBySystem;
+
+  /// Apple HealthKit read-permission limitation - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'HealthKit does not disclose which data Endurain can read. Review access in the Health app.'**
+  String get healthAccessSystemManagedNotice;
+
+  /// Action to request or re-request health data access - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Review health access'**
+  String get healthAccessReview;
+
+  /// Action that explains how to change HealthKit read access - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'How to review access'**
+  String get healthAccessReviewIos;
+
+  /// Destructive action that disconnects health sync and clears import provenance - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect health data'**
+  String get healthAccessDisconnect;
+
+  /// Health disconnect confirmation title - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect health data?'**
+  String get healthAccessDisconnectTitle;
+
+  /// Health disconnect confirmation explanation - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic import and local import history for this server will be reset. Existing activities stay in your history.'**
+  String get healthAccessDisconnectMessage;
+
+  /// Instructions for changing HealthKit read access - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Open the Health app, tap your profile picture, then Apps and Services. Select Endurain and update the data categories.'**
+  String get healthAccessReviewIosInstructions;
+
+  /// Button to request health authorization - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to health data'**
+  String get healthSyncAuthorize;
+
+  /// Button shown when Health Connect is not installed - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Install Health Connect'**
+  String get healthSyncInstallProvider;
+
+  /// Explanation shown above the install button when Health Connect is not installed - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health Connect is required to sync workouts. Install it to continue.'**
+  String get healthSyncInstallProviderDescription;
+
+  /// Message shown when the health SDK is unsupported - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health sync is not available on this device.'**
+  String get healthSyncUnsupported;
+
+  /// Select all importable workouts - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get healthSyncSelectAll;
+
+  /// Clear the workout selection - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get healthSyncClearSelection;
+
+  /// Import the selected workouts - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Import selected ({count})'**
+  String healthSyncImportSelected(int count);
+
+  /// Result message after a successful import - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} workout(s).'**
+  String healthSyncImportedCount(int count);
+
+  /// Label shown on workouts without a GPS route (non-importable) - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS route'**
+  String get healthSyncNoRouteLabel;
+
+  /// Empty state message when no importable workouts are found - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts found in the selected date range.'**
+  String get healthSyncEmptyState;
+
+  /// Guidance shown when routeConsentDeniedCount > 0 - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Some workouts were skipped because exercise-route access was not granted. Open Health Connect → Permissions and allow exercise routes for Endurain.'**
+  String get healthSyncRouteConsentGuidance;
+
+  /// iOS guidance shown when routeConsentDeniedCount > 0 - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Some workouts were skipped because Endurain could not read their GPS routes. In the Health app, open your profile, then Apps and Services, select Endurain, and allow Workout Routes.'**
+  String get healthSyncRouteConsentGuidanceIos;
+
+  /// Button to request HealthKit permissions again - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Review access'**
+  String get healthSyncReviewAccess;
+
+  /// Title of the auto-sync toggle - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-sync on resume'**
+  String get healthSyncAutoSyncTitle;
+
+  /// Subtitle of the auto-sync toggle - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Import new workouts automatically when the app opens.'**
+  String get healthSyncAutoSyncSubtitle;
+
+  /// Banner shown when workouts exist but none have GPS routes - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'These workouts don\'t include a GPS route, so they can\'t be imported. Some apps (like Garmin Connect) record activities to Apple Health without sharing the route. Workouts recorded with Apple Watch include routes and can be imported.'**
+  String get healthSyncNoRoutesExplanation;
+
+  /// Badge on a workout row that has no GPS route and cannot be imported - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Non-importable'**
+  String get healthSyncBadgeNonImportable;
+
+  /// Segment label for workouts available to import - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get healthSyncViewAvailable;
+
+  /// Segment label for imported workout history - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Imported'**
+  String get healthSyncViewImported;
+
+  /// Health workout discovery range label - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Workout date range'**
+  String get healthSyncDateRange;
+
+  /// Health import range preset - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get healthSyncRange30Days;
+
+  /// Health import range preset - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 months'**
+  String get healthSyncRange3Months;
+
+  /// Health import range preset - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Last 6 months'**
+  String get healthSyncRange6Months;
+
+  /// Health import range preset - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Last year'**
+  String get healthSyncRangeYear;
+
+  /// Health import range preset - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'All history'**
+  String get healthSyncRangeAll;
+
+  /// Health import custom range option - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Custom range'**
+  String get healthSyncRangeCustom;
+
+  /// Empty imported health history state - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No imported workouts for this connection.'**
+  String get healthSyncImportedEmpty;
+
+  /// Imported health workout timestamp - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Imported: {dateTime}'**
+  String healthSyncImportedAt(String dateTime);
+
+  /// Makes a deleted imported workout available to import again - Used in: health_sync_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get healthSyncRestore;
 }
 
 class _AppLocalizationsDelegate

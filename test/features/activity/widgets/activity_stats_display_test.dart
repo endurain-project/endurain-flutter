@@ -1,5 +1,6 @@
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/widgets/activity_stats_display.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
@@ -64,6 +65,27 @@ void main() {
       expect(find.text('1:00'), findsOneWidget);
       expect(find.text('111 m'), findsOneWidget);
       expect(find.text('7.2 km/h'), findsOneWidget);
+    });
+
+    testWidgets('shows pace for a completed run', (tester) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.completed,
+              activityType: ActivityType.run,
+              points: [
+                _point(latitude: 0, longitude: 0, seconds: 0),
+                _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 2),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(AppLocalizationsEn().activityStatPace), findsOneWidget);
+      expect(find.text('8:20 min/km'), findsOneWidget);
+      expect(find.text('7.2 km/h'), findsNothing);
     });
 
     testWidgets('hides stale stats after discard', (tester) async {

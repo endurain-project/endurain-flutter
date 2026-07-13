@@ -4,6 +4,7 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 abstract interface class LocalActivityStore {
   Future<List<LocalActivityRecord>> list();
   Future<LocalActivityRecord?> get(String id);
+  Future<List<LocalActivityRecord>> getByIds(Set<String> ids);
   Future<void> upsert(LocalActivityRecord record);
   Future<void> delete(String id);
 

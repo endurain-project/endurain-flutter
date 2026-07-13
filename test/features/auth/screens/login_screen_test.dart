@@ -60,18 +60,49 @@ void main() {
 
       await tester.pumpWidget(_loginScreen(controller: controller));
 
-      await tester.enterText(
-        find.byType(TextFormField),
-        'https://example.test',
-      );
+      await tester.enterText(find.byType(TextFormField), 'example.test');
       await tester.tap(find.text(l10n.next));
       await tester.pumpAndSettle();
 
+      expect(controller.serverUrlController.text, 'https://example.test');
       expect(find.text(l10n.username), findsOneWidget);
       expect(find.text(l10n.password), findsOneWidget);
       expect(find.text(l10n.showPassword), findsOneWidget);
       expect(find.text(l10n.ssoSignInWith('Keycloak')), findsOneWidget);
 
+      controller.dispose();
+    });
+
+    testWidgets('uses the selected HTTP protocol for a self-hosted server', (
+      tester,
+    ) async {
+      Uri? requestedUri;
+      final controller = _controller(
+        client: MockClient((request) async {
+          requestedUri = request.url;
+          return http.Response(
+            '{"sso_enabled":false,"local_login_enabled":true}',
+            200,
+          );
+        }),
+      );
+
+      await tester.pumpWidget(_loginScreen(controller: controller));
+      await tester.enterText(find.byType(TextFormField), 'example.test');
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('HTTP').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.next));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.warnHttpServerUrlTitle), findsOneWidget);
+
+      await tester.tap(find.text(l10n.warnHttpServerUrlConfirm));
+      await tester.pumpAndSettle();
+
+      expect(controller.serverUrlController.text, 'http://example.test');
+      expect(requestedUri?.scheme, 'http');
       controller.dispose();
     });
 
@@ -96,10 +127,7 @@ void main() {
       );
 
       await tester.pumpWidget(_loginScreen(controller: controller));
-      await tester.enterText(
-        find.byType(TextFormField),
-        'https://example.test',
-      );
+      await tester.enterText(find.byType(TextFormField), 'example.test');
       await tester.tap(find.text(l10n.next));
       await tester.pumpAndSettle();
 
@@ -132,10 +160,7 @@ void main() {
       await tester.pumpWidget(
         _loginScreen(controller: controller, urlLauncherService: launcher),
       );
-      await tester.enterText(
-        find.byType(TextFormField),
-        'https://example.test',
-      );
+      await tester.enterText(find.byType(TextFormField), 'example.test');
       await tester.tap(find.text(l10n.next));
       await tester.pumpAndSettle();
 
@@ -165,7 +190,11 @@ void main() {
 
       await tester.pumpWidget(_loginScreen(controller: controller));
 
-      await tester.enterText(find.byType(TextFormField), 'http://example.test');
+      await tester.enterText(find.byType(TextFormField), 'example.test');
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('HTTP').last);
+      await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.next));
       await tester.pump();
 

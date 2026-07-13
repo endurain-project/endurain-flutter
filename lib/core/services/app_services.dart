@@ -26,9 +26,17 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
+import 'package:endurain/features/health/controllers/health_sync_controller.dart';
+import 'package:endurain/features/health/repositories/health_import_repository.dart';
+import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
+import 'package:endurain/features/health/services/health_package_platform_adapter.dart';
+import 'package:endurain/features/health/services/health_platform_adapter.dart';
+import 'package:endurain/features/health/services/health_sync_service.dart';
+import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:health/health.dart';
 
 class AppServices {
   AppServices({this.config = AppConfig.defaults});
@@ -62,6 +70,7 @@ class AppServices {
   );
   late final AuthSessionStore authSession = AuthSessionStore(
     storage: secureStorage,
+    config: config,
   );
   late final AuthService auth = AuthService(
     storage: secureStorage,
@@ -84,6 +93,7 @@ class AppServices {
     storage: secureStorage,
     sessionStore: authSession,
     authService: auth,
+    config: config,
   );
   late final ActivityUploadService activityUpload = ActivityUploadService(
     apiClient: apiClient,
@@ -96,7 +106,6 @@ class AppServices {
       LocalActivityGpxStorage();
   late final LocalActivityRepository localActivities = LocalActivityRepository(
     gpxStorage: localActivityGpxStorage,
-    diagnostics: diagnostics,
     store: SqfliteActivityStore(),
   );
   late final ActivityRetentionSettingsRepository activityRetentionSettings =
@@ -110,6 +119,7 @@ class AppServices {
     uploadService: activityUpload,
     retentionSettingsRepository: activityRetentionSettings,
     isUploadAuthorized: auth.isAuthenticated,
+    activeConnectionProfile: authSession.getConnectionProfile,
     diagnostics: diagnostics,
     connectivitySignal: connectivity.onOnlineChanged,
   );
@@ -126,6 +136,7 @@ class AppServices {
         localActivityRepository: localActivities,
         retentionSettingsRepository: activityRetentionSettings,
         isUploadAuthorized: auth.isAuthenticated,
+        activeConnectionProfile: authSession.getConnectionProfile,
         diagnostics: diagnostics,
       );
 
@@ -133,6 +144,54 @@ class AppServices {
   final UrlLauncherService urlLauncher = const UrlLauncherService();
   final ShareService share = ShareService();
   final PackageInfoService packageInfo = const PackageInfoService();
+
+  // ── Health sync ──────────────────────────────────────────────────────────
+
+  late final HealthSyncSettingsRepository healthSyncSettings =
+      HealthSyncSettingsRepository(storage: secureStorage);
+
+  late final HealthImportRepository healthImportRepository =
+      HealthImportRepository();
+
+  late final HealthSyncService healthSyncService = HealthSyncService(
+    adapter: createHealthPlatformAdapter(),
+    importRepository: healthImportRepository,
+    localActivities: localActivities,
+    uploadQueue: activityUploadQueue,
+    gpxBuilder: const HealthWorkoutGpxBuilder(),
+    syncSettings: healthSyncSettings,
+    diagnostics: diagnostics,
+    healthSyncEnabled: config.healthSyncEnabled,
+    activeConnectionProfile: authSession.getConnectionProfile,
+  );
+
+  /// Creates a route-owned controller for health-platform workout sync.
+  ///
+  /// Health UI state contains profile-scoped rows and selections, so it must
+  /// not outlive the route or survive a logout/login transition.
+  HealthSyncController createHealthSyncController() {
+    return HealthSyncController(
+      service: healthSyncService,
+      diagnostics: diagnostics,
+      uploadCompletedSignal: activityUploadQueue.onDrainCompleted,
+    );
+  }
+
+  /// Builds the concrete health-platform adapter for the current platform.
+  ///
+  /// Returns [HealthPackagePlatformAdapter] on Android/iOS; falls back to
+  /// [UnsupportedHealthPlatformAdapter] on all other platforms (e.g. macOS,
+  /// Linux, Windows, or the host test runner).
+  HealthPlatformAdapter createHealthPlatformAdapter() {
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return HealthPackagePlatformAdapter(
+        health: Health(),
+        diagnostics: diagnostics,
+      );
+    }
+    return const UnsupportedHealthPlatformAdapter();
+  }
 
   /// Builds the active-recording recorder for the current platform.
   ///

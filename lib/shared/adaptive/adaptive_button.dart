@@ -82,8 +82,14 @@ class AdaptiveButton extends StatelessWidget {
       return CupertinoColors.inactiveGray;
     }
 
-    if (variant == AdaptiveButtonVariant.primary) {
+    if (destructive && variant == AdaptiveButtonVariant.primary) {
       return CupertinoColors.white;
+    }
+
+    if (variant == AdaptiveButtonVariant.primary) {
+      return CupertinoTheme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF04342C)
+          : CupertinoColors.white;
     }
 
     if (destructive) {

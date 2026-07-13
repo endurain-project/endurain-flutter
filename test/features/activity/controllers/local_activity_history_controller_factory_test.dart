@@ -42,6 +42,7 @@ void main() {
       );
       final controller = createLocalActivityHistoryController(
         services: services,
+        removeImportProvenance: (_) async {},
       );
       addTearDown(controller.dispose);
 
@@ -61,6 +62,7 @@ void main() {
         retentionSettingsRepository: const _FakeRetentionSettings(
           retainUploadedGpx: true,
         ),
+        removeImportProvenance: (_) async {},
       );
       addTearDown(controller.dispose);
 
@@ -73,12 +75,10 @@ void main() {
 
 class _FakeAppServices extends AppServices {
   _FakeAppServices({
-    required LocalActivityRepository repository,
+    required this._repository,
     required ActivityUploadService uploadService,
-    required ActivityRetentionSettingsRepository retentionSettingsRepository,
-  }) : _repository = repository,
-       _uploadService = uploadService,
-       _retentionSettingsRepository = retentionSettingsRepository;
+    required this._retentionSettingsRepository,
+  }) : _uploadService = uploadService;
 
   final LocalActivityRepository _repository;
   final ActivityUploadService _uploadService;

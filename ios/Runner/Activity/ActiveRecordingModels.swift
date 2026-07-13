@@ -11,6 +11,8 @@ struct ActiveActivitySessionData {
     let activityType: String
     let status: String
     let startedAt: String
+    let connectionOrigin: String?
+    let connectionProfileId: String?
     let resumedAt: String?
     let pausedAt: String?
     let endedAt: String?
@@ -23,6 +25,8 @@ struct ActiveActivitySessionData {
         activityType: String,
         status: String,
         startedAt: String,
+        connectionOrigin: String? = nil,
+        connectionProfileId: String? = nil,
         resumedAt: String? = nil,
         pausedAt: String? = nil,
         endedAt: String? = nil,
@@ -34,6 +38,8 @@ struct ActiveActivitySessionData {
         self.activityType = activityType
         self.status = status
         self.startedAt = startedAt
+        self.connectionOrigin = connectionOrigin
+        self.connectionProfileId = connectionProfileId
         self.resumedAt = resumedAt
         self.pausedAt = pausedAt
         self.endedAt = endedAt
@@ -56,6 +62,8 @@ struct ActiveActivitySessionData {
         map["activityType"] = activityType
         map["status"] = status
         map["startedAt"] = startedAt
+        if let connectionOrigin = connectionOrigin { map["connectionOrigin"] = connectionOrigin }
+        if let connectionProfileId = connectionProfileId { map["connectionProfileId"] = connectionProfileId }
         if let resumedAt = resumedAt { map["resumedAt"] = resumedAt }
         if let pausedAt = pausedAt { map["pausedAt"] = pausedAt }
         if let endedAt = endedAt { map["endedAt"] = endedAt }
@@ -87,6 +95,8 @@ struct ActiveActivitySessionData {
             activityType: activityType,
             status: status ?? self.status,
             startedAt: startedAt,
+            connectionOrigin: connectionOrigin,
+            connectionProfileId: connectionProfileId,
             resumedAt: resumedAt ?? self.resumedAt,
             pausedAt: pausedAt ?? self.pausedAt,
             endedAt: endedAt ?? self.endedAt,
@@ -110,6 +120,8 @@ struct ActiveActivitySessionData {
             activityType: (json["activityType"] as? String) ?? "",
             status: (json["status"] as? String) ?? statusFailed,
             startedAt: startedAt,
+            connectionOrigin: json["connectionOrigin"] as? String,
+            connectionProfileId: json["connectionProfileId"] as? String,
             resumedAt: json["resumedAt"] as? String,
             pausedAt: json["pausedAt"] as? String,
             endedAt: json["endedAt"] as? String,
@@ -119,7 +131,7 @@ struct ActiveActivitySessionData {
         )
     }
 
-    static let schemaVersionValue = 1
+    static let schemaVersionValue = 2
 
     static let statusRecording = "recording"
     static let statusPaused = "paused"

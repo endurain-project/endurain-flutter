@@ -1,7 +1,9 @@
 package com.endurain.endurain.activity
 
 import android.content.Context
+import android.util.AtomicFile
 import java.io.File
+import java.io.FileNotFoundException
 import org.json.JSONObject
 
 /**
@@ -23,26 +25,43 @@ class ActiveActivityStore private constructor(appContext: Context) {
     private val rootDir = File(appContext.filesDir, ROOT_DIR)
     private val activeDir = File(rootDir, ACTIVE_DIR)
     private val sessionFile = File(activeDir, SESSION_FILE)
+    private val atomicSessionFile = AtomicFile(sessionFile)
     private val pointsFile = File(activeDir, POINTS_FILE)
     private val lock = Any()
 
     fun saveSession(session: ActiveActivitySessionData) {
         synchronized(lock) {
             ensureDir()
-            sessionFile.writeText(session.toJson().toString())
+            var output: java.io.FileOutputStream? = null
+            try {
+                output = atomicSessionFile.startWrite()
+                output.write(session.toJson().toString().toByteArray(Charsets.UTF_8))
+                output.fd.sync()
+                atomicSessionFile.finishWrite(output)
+            } catch (error: Exception) {
+                output?.let { atomicSessionFile.failWrite(it) }
+                throw error
+            }
         }
     }
 
     fun loadSession(): ActiveActivitySessionData? {
         synchronized(lock) {
-            if (!sessionFile.exists()) {
-                return null
-            }
             return try {
-                ActiveActivitySessionData.fromJson(JSONObject(sessionFile.readText()))
+                atomicSessionFile.openRead().bufferedReader().use { reader ->
+                    ActiveActivitySessionData.fromJson(JSONObject(reader.readText()))
+                } ?: orphanedSession()
+            } catch (_: FileNotFoundException) {
+                orphanedSession()
             } catch (_: Exception) {
-                null
+                orphanedSession()
             }
+        }
+    }
+
+    fun hasRecoverableData(): Boolean {
+        synchronized(lock) {
+            return activeDir.listFiles()?.isNotEmpty() == true
         }
     }
 
@@ -131,6 +150,29 @@ class ActiveActivityStore private constructor(appContext: Context) {
         if (!activeDir.exists()) {
             activeDir.mkdirs()
         }
+    }
+
+    private fun orphanedSession(): ActiveActivitySessionData? {
+        val points = readPoints()
+        if (points.isEmpty()) return null
+        val first = points.first()
+        val last = points.last()
+        val startedMillis = IsoTime.toEpochMillis(first.timestamp)
+        val endedMillis = IsoTime.toEpochMillis(last.timestamp)
+        val elapsedSeconds = if (startedMillis != null && endedMillis != null) {
+            kotlin.math.max(0, ((endedMillis - startedMillis) / 1000L).toInt())
+        } else {
+            0
+        }
+        return ActiveActivitySessionData(
+            localSessionId = "recovered_${pointsFile.lastModified()}",
+            activityType = "other",
+            status = ActiveActivitySessionData.STATUS_FAILED,
+            startedAt = first.timestamp,
+            endedAt = last.timestamp,
+            elapsedDurationSeconds = elapsedSeconds,
+            currentSegmentIndex = last.segmentIndex,
+        )
     }
 
     companion object {

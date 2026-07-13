@@ -55,7 +55,7 @@ current approach cannot satisfy.
 - On refresh failure, clear the auth session consistently.
 - Never store raw passwords or secrets in the repo.
 - Keep Android signing secrets in ignored `android/key.properties` or CI environment variables.
-- Preserve F-Droid compatibility: do not add Firebase, Google Maps, Google Play Services, or proprietary SDK dependencies.
+- Prefer open-source dependencies when they meet product requirements. A proprietary or store-specific SDK is acceptable when its benefit is clear; document the rationale and isolate it behind an injectable adapter.
 
 ## Localization
 

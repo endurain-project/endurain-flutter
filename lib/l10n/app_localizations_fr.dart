@@ -92,6 +92,30 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Impossible de convertir l\'entraînement en GPX';
+
+  @override
+  String get errorHealthImportFailed =>
+      'Impossible d\'importer l\'entraînement';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Impossible d\'importer l\'entraînement : $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'L\'accès aux données de santé a été refusé';
+
+  @override
+  String get errorHealthReadFailed => 'Impossible de lire les données de santé';
+
+  @override
+  String get errorHealthUnavailable =>
+      'La synchronisation de l\'état de santé n\'est pas disponible sur cet appareil';
+
+  @override
   String get errorLoginError => 'Impossible de se connecter';
 
   @override
@@ -129,10 +153,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Vous n\'êtes pas connecté';
-
-  @override
-  String get errorPkceVerifierMissing =>
-      'Le vérificateur de connexion est introuvable';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -217,10 +237,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Impossible d\'ouvrir la connexion SSO dans le navigateur système';
-
-  @override
-  String get ssoMissingSessionId =>
-      'La réponse SSO ne contenait pas d\'identifiant de session';
 
   @override
   String ssoSignInWith(String provider) {
@@ -380,6 +396,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Vitesse';
+
+  @override
+  String get activityStatPace => 'Allure';
 
   @override
   String get activityStop => 'Arrêter';
@@ -547,7 +566,67 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsTab => 'Réglages';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® est une marque déposée de João Vitória Silva';
+
+  @override
   String get settingsScreen => 'Réglages';
+
+  @override
+  String get deviceAccessTitle => 'Accès aux appareils';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Gérer l\'accès aux données de localisation et de santé';
+
+  @override
+  String get deviceAccessLocationSection => 'Emplacement';
+
+  @override
+  String get deviceAccessHealthSection => 'Données de santé';
+
+  @override
+  String get deviceAccessLocationTitle => 'Accès à la localisation';
+
+  @override
+  String get deviceAccessHealthTitle => 'Accès aux données de santé';
+
+  @override
+  String get deviceAccessChecking => 'Vérification de l\'accès…';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'Les services de localisation sont désactivés';
+
+  @override
+  String get deviceAccessLocationAlways => 'Autorisé tout le temps';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Autorisé lors de l\'utilisation de l\'application';
+
+  @override
+  String get deviceAccessLocationBlocked =>
+      'Bloqué dans les paramètres système';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Non autorisé';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Non disponible sur cet appareil';
+
+  @override
+  String get deviceAccessHealthRequired => 'Connexion Santé est requis';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Accès à la santé mis en place';
+
+  @override
+  String get deviceAccessHealthNeedsAttention =>
+      'L’accès nécessite une attention particulière';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Non connecté';
 
   @override
   String get language => 'Langue';
@@ -569,6 +648,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get serverSettingsTitle => 'Paramètres du serveur';
 
   @override
+  String connectedToServer(String server) {
+    return 'Connecté à $server';
+  }
+
+  @override
   String get loggedIn => 'Connecté';
 
   @override
@@ -579,6 +663,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get serverUrl => 'URL du serveur';
+
+  @override
+  String get serverProtocol => 'Protocole';
 
   @override
   String get serverUrlHint => 'https://exemple.com';
@@ -697,4 +784,169 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Rapport brut';
+
+  @override
+  String get healthSyncSettingsTitle => 'Synchronisation de la santé';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importez des entraînements depuis votre plateforme de santé';
+
+  @override
+  String get healthSyncScreenTitle => 'Synchronisation de la santé';
+
+  @override
+  String get healthAccessScreenTitle => 'Accès à la santé';
+
+  @override
+  String get healthAccessRequestedData => 'Données demandées';
+
+  @override
+  String get healthAccessWorkouts => 'Entraînements';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Itinéraires d\'entraînement';
+
+  @override
+  String get healthAccessHeartRate => 'Fréquence cardiaque';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Distance, calories et pas de l’entraînement';
+
+  @override
+  String get healthAccessAllowed => 'Autorisé';
+
+  @override
+  String get healthAccessNeedsAttention => 'A besoin d\'attention';
+
+  @override
+  String get healthAccessManagedBySystem => 'Géré dans les paramètres système';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit ne divulgue pas quelles données Endurain peut lire. Vérifiez l’accès dans l’application Santé.';
+
+  @override
+  String get healthAccessReview => 'Revoir l’accès à la santé';
+
+  @override
+  String get healthAccessReviewIos => 'Comment vérifier l\'accès';
+
+  @override
+  String get healthAccessDisconnect => 'Déconnecter les données de santé';
+
+  @override
+  String get healthAccessDisconnectTitle =>
+      'Déconnecter les données de santé ?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'L\'importation automatique et l\'historique local des importations de ce serveur seront réinitialisés. Les activités existantes restent dans l\'historique.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Ouvrez l\'application Santé, appuyez sur votre photo de profil, puis sur Applications et services. Sélectionnez Endurain et mettez à jour les catégories de données.';
+
+  @override
+  String get healthSyncAuthorize => 'Connectez-vous aux données de santé';
+
+  @override
+  String get healthSyncInstallProvider => 'Installer Connexion Santé';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Health Connect est requis pour synchroniser les entraînements. Installez-le pour continuer.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'La synchronisation de l\'état de santé n\'est pas disponible sur cet appareil.';
+
+  @override
+  String get healthSyncSelectAll => 'Tout sélectionner';
+
+  @override
+  String get healthSyncClearSelection => 'Effacer';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Importer la sélection ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return '$count entraînement(s) importé(s).';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Pas d\'itinéraire GPS';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Aucune séance d\'entraînement trouvée pour la période sélectionnée.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Certains entraînements ont été ignorés car l’accès au parcours d’exercices n’était pas accordé. Ouvrez Health Connect → Autorisations et autorisez les itinéraires d\'exercice pour Endurain.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Certains entraînements ont été ignorés car Endurain ne pouvait pas lire ses itinéraires GPS. Dans l\'application Santé, ouvrez votre profil, puis Applications et services, sélectionnez Endurain et autorisez les itinéraires d\'entraînement.';
+
+  @override
+  String get healthSyncReviewAccess => 'Accès aux avis';
+
+  @override
+  String get healthSyncAutoSyncTitle =>
+      'Synchronisation automatique à la reprise';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Importez automatiquement de nouveaux entraînements à l\'ouverture de l\'application.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Ces entraînements n\'incluent pas d\'itinéraire GPS et ne peuvent donc pas être importés. Certaines applications (comme Garmin Connect) enregistrent les activités sur Apple Health sans partager l\'itinéraire. Les entraînements enregistrés avec Apple Watch incluent des itinéraires et peuvent être importés.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Non importable';
+
+  @override
+  String get healthSyncViewAvailable => 'Disponibles';
+
+  @override
+  String get healthSyncViewImported => 'Importés';
+
+  @override
+  String get healthSyncDateRange => 'Période des entraînements';
+
+  @override
+  String get healthSyncRange30Days => '30 derniers jours';
+
+  @override
+  String get healthSyncRange3Months => '3 derniers mois';
+
+  @override
+  String get healthSyncRange6Months => '6 derniers mois';
+
+  @override
+  String get healthSyncRangeYear => 'Dernière année';
+
+  @override
+  String get healthSyncRangeAll => 'Tout l\'historique';
+
+  @override
+  String get healthSyncRangeCustom => 'Période personnalisée';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Aucun entraînement importé pour cette connexion.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Importé : $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Restaurer';
 }

@@ -92,6 +92,28 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Harjoitusta ei voitu muuntaa GPX:ksi';
+
+  @override
+  String get errorHealthImportFailed => 'Harjoitusta ei voitu tuoda';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Harjoitusta ei voitu tuoda: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied => 'Terveystietoihin pääsy evättiin';
+
+  @override
+  String get errorHealthReadFailed => 'Terveystietoja ei voitu lukea';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Terveyssynkronointi ei ole käytettävissä tällä laitteella';
+
+  @override
   String get errorLoginError => 'Kirjautuminen ei onnistunut';
 
   @override
@@ -129,10 +151,6 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Et ole kirjautunut sisään';
-
-  @override
-  String get errorPkceVerifierMissing =>
-      'Kirjautumisen vahvistajaa ei löytynyt';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -217,9 +235,6 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'SSO-kirjautumista ei voitu avata järjestelmän selaimessa';
-
-  @override
-  String get ssoMissingSessionId => 'SSO-vastaus ei sisältänyt istuntotunnusta';
 
   @override
   String ssoSignInWith(String provider) {
@@ -378,6 +393,9 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Nopeus';
+
+  @override
+  String get activityStatPace => 'Vauhti';
 
   @override
   String get activityStop => 'Lopeta';
@@ -545,7 +563,65 @@ class AppLocalizationsFi extends AppLocalizations {
   String get settingsTab => 'Asetukset';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® on João Vitória Silvan rekisteröity tavaramerkki.';
+
+  @override
   String get settingsScreen => 'Asetukset';
+
+  @override
+  String get deviceAccessTitle => 'Laitteen käyttöoikeus';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Hallinnoi sijainti- ja terveystietojen käyttöä';
+
+  @override
+  String get deviceAccessLocationSection => 'Sijainti';
+
+  @override
+  String get deviceAccessHealthSection => 'Terveystiedot';
+
+  @override
+  String get deviceAccessLocationTitle => 'Sijainnin käyttöoikeus';
+
+  @override
+  String get deviceAccessHealthTitle => 'Terveystietojen käyttöoikeus';
+
+  @override
+  String get deviceAccessChecking => 'Tarkistetaan pääsyä…';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'Sijaintipalvelut on poistettu käytöstä';
+
+  @override
+  String get deviceAccessLocationAlways => 'Sallittu koko ajan';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Sallittu sovellusta käytettäessä';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Estetty järjestelmäasetuksissa';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Ei sallittu';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Ei saatavilla tällä laitteella';
+
+  @override
+  String get deviceAccessHealthRequired => 'Health Connect vaaditaan';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Terveydenhuoltoon pääsy';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Pääsy vaatii huomiota';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Ei yhdistetty';
 
   @override
   String get language => 'Kieli';
@@ -567,6 +643,11 @@ class AppLocalizationsFi extends AppLocalizations {
   String get serverSettingsTitle => 'Palvelinasetukset';
 
   @override
+  String connectedToServer(String server) {
+    return 'Yhdistetty palvelimeen $server';
+  }
+
+  @override
   String get loggedIn => 'Kirjautunut sisään';
 
   @override
@@ -577,6 +658,9 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get serverUrl => 'Palvelimen URL-osoite';
+
+  @override
+  String get serverProtocol => 'pöytäkirja';
 
   @override
   String get serverUrlHint => 'https://esimerkki.com';
@@ -694,4 +778,168 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Raakaraportti';
+
+  @override
+  String get healthSyncSettingsTitle => 'Terveyssynkronointi';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Tuo harjoitukset terveysalustaltasi';
+
+  @override
+  String get healthSyncScreenTitle => 'Terveyssynkronointi';
+
+  @override
+  String get healthAccessScreenTitle => 'Terveyden pääsy';
+
+  @override
+  String get healthAccessRequestedData => 'Pyydetyt tiedot';
+
+  @override
+  String get healthAccessWorkouts => 'Harjoitukset';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Harjoitusreitit';
+
+  @override
+  String get healthAccessHeartRate => 'Syke';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Harjoituksen matka, kalorit ja askeleet';
+
+  @override
+  String get healthAccessAllowed => 'Sallittu';
+
+  @override
+  String get healthAccessNeedsAttention => 'Vaatii huomiota';
+
+  @override
+  String get healthAccessManagedBySystem => 'Hallittu järjestelmäasetuksissa';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit ei paljasta, mitä tietoja Endurain voi lukea. Tarkista pääsy Terveys-sovelluksessa.';
+
+  @override
+  String get healthAccessReview => 'Tarkista terveydenhuoltoon pääsy';
+
+  @override
+  String get healthAccessReviewIos => 'Käyttöoikeuden tarkistaminen';
+
+  @override
+  String get healthAccessDisconnect => 'Katkaise terveystietojen yhteys';
+
+  @override
+  String get healthAccessDisconnectTitle =>
+      'Katkaistaanko terveystietojen yhteys?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Tämän palvelimen automaattinen tuonti ja paikallinen tuontihistoria nollataan. Olemassa olevat aktiviteetit säilyvät historiassa.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Avaa Terveys-sovellus, napauta profiilikuvaasi ja sitten Sovellukset ja palvelut. Valitse Endurain ja päivitä tietoluokat.';
+
+  @override
+  String get healthSyncAuthorize => 'Yhdistä terveystietoihin';
+
+  @override
+  String get healthSyncInstallProvider => 'Asenna Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Health Connect tarvitaan harjoitusten synkronoimiseen. Asenna se jatkaaksesi.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Terveyssynkronointi ei ole käytettävissä tällä laitteella.';
+
+  @override
+  String get healthSyncSelectAll => 'Valitse kaikki';
+
+  @override
+  String get healthSyncClearSelection => 'Selkeä';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Tuo valitut ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Tuotu $count harjoitusta.';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Ei GPS-reittiä';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Valitulta ajanjaksolta ei löytynyt harjoituksia.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Jotkut harjoitukset jätettiin väliin, koska harjoitusreitin käyttöoikeutta ei myönnetty. Avaa Health Connect → Permissions ja salli harjoitusreitit Endurainille.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Jotkut harjoitukset jäivät väliin, koska Endurain ei voinut lukea heidän GPS-reittejään. Avaa Health-sovelluksessa profiilisi, sitten Apps and Services, valitse Endurain ja salli harjoitusreitit.';
+
+  @override
+  String get healthSyncReviewAccess => 'Tarkista käyttöoikeudet';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Automaattinen synkronointi jatkuessa';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Tuo uudet harjoitukset automaattisesti, kun sovellus avautuu.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Nämä harjoitukset eivät sisällä GPS-reittiä, joten niitä ei voi tuoda. Jotkut sovellukset (kuten Garmin Connect) tallentavat toimintoja Apple Healthille jakamatta reittiä. Apple Watchilla tallennetut harjoitukset sisältävät reittejä ja ne voidaan tuoda.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Ei tuoda maahan';
+
+  @override
+  String get healthSyncViewAvailable => 'Saatavilla';
+
+  @override
+  String get healthSyncViewImported => 'Tuodut';
+
+  @override
+  String get healthSyncDateRange => 'Harjoitusten aikaväli';
+
+  @override
+  String get healthSyncRange30Days => 'Viimeiset 30 päivää';
+
+  @override
+  String get healthSyncRange3Months => 'Viimeiset 3 kuukautta';
+
+  @override
+  String get healthSyncRange6Months => 'Viimeiset 6 kuukautta';
+
+  @override
+  String get healthSyncRangeYear => 'Viime vuosi';
+
+  @override
+  String get healthSyncRangeAll => 'Koko historia';
+
+  @override
+  String get healthSyncRangeCustom => 'Mukautettu aikaväli';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Tälle yhteydelle ei ole tuotuja harjoituksia.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Tuotu: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Palauta';
 }

@@ -92,6 +92,29 @@ class AppLocalizationsSk extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Cvičenie sa nepodarilo previesť na GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Cvičenie sa nepodarilo importovať';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Nepodarilo sa importovať cvičenie: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Prístup k zdravotným údajom bol odmietnutý';
+
+  @override
+  String get errorHealthReadFailed => 'Nepodarilo sa prečítať zdravotné údaje';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Synchronizácia stavu nie je na tomto zariadení k dispozícii';
+
+  @override
   String get errorLoginError => 'Nepodarilo sa prihlásiť';
 
   @override
@@ -129,9 +152,6 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Nie ste prihlásení';
-
-  @override
-  String get errorPkceVerifierMissing => 'Overovateľ prihlásenia sa nenašiel';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -216,9 +236,6 @@ class AppLocalizationsSk extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Prihlásenie cez SSO sa nepodarilo otvoriť v systémovom prehliadači';
-
-  @override
-  String get ssoMissingSessionId => 'Odpoveď SSO neobsahovala ID relácie';
 
   @override
   String ssoSignInWith(String provider) {
@@ -376,6 +393,9 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Rýchlosť';
+
+  @override
+  String get activityStatPace => 'Tempo';
 
   @override
   String get activityStop => 'Zastaviť';
@@ -543,7 +563,67 @@ class AppLocalizationsSk extends AppLocalizations {
   String get settingsTab => 'Nastavenia';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® je registrovaná ochranná známka João Vitória Silva';
+
+  @override
   String get settingsScreen => 'Nastavenia';
+
+  @override
+  String get deviceAccessTitle => 'Prístup k zariadeniu';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Spravujte prístup k údajom o polohe a zdraví';
+
+  @override
+  String get deviceAccessLocationSection => 'Poloha';
+
+  @override
+  String get deviceAccessHealthSection => 'Zdravotné údaje';
+
+  @override
+  String get deviceAccessLocationTitle => 'Prístup k polohe';
+
+  @override
+  String get deviceAccessHealthTitle => 'Prístup k zdravotným údajom';
+
+  @override
+  String get deviceAccessChecking => 'Kontroluje sa prístup…';
+
+  @override
+  String get deviceAccessLocationServicesOff => 'Lokalizačné služby sú vypnuté';
+
+  @override
+  String get deviceAccessLocationAlways => 'Povolené po celú dobu';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Povolené pri používaní aplikácie';
+
+  @override
+  String get deviceAccessLocationBlocked =>
+      'Blokované v systémových nastaveniach';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Nie je povolené';
+
+  @override
+  String get deviceAccessHealthUnavailable =>
+      'Nie je k dispozícii na tomto zariadení';
+
+  @override
+  String get deviceAccessHealthRequired => 'Vyžaduje sa Health Connect';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Zdravotný prístup nastavený';
+
+  @override
+  String get deviceAccessHealthNeedsAttention =>
+      'Prístup si vyžaduje pozornosť';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Nepripojené';
 
   @override
   String get language => 'Jazyk';
@@ -565,6 +645,11 @@ class AppLocalizationsSk extends AppLocalizations {
   String get serverSettingsTitle => 'Nastavenia servera';
 
   @override
+  String connectedToServer(String server) {
+    return 'Pripojené k $server';
+  }
+
+  @override
   String get loggedIn => 'Prihlásené';
 
   @override
@@ -575,6 +660,9 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get serverUrl => 'Adresa URL servera';
+
+  @override
+  String get serverProtocol => 'Protokol';
 
   @override
   String get serverUrlHint => 'https://priklad.com';
@@ -693,4 +781,169 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Nespracovaná správa';
+
+  @override
+  String get healthSyncSettingsTitle => 'Synchronizácia zdravia';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importujte tréningy z vašej zdravotnej platformy';
+
+  @override
+  String get healthSyncScreenTitle => 'Synchronizácia zdravia';
+
+  @override
+  String get healthAccessScreenTitle => 'Zdravotný prístup';
+
+  @override
+  String get healthAccessRequestedData => 'Požadované údaje';
+
+  @override
+  String get healthAccessWorkouts => 'Tréningy';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Tréningové trasy';
+
+  @override
+  String get healthAccessHeartRate => 'Srdcová frekvencia';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Vzdialenosť, kalórie a kroky tréningu';
+
+  @override
+  String get healthAccessAllowed => 'Povolené';
+
+  @override
+  String get healthAccessNeedsAttention => 'Vyžaduje pozornosť';
+
+  @override
+  String get healthAccessManagedBySystem =>
+      'Spravované v systémových nastaveniach';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit nezverejňuje, ktoré údaje dokáže Endurain čítať. Skontrolujte prístup v aplikácii Zdravie.';
+
+  @override
+  String get healthAccessReview => 'Skontrolujte zdravotný prístup';
+
+  @override
+  String get healthAccessReviewIos => 'Ako skontrolovať prístup';
+
+  @override
+  String get healthAccessDisconnect => 'Odpojiť zdravotné údaje';
+
+  @override
+  String get healthAccessDisconnectTitle => 'Odpojiť zdravotné údaje?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Automatický import a miestna história importov pre tento server sa obnovia. Existujúce aktivity zostanú v histórii.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Otvorte aplikáciu Zdravie, klepnite na svoj profilový obrázok a potom na položku Aplikácie a služby. Vyberte Endurain a aktualizujte kategórie údajov.';
+
+  @override
+  String get healthSyncAuthorize => 'Pripojte sa k zdravotným údajom';
+
+  @override
+  String get healthSyncInstallProvider => 'Nainštalujte Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Na synchronizáciu tréningov sa vyžaduje Health Connect. Ak chcete pokračovať, nainštalujte ho.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Synchronizácia stavu nie je na tomto zariadení k dispozícii.';
+
+  @override
+  String get healthSyncSelectAll => 'Vybrať všetko';
+
+  @override
+  String get healthSyncClearSelection => 'Jasné';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Importovať vybraté ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Počet importovaných cvičení: $count.';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Žiadna trasa GPS';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Vo vybranom období sa nenašli žiadne tréningy.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Niektoré tréningy boli vynechané, pretože nebol povolený prístup k cvičebnej trase. Otvorte Health Connect → Povolenia a povoľte trasy cvičenia pre Endurain.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Niektoré tréningy boli vynechané, pretože Endurain nedokázal prečítať ich GPS trasy. V aplikácii Zdravie otvorte svoj profil, potom Aplikácie a služby, vyberte Endurain a povoľte trasy cvičenia.';
+
+  @override
+  String get healthSyncReviewAccess => 'Kontrola prístupu';
+
+  @override
+  String get healthSyncAutoSyncTitle =>
+      'Automatická synchronizácia pri obnovení';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Importujte nové tréningy automaticky po otvorení aplikácie.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Tieto tréningy neobsahujú trasu GPS, takže ich nemožno importovať. Niektoré aplikácie (napríklad Garmin Connect) zaznamenávajú aktivity do Apple Health bez zdieľania trasy. Tréningy zaznamenané pomocou Apple Watch zahŕňajú trasy a možno ich importovať.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Neimportovateľné';
+
+  @override
+  String get healthSyncViewAvailable => 'Dostupné';
+
+  @override
+  String get healthSyncViewImported => 'Importované';
+
+  @override
+  String get healthSyncDateRange => 'Obdobie tréningov';
+
+  @override
+  String get healthSyncRange30Days => 'Posledných 30 dní';
+
+  @override
+  String get healthSyncRange3Months => 'Posledné 3 mesiace';
+
+  @override
+  String get healthSyncRange6Months => 'Posledných 6 mesiacov';
+
+  @override
+  String get healthSyncRangeYear => 'Posledný rok';
+
+  @override
+  String get healthSyncRangeAll => 'Celá história';
+
+  @override
+  String get healthSyncRangeCustom => 'Vlastné obdobie';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Pre toto pripojenie nie sú importované tréningy.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Importované: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Obnoviť';
 }

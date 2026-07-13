@@ -1,4 +1,4 @@
-import 'package:endurain/core/utils/json_parsing.dart';
+import 'package:endurain/core/utils/gpx_formatting.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
@@ -6,8 +6,6 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 
 class ActivityGpxBuilder {
   const ActivityGpxBuilder();
-
-  static const String _projectUrl = 'https://codeberg.org/endurain-project';
 
   String build(ActivityRecordingState state, {String? trackName}) {
     final name = trackName ?? _defaultTrackName(state.activityType);
@@ -21,29 +19,29 @@ class ActivityGpxBuilder {
         'xmlns="http://www.topografix.com/GPX/1/1">',
       )
       ..writeln('  <metadata>')
-      ..writeln('    <name>${_escapeXml(name)}</name>')
-      ..writeln('    <link href="$_projectUrl">')
+      ..writeln('    <name>${gpxEscapeXml(name)}</name>')
+      ..writeln('    <link href="$gpxProjectUrl">')
       ..writeln('      <text>Endurain Project</text>')
       ..writeln('    </link>');
 
     if (metadataTime != null) {
-      buffer.writeln('    <time>${_formatTimestamp(metadataTime)}</time>');
+      buffer.writeln('    <time>${gpxFormatTimestamp(metadataTime)}</time>');
     }
 
     if (bounds != null) {
       buffer.writeln(
-        '    <bounds minlat="${_formatCoordinate(bounds.minLatitude)}" '
-        'minlon="${_formatCoordinate(bounds.minLongitude)}" '
-        'maxlat="${_formatCoordinate(bounds.maxLatitude)}" '
-        'maxlon="${_formatCoordinate(bounds.maxLongitude)}" />',
+        '    <bounds minlat="${gpxFormatCoordinate(bounds.minLatitude)}" '
+        'minlon="${gpxFormatCoordinate(bounds.minLongitude)}" '
+        'maxlat="${gpxFormatCoordinate(bounds.maxLatitude)}" '
+        'maxlon="${gpxFormatCoordinate(bounds.maxLongitude)}" />',
       );
     }
 
     buffer
       ..writeln('  </metadata>')
       ..writeln('  <trk>')
-      ..writeln('    <name>${_escapeXml(name)}</name>')
-      ..writeln('    <type>${_escapeXml(trackType)}</type>');
+      ..writeln('    <name>${gpxEscapeXml(name)}</name>')
+      ..writeln('    <type>${gpxEscapeXml(trackType)}</type>');
 
     for (final segment in _segmentsForGpx(state)) {
       buffer.writeln('    <trkseg>');
@@ -80,22 +78,20 @@ class ActivityGpxBuilder {
 
   void _writeTrackPoint(StringBuffer buffer, ActivityTrackPoint point) {
     buffer.writeln(
-      '      <trkpt lat="${_formatCoordinate(point.latitude)}" '
-      'lon="${_formatCoordinate(point.longitude)}">',
+      '      <trkpt lat="${gpxFormatCoordinate(point.latitude)}" '
+      'lon="${gpxFormatCoordinate(point.longitude)}">',
     );
 
     if (point.elevationMeters != null) {
       buffer.writeln(
-        '        <ele>${_formatElevation(point.elevationMeters!)}</ele>',
+        '        <ele>${gpxFormatElevation(point.elevationMeters!)}</ele>',
       );
     }
 
-    buffer.writeln('        <time>${_formatTimestamp(point.timestamp)}</time>');
+    buffer.writeln(
+      '        <time>${gpxFormatTimestamp(point.timestamp)}</time>',
+    );
     buffer.writeln('      </trkpt>');
-  }
-
-  String _formatTimestamp(DateTime timestamp) {
-    return timestamp.toUtcIso8601();
   }
 
   DateTime? _metadataTime(ActivityRecordingState state) {
@@ -135,47 +131,6 @@ class ActivityGpxBuilder {
       maxLatitude: maxLatitude,
       maxLongitude: maxLongitude,
     );
-  }
-
-  String _formatCoordinate(double value) {
-    return _formatDecimal(value, maxFractionDigits: 7);
-  }
-
-  String _formatElevation(double value) {
-    return _formatDecimal(value, maxFractionDigits: 1, minFractionDigits: 1);
-  }
-
-  String _formatDecimal(
-    double value, {
-    required int maxFractionDigits,
-    int minFractionDigits = 0,
-  }) {
-    var text = value.toStringAsFixed(maxFractionDigits);
-    if (text.startsWith('-0') && double.parse(text) == 0) {
-      text = text.substring(1);
-    }
-    if (!text.contains('.')) {
-      return text;
-    }
-
-    while (text.split('.').last.length > minFractionDigits &&
-        text.endsWith('0')) {
-      text = text.substring(0, text.length - 1);
-    }
-
-    if (text.endsWith('.')) {
-      text = text.substring(0, text.length - 1);
-    }
-    return text;
-  }
-
-  String _escapeXml(String value) {
-    return value
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&apos;');
   }
 }
 

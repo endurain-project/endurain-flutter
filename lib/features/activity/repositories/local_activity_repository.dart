@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_store.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
@@ -13,7 +12,6 @@ class LocalActivityRepository {
     Future<Directory> Function()? supportDirectoryProvider,
     LocalActivityGpxStorage? gpxStorage,
     LocalActivityStore? store,
-    DiagnosticsRecorder? diagnostics,
   }) : _gpxStorage =
            gpxStorage ??
            LocalActivityGpxStorage(
@@ -27,6 +25,9 @@ class LocalActivityRepository {
   Future<List<LocalActivityRecord>> list() => _store.list();
 
   Future<LocalActivityRecord?> get(String id) => _store.get(id);
+
+  Future<List<LocalActivityRecord>> getByIds(Set<String> ids) =>
+      _store.getByIds(ids);
 
   Future<String> writeGpx({required String id, required String gpx}) =>
       _gpxStorage.write(id: id, gpx: gpx);

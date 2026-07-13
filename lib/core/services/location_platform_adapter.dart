@@ -15,6 +15,8 @@ abstract class LocationPlatformAdapter {
     required LocationSettings locationSettings,
   });
 
+  Future<bool> openLocationSettings();
+
   Future<bool> openAppSettings();
 }
 
@@ -48,6 +50,11 @@ class GeolocatorLocationPlatformAdapter implements LocationPlatformAdapter {
     required LocationSettings locationSettings,
   }) {
     return Geolocator.getPositionStream(locationSettings: locationSettings);
+  }
+
+  @override
+  Future<bool> openLocationSettings() {
+    return Geolocator.openLocationSettings();
   }
 
   @override

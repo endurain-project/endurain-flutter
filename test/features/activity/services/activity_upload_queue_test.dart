@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
@@ -110,6 +111,28 @@ void main() {
       }
     });
 
+    test('skips failed records that require manual retry', () async {
+      await _createRecord(
+        repository,
+        id: 'q_terminal',
+        status: LocalActivityUploadStatus.failed,
+        autoRetryEligible: false,
+      );
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+      );
+
+      await queue.drain();
+
+      expect(attemptedKeys, isEmpty);
+      expect(
+        (await repository.get('q_terminal'))?.uploadStatus,
+        LocalActivityUploadStatus.failed,
+      );
+    });
+
     test('does nothing when the upload service is not configured', () async {
       await _createRecord(
         repository,
@@ -174,6 +197,45 @@ void main() {
       expect(attemptedKeys, ['q_authorized']);
     });
 
+    test('drains only records for the active connection origin', () async {
+      final active = await _createRecord(
+        repository,
+        id: 'q_active',
+        status: LocalActivityUploadStatus.pending,
+        connectionOrigin: 'https://active.example',
+        connectionProfileId: 'profile-active',
+      );
+      final other = await _createRecord(
+        repository,
+        id: 'q_other',
+        status: LocalActivityUploadStatus.pending,
+        connectionOrigin: 'https://other.example',
+        connectionProfileId: 'profile-other',
+      );
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+        activeConnectionProfile: () async => const ConnectionProfile(
+          id: 'profile-active',
+          origin: 'https://active.example',
+          kind: ConnectionKind.selfHosted,
+        ),
+      );
+
+      await queue.drain();
+
+      expect(attemptedKeys, [active.id]);
+      expect(
+        (await repository.get(active.id))?.uploadStatus,
+        LocalActivityUploadStatus.uploaded,
+      );
+      expect(
+        (await repository.get(other.id))?.uploadStatus,
+        LocalActivityUploadStatus.pending,
+      );
+    });
+
     test('concurrent drain calls share a single run', () async {
       await _createRecord(
         repository,
@@ -200,6 +262,47 @@ void main() {
 
       // Only one drain ran, so the single record was attempted once.
       expect(calls, 1);
+    });
+
+    test('a drain requested in flight performs a follow-up scan', () async {
+      await _createRecord(
+        repository,
+        id: 'q_first',
+        status: LocalActivityUploadStatus.pending,
+      );
+      final uploadStarted = Completer<void>();
+      final releaseUpload = Completer<void>();
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          uploadFile: (_, _, _, {idempotencyKey}) async {
+            attemptedKeys.add(idempotencyKey);
+            if (!uploadStarted.isCompleted) {
+              uploadStarted.complete();
+              await releaseUpload.future;
+            }
+            return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+          },
+        ),
+      );
+
+      final firstDrain = queue.drain();
+      await uploadStarted.future;
+      await _createRecord(
+        repository,
+        id: 'q_second',
+        status: LocalActivityUploadStatus.pending,
+      );
+      final joinedDrain = queue.drain();
+      releaseUpload.complete();
+      await Future.wait([firstDrain, joinedDrain]);
+
+      expect(attemptedKeys, ['q_first', 'q_second']);
     });
 
     test('connectivity signal triggers a drain when online', () async {
@@ -249,6 +352,9 @@ Future<LocalActivityRecord> _createRecord(
   LocalActivityRepository repository, {
   required String id,
   required LocalActivityUploadStatus status,
+  String? connectionOrigin = 'https://example.test',
+  String? connectionProfileId = 'profile-1',
+  bool autoRetryEligible = true,
 }) async {
   final fileName = await repository.writeGpx(id: id, gpx: '<gpx />');
   final record = LocalActivityRecord(
@@ -263,6 +369,9 @@ Future<LocalActivityRecord> _createRecord(
     uploadStatus: status,
     createdAt: DateTime.utc(2026, 6, 2, 10, 31),
     updatedAt: DateTime.utc(2026, 6, 2, 10, 31),
+    connectionOrigin: connectionOrigin,
+    connectionProfileId: connectionProfileId,
+    autoRetryEligible: autoRetryEligible,
   );
   await repository.upsert(record);
   return record;

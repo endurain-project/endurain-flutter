@@ -9,8 +9,7 @@ import 'package:endurain/core/services/app_preferences_store.dart';
 /// use, so a language chosen here can round-trip across the stack. A missing
 /// value means "follow the system locale".
 class LocaleSettingsRepository {
-  const LocaleSettingsRepository({required AppPreferencesStore preferences})
-    : _preferences = preferences;
+  const LocaleSettingsRepository({required this._preferences});
 
   static const _localeTagKey = 'app_locale';
 

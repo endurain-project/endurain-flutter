@@ -33,6 +33,7 @@ class Validators {
     final uri = Uri.tryParse(trimmed);
     if (uri == null ||
         !uri.hasScheme ||
+        uri.host.isEmpty ||
         (!uri.isScheme('http') && !uri.isScheme('https'))) {
       return l10n.invalidUrl;
     }

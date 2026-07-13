@@ -37,6 +37,8 @@ class SecureStorageService {
   static const _refreshTokenKey = 'refresh_token';
   static const _sessionIdKey = 'session_id';
   static const _accessTokenExpiresAtKey = 'access_token_expires_at';
+  static const _authSessionKey = 'auth_session_v2';
+  static const _authSessionAuthorityKey = 'auth_session_authoritative';
 
   // Read a value. Returns null when the key is absent.
   // Throws [AppException] with [AppErrorCode.secureStorageReadFailed] when the
@@ -63,7 +65,10 @@ class SecureStorageService {
   Future<void> write({required String key, required String value}) async {
     try {
       await _storage.write(key: key, value: value);
-    } catch (_) {
+    } catch (error) {
+      if (!_isDuplicateKeychainItem(error)) {
+        throw AppException(AppErrorCode.secureStorageWriteFailed, cause: error);
+      }
       try {
         await _storage.delete(key: key);
         await _storage.write(key: key, value: value);
@@ -71,6 +76,13 @@ class SecureStorageService {
         throw AppException(AppErrorCode.secureStorageWriteFailed, cause: e);
       }
     }
+  }
+
+  bool _isDuplicateKeychainItem(Object error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('errsecduplicateitem') ||
+        message.contains('duplicate item') ||
+        message.contains('-25299');
   }
 
   // Delete a value
@@ -130,6 +142,28 @@ class SecureStorageService {
   Future<void> deleteAccessTokenExpiresAt() =>
       delete(key: _accessTokenExpiresAtKey);
 
+  Future<String?> getAuthSession() => read(key: _authSessionKey);
+
+  Future<void> setAuthSession(String session) =>
+      write(key: _authSessionKey, value: session);
+
+  Future<void> deleteAuthSession() => delete(key: _authSessionKey);
+
+  Future<bool> isAuthSessionAuthoritative() async {
+    return await read(key: _authSessionAuthorityKey) == 'true';
+  }
+
+  Future<void> markAuthSessionAuthoritative() {
+    return write(key: _authSessionAuthorityKey, value: 'true');
+  }
+
+  Future<void> clearLegacyAuthTokens() async {
+    await deleteAccessToken();
+    await deleteRefreshToken();
+    await deleteSessionId();
+    await deleteAccessTokenExpiresAt();
+  }
+
   Future<bool> isAccessTokenExpiringSoon({
     Duration threshold = const Duration(minutes: 2),
   }) async {
@@ -142,9 +176,8 @@ class SecureStorageService {
 
   // Clear all auth tokens
   Future<void> clearAuthTokens() async {
-    await deleteAccessToken();
-    await deleteRefreshToken();
-    await deleteSessionId();
-    await deleteAccessTokenExpiresAt();
+    await markAuthSessionAuthoritative();
+    await deleteAuthSession();
+    await clearLegacyAuthTokens();
   }
 }

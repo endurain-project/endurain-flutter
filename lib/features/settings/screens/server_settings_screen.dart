@@ -45,7 +45,8 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
   void initState() {
     super.initState();
     _repository = widget.repository ?? _createRepository();
-    _config = widget.config ?? AppConfig.defaults;
+    _config =
+        widget.config ?? AppScope.servicesOf(context, listen: false).config;
     _loadSettings();
   }
 
@@ -57,6 +58,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
       authService: widget.authService ?? services.auth,
       mapSettingsRepository: MapSettingsRepository(
         preferences: services.preferences,
+        activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
       ),
     );
   }

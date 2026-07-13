@@ -1,17 +1,21 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 
 class MapSettingsRepository {
-  const MapSettingsRepository({required AppPreferencesStore preferences})
-    : _preferences = preferences;
+  const MapSettingsRepository({
+    required this._preferences,
+    this.activeConnectionOrigin,
+  });
 
   static const _tileServerUrlKey = 'tile_server_url';
-  static const _tileServerAttributionKey = 'tile_server_attribution';
-  static const _mapBackgroundColorKey = 'map_background_color';
 
   final AppPreferencesStore _preferences;
+  final Future<String?> Function()? activeConnectionOrigin;
 
   /// Whether [url] is an acceptable tile-server URL to persist: a well-formed
   /// absolute `http`/`https` URL with a host. Language-free so it can guard the
@@ -23,8 +27,13 @@ class MapSettingsRepository {
         uri.host.isNotEmpty;
   }
 
-  Future<String> getTileServerUrl() async {
-    final tileUrl = await _preferences.read(key: _tileServerUrlKey);
+  Future<String> getTileServerUrl({String? origin}) async {
+    final resolvedOrigin = origin ?? await activeConnectionOrigin?.call();
+    if (activeConnectionOrigin != null &&
+        (resolvedOrigin == null || resolvedOrigin.isEmpty)) {
+      return MapConstants.defaultTileServerUrl;
+    }
+    final tileUrl = await _preferences.read(key: _keyForOrigin(resolvedOrigin));
     if (tileUrl == null || tileUrl.isEmpty) {
       return MapConstants.defaultTileServerUrl;
     }
@@ -37,47 +46,36 @@ class MapSettingsRepository {
   /// stored regardless of caller; throws [AppException] with
   /// [AppErrorCode.invalidTileServerUrl] when [url] is not a valid http/https
   /// URL.
-  Future<void> saveTileServerUrl(String url) async {
+  Future<void> saveTileServerUrl(String url, {String? origin}) async {
     if (!isValidTileServerUrl(url)) {
       throw const AppException(AppErrorCode.invalidTileServerUrl);
     }
-    return _preferences.write(key: _tileServerUrlKey, value: url);
-  }
-
-  Future<String?> getTileServerAttribution() {
-    return _preferences.read(key: _tileServerAttributionKey);
-  }
-
-  Future<void> saveTileServerAttribution(String attribution) {
-    return _preferences.write(
-      key: _tileServerAttributionKey,
-      value: attribution,
-    );
-  }
-
-  Future<String?> getMapBackgroundColor() {
-    return _preferences.read(key: _mapBackgroundColorKey);
-  }
-
-  Future<void> saveMapBackgroundColor(String color) {
-    return _preferences.write(key: _mapBackgroundColorKey, value: color);
+    final resolvedOrigin = origin ?? await activeConnectionOrigin?.call();
+    if (activeConnectionOrigin != null &&
+        (resolvedOrigin == null || resolvedOrigin.isEmpty)) {
+      throw const AppException(AppErrorCode.notAuthenticated);
+    }
+    return _preferences.write(key: _keyForOrigin(resolvedOrigin), value: url);
   }
 
   /// Persists any map-related fields from [settings] that have non-empty
   /// values. Fields that are null or empty are not written, leaving previously
   /// stored values intact.
-  Future<void> saveFromServerSettings(ServerSettings settings) async {
+  Future<void> saveFromServerSettings(
+    ServerSettings settings, {
+    required String origin,
+  }) async {
     final url = settings.tileserverUrl;
     if (url != null && url.isNotEmpty && isValidTileServerUrl(url)) {
-      await saveTileServerUrl(url);
+      await saveTileServerUrl(url, origin: origin);
+      return;
     }
-    final attribution = settings.tileserverAttribution;
-    if (attribution != null && attribution.isNotEmpty) {
-      await saveTileServerAttribution(attribution);
-    }
-    final color = settings.mapBackgroundColor;
-    if (color != null && color.isNotEmpty) {
-      await saveMapBackgroundColor(color);
-    }
+    await _preferences.delete(key: _keyForOrigin(origin));
+  }
+
+  String _keyForOrigin(String? origin) {
+    if (origin == null || origin.isEmpty) return _tileServerUrlKey;
+    final digest = sha256.convert(utf8.encode(origin)).toString();
+    return '${_tileServerUrlKey}_$digest';
   }
 }

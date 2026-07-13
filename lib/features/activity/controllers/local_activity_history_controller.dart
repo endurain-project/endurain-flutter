@@ -11,18 +11,17 @@ import 'package:flutter/foundation.dart';
 
 class LocalActivityHistoryController extends ChangeNotifier {
   LocalActivityHistoryController({
-    required LocalActivityRepository repository,
+    required this._repository,
     required ActivityUploadService uploadService,
-    required ShareService shareService,
-    ActivityRetentionSettingsRepository? retentionSettingsRepository,
+    required this._shareService,
+    this._retentionSettingsRepository,
     DateTime Function()? now,
     DiagnosticsRecorder? diagnostics,
-  }) : _repository = repository,
-       _uploadService = uploadService,
-       _shareService = shareService,
-       _retentionSettingsRepository = retentionSettingsRepository,
+    Future<void> Function(String localActivityId)? removeImportProvenance,
+  }) : _uploadService = uploadService,
        _now = now ?? DateTime.now,
-       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
+       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
+       _removeImportProvenance = removeImportProvenance;
 
   static const int _pageSize = 20;
 
@@ -32,6 +31,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
   final DateTime Function() _now;
   final DiagnosticsRecorder _diagnostics;
+  final Future<void> Function(String localActivityId)? _removeImportProvenance;
 
   List<LocalActivityRecord> _records = const [];
   Set<String> _busyRecordIds = const {};
@@ -71,6 +71,23 @@ class LocalActivityHistoryController extends ChangeNotifier {
       final page = await _repository.listPage(offset: 0, limit: _pageSize);
       _records = page;
       _hasMore = page.length == _pageSize;
+    } catch (error) {
+      _error = _asAppException(error);
+    } finally {
+      _isLoading = false;
+      _notifyListeners();
+    }
+  }
+
+  /// Loads one record for a details route without depending on list paging.
+  Future<void> loadRecord(String id) async {
+    _isLoading = true;
+    _error = null;
+    _notifyListeners();
+    try {
+      final record = await _repository.get(id);
+      _records = record == null ? const [] : [record];
+      _hasMore = false;
     } catch (error) {
       _error = _asAppException(error);
     } finally {
@@ -136,13 +153,13 @@ class LocalActivityHistoryController extends ChangeNotifier {
         retentionRepository: _retentionSettingsRepository,
         now: _now,
       );
-      await load();
+      await _refreshRecord(id);
     } catch (_) {
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.activityUploadRetryFailed,
         details: {'id': id},
       );
-      await load();
+      await _refreshRecord(id);
       rethrow;
     } finally {
       _setBusy(id, busy: false);
@@ -156,10 +173,30 @@ class LocalActivityHistoryController extends ChangeNotifier {
     _setBusy(id, busy: true);
     try {
       await _repository.delete(id);
-      await load();
+      await _removeImportProvenance?.call(id);
+      _records = _records.where((record) => record.id != id).toList();
+      _notifyListeners();
     } finally {
       _setBusy(id, busy: false);
     }
+  }
+
+  Future<void> _refreshRecord(String id) async {
+    final updated = await _repository.get(id);
+    final index = _records.indexWhere((record) => record.id == id);
+    if (updated == null) {
+      if (index >= 0) {
+        _records = [..._records]..removeAt(index);
+      }
+      _notifyListeners();
+      return;
+    }
+    if (index < 0) {
+      _records = [updated, ..._records];
+    } else {
+      _records = [..._records]..[index] = updated;
+    }
+    _notifyListeners();
   }
 
   void _setBusy(String id, {required bool busy}) {

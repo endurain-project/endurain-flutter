@@ -21,6 +21,23 @@ void main() {
       expect(AppConfig.defaultApiBasePath, '/api/v1');
     });
 
+    group('healthSyncEnabled', () {
+      test('defaults to true', () {
+        const config = AppConfig.defaults;
+        expect(config.healthSyncEnabled, isTrue);
+      });
+
+      test('can be overridden to false', () {
+        const config = AppConfig(healthSyncEnabled: false);
+        expect(config.healthSyncEnabled, isFalse);
+      });
+
+      test('explicit true is preserved', () {
+        const config = AppConfig(healthSyncEnabled: true);
+        expect(config.healthSyncEnabled, isTrue);
+      });
+    });
+
     group('isTileServerHostAllowed', () {
       test('returns true for any host when allowedTileServerHosts is null', () {
         const config = AppConfig.defaults;
@@ -69,6 +86,14 @@ void main() {
         const config = AppConfig(cloudBaseUrl: 'https://App.Endurain.Test');
         expect(
           config.allowInsecureTransportFor('http://app.endurain.test/login'),
+          isFalse,
+        );
+      });
+
+      test('matches the cloud origin with a terminal DNS dot', () {
+        const config = AppConfig(cloudBaseUrl: 'https://app.endurain.test');
+        expect(
+          config.allowInsecureTransportFor('http://app.endurain.test.'),
           isFalse,
         );
       });

@@ -88,6 +88,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed => 'Could not convert workout to GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Could not import workout';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Could not import workout: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied => 'Health data access was denied';
+
+  @override
+  String get errorHealthReadFailed => 'Could not read health data';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Health sync is not available on this device';
+
+  @override
   String get errorLoginError => 'Could not sign in';
 
   @override
@@ -125,9 +146,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'You are not signed in';
-
-  @override
-  String get errorPkceVerifierMissing => 'The sign-in verifier was not found';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -210,9 +228,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Could not open SSO sign-in in the system browser';
-
-  @override
-  String get ssoMissingSessionId => 'SSO callback did not include a session ID';
 
   @override
   String ssoSignInWith(String provider) {
@@ -369,6 +384,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Speed';
+
+  @override
+  String get activityStatPace => 'Pace';
 
   @override
   String get activityStop => 'Stop';
@@ -534,7 +552,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTab => 'Settings';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® is a registered trademark of João Vitória Silva';
+
+  @override
   String get settingsScreen => 'Settings';
+
+  @override
+  String get deviceAccessTitle => 'Device access';
+
+  @override
+  String get deviceAccessSubtitle => 'Manage location and health data access';
+
+  @override
+  String get deviceAccessLocationSection => 'Location';
+
+  @override
+  String get deviceAccessHealthSection => 'Health data';
+
+  @override
+  String get deviceAccessLocationTitle => 'Location access';
+
+  @override
+  String get deviceAccessHealthTitle => 'Health data access';
+
+  @override
+  String get deviceAccessChecking => 'Checking access…';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'Location services are turned off';
+
+  @override
+  String get deviceAccessLocationAlways => 'Allowed all the time';
+
+  @override
+  String get deviceAccessLocationWhileUsing => 'Allowed while using the app';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Blocked in system settings';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Not allowed';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Not available on this device';
+
+  @override
+  String get deviceAccessHealthRequired => 'Health Connect is required';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Health access set up';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Access needs attention';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Not connected';
 
   @override
   String get language => 'Language';
@@ -556,6 +630,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverSettingsTitle => 'Server settings';
 
   @override
+  String connectedToServer(String server) {
+    return 'Connected to $server';
+  }
+
+  @override
   String get loggedIn => 'Logged in';
 
   @override
@@ -568,7 +647,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverUrl => 'Server URL';
 
   @override
-  String get serverUrlHint => 'https://example.com';
+  String get serverProtocol => 'Protocol';
+
+  @override
+  String get serverUrlHint => 'example.com';
 
   @override
   String get warnHttpServerUrlTitle => 'Insecure connection';
@@ -683,4 +765,167 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Raw report';
+
+  @override
+  String get healthSyncSettingsTitle => 'Health sync';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Import workouts from your health platform';
+
+  @override
+  String get healthSyncScreenTitle => 'Health sync';
+
+  @override
+  String get healthAccessScreenTitle => 'Health access';
+
+  @override
+  String get healthAccessRequestedData => 'Requested data';
+
+  @override
+  String get healthAccessWorkouts => 'Workouts';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Workout routes';
+
+  @override
+  String get healthAccessHeartRate => 'Heart rate';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Workout distance, calories, and steps';
+
+  @override
+  String get healthAccessAllowed => 'Allowed';
+
+  @override
+  String get healthAccessNeedsAttention => 'Needs attention';
+
+  @override
+  String get healthAccessManagedBySystem => 'Managed in system settings';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit does not disclose which data Endurain can read. Review access in the Health app.';
+
+  @override
+  String get healthAccessReview => 'Review health access';
+
+  @override
+  String get healthAccessReviewIos => 'How to review access';
+
+  @override
+  String get healthAccessDisconnect => 'Disconnect health data';
+
+  @override
+  String get healthAccessDisconnectTitle => 'Disconnect health data?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Automatic import and local import history for this server will be reset. Existing activities stay in your history.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Open the Health app, tap your profile picture, then Apps and Services. Select Endurain and update the data categories.';
+
+  @override
+  String get healthSyncAuthorize => 'Connect to health data';
+
+  @override
+  String get healthSyncInstallProvider => 'Install Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Health Connect is required to sync workouts. Install it to continue.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Health sync is not available on this device.';
+
+  @override
+  String get healthSyncSelectAll => 'Select all';
+
+  @override
+  String get healthSyncClearSelection => 'Clear';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Import selected ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Imported $count workout(s).';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'No GPS route';
+
+  @override
+  String get healthSyncEmptyState =>
+      'No workouts found in the selected date range.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Some workouts were skipped because exercise-route access was not granted. Open Health Connect → Permissions and allow exercise routes for Endurain.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Some workouts were skipped because Endurain could not read their GPS routes. In the Health app, open your profile, then Apps and Services, select Endurain, and allow Workout Routes.';
+
+  @override
+  String get healthSyncReviewAccess => 'Review access';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Auto-sync on resume';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Import new workouts automatically when the app opens.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'These workouts don\'t include a GPS route, so they can\'t be imported. Some apps (like Garmin Connect) record activities to Apple Health without sharing the route. Workouts recorded with Apple Watch include routes and can be imported.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Non-importable';
+
+  @override
+  String get healthSyncViewAvailable => 'Available';
+
+  @override
+  String get healthSyncViewImported => 'Imported';
+
+  @override
+  String get healthSyncDateRange => 'Workout date range';
+
+  @override
+  String get healthSyncRange30Days => 'Last 30 days';
+
+  @override
+  String get healthSyncRange3Months => 'Last 3 months';
+
+  @override
+  String get healthSyncRange6Months => 'Last 6 months';
+
+  @override
+  String get healthSyncRangeYear => 'Last year';
+
+  @override
+  String get healthSyncRangeAll => 'All history';
+
+  @override
+  String get healthSyncRangeCustom => 'Custom range';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'No imported workouts for this connection.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Imported: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Restore';
 }

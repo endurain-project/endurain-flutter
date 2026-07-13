@@ -109,6 +109,36 @@
       }
     }
   },
+  "errorHealthGpxBuildFailed": "Could not convert workout to GPX",
+  "@errorHealthGpxBuildFailed": {
+    "description": "Health workout GPX conversion error - Used in: error_localizations.dart"
+  },
+  "errorHealthImportFailed": "Could not import workout",
+  "@errorHealthImportFailed": {
+    "description": "Generic health workout import error - Used in: error_localizations.dart"
+  },
+  "errorHealthImportFailedWithDetails": "Could not import workout: {details}",
+  "@errorHealthImportFailedWithDetails": {
+    "description": "Health workout import error with details - Used in: error_localizations.dart",
+    "placeholders": {
+      "details": {
+        "type": "String",
+        "example": "Storage unavailable"
+      }
+    }
+  },
+  "errorHealthPermissionDenied": "Health data access was denied",
+  "@errorHealthPermissionDenied": {
+    "description": "Health authorization denied error - Used in: error_localizations.dart"
+  },
+  "errorHealthReadFailed": "Could not read health data",
+  "@errorHealthReadFailed": {
+    "description": "Health data read error - Used in: error_localizations.dart"
+  },
+  "errorHealthUnavailable": "Health sync is not available on this device",
+  "@errorHealthUnavailable": {
+    "description": "Health platform unavailable error - Used in: error_localizations.dart"
+  },
   "errorLoginError": "Could not sign in",
   "@errorLoginError": {
     "description": "Generic login error - Used in: error_localizations.dart"
@@ -172,10 +202,6 @@
   "errorNotAuthenticated": "You are not signed in",
   "@errorNotAuthenticated": {
     "description": "Error when an authenticated request has no token - Used in: error_localizations.dart"
-  },
-  "errorPkceVerifierMissing": "The sign-in verifier was not found",
-  "@errorPkceVerifierMissing": {
-    "description": "Error when PKCE verifier is missing - Used in: error_localizations.dart"
   },
   "errorPkceVerifierMissingRestartLogin": "The sign-in verifier was not found. Please start sign-in again.",
   "@errorPkceVerifierMissingRestartLogin": {
@@ -283,10 +309,6 @@
   "ssoBrowserLaunchFailed": "Could not open SSO sign-in in the system browser",
   "@ssoBrowserLaunchFailed": {
     "description": "Error shown when SSO system browser launch fails - Used in: login_screen.dart"
-  },
-  "ssoMissingSessionId": "SSO callback did not include a session ID",
-  "@ssoMissingSessionId": {
-    "description": "Error shown when the SSO callback URL lacks a session_id - Used in: login_screen.dart"
   },
   "ssoSignInWith": "Sign in with {provider}",
   "@ssoSignInWith": {
@@ -482,6 +504,10 @@
   "activityStatSpeed": "Speed",
   "@activityStatSpeed": {
     "description": "Recording stats speed label - Used in: activity_stats_display.dart"
+  },
+  "activityStatPace": "Pace",
+  "@activityStatPace": {
+    "description": "Recording stats pace label for runs - Used in: activity_stats_display.dart"
   },
   "activityStop": "Stop",
   "@activityStop": {
@@ -713,9 +739,81 @@
   "@settingsTab": {
     "description": "Settings tab label - Used in: app_bottom_nav.dart"
   },
+  "endurainTrademarkNotice": "Endurain® is a registered trademark of João Vitória Silva",
+  "@endurainTrademarkNotice": {
+    "description": "Registered trademark attribution shown in the settings footer - Used in: settings_screen.dart"
+  },
   "settingsScreen": "Settings",
   "@settingsScreen": {
     "description": "Settings screen title - Used in: settings_screen.dart"
+  },
+  "deviceAccessTitle": "Device access",
+  "@deviceAccessTitle": {
+    "description": "Settings entry and screen title for mobile permissions - Used in: settings_screen.dart, device_access_screen.dart"
+  },
+  "deviceAccessSubtitle": "Manage location and health data access",
+  "@deviceAccessSubtitle": {
+    "description": "Subtitle for the device access settings entry - Used in: settings_screen.dart"
+  },
+  "deviceAccessLocationSection": "Location",
+  "@deviceAccessLocationSection": {
+    "description": "Device access screen section heading - Used in: device_access_screen.dart"
+  },
+  "deviceAccessHealthSection": "Health data",
+  "@deviceAccessHealthSection": {
+    "description": "Device access screen section heading - Used in: device_access_screen.dart"
+  },
+  "deviceAccessLocationTitle": "Location access",
+  "@deviceAccessLocationTitle": {
+    "description": "Location permission row title - Used in: device_access_screen.dart"
+  },
+  "deviceAccessHealthTitle": "Health data access",
+  "@deviceAccessHealthTitle": {
+    "description": "Health permission row title - Used in: device_access_screen.dart"
+  },
+  "deviceAccessChecking": "Checking access…",
+  "@deviceAccessChecking": {
+    "description": "Temporary status while device permissions are checked - Used in: device_access_screen.dart"
+  },
+  "deviceAccessLocationServicesOff": "Location services are turned off",
+  "@deviceAccessLocationServicesOff": {
+    "description": "Location status when device location services are disabled - Used in: device_access_screen.dart"
+  },
+  "deviceAccessLocationAlways": "Allowed all the time",
+  "@deviceAccessLocationAlways": {
+    "description": "Location permission status - Used in: device_access_screen.dart"
+  },
+  "deviceAccessLocationWhileUsing": "Allowed while using the app",
+  "@deviceAccessLocationWhileUsing": {
+    "description": "Location permission status - Used in: device_access_screen.dart"
+  },
+  "deviceAccessLocationBlocked": "Blocked in system settings",
+  "@deviceAccessLocationBlocked": {
+    "description": "Location permission status - Used in: device_access_screen.dart"
+  },
+  "deviceAccessLocationNotAllowed": "Not allowed",
+  "@deviceAccessLocationNotAllowed": {
+    "description": "Location permission status - Used in: device_access_screen.dart"
+  },
+  "deviceAccessHealthUnavailable": "Not available on this device",
+  "@deviceAccessHealthUnavailable": {
+    "description": "Health platform status - Used in: device_access_screen.dart"
+  },
+  "deviceAccessHealthRequired": "Health Connect is required",
+  "@deviceAccessHealthRequired": {
+    "description": "Health platform status when provider is absent - Used in: device_access_screen.dart"
+  },
+  "deviceAccessHealthSetUp": "Health access set up",
+  "@deviceAccessHealthSetUp": {
+    "description": "Health platform status without claiming individual read grants - Used in: device_access_screen.dart"
+  },
+  "deviceAccessHealthNeedsAttention": "Access needs attention",
+  "@deviceAccessHealthNeedsAttention": {
+    "description": "Health platform status - Used in: device_access_screen.dart"
+  },
+  "deviceAccessHealthNotConnected": "Not connected",
+  "@deviceAccessHealthNotConnected": {
+    "description": "Health platform status - Used in: device_access_screen.dart"
   },
   "language": "Language",
   "@language": {
@@ -741,6 +839,16 @@
   "@serverSettingsTitle": {
     "description": "Server settings screen title - Used in: server_settings_screen.dart"
   },
+  "connectedToServer": "Connected to {server}",
+  "@connectedToServer": {
+    "description": "Server settings subtitle showing the connected server - Used in: settings_screen.dart",
+    "placeholders": {
+      "server": {
+        "type": "String",
+        "example": "https://endurain.example"
+      }
+    }
+  },
   "loggedIn": "Logged in",
   "@loggedIn": {
     "description": "Logged in section header - Used in: server_settings_screen.dart"
@@ -757,9 +865,13 @@
   "@serverUrl": {
     "description": "Server URL field label - Used in: login_screen.dart, server_settings_screen.dart"
   },
-  "serverUrlHint": "https://example.com",
+  "serverProtocol": "Protocol",
+  "@serverProtocol": {
+    "description": "Server protocol selector label - Used in: login_screen.dart"
+  },
+  "serverUrlHint": "example.com",
   "@serverUrlHint": {
-    "description": "Server URL field hint text - Used in: login_screen.dart"
+    "description": "Server address field hint text without a protocol - Used in: login_screen.dart"
   },
   "warnHttpServerUrlTitle": "Insecure connection",
   "@warnHttpServerUrlTitle": {
@@ -920,5 +1032,214 @@
   "diagnosticsRawReport": "Raw report",
   "@diagnosticsRawReport": {
     "description": "Diagnostics raw report section header - Used in: diagnostics_screen.dart"
+  },
+
+  "@@healthSection": "Health sync",
+  "healthSyncSettingsTitle": "Health sync",
+  "@healthSyncSettingsTitle": {
+    "description": "Settings tile label and screen title - Used in: settings_screen.dart, health_sync_screen.dart"
+  },
+  "healthSyncSettingsSubtitle": "Import workouts from your health platform",
+  "@healthSyncSettingsSubtitle": {
+    "description": "Settings tile subtitle - Used in: settings_screen.dart"
+  },
+  "healthSyncScreenTitle": "Health sync",
+  "@healthSyncScreenTitle": {
+    "description": "Health sync screen title - Used in: health_sync_screen.dart"
+  },
+  "healthAccessScreenTitle": "Health access",
+  "@healthAccessScreenTitle": {
+    "description": "Title for health permission details - Used in: health_access_screen.dart"
+  },
+  "healthAccessRequestedData": "Requested data",
+  "@healthAccessRequestedData": {
+    "description": "Section heading for health data categories - Used in: health_access_screen.dart"
+  },
+  "healthAccessWorkouts": "Workouts",
+  "@healthAccessWorkouts": {
+    "description": "Health data category - Used in: health_access_screen.dart"
+  },
+  "healthAccessWorkoutRoutes": "Workout routes",
+  "@healthAccessWorkoutRoutes": {
+    "description": "Health data category - Used in: health_access_screen.dart"
+  },
+  "healthAccessHeartRate": "Heart rate",
+  "@healthAccessHeartRate": {
+    "description": "Health data category - Used in: health_access_screen.dart"
+  },
+  "healthAccessWorkoutSummary": "Workout distance, calories, and steps",
+  "@healthAccessWorkoutSummary": {
+    "description": "Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart"
+  },
+  "healthAccessAllowed": "Allowed",
+  "@healthAccessAllowed": {
+    "description": "Android health data permission status - Used in: health_access_screen.dart"
+  },
+  "healthAccessNeedsAttention": "Needs attention",
+  "@healthAccessNeedsAttention": {
+    "description": "Android health data permission status - Used in: health_access_screen.dart"
+  },
+  "healthAccessManagedBySystem": "Managed in system settings",
+  "@healthAccessManagedBySystem": {
+    "description": "HealthKit data permission status - Used in: health_access_screen.dart"
+  },
+  "healthAccessSystemManagedNotice": "HealthKit does not disclose which data Endurain can read. Review access in the Health app.",
+  "@healthAccessSystemManagedNotice": {
+    "description": "Apple HealthKit read-permission limitation - Used in: health_access_screen.dart"
+  },
+  "healthAccessReview": "Review health access",
+  "@healthAccessReview": {
+    "description": "Action to request or re-request health data access - Used in: health_access_screen.dart"
+  },
+  "healthAccessReviewIos": "How to review access",
+  "@healthAccessReviewIos": {
+    "description": "Action that explains how to change HealthKit read access - Used in: health_access_screen.dart"
+  },
+  "healthAccessDisconnect": "Disconnect health data",
+  "@healthAccessDisconnect": {
+    "description": "Destructive action that disconnects health sync and clears import provenance - Used in: health_access_screen.dart"
+  },
+  "healthAccessDisconnectTitle": "Disconnect health data?",
+  "@healthAccessDisconnectTitle": {
+    "description": "Health disconnect confirmation title - Used in: health_access_screen.dart"
+  },
+  "healthAccessDisconnectMessage": "Automatic import and local import history for this server will be reset. Existing activities stay in your history.",
+  "@healthAccessDisconnectMessage": {
+    "description": "Health disconnect confirmation explanation - Used in: health_access_screen.dart"
+  },
+  "healthAccessReviewIosInstructions": "Open the Health app, tap your profile picture, then Apps and Services. Select Endurain and update the data categories.",
+  "@healthAccessReviewIosInstructions": {
+    "description": "Instructions for changing HealthKit read access - Used in: health_access_screen.dart"
+  },
+  "healthSyncAuthorize": "Connect to health data",
+  "@healthSyncAuthorize": {
+    "description": "Button to request health authorization - Used in: health_sync_screen.dart"
+  },
+  "healthSyncInstallProvider": "Install Health Connect",
+  "@healthSyncInstallProvider": {
+    "description": "Button shown when Health Connect is not installed - Used in: health_sync_screen.dart"
+  },
+  "healthSyncInstallProviderDescription": "Health Connect is required to sync workouts. Install it to continue.",
+  "@healthSyncInstallProviderDescription": {
+    "description": "Explanation shown above the install button when Health Connect is not installed - Used in: health_sync_screen.dart"
+  },
+  "healthSyncUnsupported": "Health sync is not available on this device.",
+  "@healthSyncUnsupported": {
+    "description": "Message shown when the health SDK is unsupported - Used in: health_sync_screen.dart"
+  },
+  "healthSyncSelectAll": "Select all",
+  "@healthSyncSelectAll": {
+    "description": "Select all importable workouts - Used in: health_sync_screen.dart"
+  },
+  "healthSyncClearSelection": "Clear",
+  "@healthSyncClearSelection": {
+    "description": "Clear the workout selection - Used in: health_sync_screen.dart"
+  },
+  "healthSyncImportSelected": "Import selected ({count})",
+  "@healthSyncImportSelected": {
+    "description": "Import the selected workouts - Used in: health_sync_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "healthSyncImportedCount": "Imported {count} workout(s).",
+  "@healthSyncImportedCount": {
+    "description": "Result message after a successful import - Used in: health_sync_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "healthSyncNoRouteLabel": "No GPS route",
+  "@healthSyncNoRouteLabel": {
+    "description": "Label shown on workouts without a GPS route (non-importable) - Used in: health_sync_screen.dart"
+  },
+  "healthSyncEmptyState": "No workouts found in the selected date range.",
+  "@healthSyncEmptyState": {
+    "description": "Empty state message when no importable workouts are found - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRouteConsentGuidance": "Some workouts were skipped because exercise-route access was not granted. Open Health Connect → Permissions and allow exercise routes for Endurain.",
+  "@healthSyncRouteConsentGuidance": {
+    "description": "Guidance shown when routeConsentDeniedCount > 0 - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRouteConsentGuidanceIos": "Some workouts were skipped because Endurain could not read their GPS routes. In the Health app, open your profile, then Apps and Services, select Endurain, and allow Workout Routes.",
+  "@healthSyncRouteConsentGuidanceIos": {
+    "description": "iOS guidance shown when routeConsentDeniedCount > 0 - Used in: health_sync_screen.dart"
+  },
+  "healthSyncReviewAccess": "Review access",
+  "@healthSyncReviewAccess": {
+    "description": "Button to request HealthKit permissions again - Used in: health_sync_screen.dart"
+  },
+  "healthSyncAutoSyncTitle": "Auto-sync on resume",
+  "@healthSyncAutoSyncTitle": {
+    "description": "Title of the auto-sync toggle - Used in: health_sync_screen.dart"
+  },
+  "healthSyncAutoSyncSubtitle": "Import new workouts automatically when the app opens.",
+  "@healthSyncAutoSyncSubtitle": {
+    "description": "Subtitle of the auto-sync toggle - Used in: health_sync_screen.dart"
+  },
+  "healthSyncNoRoutesExplanation": "These workouts don't include a GPS route, so they can't be imported. Some apps (like Garmin Connect) record activities to Apple Health without sharing the route. Workouts recorded with Apple Watch include routes and can be imported.",
+  "@healthSyncNoRoutesExplanation": {
+    "description": "Banner shown when workouts exist but none have GPS routes - Used in: health_sync_screen.dart"
+  },
+  "healthSyncBadgeNonImportable": "Non-importable",
+  "@healthSyncBadgeNonImportable": {
+    "description": "Badge on a workout row that has no GPS route and cannot be imported - Used in: health_sync_screen.dart"
+  },
+  "healthSyncViewAvailable": "Available",
+  "@healthSyncViewAvailable": {
+    "description": "Segment label for workouts available to import - Used in: health_sync_screen.dart"
+  },
+  "healthSyncViewImported": "Imported",
+  "@healthSyncViewImported": {
+    "description": "Segment label for imported workout history - Used in: health_sync_screen.dart"
+  },
+  "healthSyncDateRange": "Workout date range",
+  "@healthSyncDateRange": {
+    "description": "Health workout discovery range label - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRange30Days": "Last 30 days",
+  "@healthSyncRange30Days": {
+    "description": "Health import range preset - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRange3Months": "Last 3 months",
+  "@healthSyncRange3Months": {
+    "description": "Health import range preset - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRange6Months": "Last 6 months",
+  "@healthSyncRange6Months": {
+    "description": "Health import range preset - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRangeYear": "Last year",
+  "@healthSyncRangeYear": {
+    "description": "Health import range preset - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRangeAll": "All history",
+  "@healthSyncRangeAll": {
+    "description": "Health import range preset - Used in: health_sync_screen.dart"
+  },
+  "healthSyncRangeCustom": "Custom range",
+  "@healthSyncRangeCustom": {
+    "description": "Health import custom range option - Used in: health_sync_screen.dart"
+  },
+  "healthSyncImportedEmpty": "No imported workouts for this connection.",
+  "@healthSyncImportedEmpty": {
+    "description": "Empty imported health history state - Used in: health_sync_screen.dart"
+  },
+  "healthSyncImportedAt": "Imported: {dateTime}",
+  "@healthSyncImportedAt": {
+    "description": "Imported health workout timestamp - Used in: health_sync_screen.dart",
+    "placeholders": {
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "healthSyncRestore": "Restore",
+  "@healthSyncRestore": {
+    "description": "Makes a deleted imported workout available to import again - Used in: health_sync_screen.dart"
   }
 }

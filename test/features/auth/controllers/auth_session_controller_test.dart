@@ -15,8 +15,13 @@ void main() {
   group('AuthSessionController', () {
     test('initializes from stored auth state', () async {
       final storage = SecureStorageService();
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
+      await AuthSessionStore(storage: storage).saveSession(
+        origin: 'https://example.test',
+        accessToken: 'access-1',
+        refreshToken: 'refresh-1',
+        sessionId: 'session-1',
+        expiresInSeconds: 3600,
+      );
       final controller = AuthSessionController(
         authService: AuthService(storage: storage),
       );

@@ -30,8 +30,7 @@ class BackgroundLocationConfig {
 /// When [background] is provided, platform-specific settings are returned so
 /// updates keep flowing while the app is backgrounded:
 /// - Android starts a foreground service with a persistent notification and
-///   forces the FOSS `LocationManager` (no Google Play Services), keeping the
-///   build F-Droid compatible.
+///   uses Android-specific background location settings.
 /// - Apple platforms enable background location updates.
 LocationSettings buildLocationSettings({
   BackgroundLocationConfig? background,
@@ -49,7 +48,6 @@ LocationSettings buildLocationSettings({
       return AndroidSettings(
         accuracy: accuracy,
         distanceFilter: distanceFilter,
-        forceLocationManager: true,
         foregroundNotificationConfig: ForegroundNotificationConfig(
           notificationTitle: background.notificationTitle,
           notificationText: background.notificationText,

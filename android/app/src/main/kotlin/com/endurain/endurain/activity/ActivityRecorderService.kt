@@ -26,9 +26,6 @@ import java.util.Date
  * Foreground service that owns background location collection for an active
  * recording.
  *
- * F-Droid compatible: uses the platform [LocationManager] with the GPS/network
- * providers only. No Google Play Services / fused location is used.
- *
  * Each fix is persisted to the durable [ActiveActivityStore] before being
  * broadcast to Flutter, so points survive process death and are replayed via
  * `drain` on reattach.

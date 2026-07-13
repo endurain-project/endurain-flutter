@@ -5,6 +5,7 @@ import 'dart:async';
 // drives the live UI.
 
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/utils/id_generation.dart';
@@ -23,36 +24,36 @@ import 'package:flutter/foundation.dart';
 
 class ActivityRecordingController extends ChangeNotifier {
   ActivityRecordingController({
-    required ActivityRecordingService recordingService,
+    required this._recordingService,
     ActivityGpxBuilder gpxBuilder = const ActivityGpxBuilder(),
     ActivityUploadService? uploadService,
     LocalActivityRepository? localActivityRepository,
     LocalActivitySummaryBuilder? localActivitySummaryBuilder,
-    ActivityRetentionSettingsRepository? retentionSettingsRepository,
+    this._retentionSettingsRepository,
     Future<bool> Function()? isUploadAuthorized,
+    Future<ConnectionProfile?> Function()? activeConnectionProfile,
     DiagnosticsRecorder? diagnostics,
     String Function()? localActivityIdProvider,
     DateTime Function()? now,
-    bool ownsService = true,
-  }) : _recordingService = recordingService,
-       _gpxBuilder = gpxBuilder,
+    this._ownsService = true,
+  }) : _gpxBuilder = gpxBuilder,
        _uploadService = uploadService ?? ActivityUploadService(),
        _localActivityRepository =
            localActivityRepository ?? LocalActivityRepository(),
        _localActivitySummaryBuilder =
            localActivitySummaryBuilder ?? LocalActivitySummaryBuilder(),
-       _retentionSettingsRepository = retentionSettingsRepository,
        _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
+       _activeConnectionProfile = activeConnectionProfile ?? _noActiveProfile,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
-       _now = now ?? DateTime.now,
-       _ownsService = ownsService {
+       _now = now ?? DateTime.now {
     _stateSubscription = _recordingService.stateStream.listen((state) {
       _setState(state);
     });
   }
 
   static Future<bool> _alwaysAuthorized() async => true;
+  static Future<ConnectionProfile?> _noActiveProfile() async => null;
 
   final ActivityRecordingService _recordingService;
   final ActivityGpxBuilder _gpxBuilder;
@@ -61,6 +62,7 @@ class ActivityRecordingController extends ChangeNotifier {
   final LocalActivitySummaryBuilder _localActivitySummaryBuilder;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
   final Future<bool> Function() _isUploadAuthorized;
+  final Future<ConnectionProfile?> Function() _activeConnectionProfile;
   final DiagnosticsRecorder _diagnostics;
   final String Function() _localActivityIdProvider;
   final DateTime Function() _now;
@@ -76,6 +78,7 @@ class ActivityRecordingController extends ChangeNotifier {
   ActivityUploadStatus _uploadStatus = ActivityUploadStatus.idle;
   AppException? _uploadError;
   Future<void>? _activeUpload;
+  Future<bool>? _activeRecovery;
   BackgroundLocationConfig? _backgroundConfig;
 
   ActivityRecordingState get state => _state;
@@ -109,14 +112,25 @@ class ActivityRecordingController extends ChangeNotifier {
   }
 
   Future<void> start(ActivityType type) async {
+    await _activeRecovery;
+    if (_state.isActive ||
+        _state.status == ActivityRecordingStatus.stopping ||
+        _state.status == ActivityRecordingStatus.completed) {
+      return;
+    }
     _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.idle);
     selectActivityType(type);
+    final localActivityId = _localActivityIdProvider();
+    final profile = await _activeConnectionProfile();
     await _recordingService.start(
       activityType: _selectedActivityType,
       backgroundConfig: _backgroundConfig,
+      localSessionId: localActivityId,
+      connectionOrigin: profile?.origin,
+      connectionProfileId: profile?.id,
     );
     _setState(_recordingService.state);
   }
@@ -124,13 +138,28 @@ class ActivityRecordingController extends ChangeNotifier {
   /// Attempts to restore a recoverable active recording left behind by a
   /// previous app run (e.g. after the process was killed mid-recording).
   ///
-  /// Returns `true` when a paused recording was restored.
-  Future<bool> recoverActiveRecording() async {
+  /// Returns `true` when an active or completed recording was restored.
+  Future<bool> recoverActiveRecording() {
+    final existing = _activeRecovery;
+    if (existing != null) {
+      return existing;
+    }
+    final recovery = _recoverActiveRecording().whenComplete(() {
+      _activeRecovery = null;
+    });
+    _activeRecovery = recovery;
+    return recovery;
+  }
+
+  Future<bool> _recoverActiveRecording() async {
     final recovered = await _recordingService.recoverActiveSession();
     if (recovered) {
       _selectedActivityType =
           _recordingService.state.activityType ?? _selectedActivityType;
       _setState(_recordingService.state);
+      if (_recordingService.state.status == ActivityRecordingStatus.completed) {
+        await _finalizeCompletedState(_recordingService.state);
+      }
     }
     return recovered;
   }
@@ -149,27 +178,31 @@ class ActivityRecordingController extends ChangeNotifier {
     await _recordingService.stop();
     final completedState = _recordingService.state;
     if (completedState.status == ActivityRecordingStatus.completed) {
-      final gpx = _buildCompletedGpx(completedState);
-      if (gpx == null) {
-        return;
-      }
-      final localRecord = await _saveCompletedActivity(completedState, gpx);
-      if (localRecord == null) {
-        return;
-      }
-      _setState(completedState.copyWith(localActivityId: localRecord.id));
-      // Only attempt an immediate upload when a server session is available.
-      // In offline guest mode the record stays locally persisted as pending
-      // and the upload queue drains it once the user signs in.
-      if (await _isUploadAuthorized()) {
-        unawaited(uploadCompletedGpx());
-      }
+      await _finalizeCompletedState(completedState);
       return;
     }
     _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setState(completedState);
+  }
+
+  Future<void> _finalizeCompletedState(
+    ActivityRecordingState completedState,
+  ) async {
+    final gpx = _buildCompletedGpx(completedState);
+    if (gpx == null) {
+      return;
+    }
+    final localRecord = await _saveCompletedActivity(completedState, gpx);
+    if (localRecord == null) {
+      return;
+    }
+    await _recordingService.acknowledgeFinalized();
+    _setState(completedState.copyWith(localActivityId: localRecord.id));
+    if (await _isUploadAuthorized()) {
+      unawaited(uploadCompletedGpx());
+    }
   }
 
   Future<void> discard() async {
@@ -256,17 +289,23 @@ class ActivityRecordingController extends ChangeNotifier {
   ) async {
     try {
       final createdAt = _now().toUtc();
-      final localActivityId = _localActivityIdProvider();
+      final localActivityId =
+          _recordingService.localSessionId ?? _localActivityIdProvider();
       final gpxFileName = await _localActivityRepository.writeGpx(
         id: localActivityId,
         gpx: gpx,
       );
-      final localRecord = _localActivitySummaryBuilder.build(
-        state: completedState,
-        id: localActivityId,
-        gpxFileName: gpxFileName,
-        createdAt: createdAt,
-      );
+      final localRecord = _localActivitySummaryBuilder
+          .build(
+            state: completedState,
+            id: localActivityId,
+            gpxFileName: gpxFileName,
+            createdAt: createdAt,
+          )
+          .copyWith(
+            connectionOrigin: _recordingService.connectionOrigin,
+            connectionProfileId: _recordingService.connectionProfileId,
+          );
       await _localActivityRepository.upsert(localRecord);
       _completedLocalActivityId = localRecord.id;
       _completedLocalActivityRecord = localRecord;
@@ -357,7 +396,8 @@ class ActivityRecordingController extends ChangeNotifier {
   /// handle the save-failed path rather than relying on status transitions.
   void _setState(ActivityRecordingState state) {
     if (_state.status == ActivityRecordingStatus.failed &&
-        _state.lastError == ActivityRecordingError.localSaveFailed &&
+        (_state.lastError == ActivityRecordingError.localSaveFailed ||
+            _state.lastError == ActivityRecordingError.gpxGenerationFailed) &&
         (state.status == ActivityRecordingStatus.stopping ||
             state.status == ActivityRecordingStatus.completed)) {
       return;

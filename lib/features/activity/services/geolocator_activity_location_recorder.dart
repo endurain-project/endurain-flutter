@@ -21,14 +21,12 @@ import 'package:geolocator/geolocator.dart';
 /// capable.
 class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   GeolocatorActivityLocationRecorder({
-    required ActiveActivityStore store,
+    required this._store,
     LocationService? locationService,
-    ActivitySegmentPolicy segmentPolicy = const ActivitySegmentPolicy(),
+    this._segmentPolicy = const ActivitySegmentPolicy(),
     DiagnosticsRecorder? diagnostics,
     DateTime Function()? now,
-  }) : _store = store,
-       _locationService = locationService ?? LocationService(),
-       _segmentPolicy = segmentPolicy,
+  }) : _locationService = locationService ?? LocationService(),
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _now = now ?? DateTime.now;
 
@@ -55,17 +53,21 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   @override
   Future<void> start(ActivityRecorderStartRequest request) async {
     await _waitForPendingPositions();
+    if (await _store.loadSession() != null) {
+      throw StateError('A recoverable activity session already exists.');
+    }
     final session = ActiveActivitySession(
       localSessionId: request.localSessionId,
       activityType: request.activityType,
       status: ActiveActivityStatus.recording,
       startedAt: request.startedAt,
+      connectionOrigin: request.connectionOrigin,
+      connectionProfileId: request.connectionProfileId,
     );
     _session = session;
     _backgroundConfig = request.backgroundConfig;
     _lastPoint = null;
     _resumedFromPause = false;
-    await _store.clear();
     await _store.saveSession(session);
     _emit(ActivityRecorderEvent.started(session));
     _diagnostics.recordBreadcrumbSync(

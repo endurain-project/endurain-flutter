@@ -36,7 +36,7 @@ void main() {
 
       expect(settings, isA<AndroidSettings>());
       final android = settings as AndroidSettings;
-      expect(android.forceLocationManager, isTrue);
+      expect(android.forceLocationManager, isFalse);
       expect(android.foregroundNotificationConfig, isNotNull);
       expect(
         android.foregroundNotificationConfig!.notificationTitle,

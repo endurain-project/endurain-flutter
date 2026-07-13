@@ -63,7 +63,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       expect(find.byTooltip(l10n.myLocation), findsOneWidget);
       expect(find.byIcon(Icons.my_location), findsOneWidget);
@@ -76,6 +76,46 @@ void main() {
 
       activityController.dispose();
       mapController.dispose();
+      await platform.close();
+    });
+
+    testWidgets('recentering resets the map direction to north', (
+      tester,
+    ) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+      );
+      final mapStateController = await _mapController(platform);
+      final activityController = _activityController(platform);
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            controller: mapStateController,
+            activityController: activityController,
+          ),
+        ),
+      );
+      await _pumpMapFrame(tester);
+
+      final flutterMap = tester.widget<FlutterMap>(find.byType(FlutterMap));
+      final flutterMapController = flutterMap.mapController!;
+      flutterMapController.rotate(45);
+      await tester.pump();
+      expect(flutterMapController.camera.rotation, closeTo(45, 0.0001));
+
+      await tester.tap(find.byTooltip(l10n.myLocation));
+      await tester.pump();
+      expect(mapStateController.isLocationLocked, isFalse);
+
+      await tester.tap(find.byTooltip(l10n.myLocation));
+      await tester.pump();
+
+      expect(mapStateController.isLocationLocked, isTrue);
+      expect(flutterMapController.camera.rotation, closeTo(0, 0.0001));
+
+      activityController.dispose();
+      mapStateController.dispose();
       await platform.close();
     });
 
@@ -94,7 +134,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       expect(find.byType(PolylineLayer), findsNothing);
 
@@ -139,7 +179,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       await activityController.start(ActivityType.run);
       platform.addPosition(
@@ -178,7 +218,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       await activityController.start(ActivityType.run);
       platform.addPosition(testPosition(latitude: 41.10, longitude: -8.60));
@@ -232,7 +272,7 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
       platform.completePosition();
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       expect(find.byType(CircularProgressIndicator), findsNothing);
 
@@ -261,16 +301,16 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       await tester.tap(find.byTooltip(l10n.activityStart));
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       expect(find.text(l10n.activityBackgroundPermissionTitle), findsOneWidget);
       expect(activityController.state.status, ActivityRecordingStatus.idle);
 
       await tester.tap(find.text(l10n.activityBackgroundPermissionContinue));
-      await tester.pumpAndSettle();
+      await _pumpMapFrame(tester);
 
       expect(
         find.text(l10n.activityBackgroundPermissionSettingsTitle),
@@ -318,7 +358,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await _pumpMapFrame(tester);
 
         final surfaceRect = tester.getRect(
           find.byKey(const ValueKey('activityRecordingControlsSurface')),
@@ -369,7 +409,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await _pumpMapFrame(tester);
 
         final surfaceRect = tester.getRect(
           find.byKey(const ValueKey('activityRecordingControlsSurface')),
@@ -431,6 +471,11 @@ ActivityRecordingController _activityController(
 
 class _MapTestApp extends TestMaterialApp {
   const _MapTestApp({required super.child});
+}
+
+Future<void> _pumpMapFrame(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 double _markerHeading(WidgetTester tester) {

@@ -21,11 +21,8 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 /// When save is true and a serverUrl was provided, the resolved URL is
 /// written back to storage so it becomes the default for future calls.
 class ServerUrlResolver {
-  const ServerUrlResolver({
-    required SecureStorageService storage,
-    required AppConfig config,
-  }) : _storage = storage,
-       _config = config;
+  const ServerUrlResolver({required this._storage, required AppConfig config})
+    : _config = config;
 
   final SecureStorageService _storage;
   final AppConfig _config;
@@ -42,17 +39,36 @@ class ServerUrlResolver {
       throw const AppException(AppErrorCode.serverUrlNotConfigured);
     }
 
-    if (!_config.allowInsecureTransportFor(url)) {
-      final uri = Uri.tryParse(url);
-      if (uri != null && uri.isScheme('http')) {
-        throw const AppException(AppErrorCode.insecureTransportNotAllowed);
-      }
-    }
+    url = normalize(url, config: _config);
 
     if (save && serverUrl != null && serverUrl.isNotEmpty) {
       await _storage.setServerUrl(url);
     }
 
     return url;
+  }
+
+  static String normalize(String value, {required AppConfig config}) {
+    final uri = Uri.tryParse(value.trim());
+    if (uri == null ||
+        !uri.hasAuthority ||
+        uri.host.isEmpty ||
+        (!uri.isScheme('http') && !uri.isScheme('https')) ||
+        uri.hasQuery ||
+        uri.hasFragment ||
+        uri.userInfo.isNotEmpty) {
+      throw const AppException(AppErrorCode.serverUrlNotConfigured);
+    }
+    if (!config.allowInsecureTransportFor(value) && uri.isScheme('http')) {
+      throw const AppException(AppErrorCode.insecureTransportNotAllowed);
+    }
+    final normalizedPath = uri.path == '/'
+        ? ''
+        : uri.path.replaceFirst(RegExp(r'/+$'), '');
+    final normalizedHost = uri.host.toLowerCase().replaceFirst(
+      RegExp(r'\.$'),
+      '',
+    );
+    return uri.replace(host: normalizedHost, path: normalizedPath).toString();
   }
 }

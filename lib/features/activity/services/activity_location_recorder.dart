@@ -77,12 +77,16 @@ class ActivityRecorderStartRequest {
     required this.localSessionId,
     required this.activityType,
     required this.startedAt,
+    this.connectionOrigin,
+    this.connectionProfileId,
     this.backgroundConfig,
   });
 
   final String localSessionId;
   final ActivityType activityType;
   final DateTime startedAt;
+  final String? connectionOrigin;
+  final String? connectionProfileId;
   final BackgroundLocationConfig? backgroundConfig;
 }
 

@@ -2,6 +2,7 @@ import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -160,7 +161,11 @@ class _DiagnosticsSummarySection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final lastUpdated = report.lastUpdatedAt == null
         ? l10n.notConfigured
-        : _formatDateTime(report.lastUpdatedAt!);
+        : formatLocalDateTime(
+            context,
+            report.lastUpdatedAt!,
+            includeSeconds: true,
+          );
 
     return AdaptiveListSection(
       header: l10n.diagnosticsSummary,
@@ -197,17 +202,17 @@ class _DiagnosticsEventsSection extends StatelessWidget {
           for (final event in visibleEvents)
             AdaptiveListTile(
               title: l10n.diagnosticsEventTitle(event.event),
-              subtitle: _eventSubtitle(event),
+              subtitle: _eventSubtitle(context, event),
             ),
       ],
     );
   }
 
-  String _eventSubtitle(DiagnosticsBreadcrumb event) {
+  String _eventSubtitle(BuildContext context, DiagnosticsBreadcrumb event) {
     final parts = <String>[];
     final at = event.at;
     if (at != null) {
-      parts.add(_formatDateTime(at));
+      parts.add(formatLocalDateTime(context, at, includeSeconds: true));
     }
     if (event.details.isNotEmpty) {
       parts.add(_formatDetails(event.details));
@@ -236,17 +241,17 @@ class _DiagnosticsErrorsSection extends StatelessWidget {
               cupertinoIcon: CupertinoIcons.exclamationmark_triangle,
             ),
             title: l10n.diagnosticsErrorTitle(error.type),
-            subtitle: _errorSubtitle(error),
+            subtitle: _errorSubtitle(context, error),
           ),
       ],
     );
   }
 
-  String _errorSubtitle(DiagnosticsErrorEntry error) {
+  String _errorSubtitle(BuildContext context, DiagnosticsErrorEntry error) {
     final parts = <String>[];
     final at = error.at;
     if (at != null) {
-      parts.add(_formatDateTime(at));
+      parts.add(formatLocalDateTime(context, at, includeSeconds: true));
     }
     parts.add(error.source);
     if (error.message.isNotEmpty) {
@@ -295,19 +300,4 @@ String _formatDetails(Map<String, Object?> details) {
   return details.entries
       .map((entry) => '${entry.key}: ${entry.value ?? ''}')
       .join(', ');
-}
-
-String _formatDateTime(DateTime value) {
-  final local = value.toLocal();
-  final date = [
-    local.year.toString().padLeft(4, '0'),
-    local.month.toString().padLeft(2, '0'),
-    local.day.toString().padLeft(2, '0'),
-  ].join('-');
-  final time = [
-    local.hour.toString().padLeft(2, '0'),
-    local.minute.toString().padLeft(2, '0'),
-    local.second.toString().padLeft(2, '0'),
-  ].join(':');
-  return '$date $time';
 }

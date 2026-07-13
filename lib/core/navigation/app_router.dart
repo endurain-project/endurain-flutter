@@ -39,7 +39,10 @@ GoRouter buildAppRouter({
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => LoginScreen(
-          onLoginSuccess: onLoginSuccess,
+          onLoginSuccess: () {
+            onLoginSuccess();
+            context.go(AppRoutes.home);
+          },
           // Login is pushed on top of home (from the Settings tab), so
           // cancelling pops back to Settings. Fall back to home if login was
           // somehow the initial location (e.g. reached via a deep link).
@@ -49,11 +52,14 @@ GoRouter buildAppRouter({
       ),
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => AppBottomNav(
-          onLogout: onLogout,
-          isGuest: session.isGuest,
-          // Push so the back button returns to the Settings tab underneath.
-          onSignIn: () => context.push(AppRoutes.login),
+        builder: (context, state) => ListenableBuilder(
+          listenable: session,
+          builder: (context, _) => AppBottomNav(
+            onLogout: onLogout,
+            isGuest: session.isGuest,
+            // Push so the back button returns to the Settings tab underneath.
+            onSignIn: () => context.push(AppRoutes.login),
+          ),
         ),
       ),
     ],

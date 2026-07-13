@@ -483,30 +483,33 @@ void main() {
       expect(recorder.discardCount, greaterThanOrEqualTo(1));
     });
 
-    test('recorder errors fail recording and discard the recorder', () async {
-      final recorder = _ControllableRecorder();
-      final diagnostics = _FakeDiagnosticsRecorder();
-      final service = _buildService(
-        recorder: recorder,
-        diagnostics: diagnostics,
-      );
-      addTearDown(service.dispose);
+    test(
+      'recorder errors fail recording without erasing durable data',
+      () async {
+        final recorder = _ControllableRecorder();
+        final diagnostics = _FakeDiagnosticsRecorder();
+        final service = _buildService(
+          recorder: recorder,
+          diagnostics: diagnostics,
+        );
+        addTearDown(service.dispose);
 
-      await service.start(activityType: ActivityType.run);
-      recorder.emitError(StateError('recorder failed'));
-      await pumpEventQueue();
+        await service.start(activityType: ActivityType.run);
+        recorder.emitError(StateError('recorder failed'));
+        await pumpEventQueue();
 
-      expect(service.state.status, ActivityRecordingStatus.failed);
-      expect(
-        service.state.lastError,
-        ActivityRecordingError.locationStreamFailed,
-      );
-      expect(recorder.discardCount, greaterThanOrEqualTo(1));
-      expect(
-        diagnostics.errorSources,
-        contains(DiagnosticsSources.activityRecorder),
-      );
-    });
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(
+          service.state.lastError,
+          ActivityRecordingError.locationStreamFailed,
+        );
+        expect(recorder.discardCount, 0);
+        expect(
+          diagnostics.errorSources,
+          contains(DiagnosticsSources.activityRecorder),
+        );
+      },
+    );
 
     test('recorder failure events map to typed error keys', () async {
       final recorder = _ControllableRecorder();
@@ -593,9 +596,7 @@ RecordedActivityPoint _point({
 /// Lets tests drive recorder events (point batches, failures, stream errors)
 /// and durable drains independently of any platform location stream.
 class _ControllableRecorder implements ActivityLocationRecorder {
-  _ControllableRecorder({
-    List<RecordedActivityPoint> pointsPersistedOnStop = const [],
-  }) : _pointsPersistedOnStop = pointsPersistedOnStop;
+  _ControllableRecorder({this._pointsPersistedOnStop = const []});
 
   final StreamController<ActivityRecorderEvent> _controller =
       StreamController<ActivityRecorderEvent>.broadcast();

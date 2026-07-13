@@ -92,6 +92,28 @@ class AppLocalizationsNb extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Kunne ikke konvertere treningen til GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Kunne ikke importere treningsøkten';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Kunne ikke importere treningsøkten: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied => 'Helsedatatilgang ble nektet';
+
+  @override
+  String get errorHealthReadFailed => 'Kunne ikke lese helsedata';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Helsesynkronisering er ikke tilgjengelig på denne enheten';
+
+  @override
   String get errorLoginError => 'Kunne ikke logge inn';
 
   @override
@@ -129,10 +151,6 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Du er ikke pålogget';
-
-  @override
-  String get errorPkceVerifierMissing =>
-      'Påloggingsverifikatoren ble ikke funnet';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -214,9 +232,6 @@ class AppLocalizationsNb extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Kunne ikke åpne SSO-pålogging i systemnettleseren';
-
-  @override
-  String get ssoMissingSessionId => 'SSO-svaret inneholdt ingen økt-ID';
 
   @override
   String ssoSignInWith(String provider) {
@@ -374,6 +389,9 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Fart';
+
+  @override
+  String get activityStatPace => 'Tempo';
 
   @override
   String get activityStop => 'Stopp';
@@ -541,7 +559,65 @@ class AppLocalizationsNb extends AppLocalizations {
   String get settingsTab => 'Innstillinger';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® er et registrert varemerke som tilhører João Vitória Silva';
+
+  @override
   String get settingsScreen => 'Innstillinger';
+
+  @override
+  String get deviceAccessTitle => 'Enhetstilgang';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Administrer tilgang til plassering og helsedata';
+
+  @override
+  String get deviceAccessLocationSection => 'Beliggenhet';
+
+  @override
+  String get deviceAccessHealthSection => 'Helsedata';
+
+  @override
+  String get deviceAccessLocationTitle => 'Stedstilgang';
+
+  @override
+  String get deviceAccessHealthTitle => 'Helsedatatilgang';
+
+  @override
+  String get deviceAccessChecking => 'Sjekker tilgang …';
+
+  @override
+  String get deviceAccessLocationServicesOff => 'Stedstjenester er slått av';
+
+  @override
+  String get deviceAccessLocationAlways => 'Tillatt hele tiden';
+
+  @override
+  String get deviceAccessLocationWhileUsing => 'Tillatt mens du bruker appen';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Blokkert i systeminnstillingene';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Ikke tillatt';
+
+  @override
+  String get deviceAccessHealthUnavailable =>
+      'Ikke tilgjengelig på denne enheten';
+
+  @override
+  String get deviceAccessHealthRequired => 'Health Connect er påkrevd';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Helsetilgang satt opp';
+
+  @override
+  String get deviceAccessHealthNeedsAttention =>
+      'Tilgang trenger oppmerksomhet';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Ikke tilkoblet';
 
   @override
   String get language => 'Språk';
@@ -563,6 +639,11 @@ class AppLocalizationsNb extends AppLocalizations {
   String get serverSettingsTitle => 'Serverinnstillinger';
 
   @override
+  String connectedToServer(String server) {
+    return 'Koblet til $server';
+  }
+
+  @override
   String get loggedIn => 'Pålogget';
 
   @override
@@ -573,6 +654,9 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get serverUrl => 'Server-URL';
+
+  @override
+  String get serverProtocol => 'Protokoll';
 
   @override
   String get serverUrlHint => 'https://eksempel.com';
@@ -690,4 +774,168 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Rårapport';
+
+  @override
+  String get healthSyncSettingsTitle => 'Helsesynkronisering';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importer treningsøkter fra helseplattformen din';
+
+  @override
+  String get healthSyncScreenTitle => 'Helsesynkronisering';
+
+  @override
+  String get healthAccessScreenTitle => 'Helsetilgang';
+
+  @override
+  String get healthAccessRequestedData => 'Forespurte data';
+
+  @override
+  String get healthAccessWorkouts => 'Treninger';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Treningsruter';
+
+  @override
+  String get healthAccessHeartRate => 'Hjertefrekvens';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Treningsdistanse, kalorier og skritt';
+
+  @override
+  String get healthAccessAllowed => 'Tillatt';
+
+  @override
+  String get healthAccessNeedsAttention => 'Trenger oppmerksomhet';
+
+  @override
+  String get healthAccessManagedBySystem =>
+      'Administrert i systeminnstillinger';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit avslører ikke hvilke data Endurain kan lese. Se gjennom tilgangen i Helse-appen.';
+
+  @override
+  String get healthAccessReview => 'Gjennomgå helsetilgang';
+
+  @override
+  String get healthAccessReviewIos => 'Hvordan vurdere tilgang';
+
+  @override
+  String get healthAccessDisconnect => 'Koble fra helsedata';
+
+  @override
+  String get healthAccessDisconnectTitle => 'Koble fra helsedata?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Automatisk import og lokal importhistorikk for denne serveren tilbakestilles. Eksisterende aktiviteter blir værende i historikken.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Åpne Helse-appen, trykk på profilbildet ditt og deretter Apper og tjenester. Velg Endurain og oppdater datakategoriene.';
+
+  @override
+  String get healthSyncAuthorize => 'Koble til helsedata';
+
+  @override
+  String get healthSyncInstallProvider => 'Installer Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Health Connect kreves for å synkronisere treningsøkter. Installer den for å fortsette.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Helsesynkronisering er ikke tilgjengelig på denne enheten.';
+
+  @override
+  String get healthSyncSelectAll => 'Velg alle';
+
+  @override
+  String get healthSyncClearSelection => 'Klart';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Importer valgt ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Importerte $count trening(er).';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Ingen GPS-rute';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Ingen treningsøkter funnet i den valgte perioden.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Noen treningsøkter ble hoppet over fordi tilgang til treningsruter ikke ble gitt. Åpne Health Connect → Tillatelser og tillat treningsruter for Endurain.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Noen treningsøkter ble hoppet over fordi Endurain ikke kunne lese GPS-rutene deres. I Helse-appen åpner du profilen din, deretter Apper og tjenester, velg Endurain og tillat treningsruter.';
+
+  @override
+  String get healthSyncReviewAccess => 'Gjennomgå tilgang';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Automatisk synkronisering ved CV';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Importer nye treningsøkter automatisk når appen åpnes.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Disse treningsøktene inkluderer ikke en GPS-rute, så de kan ikke importeres. Noen apper (som Garmin Connect) registrerer aktiviteter til Apple Health uten å dele ruten. Treningsøkter tatt opp med Apple Watch inkluderer ruter og kan importeres.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Ikke-importerbar';
+
+  @override
+  String get healthSyncViewAvailable => 'Tilgjengelige';
+
+  @override
+  String get healthSyncViewImported => 'Importerte';
+
+  @override
+  String get healthSyncDateRange => 'Treningsperiode';
+
+  @override
+  String get healthSyncRange30Days => 'Siste 30 dager';
+
+  @override
+  String get healthSyncRange3Months => 'Siste 3 måneder';
+
+  @override
+  String get healthSyncRange6Months => 'Siste 6 måneder';
+
+  @override
+  String get healthSyncRangeYear => 'Siste år';
+
+  @override
+  String get healthSyncRangeAll => 'Hele historikken';
+
+  @override
+  String get healthSyncRangeCustom => 'Egendefinert periode';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Ingen importerte treninger for denne tilkoblingen.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Importert: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Gjenopprett';
 }

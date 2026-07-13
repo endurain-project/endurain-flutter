@@ -38,11 +38,15 @@ class AdaptiveApp extends StatelessWidget {
     if (PlatformUtils.isApplePlatform) {
       Widget cupertinoBuilder(BuildContext context, Widget? child) {
         final brightness = MediaQuery.platformBrightnessOf(context);
-        return CupertinoTheme(
-          data: brightness == Brightness.dark
-              ? AppTheme.cupertinoDarkTheme
-              : AppTheme.cupertinoLightTheme,
-          child: child!,
+        final isDark = brightness == Brightness.dark;
+        return Theme(
+          data: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
+          child: CupertinoTheme(
+            data: isDark
+                ? AppTheme.cupertinoDarkTheme
+                : AppTheme.cupertinoLightTheme,
+            child: child!,
+          ),
         );
       }
 

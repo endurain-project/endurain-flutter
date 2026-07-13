@@ -5,6 +5,7 @@ import 'package:http/testing.dart';
 import 'dart:convert';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/multipart_upload_adapter.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -19,8 +20,7 @@ void main() {
   group('ApiClient uploads', () {
     test('uses injected multipart adapter with auth headers', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
+      await _seedSession(storage);
       final uploadAdapter = _FakeMultipartUploadAdapter();
       final client = ApiClient(
         storage: storage,
@@ -39,12 +39,7 @@ void main() {
 
     test('refreshes an expiring access token before uploading', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(seconds: 30)),
-      );
+      await _seedSession(storage, expiresInSeconds: 30);
       final uploadAdapter = _FakeMultipartUploadAdapter();
       final authService = AuthService(
         storage: storage,
@@ -70,18 +65,12 @@ void main() {
       await client.uploadFile('/api/files', '/tmp/activity.gpx', 'file');
 
       expect(uploadAdapter.headers['Authorization'], 'Bearer access-2');
-      expect(await storage.getAccessToken(), 'access-2');
+      expect((await _readSession(storage))?.accessToken, 'access-2');
     });
 
     test('refreshes token and retries once after upload 401', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setSessionId('session-1');
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(hours: 1)),
-      );
+      await _seedSession(storage);
       final uploadAdapter = _FakeMultipartUploadAdapter(
         statusCodes: [401, 201],
       );
@@ -118,10 +107,10 @@ void main() {
         'Bearer access-1',
         'Bearer access-2',
       ]);
-      expect(await storage.getAccessToken(), 'access-2');
+      expect((await _readSession(storage))?.accessToken, 'access-2');
     });
 
-    test('throws when uploading without a configured server URL', () async {
+    test('throws when uploading without a committed session', () async {
       final storage = SecureStorageService();
       await storage.setAccessToken('access-1');
       final client = ApiClient(
@@ -136,7 +125,7 @@ void main() {
           isA<AppException>().having(
             (exception) => exception.code,
             'code',
-            AppErrorCode.serverUrlNotConfigured,
+            AppErrorCode.notAuthenticated,
           ),
         ),
       );
@@ -165,12 +154,7 @@ void main() {
 
     test('throws sessionExpired when upload refresh after 401 fails', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(hours: 1)),
-      );
+      await _seedSession(storage);
       final authService = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -195,6 +179,64 @@ void main() {
         ),
       );
     });
+
+    test('rejects a record bound to another origin before upload', () async {
+      final storage = SecureStorageService();
+      await _seedSession(storage, origin: 'https://b.example');
+      final uploadAdapter = _FakeMultipartUploadAdapter();
+      final client = ApiClient(
+        storage: storage,
+        authService: AuthService(storage: storage),
+        uploadAdapter: uploadAdapter,
+      );
+
+      await expectLater(
+        client.uploadFile(
+          '/api/files',
+          '/tmp/activity.gpx',
+          'file',
+          expectedOrigin: 'https://a.example',
+        ),
+        throwsA(
+          isA<AppException>().having(
+            (exception) => exception.code,
+            'code',
+            AppErrorCode.notAuthenticated,
+          ),
+        ),
+      );
+      expect(uploadAdapter.uploadCalls, 0);
+    });
+
+    test('rejects another login profile on the same origin', () async {
+      final storage = SecureStorageService();
+      await _seedSession(storage, origin: 'https://same.example');
+      final session = await AuthSessionStore(storage: storage).readSession();
+      final uploadAdapter = _FakeMultipartUploadAdapter();
+      final client = ApiClient(
+        storage: storage,
+        authService: AuthService(storage: storage),
+        uploadAdapter: uploadAdapter,
+      );
+
+      await expectLater(
+        client.uploadFile(
+          '/api/files',
+          '/tmp/activity.gpx',
+          'file',
+          expectedOrigin: 'https://same.example',
+          expectedProfileId: '${session!.profileId}-other',
+        ),
+        throwsA(
+          isA<AppException>().having(
+            (exception) => exception.code,
+            'code',
+            AppErrorCode.notAuthenticated,
+          ),
+        ),
+      );
+      expect(uploadAdapter.uploadCalls, 0);
+    });
   });
 }
 
@@ -208,6 +250,7 @@ class _FakeMultipartUploadAdapter implements MultipartUploadAdapter {
   late String filePath;
   late String fieldName;
   final List<String?> authorizationHeaders = [];
+  int uploadCalls = 0;
 
   @override
   Future<http.StreamedResponse> uploadFile({
@@ -216,6 +259,7 @@ class _FakeMultipartUploadAdapter implements MultipartUploadAdapter {
     required String filePath,
     required String fieldName,
   }) async {
+    uploadCalls++;
     this.url = url;
     this.headers = headers;
     this.filePath = filePath;
@@ -226,4 +270,22 @@ class _FakeMultipartUploadAdapter implements MultipartUploadAdapter {
         : _statusCodes.last;
     return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
   }
+}
+
+Future<void> _seedSession(
+  SecureStorageService storage, {
+  String origin = 'https://example.test',
+  int expiresInSeconds = 3600,
+}) {
+  return AuthSessionStore(storage: storage).saveSession(
+    origin: origin,
+    accessToken: 'access-1',
+    refreshToken: 'refresh-1',
+    sessionId: 'session-1',
+    expiresInSeconds: expiresInSeconds,
+  );
+}
+
+Future<dynamic> _readSession(SecureStorageService storage) {
+  return AuthSessionStore(storage: storage).readSession();
 }

@@ -1,6 +1,9 @@
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/utils/date_time_formatting.dart';
+import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller_factory.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -44,7 +47,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
     _ownsController = widget.controller == null;
     _controller = widget.controller ?? _createController();
     if (_ownsController) {
-      _controller.load();
+      _controller.loadRecord(widget.recordId);
     }
   }
 
@@ -199,6 +202,7 @@ class _SummarySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toLanguageTag();
     const formatter = ActivityStatsFormatter();
 
     return AdaptiveListSection(
@@ -210,11 +214,11 @@ class _SummarySection extends StatelessWidget {
         ),
         AdaptiveListTile(
           title: l10n.activityHistoryStartedAt,
-          subtitle: _formatDateTime(record.startedAt),
+          subtitle: formatLocalDateTime(context, record.startedAt),
         ),
         AdaptiveListTile(
           title: l10n.activityHistoryEndedAt,
-          subtitle: _formatDateTime(record.endedAt),
+          subtitle: formatLocalDateTime(context, record.endedAt),
         ),
         AdaptiveListTile(
           title: l10n.activityHistoryDurationLabel,
@@ -222,11 +226,17 @@ class _SummarySection extends StatelessWidget {
         ),
         AdaptiveListTile(
           title: l10n.activityHistoryDistanceLabel,
-          subtitle: formatter.formatDistance(record.distanceMeters),
+          subtitle: formatter.formatDistance(
+            record.distanceMeters,
+            locale: locale,
+          ),
         ),
         AdaptiveListTile(
           title: l10n.activityHistoryAverageSpeed,
-          subtitle: formatter.formatSpeed(record.averageSpeedMetersPerSecond),
+          subtitle: formatter.formatSpeed(
+            record.averageSpeedMetersPerSecond,
+            locale: locale,
+          ),
         ),
         AdaptiveListTile(
           title: l10n.activityHistoryPointCount,
@@ -234,7 +244,7 @@ class _SummarySection extends StatelessWidget {
         ),
         AdaptiveListTile(
           title: l10n.activityHistoryUploadStatusLabel,
-          subtitle: _uploadStatusLabel(l10n, record.uploadStatus),
+          subtitle: _uploadStatusDetails(context, l10n, record),
         ),
         FutureBuilder<bool>(
           future: controller.hasGpx(record),
@@ -314,6 +324,21 @@ class _ActionsSection extends StatelessWidget {
   }
 }
 
+String _uploadStatusDetails(
+  BuildContext context,
+  AppLocalizations l10n,
+  LocalActivityRecord record,
+) {
+  final details = <String>[_uploadStatusLabel(l10n, record.uploadStatus)];
+  if (record.lastUploadAttemptAt != null) {
+    details.add(formatLocalDateTime(context, record.lastUploadAttemptAt!));
+  }
+  if (record.lastUploadErrorCode case final code?) {
+    details.add(localizedErrorMessage(AppException(code), l10n));
+  }
+  return details.join('\n');
+}
+
 String _uploadStatusLabel(
   AppLocalizations l10n,
   LocalActivityUploadStatus status,
@@ -323,18 +348,4 @@ String _uploadStatusLabel(
     LocalActivityUploadStatus.uploaded => l10n.activityUploadStatusUploaded,
     LocalActivityUploadStatus.failed => l10n.activityUploadStatusFailed,
   };
-}
-
-String _formatDateTime(DateTime value) {
-  final local = value.toLocal();
-  final date = [
-    local.year.toString().padLeft(4, '0'),
-    local.month.toString().padLeft(2, '0'),
-    local.day.toString().padLeft(2, '0'),
-  ].join('-');
-  final time = [
-    local.hour.toString().padLeft(2, '0'),
-    local.minute.toString().padLeft(2, '0'),
-  ].join(':');
-  return '$date $time';
 }

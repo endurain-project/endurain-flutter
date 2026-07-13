@@ -16,16 +16,19 @@ class AdaptiveSwitchListTile extends StatelessWidget {
   final String? subtitle;
   final Widget? leading;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     if (PlatformUtils.isApplePlatform) {
-      return CupertinoListTile(
-        leading: leading,
-        title: Text(title),
-        subtitle: subtitle == null ? null : Text(subtitle!),
-        trailing: CupertinoSwitch(value: value, onChanged: onChanged),
+      return MergeSemantics(
+        child: CupertinoListTile(
+          leading: leading,
+          title: Text(title),
+          subtitle: subtitle == null ? null : Text(subtitle!),
+          trailing: CupertinoSwitch(value: value, onChanged: onChanged),
+          onTap: onChanged == null ? null : () => onChanged?.call(!value),
+        ),
       );
     }
 
@@ -35,12 +38,11 @@ class AdaptiveSwitchListTile extends StatelessWidget {
         title: Text(title),
         subtitle: subtitle == null ? null : Text(subtitle!),
         trailing: Switch(value: value, onChanged: onChanged),
-        onTap: () => onChanged(!value),
+        onTap: onChanged == null ? null : () => onChanged?.call(!value),
       );
     }
 
     return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
       title: Text(title),
       subtitle: subtitle == null ? null : Text(subtitle!),
       value: value,

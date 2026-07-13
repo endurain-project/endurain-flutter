@@ -89,6 +89,29 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Nepavyko konvertuoti treniruotės į GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Nepavyko importuoti treniruotės';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Nepavyko importuoti treniruotės: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Prieiga prie sveikatos duomenų buvo uždrausta';
+
+  @override
+  String get errorHealthReadFailed => 'Nepavyko perskaityti sveikatos duomenų';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Sveikatos sinchronizavimas šiame įrenginyje nepasiekiamas';
+
+  @override
   String get errorLoginError => 'Nepavyko prisijungti';
 
   @override
@@ -125,9 +148,6 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Nesate prisijungę';
-
-  @override
-  String get errorPkceVerifierMissing => 'Prisijungimo tikrintuvas nerastas';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -210,9 +230,6 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Nepavyko atidaryti SSO prisijungimo sistemos naršyklėje';
-
-  @override
-  String get ssoMissingSessionId => 'SSO atsakyme nebuvo seanso ID';
 
   @override
   String ssoSignInWith(String provider) {
@@ -369,6 +386,9 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Greitis';
+
+  @override
+  String get activityStatPace => 'Tempas';
 
   @override
   String get activityStop => 'Sustabdyti';
@@ -534,7 +554,64 @@ class AppLocalizationsLt extends AppLocalizations {
   String get settingsTab => 'Nustatymai';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® yra registruotasis João Vitória Silva prekių ženklas.';
+
+  @override
   String get settingsScreen => 'Nustatymai';
+
+  @override
+  String get deviceAccessTitle => 'Prieiga prie įrenginio';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Tvarkykite prieigą prie vietos ir sveikatos duomenų';
+
+  @override
+  String get deviceAccessLocationSection => 'Vieta';
+
+  @override
+  String get deviceAccessHealthSection => 'Sveikatos duomenys';
+
+  @override
+  String get deviceAccessLocationTitle => 'Vietos prieiga';
+
+  @override
+  String get deviceAccessHealthTitle => 'Prieiga prie sveikatos duomenų';
+
+  @override
+  String get deviceAccessChecking => 'Tikrinama prieiga…';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'Vietos nustatymo paslaugos išjungtos';
+
+  @override
+  String get deviceAccessLocationAlways => 'Leidžiama visą laiką';
+
+  @override
+  String get deviceAccessLocationWhileUsing => 'Leidžiama naudojant programą';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Užblokuotas sistemos nustatymuose';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Neleidžiama';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Šiame įrenginyje nėra';
+
+  @override
+  String get deviceAccessHealthRequired => 'Reikalingas Health Connect';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Sukurta prieiga prie sveikatos';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Prieigai reikia dėmesio';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Neprisijungęs';
 
   @override
   String get language => 'Kalba';
@@ -556,6 +633,11 @@ class AppLocalizationsLt extends AppLocalizations {
   String get serverSettingsTitle => 'Serverio nustatymai';
 
   @override
+  String connectedToServer(String server) {
+    return 'Prisijungta prie $server';
+  }
+
+  @override
   String get loggedIn => 'Prisijungta';
 
   @override
@@ -566,6 +648,9 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get serverUrl => 'Serverio URL';
+
+  @override
+  String get serverProtocol => 'protokolas';
 
   @override
   String get serverUrlHint => 'https://pavyzdys.com';
@@ -684,4 +769,167 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Neapdorota ataskaita';
+
+  @override
+  String get healthSyncSettingsTitle => 'Sveikatos sinchronizavimas';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importuokite treniruotes iš savo sveikatos platformos';
+
+  @override
+  String get healthSyncScreenTitle => 'Sveikatos sinchronizavimas';
+
+  @override
+  String get healthAccessScreenTitle => 'Prieiga prie sveikatos';
+
+  @override
+  String get healthAccessRequestedData => 'Prašomi duomenys';
+
+  @override
+  String get healthAccessWorkouts => 'Treniruotės';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Treniruočių maršrutai';
+
+  @override
+  String get healthAccessHeartRate => 'Širdies ritmas';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Treniruotės atstumas, kalorijos ir žingsniai';
+
+  @override
+  String get healthAccessAllowed => 'Leidžiama';
+
+  @override
+  String get healthAccessNeedsAttention => 'Reikia dėmesio';
+
+  @override
+  String get healthAccessManagedBySystem => 'Tvarkomas sistemos nustatymuose';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      '„HealthKit“ neatskleidžia, kokius duomenis Endurain gali nuskaityti. Peržiūrėkite prieigą programoje Health.';
+
+  @override
+  String get healthAccessReview => 'Peržiūrėkite prieigą prie sveikatos';
+
+  @override
+  String get healthAccessReviewIos => 'Kaip peržiūrėti prieigą';
+
+  @override
+  String get healthAccessDisconnect => 'Atjungti sveikatos duomenis';
+
+  @override
+  String get healthAccessDisconnectTitle => 'Atjungti sveikatos duomenis?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Šio serverio automatinis importas ir vietinė importavimo istorija bus nustatyti iš naujo. Esamos veiklos liks istorijoje.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Atidarykite sveikatos programą, bakstelėkite savo profilio nuotrauką, tada Programos ir paslaugos. Pasirinkite Endurain ir atnaujinkite duomenų kategorijas.';
+
+  @override
+  String get healthSyncAuthorize => 'Prisijunkite prie sveikatos duomenų';
+
+  @override
+  String get healthSyncInstallProvider => 'Įdiekite „Health Connect“.';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Norint sinchronizuoti treniruotes, reikalinga „Health Connect“. Norėdami tęsti, įdiekite.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Sveikatos sinchronizavimas šiame įrenginyje nepasiekiamas.';
+
+  @override
+  String get healthSyncSelectAll => 'Pasirinkite viską';
+
+  @override
+  String get healthSyncClearSelection => 'Aišku';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Importuoti pasirinktus ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Importuota treniruočių: $count.';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Nėra GPS maršruto';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Pasirinktu laikotarpiu treniruočių nerasta.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Kai kurios treniruotės buvo praleistos, nes nebuvo suteikta prieiga prie pratimų maršruto. Atidarykite „Health Connect“ → „Leidimai“ ir leiskite „Endurain“ mankštos maršrutus.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Kai kurios treniruotės buvo praleistos, nes Endurain negalėjo nuskaityti jų GPS maršrutų. Sveikatos programoje atidarykite savo profilį, tada Programos ir paslaugos, pasirinkite Endurain ir leiskite treniruočių maršrutus.';
+
+  @override
+  String get healthSyncReviewAccess => 'Peržiūrėkite prieigą';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Automatinis sinchronizavimas tęsiant';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Atsidarius programai automatiškai importuokite naujas treniruotes.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Šiose treniruotėse nėra GPS maršruto, todėl jų negalima importuoti. Kai kurios programos (pvz., „Garmin Connect“) įrašo veiklą „Apple Health“ nebendrindamos maršruto. „Apple Watch“ įrašytos treniruotės apima maršrutus ir jas galima importuoti.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Neimportuotini';
+
+  @override
+  String get healthSyncViewAvailable => 'Galimi';
+
+  @override
+  String get healthSyncViewImported => 'Importuoti';
+
+  @override
+  String get healthSyncDateRange => 'Treniruočių laikotarpis';
+
+  @override
+  String get healthSyncRange30Days => 'Paskutinės 30 dienų';
+
+  @override
+  String get healthSyncRange3Months => 'Paskutiniai 3 mėnesiai';
+
+  @override
+  String get healthSyncRange6Months => 'Paskutiniai 6 mėnesiai';
+
+  @override
+  String get healthSyncRangeYear => 'Paskutiniai metai';
+
+  @override
+  String get healthSyncRangeAll => 'Visa istorija';
+
+  @override
+  String get healthSyncRangeCustom => 'Pasirinktinis laikotarpis';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Šiam ryšiui nėra importuotų treniruočių.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Importuota: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Atkurti';
 }

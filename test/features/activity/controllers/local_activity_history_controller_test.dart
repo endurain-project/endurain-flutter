@@ -45,6 +45,27 @@ void main() {
       expect(controller.records, isEmpty);
     });
 
+    test(
+      'loads an activity by id independently of history pagination',
+      () async {
+        final target = await _createRecord(repository, id: 'target');
+        for (var index = 0; index < 25; index++) {
+          await _createRecord(repository, id: 'newer_$index');
+        }
+        final controller = LocalActivityHistoryController(
+          repository: repository,
+          uploadService: _uploadServiceReturning(201),
+          shareService: FakeShareService(),
+        );
+        addTearDown(controller.dispose);
+
+        await controller.loadRecord(target.id);
+
+        expect(controller.records.map((record) => record.id), [target.id]);
+        expect(controller.hasMore, isFalse);
+      },
+    );
+
     test('retries pending upload successfully', () async {
       final record = await _createRecord(repository, id: 'retry_success');
       final controller = LocalActivityHistoryController(
@@ -94,12 +115,45 @@ void main() {
       expect(await repository.hasGpx(updatedRecord), isTrue);
     });
 
+    test(
+      'retry updates an older loaded page without dropping newer rows',
+      () async {
+        for (var index = 0; index < 21; index++) {
+          await _createRecord(repository, id: 'record_$index');
+        }
+        final controller = LocalActivityHistoryController(
+          repository: repository,
+          uploadService: _uploadServiceReturning(201),
+          shareService: FakeShareService(),
+        );
+        addTearDown(controller.dispose);
+        await controller.load();
+        await controller.loadMore();
+        final idsBefore = controller.records
+            .map((record) => record.id)
+            .toList();
+        final oldestId = idsBefore.last;
+
+        await controller.retryUpload(oldestId);
+
+        expect(controller.records.map((record) => record.id), idsBefore);
+        expect(
+          controller.recordById(oldestId)?.uploadStatus,
+          LocalActivityUploadStatus.uploaded,
+        );
+      },
+    );
+
     test('deletes local record and refreshes list', () async {
       final record = await _createRecord(repository, id: 'delete_record');
+      final removedProvenanceIds = <String>[];
       final controller = LocalActivityHistoryController(
         repository: repository,
         uploadService: _uploadServiceReturning(201),
         shareService: FakeShareService(),
+        removeImportProvenance: (id) async {
+          removedProvenanceIds.add(id);
+        },
       );
       addTearDown(controller.dispose);
       await controller.load();
@@ -108,6 +162,7 @@ void main() {
 
       expect(controller.records, isEmpty);
       expect(await repository.list(), isEmpty);
+      expect(removedProvenanceIds, ['delete_record']);
     });
 
     group('exportGpx', () {
@@ -212,6 +267,8 @@ Future<LocalActivityRecord> _createRecord(
     uploadStatus: LocalActivityUploadStatus.pending,
     createdAt: DateTime.utc(2026, 6, 2, 10, 31),
     updatedAt: DateTime.utc(2026, 6, 2, 10, 31),
+    connectionOrigin: 'https://example.test',
+    connectionProfileId: 'profile-1',
   );
   await repository.upsert(record);
   return record;

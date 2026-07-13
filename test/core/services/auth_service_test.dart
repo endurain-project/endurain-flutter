@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -53,9 +55,10 @@ void main() {
       expect(result.success, isTrue);
       expect(result.mfaRequired, isFalse);
       expect(result.accessToken, 'access-1');
-      expect(await storage.getAccessToken(), 'access-1');
-      expect(await storage.getRefreshToken(), 'refresh-1');
-      expect(await storage.getSessionId(), 'session-2');
+      final session = await _readSession(storage);
+      expect(session?.accessToken, 'access-1');
+      expect(session?.refreshToken, 'refresh-1');
+      expect(session?.sessionId, 'session-2');
       expect(await storage.getUsername(), 'joao');
       expect(requests, hasLength(2));
     });
@@ -196,10 +199,7 @@ void main() {
 
     test('clears local tokens when server logout fails', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setSessionId('session-1');
+      await _seedSession(storage);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -215,6 +215,7 @@ void main() {
       expect(await storage.getRefreshToken(), isNull);
       expect(await storage.getSessionId(), isNull);
       expect(await storage.getServerUrl(), 'https://example.test');
+      expect(await _readSession(storage), isNull);
     });
 
     test('throws when no server URL is configured for login', () async {
@@ -329,7 +330,7 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.accessToken, 'access-1');
-      expect(await storage.getAccessToken(), 'access-1');
+      expect((await _readSession(storage))?.accessToken, 'access-1');
     });
 
     test('verifyMfa requires a configured server URL', () async {
@@ -408,9 +409,7 @@ void main() {
 
     test('refreshToken stores rotated tokens on success', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
+      await _seedSession(storage);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -426,9 +425,10 @@ void main() {
       final refreshed = await service.refreshToken();
 
       expect(refreshed, isTrue);
-      expect(await storage.getAccessToken(), 'access-2');
-      expect(await storage.getRefreshToken(), 'refresh-2');
-      expect(await storage.getSessionId(), 'session-2');
+      final session = await _readSession(storage);
+      expect(session?.accessToken, 'access-2');
+      expect(session?.refreshToken, 'refresh-2');
+      expect(session?.sessionId, 'session-2');
     });
 
     test('refreshToken clears the session without credentials', () async {
@@ -449,9 +449,7 @@ void main() {
 
     test('refreshToken keeps the session on transport errors', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
+      await _seedSession(storage);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -464,15 +462,14 @@ void main() {
       // Transient transport failure must not log the user out: the refresh
       // token is still valid and a later attempt should succeed.
       expect(refreshed, isFalse);
-      expect(await storage.getAccessToken(), 'access-1');
-      expect(await storage.getRefreshToken(), 'refresh-1');
+      final session = await _readSession(storage);
+      expect(session?.accessToken, 'access-1');
+      expect(session?.refreshToken, 'refresh-1');
     });
 
     test('refreshToken keeps the session on a 5xx server error', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
+      await _seedSession(storage);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -483,17 +480,16 @@ void main() {
       final refreshed = await service.refreshToken();
 
       expect(refreshed, isFalse);
-      expect(await storage.getAccessToken(), 'access-1');
-      expect(await storage.getRefreshToken(), 'refresh-1');
+      final session = await _readSession(storage);
+      expect(session?.accessToken, 'access-1');
+      expect(session?.refreshToken, 'refresh-1');
     });
 
     test(
       'concurrent refreshToken calls trigger a single network round-trip',
       () async {
         final storage = SecureStorageService();
-        await storage.setServerUrl('https://example.test');
-        await storage.setAccessToken('access-1');
-        await storage.setRefreshToken('refresh-1');
+        await _seedSession(storage);
         var refreshRequests = 0;
         final service = AuthService(
           storage: storage,
@@ -518,17 +514,54 @@ void main() {
 
         expect(results, everyElement(isTrue));
         expect(refreshRequests, 1);
-        expect(await storage.getRefreshToken(), 'refresh-2');
+        expect((await _readSession(storage))?.refreshToken, 'refresh-2');
       },
     );
+
+    test('stale refresh cannot overwrite a replacement login', () async {
+      final storage = SecureStorageService();
+      final store = AuthSessionStore(storage: storage);
+      await _seedSession(storage, origin: 'https://a.example');
+      final requestStarted = Completer<void>();
+      final response = Completer<http.Response>();
+      final service = AuthService(
+        storage: storage,
+        sessionStore: store,
+        httpClient: MockClient((request) async {
+          requestStarted.complete();
+          return response.future;
+        }),
+      );
+
+      final refresh = service.refreshToken();
+      await requestStarted.future;
+      await _seedSession(
+        storage,
+        store: store,
+        origin: 'https://b.example',
+        accessToken: 'access-b',
+        refreshToken: 'refresh-b',
+        sessionId: 'session-b',
+      );
+      response.complete(
+        http.Response(
+          '{"access_token":"late-a","refresh_token":"late-refresh-a",'
+          '"session_id":"late-session-a","expires_in":3600}',
+          200,
+        ),
+      );
+
+      expect(await refresh, isFalse);
+      final current = await store.readSession();
+      expect(current?.origin, 'https://b.example');
+      expect(current?.accessToken, 'access-b');
+    });
 
     test(
       'refreshToken can run again after an in-flight refresh completes',
       () async {
         final storage = SecureStorageService();
-        await storage.setServerUrl('https://example.test');
-        await storage.setAccessToken('access-1');
-        await storage.setRefreshToken('refresh-1');
+        await _seedSession(storage);
         var refreshRequests = 0;
         final service = AuthService(
           storage: storage,
@@ -551,9 +584,7 @@ void main() {
 
     test('logout succeeds when the server confirms the logout', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
+      await _seedSession(storage);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -567,6 +598,77 @@ void main() {
       expect(serverLogoutSucceeded, isTrue);
       expect(await storage.getAccessToken(), isNull);
       expect(await storage.getRefreshToken(), isNull);
+      expect(await _readSession(storage), isNull);
+    });
+
+    test('stale logout cannot clear a replacement login', () async {
+      final storage = SecureStorageService();
+      final store = AuthSessionStore(storage: storage);
+      await _seedSession(storage, store: store, origin: 'https://a.example');
+      final requestStarted = Completer<void>();
+      final response = Completer<http.Response>();
+      final service = AuthService(
+        storage: storage,
+        sessionStore: store,
+        httpClient: MockClient((request) async {
+          requestStarted.complete();
+          return response.future;
+        }),
+      );
+
+      final logout = service.logout();
+      await requestStarted.future;
+      await _seedSession(
+        storage,
+        store: store,
+        origin: 'https://b.example',
+        accessToken: 'access-b',
+        refreshToken: 'refresh-b',
+        sessionId: 'session-b',
+      );
+      response.complete(http.Response('', 200));
+
+      expect(await logout, isTrue);
+      final current = await store.readSession();
+      expect(current?.origin, 'https://b.example');
+      expect(current?.accessToken, 'access-b');
+    });
+
+    test('logout clears a refresh that completed first', () async {
+      final storage = SecureStorageService();
+      final store = AuthSessionStore(storage: storage);
+      await _seedSession(storage, store: store);
+      final refreshStarted = Completer<void>();
+      final refreshResponse = Completer<http.Response>();
+      var logoutCalls = 0;
+      final service = AuthService(
+        storage: storage,
+        sessionStore: store,
+        httpClient: MockClient((request) async {
+          if (request.url.path == ApiEndpoints.defaults.refreshEndpoint) {
+            refreshStarted.complete();
+            return refreshResponse.future;
+          }
+          logoutCalls++;
+          return http.Response('', 200);
+        }),
+      );
+
+      final refresh = service.refreshToken();
+      await refreshStarted.future;
+      final logout = service.logout();
+      refreshResponse.complete(
+        http.Response(
+          '{"access_token":"access-2","refresh_token":"refresh-2",'
+          '"session_id":"session-2","expires_in":3600}',
+          200,
+        ),
+      );
+
+      expect(await refresh, isTrue);
+      expect(await logout, isTrue);
+      expect(logoutCalls, 1);
+      expect(await store.readSession(), isNull);
     });
 
     test('logout clears local tokens without server credentials', () async {
@@ -588,10 +690,7 @@ void main() {
 
     test('isAuthenticated is true for a valid unexpired token', () async {
       final storage = SecureStorageService();
-      await storage.setAccessToken('access-1');
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(hours: 1)),
-      );
+      await _seedSession(storage);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -606,10 +705,7 @@ void main() {
       'isAuthenticated clears the session without a refresh token',
       () async {
         final storage = SecureStorageService();
-        await storage.setAccessToken('access-1');
-        await storage.setAccessTokenExpiresAt(
-          DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
-        );
+        await _seedSession(storage, refreshToken: '', expiresInSeconds: -60);
         final service = AuthService(
           storage: storage,
           httpClient: MockClient((request) async {
@@ -618,18 +714,13 @@ void main() {
         );
 
         expect(await service.isAuthenticated(), isFalse);
-        expect(await storage.getAccessToken(), isNull);
+        expect(await _readSession(storage), isNull);
       },
     );
 
     test('isAuthenticated refreshes an expiring token', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(seconds: 30)),
-      );
+      await _seedSession(storage, expiresInSeconds: 30);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -641,17 +732,12 @@ void main() {
       );
 
       expect(await service.isAuthenticated(), isTrue);
-      expect(await storage.getAccessToken(), 'access-2');
+      expect((await _readSession(storage))?.accessToken, 'access-2');
     });
 
     test('isAuthenticated clears the session when refresh fails', () async {
       final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
-      );
+      await _seedSession(storage, expiresInSeconds: -60);
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -660,8 +746,7 @@ void main() {
       );
 
       expect(await service.isAuthenticated(), isFalse);
-      expect(await storage.getAccessToken(), isNull);
-      expect(await storage.getRefreshToken(), isNull);
+      expect(await _readSession(storage), isNull);
     });
 
     test(
@@ -671,9 +756,13 @@ void main() {
         // _storage field — they are distinct to prove the session store path
         // is used, not the raw storage path.
         final sessionStorage = SecureStorageService();
-        await sessionStorage.setServerUrl('https://session.test');
-        await sessionStorage.setRefreshToken('refresh-from-store');
         final sessionStore = AuthSessionStore(storage: sessionStorage);
+        await _seedSession(
+          sessionStorage,
+          store: sessionStore,
+          origin: 'https://session.test',
+          refreshToken: 'refresh-from-store',
+        );
         final rawStorage = SecureStorageService();
         final service = AuthService(
           storage: rawStorage,
@@ -702,9 +791,13 @@ void main() {
       'logout reads server URL and refresh token from session store',
       () async {
         final sessionStorage = SecureStorageService();
-        await sessionStorage.setServerUrl('https://session.test');
-        await sessionStorage.setRefreshToken('refresh-from-store');
         final sessionStore = AuthSessionStore(storage: sessionStorage);
+        await _seedSession(
+          sessionStorage,
+          store: sessionStore,
+          origin: 'https://session.test',
+          refreshToken: 'refresh-from-store',
+        );
         final rawStorage = SecureStorageService();
         final service = AuthService(
           storage: rawStorage,
@@ -779,4 +872,26 @@ void main() {
       expect(requests.first.url.path, '/api/v2/auth/login');
     });
   });
+}
+
+Future<void> _seedSession(
+  SecureStorageService storage, {
+  AuthSessionStore? store,
+  String origin = 'https://example.test',
+  String accessToken = 'access-1',
+  String refreshToken = 'refresh-1',
+  String sessionId = 'session-1',
+  int expiresInSeconds = 3600,
+}) {
+  return (store ?? AuthSessionStore(storage: storage)).saveSession(
+    origin: origin,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+    sessionId: sessionId,
+    expiresInSeconds: expiresInSeconds,
+  );
+}
+
+Future<dynamic> _readSession(SecureStorageService storage) {
+  return AuthSessionStore(storage: storage).readSession();
 }

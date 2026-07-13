@@ -76,6 +76,11 @@ class LocationService {
     );
   }
 
+  /// Opens the system page for device-wide location services.
+  Future<bool> openLocationSettings() async {
+    return _platformAdapter.openLocationSettings();
+  }
+
   /// Open app settings (useful when permission is permanently denied)
   Future<bool> openAppSettings() async {
     return _platformAdapter.openAppSettings();

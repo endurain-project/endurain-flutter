@@ -87,6 +87,28 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed => 'Antrenman GPX\'e dönüştürülemedi';
+
+  @override
+  String get errorHealthImportFailed => 'Antrenman içe aktarılamadı';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Antrenman içe aktarılamadı: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Sağlık verilerine erişim reddedildi';
+
+  @override
+  String get errorHealthReadFailed => 'Sağlık verileri okunamadı';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Sağlık senkronizasyonu bu cihazda kullanılamıyor';
+
+  @override
   String get errorLoginError => 'Oturum açılamadı';
 
   @override
@@ -123,9 +145,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Oturum açmadınız';
-
-  @override
-  String get errorPkceVerifierMissing => 'Oturum açma doğrulayıcısı bulunamadı';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -209,9 +228,6 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'SSO oturum açma sistem tarayıcısında açılamadı';
-
-  @override
-  String get ssoMissingSessionId => 'SSO yanıtı bir oturum kimliği içermiyordu';
 
   @override
   String ssoSignInWith(String provider) {
@@ -367,6 +383,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Hız';
+
+  @override
+  String get activityStatPace => 'Tempo';
 
   @override
   String get activityStop => 'Durdur';
@@ -533,7 +552,65 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsTab => 'Ayarlar';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain®, João Vitória Silva\'nın tescilli ticari markasıdır.';
+
+  @override
   String get settingsScreen => 'Ayarlar';
+
+  @override
+  String get deviceAccessTitle => 'Cihaz erişimi';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Konum ve sağlık verilerine erişimi yönetin';
+
+  @override
+  String get deviceAccessLocationSection => 'Konum';
+
+  @override
+  String get deviceAccessHealthSection => 'Sağlık verileri';
+
+  @override
+  String get deviceAccessLocationTitle => 'Konum erişimi';
+
+  @override
+  String get deviceAccessHealthTitle => 'Sağlık verilerine erişim';
+
+  @override
+  String get deviceAccessChecking => 'Erişim kontrol ediliyor…';
+
+  @override
+  String get deviceAccessLocationServicesOff => 'Konum hizmetleri kapalı';
+
+  @override
+  String get deviceAccessLocationAlways => 'Her zaman izin verilir';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Uygulamayı kullanırken izin veriliyor';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Sistem ayarlarında engellendi';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'İzin verilmiyor';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Bu cihazda kullanılamıyor';
+
+  @override
+  String get deviceAccessHealthRequired => 'Sağlık Bağlantısı gerekli';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Sağlık erişimi kuruldu';
+
+  @override
+  String get deviceAccessHealthNeedsAttention =>
+      'Erişime dikkat edilmesi gerekiyor';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Bağlı değil';
 
   @override
   String get language => 'Dil';
@@ -555,6 +632,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get serverSettingsTitle => 'Sunucu ayarları';
 
   @override
+  String connectedToServer(String server) {
+    return '$server\'ya bağlanıldı';
+  }
+
+  @override
   String get loggedIn => 'Oturum açıldı';
 
   @override
@@ -565,6 +647,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get serverUrl => 'Sunucu URL\'si';
+
+  @override
+  String get serverProtocol => 'Protokol';
 
   @override
   String get serverUrlHint => 'https://ornek.com';
@@ -683,4 +768,167 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Ham rapor';
+
+  @override
+  String get healthSyncSettingsTitle => 'Sağlık senkronizasyonu';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Sağlık platformunuzdan antrenmanları içe aktarın';
+
+  @override
+  String get healthSyncScreenTitle => 'Sağlık senkronizasyonu';
+
+  @override
+  String get healthAccessScreenTitle => 'Sağlık erişimi';
+
+  @override
+  String get healthAccessRequestedData => 'İstenen veriler';
+
+  @override
+  String get healthAccessWorkouts => 'Antrenmanlar';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Egzersiz rotaları';
+
+  @override
+  String get healthAccessHeartRate => 'Kalp atış hızı';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Antrenman mesafesi, kaloriler ve adımlar';
+
+  @override
+  String get healthAccessAllowed => 'İzin verildi';
+
+  @override
+  String get healthAccessNeedsAttention => 'Dikkat edilmesi gerekiyor';
+
+  @override
+  String get healthAccessManagedBySystem => 'Sistem ayarlarında yönetilir';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit, Endurain\'in hangi verileri okuyabildiğini açıklamaz. Sağlık uygulamasında erişimi inceleyin.';
+
+  @override
+  String get healthAccessReview => 'Sağlık erişimini inceleyin';
+
+  @override
+  String get healthAccessReviewIos => 'Erişim nasıl incelenir?';
+
+  @override
+  String get healthAccessDisconnect => 'Sağlık verilerinin bağlantısını kes';
+
+  @override
+  String get healthAccessDisconnectTitle =>
+      'Sağlık verilerinin bağlantısı kesilsin mi?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Bu sunucu için otomatik içe aktarma ve yerel içe aktarma geçmişi sıfırlanır. Mevcut etkinlikler geçmişte kalır.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Sağlık uygulamasını açın, profil resminize, ardından Uygulamalar ve Hizmetler\'e dokunun. Endurain\'i seçin ve veri kategorilerini güncelleyin.';
+
+  @override
+  String get healthSyncAuthorize => 'Sağlık verilerine bağlanma';
+
+  @override
+  String get healthSyncInstallProvider => 'Health Connect\'i yükleyin';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Antrenmanları senkronize etmek için Health Connect gereklidir. Devam etmek için yükleyin.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Sağlık senkronizasyonu bu cihazda kullanılamıyor.';
+
+  @override
+  String get healthSyncSelectAll => 'Tümünü seç';
+
+  @override
+  String get healthSyncClearSelection => 'Temizle';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Seçilenleri içe aktar ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return '$count antrenman içe aktarıldı.';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'GPS rotası yok';
+
+  @override
+  String get healthSyncEmptyState => 'Seçilen dönemde antrenman bulunamadı.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Egzersiz rotasına erişim izni verilmediğinden bazı antrenmanlar atlandı. Health Connect → İzinler\'i açın ve Endurain için egzersiz rotalarına izin verin.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Endurain GPS rotalarını okuyamadığı için bazı antrenmanlar atlandı. Sağlık uygulamasında profilinizi açın, ardından Uygulamalar ve Hizmetler, Endurain\'i seçin ve Antrenman Rotalarına izin verin.';
+
+  @override
+  String get healthSyncReviewAccess => 'Erişimi inceleyin';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Özgeçmişte otomatik senkronizasyon';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Uygulama açıldığında yeni antrenmanları otomatik olarak içe aktarın.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Bu antrenmanlar GPS rotası içermediğinden içe aktarılamaz. Bazı uygulamalar (Garmin Connect gibi) etkinlikleri rotayı paylaşmadan Apple Health\'e kaydeder. Apple Watch ile kaydedilen antrenmanlar rotaları içerir ve içe aktarılabilir.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'İthal edilemez';
+
+  @override
+  String get healthSyncViewAvailable => 'Mevcut';
+
+  @override
+  String get healthSyncViewImported => 'İçe aktarılan';
+
+  @override
+  String get healthSyncDateRange => 'Antrenman dönemi';
+
+  @override
+  String get healthSyncRange30Days => 'Son 30 gün';
+
+  @override
+  String get healthSyncRange3Months => 'Son 3 ay';
+
+  @override
+  String get healthSyncRange6Months => 'Son 6 ay';
+
+  @override
+  String get healthSyncRangeYear => 'Son yıl';
+
+  @override
+  String get healthSyncRangeAll => 'Tüm geçmiş';
+
+  @override
+  String get healthSyncRangeCustom => 'Özel dönem';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Bu bağlantı için içe aktarılmış antrenman yok.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'İçe aktarıldı: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Geri yükle';
 }

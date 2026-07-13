@@ -12,12 +12,10 @@ import 'package:endurain/core/services/sso_service.dart';
 /// several services behind a single login-facing API.
 class AuthCoordinator {
   const AuthCoordinator({
-    required AuthService authService,
+    required this._authService,
     required SsoService ssoService,
-    required ServerSettingsService serverSettingsService,
-  }) : _authService = authService,
-       _ssoService = ssoService,
-       _serverSettingsService = serverSettingsService;
+    required this._serverSettingsService,
+  }) : _ssoService = ssoService;
 
   final AuthService _authService;
   final SsoService _ssoService;

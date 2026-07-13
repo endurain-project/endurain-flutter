@@ -86,6 +86,10 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
         'localSessionId': request.localSessionId,
         'activityType': request.activityType.apiValue,
         'startedAt': request.startedAt.toUtcIso8601(),
+        if (request.connectionOrigin != null)
+          'connectionOrigin': request.connectionOrigin,
+        if (request.connectionProfileId != null)
+          'connectionProfileId': request.connectionProfileId,
         if (request.backgroundConfig != null) ...{
           'notificationTitle': request.backgroundConfig!.notificationTitle,
           'notificationText': request.backgroundConfig!.notificationText,

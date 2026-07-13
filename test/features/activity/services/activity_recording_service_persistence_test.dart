@@ -45,7 +45,7 @@ void main() {
       await pumpEventQueue();
       expect(store.session, isNotNull);
       expect(store.session!.status, ActiveActivityStatus.recording);
-      expect(store.clearCount, 1);
+      expect(store.clearCount, 0);
 
       adapter.addPosition(recordingPosition(latitude: 41.1, longitude: -8.6));
       await pumpEventQueue();
@@ -165,12 +165,17 @@ void main() {
         expect(store.session, isNull);
       });
 
-      test('returns false for a completed (non-active) session', () async {
+      test('recovers a completed session for durable finalization', () async {
         store.session = storedSession(ActiveActivityStatus.completed);
+        await store.appendPoints([_point(segmentIndex: 0, latitude: 41.0)]);
         final service = buildService();
         addTearDown(service.dispose);
 
-        expect(await service.recoverActiveSession(), isFalse);
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.completed);
+        expect(service.localSessionId, 'session_1');
+        expect(service.state.points, hasLength(1));
+        expect(store.session, isNotNull);
       });
     });
   });
@@ -236,6 +241,23 @@ void main() {
       expect(recorder.stopCount, 1);
     });
 
+    test('preserves the durable session when the final drain fails', () async {
+      final recorder = _StoreBackedRecorder(
+        points: [_point(segmentIndex: 0, latitude: 41.0)],
+        drainError: StateError('read failed'),
+      );
+      final service = buildService(recorder);
+      addTearDown(service.dispose);
+
+      await service.start(activityType: ActivityType.run);
+      await service.stop();
+
+      expect(service.state.status, ActivityRecordingStatus.failed);
+      expect(service.state.lastError, ActivityRecordingError.localSaveFailed);
+      expect(recorder.discardCount, 0);
+      expect(recorder.stopCount, 1);
+    });
+
     test(
       'completes from the store after recovering a paused session',
       () async {
@@ -293,12 +315,13 @@ RecordedActivityPoint _point({
 class _StoreBackedRecorder implements ActivityLocationRecorder {
   _StoreBackedRecorder({
     List<RecordedActivityPoint> points = const [],
-    ActiveActivitySession? recoverableSession,
-  }) : _points = List<RecordedActivityPoint>.of(points),
-       _recoverableSession = recoverableSession;
+    this._recoverableSession,
+    this.drainError,
+  }) : _points = List<RecordedActivityPoint>.of(points);
 
   final List<RecordedActivityPoint> _points;
   final ActiveActivitySession? _recoverableSession;
+  final Object? drainError;
   final StreamController<ActivityRecorderEvent> _controller =
       StreamController<ActivityRecorderEvent>.broadcast();
   ActiveActivitySession? _session;
@@ -337,6 +360,7 @@ class _StoreBackedRecorder implements ActivityLocationRecorder {
 
   @override
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0}) async {
+    if (drainError case final error?) throw error;
     return _points.sublist(sinceOffset.clamp(0, _points.length));
   }
 

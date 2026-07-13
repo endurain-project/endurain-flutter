@@ -312,11 +312,10 @@ class _LoadedEmptyHistoryController extends LocalActivityHistoryController {
 
 class _LoadedHistoryController extends LocalActivityHistoryController {
   _LoadedHistoryController({
-    required List<LocalActivityRecord> records,
+    required this._records,
     this.hasMorePages = false,
     this.loadMoreCallback,
-  }) : _records = records,
-       super(
+  }) : super(
          repository: LocalActivityRepository(
            supportDirectoryProvider: () async => throw StateError('unused'),
          ),

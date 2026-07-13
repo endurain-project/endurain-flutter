@@ -1,9 +1,7 @@
 import 'package:endurain/core/services/secure_storage_service.dart';
 
 class ActivityRetentionSettingsRepository {
-  const ActivityRetentionSettingsRepository({
-    required SecureStorageService storage,
-  }) : _storage = storage;
+  const ActivityRetentionSettingsRepository({required this._storage});
 
   static const String retainUploadedGpxKey = 'activity_retain_uploaded_gpx';
 

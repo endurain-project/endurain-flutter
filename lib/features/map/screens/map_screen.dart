@@ -91,7 +91,10 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       locationService: widget.locationService ?? services.location,
       mapSettingsRepository:
           widget.mapSettings ??
-          MapSettingsRepository(preferences: services.preferences),
+          MapSettingsRepository(
+            preferences: services.preferences,
+            activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
+          ),
     );
   }
 
@@ -138,7 +141,11 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
 
     // If locking, center on current position
     if (_controller.isLocationLocked && _shouldShowLocationMarker) {
-      _mapController.move(_displayLocation, _mapController.camera.zoom);
+      _mapController.moveAndRotate(
+        _displayLocation,
+        _mapController.camera.zoom,
+        0,
+      );
     }
   }
 

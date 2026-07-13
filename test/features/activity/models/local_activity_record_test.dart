@@ -40,6 +40,7 @@ void main() {
       expect(parsed.gpxFileName, 'activity_1.gpx');
       expect(parsed.uploadStatus, LocalActivityUploadStatus.failed);
       expect(parsed.lastUploadErrorCode, AppErrorCode.activityUploadFailed);
+      expect(parsed.autoRetryEligible, isTrue);
       expect(json.containsKey('points'), isFalse);
       expect(json.containsKey('coordinates'), isFalse);
     });
@@ -63,7 +64,15 @@ void main() {
       expect(parsed.uploadedAt, isNull);
       expect(parsed.lastUploadAttemptAt, isNull);
       expect(parsed.lastUploadErrorCode, isNull);
-      expect(parsed.serverActivityId, isNull);
+      expect(parsed.autoRetryEligible, isTrue);
+    });
+
+    test('round trips automatic retry eligibility', () {
+      final parsed = LocalActivityRecord.fromJson(
+        _record().copyWith(autoRetryEligible: false).toJson(),
+      );
+
+      expect(parsed.autoRetryEligible, isFalse);
     });
   });
 }

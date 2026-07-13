@@ -107,6 +107,28 @@ void main() {
     expect(button.color, CupertinoColors.systemRed);
   });
 
+  testWidgets('dark Apple destructive primary keeps white foreground', (
+    tester,
+  ) async {
+    PlatformUtils.debugIsApplePlatformOverride = true;
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: AdaptiveButton(
+          label: 'Delete',
+          destructive: true,
+          onPressed: () {},
+        ),
+      ),
+    );
+
+    final textContext = tester.element(find.text('Delete'));
+    expect(DefaultTextStyle.of(textContext).style.color, CupertinoColors.white);
+  });
+
   testWidgets('expand wraps button in full-width SizedBox', (tester) async {
     PlatformUtils.debugIsApplePlatformOverride = false;
 

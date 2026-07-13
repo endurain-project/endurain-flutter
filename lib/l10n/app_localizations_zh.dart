@@ -81,6 +81,26 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed => '无法将锻炼数据转换为 GPX';
+
+  @override
+  String get errorHealthImportFailed => '无法导入锻炼';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return '无法导入锻炼：$details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied => '健康数据访问被拒绝';
+
+  @override
+  String get errorHealthReadFailed => '无法读取健康数据';
+
+  @override
+  String get errorHealthUnavailable => '健康同步在此设备上不可用';
+
+  @override
   String get errorLoginError => '无法登录';
 
   @override
@@ -117,9 +137,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => '您尚未登录';
-
-  @override
-  String get errorPkceVerifierMissing => '未找到登录验证器';
 
   @override
   String get errorPkceVerifierMissingRestartLogin => '未找到登录验证器。请重新开始登录。';
@@ -192,9 +209,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ssoBrowserLaunchFailed => '无法在系统浏览器中打开 SSO 登录';
-
-  @override
-  String get ssoMissingSessionId => 'SSO 回调未包含会话 ID';
 
   @override
   String ssoSignInWith(String provider) {
@@ -342,6 +356,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get activityStatSpeed => '速度';
+
+  @override
+  String get activityStatPace => '配速';
 
   @override
   String get activityStop => '停止';
@@ -502,7 +519,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTab => '设置';
 
   @override
+  String get endurainTrademarkNotice => 'Endurain® 是 João Vitória Silva 的注册商标。';
+
+  @override
   String get settingsScreen => '设置';
+
+  @override
+  String get deviceAccessTitle => '设备接入';
+
+  @override
+  String get deviceAccessSubtitle => '管理位置和健康数据访问';
+
+  @override
+  String get deviceAccessLocationSection => '地点';
+
+  @override
+  String get deviceAccessHealthSection => '健康数据';
+
+  @override
+  String get deviceAccessLocationTitle => '位置访问';
+
+  @override
+  String get deviceAccessHealthTitle => '健康数据访问';
+
+  @override
+  String get deviceAccessChecking => '正在检查访问...';
+
+  @override
+  String get deviceAccessLocationServicesOff => '定位服务已关闭';
+
+  @override
+  String get deviceAccessLocationAlways => '一直允许';
+
+  @override
+  String get deviceAccessLocationWhileUsing => '使用应用程序时允许';
+
+  @override
+  String get deviceAccessLocationBlocked => '系统设置中屏蔽了';
+
+  @override
+  String get deviceAccessLocationNotAllowed => '不允许';
+
+  @override
+  String get deviceAccessHealthUnavailable => '在此设备上不可用';
+
+  @override
+  String get deviceAccessHealthRequired => '需要健康连接';
+
+  @override
+  String get deviceAccessHealthSetUp => '健康访问设置';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => '访问需要注意';
+
+  @override
+  String get deviceAccessHealthNotConnected => '未连接';
 
   @override
   String get language => '语言';
@@ -523,6 +594,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get serverSettingsTitle => '服务器设置';
 
   @override
+  String connectedToServer(String server) {
+    return '已连接到$server';
+  }
+
+  @override
   String get loggedIn => '已登录';
 
   @override
@@ -533,6 +609,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get serverUrl => '服务器网址';
+
+  @override
+  String get serverProtocol => '协议';
 
   @override
   String get serverUrlHint => 'https://example.com';
@@ -648,6 +727,163 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => '原始报告';
+
+  @override
+  String get healthSyncSettingsTitle => '健康同步';
+
+  @override
+  String get healthSyncSettingsSubtitle => '从您的健康平台导入锻炼数据';
+
+  @override
+  String get healthSyncScreenTitle => '健康同步';
+
+  @override
+  String get healthAccessScreenTitle => '健康获取';
+
+  @override
+  String get healthAccessRequestedData => '请求的数据';
+
+  @override
+  String get healthAccessWorkouts => '锻炼';
+
+  @override
+  String get healthAccessWorkoutRoutes => '锻炼路线';
+
+  @override
+  String get healthAccessHeartRate => '心率';
+
+  @override
+  String get healthAccessWorkoutSummary => '锻炼距离、热量和步数';
+
+  @override
+  String get healthAccessAllowed => '允许';
+
+  @override
+  String get healthAccessNeedsAttention => '需要注意';
+
+  @override
+  String get healthAccessManagedBySystem => '在系统设置中管理';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit 没有透露 Endurain 可以读取哪些数据。在“健康”应用程序中查看访问权限。';
+
+  @override
+  String get healthAccessReview => '审查健康访问权限';
+
+  @override
+  String get healthAccessReviewIos => '如何审查访问权限';
+
+  @override
+  String get healthAccessDisconnect => '断开健康数据连接';
+
+  @override
+  String get healthAccessDisconnectTitle => '要断开健康数据连接吗？';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      '将重置此服务器的自动导入和本地导入历史。现有活动会保留在历史记录中。';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      '打开“健康”应用程序，点击您的个人资料图片，然后点击“应用程序和服务”。选择 Endurain 并更新数据类别。';
+
+  @override
+  String get healthSyncAuthorize => '连接到健康数据';
+
+  @override
+  String get healthSyncInstallProvider => '安装健康连接';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      '需要 Health Connect 才能同步锻炼。安装它以继续。';
+
+  @override
+  String get healthSyncUnsupported => '健康同步在此设备上不可用。';
+
+  @override
+  String get healthSyncSelectAll => '选择全部';
+
+  @override
+  String get healthSyncClearSelection => '清除';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return '导入所选内容 ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return '导入了 $count 项锻炼。';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => '没有 GPS 路线';
+
+  @override
+  String get healthSyncEmptyState => '所选日期范围内未找到锻炼。';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      '由于未授予锻炼路线访问权限，因此跳过了一些锻炼。打开 Health Connect → 权限并允许 Endurain 的锻炼路线。';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      '由于 Endurain 无法读取 GPS 路线，一些锻炼被跳过。在“健康”应用程序中，打开您的个人资料，然后打开“应用程序和服务”，选择“Endurain”，然后允许“锻炼路线”。';
+
+  @override
+  String get healthSyncReviewAccess => '审查访问权限';
+
+  @override
+  String get healthSyncAutoSyncTitle => '恢复时自动同步';
+
+  @override
+  String get healthSyncAutoSyncSubtitle => '应用程序打开时自动导入新的锻炼。';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      '这些锻炼不包括 GPS 路线，因此无法导入。某些应用程序（例如 Garmin Connect）将活动记录到 Apple Health，但不共享路线。使用Apple Watch记录的锻炼包括路线并且可以导入。';
+
+  @override
+  String get healthSyncBadgeNonImportable => '不可进口';
+
+  @override
+  String get healthSyncViewAvailable => '可导入';
+
+  @override
+  String get healthSyncViewImported => '已导入';
+
+  @override
+  String get healthSyncDateRange => '锻炼日期范围';
+
+  @override
+  String get healthSyncRange30Days => '最近30天';
+
+  @override
+  String get healthSyncRange3Months => '最近3个月';
+
+  @override
+  String get healthSyncRange6Months => '最近6个月';
+
+  @override
+  String get healthSyncRangeYear => '最近一年';
+
+  @override
+  String get healthSyncRangeAll => '全部历史';
+
+  @override
+  String get healthSyncRangeCustom => '自定义范围';
+
+  @override
+  String get healthSyncImportedEmpty => '此连接没有已导入的锻炼。';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return '导入时间：$dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => '恢复';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -727,6 +963,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String get errorHealthGpxBuildFailed => '無法將鍛鍊資料轉換為 GPX';
+
+  @override
+  String get errorHealthImportFailed => '無法導入鍛煉';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return '無法匯入鍛鍊：$details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied => '健康數據存取被拒絕';
+
+  @override
+  String get errorHealthReadFailed => '無法讀取健康數據';
+
+  @override
+  String get errorHealthUnavailable => '健康同步在此裝置上不可用';
+
+  @override
   String get errorLoginError => '無法登入';
 
   @override
@@ -763,9 +1019,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorNotAuthenticated => '您尚未登入';
-
-  @override
-  String get errorPkceVerifierMissing => '找不到登入驗證器';
 
   @override
   String get errorPkceVerifierMissingRestartLogin => '找不到登入驗證器。請重新開始登入。';
@@ -838,9 +1091,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get ssoBrowserLaunchFailed => '無法在系統瀏覽器中開啟 SSO 登入';
-
-  @override
-  String get ssoMissingSessionId => 'SSO 回呼未包含工作階段 ID';
 
   @override
   String ssoSignInWith(String provider) {
@@ -988,6 +1238,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityStatSpeed => '速度';
+
+  @override
+  String get activityStatPace => '配速';
 
   @override
   String get activityStop => '停止';
@@ -1149,7 +1402,61 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsTab => '設定';
 
   @override
+  String get endurainTrademarkNotice => 'Endurain® 是 João Vitória Silva 的註冊商標。';
+
+  @override
   String get settingsScreen => '設定';
+
+  @override
+  String get deviceAccessTitle => '裝置存取';
+
+  @override
+  String get deviceAccessSubtitle => '管理位置和健康數據訪問';
+
+  @override
+  String get deviceAccessLocationSection => '地點';
+
+  @override
+  String get deviceAccessHealthSection => '健康數據';
+
+  @override
+  String get deviceAccessLocationTitle => '位置訪問';
+
+  @override
+  String get deviceAccessHealthTitle => '健康數據訪問';
+
+  @override
+  String get deviceAccessChecking => '正在檢查訪問...';
+
+  @override
+  String get deviceAccessLocationServicesOff => '定位服務已關閉';
+
+  @override
+  String get deviceAccessLocationAlways => '一直允許';
+
+  @override
+  String get deviceAccessLocationWhileUsing => '使用應用程式時允許';
+
+  @override
+  String get deviceAccessLocationBlocked => '系統設定中屏蔽了';
+
+  @override
+  String get deviceAccessLocationNotAllowed => '不允許';
+
+  @override
+  String get deviceAccessHealthUnavailable => '在此設備上不可用';
+
+  @override
+  String get deviceAccessHealthRequired => '需要健康連接';
+
+  @override
+  String get deviceAccessHealthSetUp => '健康訪問設置';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => '訪問需要注意';
+
+  @override
+  String get deviceAccessHealthNotConnected => '未連接';
 
   @override
   String get language => '語言';
@@ -1170,6 +1477,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get serverSettingsTitle => '伺服器設定';
 
   @override
+  String connectedToServer(String server) {
+    return '已連接到$server';
+  }
+
+  @override
   String get loggedIn => '已登入';
 
   @override
@@ -1180,6 +1492,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get serverUrl => '伺服器網址';
+
+  @override
+  String get serverProtocol => '協定';
 
   @override
   String get serverUrlHint => 'https://example.com';
@@ -1295,4 +1610,161 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get diagnosticsRawReport => '原始報告';
+
+  @override
+  String get healthSyncSettingsTitle => '健康同步';
+
+  @override
+  String get healthSyncSettingsSubtitle => '從您的健康平台匯入鍛鍊數據';
+
+  @override
+  String get healthSyncScreenTitle => '健康同步';
+
+  @override
+  String get healthAccessScreenTitle => '健康獲取';
+
+  @override
+  String get healthAccessRequestedData => '請求的數據';
+
+  @override
+  String get healthAccessWorkouts => '鍛鍊';
+
+  @override
+  String get healthAccessWorkoutRoutes => '鍛鍊路線';
+
+  @override
+  String get healthAccessHeartRate => '心率';
+
+  @override
+  String get healthAccessWorkoutSummary => '運動距離、熱量與步數';
+
+  @override
+  String get healthAccessAllowed => '允許';
+
+  @override
+  String get healthAccessNeedsAttention => '需要注意';
+
+  @override
+  String get healthAccessManagedBySystem => '在系統設定中管理';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit 並未透露 Endurain 可以讀取哪些資料。在“健康”應用程式中查看存取權限。';
+
+  @override
+  String get healthAccessReview => '審查健康存取權限';
+
+  @override
+  String get healthAccessReviewIos => '如何審查存取權限';
+
+  @override
+  String get healthAccessDisconnect => '中斷健康資料連線';
+
+  @override
+  String get healthAccessDisconnectTitle => '要中斷健康資料連線嗎？';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      '將重設此伺服器的自動匯入與本機匯入記錄。現有活動會保留在歷史記錄中。';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      '打開“健康”應用程序，點擊您的個人資料圖片，然後點擊“應用程式和服務”。選擇 Endurain 並更新資料類別。';
+
+  @override
+  String get healthSyncAuthorize => '連接到健康數據';
+
+  @override
+  String get healthSyncInstallProvider => '安裝健康連接';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      '需要 Health Connect 才能同步鍛鍊。安裝它以繼續。';
+
+  @override
+  String get healthSyncUnsupported => '健康同步在此裝置上不可用。';
+
+  @override
+  String get healthSyncSelectAll => '選擇全部';
+
+  @override
+  String get healthSyncClearSelection => '清除';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return '匯入所選內容 ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return '導入了 $count 項鍛鍊。';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => '沒有 GPS 路線';
+
+  @override
+  String get healthSyncEmptyState => '所選日期範圍內找不到運動。';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      '由於未授予鍛煉路線訪問權限，因此跳過了一些鍛煉。開啟 Health Connect → 權限並允許 Endurain 的鍛鍊路線。';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      '由於 Endurain 無法讀取 GPS 路線，一些鍛鍊被跳過。在“健康”應用程式中，打開您的個人資料，然後打開“應用程式和服務”，選擇“Endurain”，然後允許“鍛鍊路線”。';
+
+  @override
+  String get healthSyncReviewAccess => '審查存取權限';
+
+  @override
+  String get healthSyncAutoSyncTitle => '恢復時自動同步';
+
+  @override
+  String get healthSyncAutoSyncSubtitle => '應用程式開啟時自動匯入新的鍛鍊。';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      '這些鍛鍊不包括 GPS 路線，因此無法匯入。某些應用程式（例如 Garmin Connect）會將活動記錄到 Apple Health，但不共用路線。使用Apple Watch記錄的鍛鍊包括路線並且可以導入。';
+
+  @override
+  String get healthSyncBadgeNonImportable => '不可進口';
+
+  @override
+  String get healthSyncViewAvailable => '可匯入';
+
+  @override
+  String get healthSyncViewImported => '已匯入';
+
+  @override
+  String get healthSyncDateRange => '運動日期範圍';
+
+  @override
+  String get healthSyncRange30Days => '最近30天';
+
+  @override
+  String get healthSyncRange3Months => '最近3個月';
+
+  @override
+  String get healthSyncRange6Months => '最近6個月';
+
+  @override
+  String get healthSyncRangeYear => '最近一年';
+
+  @override
+  String get healthSyncRangeAll => '全部歷史';
+
+  @override
+  String get healthSyncRangeCustom => '自訂範圍';
+
+  @override
+  String get healthSyncImportedEmpty => '此連線沒有已匯入的運動。';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return '匯入時間：$dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => '恢復';
 }

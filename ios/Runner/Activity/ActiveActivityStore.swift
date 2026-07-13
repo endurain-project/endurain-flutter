@@ -62,9 +62,21 @@ final class ActiveActivityStore {
                 let data = try? Data(contentsOf: sessionFile),
                 let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
             else {
-                return nil
+                return orphanedSession()
             }
-            return ActiveActivitySessionData.fromJson(object)
+            return ActiveActivitySessionData.fromJson(object) ?? orphanedSession()
+        }
+    }
+
+    func hasRecoverableData() -> Bool {
+        return queue.sync {
+            guard let files = try? fileManager.contentsOfDirectory(
+                at: activeDirectory,
+                includingPropertiesForKeys: nil
+            ) else {
+                return false
+            }
+            return !files.isEmpty
         }
     }
 
@@ -99,11 +111,12 @@ final class ActiveActivityStore {
 
     /// Reads persisted points, skipping malformed lines, returning entries at or
     /// after `sinceOffset` (counted across valid points only).
-    func readPoints(sinceOffset: Int = 0) -> [RecordedActivityPointData] {
-        return queue.sync {
-            guard let content = try? String(contentsOf: pointsFile, encoding: .utf8) else {
+    func readPoints(sinceOffset: Int = 0) throws -> [RecordedActivityPointData] {
+        return try queue.sync {
+            guard fileManager.fileExists(atPath: pointsFile.path) else {
                 return []
             }
+            let content = try String(contentsOf: pointsFile, encoding: .utf8)
             var result: [RecordedActivityPointData] = []
             var validIndex = 0
             for rawLine in content.split(separator: "\n", omittingEmptySubsequences: false) {
@@ -153,5 +166,37 @@ final class ActiveActivityStore {
         queue.sync {
             try? fileManager.removeItem(at: activeDirectory)
         }
+    }
+
+    private func orphanedSession() -> ActiveActivitySessionData? {
+        guard
+            let content = try? String(contentsOf: pointsFile, encoding: .utf8)
+        else {
+            return nil
+        }
+        let points = content
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .compactMap { RecordedActivityPointData.tryParseLine(String($0)) }
+        guard let first = points.first, let last = points.last else {
+            return nil
+        }
+        let firstMillis = IsoTime.toEpochMillis(first.timestamp) ?? 0
+        let lastMillis = IsoTime.toEpochMillis(last.timestamp) ?? firstMillis
+        return ActiveActivitySessionData(
+            localSessionId: "recovered_\(Int(fileManager.modificationDate(pointsFile).timeIntervalSince1970))",
+            activityType: "other",
+            status: ActiveActivitySessionData.statusFailed,
+            startedAt: first.timestamp,
+            endedAt: last.timestamp,
+            elapsedDurationSeconds: max(0, Int((lastMillis - firstMillis) / 1000)),
+            currentSegmentIndex: last.segmentIndex
+        )
+    }
+}
+
+private extension FileManager {
+    func modificationDate(_ url: URL) -> Date {
+        let attributes = try? attributesOfItem(atPath: url.path)
+        return attributes?[.modificationDate] as? Date ?? Date(timeIntervalSince1970: 0)
     }
 }

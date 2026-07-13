@@ -91,6 +91,30 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Не вдалося конвертувати тренування в GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Не вдалося імпортувати тренування';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Не вдалося імпортувати тренування: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'У доступі до даних про здоров’я відмовлено';
+
+  @override
+  String get errorHealthReadFailed =>
+      'Не вдалося прочитати дані про стан здоров\'я';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Синхронізація здоров\'я недоступна на цьому пристрої';
+
+  @override
   String get errorLoginError => 'Не вдалося увійти';
 
   @override
@@ -128,9 +152,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Ви не ввійшли';
-
-  @override
-  String get errorPkceVerifierMissing => 'Верифікатор входу не знайдено';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -213,10 +234,6 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Не вдалося відкрити вхід через SSO у системному браузері';
-
-  @override
-  String get ssoMissingSessionId =>
-      'Відповідь SSO не містила ідентифікатора сеансу';
 
   @override
   String ssoSignInWith(String provider) {
@@ -373,6 +390,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Швидкість';
+
+  @override
+  String get activityStatPace => 'Темп';
 
   @override
   String get activityStop => 'Зупинити';
@@ -540,7 +560,65 @@ class AppLocalizationsUk extends AppLocalizations {
   String get settingsTab => 'Налаштування';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® є зареєстрованою торговельною маркою João Vitória Silva';
+
+  @override
   String get settingsScreen => 'Налаштування';
+
+  @override
+  String get deviceAccessTitle => 'Доступ до пристрою';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Керуйте доступом до даних про місцезнаходження та здоров’я';
+
+  @override
+  String get deviceAccessLocationSection => 'Розташування';
+
+  @override
+  String get deviceAccessHealthSection => 'Дані про здоров\'я';
+
+  @override
+  String get deviceAccessLocationTitle => 'Доступ до місцезнаходження';
+
+  @override
+  String get deviceAccessHealthTitle => 'Доступ до даних про здоров\'я';
+
+  @override
+  String get deviceAccessChecking => 'Перевірка доступу…';
+
+  @override
+  String get deviceAccessLocationServicesOff => 'Служби локації вимкнено';
+
+  @override
+  String get deviceAccessLocationAlways => 'Дозволено весь час';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Дозволено під час використання програми';
+
+  @override
+  String get deviceAccessLocationBlocked =>
+      'Заблоковано в системних налаштуваннях';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Не допускається';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Недоступно на цьому пристрої';
+
+  @override
+  String get deviceAccessHealthRequired => 'Потрібен Health Connect';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Оздоровчий доступ налаштований';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Доступ потребує уваги';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Не підключено';
 
   @override
   String get language => 'Мова';
@@ -562,6 +640,11 @@ class AppLocalizationsUk extends AppLocalizations {
   String get serverSettingsTitle => 'Налаштування сервера';
 
   @override
+  String connectedToServer(String server) {
+    return 'Підключено до $server';
+  }
+
+  @override
   String get loggedIn => 'Ви ввійшли';
 
   @override
@@ -572,6 +655,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get serverUrl => 'URL сервера';
+
+  @override
+  String get serverProtocol => 'Протокол';
 
   @override
   String get serverUrlHint => 'https://example.com';
@@ -689,4 +775,168 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Необроблений звіт';
+
+  @override
+  String get healthSyncSettingsTitle => 'Синхронізація здоров\'я';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Імпортуйте тренування зі своєї платформи здоров’я';
+
+  @override
+  String get healthSyncScreenTitle => 'Синхронізація здоров\'я';
+
+  @override
+  String get healthAccessScreenTitle => 'Оздоровчий доступ';
+
+  @override
+  String get healthAccessRequestedData => 'Запитувані дані';
+
+  @override
+  String get healthAccessWorkouts => 'Тренування';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Маршрути тренувань';
+
+  @override
+  String get healthAccessHeartRate => 'ЧСС';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Відстань, калорії та кроки тренування';
+
+  @override
+  String get healthAccessAllowed => 'Дозволено';
+
+  @override
+  String get healthAccessNeedsAttention => 'Потребує уваги';
+
+  @override
+  String get healthAccessManagedBySystem => 'Керується в налаштуваннях системи';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit не розкриває, які дані може читати Endurain. Переглянути доступ у додатку Health.';
+
+  @override
+  String get healthAccessReview => 'Перегляньте доступ до охорони здоров’я';
+
+  @override
+  String get healthAccessReviewIos => 'Як перевірити доступ';
+
+  @override
+  String get healthAccessDisconnect => 'Від’єднати дані про здоров’я';
+
+  @override
+  String get healthAccessDisconnectTitle => 'Від’єднати дані про здоров’я?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Автоматичний імпорт і локальну історію імпорту для цього сервера буде скинуто. Наявні активності залишаться в історії.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Відкрийте програму «Здоров’я», торкніться свого зображення профілю, а потім «Програми та служби». Виберіть Endurain і оновіть категорії даних.';
+
+  @override
+  String get healthSyncAuthorize => 'Підключіться до даних про здоров’я';
+
+  @override
+  String get healthSyncInstallProvider => 'Встановіть Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Для синхронізації тренувань потрібен Health Connect. Встановіть його, щоб продовжити.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Синхронізація здоров\'я недоступна на цьому пристрої.';
+
+  @override
+  String get healthSyncSelectAll => 'Вибрати все';
+
+  @override
+  String get healthSyncClearSelection => 'ясно';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Імпорт вибраного ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Імпортовано $count тренувань.';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Немає маршруту GPS';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Не знайдено тренувань за вибраний період.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Деякі тренування було пропущено, оскільки не було надано доступ до маршруту вправ. Відкрийте Health Connect → Дозволи та дозвольте маршрути вправ для Endurain.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Деякі тренування було пропущено, оскільки Endurain не міг прочитати їхні маршрути GPS. У програмі Health відкрийте свій профіль, потім Apps and Services, виберіть Endurain і дозвольте Workout Routes.';
+
+  @override
+  String get healthSyncReviewAccess => 'Огляд доступу';
+
+  @override
+  String get healthSyncAutoSyncTitle =>
+      'Автоматична синхронізація під час відновлення';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Імпортувати нові тренування автоматично, коли відкривається програма.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Ці тренування не включають GPS-маршрут, тому їх не можна імпортувати. Деякі програми (наприклад, Garmin Connect) записують дії в Apple Health, не повідомляючи маршрут. Тренування, записані за допомогою Apple Watch, містять маршрути та можуть бути імпортовані.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Неімпортний';
+
+  @override
+  String get healthSyncViewAvailable => 'Доступні';
+
+  @override
+  String get healthSyncViewImported => 'Імпортовані';
+
+  @override
+  String get healthSyncDateRange => 'Період тренувань';
+
+  @override
+  String get healthSyncRange30Days => 'Останні 30 днів';
+
+  @override
+  String get healthSyncRange3Months => 'Останні 3 місяці';
+
+  @override
+  String get healthSyncRange6Months => 'Останні 6 місяців';
+
+  @override
+  String get healthSyncRangeYear => 'Останній рік';
+
+  @override
+  String get healthSyncRangeAll => 'Уся історія';
+
+  @override
+  String get healthSyncRangeCustom => 'Власний період';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Немає імпортованих тренувань для цього підключення.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Імпортовано: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Відновити';
 }

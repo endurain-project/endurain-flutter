@@ -12,6 +12,7 @@ import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -51,6 +52,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   late final LoginController _controller;
   late final UrlLauncherService _urlLauncherService;
+  final _serverHostController = TextEditingController();
+  String _serverScheme = 'https';
 
   @override
   void initState() {
@@ -63,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       _createController,
       onChanged: _handleControllerChanged,
     );
+    _populateServerAddressFields();
     _controller.startSsoCallbackListener(
       onLoginSuccess: () => widget.onLoginSuccess?.call(),
       onError: _showError,
@@ -81,9 +85,30 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       appLinksService: widget.appLinksService ?? services.appLinks,
       mapSettingsRepository: MapSettingsRepository(
         preferences: services.preferences,
+        activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
       ),
       config: services.config,
       diagnostics: services.diagnostics,
+    );
+  }
+
+  void _populateServerAddressFields() {
+    final uri = Uri.tryParse(_controller.serverUrlController.text.trim());
+    if (uri == null ||
+        uri.host.isEmpty ||
+        (!uri.isScheme('http') && !uri.isScheme('https'))) {
+      return;
+    }
+
+    _serverScheme = uri.scheme;
+    _serverHostController.text = uri.authority + uri.path + uri.query;
+  }
+
+  String _serverUrlFor(String host) => '$_serverScheme://${host.trim()}';
+
+  void _syncServerUrl() {
+    _controller.serverUrlController.text = _serverUrlFor(
+      _serverHostController.text,
     );
   }
 
@@ -95,6 +120,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
 
   /// Step 1: Validate server URL, fetch server settings and available IdPs
   Future<void> _handleServerUrlNext() async {
+    _syncServerUrl();
     if (!_controller.formKey.currentState!.validate()) {
       return;
     }
@@ -238,6 +264,12 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   }
 
   @override
+  void dispose() {
+    _serverHostController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
@@ -277,18 +309,40 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
 
   List<Widget> _buildServerUrlFields(AppLocalizations l10n) {
     return [
+      _ServerProtocolSelector(
+        label: l10n.serverProtocol,
+        value: _serverScheme,
+        onChanged: (value) {
+          setState(() {
+            _serverScheme = value;
+          });
+        },
+      ),
+      const SizedBox(height: UIConstants.paddingStandard),
       AdaptiveTextFormField(
         label: l10n.serverUrl,
         placeholder: l10n.serverUrlHint,
-        controller: _controller.serverUrlController,
+        controller: _serverHostController,
         keyboardType: TextInputType.url,
         textInputAction: TextInputAction.done,
         prefixIcon: const AdaptiveIcon(
           materialIcon: Icons.dns,
           cupertinoIcon: CupertinoIcons.globe,
         ),
-        validator: (value) =>
-            Validators.validateUrl(value, l10n, config: _controller.config),
+        validator: (value) {
+          final host = value?.trim() ?? '';
+          if (host.isEmpty) {
+            return l10n.requiredField;
+          }
+          if (host.contains(RegExp(r'\s')) || host.contains('://')) {
+            return l10n.invalidUrl;
+          }
+          return Validators.validateUrl(
+            _serverUrlFor(host),
+            l10n,
+            config: _controller.config,
+          );
+        },
         onFieldSubmitted: (_) => _handleServerUrlNext(),
       ),
       const SizedBox(height: UIConstants.paddingLarge),
@@ -402,5 +456,52 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         expand: true,
       ),
     ];
+  }
+}
+
+class _ServerProtocolSelector extends StatelessWidget {
+  const _ServerProtocolSelector({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (PlatformUtils.isApplePlatform) {
+      return CupertinoFormRow(
+        prefix: Text(label),
+        child: CupertinoSlidingSegmentedControl<String>(
+          groupValue: value,
+          children: const {'https': Text('HTTPS'), 'http': Text('HTTP')},
+          onValueChanged: (selected) {
+            if (selected != null) {
+              onChanged(selected);
+            }
+          },
+        ),
+      );
+    }
+
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      items: const [
+        DropdownMenuItem(value: 'https', child: Text('HTTPS')),
+        DropdownMenuItem(value: 'http', child: Text('HTTP')),
+      ],
+      onChanged: (selected) {
+        if (selected != null) {
+          onChanged(selected);
+        }
+      },
+    );
   }
 }

@@ -2,13 +2,17 @@
 
 ## Tech Stack
 - **Flutter**: 3.44+ (stable channel; CI pins 3.44.1)
-- **Dart**: 3.10+
+- **Dart**: 3.12+
 - **Platforms**: Android, iOS
 - **State Management**: setState (basic) - may evolve to Provider/Riverpod
 - **Map Provider**: OpenStreetMap (flutter_map + latlong2)
 - **Secure Storage**: flutter_secure_storage
 - **Location**: geolocator
-- **F-Droid Compatible**: All dependencies are open-source (FOSS)
+
+## Dependencies
+
+- Prefer well-maintained open-source dependencies when they meet the product requirements.
+- Proprietary or store-specific SDKs are allowed when they provide a clear product, platform, security, or operational benefit. Document the rationale and isolate platform integrations behind injectable adapters.
 
 ## Code Conventions
 
@@ -102,8 +106,6 @@ Update with actual versions used:
 - `flutter_map: ^7.0.0` (to be added)
 - `latlong2: ^0.9.0` (to be added)
 
-**Note:** Only open-source packages are used to maintain F-Droid compatibility. Do NOT add Google Maps, Firebase, or other proprietary dependencies.
-
 ## Best Practices
 
 ### Error Handling
@@ -120,12 +122,6 @@ Update with actual versions used:
 - Never commit API keys or credentials
 - Use `.gitignore` for `*.jks`, environment files, and any proprietary configuration files
 - Store sensitive data only in `flutter_secure_storage`
-
-### F-Droid Compatibility
-- **Only use open-source dependencies** - check licenses before adding packages
-- Avoid Google Play Services, Firebase, and other proprietary SDKs
-- Use OpenStreetMap (`flutter_map`) instead of Google Maps
-- Ensure all dependencies have compatible licenses (MIT, BSD, Apache 2.0, etc.)
 
 ### Testing
 - Write widget tests for screens

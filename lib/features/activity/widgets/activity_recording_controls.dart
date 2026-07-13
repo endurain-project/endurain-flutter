@@ -114,9 +114,6 @@ class ActivityRecordingControls extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                         if (state.lastError ==
-                            ActivityRecordingError.backgroundPermissionRequired)
-                          ...[],
-                        if (state.lastError ==
                                 ActivityRecordingError
                                     .locationPermissionDeniedForever ||
                             state.lastError ==

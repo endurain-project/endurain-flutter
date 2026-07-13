@@ -69,7 +69,9 @@ dart run tool/check_coverage.dart \
   --exclude 'lib/core/services/location_platform_adapter.dart' \
   --exclude 'lib/core/services/multipart_upload_adapter.dart' \
   --exclude 'lib/core/services/package_info_service.dart' \
-  --exclude 'lib/core/services/url_launcher_service.dart'
+  --exclude 'lib/core/services/url_launcher_service.dart' \
+  --exclude 'lib/core/services/share_service.dart' \
+  --exclude 'lib/features/health/services/health_package_platform_adapter.dart'
 ```
 
 ## Getting Started

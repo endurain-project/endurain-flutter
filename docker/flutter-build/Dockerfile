@@ -6,7 +6,7 @@
 # used by the main Endurain repository's Docker images: the base is pinned by
 # digest and every downloaded archive is checksum-verified.
 #
-# Build and publish with .forgejo/workflows/build-image.yml. Bump the ARG
+# Build and publish with .forgejo/workflows/build-ci-docker-image.yml. Bump the ARG
 # defaults (and re-run that workflow) when upgrading the toolchain.
 
 # Pinned base. The digest is the multi-arch manifest digest for the tag in the
@@ -16,9 +16,9 @@ FROM eclipse-temurin:17-jdk-jammy@sha256:beabb759e6f9653c843958d1d1f5cecb881dfb8
 
 # --- Toolchain versions (override via --build-arg to upgrade) ---------------
 # Flutter SDK. The SHA256 is published by the Flutter release storage bucket.
-ARG FLUTTER_VERSION=3.44.1
-ARG FLUTTER_ARCHIVE=flutter_linux_3.44.1-stable.tar.xz
-ARG FLUTTER_SHA256=287937458126a53284ed112c8c7dbc647bea2d09ab65d46e2d5cf94e901aac69
+ARG FLUTTER_VERSION=3.44.6
+ARG FLUTTER_ARCHIVE=flutter_linux_3.44.6-stable.tar.xz
+ARG FLUTTER_SHA256=a6320fd72e9a2690c08e2a6a70874a30cb120dee7c78f49d2c628bd7c9e20525
 ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/releases/stable/linux
 
 # Android SDK. The command-line tools SHA256 is verified against the archive
@@ -28,7 +28,8 @@ ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/rel
 ARG ANDROID_CMDLINE_TOOLS_VERSION=14742923
 ARG ANDROID_CMDLINE_TOOLS_SHA256=04453066b540409d975c676d781da1477479dde3761310f1a7eb92a1dfb15af7
 ARG ANDROID_PLATFORM=android-36
-ARG ANDROID_BUILD_TOOLS=36.0.0
+ARG ANDROID_BUILD_TOOLS=36.1.0
+ARG ANDROID_NDK_VERSION=28.2.13676358
 
 # Node.js runtime. Forgejo/act runs JavaScript actions (actions/checkout,
 # actions/cache) by exec'ing `node` inside this image, so the runtime must be
@@ -82,7 +83,8 @@ RUN set -eu; \
     sdkmanager \
         "platform-tools" \
         "platforms;${ANDROID_PLATFORM}" \
-        "build-tools;${ANDROID_BUILD_TOOLS}"
+        "build-tools;${ANDROID_BUILD_TOOLS}" \
+        "ndk;${ANDROID_NDK_VERSION}"
 
 # --- Flutter SDK ------------------------------------------------------------
 RUN set -eu; \

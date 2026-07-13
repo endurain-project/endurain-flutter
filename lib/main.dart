@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/app.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:flutter/foundation.dart';
@@ -13,7 +14,14 @@ Future<void> main() async {
   // for tests that build widgets without an [AppScope] (see `app_scope.dart`).
   // Holding the instance here also keeps the same diagnostics object available
   // to the root-zone error handler below, which runs outside the widget tree.
-  final services = AppServices();
+  final services = AppServices(
+    config: const AppConfig(
+      healthSyncEnabled: bool.fromEnvironment(
+        'ENABLE_HEALTH_SYNC',
+        defaultValue: true,
+      ),
+    ),
+  );
   final diagnostics = services.diagnostics;
 
   final appRunner = runZonedGuarded<Future<void>>(

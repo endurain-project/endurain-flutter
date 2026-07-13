@@ -65,6 +65,8 @@ class ActivityUploadRequest {
     required this.filePath,
     required this.activityType,
     this.idempotencyKey,
+    this.expectedOrigin,
+    this.expectedProfileId,
   });
 
   final String filePath;
@@ -73,21 +75,25 @@ class ActivityUploadRequest {
   /// Stable key sent with the upload so the server can de-duplicate retried
   /// uploads of the same activity. Typically the local activity id.
   final String? idempotencyKey;
+  final String? expectedOrigin;
+  final String? expectedProfileId;
 }
 
 class ActivityUploadService {
   ActivityUploadService({
     ApiClient? apiClient,
-    ActivityUploadConfig? config,
+    this._config,
     ActivityFileUploader? uploadFile,
     ActivityUploadRetryPolicy? retryPolicy,
-  }) : _config = config,
-       _uploadFile = uploadFile ?? (apiClient ?? ApiClient()).uploadFile,
+  }) : _apiClient = apiClient ?? (uploadFile == null ? ApiClient() : null),
+       _uploadFile = uploadFile,
        _retryPolicy = retryPolicy ?? const ActivityUploadRetryPolicy();
 
   final ActivityUploadConfig? _config;
-  final ActivityFileUploader _uploadFile;
+  final ApiClient? _apiClient;
+  final ActivityFileUploader? _uploadFile;
   final ActivityUploadRetryPolicy _retryPolicy;
+  final Map<String, Future<LocalActivityRecord>> _inFlightAttempts = {};
 
   bool get isConfigured => _config?.isConfigured ?? false;
 
@@ -99,12 +105,22 @@ class ActivityUploadService {
 
     late final http.StreamedResponse response;
     try {
-      response = await _uploadFile(
-        config.endpoint,
-        request.filePath,
-        config.fieldName,
-        idempotencyKey: request.idempotencyKey,
-      );
+      final apiClient = _apiClient;
+      response = apiClient != null
+          ? await apiClient.uploadFile(
+              config.endpoint,
+              request.filePath,
+              config.fieldName,
+              idempotencyKey: request.idempotencyKey,
+              expectedOrigin: request.expectedOrigin,
+              expectedProfileId: request.expectedProfileId,
+            )
+          : await _uploadFile!(
+              config.endpoint,
+              request.filePath,
+              config.fieldName,
+              idempotencyKey: request.idempotencyKey,
+            );
     } on AppException {
       rethrow;
     } catch (error) {
@@ -142,15 +158,52 @@ class ActivityUploadService {
     required LocalActivityRepository repository,
     ActivityRetentionSettingsRepository? retentionRepository,
     DateTime Function()? now,
+  }) {
+    final existing = _inFlightAttempts[record.id];
+    if (existing != null) {
+      return existing;
+    }
+    final attempt =
+        _performUploadAttempt(
+          record: record,
+          repository: repository,
+          retentionRepository: retentionRepository,
+          now: now,
+        ).whenComplete(() {
+          _inFlightAttempts.remove(record.id);
+        });
+    _inFlightAttempts[record.id] = attempt;
+    return attempt;
+  }
+
+  Future<LocalActivityRecord> _performUploadAttempt({
+    required LocalActivityRecord record,
+    required LocalActivityRepository repository,
+    ActivityRetentionSettingsRepository? retentionRepository,
+    DateTime Function()? now,
   }) async {
+    final persisted = await repository.get(record.id);
+    final current = persisted ?? record;
+    if (current.uploadStatus == LocalActivityUploadStatus.uploaded) {
+      return current;
+    }
+    final connectionOrigin = current.connectionOrigin;
+    if (connectionOrigin == null || connectionOrigin.isEmpty) {
+      throw const AppException(AppErrorCode.notAuthenticated);
+    }
+    final connectionProfileId = current.connectionProfileId;
+    if (connectionProfileId == null || connectionProfileId.isEmpty) {
+      throw const AppException(AppErrorCode.notAuthenticated);
+    }
     final clock = now ?? DateTime.now;
     final attemptedAt = clock().toUtc();
 
-    LocalActivityRecord updated = record.copyWith(
+    LocalActivityRecord updated = current.copyWith(
       uploadStatus: LocalActivityUploadStatus.pending,
       updatedAt: attemptedAt,
       lastUploadAttemptAt: attemptedAt,
       lastUploadErrorCode: null,
+      autoRetryEligible: true,
     );
     await repository.upsert(updated);
 
@@ -170,7 +223,9 @@ class ActivityUploadService {
           ActivityUploadRequest(
             filePath: filePath,
             activityType: updated.activityType,
-            idempotencyKey: updated.id,
+            idempotencyKey: updated.effectiveIdempotencyKey,
+            expectedOrigin: updated.connectionOrigin,
+            expectedProfileId: updated.connectionProfileId,
           ),
         );
 
@@ -181,6 +236,7 @@ class ActivityUploadService {
           uploadedAt: uploadedAt,
           lastUploadAttemptAt: attemptedAt,
           lastUploadErrorCode: null,
+          autoRetryEligible: false,
         );
         await repository.upsert(updated);
 
@@ -208,6 +264,7 @@ class ActivityUploadService {
           updatedAt: clock().toUtc(),
           lastUploadAttemptAt: attemptedAt,
           lastUploadErrorCode: _safeUploadErrorCode(error),
+          autoRetryEligible: _isTransient(error),
         );
         await repository.upsert(failedRecord);
         rethrow;
@@ -231,12 +288,16 @@ class ActivityUploadService {
     if (error is! AppException) {
       return _isTransientIoError(error);
     }
+    if (error.code == AppErrorCode.requestTimeout) {
+      return true;
+    }
     if (error.code != AppErrorCode.activityUploadFailed) {
       return false;
     }
-    // Network-level error (no HTTP status): transient.
-    if (error.cause != null) {
-      return true;
+    // Only known network/I/O causes are transient. Unexpected adapter or
+    // parsing failures require manual review instead of looping on resume.
+    if (error.cause case final cause?) {
+      return _isTransientIoError(cause);
     }
     // HTTP 5xx: transient. HTTP 4xx: permanent.
     final details = error.details;

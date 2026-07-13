@@ -33,7 +33,7 @@ class AppTheme {
         seedColor: AppThemeTokens.primarySeed,
         brightness: Brightness.light,
       ).copyWith(
-        primary: AppThemeTokens.brand,
+        primary: AppThemeTokens.brandMid,
         onPrimary: Colors.white,
         secondary: AppThemeTokens.brandMid,
         onSecondary: Colors.white,
@@ -41,14 +41,14 @@ class AppTheme {
         onSecondaryContainer: AppThemeTokens.brandMid,
         surface: AppThemeTokens.lightBackground,
         onSurface: AppThemeTokens.ink,
-        onSurfaceVariant: AppThemeTokens.lightMutedForeground,
+        onSurfaceVariant: AppThemeTokens.activityOtherText,
         // Cards/dialogs/sheets are white on the warm page background.
         surfaceContainerLowest: AppThemeTokens.lightCard,
         surfaceContainerLow: AppThemeTokens.lightCard,
         surfaceContainer: AppThemeTokens.lightCard,
         surfaceContainerHigh: AppThemeTokens.lightCard,
         surfaceContainerHighest: AppThemeTokens.lightCard,
-        error: AppThemeTokens.destructive,
+        error: AppThemeTokens.activityRunningText,
         onError: Colors.white,
         outlineVariant: AppThemeTokens.hairlineLight,
       );
@@ -243,7 +243,7 @@ class AppTheme {
   // looks consistent across platforms.
   static CupertinoThemeData get cupertinoLightTheme {
     return CupertinoThemeData(
-      primaryColor: AppThemeTokens.brand,
+      primaryColor: AppThemeTokens.brandMid,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppThemeTokens.lightBackground,
       barBackgroundColor: AppThemeTokens.lightCard,

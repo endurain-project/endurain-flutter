@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/models/auth_session.dart';
+import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:http/http.dart' as http;
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -21,22 +24,28 @@ class ApiClient {
     AuthService? authService,
     MultipartUploadAdapter? uploadAdapter,
     Duration? uploadTimeout,
+    AppConfig config = AppConfig.defaults,
   }) {
     final resolvedStore =
         sessionStore ??
-        AuthSessionStore(storage: storage ?? SecureStorageService());
+        AuthSessionStore(
+          storage: storage ?? SecureStorageService(),
+          config: config,
+        );
     _sessionStore = resolvedStore;
     _authService =
         authService ??
         AuthService(sessionStore: resolvedStore, storage: storage);
     _uploadTimeout = uploadTimeout ?? ApiConstants.defaultUploadTimeout;
     _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter();
+    _config = config;
   }
 
   late final AuthSessionStore _sessionStore;
   late final AuthService _authService;
   late final MultipartUploadAdapter _uploadAdapter;
   late final Duration _uploadTimeout;
+  late final AppConfig _config;
 
   /// Upload a file with multipart/form-data
   ///
@@ -48,20 +57,21 @@ class ApiClient {
     String filePath,
     String fieldName, {
     String? idempotencyKey,
+    String? expectedOrigin,
+    String? expectedProfileId,
   }) async {
-    final serverUrl = await _sessionStore.getServerUrl();
-    if (serverUrl == null || serverUrl.isEmpty) {
-      throw const AppException(AppErrorCode.serverUrlNotConfigured);
-    }
-
-    final accessToken = await _getValidAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw const AppException(AppErrorCode.notAuthenticated);
-    }
+    final session = await _getValidSession(
+      expectedOrigin: expectedOrigin,
+      expectedProfileId: expectedProfileId,
+    );
+    final serverUrl = ServerUrlResolver.normalize(
+      session.origin,
+      config: _config,
+    );
 
     final url = Uri.parse('$serverUrl$endpoint');
     final headers = {
-      ApiConstants.authorizationHeader: 'Bearer $accessToken',
+      ApiConstants.authorizationHeader: 'Bearer ${session.accessToken}',
       ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
       if (idempotencyKey != null && idempotencyKey.isNotEmpty)
         ApiConstants.idempotencyKeyHeader: idempotencyKey,
@@ -87,12 +97,19 @@ class ApiClient {
         throw const AppException(AppErrorCode.sessionExpired);
       }
 
-      final newAccessToken = await _sessionStore.getAccessToken();
-      if (newAccessToken == null || newAccessToken.isEmpty) {
+      final refreshedSession = await _sessionStore.readSession();
+      if (!_matchesExpectedProfile(
+            refreshedSession,
+            expectedOrigin: expectedOrigin,
+            expectedProfileId: expectedProfileId,
+          ) ||
+          refreshedSession!.origin != serverUrl ||
+          refreshedSession.accessToken.isEmpty) {
         throw const AppException(AppErrorCode.sessionExpired);
       }
 
-      headers[ApiConstants.authorizationHeader] = 'Bearer $newAccessToken';
+      headers[ApiConstants.authorizationHeader] =
+          'Bearer ${refreshedSession.accessToken}';
       response = await _uploadAdapter
           .uploadFile(
             url: url,
@@ -110,17 +127,58 @@ class ApiClient {
     return response;
   }
 
-  Future<String?> _getValidAccessToken() async {
-    final accessToken = await _sessionStore.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
-      return accessToken;
+  Future<AuthSession> _getValidSession({
+    String? expectedOrigin,
+    String? expectedProfileId,
+  }) async {
+    var session = await _sessionStore.readSession();
+    if (!_matchesExpectedProfile(
+      session,
+      expectedOrigin: expectedOrigin,
+      expectedProfileId: expectedProfileId,
+    )) {
+      throw const AppException(AppErrorCode.notAuthenticated);
     }
 
-    if (await _sessionStore.isAccessTokenExpiringSoon()) {
+    if (DateTime.now()
+        .toUtc()
+        .add(const Duration(minutes: 2))
+        .isAfter(session!.accessTokenExpiresAt)) {
       await _authService.refreshToken();
-      return _sessionStore.getAccessToken();
+      session = await _sessionStore.readSession();
+      if (!_matchesExpectedProfile(
+        session,
+        expectedOrigin: expectedOrigin,
+        expectedProfileId: expectedProfileId,
+      )) {
+        throw const AppException(AppErrorCode.sessionExpired);
+      }
     }
 
-    return accessToken;
+    if (session!.accessToken.isEmpty) {
+      throw const AppException(AppErrorCode.notAuthenticated);
+    }
+    return session;
+  }
+
+  bool _matchesExpectedProfile(
+    AuthSession? session, {
+    String? expectedOrigin,
+    String? expectedProfileId,
+  }) {
+    if (session == null) {
+      return false;
+    }
+    if (expectedProfileId != null && session.profileId != expectedProfileId) {
+      return false;
+    }
+    if (expectedOrigin == null) {
+      return true;
+    }
+    final normalizedExpected = ServerUrlResolver.normalize(
+      expectedOrigin,
+      config: _config,
+    );
+    return session.origin == normalizedExpected;
   }
 }

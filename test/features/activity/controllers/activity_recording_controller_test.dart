@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -93,6 +94,39 @@ void main() {
         expect(controller.state.status, ActivityRecordingStatus.paused);
         expect(controller.state.activityType, ActivityType.ride);
       });
+
+      test(
+        'finalizes a completed durable session with its stable id',
+        () async {
+          final tempDirectory = await Directory.systemTemp.createTemp(
+            'endurain_recover_completed_',
+          );
+          addTearDown(() => tempDirectory.deleteSync(recursive: true));
+          final repository = _repositoryFor(tempDirectory);
+          final store = InMemoryActiveActivityStore();
+          store.session = _activeSession(
+            ActiveActivityStatus.completed,
+          ).copyWith(endedAt: DateTime.utc(2026, 6, 3, 9, 30));
+          await store.appendPoints([
+            _recordedPoint(segmentIndex: 0, latitude: 41.1),
+            _recordedPoint(segmentIndex: 0, latitude: 41.2),
+          ]);
+          final controller = _controllerWithActiveStore(
+            store,
+            repository: repository,
+          );
+          addTearDown(controller.dispose);
+
+          expect(await controller.recoverActiveRecording(), isTrue);
+
+          final records = await repository.list();
+          expect(records, hasLength(1));
+          expect(records.single.id, 'session_1');
+          expect(controller.state.status, ActivityRecordingStatus.completed);
+          expect(controller.state.localActivityId, 'session_1');
+          expect(store.session, isNull);
+        },
+      );
 
       test('clears and returns false for an empty-point session', () async {
         final store = InMemoryActiveActivityStore();
@@ -331,6 +365,7 @@ void main() {
           localActivityRepository: repository,
           localActivityIdProvider: () => 'upload_success',
           uploadService: _uploadServiceReturning(201),
+          activeConnectionProfile: () async => _profile,
         );
         addTearDown(controller.dispose);
 
@@ -383,6 +418,45 @@ void main() {
       },
     );
 
+    test(
+      'keeps the connection profile captured when recording starts',
+      () async {
+        final adapter = RecordingLocationPlatformAdapter();
+        final tempDirectory = await Directory.systemTemp.createTemp(
+          'endurain_recording_owner_',
+        );
+        addTearDown(() => tempDirectory.deleteSync(recursive: true));
+        final repository = _repositoryFor(tempDirectory);
+        var profile = const ConnectionProfile(
+          id: 'profile-a',
+          origin: 'https://same.example',
+          kind: ConnectionKind.selfHosted,
+        );
+        final controller = ActivityRecordingController(
+          recordingService: _recordingService(adapter: adapter),
+          localActivityRepository: repository,
+          localActivityIdProvider: () => 'owned-recording',
+          activeConnectionProfile: () async => profile,
+          isUploadAuthorized: () async => false,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.start(ActivityType.run);
+        profile = const ConnectionProfile(
+          id: 'profile-b',
+          origin: 'https://same.example',
+          kind: ConnectionKind.selfHosted,
+        );
+        adapter.addPosition(recordingPosition());
+        await pumpEventQueue();
+        await controller.stop();
+
+        final record = (await repository.list()).single;
+        expect(record.connectionOrigin, 'https://same.example');
+        expect(record.connectionProfileId, 'profile-a');
+      },
+    );
+
     test('marks auth failures with safe local upload error code', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final tempDirectory = await Directory.systemTemp.createTemp(
@@ -396,6 +470,7 @@ void main() {
         localActivityRepository: repository,
         localActivityIdProvider: () => 'upload_auth_failed',
         uploadService: _uploadServiceReturning(401),
+        activeConnectionProfile: () async => _profile,
       );
       addTearDown(controller.dispose);
 
@@ -487,6 +562,7 @@ void main() {
         localActivityRepository: repository,
         localActivityIdProvider: () => 'retention_disabled',
         uploadService: _uploadServiceReturning(201),
+        activeConnectionProfile: () async => _profile,
         retentionSettingsRepository: _FakeRetentionSettings(enabled: false),
       );
       addTearDown(controller.dispose);
@@ -517,6 +593,7 @@ void main() {
           localActivityRepository: repository,
           localActivityIdProvider: () => 'cleanup_failed',
           uploadService: _uploadServiceReturning(201),
+          activeConnectionProfile: () async => _profile,
           retentionSettingsRepository: _FakeRetentionSettings(enabled: false),
         );
         addTearDown(controller.dispose);
@@ -555,6 +632,7 @@ void main() {
         localActivityRepository: repository,
         localActivityIdProvider: () => 'retry_5xx',
         uploadService: _uploadServiceWithResponses([500, 201]),
+        activeConnectionProfile: () async => _profile,
       );
       addTearDown(controller.dispose);
 
@@ -570,6 +648,12 @@ void main() {
     });
   });
 }
+
+const _profile = ConnectionProfile(
+  id: 'profile-1',
+  origin: 'https://example.test',
+  kind: ConnectionKind.selfHosted,
+);
 
 class _ThrowingGpxBuilder extends ActivityGpxBuilder {
   const _ThrowingGpxBuilder();
@@ -659,10 +743,12 @@ LocalActivityRepository _repositoryFor(Directory directory) {
 }
 
 ActivityRecordingController _controllerWithActiveStore(
-  ActiveActivityStore store,
-) {
+  ActiveActivityStore store, {
+  LocalActivityRepository? repository,
+}) {
   return ActivityRecordingController(
     recordingService: _recordingService(store: store),
+    localActivityRepository: repository,
   );
 }
 

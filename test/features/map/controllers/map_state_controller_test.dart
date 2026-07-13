@@ -1,30 +1,16 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
 
 import '../../../helpers/fake_location_platform_adapter.dart';
+import '../../../helpers/fake_preferences_store.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late Directory tempDir;
-
-  setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('map_state_ctrl_test_');
-  });
-
-  tearDown(() => tempDir.deleteSync(recursive: true));
-
   MapSettingsRepository makeSettings() {
-    return MapSettingsRepository(
-      preferences: AppPreferencesStore(
-        supportDirectoryProvider: () async => tempDir,
-      ),
-    );
+    return MapSettingsRepository(preferences: FakePreferencesStore());
   }
 
   group('MapStateController', () {

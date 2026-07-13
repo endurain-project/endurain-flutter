@@ -18,7 +18,7 @@ on:
       - master
     paths:
       - docker/flutter-build/Dockerfile
-      - .forgejo/workflows/build-image.yml
+      - .forgejo/workflows/build-ci-docker-image.yml
 
 permissions:
   contents: read
@@ -33,7 +33,7 @@ env:
   # codeberg.org/endurain-project/endurain-flutter-ci.
   IMAGE_NAME: codeberg.org/${{ forgejo.repository }}-ci
   # Image tag. Bump together with the Dockerfile FLUTTER_VERSION arg.
-  IMAGE_TAG: "3.44.1"
+  IMAGE_TAG: "3.44.6"
 
 jobs:
 

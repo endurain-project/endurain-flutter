@@ -91,6 +91,29 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Treeningut ei saanud GPX-iks teisendada';
+
+  @override
+  String get errorHealthImportFailed => 'Treeningut ei saanud importida';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Treeningut ei saanud importida: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Juurdepääs terviseandmetele keelati';
+
+  @override
+  String get errorHealthReadFailed => 'Terviseandmeid ei õnnestunud lugeda';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Tervise sünkroonimine pole selles seadmes saadaval';
+
+  @override
   String get errorLoginError => 'Sisselogimine ebaõnnestus';
 
   @override
@@ -127,9 +150,6 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Te pole sisse logitud';
-
-  @override
-  String get errorPkceVerifierMissing => 'Sisselogimise kinnitajat ei leitud';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -213,9 +233,6 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'SSO-sisselogimist ei õnnestunud süsteemibrauseris avada';
-
-  @override
-  String get ssoMissingSessionId => 'SSO vastus ei sisaldanud seansi ID-d';
 
   @override
   String ssoSignInWith(String provider) {
@@ -372,6 +389,9 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Kiirus';
+
+  @override
+  String get activityStatPace => 'Tempo';
 
   @override
   String get activityStop => 'Peata';
@@ -539,7 +559,65 @@ class AppLocalizationsEt extends AppLocalizations {
   String get settingsTab => 'Sätted';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® on João Vitória Silva registreeritud kaubamärk.';
+
+  @override
   String get settingsScreen => 'Sätted';
+
+  @override
+  String get deviceAccessTitle => 'Seadme juurdepääs';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Hallake juurdepääsu asukoha- ja terviseandmetele';
+
+  @override
+  String get deviceAccessLocationSection => 'Asukoht';
+
+  @override
+  String get deviceAccessHealthSection => 'Terviseandmed';
+
+  @override
+  String get deviceAccessLocationTitle => 'Juurdepääs asukohale';
+
+  @override
+  String get deviceAccessHealthTitle => 'Juurdepääs terviseandmetele';
+
+  @override
+  String get deviceAccessChecking => 'Juurdepääsu kontrollimine…';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'Asukohateenused on välja lülitatud';
+
+  @override
+  String get deviceAccessLocationAlways => 'Lubatud kogu aeg';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Rakenduse kasutamise ajal lubatud';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Süsteemi seadetes blokeeritud';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Pole lubatud';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Pole selles seadmes saadaval';
+
+  @override
+  String get deviceAccessHealthRequired => 'Nõutav on Health Connect';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Tervise juurdepääs seadistatud';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Juurdepääs vajab tähelepanu';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Pole ühendatud';
 
   @override
   String get language => 'Keel';
@@ -561,6 +639,11 @@ class AppLocalizationsEt extends AppLocalizations {
   String get serverSettingsTitle => 'Serveri sätted';
 
   @override
+  String connectedToServer(String server) {
+    return 'Ühendatud serveriga $server';
+  }
+
+  @override
   String get loggedIn => 'Sisse logitud';
 
   @override
@@ -571,6 +654,9 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get serverUrl => 'Serveri URL';
+
+  @override
+  String get serverProtocol => 'Protokoll';
 
   @override
   String get serverUrlHint => 'https://naide.com';
@@ -688,4 +774,168 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Töötlemata aruanne';
+
+  @override
+  String get healthSyncSettingsTitle => 'Tervise sünkroonimine';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importige treeningud oma terviseplatvormilt';
+
+  @override
+  String get healthSyncScreenTitle => 'Tervise sünkroonimine';
+
+  @override
+  String get healthAccessScreenTitle => 'Juurdepääs tervisele';
+
+  @override
+  String get healthAccessRequestedData => 'Taotletud andmed';
+
+  @override
+  String get healthAccessWorkouts => 'Treeningud';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Treeningu marsruudid';
+
+  @override
+  String get healthAccessHeartRate => 'Südame löögisagedus';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Treeningu vahemaa, kalorid ja sammud';
+
+  @override
+  String get healthAccessAllowed => 'Lubatud';
+
+  @override
+  String get healthAccessNeedsAttention => 'Vajab tähelepanu';
+
+  @override
+  String get healthAccessManagedBySystem => 'Hallatakse süsteemiseadetes';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit ei avalda, milliseid andmeid Endurain lugeda saab. Vaadake juurdepääs rakenduses Health üle.';
+
+  @override
+  String get healthAccessReview => 'Vaadake üle juurdepääs tervisele';
+
+  @override
+  String get healthAccessReviewIos => 'Kuidas juurdepääsu üle vaadata';
+
+  @override
+  String get healthAccessDisconnect => 'Katkesta terviseandmete ühendus';
+
+  @override
+  String get healthAccessDisconnectTitle =>
+      'Kas katkestada terviseandmete ühendus?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Selle serveri automaatne import ja kohalik impordiajalugu lähtestatakse. Olemasolevad tegevused jäävad ajalukku.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Avage rakendus Health, puudutage oma profiilipilti ja seejärel valikut Rakendused ja teenused. Valige Endurain ja värskendage andmekategooriaid.';
+
+  @override
+  String get healthSyncAuthorize => 'Ühendage terviseandmetega';
+
+  @override
+  String get healthSyncInstallProvider => 'Installige Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Treeningu sünkroonimiseks on vaja Health Connecti. Jätkamiseks installige see.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Tervise sünkroonimine pole selles seadmes saadaval.';
+
+  @override
+  String get healthSyncSelectAll => 'Valige kõik';
+
+  @override
+  String get healthSyncClearSelection => 'Selge';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Impordi valitud ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Imporditud $count treening(t).';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'GPS-i marsruuti pole';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Valitud ajavahemikus ei leitud ühtegi treeningut.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Mõned treeningud jäeti vahele, kuna juurdepääsu harjutuste marsruudile ei antud. Avage Health Connect → Load ja lubage Enduraini treeningmarsruudid.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Mõned treeningud jäid vahele, kuna Endurain ei osanud nende GPS-i marsruute lugeda. Avage terviserakenduses oma profiil, seejärel Rakendused ja teenused, valige Endurain ja lubage treeningmarsruudid.';
+
+  @override
+  String get healthSyncReviewAccess => 'Vaadake juurdepääs';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Automaatne sünkroonimine jätkamisel';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Importige uued treeningud rakenduse avanemisel automaatselt.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Need treeningud ei sisalda GPS-marsruuti, seega ei saa neid importida. Mõned rakendused (nt Garmin Connect) salvestavad tegevusi Apple Healthile ilma marsruuti jagamata. Apple Watchiga salvestatud treeningud sisaldavad marsruute ja neid saab importida.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Mitteimporditav';
+
+  @override
+  String get healthSyncViewAvailable => 'Saadaval';
+
+  @override
+  String get healthSyncViewImported => 'Imporditud';
+
+  @override
+  String get healthSyncDateRange => 'Treeningute ajavahemik';
+
+  @override
+  String get healthSyncRange30Days => 'Viimased 30 päeva';
+
+  @override
+  String get healthSyncRange3Months => 'Viimased 3 kuud';
+
+  @override
+  String get healthSyncRange6Months => 'Viimased 6 kuud';
+
+  @override
+  String get healthSyncRangeYear => 'Viimane aasta';
+
+  @override
+  String get healthSyncRangeAll => 'Kogu ajalugu';
+
+  @override
+  String get healthSyncRangeCustom => 'Kohandatud ajavahemik';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Selle ühenduse jaoks pole imporditud treeninguid.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Imporditud: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Taasta';
 }

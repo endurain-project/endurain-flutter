@@ -27,12 +27,10 @@ class StoredServerSettings {
 /// rather than growing this aggregator into a grab-bag.
 class ServerSettingsRepository {
   const ServerSettingsRepository({
-    required SecureStorageService storage,
+    required this._storage,
     required AuthService authService,
-    required MapSettingsRepository mapSettingsRepository,
-  }) : _storage = storage,
-       _authService = authService,
-       _mapSettingsRepository = mapSettingsRepository;
+    required this._mapSettingsRepository,
+  }) : _authService = authService;
 
   final SecureStorageService _storage;
   final AuthService _authService;

@@ -91,6 +91,28 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed => 'Nevarēja konvertēt treniņu uz GPX';
+
+  @override
+  String get errorHealthImportFailed => 'Nevarēja importēt treniņu';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Nevarēja importēt treniņu: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Piekļuve veselības datiem tika liegta';
+
+  @override
+  String get errorHealthReadFailed => 'Nevarēja nolasīt veselības datus';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Veselības sinhronizācija šajā ierīcē nav pieejama';
+
+  @override
   String get errorLoginError => 'Neizdevās pieteikties';
 
   @override
@@ -127,10 +149,6 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Jūs neesat pieteicies';
-
-  @override
-  String get errorPkceVerifierMissing =>
-      'Pieteikšanās verificētājs netika atrasts';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -213,9 +231,6 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Neizdevās atvērt SSO pieteikšanos sistēmas pārlūkā';
-
-  @override
-  String get ssoMissingSessionId => 'SSO atbildē nebija sesijas ID';
 
   @override
   String ssoSignInWith(String provider) {
@@ -373,6 +388,9 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Ātrums';
+
+  @override
+  String get activityStatPace => 'Temps';
 
   @override
   String get activityStop => 'Apturēt';
@@ -540,7 +558,66 @@ class AppLocalizationsLv extends AppLocalizations {
   String get settingsTab => 'Iestatījumi';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Endurain® ir João Vitória Silva reģistrēta preču zīme.';
+
+  @override
   String get settingsScreen => 'Iestatījumi';
+
+  @override
+  String get deviceAccessTitle => 'Ierīces piekļuve';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'Pārvaldiet piekļuvi atrašanās vietas un veselības datiem';
+
+  @override
+  String get deviceAccessLocationSection => 'Atrašanās vieta';
+
+  @override
+  String get deviceAccessHealthSection => 'Veselības dati';
+
+  @override
+  String get deviceAccessLocationTitle => 'Piekļuve atrašanās vietai';
+
+  @override
+  String get deviceAccessHealthTitle => 'Piekļuve veselības datiem';
+
+  @override
+  String get deviceAccessChecking => 'Notiek piekļuves pārbaude…';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'Atrašanās vietas pakalpojumi ir izslēgti';
+
+  @override
+  String get deviceAccessLocationAlways => 'Atļauts visu laiku';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Atļauts lietotnes lietošanas laikā';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Bloķēts sistēmas iestatījumos';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Nav atļauts';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Nav pieejams šajā ierīcē';
+
+  @override
+  String get deviceAccessHealthRequired => 'Nepieciešams Health Connect';
+
+  @override
+  String get deviceAccessHealthSetUp =>
+      'Ir izveidota piekļuve veselības aprūpei';
+
+  @override
+  String get deviceAccessHealthNeedsAttention => 'Piekļuvei jāpievērš uzmanība';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Nav savienots';
 
   @override
   String get language => 'Valoda';
@@ -562,6 +639,11 @@ class AppLocalizationsLv extends AppLocalizations {
   String get serverSettingsTitle => 'Servera iestatījumi';
 
   @override
+  String connectedToServer(String server) {
+    return 'Izveidots savienojums ar $server';
+  }
+
+  @override
   String get loggedIn => 'Pieteicies';
 
   @override
@@ -572,6 +654,9 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get serverUrl => 'Servera URL';
+
+  @override
+  String get serverProtocol => 'Protokols';
 
   @override
   String get serverUrlHint => 'https://piemers.com';
@@ -689,4 +774,168 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Neapstrādāts pārskats';
+
+  @override
+  String get healthSyncSettingsTitle => 'Veselības sinhronizācija';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importējiet treniņus no savas veselības platformas';
+
+  @override
+  String get healthSyncScreenTitle => 'Veselības sinhronizācija';
+
+  @override
+  String get healthAccessScreenTitle => 'Veselības pieejamība';
+
+  @override
+  String get healthAccessRequestedData => 'Pieprasītie dati';
+
+  @override
+  String get healthAccessWorkouts => 'Treniņi';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Treniņu maršruti';
+
+  @override
+  String get healthAccessHeartRate => 'Sirdsdarbība';
+
+  @override
+  String get healthAccessWorkoutSummary =>
+      'Treniņa distance, kalorijas un soļi';
+
+  @override
+  String get healthAccessAllowed => 'Atļauts';
+
+  @override
+  String get healthAccessNeedsAttention => 'Nepieciešama uzmanība';
+
+  @override
+  String get healthAccessManagedBySystem => 'Pārvalda sistēmas iestatījumos';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'HealthKit neatklāj, kādus datus Endurain var nolasīt. Pārskatiet piekļuvi lietotnē Health.';
+
+  @override
+  String get healthAccessReview => 'Pārskatiet veselības pieejamību';
+
+  @override
+  String get healthAccessReviewIos => 'Kā pārskatīt piekļuvi';
+
+  @override
+  String get healthAccessDisconnect => 'Atvienot veselības datus';
+
+  @override
+  String get healthAccessDisconnectTitle => 'Atvienot veselības datus?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Šī servera automātiskā importēšana un lokālā importēšanas vēsture tiks atiestatīta. Esošās aktivitātes paliks vēsturē.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Atveriet lietotni Health, pieskarieties savam profila attēlam un pēc tam — Programmas un pakalpojumi. Atlasiet Endurain un atjauniniet datu kategorijas.';
+
+  @override
+  String get healthSyncAuthorize =>
+      'Izveidojiet savienojumu ar veselības datiem';
+
+  @override
+  String get healthSyncInstallProvider => 'Instalējiet Health Connect';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Lai sinhronizētu treniņus, ir nepieciešams Health Connect. Instalējiet to, lai turpinātu.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Veselības sinhronizācija šajā ierīcē nav pieejama.';
+
+  @override
+  String get healthSyncSelectAll => 'Atlasiet visu';
+
+  @override
+  String get healthSyncClearSelection => 'Skaidrs';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Importēt atlasīto ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Importēts(-i) $count treniņš(-i).';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Nav GPS maršruta';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Atlasītajā periodā nav atrasts neviens treniņš.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Daži treniņi tika izlaisti, jo netika piešķirta piekļuve vingrinājumu maršrutam. Atveriet Health Connect → Atļaujas un atļaujiet Endurain vingrojumu maršrutus.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Daži treniņi tika izlaisti, jo Endurain nevarēja nolasīt savus GPS maršrutus. Lietotnē Health atveriet savu profilu, pēc tam Programmas un pakalpojumi, atlasiet Endurain un atļaujiet Workout Routes.';
+
+  @override
+  String get healthSyncReviewAccess => 'Pārskatiet piekļuvi';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Automātiskā sinhronizācija, atsākot';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Kad lietotne tiek atvērta, automātiski importējiet jaunus treniņus.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Šajos treniņos nav iekļauts GPS maršruts, tāpēc tos nevar importēt. Dažas lietotnes (piemēram, Garmin Connect) ieraksta darbības pakalpojumā Apple Health, nekoplietojot maršrutu. Ar Apple Watch ierakstītajos treniņos ir iekļauti maršruti, un tos var importēt.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Neimportējams';
+
+  @override
+  String get healthSyncViewAvailable => 'Pieejami';
+
+  @override
+  String get healthSyncViewImported => 'Importēti';
+
+  @override
+  String get healthSyncDateRange => 'Treniņu periods';
+
+  @override
+  String get healthSyncRange30Days => 'Pēdējās 30 dienas';
+
+  @override
+  String get healthSyncRange3Months => 'Pēdējie 3 mēneši';
+
+  @override
+  String get healthSyncRange6Months => 'Pēdējie 6 mēneši';
+
+  @override
+  String get healthSyncRangeYear => 'Pēdējais gads';
+
+  @override
+  String get healthSyncRangeAll => 'Visa vēsture';
+
+  @override
+  String get healthSyncRangeCustom => 'Pielāgots periods';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Šim savienojumam nav importētu treniņu.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Importēts: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Atjaunot';
 }

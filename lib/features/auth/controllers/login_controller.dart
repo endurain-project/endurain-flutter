@@ -8,19 +8,18 @@ import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_links_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
+import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 class LoginController extends ChangeNotifier {
   LoginController({
-    required AuthCoordinator authCoordinator,
+    required this._authCoordinator,
     AppLinksService? appLinksService,
-    MapSettingsRepository? mapSettingsRepository,
+    this._mapSettingsRepository,
     AppConfig? config,
     DiagnosticsRecorder? diagnostics,
-  }) : _authCoordinator = authCoordinator,
-       _appLinksService = appLinksService ?? DefaultAppLinksService(),
-       _mapSettingsRepository = mapSettingsRepository,
+  }) : _appLinksService = appLinksService ?? DefaultAppLinksService(),
        _config = config ?? AppConfig.defaults,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
@@ -92,7 +91,6 @@ class LoginController extends ChangeNotifier {
     try {
       final serverUrl = serverUrlController.text.trim();
       final settings = await _authCoordinator.getServerSettings(serverUrl);
-      await _mapSettingsRepository?.saveFromServerSettings(settings);
 
       List<IdentityProvider> providers = const [];
       if (settings.ssoEnabled) {
@@ -160,6 +158,7 @@ class LoginController extends ChangeNotifier {
         _mfaUsername = result.username;
         _setLoading(false);
       } else {
+        await _commitServerSettings();
         _onLoginSuccess?.call();
       }
     } catch (error) {
@@ -182,6 +181,7 @@ class LoginController extends ChangeNotifier {
         username: username,
         mfaCode: mfaCodeController.text.trim(),
       );
+      await _commitServerSettings();
       _onLoginSuccess?.call();
     } catch (error) {
       _setLoading(false);
@@ -238,6 +238,7 @@ class LoginController extends ChangeNotifier {
 
     try {
       await _authCoordinator.exchangeSsoSessionForTokens(sessionId);
+      await _commitServerSettings();
       _onLoginSuccess?.call();
     } catch (error) {
       _setLoading(false);
@@ -252,6 +253,19 @@ class LoginController extends ChangeNotifier {
 
   void _notifyError(Object error) {
     _onError?.call(error);
+  }
+
+  Future<void> _commitServerSettings() async {
+    final settings = _serverSettings;
+    final origin = ServerUrlResolver.normalize(
+      serverUrlController.text,
+      config: _config,
+    );
+    if (settings == null || origin.isEmpty) return;
+    await _mapSettingsRepository?.saveFromServerSettings(
+      settings,
+      origin: origin,
+    );
   }
 
   @override

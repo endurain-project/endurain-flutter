@@ -93,17 +93,28 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             ))
             return
         }
+        if store.hasRecoverableData() {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorState,
+                message: "A recoverable session already exists",
+                details: nil
+            ))
+            return
+        }
         let activityType = (arguments?["activityType"] as? String) ?? ""
         let startedAt = (arguments?["startedAt"] as? String) ?? IsoTime.nowUtc()
+        let connectionOrigin = arguments?["connectionOrigin"] as? String
+        let connectionProfileId = arguments?["connectionProfileId"] as? String
 
         let session = ActiveActivitySessionData(
             localSessionId: localSessionId,
             activityType: activityType,
             status: ActiveActivitySessionData.statusRecording,
             startedAt: startedAt,
+            connectionOrigin: connectionOrigin,
+            connectionProfileId: connectionProfileId,
             currentSegmentIndex: 0
         )
-        store.clear()
         store.saveSession(session)
 
         if !recorder.startCollection() {
@@ -211,12 +222,38 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
     private func handleDrain(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? [String: Any]
         let sinceOffset = JsonScalar.int(arguments?["sinceOffset"]) ?? 0
-        let points = store.readPoints(sinceOffset: sinceOffset).map { $0.toMap() }
-        result(points)
+        do {
+            let points = try store.readPoints(sinceOffset: sinceOffset).map { $0.toMap() }
+            result(points)
+        } catch {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorStore,
+                message: "Unable to read persisted recording points",
+                details: nil
+            ))
+        }
     }
 
     private func handleRecover(result: @escaping FlutterResult) {
-        result(store.loadSession()?.toMap())
+        guard let session = store.loadSession() else {
+            result(nil)
+            return
+        }
+        guard session.status == ActiveActivitySessionData.statusRecording else {
+            result(session.toMap())
+            return
+        }
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let paused = session.copyWith(
+            status: ActiveActivitySessionData.statusPaused,
+            pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
+            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: nowMillis)
+        )
+        // Save the pause before stopping Core Location so an in-flight update
+        // is rejected by the recorder's recording-state guard.
+        store.saveSession(paused)
+        recorder.stopCollection()
+        result(paused.toMap())
     }
 
     /// Accumulated elapsed seconds, mirroring the Dart geolocator recorder:
@@ -260,4 +297,5 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
     static let errorState = "invalid_state"
     static let errorService = "service_start_failed"
     static let errorVersion = "unsupported_version"
+    static let errorStore = "store_read_failed"
 }

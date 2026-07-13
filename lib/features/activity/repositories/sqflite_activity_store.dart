@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -21,7 +20,7 @@ class SqfliteActivityStore implements LocalActivityStore {
     : _factory = databaseFactory ?? _platformFactory(),
       _path = databasePath;
 
-  static const int _schemaVersion = 1;
+  static const int _schemaVersion = 6;
   static const String _dbFileName = 'activity.db';
   static const String _tableVersion = 'schema_version';
   static const String _tableActivity = 'local_activity';
@@ -44,6 +43,11 @@ class SqfliteActivityStore implements LocalActivityStore {
   /// Never edit a shipped migration — only append new ones.
   late final Map<int, Future<void> Function(Database)> _migrations = {
     1: _migrateToV1,
+    2: _migrateToV2,
+    3: _migrateToV3,
+    4: _migrateToV4,
+    5: _migrateToV5,
+    6: _migrateToV6,
   };
 
   static DatabaseFactory _platformFactory() => databaseFactorySqflitePlugin;
@@ -52,7 +56,10 @@ class SqfliteActivityStore implements LocalActivityStore {
     if (_db != null) return _db!;
     final path =
         _path ??
-        '${await _factory.getDatabasesPath()}${Platform.pathSeparator}$_dbFileName';
+        await privateDatabasePath(
+          databaseFactory: _factory,
+          fileName: _dbFileName,
+        );
     _db = await _factory.openDatabase(
       path,
       options: OpenDatabaseOptions(
@@ -125,6 +132,79 @@ class SqfliteActivityStore implements LocalActivityStore {
     ''');
   }
 
+  /// Schema version 2: adds the optional `idempotency_key` column used for
+  /// stable server-side upload de-duplication (health imports derive it from
+  /// the source workout UUID; GPS recordings leave it null and fall back to
+  /// the record id).
+  Future<void> _migrateToV2(Database db) async {
+    await db.execute(
+      'ALTER TABLE $_tableActivity ADD COLUMN idempotency_key TEXT',
+    );
+  }
+
+  Future<void> _migrateToV3(Database db) async {
+    await db.execute(
+      'ALTER TABLE $_tableActivity ADD COLUMN connection_origin TEXT',
+    );
+  }
+
+  Future<void> _migrateToV4(Database db) async {
+    await db.execute('ALTER TABLE $_tableActivity RENAME TO local_activity_v3');
+    await db.execute('''
+      CREATE TABLE $_tableActivity (
+        id                               TEXT PRIMARY KEY,
+        activity_type                    TEXT NOT NULL,
+        started_at                       TEXT NOT NULL,
+        ended_at                         TEXT NOT NULL,
+        elapsed_duration_seconds         INTEGER NOT NULL,
+        distance_meters                  REAL NOT NULL,
+        average_speed_meters_per_second  REAL,
+        point_count                      INTEGER NOT NULL,
+        gpx_file_name                    TEXT NOT NULL,
+        upload_status                    TEXT NOT NULL,
+        created_at                       TEXT NOT NULL,
+        updated_at                       TEXT NOT NULL,
+        uploaded_at                      TEXT,
+        last_upload_attempt_at           TEXT,
+        last_upload_error_code           TEXT,
+        idempotency_key                  TEXT,
+        connection_origin                TEXT
+      )
+    ''');
+    await db.execute('''
+      INSERT INTO $_tableActivity (
+        id, activity_type, started_at, ended_at,
+        elapsed_duration_seconds, distance_meters,
+        average_speed_meters_per_second, point_count,
+        gpx_file_name, upload_status, created_at, updated_at,
+        uploaded_at, last_upload_attempt_at, last_upload_error_code,
+        idempotency_key, connection_origin
+      )
+      SELECT
+        id, activity_type, started_at, ended_at,
+        elapsed_duration_seconds, distance_meters,
+        average_speed_meters_per_second, point_count,
+        gpx_file_name, upload_status, created_at, updated_at,
+        uploaded_at, last_upload_attempt_at, last_upload_error_code,
+        idempotency_key, connection_origin
+      FROM local_activity_v3
+    ''');
+    await db.execute('DROP TABLE local_activity_v3');
+  }
+
+  Future<void> _migrateToV5(Database db) async {
+    await db.execute(
+      'ALTER TABLE $_tableActivity ADD COLUMN connection_profile_id TEXT',
+    );
+  }
+
+  Future<void> _migrateToV6(Database db) async {
+    await db.execute(
+      'ALTER TABLE $_tableActivity '
+      'ADD COLUMN auto_retry_eligible INTEGER NOT NULL DEFAULT 1',
+    );
+  }
+
   @override
   Future<List<LocalActivityRecord>> list() async {
     final db = await _open();
@@ -143,6 +223,19 @@ class SqfliteActivityStore implements LocalActivityStore {
     );
     if (rows.isEmpty) return null;
     return _fromRow(rows.first);
+  }
+
+  @override
+  Future<List<LocalActivityRecord>> getByIds(Set<String> ids) async {
+    if (ids.isEmpty) return const [];
+    final db = await _open();
+    final placeholders = List.filled(ids.length, '?').join(', ');
+    final rows = await db.query(
+      _tableActivity,
+      where: 'id IN ($placeholders)',
+      whereArgs: ids.toList(),
+    );
+    return rows.map(_fromRow).toList();
   }
 
   @override
@@ -226,7 +319,10 @@ class SqfliteActivityStore implements LocalActivityStore {
       'uploaded_at': r.uploadedAt?.toUtcIso8601(),
       'last_upload_attempt_at': r.lastUploadAttemptAt?.toUtcIso8601(),
       'last_upload_error_code': r.lastUploadErrorCode?.name,
-      'server_activity_id': r.serverActivityId,
+      'auto_retry_eligible': r.autoRetryEligible ? 1 : 0,
+      'idempotency_key': r.idempotencyKey,
+      'connection_origin': r.connectionOrigin,
+      'connection_profile_id': r.connectionProfileId,
     };
   }
 
@@ -248,7 +344,10 @@ class SqfliteActivityStore implements LocalActivityStore {
       uploadedAt: jsonDateTime(row['uploaded_at']),
       lastUploadAttemptAt: jsonDateTime(row['last_upload_attempt_at']),
       lastUploadErrorCode: _errorCode(row['last_upload_error_code']),
-      serverActivityId: row['server_activity_id'] as String?,
+      autoRetryEligible: (row['auto_retry_eligible'] as int? ?? 1) == 1,
+      idempotencyKey: row['idempotency_key'] as String?,
+      connectionOrigin: row['connection_origin'] as String?,
+      connectionProfileId: row['connection_profile_id'] as String?,
     );
   }
 

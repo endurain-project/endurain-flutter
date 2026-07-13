@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -26,12 +25,10 @@ SqfliteActivityStore createTestActivityStore(Directory directory) {
 /// in-process ffi SQLite database stored in the same directory so each test
 /// gets an isolated database that is removed with its temp directory.
 LocalActivityRepository createTestLocalActivityRepository(
-  Directory supportDirectory, {
-  DiagnosticsRecorder? diagnostics,
-}) {
+  Directory supportDirectory,
+) {
   return LocalActivityRepository(
     supportDirectoryProvider: () async => supportDirectory,
-    diagnostics: diagnostics,
     store: createTestActivityStore(supportDirectory),
   );
 }

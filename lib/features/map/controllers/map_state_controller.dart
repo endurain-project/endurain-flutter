@@ -9,10 +9,9 @@ import 'package:endurain/features/map/repositories/map_settings_repository.dart'
 
 class MapStateController extends ChangeNotifier {
   MapStateController({
-    required LocationService locationService,
+    required this._locationService,
     required MapSettingsRepository mapSettingsRepository,
-  }) : _locationService = locationService,
-       _mapSettingsRepository = mapSettingsRepository;
+  }) : _mapSettingsRepository = mapSettingsRepository;
 
   final LocationService _locationService;
   final MapSettingsRepository _mapSettingsRepository;

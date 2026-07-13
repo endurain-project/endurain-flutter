@@ -78,6 +78,18 @@ void main() {
       await store.close();
     });
 
+    test('getByIds returns matching records and ignores missing ids', () async {
+      final store = makeStore();
+      await store.upsert(_record(id: 'a'));
+      await store.upsert(_record(id: 'b'));
+      await store.upsert(_record(id: 'c'));
+
+      final results = await store.getByIds({'a', 'c', 'missing'});
+
+      expect(results.map((record) => record.id).toSet(), {'a', 'c'});
+      await store.close();
+    });
+
     test('delete removes a record', () async {
       final store = makeStore();
       await store.upsert(_record(id: 'a1'));
@@ -99,13 +111,15 @@ void main() {
       final record = _record(id: 'r1').copyWith(
         uploadStatus: LocalActivityUploadStatus.uploaded,
         uploadedAt: now,
-        serverActivityId: 'srv-42',
+        connectionOrigin: 'https://example.test',
+        connectionProfileId: 'profile-1',
       );
       await store.upsert(record);
 
       final retrieved = await store.get('r1');
       expect(retrieved?.uploadedAt, now);
-      expect(retrieved?.serverActivityId, 'srv-42');
+      expect(retrieved?.connectionOrigin, 'https://example.test');
+      expect(retrieved?.connectionProfileId, 'profile-1');
       await store.close();
     });
 
@@ -115,7 +129,6 @@ void main() {
 
       final retrieved = await store.get('r2');
       expect(retrieved?.uploadedAt, isNull);
-      expect(retrieved?.serverActivityId, isNull);
       expect(retrieved?.averageSpeedMetersPerSecond, isNull);
       await store.close();
     });
@@ -262,10 +275,109 @@ void main() {
       final db = await databaseFactoryFfi.openDatabase(dbPath);
       final rows = await db.query('schema_version');
       expect(rows, hasLength(1));
-      expect(rows.first['version'], 1);
+      expect(rows.first['version'], 6);
+      final columns = await db.rawQuery('PRAGMA table_info(local_activity)');
+      expect(
+        columns.map((column) => column['name']),
+        isNot(contains('server_activity_id')),
+      );
       await db.close();
       await store.close();
     });
+
+    test('persists and restores the idempotency key', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      final record = _record(
+        id: 'idem-1',
+      ).copyWith(idempotencyKey: 'health_uuid');
+      await store.upsert(record);
+      await store.close();
+
+      final reopened = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      final restored = await reopened.get('idem-1');
+      expect(restored?.idempotencyKey, 'health_uuid');
+      expect(restored?.effectiveIdempotencyKey, 'health_uuid');
+      await reopened.close();
+    });
+
+    test('persists automatic retry eligibility', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      await store.upsert(
+        _record(id: 'manual-only').copyWith(autoRetryEligible: false),
+      );
+      await store.close();
+
+      final reopened = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      expect((await reopened.get('manual-only'))?.autoRetryEligible, isFalse);
+      await reopened.close();
+    });
+
+    test(
+      'upgrades a v1 database by adding the idempotency_key column',
+      () async {
+        final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+        // Simulate a database created by schema version 1 (no idempotency_key).
+        final v1 = await databaseFactoryFfi.openDatabase(
+          dbPath,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              await db.execute(
+                'CREATE TABLE schema_version (version INTEGER NOT NULL)',
+              );
+              await db.insert('schema_version', {'version': 1});
+              await db.execute('''
+              CREATE TABLE local_activity (
+                id                               TEXT PRIMARY KEY,
+                activity_type                    TEXT NOT NULL,
+                started_at                       TEXT NOT NULL,
+                ended_at                         TEXT NOT NULL,
+                elapsed_duration_seconds         INTEGER NOT NULL,
+                distance_meters                  REAL NOT NULL,
+                average_speed_meters_per_second  REAL,
+                point_count                      INTEGER NOT NULL,
+                gpx_file_name                    TEXT NOT NULL,
+                upload_status                    TEXT NOT NULL,
+                created_at                       TEXT NOT NULL,
+                updated_at                       TEXT NOT NULL,
+                uploaded_at                      TEXT,
+                last_upload_attempt_at           TEXT,
+                last_upload_error_code           TEXT,
+                server_activity_id               TEXT
+              )
+            ''');
+            },
+          ),
+        );
+        await v1.close();
+
+        final store = SqfliteActivityStore(
+          databaseFactory: databaseFactoryFfi,
+          databasePath: dbPath,
+        );
+        // Opening triggers onUpgrade; a write exercises the new column.
+        await store.upsert(
+          _record(id: 'upgraded').copyWith(idempotencyKey: 'health_x'),
+        );
+        final restored = await store.get('upgraded');
+        expect(restored?.idempotencyKey, 'health_x');
+        await store.close();
+      },
+    );
   });
 }
 

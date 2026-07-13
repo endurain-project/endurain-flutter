@@ -43,6 +43,13 @@
 	<string>This app uses location to record activities while the app is in the background.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app uses location to show your position on the map and record activities while you are using the app.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Endurain reads your workout history from HealthKit to let you import activities and keep your training log in sync.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

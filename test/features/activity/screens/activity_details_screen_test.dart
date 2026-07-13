@@ -344,9 +344,8 @@ class _LoadedController extends LocalActivityHistoryController {
   _LoadedController({
     required this.record,
     this.hasGpxValue = false,
-    bool busy = false,
-  }) : _busy = busy,
-       super(
+    this._busy = false,
+  }) : super(
          repository: LocalActivityRepository(
            supportDirectoryProvider: () async => throw StateError('unused'),
          ),

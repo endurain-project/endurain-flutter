@@ -90,6 +90,11 @@ class RecordingLocationPlatformAdapter implements LocationPlatformAdapter {
   }
 
   @override
+  Future<bool> openLocationSettings() async {
+    return true;
+  }
+
+  @override
   Future<bool> openAppSettings() async {
     return true;
   }

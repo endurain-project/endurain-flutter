@@ -14,6 +14,7 @@ class AppConfig {
   const AppConfig({
     this.apiBasePath = defaultApiBasePath,
     this.allowedTileServerHosts,
+    this.healthSyncEnabled = true,
     this.cloudBaseUrl,
   });
 
@@ -34,6 +35,21 @@ class AppConfig {
   ///
   /// A build can set this to restrict users to approved tile servers.
   final Set<String>? allowedTileServerHosts;
+
+  /// Safety / rollout flag for the Health platform sync feature.
+  ///
+  /// Defaults to `true` for all builds.
+  ///
+  /// Uses:
+  /// - Kill switch: disable without a code revert by passing
+  ///   `--dart-define=ENABLE_HEALTH_SYNC=false` at build time.
+  /// - Clean degradation: forces a tested "off" code path so GPS recording and
+  ///   manual upload keep working when health sync is disabled.
+  /// - Testing: disable in unit/widget tests that must not touch native APIs.
+  ///
+  /// Runtime availability is decided separately via `getSdkStatus()` — this
+  /// flag only gates whether the feature is wired up at all.
+  final bool healthSyncEnabled;
 
   /// Optional origin of the official managed ("Endurain Cloud") service.
   ///
@@ -64,6 +80,8 @@ class AppConfig {
   /// enforcement points (URL resolution, form validation).
   bool allowInsecureTransportFor(String url) => !_isCloudOrigin(url);
 
+  bool isManagedOrigin(String url) => _isCloudOrigin(url);
+
   /// Whether [url] targets the official [cloudBaseUrl] origin (host match).
   bool _isCloudOrigin(String url) {
     final cloud = cloudBaseUrl;
@@ -75,8 +93,11 @@ class AppConfig {
     if (target == null || cloudUri == null || !target.hasAuthority) {
       return false;
     }
-    return target.host.toLowerCase() == cloudUri.host.toLowerCase();
+    return _canonicalHost(target.host) == _canonicalHost(cloudUri.host);
   }
+
+  String _canonicalHost(String host) =>
+      host.toLowerCase().replaceFirst(RegExp(r'\.$'), '');
 
   /// The current Endurain API version path prefix.
   static const String defaultApiBasePath = '/api/v1';

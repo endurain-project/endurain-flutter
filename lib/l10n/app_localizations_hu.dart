@@ -92,6 +92,30 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get errorHealthGpxBuildFailed =>
+      'Nem sikerült az edzést GPX-re konvertálni';
+
+  @override
+  String get errorHealthImportFailed => 'Nem sikerült importálni az edzést';
+
+  @override
+  String errorHealthImportFailedWithDetails(String details) {
+    return 'Nem sikerült importálni az edzést: $details';
+  }
+
+  @override
+  String get errorHealthPermissionDenied =>
+      'Az egészségügyi adatokhoz való hozzáférés megtagadva';
+
+  @override
+  String get errorHealthReadFailed =>
+      'Nem sikerült beolvasni az egészségügyi adatokat';
+
+  @override
+  String get errorHealthUnavailable =>
+      'Az állapotszinkronizálás nem érhető el ezen az eszközön';
+
+  @override
   String get errorLoginError => 'Nem sikerült bejelentkezni';
 
   @override
@@ -130,10 +154,6 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get errorNotAuthenticated => 'Nincs bejelentkezve';
-
-  @override
-  String get errorPkceVerifierMissing =>
-      'A bejelentkezési ellenőrző nem található';
 
   @override
   String get errorPkceVerifierMissingRestartLogin =>
@@ -218,10 +238,6 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get ssoBrowserLaunchFailed =>
       'Nem sikerült megnyitni az SSO-bejelentkezést a rendszer böngészőjében';
-
-  @override
-  String get ssoMissingSessionId =>
-      'Az SSO-válasz nem tartalmazott munkamenet-azonosítót';
 
   @override
   String ssoSignInWith(String provider) {
@@ -379,6 +395,9 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get activityStatSpeed => 'Sebesség';
+
+  @override
+  String get activityStatPace => 'Tempó';
 
   @override
   String get activityStop => 'Leállítás';
@@ -546,7 +565,66 @@ class AppLocalizationsHu extends AppLocalizations {
   String get settingsTab => 'Beállítások';
 
   @override
+  String get endurainTrademarkNotice =>
+      'Az Endurain® João Vitória Silva bejegyzett védjegye.';
+
+  @override
   String get settingsScreen => 'Beállítások';
+
+  @override
+  String get deviceAccessTitle => 'Eszköz hozzáférés';
+
+  @override
+  String get deviceAccessSubtitle =>
+      'A hely- és egészségügyi adatokhoz való hozzáférés kezelése';
+
+  @override
+  String get deviceAccessLocationSection => 'Helyszín';
+
+  @override
+  String get deviceAccessHealthSection => 'Egészségügyi adatok';
+
+  @override
+  String get deviceAccessLocationTitle => 'Helyhozzáférés';
+
+  @override
+  String get deviceAccessHealthTitle => 'Hozzáférés az egészségügyi adatokhoz';
+
+  @override
+  String get deviceAccessChecking => 'Hozzáférés ellenőrzése…';
+
+  @override
+  String get deviceAccessLocationServicesOff =>
+      'A helymeghatározási szolgáltatások ki vannak kapcsolva';
+
+  @override
+  String get deviceAccessLocationAlways => 'Mindig engedélyezett';
+
+  @override
+  String get deviceAccessLocationWhileUsing =>
+      'Az alkalmazás használata során engedélyezett';
+
+  @override
+  String get deviceAccessLocationBlocked => 'Letiltva a rendszerbeállításokban';
+
+  @override
+  String get deviceAccessLocationNotAllowed => 'Nem engedélyezett';
+
+  @override
+  String get deviceAccessHealthUnavailable => 'Nem érhető el ezen az eszközön';
+
+  @override
+  String get deviceAccessHealthRequired => 'A Health Connect szükséges';
+
+  @override
+  String get deviceAccessHealthSetUp => 'Egészségügyi hozzáférés beállítása';
+
+  @override
+  String get deviceAccessHealthNeedsAttention =>
+      'A hozzáférés figyelmet igényel';
+
+  @override
+  String get deviceAccessHealthNotConnected => 'Nincs csatlakoztatva';
 
   @override
   String get language => 'Nyelv';
@@ -568,6 +646,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get serverSettingsTitle => 'Kiszolgálóbeállítások';
 
   @override
+  String connectedToServer(String server) {
+    return 'Csatlakozva a következőhöz: $server';
+  }
+
+  @override
   String get loggedIn => 'Bejelentkezve';
 
   @override
@@ -578,6 +661,9 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get serverUrl => 'Kiszolgáló URL-címe';
+
+  @override
+  String get serverProtocol => 'Protokoll';
 
   @override
   String get serverUrlHint => 'https://pelda.com';
@@ -695,4 +781,169 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get diagnosticsRawReport => 'Nyers jelentés';
+
+  @override
+  String get healthSyncSettingsTitle => 'Egészségügyi szinkron';
+
+  @override
+  String get healthSyncSettingsSubtitle =>
+      'Importáljon edzéseket egészségügyi platformjáról';
+
+  @override
+  String get healthSyncScreenTitle => 'Egészségügyi szinkron';
+
+  @override
+  String get healthAccessScreenTitle => 'Egészségügyi hozzáférés';
+
+  @override
+  String get healthAccessRequestedData => 'Kért adatok';
+
+  @override
+  String get healthAccessWorkouts => 'Edzések';
+
+  @override
+  String get healthAccessWorkoutRoutes => 'Edzés útvonalak';
+
+  @override
+  String get healthAccessHeartRate => 'Pulzusszám';
+
+  @override
+  String get healthAccessWorkoutSummary => 'Edzéstáv, kalóriák és lépések';
+
+  @override
+  String get healthAccessAllowed => 'Engedélyezett';
+
+  @override
+  String get healthAccessNeedsAttention => 'Figyelmet igényel';
+
+  @override
+  String get healthAccessManagedBySystem =>
+      'A rendszer beállításaiban kezelhető';
+
+  @override
+  String get healthAccessSystemManagedNotice =>
+      'A HealthKit nem hozza nyilvánosságra, hogy az Endurain mely adatokat tud olvasni. Tekintse át a hozzáférést az Egészség alkalmazásban.';
+
+  @override
+  String get healthAccessReview => 'Tekintse át az egészségügyi hozzáférést';
+
+  @override
+  String get healthAccessReviewIos => 'A hozzáférés felülvizsgálata';
+
+  @override
+  String get healthAccessDisconnect => 'Egészségügyi adatok leválasztása';
+
+  @override
+  String get healthAccessDisconnectTitle =>
+      'Leválasztja az egészségügyi adatokat?';
+
+  @override
+  String get healthAccessDisconnectMessage =>
+      'Az automatikus importálás és a helyi importálási előzmények ennél a szervernél alaphelyzetbe állnak. A meglévő tevékenységek megmaradnak az előzményekben.';
+
+  @override
+  String get healthAccessReviewIosInstructions =>
+      'Nyissa meg az Egészség alkalmazást, koppintson a profilképére, majd az Alkalmazások és szolgáltatások elemre. Válassza az Enduraint, és frissítse az adatkategóriákat.';
+
+  @override
+  String get healthSyncAuthorize => 'Csatlakozás egészségügyi adatokhoz';
+
+  @override
+  String get healthSyncInstallProvider => 'Telepítse a Health Connectet';
+
+  @override
+  String get healthSyncInstallProviderDescription =>
+      'Az edzések szinkronizálásához a Health Connect szükséges. A folytatáshoz telepítse.';
+
+  @override
+  String get healthSyncUnsupported =>
+      'Az állapotszinkronizálás nem érhető el ezen az eszközön.';
+
+  @override
+  String get healthSyncSelectAll => 'Válassza ki az összeset';
+
+  @override
+  String get healthSyncClearSelection => 'Világos';
+
+  @override
+  String healthSyncImportSelected(int count) {
+    return 'Kijelölt importálás ($count)';
+  }
+
+  @override
+  String healthSyncImportedCount(int count) {
+    return 'Importált $count edzés.';
+  }
+
+  @override
+  String get healthSyncNoRouteLabel => 'Nincs GPS útvonal';
+
+  @override
+  String get healthSyncEmptyState =>
+      'Nem található edzés a kiválasztott időszakban.';
+
+  @override
+  String get healthSyncRouteConsentGuidance =>
+      'Néhány edzést kihagytunk, mert nem biztosítottak hozzáférést az edzési útvonalhoz. Nyissa meg a Health Connect → Engedélyek lehetőséget, és engedélyezze az edzési útvonalakat az Endurain számára.';
+
+  @override
+  String get healthSyncRouteConsentGuidanceIos =>
+      'Néhány edzést kihagytak, mert az Endurain nem tudta leolvasni a GPS-útvonalait. Az Egészség alkalmazásban nyissa meg profilját, majd az Alkalmazások és szolgáltatások lehetőséget, válassza az Enduraint, és engedélyezze az edzési útvonalakat.';
+
+  @override
+  String get healthSyncReviewAccess => 'Tekintse át a hozzáférést';
+
+  @override
+  String get healthSyncAutoSyncTitle =>
+      'Automatikus szinkronizálás folytatáskor';
+
+  @override
+  String get healthSyncAutoSyncSubtitle =>
+      'Az alkalmazás megnyitásakor automatikusan importáljon új edzéseket.';
+
+  @override
+  String get healthSyncNoRoutesExplanation =>
+      'Ezek az edzések nem tartalmaznak GPS útvonalat, így nem importálhatók. Egyes alkalmazások (például a Garmin Connect) az útvonal megosztása nélkül rögzítik a tevékenységeket az Apple Health számára. Az Apple Watch segítségével rögzített edzések útvonalakat tartalmaznak, és importálhatók.';
+
+  @override
+  String get healthSyncBadgeNonImportable => 'Nem importálható';
+
+  @override
+  String get healthSyncViewAvailable => 'Elérhető';
+
+  @override
+  String get healthSyncViewImported => 'Importált';
+
+  @override
+  String get healthSyncDateRange => 'Edzések időszaka';
+
+  @override
+  String get healthSyncRange30Days => 'Utolsó 30 nap';
+
+  @override
+  String get healthSyncRange3Months => 'Utolsó 3 hónap';
+
+  @override
+  String get healthSyncRange6Months => 'Utolsó 6 hónap';
+
+  @override
+  String get healthSyncRangeYear => 'Utolsó év';
+
+  @override
+  String get healthSyncRangeAll => 'Teljes előzmény';
+
+  @override
+  String get healthSyncRangeCustom => 'Egyéni időszak';
+
+  @override
+  String get healthSyncImportedEmpty =>
+      'Nincs importált edzés ehhez a kapcsolathoz.';
+
+  @override
+  String healthSyncImportedAt(String dateTime) {
+    return 'Importálva: $dateTime';
+  }
+
+  @override
+  String get healthSyncRestore => 'Visszaállítás';
 }

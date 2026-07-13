@@ -91,6 +91,9 @@ class _FakeLocationPlatformAdapter implements LocationPlatformAdapter {
   Future<bool> isLocationServiceEnabled() async => serviceEnabled;
 
   @override
+  Future<bool> openLocationSettings() async => true;
+
+  @override
   Future<bool> openAppSettings() async => true;
 
   @override

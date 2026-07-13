@@ -1,26 +1,23 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/models/server_settings.dart';
-import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/core/models/server_settings.dart';
+
+import '../../../helpers/fake_preferences_store.dart';
 
 void main() {
+  const originA = 'https://a.example';
+  const originB = 'https://b.example';
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late Directory tempDir;
-  late AppPreferencesStore prefs;
+  late FakePreferencesStore prefs;
   late MapSettingsRepository repository;
 
-  setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('map_settings_repo_test_');
-    prefs = AppPreferencesStore(supportDirectoryProvider: () async => tempDir);
+  setUp(() {
+    prefs = FakePreferencesStore();
     repository = MapSettingsRepository(preferences: prefs);
   });
-
-  tearDown(() => tempDir.deleteSync(recursive: true));
 
   group('MapSettingsRepository', () {
     test('uses the default tile server when none is stored', () async {
@@ -68,14 +65,13 @@ void main() {
           'tileserver_attribution': 'OpenStreetMap',
         });
 
-        await repository.saveFromServerSettings(settings);
+        await repository.saveFromServerSettings(settings, origin: originA);
 
         // Invalid URL skipped; attribution still saved.
         expect(
-          await repository.getTileServerUrl(),
+          await repository.getTileServerUrl(origin: originA),
           MapConstants.defaultTileServerUrl,
         );
-        expect(await repository.getTileServerAttribution(), 'OpenStreetMap');
       },
     );
 
@@ -87,30 +83,29 @@ void main() {
           'map_background_color': '#102030',
         });
 
-        await repository.saveFromServerSettings(settings);
+        await repository.saveFromServerSettings(settings, origin: originA);
 
         expect(
-          await repository.getTileServerUrl(),
+          await repository.getTileServerUrl(origin: originA),
           'https://tiles.test/{z}/{x}/{y}.png',
         );
-        expect(await repository.getTileServerAttribution(), 'OpenStreetMap');
-        expect(await repository.getMapBackgroundColor(), '#102030');
       });
 
-      test('does not overwrite stored values when fields are null', () async {
+      test('clears the origin value when server settings omit it', () async {
         await repository.saveTileServerUrl(
           'https://tiles.previous.test/{z}/{x}/{y}.png',
+          origin: originA,
         );
 
         // fromJson defaults tileserver_url to null when not present.
         final settings = ServerSettings.fromJson({});
 
-        await repository.saveFromServerSettings(settings);
+        await repository.saveFromServerSettings(settings, origin: originA);
 
         // Previous value must still be there.
         expect(
-          await repository.getTileServerUrl(),
-          'https://tiles.previous.test/{z}/{x}/{y}.png',
+          await repository.getTileServerUrl(origin: originA),
+          MapConstants.defaultTileServerUrl,
         );
       });
 
@@ -119,6 +114,7 @@ void main() {
         () async {
           await repository.saveTileServerUrl(
             'https://tiles.previous.test/{z}/{x}/{y}.png',
+            origin: originA,
           );
 
           final settings = ServerSettings.fromJson({
@@ -127,14 +123,34 @@ void main() {
             'map_background_color': '',
           });
 
-          await repository.saveFromServerSettings(settings);
+          await repository.saveFromServerSettings(settings, origin: originA);
 
           expect(
-            await repository.getTileServerUrl(),
-            'https://tiles.previous.test/{z}/{x}/{y}.png',
+            await repository.getTileServerUrl(origin: originA),
+            MapConstants.defaultTileServerUrl,
           );
         },
       );
+
+      test('keeps different connection origins isolated', () async {
+        await repository.saveTileServerUrl(
+          'https://tiles.a.test/{z}/{x}/{y}.png',
+          origin: originA,
+        );
+        await repository.saveTileServerUrl(
+          'https://tiles.b.test/{z}/{x}/{y}.png',
+          origin: originB,
+        );
+
+        expect(
+          await repository.getTileServerUrl(origin: originA),
+          'https://tiles.a.test/{z}/{x}/{y}.png',
+        );
+        expect(
+          await repository.getTileServerUrl(origin: originB),
+          'https://tiles.b.test/{z}/{x}/{y}.png',
+        );
+      });
     });
   });
 }

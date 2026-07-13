@@ -204,6 +204,7 @@ class DiagnosticsEvents {
       'activity.upload_queue_record_failed';
   static const String activityUploadRetryFailed =
       'activity.upload_retry_failed';
+  static const String healthAutoSyncFailed = 'health.auto_sync_failed';
   static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
 }
 

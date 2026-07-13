@@ -7,13 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AppTheme Material', () {
-    test('light theme pins the teal brand as primary', () {
+    test('light theme uses accessible dark teal as primary', () {
       final theme = AppTheme.lightTheme;
 
-      expect(theme.colorScheme.primary, AppThemeTokens.brand);
+      expect(theme.colorScheme.primary, AppThemeTokens.brandMid);
       expect(theme.colorScheme.onPrimary, Colors.white);
       expect(theme.colorScheme.surface, AppThemeTokens.lightBackground);
-      expect(theme.colorScheme.error, AppThemeTokens.destructive);
+      expect(theme.colorScheme.error, AppThemeTokens.activityRunningText);
     });
 
     test('dark theme uses the readable teal foreground as primary', () {
@@ -75,8 +75,11 @@ void main() {
   });
 
   group('AppTheme Cupertino', () {
-    test('light theme uses the teal brand as primary', () {
-      expect(AppTheme.cupertinoLightTheme.primaryColor, AppThemeTokens.brand);
+    test('light theme uses accessible dark teal as primary', () {
+      expect(
+        AppTheme.cupertinoLightTheme.primaryColor,
+        AppThemeTokens.brandMid,
+      );
     });
 
     test('dark theme uses the readable teal foreground as primary', () {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -25,17 +26,17 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 /// so app-resume and a connectivity event cannot start two overlapping drains.
 class ActivityUploadQueue {
   ActivityUploadQueue({
-    required LocalActivityRepository repository,
+    required this._repository,
     required ActivityUploadService uploadService,
-    ActivityRetentionSettingsRepository? retentionSettingsRepository,
+    this._retentionSettingsRepository,
     Future<bool> Function()? isUploadAuthorized,
+    Future<ConnectionProfile?> Function()? activeConnectionProfile,
     DiagnosticsRecorder? diagnostics,
     DateTime Function()? now,
     Stream<bool>? connectivitySignal,
-  }) : _repository = repository,
-       _uploadService = uploadService,
-       _retentionSettingsRepository = retentionSettingsRepository,
+  }) : _uploadService = uploadService,
        _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
+       _activeConnectionProfile = activeConnectionProfile,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _now = now ?? DateTime.now {
     if (connectivitySignal != null) {
@@ -58,11 +59,17 @@ class ActivityUploadQueue {
   final ActivityUploadService _uploadService;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
   final Future<bool> Function() _isUploadAuthorized;
+  final Future<ConnectionProfile?> Function()? _activeConnectionProfile;
   final DiagnosticsRecorder _diagnostics;
   final DateTime Function() _now;
 
   StreamSubscription<bool>? _connectivitySubscription;
+  final StreamController<void> _drainCompletedController =
+      StreamController<void>.broadcast();
   Future<void>? _inFlightDrain;
+  bool _followUpRequested = false;
+
+  Stream<void> get onDrainCompleted => _drainCompletedController.stream;
 
   /// Re-attempts every locally-stored activity whose upload has not yet
   /// succeeded. Best-effort: a failure on one record does not stop the others,
@@ -70,9 +77,24 @@ class ActivityUploadQueue {
   ///
   /// Single-flight: a concurrent call returns the in-progress future.
   Future<void> drain() {
-    return _inFlightDrain ??= _drain().whenComplete(() {
+    final inFlight = _inFlightDrain;
+    if (inFlight != null) {
+      _followUpRequested = true;
+      return inFlight;
+    }
+    return _inFlightDrain = _drainUntilSettled().whenComplete(() {
       _inFlightDrain = null;
+      if (!_drainCompletedController.isClosed) {
+        _drainCompletedController.add(null);
+      }
     });
+  }
+
+  Future<void> _drainUntilSettled() async {
+    do {
+      _followUpRequested = false;
+      await _drain();
+    } while (_followUpRequested);
   }
 
   Future<void> _drain() async {
@@ -85,7 +107,19 @@ class ActivityUploadQueue {
       return;
     }
 
-    final pending = await _repository.listByUploadStatus(_drainableStatuses);
+    final records = await _repository.listByUploadStatus(_drainableStatuses);
+    final retryableRecords = records.where(
+      (record) =>
+          record.uploadStatus == LocalActivityUploadStatus.pending ||
+          record.autoRetryEligible,
+    );
+    final profileProvider = _activeConnectionProfile;
+    final pending = profileProvider == null
+        ? retryableRecords.toList()
+        : _recordsForActiveProfile(
+            retryableRecords.toList(),
+            await profileProvider(),
+          );
     if (pending.isEmpty) {
       return;
     }
@@ -124,8 +158,23 @@ class ActivityUploadQueue {
     );
   }
 
+  List<LocalActivityRecord> _recordsForActiveProfile(
+    List<LocalActivityRecord> records,
+    ConnectionProfile? profile,
+  ) {
+    if (profile == null) return const [];
+    return records
+        .where(
+          (record) =>
+              record.connectionOrigin == profile.origin &&
+              record.connectionProfileId == profile.id,
+        )
+        .toList();
+  }
+
   void dispose() {
     unawaited(_connectivitySubscription?.cancel());
     _connectivitySubscription = null;
+    unawaited(_drainCompletedController.close());
   }
 }
