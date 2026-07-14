@@ -1,6 +1,7 @@
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
+import 'package:endurain/core/utils/sqlite_migration_runner.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_store.dart';
@@ -36,20 +37,24 @@ class SqfliteActivityStore implements LocalActivityStore {
   /// Both fresh installs (`onCreate`) and existing databases (`onUpgrade`) run
   /// the same migration steps, so the schema is built by exactly one code path.
   /// To evolve the schema:
-  ///   1. add a new entry keyed by the next integer (e.g. `2: _migrateToV2`),
+  ///   1. add a new entry keyed by the next integer (e.g. `8: _migrateToV8`),
   ///   2. bump [_schemaVersion] to match,
   ///   3. implement the migration with additive, idempotent-friendly DDL
   ///      (e.g. `ALTER TABLE ... ADD COLUMN`).
-  /// Never edit a shipped migration — only append new ones.
-  late final Map<int, Future<void> Function(Database)> _migrations = {
-    1: _migrateToV1,
-    2: _migrateToV2,
-    3: _migrateToV3,
-    4: _migrateToV4,
-    5: _migrateToV5,
-    6: _migrateToV6,
-    7: _migrateToV7,
-  };
+  /// Never edit a shipped migration — only append new ones. A missing migration
+  /// for the target version fails loudly (see [SqliteMigrationRunner]).
+  late final SqliteMigrationRunner _migrationRunner = SqliteMigrationRunner(
+    migrations: {
+      1: _migrateToV1,
+      2: _migrateToV2,
+      3: _migrateToV3,
+      4: _migrateToV4,
+      5: _migrateToV5,
+      6: _migrateToV6,
+      7: _migrateToV7,
+    },
+    recordVersion: _recordSchemaVersion,
+  );
 
   static DatabaseFactory _platformFactory() => databaseFactorySqflitePlugin;
 
@@ -68,33 +73,14 @@ class SqfliteActivityStore implements LocalActivityStore {
         onCreate: (db, version) async {
           // Fresh install: run every migration from 1..version so the schema
           // is produced by the same steps an upgrade would apply.
-          await _runMigrations(db, from: 0, to: version);
+          await _migrationRunner.run(db, from: 0, to: version);
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          await _runMigrations(db, from: oldVersion, to: newVersion);
+          await _migrationRunner.run(db, from: oldVersion, to: newVersion);
         },
       ),
     );
     return _db!;
-  }
-
-  /// Applies each migration whose target version is in `(from, to]`, in
-  /// ascending order, and records the resulting version in [_tableVersion].
-  Future<void> _runMigrations(
-    Database db, {
-    required int from,
-    required int to,
-  }) async {
-    for (var version = from + 1; version <= to; version++) {
-      final migration = _migrations[version];
-      if (migration == null) {
-        throw StateError(
-          'Missing SQLite migration for schema version $version.',
-        );
-      }
-      await migration(db);
-    }
-    await _recordSchemaVersion(db, to);
   }
 
   /// Persists the current schema [version] in [_tableVersion] (single-row).

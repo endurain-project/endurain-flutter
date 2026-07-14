@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -56,6 +57,30 @@ void main() {
         MapConstants.defaultTileServerUrl,
       );
     });
+
+    test(
+      'falls back to the default when a stored URL is no longer allowed',
+      () async {
+        // Stored while any tile host was permitted.
+        await repository.saveTileServerUrl(
+          'https://tiles.blocked.test/{z}/{x}/{y}.png',
+        );
+
+        // A later build tightens the allowlist so the stored host is rejected;
+        // reading must not serve a host that current policy no longer allows.
+        final restricted = MapSettingsRepository(
+          preferences: prefs,
+          config: const AppConfig(
+            allowedTileServerHosts: {'tiles.allowed.test'},
+          ),
+        );
+
+        expect(
+          await restricted.getTileServerUrl(),
+          MapConstants.defaultTileServerUrl,
+        );
+      },
+    );
 
     test(
       'skips an invalid server-provided tile URL without throwing',

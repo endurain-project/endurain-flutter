@@ -1,13 +1,14 @@
 # Copilot Instructions for Endurain Mobile
 
 ## Tech Stack
-- **Flutter**: 3.44+ (stable channel; CI pins 3.44.1)
+- **Flutter**: 3.44+ (stable channel; CI pins 3.44.6)
 - **Dart**: 3.12+
 - **Platforms**: Android, iOS
-- **State Management**: setState (basic) - may evolve to Provider/Riverpod
+- **State Management**: `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and exposed via `AppScope`; obtain services with `AppScope.servicesOf(context)`
 - **Map Provider**: OpenStreetMap (flutter_map + latlong2)
 - **Secure Storage**: flutter_secure_storage
-- **Location**: geolocator
+- **Location**: geolocator (foreground) + a native Android/iOS recorder for background activity capture
+- **Health**: HealthKit (iOS) / Health Connect (Android) via `health`
 
 ## Dependencies
 
@@ -56,9 +57,9 @@ class MyWidget extends StatelessWidget {
 - **Never** hardcode user-facing strings
 - Always use `AppLocalizations.of(context)` (or `l10n` variable)
 - Example: `Text(l10n.mapTab)` instead of `Text('Map')`
-- Supported languages: English (en), Portuguese (pt)
-- **Translations organized by feature** in `lib/l10n/app_en.arb` and `app_pt.arb`
-  - Sections: Common/Shared, Auth, Map, Settings (see `lib/l10n/README.md`)
+- Supported languages: 30+ locales (see `lib/core/localization/app_locales.dart`); English (`app_en.arb`) is the source/reference locale. An ARB parity guard test enforces that every locale defines the same keys.
+- **Translations organized by feature** in `lib/l10n/app_en.arb` and the per-locale `app_<code>.arb` files
+  - Sections: Common/Shared, Auth, Map, Activity, Health, Settings (see `lib/l10n/README.md`)
   - When adding translations, place them in the appropriate section
   - Include usage info in description: `"Used in: your_screen.dart"`
   - Run `flutter gen-l10n` after editing ARB files
@@ -98,13 +99,16 @@ lib/
 ```
 
 ## Package Versions (Reference)
-Update with actual versions used:
+The authoritative list is `pubspec.yaml`; keep this section in sync when adding load-bearing dependencies:
 - `cupertino_icons: ^1.0.8`
 - `flutter_lints: ^6.0.0`
-- `flutter_secure_storage: ^9.0.0` (to be added)
-- `geolocator: ^13.0.0` (to be added)
-- `flutter_map: ^7.0.0` (to be added)
-- `latlong2: ^0.9.0` (to be added)
+- `flutter_secure_storage: ^10.0.0`
+- `geolocator: ^14.0.3`
+- `flutter_map: ^8.3.1`
+- `latlong2: ^0.10.1`
+- `go_router: ^17.3.0`
+- `sqflite: ^2.4.0`
+- `health: ^13.3.1`
 
 ## Best Practices
 

@@ -79,7 +79,7 @@ dart run tool/check_coverage.dart \
 1. **Fork the repository** on Codeberg
 2. **Clone your fork** locally:
    ```bash
-   git clone https://codeberg.org/YOUR_USERNAME/endurain.git
+   git clone https://codeberg.org/YOUR_USERNAME/endurain-flutter.git
    ```
 3. **Create a branch** and use a descriptive name:
    ```bash
@@ -93,7 +93,7 @@ dart run tool/check_coverage.dart \
    feat: add GPX export for activities
    docs: clarify Docker environment variables
    ```
-5. **Push and open a PR** against the `master` branch, filling in the PR template completely
+5. **Push and open a PR** against the `main` branch, filling in the PR template completely
 
 ## Response Time Expectations
 

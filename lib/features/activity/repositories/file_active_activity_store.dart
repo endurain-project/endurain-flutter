@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
@@ -35,7 +36,7 @@ class FileActiveActivityStore implements ActiveActivityStore {
 
   final Future<Directory> Function() _supportDirectoryProvider;
   final DiagnosticsRecorder _diagnostics;
-  Future<void> _operationQueue = Future<void>.value();
+  final SerialTaskQueue _queue = SerialTaskQueue();
 
   @override
   Future<void> saveSession(ActiveActivitySession session) {
@@ -192,11 +193,7 @@ class FileActiveActivityStore implements ActiveActivityStore {
     });
   }
 
-  Future<T> _serialized<T>(Future<T> Function() action) {
-    final result = _operationQueue.then((_) => action());
-    _operationQueue = result.then<void>((_) {}, onError: (_, _) {});
-    return result;
-  }
+  Future<T> _serialized<T>(Future<T> Function() action) => _queue.run(action);
 
   Future<Directory> _activeDirectory({bool create = false}) async {
     final supportDirectory = await _supportDirectoryProvider();

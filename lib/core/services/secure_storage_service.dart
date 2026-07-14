@@ -164,16 +164,6 @@ class SecureStorageService {
     await deleteAccessTokenExpiresAt();
   }
 
-  Future<bool> isAccessTokenExpiringSoon({
-    Duration threshold = const Duration(minutes: 2),
-  }) async {
-    final expiresAt = await getAccessTokenExpiresAt();
-    if (expiresAt == null) {
-      return false;
-    }
-    return DateTime.now().toUtc().add(threshold).isAfter(expiresAt);
-  }
-
   // Clear all auth tokens
   Future<void> clearAuthTokens() async {
     await markAuthSessionAuthoritative();

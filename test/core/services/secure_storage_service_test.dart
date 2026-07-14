@@ -121,24 +121,6 @@ void main() {
   });
 
   group('SecureStorageService', () {
-    test('detects tokens expiring inside the threshold', () async {
-      final storage = SecureStorageService();
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(seconds: 30)),
-      );
-
-      expect(await storage.isAccessTokenExpiringSoon(), isTrue);
-    });
-
-    test('does not treat later token expiry as expiring soon', () async {
-      final storage = SecureStorageService();
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(hours: 1)),
-      );
-
-      expect(await storage.isAccessTokenExpiringSoon(), isFalse);
-    });
-
     test('clears only auth tokens', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://example.test');
@@ -161,12 +143,6 @@ void main() {
       await storage.write(key: 'access_token_expires_at', value: 'not-a-date');
 
       expect(await storage.getAccessTokenExpiresAt(), isNull);
-    });
-
-    test('treats a missing expiry as not expiring soon', () async {
-      final storage = SecureStorageService();
-
-      expect(await storage.isAccessTokenExpiringSoon(), isFalse);
     });
 
     test('round-trips server and username preferences', () async {

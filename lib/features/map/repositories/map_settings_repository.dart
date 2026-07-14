@@ -42,6 +42,13 @@ class MapSettingsRepository {
     if (tileUrl == null || tileUrl.isEmpty) {
       return MapConstants.defaultTileServerUrl;
     }
+    // Re-validate on read: a stored URL can become disallowed after an app
+    // update (a tighter allowedTileServerHosts allowlist, or a managed build
+    // that now requires HTTPS). Fall back to the default rather than serve a
+    // host that current policy rejects.
+    if (!isValidTileServerUrl(tileUrl)) {
+      return MapConstants.defaultTileServerUrl;
+    }
     return tileUrl;
   }
 

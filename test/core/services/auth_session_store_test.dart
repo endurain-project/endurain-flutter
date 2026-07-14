@@ -31,7 +31,6 @@ void main() {
       expect(await storage.getUsername(), 'joao');
       expect(await storage.getAccessTokenExpiresAt(), isNull);
       expect(await storage.getAuthSession(), isNotNull);
-      expect(await store.isAccessTokenExpiringSoon(), isFalse);
       final session = await store.readSession();
       expect(session?.origin, 'https://example.test');
       expect(session?.accessToken, 'access-1');
@@ -116,13 +115,13 @@ void main() {
       final store = AuthSessionStore(storage: storage);
       await storage.setServerUrl('https://example.test');
 
-      expect(await store.getServerUrl(), 'https://example.test');
+      expect(await store.getLastServerUrl(), 'https://example.test');
     });
 
     test('returns null server URL when not set', () async {
       final store = AuthSessionStore(storage: SecureStorageService());
 
-      expect(await store.getServerUrl(), isNull);
+      expect(await store.getLastServerUrl(), isNull);
     });
 
     test(

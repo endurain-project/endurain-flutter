@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
@@ -63,7 +64,7 @@ class HealthSyncService {
   DateTime? _nextPageEndExclusive;
   bool _availableHasMore = false;
   int _routeConsentDeniedCount = 0;
-  Future<void> _operationTail = Future<void>.value();
+  final SerialTaskQueue _queue = SerialTaskQueue();
 
   /// Number of workouts in the latest read whose route data could not be read.
   int get routeConsentDeniedCount => _routeConsentDeniedCount;
@@ -607,15 +608,6 @@ class HealthSyncService {
     return 'health_$digest';
   }
 
-  Future<T> _serialize<T>(Future<T> Function() operation) {
-    final completer = Completer<T>();
-    _operationTail = _operationTail.then((_) async {
-      try {
-        completer.complete(await operation());
-      } catch (error, stackTrace) {
-        completer.completeError(error, stackTrace);
-      }
-    });
-    return completer.future;
-  }
+  Future<T> _serialize<T>(Future<T> Function() operation) =>
+      _queue.run(operation);
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -193,11 +195,99 @@ void main() {
       expect(await store.lastSyncAt(profileA), ts2);
     });
 
-    test('schema version is recorded', () async {
-      final store = makeStore();
-      // Open the database by performing a query.
-      await store.isImported(profileId: profileA, sourceId: 'any');
-      // No assertion needed — if the migration fails the setup above throws.
+    test(
+      'fresh install builds the v3 schema with profile_id columns',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('health_store_v3');
+        addTearDown(() => dir.delete(recursive: true));
+        final dbPath = '${dir.path}/health_import.db';
+        final store = SqfliteHealthImportStore(
+          databaseFactory: databaseFactoryFfi,
+          databasePath: dbPath,
+        );
+        // Force the database open + migrations by issuing a query.
+        await store.isImported(profileId: profileA, sourceId: 'any');
+
+        final db = await databaseFactoryFfi.openDatabase(dbPath);
+        addTearDown(db.close);
+        final version = await db.query('schema_version');
+        expect(version.first['version'], 3);
+        for (final table in const ['imported_workouts', 'sync_state']) {
+          final columns = await db.rawQuery('PRAGMA table_info($table)');
+          final names = columns.map((column) => column['name']).toSet();
+          expect(names, contains('profile_id'));
+          expect(names, isNot(contains('origin')));
+        }
+      },
+    );
+
+    test('upgrades a v2 database to v3, preserving data', () async {
+      final dir = await Directory.systemTemp.createTemp('health_store_v2');
+      addTearDown(() => dir.delete(recursive: true));
+      final dbPath = '${dir.path}/health_import.db';
+
+      // Build a v2-schema database (origin columns) with a scoped row and a
+      // last-sync timestamp, exactly as a shipped v2 build would leave it.
+      final legacy = await databaseFactoryFfi.openDatabase(
+        dbPath,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onCreate: (db, version) async {
+            await db.execute(
+              'CREATE TABLE schema_version '
+              '(id INTEGER PRIMARY KEY, version INTEGER NOT NULL)',
+            );
+            await db.execute(
+              'INSERT OR REPLACE INTO schema_version (id, version) '
+              'VALUES (1, 2)',
+            );
+            await db.execute(
+              'CREATE TABLE imported_workouts ('
+              'origin TEXT NOT NULL, source_id TEXT NOT NULL, '
+              'local_activity_id TEXT NOT NULL, imported_at TEXT NOT NULL, '
+              'PRIMARY KEY (origin, source_id))',
+            );
+            await db.execute(
+              'CREATE INDEX imported_workouts_local_id_idx '
+              'ON imported_workouts (local_activity_id)',
+            );
+            await db.execute(
+              'CREATE TABLE sync_state '
+              '(origin TEXT PRIMARY KEY, last_sync_at TEXT NOT NULL)',
+            );
+            await db.insert('imported_workouts', {
+              'origin': profileA,
+              'source_id': 'uuid-1',
+              'local_activity_id': 'local-a',
+              'imported_at': '2026-01-01T00:00:00.000Z',
+            });
+            await db.insert('sync_state', {
+              'origin': profileA,
+              'last_sync_at': '2026-01-02T00:00:00.000Z',
+            });
+          },
+        ),
+      );
+      await legacy.close();
+
+      // Opening through the store runs the v3 upgrade.
+      final store = SqfliteHealthImportStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      expect(
+        await store.localActivityIdFor(profileId: profileA, sourceId: 'uuid-1'),
+        'local-a',
+      );
+      expect(await store.lastSyncAt(profileA), DateTime.utc(2026, 1, 2));
+
+      final db = await databaseFactoryFfi.openDatabase(dbPath);
+      addTearDown(db.close);
+      expect((await db.query('schema_version')).first['version'], 3);
+      final columns = await db.rawQuery('PRAGMA table_info(imported_workouts)');
+      final names = columns.map((column) => column['name']).toSet();
+      expect(names, contains('profile_id'));
+      expect(names, isNot(contains('origin')));
     });
   });
 }

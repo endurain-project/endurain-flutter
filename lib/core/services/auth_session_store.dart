@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 
 class AuthSessionStore {
@@ -16,7 +16,7 @@ class AuthSessionStore {
 
   final SecureStorageService _storage;
   final AppConfig _config;
-  Future<void> _mutationTail = Future<void>.value();
+  final SerialTaskQueue _queue = SerialTaskQueue();
 
   Future<AuthSession?> readSession() => _serialize(_readSessionUnlocked);
 
@@ -66,26 +66,10 @@ class AuthSessionStore {
 
   Future<String?> getLastServerUrl() => _storage.getServerUrl();
 
-  @Deprecated('Use getAuthenticatedOrigin or getLastServerUrl explicitly.')
-  Future<String?> getServerUrl() => getLastServerUrl();
-
   Future<String?> getAccessToken() async => (await readSession())?.accessToken;
 
   Future<String?> getRefreshToken() async =>
       (await readSession())?.refreshToken;
-
-  Future<bool> isAccessTokenExpiringSoon({
-    Duration threshold = const Duration(minutes: 2),
-  }) async {
-    final session = await readSession();
-    if (session == null) {
-      return false;
-    }
-    return DateTime.now()
-        .toUtc()
-        .add(threshold)
-        .isAfter(session.accessTokenExpiresAt);
-  }
 
   Future<void> saveLoginUsername(String username) {
     return _storage.setUsername(username);
@@ -223,17 +207,7 @@ class AuthSessionStore {
     });
   }
 
-  Future<T> _serialize<T>(Future<T> Function() action) {
-    final completer = Completer<T>();
-    _mutationTail = _mutationTail.then((_) async {
-      try {
-        completer.complete(await action());
-      } catch (error, stackTrace) {
-        completer.completeError(error, stackTrace);
-      }
-    });
-    return completer.future;
-  }
+  Future<T> _serialize<T>(Future<T> Function() action) => _queue.run(action);
 
   Future<AuthSession?> _readLegacySession() async {
     final origin = await _storage.getServerUrl();
