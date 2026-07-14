@@ -25,6 +25,31 @@ val releaseStorePassword = signingValue(
 )
 val releaseKeyAlias = signingValue("keyAlias", "ANDROID_KEY_ALIAS")
 val releaseKeyPassword = signingValue("keyPassword", "ANDROID_KEY_PASSWORD")
+val isReleaseBuild = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+val missingReleaseSigningValues = listOf(
+    "ANDROID_KEYSTORE_PATH (or storeFile)" to releaseStoreFile,
+    "ANDROID_KEYSTORE_PASSWORD (or storePassword)" to releaseStorePassword,
+    "ANDROID_KEY_ALIAS (or keyAlias)" to releaseKeyAlias,
+    "ANDROID_KEY_PASSWORD (or keyPassword)" to releaseKeyPassword,
+).filter { (_, value) -> value.isNullOrBlank() }.map { (name, _) -> name }
+val configuredReleaseStoreFile = releaseStoreFile
+    ?.takeIf { it.isNotBlank() }
+    ?.let(::file)
+
+if (isReleaseBuild && missingReleaseSigningValues.isNotEmpty()) {
+    throw GradleException(
+        "Release builds require Android upload-key credentials. Missing: " +
+            missingReleaseSigningValues.joinToString(),
+    )
+}
+if (isReleaseBuild && configuredReleaseStoreFile?.isFile != true) {
+    throw GradleException(
+        "Release builds require a readable upload keystore at " +
+            "ANDROID_KEYSTORE_PATH (or storeFile).",
+    )
+}
 
 android {
     namespace = "com.endurain.endurain"
@@ -48,9 +73,7 @@ android {
 
     signingConfigs {
         create("release") {
-            if (releaseStoreFile != null) {
-                storeFile = file(releaseStoreFile)
-            }
+            storeFile = configuredReleaseStoreFile
             storePassword = releaseStorePassword
             keyAlias = releaseKeyAlias
             keyPassword = releaseKeyPassword
@@ -59,15 +82,9 @@ android {
 
     buildTypes {
         release {
-            // Use the real upload key when a keystore is configured (via
-            // key.properties or the ANDROID_* env vars). Fall back to the debug
-            // signing config when none is present so keyless builds - notably
-            // CI release-build verification - still produce a valid APK.
-            signingConfig = if (releaseStoreFile != null) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // Never publish a debug-signed artifact. The release task checks
+            // required upload-key inputs before this variant is configured.
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

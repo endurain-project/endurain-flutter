@@ -2,6 +2,15 @@ name: Build Android
 
 on:
   workflow_dispatch:
+    inputs:
+      version_name:
+        description: Release version name, for example 0.3.1
+        required: true
+        type: string
+      version_code:
+        description: Monotonically increasing Android version code
+        required: true
+        type: string
   release:
     types:
       - published
@@ -39,6 +48,67 @@ jobs:
       - name: Set up Flutter
         uses: ./.forgejo/actions/setup-flutter
 
+      - name: Prepare signed release inputs
+        shell: bash
+        env:
+          EVENT_NAME: ${{ forgejo.event_name }}
+          RELEASE_TAG: ${{ forgejo.event.release.tag_name }}
+          RELEASE_ID: ${{ forgejo.event.release.id }}
+          INPUT_VERSION_NAME: ${{ inputs.version_name }}
+          INPUT_VERSION_CODE: ${{ inputs.version_code }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_UPLOAD_CERT_SHA256: ${{ secrets.ANDROID_UPLOAD_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "release" ]]; then
+            VERSION_NAME="${RELEASE_TAG#v}"
+            VERSION_CODE="$RELEASE_ID"
+          else
+            VERSION_NAME="$INPUT_VERSION_NAME"
+            VERSION_CODE="$INPUT_VERSION_CODE"
+          fi
+
+          [[ "$VERSION_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]
+          [[ "$VERSION_CODE" =~ ^[1-9][0-9]*$ ]]
+          : "${ANDROID_KEYSTORE_BASE64:?Missing ANDROID_KEYSTORE_BASE64 secret}"
+          : "${ANDROID_KEYSTORE_PASSWORD:?Missing ANDROID_KEYSTORE_PASSWORD secret}"
+          : "${ANDROID_KEY_ALIAS:?Missing ANDROID_KEY_ALIAS secret}"
+          : "${ANDROID_KEY_PASSWORD:?Missing ANDROID_KEY_PASSWORD secret}"
+          : "${ANDROID_UPLOAD_CERT_SHA256:?Missing ANDROID_UPLOAD_CERT_SHA256 secret}"
+
+          keystore_path="$RUNNER_TEMP/endurain-upload-key.jks"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore_path"
+          test -s "$keystore_path"
+
+          expected_fingerprint="$(
+            printf '%s' "$ANDROID_UPLOAD_CERT_SHA256" |
+              tr -d '[:space:]:' |
+              tr '[:lower:]' '[:upper:]'
+          )"
+          [[ "$expected_fingerprint" =~ ^[0-9A-F]{64}$ ]]
+          actual_fingerprint="$(
+            keytool -list -v \
+              -keystore "$keystore_path" \
+              -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+              -alias "$ANDROID_KEY_ALIAS" 2>/dev/null |
+              awk -F': ' '/SHA256:/{gsub(":", "", $2); print toupper($2); exit}'
+          )"
+          [[ "$actual_fingerprint" == "$expected_fingerprint" ]]
+
+          {
+            echo "ANDROID_KEYSTORE_PATH=$keystore_path"
+            echo "ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD"
+            echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS"
+            echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD"
+            echo "VERSION_NAME=$VERSION_NAME"
+            echo "VERSION_CODE=$VERSION_CODE"
+            echo "EXPECTED_CERT_SHA256=$expected_fingerprint"
+          } >> "$GITHUB_ENV"
+
       - name: Build release APK
         shell: bash
         # Build for arm64-v8a only. A fat APK runs gen_snapshot (the native Dart
@@ -67,7 +137,27 @@ jobs:
           # Stop any stale Gradle daemons
           pkill -f 'GradleDaemon' || true
           # Build with split debug info to reduce gen_snapshot memory
-          flutter build apk --release --target-platform android-arm64 --split-debug-info=build/debug-info
+          flutter build apk --release \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE" \
+            --target-platform android-arm64 \
+            --split-debug-info=build/debug-info
+
+      - name: Verify signed APK
+        shell: bash
+        env:
+          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
+        run: |
+          set -euo pipefail
+          test -s "$APK_PATH"
+          apksigner="$(find "$ANDROID_HOME/build-tools" -path '*/apksigner' -type f | sort -V | tail -n 1)"
+          test -n "$apksigner"
+          "$apksigner" verify --verbose --print-certs "$APK_PATH"
+          actual_fingerprint="$(
+            "$apksigner" verify --print-certs "$APK_PATH" |
+              awk -F': ' '/Signer #1 certificate SHA-256 digest:/{gsub(":", "", $2); print toupper($2); exit}'
+          )"
+          [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
 
       # For manual builds there is no release to attach to, so keep the APK as a
       # workflow-run artifact for download/inspection.

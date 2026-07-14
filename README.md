@@ -144,8 +144,7 @@ When the managed service is ready, add a branded server picker that creates an e
 - Improve activity import feedback once the server exposes richer post-upload status and metadata
 - Expand activity statistics as server/mobile contracts mature
 
-See [Local Activity Storage Design](#local-activity-storage-design) below for
-the current on-device storage design behind activity recording and retention.
+See [Local Activity Storage Design](#local-activity-storage-design) below for the current on-device storage design behind activity recording and retention.
 
 ## Tech Stack
 
@@ -216,33 +215,18 @@ flutter doctor --android-licenses
 flutter doctor -v
 ```
 
-To run on a physical Android device, enable Developer options and USB debugging
-on the device, connect it with a data-capable USB cable, and accept the USB
-debugging authorization prompt. Verify that Flutter sees the device before
-running the app:
+To run on a physical Android device, enable Developer options and USB debugging on the device, connect it with a data-capable USB cable, and accept the USB debugging authorization prompt. Verify that Flutter sees the device before running the app:
 
 ```bash
 flutter devices
 flutter run -d <android-device-id>
 ```
 
-The Android build scripts use Kotlin DSL (`.kts` files). Flutter's Built-in
-Kotlin Gradle flag (`android.builtInKotlin`) is not yet enabled because
-`package_info_plus` and `url_launcher_android` still self-apply KGP and are not
-compatible with the built-in Kotlin path. The Kotlin plugin is applied
-explicitly at version 2.2.20 in `settings.gradle.kts` instead. Once those
-plugins ship compatible releases, the explicit declaration can be removed and
-the flag enabled. Current Android builds can still show upstream plugin warnings
-for these dependencies; if the debug build succeeds, track them with dependency
-updates rather than editing files in the local pub cache.
+The Android build scripts use Kotlin DSL (`.kts` files). Flutter's Built-in Kotlin Gradle flag (`android.builtInKotlin`) is not yet enabled because `package_info_plus` and `url_launcher_android` still self-apply KGP and are not compatible with the built-in Kotlin path. The Kotlin plugin is applied explicitly at version 2.2.20 in `settings.gradle.kts` instead. Once those plugins ship compatible releases, the explicit declaration can be removed and the flag enabled. Current Android builds can still show upstream plugin warnings for these dependencies; if the debug build succeeds, track them with dependency updates rather than editing files in the local pub cache.
 
 ### Android Health Sync Availability
 
-Health sync is optional. Android 14 and later include Health Connect as a
-system component. On earlier Android versions, the user must install the
-separate Health Connect provider before importing workouts. On devices where
-the provider is unavailable, the app keeps GPS recording and manual GPX upload
-available and shows health sync as unavailable.
+Health sync is optional. Android 14 and later include Health Connect as a system component. On earlier Android versions, the user must install the separate Health Connect provider before importing workouts. On devices where the provider is unavailable, the app keeps GPS recording and manual GPX upload available and shows health sync as unavailable.
 
 ## SSO/OAuth Callback
 
@@ -260,28 +244,16 @@ endurain://auth/sso/callback?session_id=...
 
 Register this callback URL in the Endurain server or identity provider configuration used for mobile SSO.
 
-For production deployments that control a public domain, verified HTTPS
-callbacks are the preferred mobile best practice. Android App Links and iOS
-Universal Links let the operating system verify that the domain is allowed to
-open the Endurain app, reducing custom-scheme hijacking and misrouting risk.
-PKCE still protects the current custom-scheme flow, but verified links provide
-a stronger OS-level ownership check.
+For production deployments that control a public domain, verified HTTPS callbacks are the preferred mobile best practice. Android App Links and iOS Universal Links let the operating system verify that the domain is allowed to open the Endurain app, reducing custom-scheme hijacking and misrouting risk. PKCE still protects the current custom-scheme flow, but verified links provide a stronger OS-level ownership check.
 
 Using verified callbacks requires both app and server/domain configuration:
 
-- Configure the mobile app to accept the HTTPS callback path with Android
-  `android:autoVerify="true"` App Links and iOS Associated Domains.
-- Serve Android Digital Asset Links from
-  `https://<your-domain>/.well-known/assetlinks.json`.
-- Serve the Apple App Site Association file from
-  `https://<your-domain>/.well-known/apple-app-site-association`.
-- Add the HTTPS callback URL to the Endurain server and identity-provider
-  allowed redirect/callback URL configuration.
+- Configure the mobile app to accept the HTTPS callback path with Android `android:autoVerify="true"` App Links and iOS Associated Domains.
+- Serve Android Digital Asset Links from `https://<your-domain>/.well-known/assetlinks.json`.
+- Serve the Apple App Site Association file from `https://<your-domain>/.well-known/apple-app-site-association`.
+- Add the HTTPS callback URL to the Endurain server and identity-provider allowed redirect/callback URL configuration.
 
-Keeping both callback styles during migration is recommended: continue to
-support `endurain://auth/sso/callback` for existing deployments while adding a
-verified HTTPS callback for domains that can publish the required `.well-known`
-files.
+Keeping both callback styles during migration is recommended: continue to support `endurain://auth/sso/callback` for existing deployments while adding a verified HTTPS callback for domains that can publish the required `.well-known` files.
 
 ## Local Diagnostics
 
@@ -295,35 +267,24 @@ iOS `.ips` crash reports remain separate system-generated native crash reports. 
 
 ### Android: Active Recording — Location Provider Loss
 
-Native Kotlin unit coverage is not available for the `onProviderDisabled`
-path. Use these steps to validate the behavior manually on a physical or
-emulated Android device.
+Native Kotlin unit coverage is not available for the `onProviderDisabled` path. Use these steps to validate the behavior manually on a physical or emulated Android device.
 
-**Prerequisites:** A running Endurain server, a connected Android device with
-GPS and network location enabled, and developer options active.
+**Prerequisites:** A running Endurain server, a connected Android device with GPS and network location enabled, and developer options active.
 
 1. Open the app and start an activity recording.
-2. Verify the foreground-service notification appears and that the recording
-   status is active.
+2. Verify the foreground-service notification appears and that the recording status is active.
 3. Background the app (press Home or the recents button).
-4. Open the device Settings and disable **all** location providers (both GPS
-   and network/Wi-Fi scanning). On most devices this is under
-   *Location > App permissions* or by toggling the master location switch.
-5. Wait approximately 5–10 seconds for the service to detect the provider
-   change.
+4. Open the device Settings and disable **all** location providers (both GPS and network/Wi-Fi scanning). On most devices this is under *Location > App permissions* or by toggling the master location switch.
+5. Wait approximately 5–10 seconds for the service to detect the provider change.
 6. Return to the app.
 
 **Expected results:**
-- The recording shows a non-recoverable failed state (not an active or paused
-  state).
+- The recording shows a non-recoverable failed state (not an active or paused state).
 - No "resume recording" option is offered.
-- After fully restarting the app (force-stop and reopen), no phantom active
-  session is restored from the saved session file.
-- The local activity history shows the completed (or failed) entry with the
-  points collected before providers were disabled.
+- After fully restarting the app (force-stop and reopen), no phantom active session is restored from the saved session file.
+- The local activity history shows the completed (or failed) entry with the points collected before providers were disabled.
 
-**Recovery path:** Re-enable location providers, then start a new recording
-as normal.
+**Recovery path:** Re-enable location providers, then start a new recording as normal.
 
 ## Development Workflow
 
@@ -383,9 +344,15 @@ flutter build apk --debug
 ```
 
 Release builds require Android signing configuration. Copy
-`android/key.properties.example` to ignored `android/key.properties` and fill it
-locally, or provide the documented `ANDROID_KEYSTORE_*` environment variables in
-CI.
+`android/key.properties.example` to ignored `android/key.properties` and fill it locally, or provide the documented `ANDROID_KEYSTORE_*` environment variables in CI. A release build now fails rather than falling back to the debug key when any signing input is missing.
+
+Forgejo release builds require these repository secrets:
+
+- `ANDROID_KEYSTORE_BASE64`: base64-encoded upload keystore.
+- `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`: upload-key credentials.
+- `ANDROID_UPLOAD_CERT_SHA256`: expected SHA-256 certificate fingerprint, with or without colon separators.
+
+For a published release, CI derives `versionName` from its `vX.Y.Z` tag and uses the Forgejo release ID as the monotonic Android `versionCode`. Manual workflow runs require an explicit semantic `version_name` and positive, monotonically increasing `version_code`.
 
 ```bash
 flutter build apk --release
@@ -432,9 +399,7 @@ tool/
 
 ## Local Activity Storage Design
 
-Activities are recorded and saved on-device for upload to the server. Metadata
-is stored in SQLite (via `SqfliteActivityStore`), while GPX tracks remain as
-files on disk.
+Activities are recorded and saved on-device for upload to the server. Metadata is stored in SQLite (via `SqfliteActivityStore`), while GPX tracks remain as files on disk.
 
 ### Current layout (SQLite metadata + GPX files)
 
@@ -447,8 +412,7 @@ Completed recordings are stored under the app's private support directory:
         └── <activity-id>.gpx      # Raw GPX 1.1 file for each recording
 ```
 
-Activity metadata lives in a SQLite database (`activity.db`, schema v1) under
-the platform databases directory. The database holds two tables:
+Activity metadata lives in a SQLite database (`activity.db`, schema v1) under the platform databases directory. The database holds two tables:
 
 | Table                  | Purpose                                                  |
 |------------------------|----------------------------------------------------------|
@@ -460,16 +424,11 @@ Each `local_activity` row contains: `id`, `activity_type`, `started_at`,
 `average_speed_meters_per_second`, `point_count`, `gpx_file_name`,
 `upload_status`, `created_at`, `updated_at`, `uploaded_at`,
 `last_upload_attempt_at`, `last_upload_error_code`, and `server_activity_id`.
-GPX files live on disk under `gpx/` — only the metadata is stored in the
-database.
+GPX files live on disk under `gpx/` — only the metadata is stored in the database.
 
 ### Schema migrations
 
-Schema changes are applied through an ordered, append-only migration map keyed
-by target version. Fresh installs (`onCreate`) and upgrades (`onUpgrade`) run
-the same migration steps, so the schema is produced by exactly one code path.
-To evolve the schema, append a new migration and bump the schema version —
-shipped migrations are never edited.
+Schema changes are applied through an ordered, append-only migration map keyed by target version. Fresh installs (`onCreate`) and upgrades (`onUpgrade`) run the same migration steps, so the schema is produced by exactly one code path. To evolve the schema, append a new migration and bump the schema version — shipped migrations are never edited.
 
 ### SQLite package decision
 
@@ -480,13 +439,9 @@ shipped migrations are never edited.
 | `sqflite`             | Apache 2.0 | De facto Flutter SQLite; Android/iOS native    |
 | `sqflite_common_ffi`  | MIT        | In-process SQLite for unit tests (dev only)    |
 
-`sqflite` provides the shipped Android/iOS implementation, while
-`sqflite_common_ffi` is a `dev_dependency` that runs the same API in-process
-during unit tests without platform-channel mocks.
+`sqflite` provides the shipped Android/iOS implementation, while `sqflite_common_ffi` is a `dev_dependency` that runs the same API in-process during unit tests without platform-channel mocks.
 
-`drift` (an ORM built on SQLite) was considered but rejected — the direct SQL
-API of `sqflite` is sufficient for the current schema and avoids an additional
-code-generation dependency.
+`drift` (an ORM built on SQLite) was considered but rejected — the direct SQL API of `sqflite` is sufficient for the current schema and avoids an additional code-generation dependency.
 
 ## Contributing
 

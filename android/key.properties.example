@@ -3,6 +3,8 @@
 # CI can provide the same values with these environment variables:
 # ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS,
 # ANDROID_KEY_PASSWORD
+# The Forgejo release workflow instead expects the keystore as the base64
+# secret ANDROID_KEYSTORE_BASE64 and verifies ANDROID_UPLOAD_CERT_SHA256.
 
 storeFile=/absolute/path/to/upload-keystore.jks
 storePassword=replace-with-keystore-password
