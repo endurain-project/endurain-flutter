@@ -271,7 +271,7 @@ void main() {
       () async {
         adapter.workouts = [makeWorkout('w1')];
         await importStore.markImported(
-          origin: profile.id,
+          profileId: profile.id,
           sourceId: 'w1',
           localActivityId: 'missing-local',
         );
@@ -280,7 +280,7 @@ void main() {
 
         expect(result, isEmpty);
         expect(
-          await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+          await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
           isTrue,
         );
 
@@ -347,15 +347,15 @@ void main() {
       expect(result.imported, 2);
       expect(result.failed, 0);
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isTrue,
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w2'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w2'),
         isTrue,
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w3'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w3'),
         isFalse,
       );
 
@@ -389,7 +389,7 @@ void main() {
       final result = await service.importWorkouts(['w1']);
       expect(result.imported, 0);
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isFalse,
       );
     });
@@ -437,11 +437,11 @@ void main() {
         lessThanOrEqualTo(const Duration(days: 30)),
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'recent'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'recent'),
         isTrue,
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'wide'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'wide'),
         isFalse,
       );
     });
@@ -458,15 +458,15 @@ void main() {
 
       expect(result.imported, 2);
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isTrue,
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w2'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w2'),
         isTrue,
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w3'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w3'),
         isFalse,
       );
     });
@@ -479,11 +479,11 @@ void main() {
       expect(result.imported, 2);
       expect(adapter.readWorkoutsCallCount, 1);
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isTrue,
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w2'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w2'),
         isTrue,
       );
     });
@@ -640,11 +640,11 @@ void main() {
 
         expect(candidates.map((workout) => workout.sourceId), contains('w1'));
         expect(
-          await importStore.isImported(origin: 'profile-a', sourceId: 'w1'),
+          await importStore.isImported(profileId: 'profile-a', sourceId: 'w1'),
           isTrue,
         );
         expect(
-          await importStore.isImported(origin: 'profile-b', sourceId: 'w1'),
+          await importStore.isImported(profileId: 'profile-b', sourceId: 'w1'),
           isFalse,
         );
       },
@@ -661,11 +661,11 @@ void main() {
 
       expect(results.fold<int>(0, (sum, result) => sum + result.imported), 2);
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isTrue,
       );
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w2'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w2'),
         isTrue,
       );
     });
@@ -687,7 +687,7 @@ void main() {
       );
       expect(await service.isAutoSyncOnResumeEnabled(), isFalse);
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isFalse,
       );
     });
@@ -728,7 +728,7 @@ void main() {
       await localActivities.delete(imported.localActivityId);
       await service.restoreMissingImport(imported);
       expect(
-        await importStore.isImported(origin: profile.id, sourceId: 'w1'),
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isFalse,
       );
     });
@@ -773,7 +773,7 @@ void main() {
         ),
       );
       expect(
-        await importStore.isImported(origin: 'profile-a', sourceId: 'w1'),
+        await importStore.isImported(profileId: 'profile-a', sourceId: 'w1'),
         isTrue,
       );
     });

@@ -176,8 +176,8 @@ class HealthSyncService {
     return _serialize(() async {
       final profile = await _requireActiveProfile();
       await _adapter.revokePermissions();
-      await _syncSettings.clearForOrigin(profile.id);
-      await _importRepo.clearOrigin(profile.id);
+      await _syncSettings.clearForProfile(profile.id);
+      await _importRepo.clearForProfile(profile.id);
       _lastCandidates = const [];
       _candidateProfileId = null;
       _candidateRange = null;
@@ -280,7 +280,7 @@ class HealthSyncService {
     final candidates = <HealthWorkout>[];
     for (final workout in all) {
       var importedLocalId = await _importRepo.localActivityIdFor(
-        origin: profile.id,
+        profileId: profile.id,
         sourceId: workout.sourceId,
       );
       if (importedLocalId == null) {
@@ -291,7 +291,7 @@ class HealthSyncService {
           final legacyRecord = await _localActivities.get(legacyLocalId);
           if (legacyRecord?.connectionOrigin == profile.origin) {
             await _importRepo.adoptLegacyImport(
-              origin: profile.id,
+              profileId: profile.id,
               sourceId: workout.sourceId,
             );
             importedLocalId = legacyLocalId;
@@ -358,7 +358,7 @@ class HealthSyncService {
     return _serialize(() async {
       final profile = await _requireActiveProfile();
       final rows = await _importRepo.listImported(
-        origin: profile.id,
+        profileId: profile.id,
         offset: offset,
         limit: limit + 1,
       );
@@ -390,7 +390,7 @@ class HealthSyncService {
     return _serialize(() async {
       final profile = await _requireActiveProfile();
       final activeLocalActivityId = await _importRepo.localActivityIdFor(
-        origin: profile.id,
+        profileId: profile.id,
         sourceId: imported.sourceId,
       );
       if (activeLocalActivityId != imported.localActivityId) {
@@ -450,7 +450,7 @@ class HealthSyncService {
 
     for (final workout in toImport) {
       if (await _importRepo.isImported(
-        origin: profile.id,
+        profileId: profile.id,
         sourceId: workout.sourceId,
       )) {
         continue;
@@ -533,7 +533,7 @@ class HealthSyncService {
     HealthWorkout workout,
   ) async {
     final legacyLocalId = await _importRepo.localActivityIdFor(
-      origin: profile.id,
+      profileId: profile.id,
       sourceId: workout.sourceId,
     );
     final localId = legacyLocalId ?? _localIdFor(profile.id, workout.sourceId);
@@ -544,7 +544,7 @@ class HealthSyncService {
         throw const AppException(AppErrorCode.healthImportFailed);
       }
       await _importRepo.markImported(
-        origin: profile.id,
+        profileId: profile.id,
         sourceId: workout.sourceId,
         localActivityId: localId,
       );
@@ -581,7 +581,7 @@ class HealthSyncService {
 
     await _localActivities.upsert(record);
     await _importRepo.markImported(
-      origin: profile.id,
+      profileId: profile.id,
       sourceId: workout.sourceId,
       localActivityId: localId,
     );
@@ -602,8 +602,8 @@ class HealthSyncService {
     }
   }
 
-  String _localIdFor(String origin, String sourceId) {
-    final digest = sha256.convert(utf8.encode('$origin\n$sourceId'));
+  String _localIdFor(String profileId, String sourceId) {
+    final digest = sha256.convert(utf8.encode('$profileId\n$sourceId'));
     return 'health_$digest';
   }
 

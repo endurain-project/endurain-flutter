@@ -43,27 +43,27 @@ class HealthSyncSettingsRepository {
   /// Defaults to `false` — manual import is the default experience. The user
   /// opts in by granting platform health authorization and enabling this
   /// toggle on the health sync screen.
-  Future<bool> isAutoSyncOnResumeEnabled(String origin) async {
-    final value = await _storage.read(key: _originKey(origin));
+  Future<bool> isAutoSyncOnResumeEnabled(String profileId) async {
+    final value = await _storage.read(key: _autoSyncKey(profileId));
     return value == 'true';
   }
 
-  Future<void> setAutoSyncOnResumeEnabled(String origin, bool enabled) {
+  Future<void> setAutoSyncOnResumeEnabled(String profileId, bool enabled) {
     return _storage.write(
-      key: _originKey(origin),
+      key: _autoSyncKey(profileId),
       value: enabled ? 'true' : 'false',
     );
   }
 
-  Future<void> clearForOrigin(String origin) {
+  Future<void> clearForProfile(String profileId) {
     return Future.wait([
-      _storage.delete(key: _originKey(origin)),
-      _storage.delete(key: _scopedKey(_keyConnected, origin)),
+      _storage.delete(key: _autoSyncKey(profileId)),
+      _storage.delete(key: _scopedKey(_keyConnected, profileId)),
     ]);
   }
 
-  String _originKey(String origin) {
-    return _scopedKey(_keyAutoSyncOnResume, origin);
+  String _autoSyncKey(String profileId) {
+    return _scopedKey(_keyAutoSyncOnResume, profileId);
   }
 
   String _scopedKey(String prefix, String scope) {

@@ -5,7 +5,7 @@ import 'package:endurain/features/health/repositories/health_import_repository.d
 import 'package:endurain/features/health/repositories/sqflite_health_import_store.dart';
 
 void main() {
-  const origin = 'https://example.test';
+  const profileId = 'profile-x';
   setUpAll(() {
     sqfliteFfiInit();
   });
@@ -21,23 +21,26 @@ void main() {
     test('isImported delegates to store', () async {
       final repo = makeRepo();
       await repo.markImported(
-        origin: origin,
+        profileId: profileId,
         sourceId: 'uuid-x',
         localActivityId: 'local-y',
       );
-      expect(await repo.isImported(origin: origin, sourceId: 'uuid-x'), isTrue);
       expect(
-        await repo.isImported(origin: origin, sourceId: 'uuid-z'),
+        await repo.isImported(profileId: profileId, sourceId: 'uuid-x'),
+        isTrue,
+      );
+      expect(
+        await repo.isImported(profileId: profileId, sourceId: 'uuid-z'),
         isFalse,
       );
     });
 
     test('lastSyncAt / setLastSyncAt delegate to store', () async {
       final repo = makeRepo();
-      expect(await repo.lastSyncAt(origin), isNull);
+      expect(await repo.lastSyncAt(profileId), isNull);
       final ts = DateTime.utc(2025, 6, 3, 8, 0);
-      await repo.setLastSyncAt(origin, ts);
-      expect(await repo.lastSyncAt(origin), ts);
+      await repo.setLastSyncAt(profileId, ts);
+      expect(await repo.lastSyncAt(profileId), ts);
     });
   });
 }

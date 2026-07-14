@@ -14,31 +14,35 @@ class HealthImportRepository {
 
   final HealthImportStore _store;
 
-  Future<bool> isImported({required String origin, required String sourceId}) =>
-      _run(() => _store.isImported(origin: origin, sourceId: sourceId));
+  Future<bool> isImported({
+    required String profileId,
+    required String sourceId,
+  }) => _run(() => _store.isImported(profileId: profileId, sourceId: sourceId));
 
   Future<String?> localActivityIdFor({
-    required String origin,
+    required String profileId,
     required String sourceId,
-  }) =>
-      _run(() => _store.localActivityIdFor(origin: origin, sourceId: sourceId));
+  }) => _run(
+    () => _store.localActivityIdFor(profileId: profileId, sourceId: sourceId),
+  );
 
   Future<String?> legacyLocalActivityIdFor(String sourceId) =>
       _run(() => _store.legacyLocalActivityIdFor(sourceId));
 
   Future<void> adoptLegacyImport({
-    required String origin,
+    required String profileId,
     required String sourceId,
-  }) =>
-      _run(() => _store.adoptLegacyImport(origin: origin, sourceId: sourceId));
+  }) => _run(
+    () => _store.adoptLegacyImport(profileId: profileId, sourceId: sourceId),
+  );
 
   Future<void> markImported({
-    required String origin,
+    required String profileId,
     required String sourceId,
     required String localActivityId,
   }) => _run(
     () => _store.markImported(
-      origin: origin,
+      profileId: profileId,
       sourceId: sourceId,
       localActivityId: localActivityId,
     ),
@@ -47,22 +51,23 @@ class HealthImportRepository {
   Future<void> removeByLocalActivityId(String localActivityId) =>
       _run(() => _store.removeByLocalActivityId(localActivityId));
 
-  Future<void> clearOrigin(String origin) =>
-      _run(() => _store.clearOrigin(origin));
+  Future<void> clearForProfile(String profileId) =>
+      _run(() => _store.clearForProfile(profileId));
 
   Future<List<HealthImportedWorkout>> listImported({
-    required String origin,
+    required String profileId,
     required int offset,
     required int limit,
   }) => _run(
-    () => _store.listImported(origin: origin, offset: offset, limit: limit),
+    () =>
+        _store.listImported(profileId: profileId, offset: offset, limit: limit),
   );
 
-  Future<DateTime?> lastSyncAt(String origin) =>
-      _run(() => _store.lastSyncAt(origin));
+  Future<DateTime?> lastSyncAt(String profileId) =>
+      _run(() => _store.lastSyncAt(profileId));
 
-  Future<void> setLastSyncAt(String origin, DateTime at) =>
-      _run(() => _store.setLastSyncAt(origin, at));
+  Future<void> setLastSyncAt(String profileId, DateTime at) =>
+      _run(() => _store.setLastSyncAt(profileId, at));
 
   Future<T> _run<T>(Future<T> Function() action) async {
     try {

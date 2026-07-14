@@ -5,6 +5,11 @@ import 'package:sqflite/sqflite.dart';
 
 /// SQLite-backed [HealthImportStore] implemented with sqflite.
 ///
+/// Note: the physical `origin` columns store the connection **profile id**
+/// (the [HealthImportStore] API calls this `profileId`). The column name is
+/// retained from schema v2 because `ALTER TABLE ... RENAME COLUMN` requires
+/// SQLite 3.25+, which is unavailable on Android API 26–29.
+///
 /// Inject a custom `databaseFactory` and `databasePath` in tests:
 /// ```dart
 /// SqfliteHealthImportStore(
@@ -151,15 +156,16 @@ class SqfliteHealthImportStore implements HealthImportStore {
 
   @override
   Future<bool> isImported({
-    required String origin,
+    required String profileId,
     required String sourceId,
   }) async {
-    return await localActivityIdFor(origin: origin, sourceId: sourceId) != null;
+    return await localActivityIdFor(profileId: profileId, sourceId: sourceId) !=
+        null;
   }
 
   @override
   Future<String?> localActivityIdFor({
-    required String origin,
+    required String profileId,
     required String sourceId,
   }) async {
     final db = await _open();
@@ -167,7 +173,7 @@ class SqfliteHealthImportStore implements HealthImportStore {
       _tableImported,
       columns: ['local_activity_id'],
       where: 'origin = ? AND source_id = ?',
-      whereArgs: [origin, sourceId],
+      whereArgs: [profileId, sourceId],
       limit: 1,
     );
     if (rows.isNotEmpty) {
@@ -193,13 +199,13 @@ class SqfliteHealthImportStore implements HealthImportStore {
 
   @override
   Future<void> adoptLegacyImport({
-    required String origin,
+    required String profileId,
     required String sourceId,
   }) async {
     final db = await _open();
     await db.update(
       _tableImported,
-      {'origin': origin},
+      {'origin': profileId},
       where: 'origin = ? AND source_id = ?',
       whereArgs: [_legacyOrigin, sourceId],
     );
@@ -207,13 +213,13 @@ class SqfliteHealthImportStore implements HealthImportStore {
 
   @override
   Future<void> markImported({
-    required String origin,
+    required String profileId,
     required String sourceId,
     required String localActivityId,
   }) async {
     final db = await _open();
     await db.insert(_tableImported, {
-      'origin': origin,
+      'origin': profileId,
       'source_id': sourceId,
       'local_activity_id': localActivityId,
       'imported_at': DateTime.now().toUtc().toIso8601String(),
@@ -231,21 +237,21 @@ class SqfliteHealthImportStore implements HealthImportStore {
   }
 
   @override
-  Future<void> clearOrigin(String origin) async {
+  Future<void> clearForProfile(String profileId) async {
     final db = await _open();
     await db.transaction((txn) async {
       await txn.delete(
         _tableImported,
         where: 'origin = ?',
-        whereArgs: [origin],
+        whereArgs: [profileId],
       );
-      await txn.delete(_tableSync, where: 'origin = ?', whereArgs: [origin]);
+      await txn.delete(_tableSync, where: 'origin = ?', whereArgs: [profileId]);
     });
   }
 
   @override
   Future<List<HealthImportedWorkout>> listImported({
-    required String origin,
+    required String profileId,
     required int offset,
     required int limit,
   }) async {
@@ -253,7 +259,7 @@ class SqfliteHealthImportStore implements HealthImportStore {
     final rows = await db.query(
       _tableImported,
       where: 'origin = ?',
-      whereArgs: [origin],
+      whereArgs: [profileId],
       orderBy: 'imported_at DESC',
       offset: offset,
       limit: limit,
@@ -270,13 +276,13 @@ class SqfliteHealthImportStore implements HealthImportStore {
   }
 
   @override
-  Future<DateTime?> lastSyncAt(String origin) async {
+  Future<DateTime?> lastSyncAt(String profileId) async {
     final db = await _open();
     final rows = await db.query(
       _tableSync,
       columns: ['last_sync_at'],
       where: 'origin = ?',
-      whereArgs: [origin],
+      whereArgs: [profileId],
       limit: 1,
     );
     if (rows.isEmpty) return null;
@@ -286,10 +292,10 @@ class SqfliteHealthImportStore implements HealthImportStore {
   }
 
   @override
-  Future<void> setLastSyncAt(String origin, DateTime at) async {
+  Future<void> setLastSyncAt(String profileId, DateTime at) async {
     final db = await _open();
     await db.insert(_tableSync, {
-      'origin': origin,
+      'origin': profileId,
       'last_sync_at': at.toUtc().toIso8601String(),
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }

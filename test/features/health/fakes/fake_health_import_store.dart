@@ -10,15 +10,15 @@ class FakeHealthImportStore implements HealthImportStore {
 
   @override
   Future<bool> isImported({
-    required String origin,
+    required String profileId,
     required String sourceId,
-  }) async => _imported.contains('$origin::$sourceId');
+  }) async => _imported.contains('$profileId::$sourceId');
 
   @override
   Future<String?> localActivityIdFor({
-    required String origin,
+    required String profileId,
     required String sourceId,
-  }) async => _localIds['$origin::$sourceId'];
+  }) async => _localIds['$profileId::$sourceId'];
 
   @override
   Future<String?> legacyLocalActivityIdFor(String sourceId) async =>
@@ -26,27 +26,27 @@ class FakeHealthImportStore implements HealthImportStore {
 
   @override
   Future<void> adoptLegacyImport({
-    required String origin,
+    required String profileId,
     required String sourceId,
   }) async {
     final legacyKey = 'legacy://unassigned::$sourceId';
     final localId = _localIds.remove(legacyKey);
     _imported.remove(legacyKey);
     if (localId != null) {
-      _localIds['$origin::$sourceId'] = localId;
-      _imported.add('$origin::$sourceId');
+      _localIds['$profileId::$sourceId'] = localId;
+      _imported.add('$profileId::$sourceId');
     }
   }
 
   @override
   Future<void> markImported({
-    required String origin,
+    required String profileId,
     required String sourceId,
     required String localActivityId,
   }) async {
-    _imported.add('$origin::$sourceId');
-    _localIds['$origin::$sourceId'] = localActivityId;
-    _importedAt['$origin::$sourceId'] = DateTime.now().toUtc();
+    _imported.add('$profileId::$sourceId');
+    _localIds['$profileId::$sourceId'] = localActivityId;
+    _importedAt['$profileId::$sourceId'] = DateTime.now().toUtc();
   }
 
   @override
@@ -63,27 +63,27 @@ class FakeHealthImportStore implements HealthImportStore {
   }
 
   @override
-  Future<void> clearOrigin(String origin) async {
-    _imported.removeWhere((value) => value.startsWith('$origin::'));
-    _localIds.removeWhere((key, _) => key.startsWith('$origin::'));
-    _importedAt.removeWhere((key, _) => key.startsWith('$origin::'));
+  Future<void> clearForProfile(String profileId) async {
+    _imported.removeWhere((value) => value.startsWith('$profileId::'));
+    _localIds.removeWhere((key, _) => key.startsWith('$profileId::'));
+    _importedAt.removeWhere((key, _) => key.startsWith('$profileId::'));
     _lastSyncAt = null;
   }
 
   @override
-  Future<DateTime?> lastSyncAt(String origin) async => _lastSyncAt;
+  Future<DateTime?> lastSyncAt(String profileId) async => _lastSyncAt;
 
   @override
-  Future<void> setLastSyncAt(String origin, DateTime at) async =>
+  Future<void> setLastSyncAt(String profileId, DateTime at) async =>
       _lastSyncAt = at;
 
   @override
   Future<List<HealthImportedWorkout>> listImported({
-    required String origin,
+    required String profileId,
     required int offset,
     required int limit,
   }) async {
-    final prefix = '$origin::';
+    final prefix = '$profileId::';
     final entries =
         _localIds.entries
             .where((entry) => entry.key.startsWith(prefix))

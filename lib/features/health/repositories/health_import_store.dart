@@ -15,18 +15,21 @@ import 'package:endurain/features/health/models/health_imported_workout.dart';
 ///   any other PII in diagnostic output.
 abstract class HealthImportStore {
   /// Returns `true` when the workout identified by [sourceId] has already been
-  /// imported (persisted and enqueued for upload).
-  Future<bool> isImported({required String origin, required String sourceId});
+  /// imported (persisted and enqueued for upload) for [profileId].
+  Future<bool> isImported({
+    required String profileId,
+    required String sourceId,
+  });
 
   Future<String?> localActivityIdFor({
-    required String origin,
+    required String profileId,
     required String sourceId,
   });
 
   Future<String?> legacyLocalActivityIdFor(String sourceId);
 
   Future<void> adoptLegacyImport({
-    required String origin,
+    required String profileId,
     required String sourceId,
   });
 
@@ -35,25 +38,26 @@ abstract class HealthImportStore {
   ///
   /// Idempotent — safe to call more than once for the same [sourceId].
   Future<void> markImported({
-    required String origin,
+    required String profileId,
     required String sourceId,
     required String localActivityId,
   });
 
   Future<void> removeByLocalActivityId(String localActivityId);
 
-  Future<void> clearOrigin(String origin);
+  /// Removes all imported-workout dedup rows and sync state for [profileId].
+  Future<void> clearForProfile(String profileId);
 
   Future<List<HealthImportedWorkout>> listImported({
-    required String origin,
+    required String profileId,
     required int offset,
     required int limit,
   });
 
   /// Returns the UTC timestamp of the last successful import, or `null` if
   /// no import has completed yet.
-  Future<DateTime?> lastSyncAt(String origin);
+  Future<DateTime?> lastSyncAt(String profileId);
 
   /// Persists [at] as the last successful sync timestamp.
-  Future<void> setLastSyncAt(String origin, DateTime at);
+  Future<void> setLastSyncAt(String profileId, DateTime at);
 }
