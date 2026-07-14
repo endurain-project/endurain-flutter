@@ -105,8 +105,8 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
   void _onLoginSuccess() {
     _sessionController.markAuthenticated();
-    // A guest may have recorded activities offline; now that a server is
-    // connected and authenticated, flush the pending upload backlog.
+    // Activities recorded in guest mode have no connection yet. Draining now
+    // binds that offline backlog to the newly-connected account and uploads it.
     unawaited(_services.activityUploadQueue.drain());
   }
 

@@ -57,6 +57,16 @@ class LocalActivityRepository {
 
   Future<int> count() => _store.count();
 
+  Future<int> bindUnassignedToProfile({
+    required String origin,
+    required String profileId,
+    required DateTime updatedAt,
+  }) => _store.bindUnassignedToProfile(
+    origin: origin,
+    profileId: profileId,
+    updatedAt: updatedAt,
+  );
+
   Future<void> delete(String id) async {
     final record = await _store.get(id);
     if (record == null) {

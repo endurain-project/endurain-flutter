@@ -236,6 +236,36 @@ void main() {
       );
     });
 
+    test('binds guest records to the active connection and uploads', () async {
+      final guest = await _createRecord(
+        repository,
+        id: 'q_guest',
+        status: LocalActivityUploadStatus.pending,
+        connectionOrigin: null,
+        connectionProfileId: null,
+      );
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+        activeConnectionProfile: () async => const ConnectionProfile(
+          id: 'profile-active',
+          origin: 'https://active.example',
+          kind: ConnectionKind.selfHosted,
+        ),
+      );
+
+      await queue.drain();
+
+      // The formerly-unassigned guest record is bound to the active connection
+      // and then uploaded.
+      expect(attemptedKeys, [guest.id]);
+      final bound = await repository.get(guest.id);
+      expect(bound?.uploadStatus, LocalActivityUploadStatus.uploaded);
+      expect(bound?.connectionOrigin, 'https://active.example');
+      expect(bound?.connectionProfileId, 'profile-active');
+    });
+
     test('concurrent drain calls share a single run', () async {
       await _createRecord(
         repository,

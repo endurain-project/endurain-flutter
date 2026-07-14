@@ -108,6 +108,22 @@ class ActivityUploadQueue {
       return;
     }
 
+    final profileProvider = _activeConnectionProfile;
+    final activeProfile = profileProvider == null
+        ? null
+        : await profileProvider();
+
+    // Claim any activities recorded before a server was connected (guest mode
+    // leaves them with no origin/profile) for the now-active connection, so a
+    // backlog captured offline finally uploads after sign-in.
+    if (activeProfile != null) {
+      await _repository.bindUnassignedToProfile(
+        origin: activeProfile.origin,
+        profileId: activeProfile.id,
+        updatedAt: _now().toUtc(),
+      );
+    }
+
     final records = await _repository.listByUploadStatus(_drainableStatuses);
     final retryableRecords = records.where(
       (record) =>
@@ -115,13 +131,9 @@ class ActivityUploadQueue {
           record.autoRetryEligible ||
           record.gpxCleanupPending,
     );
-    final profileProvider = _activeConnectionProfile;
     final pending = profileProvider == null
         ? retryableRecords.toList()
-        : _recordsForActiveProfile(
-            retryableRecords.toList(),
-            await profileProvider(),
-          );
+        : _recordsForActiveProfile(retryableRecords.toList(), activeProfile);
     if (pending.isEmpty) {
       return;
     }

@@ -105,6 +105,40 @@ void main() {
       await store.close();
     });
 
+    test('bindUnassignedToProfile claims only unassigned records', () async {
+      final store = makeStore();
+      await store.upsert(_record(id: 'guest-1'));
+      await store.upsert(_record(id: 'guest-2'));
+      await store.upsert(
+        _record(id: 'bound').copyWith(
+          connectionOrigin: 'https://existing.example',
+          connectionProfileId: 'profile-existing',
+        ),
+      );
+
+      final bound = await store.bindUnassignedToProfile(
+        origin: 'https://active.example',
+        profileId: 'profile-active',
+        updatedAt: DateTime.utc(2026, 6, 3, 9),
+      );
+
+      expect(bound, 2);
+      expect(
+        (await store.get('guest-1'))?.connectionOrigin,
+        'https://active.example',
+      );
+      expect(
+        (await store.get('guest-2'))?.connectionProfileId,
+        'profile-active',
+      );
+      // A record already bound to a connection is left untouched.
+      expect(
+        (await store.get('bound'))?.connectionOrigin,
+        'https://existing.example',
+      );
+      await store.close();
+    });
+
     test('upsert persists all nullable fields', () async {
       final store = makeStore();
       final now = DateTime.utc(2026, 6, 1, 12);

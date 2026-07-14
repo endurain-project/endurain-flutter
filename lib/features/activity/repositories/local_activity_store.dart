@@ -28,4 +28,17 @@ abstract interface class LocalActivityStore {
 
   /// Returns the total number of stored records.
   Future<int> count();
+
+  /// Assigns [origin]/[profileId] to every record that has no connection yet
+  /// (recorded in guest mode, before a server was connected), stamping
+  /// [updatedAt]. Returns the number of records bound.
+  ///
+  /// Lets the durable upload queue finally upload activities captured offline
+  /// once the user signs in, without affecting records already bound to a
+  /// connection.
+  Future<int> bindUnassignedToProfile({
+    required String origin,
+    required String profileId,
+    required DateTime updatedAt,
+  });
 }
