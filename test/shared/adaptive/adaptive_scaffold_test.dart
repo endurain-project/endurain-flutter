@@ -44,14 +44,13 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         withEdgeToEdgeInsets(
-          const AdaptiveScaffold(
-            body: SizedBox.expand(key: ValueKey('body')),
-          ),
+          const AdaptiveScaffold(body: SizedBox.expand(key: ValueKey('body'))),
         ),
       );
 
       final rect = tester.getRect(find.byKey(const ValueKey('body')));
-      final screenHeight = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final screenHeight =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
 
       expect(rect.top, topInset);
       expect(rect.bottom, moreOrLessEquals(screenHeight - bottomInset));
@@ -71,7 +70,8 @@ void main() {
       );
 
       final rect = tester.getRect(find.byKey(const ValueKey('body')));
-      final screenHeight = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final screenHeight =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
 
       expect(rect.top, 0);
       expect(rect.bottom, moreOrLessEquals(screenHeight));
@@ -97,13 +97,16 @@ void main() {
       );
 
       final rect = tester.getRect(find.byKey(const ValueKey('fab')));
-      final screenHeight = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final screenHeight =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
 
       // The button must never sit under the (transparent) gesture nav bar.
       expect(
         rect.bottom,
         moreOrLessEquals(
-          screenHeight - bottomInset - LocationMarkerConstants.buttonOuterPadding,
+          screenHeight -
+              bottomInset -
+              LocationMarkerConstants.buttonOuterPadding,
         ),
       );
     },
