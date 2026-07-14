@@ -21,9 +21,6 @@ void main() {
           workouts: HealthDataAccessStatus.allowed,
           workoutRoutes: HealthDataAccessStatus.needsAttention,
           heartRate: HealthDataAccessStatus.allowed,
-          distance: HealthDataAccessStatus.allowed,
-          calories: HealthDataAccessStatus.allowed,
-          steps: HealthDataAccessStatus.allowed,
         ),
       );
       final controller = HealthSyncController(service: service);
@@ -40,8 +37,7 @@ void main() {
       expect(find.text(l10n.healthAccessWorkouts), findsOneWidget);
       expect(find.text(l10n.healthAccessWorkoutRoutes), findsOneWidget);
       expect(find.text(l10n.healthAccessHeartRate), findsOneWidget);
-      expect(find.text(l10n.healthAccessWorkoutSummary), findsOneWidget);
-      expect(find.text(l10n.healthAccessAllowed), findsNWidgets(3));
+      expect(find.text(l10n.healthAccessAllowed), findsNWidgets(2));
       expect(find.text(l10n.healthAccessNeedsAttention), findsOneWidget);
       expect(find.text(l10n.healthAccessSystemManagedNotice), findsNothing);
 

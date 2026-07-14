@@ -16,12 +16,6 @@ const _coreReadTypes = [
   HealthDataType.HEART_RATE,
 ];
 
-const _androidEnrichmentReadTypes = [
-  HealthDataType.DISTANCE_DELTA,
-  HealthDataType.TOTAL_CALORIES_BURNED,
-  HealthDataType.STEPS,
-];
-
 const _healthConnectHistoryWindow = Duration(days: 30);
 
 /// [HealthPlatformAdapter] backed by the `health` Flutter package.
@@ -45,11 +39,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
 
   static TargetPlatform _defaultTargetPlatform() => defaultTargetPlatform;
 
-  List<HealthDataType> get _readTypes => [
-    ..._coreReadTypes,
-    if (_targetPlatform() == TargetPlatform.android)
-      ..._androidEnrichmentReadTypes,
-  ];
+  List<HealthDataType> get _readTypes => _coreReadTypes;
 
   List<HealthDataAccess> get _readAccess =>
       List.filled(_readTypes.length, HealthDataAccess.READ);
@@ -172,9 +162,6 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
         workouts: _accessStatus(results[0]),
         workoutRoutes: _accessStatus(results[1]),
         heartRate: _accessStatus(results[2]),
-        distance: _accessStatus(results[3]),
-        calories: _accessStatus(results[4]),
-        steps: _accessStatus(results[5]),
       );
     } catch (_) {
       return const HealthDataAccessDetails(

@@ -17,15 +17,9 @@
          Declare ONLY what the feature actually requests/reads:
             - READ_EXERCISE: workout sessions.
          - READ_HEART_RATE: HR samples merged into the GPX route.
-         - READ_EXERCISE_ROUTES: route access surfaced by Health Connect.
-            The pinned health package enriches exercise sessions by reading
-            distance, total calories, and steps, so those permissions must remain
-            aligned with its native implementation. -->
+            - READ_EXERCISE_ROUTES: route access surfaced by Health Connect. -->
     <uses-permission android:name="android.permission.health.READ_EXERCISE" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
-        <uses-permission android:name="android.permission.health.READ_DISTANCE" />
-        <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
-        <uses-permission android:name="android.permission.health.READ_STEPS" />
     <!-- Required to read GPS exercise routes from Health Connect. -->
     <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
     <!-- Required for Health Connect reads older than its standard 30-day window. -->

@@ -104,12 +104,6 @@ class _HealthAccessScreenState extends State<HealthAccessScreen> {
                 l10n,
               ),
               _dataTile(l10n.healthAccessHeartRate, details.heartRate, l10n),
-              if (details.canInspectIndividualPermissions)
-                _dataTile(
-                  l10n.healthAccessWorkoutSummary,
-                  details.workoutSummary,
-                  l10n,
-                ),
             ],
           ),
           if (!details.canInspectIndividualPermissions)

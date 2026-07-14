@@ -19,9 +19,6 @@ void main() {
         workouts: HealthDataAccessStatus.allowed,
         workoutRoutes: HealthDataAccessStatus.allowed,
         heartRate: HealthDataAccessStatus.allowed,
-        distance: HealthDataAccessStatus.allowed,
-        calories: HealthDataAccessStatus.allowed,
-        steps: HealthDataAccessStatus.allowed,
       );
 
       expect(details.hasItemsNeedingAttention, isFalse);
