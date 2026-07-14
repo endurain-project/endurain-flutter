@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/server_settings.dart';
@@ -9,22 +10,26 @@ import 'package:endurain/core/services/app_preferences_store.dart';
 class MapSettingsRepository {
   const MapSettingsRepository({
     required this._preferences,
+    this.config = AppConfig.defaults,
     this.activeConnectionOrigin,
   });
 
   static const _tileServerUrlKey = 'tile_server_url';
 
   final AppPreferencesStore _preferences;
+  final AppConfig config;
   final Future<String?> Function()? activeConnectionOrigin;
 
   /// Whether [url] is an acceptable tile-server URL to persist: a well-formed
   /// absolute `http`/`https` URL with a host. Language-free so it can guard the
   /// repository boundary without depending on localization.
-  static bool isValidTileServerUrl(String url) {
+  bool isValidTileServerUrl(String url) {
     final uri = Uri.tryParse(url.trim());
     return uri != null &&
         (uri.isScheme('http') || uri.isScheme('https')) &&
-        uri.host.isNotEmpty;
+        uri.host.isNotEmpty &&
+        config.isTileServerHostAllowed(uri.host) &&
+        (!config.isManagedOrigin(url) || uri.isScheme('https'));
   }
 
   Future<String> getTileServerUrl({String? origin}) async {

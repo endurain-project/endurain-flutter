@@ -38,6 +38,7 @@ class LocalActivityRecord {
     this.lastUploadAttemptAt,
     this.lastUploadErrorCode,
     this.autoRetryEligible = true,
+    this.gpxCleanupPending = false,
     this.idempotencyKey,
     this.connectionOrigin,
     this.connectionProfileId,
@@ -64,6 +65,10 @@ class LocalActivityRecord {
   /// Network, timeout, and server 5xx failures remain eligible. Permanent
   /// request, authentication, configuration, and missing-file failures do not.
   final bool autoRetryEligible;
+
+  /// The server accepted this activity, but removing its local GPX file still
+  /// needs retrying because retention is disabled.
+  final bool gpxCleanupPending;
 
   /// Stable key used for server-side upload de-duplication.
   ///
@@ -102,6 +107,7 @@ class LocalActivityRecord {
     Object? lastUploadAttemptAt = kUnset,
     Object? lastUploadErrorCode = kUnset,
     bool? autoRetryEligible,
+    bool? gpxCleanupPending,
     Object? idempotencyKey = kUnset,
     Object? connectionOrigin = kUnset,
     Object? connectionProfileId = kUnset,
@@ -133,6 +139,7 @@ class LocalActivityRecord {
           ? this.lastUploadErrorCode
           : lastUploadErrorCode as AppErrorCode?,
       autoRetryEligible: autoRetryEligible ?? this.autoRetryEligible,
+      gpxCleanupPending: gpxCleanupPending ?? this.gpxCleanupPending,
       idempotencyKey: identical(idempotencyKey, kUnset)
           ? this.idempotencyKey
           : idempotencyKey as String?,
@@ -166,6 +173,7 @@ class LocalActivityRecord {
       if (lastUploadErrorCode != null)
         'lastUploadErrorCode': lastUploadErrorCode!.name,
       'autoRetryEligible': autoRetryEligible,
+      'gpxCleanupPending': gpxCleanupPending,
       if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
       if (connectionOrigin != null) 'connectionOrigin': connectionOrigin,
       if (connectionProfileId != null)
@@ -201,6 +209,9 @@ class LocalActivityRecord {
       autoRetryEligible: json['autoRetryEligible'] is bool
           ? json['autoRetryEligible'] as bool
           : true,
+      gpxCleanupPending: json['gpxCleanupPending'] is bool
+          ? json['gpxCleanupPending'] as bool
+          : false,
       idempotencyKey: jsonString(json['idempotencyKey']),
       connectionOrigin: jsonString(json['connectionOrigin']),
       connectionProfileId: jsonString(json['connectionProfileId']),

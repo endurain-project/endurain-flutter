@@ -42,6 +42,11 @@ void main() {
             );
           }
 
+          if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+            expect(request.headers['Authorization'], 'Bearer access-1');
+            return http.Response('{"id":42}', 200);
+          }
+
           fail('Unexpected request to ${request.url}');
         }),
       );
@@ -59,8 +64,9 @@ void main() {
       expect(session?.accessToken, 'access-1');
       expect(session?.refreshToken, 'refresh-1');
       expect(session?.sessionId, 'session-2');
+      expect(session?.profileId, '42');
       expect(await storage.getUsername(), 'joao');
-      expect(requests, hasLength(2));
+      expect(requests, hasLength(3));
     });
 
     test('returns MFA state without exchanging tokens', () async {
@@ -150,6 +156,10 @@ void main() {
               '{"access_token":"access-1","session_id":"session-2","expires_in":3600}',
               200,
             );
+          }
+
+          if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+            return http.Response('{"id":42}', 200);
           }
 
           fail('Unexpected request to ${request.url}');
@@ -248,6 +258,9 @@ void main() {
           if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             return http.Response('{"session_id":"session-1"}', 200);
           }
+          if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+            return http.Response('{"id":42}', 200);
+          }
           return http.Response(
             '{"access_token":"access-1","refresh_token":"refresh-1","session_id":"session-2","expires_in":3600}',
             200,
@@ -320,6 +333,9 @@ void main() {
               '{"access_token":"access-1","refresh_token":"refresh-1","session_id":"session-2","expires_in":3600}',
               200,
             );
+          }
+          if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+            return http.Response('{"id":42}', 200);
           }
           fail('Unexpected request to ${request.url}');
         }),
@@ -542,6 +558,7 @@ void main() {
         accessToken: 'access-b',
         refreshToken: 'refresh-b',
         sessionId: 'session-b',
+        profileId: '43',
       );
       response.complete(
         http.Response(
@@ -625,6 +642,7 @@ void main() {
         accessToken: 'access-b',
         refreshToken: 'refresh-b',
         sessionId: 'session-b',
+        profileId: '43',
       );
       response.complete(http.Response('', 200));
 
@@ -861,6 +879,9 @@ void main() {
               200,
             );
           }
+          if (request.url.path == '/api/v2/profile') {
+            return http.Response('{"id":42}', 200);
+          }
           fail('Unexpected path: ${request.url.path}');
         }),
         config: v2Config,
@@ -881,6 +902,7 @@ Future<void> _seedSession(
   String accessToken = 'access-1',
   String refreshToken = 'refresh-1',
   String sessionId = 'session-1',
+  String profileId = '42',
   int expiresInSeconds = 3600,
 }) {
   return (store ?? AuthSessionStore(storage: storage)).saveSession(
@@ -888,6 +910,7 @@ Future<void> _seedSession(
     accessToken: accessToken,
     refreshToken: refreshToken,
     sessionId: sessionId,
+    profileId: profileId,
     expiresInSeconds: expiresInSeconds,
   );
 }

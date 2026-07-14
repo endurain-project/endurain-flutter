@@ -291,8 +291,13 @@ class ActivityRecorderService : Service() {
             return
         }
         val nowMillis = if (location.time > 0) location.time else System.currentTimeMillis()
-        var segmentIndex = session.currentSegmentIndex
         val previous = lastPointEpochMillis
+        if (previous != null && nowMillis > previous && location.hasSpeed() &&
+            location.speed > MAX_SPEED_METERS_PER_SECOND
+        ) {
+            return
+        }
+        var segmentIndex = session.currentSegmentIndex
         if (resumedFromPause) {
             if (previous != null) {
                 segmentIndex += 1
@@ -327,6 +332,9 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERSISTENCE_FAILED,
             )
+            stopCollection()
+            stopForegroundCompat()
+            stopSelf()
             return
         }
         ActivityRecorderCoordinator.emitPointBatch(listOf(point))
@@ -522,6 +530,7 @@ class ActivityRecorderService : Service() {
         private const val MIN_UPDATE_DISTANCE_METERS = 3f
         private const val MAX_TIME_GAP_MILLIS = 30_000L
         private const val MAX_ACCURACY_METERS = 100f
+        private const val MAX_SPEED_METERS_PER_SECOND = 90f
 
         private fun baseIntent(context: Context, action: String): Intent {
             return Intent(context, ActivityRecorderService::class.java).setAction(action)

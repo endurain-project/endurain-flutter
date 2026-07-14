@@ -43,6 +43,9 @@ class LocalActivityRepository {
 
   Future<void> upsert(LocalActivityRecord record) => _store.upsert(record);
 
+  Future<bool> updateIfPresent(LocalActivityRecord record) =>
+      _store.updateIfPresent(record);
+
   Future<List<LocalActivityRecord>> listPage({
     required int offset,
     required int limit,

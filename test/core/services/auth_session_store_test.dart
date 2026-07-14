@@ -20,6 +20,7 @@ void main() {
         accessToken: 'access-1',
         refreshToken: 'refresh-1',
         sessionId: 'session-1',
+        profileId: '42',
         username: 'joao',
         expiresInSeconds: 3600,
       );
@@ -44,6 +45,7 @@ void main() {
         accessToken: 'access-1',
         refreshToken: 'refresh-1',
         sessionId: 'session-1',
+        profileId: '42',
         expiresInSeconds: 3600,
       );
 
@@ -57,6 +59,7 @@ void main() {
         accessToken: 'access-a',
         refreshToken: 'refresh-a',
         sessionId: 'session-a',
+        profileId: '42',
         expiresInSeconds: 3600,
       );
       final stale = (await store.readSession())!;
@@ -66,6 +69,7 @@ void main() {
         accessToken: 'access-b',
         refreshToken: 'refresh-b',
         sessionId: 'session-b',
+        profileId: '43',
         expiresInSeconds: 3600,
       );
 
@@ -94,6 +98,7 @@ void main() {
         accessToken: 'access-1',
         refreshToken: 'refresh-1',
         sessionId: 'session-1',
+        profileId: '42',
         expiresInSeconds: 3600,
       );
 
@@ -161,6 +166,34 @@ void main() {
       expect(session?.profileId, isNotEmpty);
       expect(session?.revision, isNotEmpty);
       expect(await storage.isAuthSessionAuthoritative(), isTrue);
+    });
+
+    test('preserves a stable backend profile ID across sequential logins',
+        () async {
+      final store = AuthSessionStore(storage: SecureStorageService());
+
+      await store.saveSession(
+        origin: 'https://example.test',
+        accessToken: 'access-1',
+        refreshToken: 'refresh-1',
+        sessionId: 'session-1',
+        profileId: '42',
+        expiresInSeconds: 3600,
+      );
+      final first = (await store.readSession())!;
+
+      await store.saveSession(
+        origin: 'https://example.test',
+        accessToken: 'access-2',
+        refreshToken: 'refresh-2',
+        sessionId: 'session-2',
+        profileId: '42',
+        expiresInSeconds: 3600,
+      );
+      final second = (await store.readSession())!;
+
+      expect(second.profileId, first.profileId);
+      expect(second.revision, isNot(first.revision));
     });
 
     test('malformed canonical session clears without deadlocking', () async {

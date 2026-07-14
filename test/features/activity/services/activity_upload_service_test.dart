@@ -283,6 +283,46 @@ void main() {
       );
     });
 
+    test(
+      'does not recreate a record deleted while its upload is in flight',
+      () async {
+        final record = await _createRecord(repository, id: 'svc_deleted');
+        final uploadStarted = Completer<void>();
+        final releaseUpload = Completer<void>();
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          uploadFile: (_, _, _, {idempotencyKey}) async {
+            uploadStarted.complete();
+            await releaseUpload.future;
+            return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+          },
+        );
+
+        final attempt = service.performUploadAttempt(
+          record: record,
+          repository: repository,
+        );
+        await uploadStarted.future;
+        await repository.delete(record.id);
+        releaseUpload.complete();
+
+        await expectLater(
+          attempt,
+          throwsA(
+            isA<AppException>().having(
+              (error) => error.code,
+              'code',
+              AppErrorCode.activityLocalActivityNotFound,
+            ),
+          ),
+        );
+        expect(await repository.get(record.id), isNull);
+      },
+    );
+
     test('stale pending snapshot does not downgrade uploaded state', () async {
       final stale = await _createRecord(repository, id: 'svc_stale');
       final uploaded = stale.copyWith(
@@ -340,6 +380,39 @@ void main() {
         persisted.lastUploadErrorCode,
         AppErrorCode.activityGpxCleanupFailed,
       );
+      expect(persisted.gpxCleanupPending, isTrue);
+    });
+
+    test('retries uploaded GPX cleanup without uploading again', () async {
+      final record = await _createRecord(repository, id: 'svc_cleanup_retry');
+      var uploads = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        uploadFile: (_, _, _, {idempotencyKey}) async {
+          uploads++;
+          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
+        },
+      );
+      const retained = _FakeRetentionSettings(enabled: true);
+      final first = await service.performUploadAttempt(
+        record: record,
+        repository: repository,
+        retentionRepository: retained,
+      );
+      await repository.upsert(first.copyWith(gpxCleanupPending: true));
+
+      final result = await service.performUploadAttempt(
+        record: first,
+        repository: repository,
+        retentionRepository: const _FakeRetentionSettings(enabled: false),
+      );
+
+      expect(uploads, 1);
+      expect(result.gpxCleanupPending, isFalse);
+      expect(await repository.hasGpx(result), isFalse);
     });
 
     test('marks record failed and rethrows on upload error', () async {

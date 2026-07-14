@@ -93,6 +93,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
           widget.mapSettings ??
           MapSettingsRepository(
             preferences: services.preferences,
+            config: services.config,
             activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
           ),
     );

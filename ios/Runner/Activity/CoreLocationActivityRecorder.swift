@@ -16,6 +16,8 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
 
     /// Time gap (ms) beyond which a new track segment is started.
     private static let maxTimeGapMillis: Int64 = 30_000
+    private static let maxAccuracyMeters: CLLocationAccuracy = 100
+    private static let maxSpeedMetersPerSecond: CLLocationSpeed = 90
 
     private let store: ActiveActivityStore
     private let manager = CLLocationManager()
@@ -110,10 +112,21 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         var produced: [RecordedActivityPointData] = []
 
         for location in locations {
+            guard location.horizontalAccuracy < 0 ||
+                location.horizontalAccuracy <= CoreLocationActivityRecorder.maxAccuracyMeters
+            else {
+                continue
+            }
             let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
             let effectiveMillis = rawMillis > 0
                 ? rawMillis
                 : Int64(Date().timeIntervalSince1970 * 1000)
+            if let previous = lastPointEpochMillis,
+                effectiveMillis > previous,
+                location.speed >= 0,
+                location.speed > CoreLocationActivityRecorder.maxSpeedMetersPerSecond {
+                continue
+            }
 
             if resumedFromPause {
                 if lastPointEpochMillis != nil {
@@ -146,6 +159,8 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         do {
             try store.appendPoints(produced)
         } catch {
+            stopCollection()
+            persistFailure()
             ActivityRecorderCoordinator.shared.emitFailed(
                 ActivityRecorderCoordinator.reasonPersistenceFailed
             )

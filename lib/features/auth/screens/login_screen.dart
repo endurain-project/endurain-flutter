@@ -85,6 +85,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       appLinksService: widget.appLinksService ?? services.appLinks,
       mapSettingsRepository: MapSettingsRepository(
         preferences: services.preferences,
+        config: services.config,
         activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
       ),
       config: services.config,

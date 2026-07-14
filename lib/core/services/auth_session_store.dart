@@ -96,6 +96,7 @@ class AuthSessionStore {
     required String accessToken,
     required String refreshToken,
     required String sessionId,
+    required String profileId,
     String? username,
     required int expiresInSeconds,
   }) async {
@@ -111,7 +112,7 @@ class AuthSessionStore {
         sessionId: sessionId,
         username: username,
         expiresInSeconds: expiresInSeconds,
-        profileId: _newRevision(),
+        profileId: profileId,
       );
       await _writeCanonicalSession(session);
     });

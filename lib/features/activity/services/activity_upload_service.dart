@@ -183,8 +183,19 @@ class ActivityUploadService {
     DateTime Function()? now,
   }) async {
     final persisted = await repository.get(record.id);
-    final current = persisted ?? record;
+    if (persisted == null) {
+      throw const AppException(AppErrorCode.activityLocalActivityNotFound);
+    }
+    final current = persisted;
     if (current.uploadStatus == LocalActivityUploadStatus.uploaded) {
+      if (current.gpxCleanupPending) {
+        return _retryUploadedGpxCleanup(
+          record: current,
+          repository: repository,
+          retentionRepository: retentionRepository,
+          now: now ?? DateTime.now,
+        );
+      }
       return current;
     }
     final connectionOrigin = current.connectionOrigin;
@@ -205,7 +216,9 @@ class ActivityUploadService {
       lastUploadErrorCode: null,
       autoRetryEligible: true,
     );
-    await repository.upsert(updated);
+    if (!await repository.updateIfPresent(updated)) {
+      throw const AppException(AppErrorCode.activityLocalActivityNotFound);
+    }
 
     final maxAttempts = _retryPolicy.maxAttempts.clamp(1, 1 << 20);
     Object? lastError;
@@ -238,7 +251,9 @@ class ActivityUploadService {
           lastUploadErrorCode: null,
           autoRetryEligible: false,
         );
-        await repository.upsert(updated);
+        if (!await repository.updateIfPresent(updated)) {
+          throw const AppException(AppErrorCode.activityLocalActivityNotFound);
+        }
 
         final cleanupError = await _cleanupUploadedGpx(
           record: updated,
@@ -249,8 +264,9 @@ class ActivityUploadService {
           updated = updated.copyWith(
             updatedAt: clock().toUtc(),
             lastUploadErrorCode: cleanupError.code,
+            gpxCleanupPending: true,
           );
-          await repository.upsert(updated);
+          await repository.updateIfPresent(updated);
         }
 
         return updated;
@@ -266,7 +282,7 @@ class ActivityUploadService {
           lastUploadErrorCode: _safeUploadErrorCode(error),
           autoRetryEligible: _isTransient(error),
         );
-        await repository.upsert(failedRecord);
+        await repository.updateIfPresent(failedRecord);
         rethrow;
       }
     }
@@ -344,5 +360,25 @@ class ActivityUploadService {
     } catch (error) {
       return AppException(AppErrorCode.activityGpxCleanupFailed, cause: error);
     }
+  }
+
+  Future<LocalActivityRecord> _retryUploadedGpxCleanup({
+    required LocalActivityRecord record,
+    required LocalActivityRepository repository,
+    required ActivityRetentionSettingsRepository? retentionRepository,
+    required DateTime Function() now,
+  }) async {
+    final cleanupError = await _cleanupUploadedGpx(
+      record: record,
+      repository: repository,
+      retentionRepository: retentionRepository,
+    );
+    final updated = record.copyWith(
+      updatedAt: now().toUtc(),
+      gpxCleanupPending: cleanupError != null,
+      lastUploadErrorCode: cleanupError?.code,
+    );
+    await repository.updateIfPresent(updated);
+    return updated;
   }
 }

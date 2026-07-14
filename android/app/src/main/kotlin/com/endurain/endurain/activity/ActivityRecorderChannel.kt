@@ -202,10 +202,12 @@ class ActivityRecorderChannel(context: Context) :
             return
         }
         val nowMillis = System.currentTimeMillis()
+        val recoveryMillis = store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis)
+            ?: nowMillis
         val paused = session.copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,
             pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+            elapsedDurationSeconds = elapsedSeconds(session, recoveryMillis),
         )
         // Persist the pause before stopping collection so any in-flight fix is
         // rejected by the service's recording-state guard.

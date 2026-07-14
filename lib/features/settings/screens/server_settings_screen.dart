@@ -58,6 +58,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
       authService: widget.authService ?? services.auth,
       mapSettingsRepository: MapSettingsRepository(
         preferences: services.preferences,
+        config: services.config,
         activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
       ),
     );

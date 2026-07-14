@@ -40,32 +40,31 @@ Future<void> _migrateLegacyDatabase({
   final legacyDirectory = await databaseFactory.getDatabasesPath();
   final legacyPath = '$legacyDirectory${Platform.pathSeparator}$fileName';
   final legacyDatabase = File(legacyPath);
-  final targetDatabase = File(targetPath);
+  const suffixes = ['', '-wal', '-shm', '-journal'];
+  final legacyFiles = [
+    for (final suffix in suffixes) File('$legacyPath$suffix'),
+  ];
+  final targetFiles = [
+    for (final suffix in suffixes) File('$targetPath$suffix'),
+  ];
+  final hasLegacyFiles = legacyFiles.any((file) => file.existsSync());
+  final hasTargetFiles = targetFiles.any((file) => file.existsSync());
 
-  for (final suffix in const ['-wal', '-shm', '-journal']) {
+  // Never combine source and target files from separate database copies.
+  // Preflight the full SQLite set before changing anything so a later launch
+  // can reliably retry an interrupted migration.
+  if (hasLegacyFiles && hasTargetFiles) {
+    throw FileSystemException(
+      'Conflicting SQLite migration database',
+      legacyDatabase.path,
+    );
+  }
+  if (!hasLegacyFiles || hasTargetFiles) return;
+
+  for (final suffix in suffixes) {
     final source = File('$legacyPath$suffix');
     if (!source.existsSync()) continue;
-    final target = File('$targetPath$suffix');
-    if (target.existsSync()) {
-      throw FileSystemException(
-        'Conflicting SQLite migration sidecar',
-        source.path,
-      );
-    }
-    await _moveFile(source, target.path);
-  }
-
-  if (targetDatabase.existsSync()) {
-    if (legacyDatabase.existsSync()) {
-      throw FileSystemException(
-        'Conflicting SQLite migration database',
-        legacyDatabase.path,
-      );
-    }
-    return;
-  }
-  if (legacyDatabase.existsSync()) {
-    await _moveFile(legacyDatabase, targetPath);
+    await _moveFile(source, '$targetPath$suffix');
   }
 }
 
@@ -79,6 +78,12 @@ Future<void> _moveFile(File source, String targetPath) async {
     }
   }
 
-  await source.copy(targetPath);
+  final stagingPath = '$targetPath.migrating';
+  final stagingFile = File(stagingPath);
+  if (stagingFile.existsSync()) {
+    await stagingFile.delete();
+  }
+  await source.copy(stagingPath);
+  await stagingFile.rename(targetPath);
   await source.delete();
 }

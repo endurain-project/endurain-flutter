@@ -6,6 +6,10 @@ abstract interface class LocalActivityStore {
   Future<LocalActivityRecord?> get(String id);
   Future<List<LocalActivityRecord>> getByIds(Set<String> ids);
   Future<void> upsert(LocalActivityRecord record);
+
+  /// Updates [record] only when it still exists. This prevents an asynchronous
+  /// upload completion from recreating metadata removed by the user.
+  Future<bool> updateIfPresent(LocalActivityRecord record);
   Future<void> delete(String id);
 
   /// Returns at most [limit] records ordered newest-first, skipping the

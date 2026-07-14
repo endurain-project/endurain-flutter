@@ -94,6 +94,14 @@ class ApiClient {
       await response.stream.drain<void>();
       final refreshed = await _authService.refreshToken();
       if (!refreshed) {
+        final retainedSession = await _sessionStore.readSession();
+        if (_matchesExpectedProfile(
+          retainedSession,
+          expectedOrigin: expectedOrigin,
+          expectedProfileId: expectedProfileId,
+        )) {
+          throw const AppException(AppErrorCode.requestTimeout);
+        }
         throw const AppException(AppErrorCode.sessionExpired);
       }
 
@@ -144,7 +152,7 @@ class ApiClient {
         .toUtc()
         .add(const Duration(minutes: 2))
         .isAfter(session!.accessTokenExpiresAt)) {
-      await _authService.refreshToken();
+      final refreshed = await _authService.refreshToken();
       session = await _sessionStore.readSession();
       if (!_matchesExpectedProfile(
         session,
@@ -152,6 +160,9 @@ class ApiClient {
         expectedProfileId: expectedProfileId,
       )) {
         throw const AppException(AppErrorCode.sessionExpired);
+      }
+      if (!refreshed) {
+        throw const AppException(AppErrorCode.requestTimeout);
       }
     }
 

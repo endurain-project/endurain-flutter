@@ -30,6 +30,9 @@ class ApiEndpoints {
   String get idpLoginEndpoint => '$_base/public/idp/login';
   String get idpSessionTokenExchangeEndpoint => '$_base/public/idp/session';
 
+  // Authenticated profile endpoint.
+  String get profileEndpoint => '$_base/profile';
+
   // Server settings public endpoint
   String get serverSettingsEndpoint => '$_base/public/server_settings';
 

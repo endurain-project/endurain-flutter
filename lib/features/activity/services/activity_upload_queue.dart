@@ -53,6 +53,7 @@ class ActivityUploadQueue {
   static const Set<LocalActivityUploadStatus> _drainableStatuses = {
     LocalActivityUploadStatus.pending,
     LocalActivityUploadStatus.failed,
+    LocalActivityUploadStatus.uploaded,
   };
 
   final LocalActivityRepository _repository;
@@ -111,7 +112,8 @@ class ActivityUploadQueue {
     final retryableRecords = records.where(
       (record) =>
           record.uploadStatus == LocalActivityUploadStatus.pending ||
-          record.autoRetryEligible,
+          record.autoRetryEligible ||
+          record.gpxCleanupPending,
     );
     final profileProvider = _activeConnectionProfile;
     final pending = profileProvider == null

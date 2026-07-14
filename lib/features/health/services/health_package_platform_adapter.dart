@@ -22,6 +22,8 @@ const _androidEnrichmentReadTypes = [
   HealthDataType.STEPS,
 ];
 
+const _healthConnectHistoryWindow = Duration(days: 30);
+
 /// [HealthPlatformAdapter] backed by the `health` Flutter package.
 ///
 /// Connects to HealthKit on iOS and Health Connect on Android. Inject a
@@ -213,6 +215,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   }) async {
     try {
       await _ensureConfigured();
+      await _ensureHistoryAuthorization(start);
       _routeConsentDeniedCount = 0;
       // Step 1 — Fetch workout metadata.
       final workoutPoints = await _health.getHealthDataFromTypes(
@@ -263,6 +266,20 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       rethrow;
     } catch (e) {
       throw AppException(AppErrorCode.healthReadFailed, cause: e);
+    }
+  }
+
+  Future<void> _ensureHistoryAuthorization(DateTime start) async {
+    if (_targetPlatform() != TargetPlatform.android ||
+        !start.isBefore(
+          DateTime.now().toUtc().subtract(_healthConnectHistoryWindow),
+        )) {
+      return;
+    }
+    if (!await _health.isHealthDataHistoryAvailable()) return;
+    if (await _health.isHealthDataHistoryAuthorized()) return;
+    if (!await _health.requestHealthDataHistoryAuthorization()) {
+      throw const AppException(AppErrorCode.healthPermissionDenied);
     }
   }
 

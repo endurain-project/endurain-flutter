@@ -244,10 +244,12 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             return
         }
         let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let recoveryMillis = store.lastPoint().flatMap { IsoTime.toEpochMillis($0.timestamp) }
+            ?? nowMillis
         let paused = session.copyWith(
             status: ActiveActivitySessionData.statusPaused,
             pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: nowMillis)
+            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: recoveryMillis)
         )
         // Save the pause before stopping Core Location so an in-flight update
         // is rejected by the recorder's recording-state guard.

@@ -20,7 +20,7 @@ class SqfliteActivityStore implements LocalActivityStore {
     : _factory = databaseFactory ?? _platformFactory(),
       _path = databasePath;
 
-  static const int _schemaVersion = 6;
+  static const int _schemaVersion = 7;
   static const String _dbFileName = 'activity.db';
   static const String _tableVersion = 'schema_version';
   static const String _tableActivity = 'local_activity';
@@ -48,6 +48,7 @@ class SqfliteActivityStore implements LocalActivityStore {
     4: _migrateToV4,
     5: _migrateToV5,
     6: _migrateToV6,
+    7: _migrateToV7,
   };
 
   static DatabaseFactory _platformFactory() => databaseFactorySqflitePlugin;
@@ -205,6 +206,13 @@ class SqfliteActivityStore implements LocalActivityStore {
     );
   }
 
+  Future<void> _migrateToV7(Database db) async {
+    await db.execute(
+      'ALTER TABLE $_tableActivity '
+      'ADD COLUMN gpx_cleanup_pending INTEGER NOT NULL DEFAULT 0',
+    );
+  }
+
   @override
   Future<List<LocalActivityRecord>> list() async {
     final db = await _open();
@@ -246,6 +254,18 @@ class SqfliteActivityStore implements LocalActivityStore {
       _toRow(record),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  @override
+  Future<bool> updateIfPresent(LocalActivityRecord record) async {
+    final db = await _open();
+    return await db.update(
+          _tableActivity,
+          _toRow(record),
+          where: 'id = ?',
+          whereArgs: [record.id],
+        ) >
+        0;
   }
 
   @override
@@ -320,6 +340,7 @@ class SqfliteActivityStore implements LocalActivityStore {
       'last_upload_attempt_at': r.lastUploadAttemptAt?.toUtcIso8601(),
       'last_upload_error_code': r.lastUploadErrorCode?.name,
       'auto_retry_eligible': r.autoRetryEligible ? 1 : 0,
+      'gpx_cleanup_pending': r.gpxCleanupPending ? 1 : 0,
       'idempotency_key': r.idempotencyKey,
       'connection_origin': r.connectionOrigin,
       'connection_profile_id': r.connectionProfileId,
@@ -345,6 +366,7 @@ class SqfliteActivityStore implements LocalActivityStore {
       lastUploadAttemptAt: jsonDateTime(row['last_upload_attempt_at']),
       lastUploadErrorCode: _errorCode(row['last_upload_error_code']),
       autoRetryEligible: (row['auto_retry_eligible'] as int? ?? 1) == 1,
+      gpxCleanupPending: (row['gpx_cleanup_pending'] as int? ?? 0) == 1,
       idempotencyKey: row['idempotency_key'] as String?,
       connectionOrigin: row['connection_origin'] as String?,
       connectionProfileId: row['connection_profile_id'] as String?,
