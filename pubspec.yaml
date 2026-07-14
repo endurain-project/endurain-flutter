@@ -172,5 +172,5 @@ flutter_launcher_icons:
   image_path_ios_dark_transparent: "assets/logo/brand_logo_dark_theme.png"
   image_path_ios_tinted_grayscale: "assets/logo/brand_logo_light_theme.png"
   desaturate_tinted_to_grayscale_ios: true
-  min_sdk_android: 21
+  min_sdk_android: 26
 
