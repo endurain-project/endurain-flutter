@@ -95,6 +95,10 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorTokenExchangeFailed
           : l10n.errorTokenExchangeFailedWithDetails(details),
+    // Reuses the timeout copy: to the user this is the same "temporarily
+    // unavailable, try again" situation. The distinct code exists so internal
+    // retry logic can recognize a transient auth-refresh failure.
+    AppErrorCode.transientAuthUnavailable => l10n.errorRequestTimeout,
     AppErrorCode.unexpectedResponseFormat => l10n.errorUnexpectedResponseFormat,
     AppErrorCode.unsupportedHttpMethod =>
       details == null

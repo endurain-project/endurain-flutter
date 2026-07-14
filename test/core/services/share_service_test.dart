@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:endurain/core/services/share_service.dart';
+import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_plus/share_plus.dart';
 

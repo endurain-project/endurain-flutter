@@ -1,5 +1,5 @@
 import 'package:endurain/core/services/app_services.dart';
-import 'package:endurain/core/services/share_service.dart';
+import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';

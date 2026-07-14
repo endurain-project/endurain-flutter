@@ -4,7 +4,7 @@ import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
-import 'package:endurain/core/services/url_launcher_service.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';

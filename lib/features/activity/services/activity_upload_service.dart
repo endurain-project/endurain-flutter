@@ -304,7 +304,8 @@ class ActivityUploadService {
     if (error is! AppException) {
       return _isTransientIoError(error);
     }
-    if (error.code == AppErrorCode.requestTimeout) {
+    if (error.code == AppErrorCode.requestTimeout ||
+        error.code == AppErrorCode.transientAuthUnavailable) {
       return true;
     }
     if (error.code != AppErrorCode.activityUploadFailed) {

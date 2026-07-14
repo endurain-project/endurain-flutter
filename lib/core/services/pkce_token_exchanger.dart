@@ -86,13 +86,7 @@ class PkceTokenExchanger {
         expiresInSeconds: expiresIn,
       );
 
-      return AuthResult(
-        success: true,
-        mfaRequired: false,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        sessionId: returnedSessionId,
-      );
+      return AuthResult(success: true, mfaRequired: false);
     } on AppException {
       rethrow;
     } catch (e) {

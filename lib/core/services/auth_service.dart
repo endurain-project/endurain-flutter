@@ -331,23 +331,22 @@ class AuthService {
   }
 }
 
-/// Authentication result model
+/// Authentication result model.
+///
+/// Carries only the flow-control outcome the login UI needs. Issued tokens are
+/// never returned here — they are persisted in secure storage by the session
+/// store during the PKCE exchange, so nothing downstream has to handle raw
+/// tokens.
 class AuthResult {
   final bool success;
   final bool mfaRequired;
   final String? username;
   final String? message;
-  final String? accessToken;
-  final String? refreshToken;
-  final String? sessionId;
 
   AuthResult({
     required this.success,
     this.mfaRequired = false,
     this.username,
     this.message,
-    this.accessToken,
-    this.refreshToken,
-    this.sessionId,
   });
 }

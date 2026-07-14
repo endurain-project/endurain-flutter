@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:endurain/core/services/share_service.dart';
+import 'package:endurain/core/services/platform/share_service.dart';
 
 class FakeShareService extends ShareService {
   FakeShareService({this.throwError});

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:endurain/core/services/location_platform_adapter.dart';
+import 'package:endurain/core/services/platform/location_platform_adapter.dart';
 import 'package:endurain/core/services/location_service.dart';
 
 void main() {

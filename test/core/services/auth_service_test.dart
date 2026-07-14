@@ -59,7 +59,6 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.mfaRequired, isFalse);
-      expect(result.accessToken, 'access-1');
       final session = await _readSession(storage);
       expect(session?.accessToken, 'access-1');
       expect(session?.refreshToken, 'refresh-1');
@@ -270,7 +269,10 @@ void main() {
 
       final result = await service.login('joao', 'secret');
 
-      expect(result.accessToken, 'access-1');
+      expect(result.success, isTrue);
+      final session = await _readSession(storage);
+      expect(session?.origin, 'https://stored.test');
+      expect(session?.accessToken, 'access-1');
     });
 
     test('throws when login succeeds without session or MFA', () async {
@@ -345,7 +347,6 @@ void main() {
       final result = await service.verifyMfa('joao', '123456');
 
       expect(result.success, isTrue);
-      expect(result.accessToken, 'access-1');
       expect((await _readSession(storage))?.accessToken, 'access-1');
     });
 

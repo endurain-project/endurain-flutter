@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:endurain/core/services/app_links_service.dart';
+import 'package:endurain/core/services/platform/app_links_service.dart';
 
 class FakeAppLinksService implements AppLinksService {
   final _controller = StreamController<Uri>.broadcast();

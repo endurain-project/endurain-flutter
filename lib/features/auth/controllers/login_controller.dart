@@ -5,7 +5,7 @@ import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
-import 'package:endurain/core/services/app_links_service.dart';
+import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';

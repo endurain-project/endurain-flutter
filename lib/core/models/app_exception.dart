@@ -35,6 +35,11 @@ enum AppErrorCode {
   sessionExpired,
   ssoTokenExchangeError,
   tokenExchangeFailed,
+
+  /// A token refresh could not be completed due to a transient network or
+  /// server condition, but the stored session is still valid. Callers should
+  /// treat this as retryable, unlike [sessionExpired], which is terminal.
+  transientAuthUnavailable,
   unexpectedResponseFormat,
   unsupportedHttpMethod,
 }

@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/url_launcher_service.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 
 class FakeUrlLauncherService extends UrlLauncherService {
   FakeUrlLauncherService({required this.launched});

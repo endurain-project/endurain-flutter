@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:endurain/core/services/location_platform_adapter.dart';
+import 'package:endurain/core/services/platform/location_platform_adapter.dart';
 import 'package:geolocator/geolocator.dart';
 
 /// Builds a deterministic [Position] for activity-recording tests.

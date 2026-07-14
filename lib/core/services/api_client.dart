@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/multipart_upload_adapter.dart';
+import 'package:endurain/core/services/platform/multipart_upload_adapter.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 
@@ -100,7 +100,10 @@ class ApiClient {
           expectedOrigin: expectedOrigin,
           expectedProfileId: expectedProfileId,
         )) {
-          throw const AppException(AppErrorCode.requestTimeout);
+          // The refresh could not complete (transient network/server issue)
+          // but the session for this profile is still present. Signal a
+          // retryable condition rather than a terminal session-expired error.
+          throw const AppException(AppErrorCode.transientAuthUnavailable);
         }
         throw const AppException(AppErrorCode.sessionExpired);
       }
@@ -162,7 +165,9 @@ class ApiClient {
         throw const AppException(AppErrorCode.sessionExpired);
       }
       if (!refreshed) {
-        throw const AppException(AppErrorCode.requestTimeout);
+        // Token expiring soon and the proactive refresh failed transiently;
+        // the session is retained, so surface a retryable error.
+        throw const AppException(AppErrorCode.transientAuthUnavailable);
       }
     }
 

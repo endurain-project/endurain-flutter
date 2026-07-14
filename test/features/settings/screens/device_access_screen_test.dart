@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/location_platform_adapter.dart';
+import 'package:endurain/core/services/platform/location_platform_adapter.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';

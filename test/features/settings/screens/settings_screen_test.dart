@@ -1,6 +1,6 @@
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
-import 'package:endurain/core/services/package_info_service.dart';
+import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';

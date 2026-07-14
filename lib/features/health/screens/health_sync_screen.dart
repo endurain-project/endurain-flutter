@@ -236,18 +236,49 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
           const AdaptiveProgressBar(),
         Expanded(
           child: state.selectedView == HealthSyncView.available
-              ? _buildAvailableView(context, l10n, state)
-              : _buildImportedView(context, l10n, state),
+              ? _AvailableWorkoutsView(controller: _controller, state: state)
+              : _ImportedWorkoutsView(controller: _controller, state: state),
         ),
       ],
     );
   }
+}
 
-  Widget _buildAvailableView(
-    BuildContext context,
-    AppLocalizations l10n,
-    HealthSyncState state,
-  ) {
+// ── Content views ────────────────────────────────────────────────────────────
+
+/// Inline, centered error message shown within a workout list surface.
+class _InlineError extends StatelessWidget {
+  const _InlineError({required this.error});
+
+  final Object error;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(top: UIConstants.paddingStandard),
+      child: Text(
+        localizedErrorMessage(error, l10n),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.error,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
+/// The "Available" tab: import range, auto-sync toggle, notices, and the list
+/// of health-platform workouts eligible for import.
+class _AvailableWorkoutsView extends StatelessWidget {
+  const _AvailableWorkoutsView({required this.controller, required this.state});
+
+  final HealthSyncController controller;
+  final HealthSyncState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final automationSubtitle = [
       l10n.healthSyncAutoSyncSubtitle,
       if (state.lastSyncAt != null)
@@ -256,7 +287,7 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
         ),
     ].join('\n');
     return RefreshIndicator.adaptive(
-      onRefresh: _controller.loadImportableWorkouts,
+      onRefresh: controller.loadImportableWorkouts,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(UIConstants.paddingStandard),
@@ -273,7 +304,7 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
                 value: state.autoSyncOnResume,
                 onChanged: state.isImporting || state.isUpdatingAutoSync
                     ? null
-                    : _controller.setAutoSyncOnResume,
+                    : controller.setAutoSyncOnResume,
               ),
             ],
           ),
@@ -291,8 +322,7 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
             _buildRouteConsentNotice(context, l10n),
           if (_showNoRoutesExplanation(state))
             _buildNoRoutesNotice(context, l10n),
-          if (state.error != null)
-            _buildInlineError(context, l10n, state.error!),
+          if (state.error != null) _InlineError(error: state.error!),
           _buildToolbar(context, l10n, state),
           _buildWorkoutList(context, l10n, state),
           if (state.availableHasMore) ...[
@@ -303,29 +333,12 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
                 variant: AdaptiveButtonVariant.secondary,
                 onPressed: state.isLoadingMoreAvailable
                     ? null
-                    : _controller.loadMoreAvailable,
+                    : controller.loadMoreAvailable,
               ),
             ),
           ],
           _buildImportActions(context, l10n, state),
         ],
-      ),
-    );
-  }
-
-  Widget _buildInlineError(
-    BuildContext context,
-    AppLocalizations l10n,
-    Object error,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(top: UIConstants.paddingStandard),
-      child: Text(
-        localizedErrorMessage(error, l10n),
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.error,
-        ),
-        textAlign: TextAlign.center,
       ),
     );
   }
@@ -337,7 +350,7 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
   ) {
     return AdaptiveListTile(
       title: l10n.healthSyncDateRange,
-      subtitle: _rangeLabel(l10n, state.selectedRange),
+      subtitle: _rangeLabel(context, l10n, state.selectedRange),
       leading: const AdaptiveIcon(
         materialIcon: Icons.date_range,
         cupertinoIcon: CupertinoIcons.calendar,
@@ -401,7 +414,7 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
           );
     if (!context.mounted || preset == null) return;
     if (preset != HealthImportRangePreset.custom) {
-      await _controller.setRange(_rangeForPreset(preset));
+      await controller.setRange(_rangeForPreset(preset));
       return;
     }
 
@@ -421,7 +434,7 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
       confirmLabel: l10n.ok,
     );
     if (selected == null) return;
-    await _controller.setRange(
+    await controller.setRange(
       HealthImportRange.custom(
         startDate: selected.start,
         endDate: selected.end,
@@ -444,7 +457,11 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
     };
   }
 
-  String _rangeLabel(AppLocalizations l10n, HealthImportRange range) {
+  String _rangeLabel(
+    BuildContext context,
+    AppLocalizations l10n,
+    HealthImportRange range,
+  ) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     return switch (range.preset) {
       HealthImportRangePreset.last30Days => l10n.healthSyncRange30Days,
@@ -517,77 +534,6 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
     );
   }
 
-  Widget _buildImportedView(
-    BuildContext context,
-    AppLocalizations l10n,
-    HealthSyncState state,
-  ) {
-    return RefreshIndicator.adaptive(
-      onRefresh: _controller.loadImported,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(UIConstants.paddingStandard),
-        children: [
-          if (state.error != null) ...[
-            _buildInlineError(context, l10n, state.error!),
-            Center(
-              child: AdaptiveButton(
-                label: l10n.activityHistoryRefresh,
-                variant: AdaptiveButtonVariant.secondary,
-                onPressed: state.isLoadingImported
-                    ? null
-                    : _controller.loadImported,
-              ),
-            ),
-            const SizedBox(height: UIConstants.paddingStandard),
-          ],
-          if (state.importedWorkouts.isEmpty && !state.isLoadingImported)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: UIConstants.paddingXLarge,
-              ),
-              child: Text(
-                l10n.healthSyncImportedEmpty,
-                textAlign: TextAlign.center,
-              ),
-            )
-          else if (state.importedWorkouts.isNotEmpty)
-            AdaptiveListSection(
-              children: [
-                for (final imported in state.importedWorkouts)
-                  _ImportedWorkoutTile(
-                    imported: imported,
-                    onTap: imported.localActivity == null
-                        ? null
-                        : () => adaptivePush<void>(
-                            context,
-                            (_) => ActivityDetailsScreen(
-                              recordId: imported.localActivityId,
-                            ),
-                          ),
-                    onRestore: imported.localActivity == null
-                        ? () => _controller.restoreMissingImport(imported)
-                        : null,
-                  ),
-              ],
-            ),
-          if (state.importedHasMore) ...[
-            const SizedBox(height: UIConstants.paddingStandard),
-            Center(
-              child: AdaptiveButton(
-                label: l10n.activityHistoryLoadMore,
-                variant: AdaptiveButtonVariant.secondary,
-                onPressed: state.isLoadingImported
-                    ? null
-                    : () => _controller.loadImported(reset: false),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   /// Shows guidance when workouts were found but none carry a GPS route (e.g.
   /// activities written to the health platform by apps like Garmin Connect
   /// that don't share routes). Suppressed while loading and when the absence is
@@ -625,14 +571,14 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
           AdaptiveButton(
             label: l10n.healthSyncSelectAll,
             variant: AdaptiveButtonVariant.secondary,
-            onPressed: state.isImporting ? null : _controller.selectAll,
+            onPressed: state.isImporting ? null : controller.selectAll,
           ),
           AdaptiveButton(
             label: l10n.healthSyncClearSelection,
             variant: AdaptiveButtonVariant.secondary,
             onPressed: state.selectedSourceIds.isEmpty || state.isImporting
                 ? null
-                : _controller.clearSelection,
+                : controller.clearSelection,
           ),
         ],
       ),
@@ -652,12 +598,12 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
         for (final workout in state.importableWorkouts)
           _WorkoutRow(
             workout: workout,
-            title: _formatTitle(l10n, workout),
-            subtitle: _formatSubtitle(workout),
+            title: _formatTitle(context, l10n, workout),
+            subtitle: _formatSubtitle(context, workout),
             isSelected: state.selectedSourceIds.contains(workout.sourceId),
             noRouteLabel: l10n.healthSyncNoRouteLabel,
             onChanged: workout.hasRoute && !state.isImporting
-                ? (_) => _controller.toggleSelection(workout.sourceId)
+                ? (_) => controller.toggleSelection(workout.sourceId)
                 : null,
           ),
       ],
@@ -675,14 +621,18 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
     );
   }
 
-  String _formatTitle(AppLocalizations l10n, HealthWorkout workout) {
+  String _formatTitle(
+    BuildContext context,
+    AppLocalizations l10n,
+    HealthWorkout workout,
+  ) {
     final typeLabel = workout.type.toActivityType().localizedLabel(l10n);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dateStr = DateFormat.yMd(locale).format(workout.startedAt.toLocal());
     return '$typeLabel · $dateStr';
   }
 
-  String? _formatSubtitle(HealthWorkout workout) {
+  String? _formatSubtitle(BuildContext context, HealthWorkout workout) {
     const formatter = ActivityStatsFormatter();
     final locale = Localizations.localeOf(context).toLanguageTag();
     final parts = <String>[
@@ -713,9 +663,86 @@ class _HealthSyncScreenState extends State<HealthSyncScreen> {
         children: [
           AdaptiveButton(
             label: l10n.healthSyncImportSelected(selectedCount),
-            onPressed: canImport ? () => _controller.importSelected() : null,
+            onPressed: canImport ? () => controller.importSelected() : null,
             expand: true,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The "Imported" tab: previously imported workouts and their upload status.
+class _ImportedWorkoutsView extends StatelessWidget {
+  const _ImportedWorkoutsView({required this.controller, required this.state});
+
+  final HealthSyncController controller;
+  final HealthSyncState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return RefreshIndicator.adaptive(
+      onRefresh: controller.loadImported,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(UIConstants.paddingStandard),
+        children: [
+          if (state.error != null) ...[
+            _InlineError(error: state.error!),
+            Center(
+              child: AdaptiveButton(
+                label: l10n.activityHistoryRefresh,
+                variant: AdaptiveButtonVariant.secondary,
+                onPressed: state.isLoadingImported
+                    ? null
+                    : controller.loadImported,
+              ),
+            ),
+            const SizedBox(height: UIConstants.paddingStandard),
+          ],
+          if (state.importedWorkouts.isEmpty && !state.isLoadingImported)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: UIConstants.paddingXLarge,
+              ),
+              child: Text(
+                l10n.healthSyncImportedEmpty,
+                textAlign: TextAlign.center,
+              ),
+            )
+          else if (state.importedWorkouts.isNotEmpty)
+            AdaptiveListSection(
+              children: [
+                for (final imported in state.importedWorkouts)
+                  _ImportedWorkoutTile(
+                    imported: imported,
+                    onTap: imported.localActivity == null
+                        ? null
+                        : () => adaptivePush<void>(
+                            context,
+                            (_) => ActivityDetailsScreen(
+                              recordId: imported.localActivityId,
+                            ),
+                          ),
+                    onRestore: imported.localActivity == null
+                        ? () => controller.restoreMissingImport(imported)
+                        : null,
+                  ),
+              ],
+            ),
+          if (state.importedHasMore) ...[
+            const SizedBox(height: UIConstants.paddingStandard),
+            Center(
+              child: AdaptiveButton(
+                label: l10n.activityHistoryLoadMore,
+                variant: AdaptiveButtonVariant.secondary,
+                onPressed: state.isLoadingImported
+                    ? null
+                    : () => controller.loadImported(reset: false),
+              ),
+            ),
+          ],
         ],
       ),
     );

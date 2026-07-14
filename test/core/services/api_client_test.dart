@@ -7,7 +7,7 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/multipart_upload_adapter.dart';
+import 'package:endurain/core/services/platform/multipart_upload_adapter.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 
 void main() {
@@ -236,6 +236,74 @@ void main() {
         ),
       );
       expect(uploadAdapter.uploadCalls, 0);
+    });
+
+    test('throws transientAuthUnavailable when a proactive refresh fails '
+        'transiently', () async {
+      final storage = SecureStorageService();
+      await _seedSession(storage, expiresInSeconds: 30);
+      final uploadAdapter = _FakeMultipartUploadAdapter();
+      final authService = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/api/v1/auth/refresh');
+          // 5xx keeps the session (transient), unlike a 401/403 rejection.
+          return http.Response('{"detail":"unavailable"}', 503);
+        }),
+      );
+      final client = ApiClient(
+        storage: storage,
+        authService: authService,
+        uploadAdapter: uploadAdapter,
+      );
+
+      await expectLater(
+        client.uploadFile('/api/files', '/tmp/activity.gpx', 'file'),
+        throwsA(
+          isA<AppException>().having(
+            (exception) => exception.code,
+            'code',
+            AppErrorCode.transientAuthUnavailable,
+          ),
+        ),
+      );
+      // No valid token was obtained, so the upload is never attempted and the
+      // session is retained for a later retry.
+      expect(uploadAdapter.uploadCalls, 0);
+      expect((await _readSession(storage))?.accessToken, 'access-1');
+    });
+
+    test('throws transientAuthUnavailable when the post-401 refresh fails '
+        'transiently', () async {
+      final storage = SecureStorageService();
+      await _seedSession(storage);
+      final uploadAdapter = _FakeMultipartUploadAdapter(statusCodes: [401]);
+      final authService = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/api/v1/auth/refresh');
+          return http.Response('{"detail":"unavailable"}', 503);
+        }),
+      );
+      final client = ApiClient(
+        storage: storage,
+        authService: authService,
+        uploadAdapter: uploadAdapter,
+      );
+
+      await expectLater(
+        client.uploadFile('/api/files', '/tmp/activity.gpx', 'file'),
+        throwsA(
+          isA<AppException>().having(
+            (exception) => exception.code,
+            'code',
+            AppErrorCode.transientAuthUnavailable,
+          ),
+        ),
+      );
+      // Only the initial attempt happened; no retry without a fresh token.
+      expect(uploadAdapter.uploadCalls, 1);
+      expect((await _readSession(storage))?.accessToken, 'access-1');
     });
   });
 }
