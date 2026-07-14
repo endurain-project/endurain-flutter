@@ -12,16 +12,31 @@ import 'package:endurain/core/services/base_http_client.dart';
 /// fields, and persist tokens through [AuthSessionStore]. Only the error code
 /// and whether a username is persisted differ between the two flows.
 class PkceTokenExchanger {
-  const PkceTokenExchanger({
+  PkceTokenExchanger({
     required this._sessionStore,
     required BaseHttpClient http,
     ApiEndpoints? endpoints,
+    int profileFetchAttempts = 3,
+    Future<void> Function(int attempt)? retryDelay,
   }) : _http = http,
-       _endpoints = endpoints ?? const ApiEndpoints();
+       _endpoints = endpoints ?? const ApiEndpoints(),
+       _profileFetchAttempts = profileFetchAttempts < 1
+           ? 1
+           : profileFetchAttempts,
+       _retryDelay = retryDelay ?? _defaultProfileRetryDelay;
 
   final AuthSessionStore _sessionStore;
   final BaseHttpClient _http;
   final ApiEndpoints _endpoints;
+
+  /// How many times to attempt the post-exchange profile fetch before giving
+  /// up. The tokens have just been issued, so a failure here is almost always
+  /// a transient blip; retrying avoids discarding valid credentials.
+  final int _profileFetchAttempts;
+  final Future<void> Function(int attempt) _retryDelay;
+
+  static Future<void> _defaultProfileRetryDelay(int attempt) =>
+      Future<void>.delayed(Duration(milliseconds: 200 * attempt));
 
   /// Exchanges [sessionId] for bearer tokens using the PKCE [verifier].
   ///
@@ -51,9 +66,9 @@ class PkceTokenExchanger {
       final refreshToken = ApiResponse.requiredString(data, 'refresh_token');
       final returnedSessionId = ApiResponse.requiredString(data, 'session_id');
       final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
-      final profile = await _http.getJsonObject(
-        Uri.parse('$serverUrl${_endpoints.profileEndpoint}'),
-        extraHeaders: {'Authorization': 'Bearer $accessToken'},
+      final profile = await _fetchProfile(
+        serverUrl: serverUrl,
+        accessToken: accessToken,
         failureCode: failureCode,
       );
       final profileId = ApiResponse.requiredPositiveInt(
@@ -83,5 +98,39 @@ class PkceTokenExchanger {
     } catch (e) {
       throw AppException(failureCode, cause: e);
     }
+  }
+
+  /// Fetches the authenticated user's profile to derive the stable server-side
+  /// account id used as the connection profile id.
+  ///
+  /// Retries transient failures with a short backoff. The bearer token was
+  /// issued moments earlier, so a failure here is almost always a temporary
+  /// network hiccup; retrying prevents a single blip from discarding valid
+  /// credentials and forcing the user to sign in again. After the final
+  /// attempt the underlying error propagates so the caller can surface it.
+  Future<Map<String, dynamic>> _fetchProfile({
+    required String serverUrl,
+    required String accessToken,
+    required AppErrorCode failureCode,
+  }) async {
+    final profileUrl = Uri.parse('$serverUrl${_endpoints.profileEndpoint}');
+    Object? lastError;
+    StackTrace? lastStackTrace;
+    for (var attempt = 0; attempt < _profileFetchAttempts; attempt++) {
+      if (attempt > 0) {
+        await _retryDelay(attempt);
+      }
+      try {
+        return await _http.getJsonObject(
+          profileUrl,
+          extraHeaders: {'Authorization': 'Bearer $accessToken'},
+          failureCode: failureCode,
+        );
+      } catch (error, stackTrace) {
+        lastError = error;
+        lastStackTrace = stackTrace;
+      }
+    }
+    Error.throwWithStackTrace(lastError!, lastStackTrace!);
   }
 }
