@@ -53,12 +53,13 @@ class PkceTokenExchanger {
       final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
       final profile = await _http.getJsonObject(
         Uri.parse('$serverUrl${_endpoints.profileEndpoint}'),
-        extraHeaders: {
-          'Authorization': 'Bearer $accessToken',
-        },
+        extraHeaders: {'Authorization': 'Bearer $accessToken'},
         failureCode: failureCode,
       );
-      final profileId = ApiResponse.requiredPositiveInt(profile, 'id').toString();
+      final profileId = ApiResponse.requiredPositiveInt(
+        profile,
+        'id',
+      ).toString();
 
       await _sessionStore.saveSession(
         origin: serverUrl,

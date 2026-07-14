@@ -125,6 +125,9 @@ void main() {
       final service = SsoService(
         storage: SecureStorageService(),
         httpClient: MockClient((request) async {
+          if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+            return http.Response('{"id":1}', 200);
+          }
           return http.Response(
             '{"access_token":"at","refresh_token":"rt",'
             '"session_id":"sid","expires_in":3600}',

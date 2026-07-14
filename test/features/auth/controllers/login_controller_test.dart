@@ -98,6 +98,9 @@ void main() {
         authCoordinator: _repository(
           storage: storage,
           client: MockClient((request) async {
+            if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+              return http.Response('{"id":1}', 200);
+            }
             expect(
               request.url.path,
               '${ApiEndpoints.defaults.idpSessionTokenExchangeEndpoint}/session-1/tokens',
@@ -344,6 +347,9 @@ void main() {
             if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
               return http.Response('{"session_id":"session-1"}', 200);
             }
+            if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+              return http.Response('{"id":1}', 200);
+            }
             return http.Response(
               '{"access_token":"access-1","refresh_token":"refresh-1","session_id":"session-2","expires_in":3600}',
               200,
@@ -411,6 +417,9 @@ void main() {
             }
             if (request.url.path == ApiEndpoints.defaults.mfaVerifyEndpoint) {
               return http.Response('{"session_id":"session-1"}', 200);
+            }
+            if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+              return http.Response('{"id":1}', 200);
             }
             return http.Response(
               '{"access_token":"access-1","refresh_token":"refresh-1","session_id":"session-2","expires_in":3600}',
@@ -633,6 +642,9 @@ void main() {
                 '"session_id":"session-2","expires_in":3600}',
                 200,
               );
+            }
+            if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+              return http.Response('{"id":1}', 200);
             }
             if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
               return http.Response('[]', 200);

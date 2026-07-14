@@ -275,7 +275,7 @@ void main() {
       final db = await databaseFactoryFfi.openDatabase(dbPath);
       final rows = await db.query('schema_version');
       expect(rows, hasLength(1));
-      expect(rows.first['version'], 6);
+      expect(rows.first['version'], 7);
       final columns = await db.rawQuery('PRAGMA table_info(local_activity)');
       expect(
         columns.map((column) => column['name']),

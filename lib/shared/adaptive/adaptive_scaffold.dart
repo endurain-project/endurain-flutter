@@ -21,8 +21,15 @@ class AdaptiveScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Android 15+ (API 35) and modern iOS both draw edge-to-edge by default,
+    // so every platform branch below must apply the SafeArea itself instead
+    // of relying on the host Scaffold: Scaffold only strips the *top* inset
+    // when an AppBar is present and only strips the *bottom* inset when a
+    // bottomNavigationBar is present, so a plain body would otherwise render
+    // under the transparent status bar / gesture navigation bar.
+    final content = safeArea ? SafeArea(child: body) : body;
+
     if (PlatformUtils.isApplePlatform) {
-      final content = safeArea ? SafeArea(child: body) : body;
       return CupertinoPageScaffold(
         navigationBar: title == null && leading == null
             ? null
@@ -41,7 +48,7 @@ class AdaptiveScaffold extends StatelessWidget {
               title: title == null ? null : Text(title!),
               leading: leading,
             ),
-      body: _withFloatingActionButton(body),
+      body: _withFloatingActionButton(content),
     );
   }
 

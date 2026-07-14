@@ -168,33 +168,35 @@ void main() {
       expect(await storage.isAuthSessionAuthoritative(), isTrue);
     });
 
-    test('preserves a stable backend profile ID across sequential logins',
-        () async {
-      final store = AuthSessionStore(storage: SecureStorageService());
+    test(
+      'preserves a stable backend profile ID across sequential logins',
+      () async {
+        final store = AuthSessionStore(storage: SecureStorageService());
 
-      await store.saveSession(
-        origin: 'https://example.test',
-        accessToken: 'access-1',
-        refreshToken: 'refresh-1',
-        sessionId: 'session-1',
-        profileId: '42',
-        expiresInSeconds: 3600,
-      );
-      final first = (await store.readSession())!;
+        await store.saveSession(
+          origin: 'https://example.test',
+          accessToken: 'access-1',
+          refreshToken: 'refresh-1',
+          sessionId: 'session-1',
+          profileId: '42',
+          expiresInSeconds: 3600,
+        );
+        final first = (await store.readSession())!;
 
-      await store.saveSession(
-        origin: 'https://example.test',
-        accessToken: 'access-2',
-        refreshToken: 'refresh-2',
-        sessionId: 'session-2',
-        profileId: '42',
-        expiresInSeconds: 3600,
-      );
-      final second = (await store.readSession())!;
+        await store.saveSession(
+          origin: 'https://example.test',
+          accessToken: 'access-2',
+          refreshToken: 'refresh-2',
+          sessionId: 'session-2',
+          profileId: '42',
+          expiresInSeconds: 3600,
+        );
+        final second = (await store.readSession())!;
 
-      expect(second.profileId, first.profileId);
-      expect(second.revision, isNot(first.revision));
-    });
+        expect(second.profileId, first.profileId);
+        expect(second.revision, isNot(first.revision));
+      },
+    );
 
     test('malformed canonical session clears without deadlocking', () async {
       FlutterSecureStorage.setMockInitialValues({
