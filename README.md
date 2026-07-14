@@ -36,18 +36,6 @@ Endurain Mobile is the official companion app for [Endurain](https://github.com/
 
 The app is designed with privacy in mind, connecting directly to your self-hosted Endurain server without any third-party services or analytics.
 
-### Self-Hosted First, Managed-Service Ready
-
-The current app ships as a self-hosted client. A managed Endurain service is not available yet, so the server connection screen intentionally presents only the user-provided instance flow.
-
-The core already reserves the correct boundary for a future managed rollout:
-
-- A committed authenticated session binds its credentials to one canonical server origin. A new login candidate never replaces an existing session until the token exchange succeeds.
-- Locally queued activities are bound to the origin active when they are saved. Guest activities remain local until a future explicit destination-assignment flow is added; they are never silently uploaded to a newly selected server.
-- `AppConfig.cloudBaseUrl` is the future official managed origin. It remains unset until the service and its public domain exist. Once configured, managed connections must use HTTPS; self-hosted connections retain the existing explicit HTTP warning path for trusted local deployments.
-
-When the managed service is ready, add a branded server picker that creates an explicit managed connection profile, configure `cloudBaseUrl` with the final HTTPS origin, restrict managed map resources to the approved allowlist, and move managed SSO to Android App Links and iOS Universal Links. Do not add a placeholder cloud endpoint or relax HTTPS before those server-side contracts exist.
-
 ## Current Features
 
 ✅ **Authentication**
