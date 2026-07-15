@@ -398,6 +398,12 @@ class AppLocalizationsSk extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Najvyššia rýchlosť';
+
+  @override
+  String get activityStatElevationGain => 'Prevýšenie';
+
+  @override
   String get activityStop => 'Zastaviť';
 
   @override

@@ -395,6 +395,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get activityStatPace => 'Темп';
 
   @override
+  String get activityStatMaxSpeed => 'Макс. швидкість';
+
+  @override
+  String get activityStatElevationGain => 'Набір висоти';
+
+  @override
   String get activityStop => 'Зупинити';
 
   @override

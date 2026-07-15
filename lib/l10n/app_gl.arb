@@ -1,5 +1,7 @@
 {
   "@@locale": "gl",
+  "activityStatMaxSpeed": "Velocidade máxima",
+  "activityStatElevationGain": "Desnivel positivo",
   "error": "Erro",
   "ok": "Aceptar",
   "cancel": "Cancelar",

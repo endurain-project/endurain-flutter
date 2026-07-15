@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
@@ -113,7 +113,7 @@ class ActivityRecordingService {
       return;
     }
     final startedAt = _now();
-    final resolvedSessionId = localSessionId ?? _defaultSessionId();
+    final resolvedSessionId = localSessionId ?? recordingSessionId();
     _localSessionId = resolvedSessionId;
     _connectionOrigin = connectionOrigin;
     _connectionProfileId = connectionProfileId;
@@ -643,18 +643,34 @@ class ActivityRecordingService {
 
     if (session.status == ActiveActivityStatus.completed ||
         session.status == ActiveActivityStatus.failed) {
-      return _recoverCompletedSession(session, recordedPoints);
+      return _recoverSession(
+        session,
+        recordedPoints,
+        status: ActivityRecordingStatus.completed,
+      );
     }
     if (!session.isActive) {
       return false;
     }
-    return _recoverFromSessionAndPoints(session, recordedPoints);
+    return _recoverSession(
+      session,
+      recordedPoints,
+      status: ActivityRecordingStatus.paused,
+    );
   }
 
-  bool _recoverCompletedSession(
+  /// Rebuilds and emits recording state from a recovered durable [session] and
+  /// its persisted [recordedPoints].
+  ///
+  /// A `completed` recovery stamps [ActivityRecordingState.endedAt] (the
+  /// session's own end time, or now as a fallback) so the finished activity can
+  /// be finalized; a `paused` recovery leaves it unset so recording can resume.
+  bool _recoverSession(
     ActiveActivitySession session,
-    List<RecordedActivityPoint> recordedPoints,
-  ) {
+    List<RecordedActivityPoint> recordedPoints, {
+    required ActivityRecordingStatus status,
+  }) {
+    final isCompleted = status == ActivityRecordingStatus.completed;
     _localSessionId = session.localSessionId;
     _connectionOrigin = session.connectionOrigin;
     _connectionProfileId = session.connectionProfileId;
@@ -664,10 +680,10 @@ class ActivityRecordingService {
     _lastBreadcrumbPointCount = recordedPoints.length;
     _emit(
       ActivityRecordingState(
-        status: ActivityRecordingStatus.completed,
+        status: status,
         activityType: session.activityType,
         startedAt: session.startedAt,
-        endedAt: session.endedAt ?? _now(),
+        endedAt: isCompleted ? (session.endedAt ?? _now()) : null,
         elapsedDurationSeconds: session.elapsedDurationSeconds,
         segments: segments,
       ),
@@ -678,38 +694,7 @@ class ActivityRecordingService {
         'pointCount': recordedPoints.length,
         'segmentCount': segments.length,
         'recovered': true,
-        'completed': true,
-      },
-    );
-    return true;
-  }
-
-  bool _recoverFromSessionAndPoints(
-    ActiveActivitySession session,
-    List<RecordedActivityPoint> recordedPoints,
-  ) {
-    _localSessionId = session.localSessionId;
-    _connectionOrigin = session.connectionOrigin;
-    _connectionProfileId = session.connectionProfileId;
-    final segments = _segmentsFromRecorded(recordedPoints);
-    _elapsedBeforeCurrentSegmentSeconds = session.elapsedDurationSeconds;
-    _recordingSegmentStartedAt = null;
-    _lastBreadcrumbPointCount = recordedPoints.length;
-    _emit(
-      ActivityRecordingState(
-        status: ActivityRecordingStatus.paused,
-        activityType: session.activityType,
-        startedAt: session.startedAt,
-        elapsedDurationSeconds: session.elapsedDurationSeconds,
-        segments: segments,
-      ),
-    );
-    _recordBreadcrumb(
-      DiagnosticsEvents.activityActiveSessionRecovered,
-      details: {
-        'pointCount': recordedPoints.length,
-        'segmentCount': segments.length,
-        'recovered': true,
+        if (isCompleted) 'completed': true,
       },
     );
     return true;
@@ -734,12 +719,6 @@ class ActivityRecordingService {
       segments.add(ActivityTrackSegment(points: currentPoints));
     }
     return segments;
-  }
-
-  static String _defaultSessionId() {
-    final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
-    final random = Random().nextInt(1 << 32);
-    return 'session_${timestamp}_$random';
   }
 
   void _ensureNotDisposed() {

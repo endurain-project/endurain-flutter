@@ -72,6 +72,26 @@ void main() {
       expect(gpx, contains('<type>run</type>'));
     });
 
+    test('includes a <bounds> element enclosing the route', () {
+      final workout = makeWorkout(
+        route: [
+          makePoint(lat: 38.71, lon: -9.13, offsetSeconds: 0),
+          makePoint(lat: 38.72, lon: -9.14, offsetSeconds: 60),
+        ],
+      );
+      final gpx = builder.build(workout);
+
+      // min/max derived from the two route points. Keeps the health GPX shape
+      // consistent with the GPS-recording builder, which also emits <bounds>.
+      expect(
+        gpx,
+        contains(
+          '<bounds minlat="38.71" minlon="-9.14" '
+          'maxlat="38.72" maxlon="-9.13" />',
+        ),
+      );
+    });
+
     test('includes gpxtpx:hr extension when heart rate is present', () {
       final workout = makeWorkout(
         route: [

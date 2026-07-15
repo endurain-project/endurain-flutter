@@ -401,6 +401,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get activityStatPace => 'Allure';
 
   @override
+  String get activityStatMaxSpeed => 'Vitesse max.';
+
+  @override
+  String get activityStatElevationGain => 'Dénivelé positif';
+
+  @override
   String get activityStop => 'Arrêter';
 
   @override

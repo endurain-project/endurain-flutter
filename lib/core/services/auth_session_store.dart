@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 
@@ -44,8 +44,8 @@ class AuthSessionStore {
           decoded['profileId'] == null || decoded['revision'] == null;
       final session = AuthSession.fromJson(
         decoded,
-        fallbackProfileId: needsMigration ? _newRevision() : null,
-        fallbackRevision: needsMigration ? _newRevision() : null,
+        fallbackProfileId: needsMigration ? connectionRevision() : null,
+        fallbackRevision: needsMigration ? connectionRevision() : null,
       );
       final normalized = _normalizeSession(session);
       if (needsMigration || normalized.origin != session.origin) {
@@ -169,7 +169,7 @@ class AuthSessionStore {
   }) {
     final session = AuthSession(
       profileId: profileId,
-      revision: _newRevision(),
+      revision: connectionRevision(),
       origin: origin,
       connectionKind:
           connectionKind ??
@@ -223,8 +223,8 @@ class AuthSessionStore {
       return null;
     }
     final session = AuthSession(
-      profileId: _newRevision(),
-      revision: _newRevision(),
+      profileId: connectionRevision(),
+      revision: connectionRevision(),
       origin: ServerUrlResolver.normalize(origin, config: _config),
       connectionKind: _config.isManagedOrigin(origin)
           ? ConnectionKind.managed
@@ -237,11 +237,6 @@ class AuthSessionStore {
     );
     await _writeCanonicalSession(session);
     return session;
-  }
-
-  String _newRevision() {
-    final random = Random.secure().nextInt(1 << 32);
-    return '${DateTime.now().toUtc().microsecondsSinceEpoch}-$random';
   }
 
   AuthSession _normalizeSession(AuthSession session) {

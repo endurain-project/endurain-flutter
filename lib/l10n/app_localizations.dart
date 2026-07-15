@@ -801,6 +801,18 @@ abstract class AppLocalizations {
   /// **'Pace'**
   String get activityStatPace;
 
+  /// Post-recording summary maximum speed label - Used in: activity_completion_summary.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Max speed'**
+  String get activityStatMaxSpeed;
+
+  /// Post-recording summary total ascent label - Used in: activity_completion_summary.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Elevation gain'**
+  String get activityStatElevationGain;
+
   /// Stop recording button label and tooltip - Used in: activity_recording_controls.dart
   ///
   /// In en, this message translates to:

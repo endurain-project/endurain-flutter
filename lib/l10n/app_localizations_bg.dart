@@ -397,6 +397,12 @@ class AppLocalizationsBg extends AppLocalizations {
   String get activityStatPace => 'Темпо';
 
   @override
+  String get activityStatMaxSpeed => 'Макс. скорост';
+
+  @override
+  String get activityStatElevationGain => 'Изкачване';
+
+  @override
   String get activityStop => 'Стоп';
 
   @override

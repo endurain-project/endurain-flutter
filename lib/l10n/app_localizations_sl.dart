@@ -395,6 +395,12 @@ class AppLocalizationsSl extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Najv. hitrost';
+
+  @override
+  String get activityStatElevationGain => 'Vzpon';
+
+  @override
   String get activityStop => 'Ustavi';
 
   @override

@@ -1,5 +1,7 @@
 {
   "@@locale": "tr",
+  "activityStatMaxSpeed": "Maks. hız",
+  "activityStatElevationGain": "Yükselti kazancı",
   "error": "Hata",
   "ok": "Tamam",
   "cancel": "İptal",

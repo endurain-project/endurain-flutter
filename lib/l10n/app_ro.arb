@@ -1,5 +1,7 @@
 {
   "@@locale": "ro",
+  "activityStatMaxSpeed": "Viteză maximă",
+  "activityStatElevationGain": "Urcare",
   "error": "Eroare",
   "ok": "OK",
   "cancel": "Anulează",

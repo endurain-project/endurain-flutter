@@ -7,6 +7,7 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:endurain/features/activity/services/gpx_route_parser.dart';
 import 'package:flutter/foundation.dart';
 
 class LocalActivityHistoryController extends ChangeNotifier {
@@ -61,6 +62,22 @@ class LocalActivityHistoryController extends ChangeNotifier {
 
   Future<bool> hasGpx(LocalActivityRecord record) {
     return _repository.hasGpx(record);
+  }
+
+  /// Loads and parses the GPS route for [record] so a map can be drawn from the
+  /// retained GPX file. Returns `null` when the file is missing (e.g. deleted
+  /// after upload) or contains no track points, so callers can hide the map
+  /// without special-casing errors.
+  Future<GpxRoute?> loadRoute(LocalActivityRecord record) async {
+    try {
+      if (!await hasGpx(record)) {
+        return null;
+      }
+      final gpx = await _repository.readGpxContents(record);
+      return const GpxRouteParser().parse(gpx);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> load() async {

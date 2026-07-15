@@ -30,6 +30,17 @@ class ActivityStatsFormatter {
     return '${_formatDecimal(metersPerSecond * 3.6, 1, locale)} km/h';
   }
 
+  String formatElevation(double? meters, {String? locale}) {
+    if (meters == null) {
+      return '-';
+    }
+    final rounded = meters.round();
+    if (locale == null) {
+      return '$rounded m';
+    }
+    return '${NumberFormat.decimalPattern(locale).format(rounded)} m';
+  }
+
   String formatPace(double? metersPerSecond) {
     if (metersPerSecond == null || metersPerSecond <= 0) {
       return '-';

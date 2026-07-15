@@ -400,6 +400,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Maks. prędkość';
+
+  @override
+  String get activityStatElevationGain => 'Przewyższenie';
+
+  @override
   String get activityStop => 'Zatrzymaj';
 
   @override

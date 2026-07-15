@@ -86,6 +86,50 @@ void main() {
       expect(record.averageSpeedMetersPerSecond, isNull);
     });
 
+    test('captures max speed and elevation gain from the track', () {
+      final state = ActivityRecordingState(
+        status: ActivityRecordingStatus.completed,
+        activityType: ActivityType.ride,
+        startedAt: DateTime.utc(2026, 6, 2, 10),
+        endedAt: DateTime.utc(2026, 6, 2, 10, 2),
+        elapsedDurationSeconds: 120,
+        points: [
+          _point(
+            latitude: 0,
+            longitude: 0,
+            seconds: 0,
+            speed: 2,
+            elevation: 100,
+          ),
+          _point(
+            latitude: 0,
+            longitude: 0.001,
+            seconds: 60,
+            speed: 6,
+            elevation: 140,
+          ),
+          _point(
+            latitude: 0,
+            longitude: 0.002,
+            seconds: 120,
+            speed: 3,
+            elevation: 130,
+          ),
+        ],
+      );
+
+      final record = builder.build(
+        state: state,
+        id: 'activity_metrics',
+        gpxFileName: 'activity_metrics.gpx',
+        createdAt: DateTime.utc(2026, 6, 2, 10, 3),
+      );
+
+      // Fastest reported point speed is 6 m/s; ascent = +40 then -10 ignored.
+      expect(record.maxSpeedMetersPerSecond, 6);
+      expect(record.elevationGainMeters, closeTo(40, 0.001));
+    });
+
     test('rejects non-completed recording states', () {
       final state = ActivityRecordingState(
         status: ActivityRecordingStatus.recording,
@@ -115,10 +159,14 @@ ActivityTrackPoint _point({
   required double latitude,
   required double longitude,
   int seconds = 0,
+  double? speed,
+  double? elevation,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
     longitude: longitude,
     timestamp: DateTime.utc(2026).add(Duration(seconds: seconds)),
+    speedMetersPerSecond: speed,
+    elevationMeters: elevation,
   );
 }

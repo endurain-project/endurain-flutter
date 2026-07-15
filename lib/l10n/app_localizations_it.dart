@@ -400,6 +400,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get activityStatPace => 'Ritmo';
 
   @override
+  String get activityStatMaxSpeed => 'Velocità massima';
+
+  @override
+  String get activityStatElevationGain => 'Dislivello positivo';
+
+  @override
   String get activityStop => 'Ferma';
 
   @override

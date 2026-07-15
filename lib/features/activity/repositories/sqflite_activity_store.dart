@@ -21,7 +21,7 @@ class SqfliteActivityStore implements LocalActivityStore {
     : _factory = databaseFactory ?? _platformFactory(),
       _path = databasePath;
 
-  static const int _schemaVersion = 7;
+  static const int _schemaVersion = 8;
   static const String _dbFileName = 'activity.db';
   static const String _tableVersion = 'schema_version';
   static const String _tableActivity = 'local_activity';
@@ -52,6 +52,7 @@ class SqfliteActivityStore implements LocalActivityStore {
       5: _migrateToV5,
       6: _migrateToV6,
       7: _migrateToV7,
+      8: _migrateToV8,
     },
     recordVersion: _recordSchemaVersion,
   );
@@ -199,6 +200,20 @@ class SqfliteActivityStore implements LocalActivityStore {
     );
   }
 
+  /// Schema version 8: adds the optional richer-summary metrics surfaced in the
+  /// post-recording summary and activity details — the fastest observed speed
+  /// and total ascent. Both are null for activities recorded before this
+  /// migration and for imports without the underlying track data.
+  Future<void> _migrateToV8(Database db) async {
+    await db.execute(
+      'ALTER TABLE $_tableActivity '
+      'ADD COLUMN max_speed_meters_per_second REAL',
+    );
+    await db.execute(
+      'ALTER TABLE $_tableActivity ADD COLUMN elevation_gain_meters REAL',
+    );
+  }
+
   @override
   Future<List<LocalActivityRecord>> list() async {
     final db = await _open();
@@ -335,6 +350,8 @@ class SqfliteActivityStore implements LocalActivityStore {
       'elapsed_duration_seconds': r.elapsedDurationSeconds,
       'distance_meters': r.distanceMeters,
       'average_speed_meters_per_second': r.averageSpeedMetersPerSecond,
+      'max_speed_meters_per_second': r.maxSpeedMetersPerSecond,
+      'elevation_gain_meters': r.elevationGainMeters,
       'point_count': r.pointCount,
       'gpx_file_name': r.gpxFileName,
       'upload_status': r.uploadStatus.toJson(),
@@ -361,6 +378,9 @@ class SqfliteActivityStore implements LocalActivityStore {
       distanceMeters: (row['distance_meters'] as num).toDouble(),
       averageSpeedMetersPerSecond:
           (row['average_speed_meters_per_second'] as num?)?.toDouble(),
+      maxSpeedMetersPerSecond: (row['max_speed_meters_per_second'] as num?)
+          ?.toDouble(),
+      elevationGainMeters: (row['elevation_gain_meters'] as num?)?.toDouble(),
       pointCount: row['point_count'] as int,
       gpxFileName: row['gpx_file_name'] as String,
       uploadStatus: LocalActivityUploadStatus.fromJson(row['upload_status']),

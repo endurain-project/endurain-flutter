@@ -4,10 +4,13 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:endurain/features/activity/services/gpx_route_parser.dart';
+import 'package:endurain/features/activity/widgets/activity_route_map.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../helpers/fake_share_service.dart';
 
@@ -161,6 +164,37 @@ void main() {
 
       expect(find.text(_l10n.activityHistoryGpxMissing), findsOneWidget);
     });
+
+    testWidgets('shows max speed and elevation gain when present', (
+      tester,
+    ) async {
+      final controller = _LoadedController(
+        record: _baseRecord.copyWith(
+          maxSpeedMetersPerSecond: 5.0,
+          elevationGainMeters: 123.0,
+        ),
+      );
+      addTearDown(controller.dispose);
+
+      await _pumpDetails(tester, controller);
+
+      expect(find.text(_l10n.activityStatMaxSpeed), findsOneWidget);
+      expect(find.text('18.0 km/h'), findsOneWidget);
+      expect(find.text(_l10n.activityStatElevationGain), findsOneWidget);
+      expect(find.text('123 m'), findsOneWidget);
+    });
+
+    testWidgets('hides max speed and elevation gain when absent', (
+      tester,
+    ) async {
+      final controller = _LoadedController(record: _baseRecord);
+      addTearDown(controller.dispose);
+
+      await _pumpDetails(tester, controller);
+
+      expect(find.text(_l10n.activityStatMaxSpeed), findsNothing);
+      expect(find.text(_l10n.activityStatElevationGain), findsNothing);
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -268,6 +302,58 @@ void main() {
       expect(find.text(_l10n.activityExportGpx), findsNothing);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Phase 17 — route preview map
+  // -------------------------------------------------------------------------
+
+  group('ActivityDetailsScreen – Phase 17: route map', () {
+    GpxRoute route() => const GpxRoute(
+      segments: [
+        [LatLng(41.10, -8.60), LatLng(41.11, -8.59)],
+      ],
+    );
+
+    testWidgets('shows the route map when a route and tile provider exist', (
+      tester,
+    ) async {
+      final controller = _LoadedController(
+        record: _baseRecord,
+        hasGpxValue: true,
+        route: route(),
+      );
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityDetailsScreen(
+            recordId: _baseRecord.id,
+            controller: controller,
+            tileServerUrlProvider: () async =>
+                'https://tile.example/{z}/{x}/{y}.png',
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(ActivityRouteMap), findsOneWidget);
+    });
+
+    testWidgets('omits the route map without a tile provider', (tester) async {
+      final controller = _LoadedController(
+        record: _baseRecord,
+        hasGpxValue: true,
+        route: route(),
+      );
+      addTearDown(controller.dispose);
+
+      await _pumpDetails(tester, controller);
+
+      expect(find.byType(ActivityRouteMap), findsNothing);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -344,6 +430,7 @@ class _LoadedController extends LocalActivityHistoryController {
   _LoadedController({
     required this.record,
     this.hasGpxValue = false,
+    this.route,
     this._busy = false,
   }) : super(
          repository: LocalActivityRepository(
@@ -355,6 +442,7 @@ class _LoadedController extends LocalActivityHistoryController {
 
   final LocalActivityRecord record;
   final bool hasGpxValue;
+  final GpxRoute? route;
   final bool _busy;
 
   @override
@@ -368,6 +456,9 @@ class _LoadedController extends LocalActivityHistoryController {
 
   @override
   Future<bool> hasGpx(LocalActivityRecord r) async => hasGpxValue;
+
+  @override
+  Future<GpxRoute?> loadRoute(LocalActivityRecord r) async => route;
 
   @override
   Future<void> load() async {}

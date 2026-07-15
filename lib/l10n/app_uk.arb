@@ -1,5 +1,7 @@
 {
   "@@locale": "uk",
+  "activityStatMaxSpeed": "Макс. швидкість",
+  "activityStatElevationGain": "Набір висоти",
   "error": "Помилка",
   "ok": "OK",
   "cancel": "Скасувати",

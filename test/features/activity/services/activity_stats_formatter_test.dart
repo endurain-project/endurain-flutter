@@ -30,5 +30,12 @@ void main() {
       expect(formatter.formatPace(0), '-');
       expect(formatter.formatPace(2.5), '6:40 min/km');
     });
+
+    test('formats elevation only when available', () {
+      expect(formatter.formatElevation(null), '-');
+      expect(formatter.formatElevation(123.4), '123 m');
+      expect(formatter.formatElevation(124.6), '125 m');
+      expect(formatter.formatElevation(1235, locale: 'en-US'), '1,235 m');
+    });
   });
 }

@@ -1,5 +1,7 @@
 {
   "@@locale": "el",
+  "activityStatMaxSpeed": "Μέγιστη ταχύτητα",
+  "activityStatElevationGain": "Ανάβαση",
   "error": "Σφάλμα",
   "ok": "OK",
   "cancel": "Άκυρο",

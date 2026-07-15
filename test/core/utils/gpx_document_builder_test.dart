@@ -53,7 +53,7 @@ void main() {
       expect(
         gpx,
         contains(
-          '<gpx version="1.1" creator="Endurain Mobile" '
+          '<gpx version="1.1" creator="Endurain mobile app" '
           'xmlns="http://www.topografix.com/GPX/1/1">',
         ),
       );

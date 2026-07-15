@@ -1,4 +1,4 @@
-# Copilot Instructions for Endurain Mobile
+# Copilot Instructions for Endurain mobile app
 
 ## Tech Stack
 - **Flutter**: 3.44+ (stable channel; CI pins 3.44.6)

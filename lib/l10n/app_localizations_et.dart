@@ -394,6 +394,12 @@ class AppLocalizationsEt extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Maks. kiirus';
+
+  @override
+  String get activityStatElevationGain => 'Tõus';
+
+  @override
   String get activityStop => 'Peata';
 
   @override

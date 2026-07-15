@@ -1,5 +1,7 @@
 {
   "@@locale": "hr",
+  "activityStatMaxSpeed": "Maks. brzina",
+  "activityStatElevationGain": "Uspon",
   "error": "Pogreška",
   "ok": "U redu",
   "cancel": "Odustani",

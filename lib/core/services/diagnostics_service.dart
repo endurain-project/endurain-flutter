@@ -39,6 +39,9 @@ abstract class DiagnosticsStore implements DiagnosticsRecorder {
   Future<String?> readReportText();
 
   Future<void> clearReport();
+
+  /// Flushes any buffered diagnostics to disk and awaits the write.
+  Future<void> flush();
 }
 
 class DiagnosticsReport {
@@ -205,6 +208,19 @@ class DiagnosticsEvents {
   static const String activityUploadRetryFailed =
       'activity.upload_retry_failed';
   static const String healthAutoSyncFailed = 'health.auto_sync_failed';
+  static const String healthAuthRequested = 'health.auth_requested';
+  static const String healthListImportable = 'health.list_importable';
+  static const String healthImportWorkouts = 'health.import_workouts';
+  static const String healthImportWorkoutFailed =
+      'health.import_workout_failed';
+  static const String healthConnectSdkStatus = 'health.connect_sdk_status';
+  static const String healthRequestAuthorization =
+      'health.request_authorization';
+  static const String healthRequestAuthorizationError =
+      'health.request_authorization_error';
+  static const String healthInstallProviderRequested =
+      'health.install_provider_requested';
+  static const String healthReadWorkouts = 'health.read_workouts';
   static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
 }
 
@@ -227,6 +243,20 @@ class DiagnosticsService implements DiagnosticsStore {
   bool _initialized = false;
   bool _enabled = false;
 
+  // In-memory source of truth for reads. Recording appends here synchronously
+  // and never blocks on disk; the file is only a persistence mirror that is
+  // flushed asynchronously (breadcrumbs) or synchronously (errors) below.
+  final List<Object?> _breadcrumbs = <Object?>[];
+  final List<Object?> _errors = <Object?>[];
+  DateTime? _lastUpdatedAt;
+
+  // Coalesced async-flush state. A burst of breadcrumbs collapses into a single
+  // async write instead of one synchronous fsync per event (which janked the
+  // platform thread while recording). Only one write runs at a time; if new
+  // events arrive mid-write, [_dirty] makes the loop take one more pass.
+  bool _dirty = false;
+  Future<void>? _activeFlush;
+
   @override
   Future<void> initialize() async {
     if (_initialized) {
@@ -240,7 +270,9 @@ class DiagnosticsService implements DiagnosticsStore {
     _reportFile = File(
       '${directory.path}${Platform.pathSeparator}endurain_diagnostics.json',
     );
-    _enabled = _readPayloadSync()['enabled'] == true;
+    final payload = _readPayloadSync();
+    _enabled = payload['enabled'] == true;
+    _loadInMemory(payload);
     _initialized = true;
   }
 
@@ -261,12 +293,24 @@ class DiagnosticsService implements DiagnosticsStore {
     }
 
     if (enabled) {
-      final payload = _readPayloadSync();
-      payload['enabled'] = true;
-      _writePayloadSync(payload);
-    } else if (file.existsSync()) {
-      // Discard the stored report so disabled diagnostics free device storage.
-      file.deleteSync();
+      // Persist the opt-in synchronously so a restart before any event still
+      // reports diagnostics as enabled.
+      _writeSync();
+    } else {
+      // Let any in-flight async flush settle, then discard the stored report
+      // so disabled diagnostics free device storage.
+      await _activeFlush;
+      _breadcrumbs.clear();
+      _errors.clear();
+      _dirty = false;
+      _lastUpdatedAt = null;
+      if (file.existsSync()) {
+        try {
+          file.deleteSync();
+        } catch (_) {
+          // Best-effort: deletion failure must not surface to the app.
+        }
+      }
     }
   }
 
@@ -279,15 +323,13 @@ class DiagnosticsService implements DiagnosticsStore {
       return;
     }
 
-    final payload = _readPayloadSync();
-    final breadcrumbs = _listFromPayload(payload, 'breadcrumbs');
-    breadcrumbs.add({
+    _breadcrumbs.add({
       'at': _now().toUtcIso8601(),
       'event': _sanitize(event),
       if (details.isNotEmpty) 'details': _sanitizeDetails(details),
     });
-    payload['breadcrumbs'] = _trimList(breadcrumbs, maxBreadcrumbs);
-    _writePayloadSync(payload);
+    _trimInPlace(_breadcrumbs, maxBreadcrumbs);
+    _scheduleFlush();
   }
 
   @override
@@ -309,33 +351,29 @@ class DiagnosticsService implements DiagnosticsStore {
       return;
     }
 
-    final payload = _readPayloadSync();
-    final errors = _listFromPayload(payload, 'errors');
-    errors.add({
+    _errors.add({
       'at': _now().toUtcIso8601(),
       'source': _sanitize(source),
       'type': _sanitize(error.runtimeType.toString()),
       'message': _sanitize(error.toString(), maxLength: 800),
       'stack': _sanitize(stackTrace.toString(), maxLength: 8000),
     });
-    payload['errors'] = _trimList(errors, maxErrors);
-    _writePayloadSync(payload);
+    _trimInPlace(_errors, maxErrors);
+    // Errors are rare and are the crash context we most want to survive a hard
+    // termination, so persist synchronously rather than via the coalesced
+    // async flush used for breadcrumbs. If a breadcrumb flush is mid-write it
+    // snapshotted older state, so re-mark dirty to reconcile afterwards.
+    _writeSync();
+    _dirty = _activeFlush != null;
   }
 
   @override
   Future<DiagnosticsReport?> readReport() async {
     await initialize();
-    final file = _reportFile;
-    if (file == null || !file.existsSync()) {
+    if (!_hasContent) {
       return null;
     }
-
-    final payload = _readPayloadSync();
-    if (!_hasReportContent(payload)) {
-      return null;
-    }
-
-    return DiagnosticsReport.fromPayload(payload);
+    return DiagnosticsReport.fromPayload(_currentPayload());
   }
 
   @override
@@ -351,13 +389,34 @@ class DiagnosticsService implements DiagnosticsStore {
     if (file == null) {
       return;
     }
+    // Settle any in-flight async flush before mutating so a pending write
+    // cannot resurrect the just-cleared breadcrumbs on disk.
+    await _activeFlush;
+    _breadcrumbs.clear();
+    _errors.clear();
+    _dirty = false;
     if (_enabled) {
       // Keep collection enabled but drop the captured breadcrumbs and errors.
-      final payload = _emptyPayload();
-      payload['enabled'] = true;
-      _writePayloadSync(payload);
+      _writeSync();
     } else if (file.existsSync()) {
-      file.deleteSync();
+      try {
+        file.deleteSync();
+      } catch (_) {
+        // Best-effort.
+      }
+    }
+  }
+
+  @override
+  Future<void> flush() async {
+    if (!_initialized || !_enabled) {
+      return;
+    }
+    // Drain the in-flight write, then persist any state buffered after it.
+    await _activeFlush;
+    if (_dirty) {
+      _scheduleFlush();
+      await _activeFlush;
     }
   }
 
@@ -388,17 +447,82 @@ class DiagnosticsService implements DiagnosticsStore {
     return _emptyPayload();
   }
 
-  void _writePayloadSync(Map<String, Object?> payload) {
+  void _loadInMemory(Map<String, Object?> payload) {
+    _breadcrumbs
+      ..clear()
+      ..addAll(_listFromPayload(payload, 'breadcrumbs'));
+    _errors
+      ..clear()
+      ..addAll(_listFromPayload(payload, 'errors'));
+    final last = payload['lastUpdatedAt'];
+    _lastUpdatedAt = last is String ? DateTime.tryParse(last)?.toUtc() : null;
+  }
+
+  bool get _hasContent => _breadcrumbs.isNotEmpty || _errors.isNotEmpty;
+
+  /// Builds the on-disk payload from the current in-memory state.
+  Map<String, Object?> _currentPayload() {
+    return {
+      'schemaVersion': 1,
+      'app': 'Endurain',
+      if (_enabled) 'enabled': true,
+      if (_lastUpdatedAt != null)
+        'lastUpdatedAt': _lastUpdatedAt!.toUtcIso8601(),
+      'breadcrumbs': List<Object?>.from(_breadcrumbs),
+      'errors': List<Object?>.from(_errors),
+    };
+  }
+
+  String _encodePayload(Map<String, Object?> payload) =>
+      const JsonEncoder.withIndent('  ').convert(payload);
+
+  /// Writes the current state synchronously (fsync).
+  ///
+  /// Used for errors — which must survive a hard crash — and for the opt-in and
+  /// clear transitions, where a durable write is both cheap and expected.
+  void _writeSync() {
     final file = _reportFile;
     if (file == null) {
       return;
     }
+    _lastUpdatedAt = _now();
+    try {
+      file.writeAsStringSync(_encodePayload(_currentPayload()), flush: true);
+    } catch (_) {
+      // Best-effort: diagnostics must never surface I/O errors to the app.
+    }
+  }
 
-    payload['lastUpdatedAt'] = _now().toUtcIso8601();
-    file.writeAsStringSync(
-      const JsonEncoder.withIndent('  ').convert(payload),
-      flush: true,
-    );
+  /// Kicks a coalesced async flush for buffered breadcrumbs.
+  ///
+  /// The first call starts the write loop; later calls while it runs just
+  /// re-mark [_dirty] so the loop makes one more pass. Only one write runs at a
+  /// time, so a burst of breadcrumbs collapses into a single (or few) writes.
+  void _scheduleFlush() {
+    _dirty = true;
+    _activeFlush ??= _runFlush();
+  }
+
+  Future<void> _runFlush() async {
+    while (_dirty) {
+      _dirty = false;
+      await _writeAsync();
+    }
+    _activeFlush = null;
+  }
+
+  Future<void> _writeAsync() async {
+    final file = _reportFile;
+    if (file == null) {
+      return;
+    }
+    _lastUpdatedAt = _now();
+    final content = _encodePayload(_currentPayload());
+    try {
+      await file.writeAsString(content);
+    } catch (_) {
+      // Best-effort: diagnostics must never surface I/O errors to the app.
+    }
   }
 
   List<Object?> _listFromPayload(Map<String, Object?> payload, String key) {
@@ -406,18 +530,11 @@ class DiagnosticsService implements DiagnosticsStore {
     return value is List ? List<Object?>.from(value) : <Object?>[];
   }
 
-  List<Object?> _trimList(List<Object?> values, int maxLength) {
+  void _trimInPlace(List<Object?> values, int maxLength) {
     if (values.length <= maxLength) {
-      return values;
+      return;
     }
-    return values.sublist(values.length - maxLength);
-  }
-
-  bool _hasReportContent(Map<String, Object?> payload) {
-    final breadcrumbs = payload['breadcrumbs'];
-    final errors = payload['errors'];
-    return breadcrumbs is List && breadcrumbs.isNotEmpty ||
-        errors is List && errors.isNotEmpty;
+    values.removeRange(0, values.length - maxLength);
   }
 
   Map<String, Object?> _sanitizeDetails(Map<String, Object?> details) {

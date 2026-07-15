@@ -42,6 +42,18 @@ class LocalActivityGpxStorage {
     return file.path;
   }
 
+  Future<String> read(String fileName) async {
+    final safeFileName = _safeFileName(fileName);
+    final directory = await _gpxDirectory();
+    final file = File(
+      '${directory.path}${Platform.pathSeparator}$safeFileName',
+    );
+    if (!file.existsSync()) {
+      throw const AppException(AppErrorCode.activityLocalGpxMissing);
+    }
+    return file.readAsString();
+  }
+
   Future<bool> exists(String fileName) async {
     final safeFileName = _safeFileName(fileName);
     final directory = await _gpxDirectory();

@@ -131,6 +131,100 @@ void main() {
       // Distance should be double that of a single-segment walk of the same length.
       expect(stats.distanceMeters, closeTo(single.distanceMeters * 2, 1));
     });
+
+    // -------------------------------------------------------------------------
+    // Max speed and elevation gain (post-recording summary metrics).
+    // -------------------------------------------------------------------------
+
+    test('tracks the fastest reported instantaneous speed', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0, speed: 2),
+          _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 5),
+          _point(latitude: 0, longitude: 0.002, seconds: 120, speed: 3),
+        ]),
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, 5);
+    });
+
+    test('derives max speed from movement when GPS speed is missing', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0),
+          _point(latitude: 0, longitude: 0.001, seconds: 60),
+          _point(latitude: 0, longitude: 0.003, seconds: 120),
+        ]),
+      );
+
+      // Second leg (~222m/60s) is faster than the first (~111m/60s).
+      expect(stats.maxSpeedMetersPerSecond, closeTo(3.7, 0.1));
+    });
+
+    test('reports null max speed for a single-point segment', () {
+      final stats = calculator.calculate(
+        oneSegment([_point(latitude: 0, longitude: 0)]),
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, isNull);
+    });
+
+    test('sums positive elevation deltas as elevation gain', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0, elevation: 100),
+          _point(latitude: 0, longitude: 0.001, seconds: 60, elevation: 110),
+          _point(latitude: 0, longitude: 0.002, seconds: 120, elevation: 105),
+          _point(latitude: 0, longitude: 0.003, seconds: 180, elevation: 125),
+        ]),
+      );
+
+      // +10, then -5 (ignored), then +20 = 30.
+      expect(stats.elevationGainMeters, closeTo(30, 0.001));
+    });
+
+    test('reports zero elevation gain for a pure descent', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0, elevation: 200),
+          _point(latitude: 0, longitude: 0.001, seconds: 60, elevation: 150),
+        ]),
+      );
+
+      expect(stats.elevationGainMeters, 0);
+    });
+
+    test('reports null elevation gain without elevation data', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0),
+          _point(latitude: 0, longitude: 0.001, seconds: 60),
+        ]),
+      );
+
+      expect(stats.elevationGainMeters, isNull);
+    });
+
+    test('does not count elevation change between segments', () {
+      final seg1 = ActivityTrackSegment(
+        points: [
+          _point(latitude: 0, longitude: 0, seconds: 0, elevation: 100),
+          _point(latitude: 0, longitude: 0.001, seconds: 60, elevation: 110),
+        ],
+      );
+      final seg2 = ActivityTrackSegment(
+        points: [
+          _point(latitude: 0, longitude: 5, seconds: 120, elevation: 500),
+          _point(latitude: 0, longitude: 5.001, seconds: 180, elevation: 520),
+        ],
+      );
+
+      final stats = calculator.calculate([seg1, seg2]);
+
+      // +10 in the first segment and +20 in the second; the 110->500 jump
+      // across the pause boundary is not counted.
+      expect(stats.elevationGainMeters, closeTo(30, 0.001));
+    });
   });
 }
 
@@ -139,11 +233,13 @@ ActivityTrackPoint _point({
   required double longitude,
   int seconds = 0,
   double? speed,
+  double? elevation,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
     longitude: longitude,
     timestamp: DateTime.utc(2026).add(Duration(seconds: seconds)),
     speedMetersPerSecond: speed,
+    elevationMeters: elevation,
   );
 }

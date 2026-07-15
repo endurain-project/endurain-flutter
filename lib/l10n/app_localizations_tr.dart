@@ -388,6 +388,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Maks. hız';
+
+  @override
+  String get activityStatElevationGain => 'Yükselti kazancı';
+
+  @override
   String get activityStop => 'Durdur';
 
   @override

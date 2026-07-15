@@ -1,5 +1,7 @@
 {
   "@@locale": "ca",
+  "activityStatMaxSpeed": "Velocitat màxima",
+  "activityStatElevationGain": "Desnivell positiu",
   "error": "Error",
   "ok": "D'acord",
   "cancel": "Cancel·la",

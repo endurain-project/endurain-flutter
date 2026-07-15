@@ -1,5 +1,7 @@
 {
   "@@locale": "pl",
+  "activityStatMaxSpeed": "Maks. prędkość",
+  "activityStatElevationGain": "Przewyższenie",
   "error": "Błąd",
   "ok": "OK",
   "cancel": "Anuluj",

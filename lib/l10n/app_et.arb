@@ -1,5 +1,7 @@
 {
   "@@locale": "et",
+  "activityStatMaxSpeed": "Maks. kiirus",
+  "activityStatElevationGain": "Tõus",
   "error": "Viga",
   "ok": "OK",
   "cancel": "Tühista",

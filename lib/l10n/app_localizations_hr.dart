@@ -399,6 +399,12 @@ class AppLocalizationsHr extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Maks. brzina';
+
+  @override
+  String get activityStatElevationGain => 'Uspon';
+
+  @override
   String get activityStop => 'Zaustavi';
 
   @override

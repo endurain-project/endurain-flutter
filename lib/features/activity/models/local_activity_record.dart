@@ -34,6 +34,8 @@ class LocalActivityRecord {
     required this.createdAt,
     required this.updatedAt,
     this.averageSpeedMetersPerSecond,
+    this.maxSpeedMetersPerSecond,
+    this.elevationGainMeters,
     this.uploadedAt,
     this.lastUploadAttemptAt,
     this.lastUploadErrorCode,
@@ -51,6 +53,8 @@ class LocalActivityRecord {
   final int elapsedDurationSeconds;
   final double distanceMeters;
   final double? averageSpeedMetersPerSecond;
+  final double? maxSpeedMetersPerSecond;
+  final double? elevationGainMeters;
   final int pointCount;
   final String gpxFileName;
   final LocalActivityUploadStatus uploadStatus;
@@ -98,6 +102,8 @@ class LocalActivityRecord {
     int? elapsedDurationSeconds,
     double? distanceMeters,
     Object? averageSpeedMetersPerSecond = kUnset,
+    Object? maxSpeedMetersPerSecond = kUnset,
+    Object? elevationGainMeters = kUnset,
     int? pointCount,
     String? gpxFileName,
     LocalActivityUploadStatus? uploadStatus,
@@ -124,6 +130,12 @@ class LocalActivityRecord {
           identical(averageSpeedMetersPerSecond, kUnset)
           ? this.averageSpeedMetersPerSecond
           : averageSpeedMetersPerSecond as double?,
+      maxSpeedMetersPerSecond: identical(maxSpeedMetersPerSecond, kUnset)
+          ? this.maxSpeedMetersPerSecond
+          : maxSpeedMetersPerSecond as double?,
+      elevationGainMeters: identical(elevationGainMeters, kUnset)
+          ? this.elevationGainMeters
+          : elevationGainMeters as double?,
       pointCount: pointCount ?? this.pointCount,
       gpxFileName: gpxFileName ?? this.gpxFileName,
       uploadStatus: uploadStatus ?? this.uploadStatus,
@@ -162,6 +174,10 @@ class LocalActivityRecord {
       'distanceMeters': distanceMeters,
       if (averageSpeedMetersPerSecond != null)
         'averageSpeedMetersPerSecond': averageSpeedMetersPerSecond,
+      if (maxSpeedMetersPerSecond != null)
+        'maxSpeedMetersPerSecond': maxSpeedMetersPerSecond,
+      if (elevationGainMeters != null)
+        'elevationGainMeters': elevationGainMeters,
       'pointCount': pointCount,
       'gpxFileName': gpxFileName,
       'uploadStatus': uploadStatus.toJson(),
@@ -198,6 +214,8 @@ class LocalActivityRecord {
       averageSpeedMetersPerSecond: jsonDouble(
         json['averageSpeedMetersPerSecond'],
       ),
+      maxSpeedMetersPerSecond: jsonDouble(json['maxSpeedMetersPerSecond']),
+      elevationGainMeters: jsonDouble(json['elevationGainMeters']),
       pointCount: jsonInt(json['pointCount']) ?? 0,
       gpxFileName: jsonRequiredString(json['gpxFileName'], 'gpxFileName'),
       uploadStatus: LocalActivityUploadStatus.fromJson(json['uploadStatus']),

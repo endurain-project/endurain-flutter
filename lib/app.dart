@@ -90,6 +90,12 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         unawaited(_autoSyncHealthOnResume());
       }
     }
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      // Persist any buffered diagnostics before the OS can reclaim the
+      // backgrounded process. Best-effort; a no-op when diagnostics is off.
+      unawaited(_services.diagnostics.flush());
+    }
   }
 
   Future<void> _autoSyncHealthOnResume() async {

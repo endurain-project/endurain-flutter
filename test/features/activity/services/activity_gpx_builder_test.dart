@@ -22,7 +22,7 @@ void main() {
       );
 
       expect(gpx, startsWith('<?xml version="1.0" encoding="UTF-8"?>'));
-      expect(gpx, contains('<gpx version="1.1" creator="Endurain Mobile"'));
+      expect(gpx, contains('<gpx version="1.1" creator="Endurain mobile app"'));
       expect(gpx, contains('  <metadata>'));
       expect(gpx, contains('    <name>run</name>'));
       expect(

@@ -1,5 +1,7 @@
 {
   "@@locale": "sl",
+  "activityStatMaxSpeed": "Najv. hitrost",
+  "activityStatElevationGain": "Vzpon",
   "error": "Napaka",
   "ok": "V redu",
   "cancel": "Prekliči",

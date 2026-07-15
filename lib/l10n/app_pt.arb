@@ -1,6 +1,6 @@
 {
   "@@locale": "pt",
-  "@@context": "Endurain Mobile - Traduções em português europeu (pt-PT) organizadas por funcionalidade; geradas como o locale base 'pt'",
+  "@@context": "Endurain mobile app - Traduções em português europeu (pt-PT) organizadas por funcionalidade; geradas como o locale base 'pt'",
   "@sectionCommon": "=== COMUM / PARTILHADO (core/utils/dialog_utils.dart, core/utils/validators.dart) ===",
   "error": "Erro",
   "@error": {
@@ -508,6 +508,14 @@
   "activityStatPace": "Ritmo",
   "@activityStatPace": {
     "description": "Rótulo do ritmo nas estatísticas de corrida - Usado em: activity_stats_display.dart"
+  },
+  "activityStatMaxSpeed": "Velocidade máxima",
+  "@activityStatMaxSpeed": {
+    "description": "Rótulo da velocidade máxima no resumo pós-gravação - Usado em: activity_completion_summary.dart"
+  },
+  "activityStatElevationGain": "Ganho de elevação",
+  "@activityStatElevationGain": {
+    "description": "Rótulo do desnível positivo no resumo pós-gravação - Usado em: activity_completion_summary.dart"
   },
   "activityStop": "Parar",
   "@activityStop": {

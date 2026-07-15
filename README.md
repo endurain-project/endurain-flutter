@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/logo/brand_logo_light_theme.png" width="128" height="128">
 
-  # Endurain Mobile
+  # Endurain mobile app
 
   ![License](https://img.shields.io/github/license/endurain-project/endurain-flutter)
   [![GitHub release](https://img.shields.io/github/v/release/endurain-project/endurain-flutter)](https://github.com/endurain-project/endurain-flutter/releases)
@@ -17,7 +17,7 @@
 
 ## Table of Contents
 
-- [What is Endurain Mobile?](#what-is-endurain-mobile)
+- [What is Endurain mobile app?](#what-is-endurain-mobile)
 - [Current Features](#current-features)
 - [Roadmap](#roadmap)
 - [Tech Stack](#tech-stack)
@@ -30,9 +30,9 @@
 - [Contributing](#contributing)
 - [License](#license)
 
-## What is Endurain Mobile?
+## What is Endurain mobile app?
 
-Endurain Mobile is the official companion app for [Endurain](https://github.com/endurain-project/endurain), a self-hosted fitness tracking service. Built with Flutter, it provides a native mobile experience for tracking your fitness activities while maintaining full control over your data.
+Endurain mobile app is the official companion app for [Endurain](https://github.com/endurain-project/endurain), a self-hosted fitness tracking service. Built with Flutter, it provides a native mobile experience for tracking your fitness activities while maintaining full control over your data.
 
 The app is designed with privacy in mind, connecting directly to your self-hosted Endurain server without any third-party services or analytics.
 
@@ -66,15 +66,11 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Direct GPX upload to the Endurain activity import endpoint after a recording completes
 - Completed activity retention in private app storage (SQLite metadata store + GPX files), including local summary metadata, GPX availability, and upload state
 - Non-destructive post-upload flow with `Done`, `View history`, retry, and explicit delete actions
-- Durable upload recovery: a finished activity is always saved locally first.
-  Transient network, timeout, and server failures remain eligible for automatic
-  recovery by an app-lifetime upload queue on app resume or restored
-  connectivity. Validation, authentication, configuration, and missing-file
-  failures stay available for explicit manual retry instead of looping on every
-  resume. Drain requests received during an active run trigger a follow-up scan
-  so newly imported activities are not stranded
+- Richer local post-recording summary shown on the map when a recording completes, before or after upload: activity type, start time, duration, distance, average pace/speed, max speed, elevation gain, and GPS point count. Max speed and elevation gain are persisted and also shown on the saved activity details screen
+- Durable upload recovery: a finished activity is always saved locally first. Transient network, timeout, and server failures remain eligible for automatic recovery by an app-lifetime upload queue on app resume or restored connectivity. Validation, authentication, configuration, and missing-file failures stay available for explicit manual retry instead of looping on every resume. Drain requests received during an active run trigger a follow-up scan so newly imported activities are not stranded
 - Forward-compatible upload de-duplication: each upload carries the local activity id as an `Idempotency-Key` request header. This is fully optional on the server — Endurain servers that do not recognize the header simply ignore it and uploads work unchanged, while a server that adopts it can de-duplicate automatically retried uploads with no app changes
 - Local activity history and details screens for completed recordings saved on the device, with incremental pagination
+- Activity route preview map on the details screen, drawn from the retained GPX file on OpenStreetMap tiles (shown while the GPX is still stored on the device)
 - Manual GPX export/share from the activity details screen via the OS share sheet
 
 ✅ **Settings**
@@ -91,26 +87,16 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 
 ✅ **Health Data Sync**
 - Import route-bearing workouts from Apple HealthKit on iOS and Health Connect on Android
-- Review and request access to workouts, workout routes, heart rate, and the
-  distance, calories, and steps that Health Connect uses to summarize workouts
+- Review and request access to workouts, workout routes, heart rate, and the distance, calories, and steps that Health Connect uses to summarize workouts
 - Browse the last 30 days by default, or choose three months, six months, one year, all history, or a custom date range; older history is read in 30-day pages so wide searches do not become a single expensive platform query
-- Select one or more eligible workouts, use `Select all` for the currently
-  loaded page set, and commit them through one explicit import action;
-  unavailable workouts remain informational rows without selection controls
+- Select one or more eligible workouts, use `Select all` for the currently loaded page set, and commit them through one explicit import action; unavailable workouts remain informational rows without selection controls
 - Review imported workouts for the active connection, including their local upload status, and open records that are still available on the device
-- Restore an imported workout only when its local record is missing. Discovery
-  is read-only and never clears provenance implicitly, so background sync cannot
-  recreate an intentionally deleted activity without that explicit action
+- Restore an imported workout only when its local record is missing. Discovery is read-only and never clears provenance implicitly, so background sync cannot recreate an intentionally deleted activity without that explicit action
 - Convert imported routes to GPX and feed them into the same durable local upload queue used by GPS recording
 - Prevent duplicate imports locally and use stable upload idempotency keys
 - Optionally import new workouts automatically when the app resumes; automatic discovery remains bounded to the default 30-day window
-- Health-derived activity files and databases live in dedicated no-backup
-  storage on Android and iOS; imported data can be deleted from local activity
-  history or reset from Health access settings
-- Import provenance is scoped to the active connection profile, and health UI
-  controllers are route-owned so imported rows and selections cannot survive a
-  logout/login transition. A backend account UUID is still required before
-  separate login profiles can safely share imported history across sign-out and
+- Health-derived activity files and databases live in dedicated no-backup storage on Android and iOS; imported data can be deleted from local activity history or reset from Health access settings
+- Import provenance is scoped to the active connection profile, and health UI controllers are route-owned so imported rows and selections cannot survive a logout/login transition. A backend account UUID is still required before separate login profiles can safely share imported history across sign-out and
   sign-in cycles
 
 ✅ **User Experience**
@@ -118,16 +104,12 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Dark/light theme support
 - Secure local session storage
 - Shared adaptive widget layer for Material and Cupertino controls
-- Platform-native health controls: Material checkboxes for Android batch
-  selection, whole-row selection with trailing checkmarks on iOS, switches only
-  for immediate settings, accurate sport glyphs on both platforms, and tested
-  dark-mode/200% text layouts
+- Platform-native health controls: Material checkboxes for Android batch selection, whole-row selection with trailing checkmarks on iOS, switches only for immediate settings, accurate sport glyphs on both platforms, and tested dark-mode/200% text layouts
 - Local SSO provider icon assets with remote icon fallback
 
 ## Roadmap
 
 🚧 **Next Activity Milestones**
-- Add a richer local post-recording summary for completed activities before or after upload
 - Add server-synced activity history and details once the server exposes stable imported activity metadata
 - Improve activity import feedback once the server exposes richer post-upload status and metadata
 - Expand activity statistics as server/mobile contracts mature
@@ -403,12 +385,7 @@ Activity metadata lives in a SQLite database (`activity.db`, schema v1) under th
 | `schema_version`       | Single-row version counter used to gate migrations.      |
 | `local_activity`       | One row per activity, all metadata columns.              |
 
-Each `local_activity` row contains: `id`, `activity_type`, `started_at`,
-`ended_at`, `elapsed_duration_seconds`, `distance_meters`,
-`average_speed_meters_per_second`, `point_count`, `gpx_file_name`,
-`upload_status`, `created_at`, `updated_at`, `uploaded_at`,
-`last_upload_attempt_at`, `last_upload_error_code`, and `server_activity_id`.
-GPX files live on disk under `gpx/` — only the metadata is stored in the database.
+Each `local_activity` row contains: `id`, `activity_type`, `started_at`, `ended_at`, `elapsed_duration_seconds`, `distance_meters`, `average_speed_meters_per_second`, `max_speed_meters_per_second`, `elevation_gain_meters`, `point_count`, `gpx_file_name`, `upload_status`, `created_at`, `updated_at`, `uploaded_at`, `last_upload_attempt_at`, `last_upload_error_code`, and `server_activity_id`. GPX files live on disk under `gpx/` — only the metadata is stored in the database.
 
 ### Schema migrations
 

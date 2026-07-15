@@ -219,6 +219,63 @@ void main() {
       second.recordBreadcrumbSync('captured-after-restart');
       expect(await second.readReport(), isNotNull);
     });
+
+    test('buffers breadcrumbs and persists them to disk on flush', () async {
+      final first = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+      await first.initialize();
+      await first.setEnabled(true);
+      first.recordBreadcrumbSync('buffered.event');
+
+      // Force the coalesced async write, then read from a fresh instance so
+      // the assertion only passes if the breadcrumb actually reached disk.
+      await first.flush();
+
+      final second = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+      await second.initialize();
+      final report = await second.readReport();
+
+      expect(report, isNotNull);
+      expect(
+        report!.breadcrumbs.map((breadcrumb) => breadcrumb.event),
+        contains('buffered.event'),
+      );
+    });
+
+    test('persists errors synchronously without an explicit flush', () async {
+      final first = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+      await first.initialize();
+      await first.setEnabled(true);
+      first.recordErrorSync(StateError('boom'), StackTrace.empty);
+
+      // No flush(): a fresh instance must still see the error, proving errors
+      // are written synchronously so crash context survives a hard termination.
+      final second = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+      await second.initialize();
+      final report = await second.readReport();
+
+      expect(report, isNotNull);
+      expect(report!.errors.single.type, 'StateError');
+    });
+
+    test('flush is a safe no-op while disabled', () async {
+      final service = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+      await service.initialize();
+
+      await service.flush();
+
+      expect(service.isEnabled, isFalse);
+      expect(await service.readReport(), isNull);
+    });
   });
 }
 

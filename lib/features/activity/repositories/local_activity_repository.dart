@@ -35,6 +35,9 @@ class LocalActivityRepository {
   Future<String> readGpxFilePath(LocalActivityRecord record) =>
       _gpxStorage.readFilePath(record.gpxFileName);
 
+  Future<String> readGpxContents(LocalActivityRecord record) =>
+      _gpxStorage.read(record.gpxFileName);
+
   Future<bool> hasGpx(LocalActivityRecord record) =>
       _gpxStorage.exists(record.gpxFileName);
 

@@ -27,6 +27,7 @@ class ActiveActivityStore private constructor(appContext: Context) {
     private val sessionFile = File(activeDir, SESSION_FILE)
     private val atomicSessionFile = AtomicFile(sessionFile)
     private val pointsFile = File(activeDir, POINTS_FILE)
+    private val pointsLog = ActivePointsLog(pointsFile)
     private val lock = Any()
 
     fun saveSession(session: ActiveActivitySessionData) {
@@ -50,11 +51,11 @@ class ActiveActivityStore private constructor(appContext: Context) {
             return try {
                 atomicSessionFile.openRead().bufferedReader().use { reader ->
                     ActiveActivitySessionData.fromJson(JSONObject(reader.readText()))
-                } ?: orphanedSession()
+                } ?: pointsLog.orphanedSession()
             } catch (_: FileNotFoundException) {
-                orphanedSession()
+                pointsLog.orphanedSession()
             } catch (_: Exception) {
-                orphanedSession()
+                pointsLog.orphanedSession()
             }
         }
     }
@@ -71,11 +72,7 @@ class ActiveActivityStore private constructor(appContext: Context) {
         }
         synchronized(lock) {
             ensureDir()
-            val builder = StringBuilder()
-            for (point in points) {
-                builder.append(point.toJsonLine()).append('\n')
-            }
-            pointsFile.appendText(builder.toString())
+            pointsLog.append(points)
         }
     }
 
@@ -87,53 +84,21 @@ class ActiveActivityStore private constructor(appContext: Context) {
      */
     fun readPoints(sinceOffset: Int = 0): List<RecordedActivityPointData> {
         synchronized(lock) {
-            if (!pointsFile.exists()) {
-                return emptyList()
-            }
-            val result = ArrayList<RecordedActivityPointData>()
-            var index = 0
-            pointsFile.forEachLine { line ->
-                val point = RecordedActivityPointData.tryParseLine(line)
-                if (point != null) {
-                    if (index >= sinceOffset) {
-                        result.add(point)
-                    }
-                    index++
-                }
-            }
-            return result
+            return pointsLog.read(sinceOffset)
         }
     }
 
     /** Counts only valid, parseable points so callers can compute offsets. */
     fun pointCount(): Int {
         synchronized(lock) {
-            if (!pointsFile.exists()) {
-                return 0
-            }
-            var count = 0
-            pointsFile.forEachLine { line ->
-                if (RecordedActivityPointData.tryParseLine(line) != null) {
-                    count++
-                }
-            }
-            return count
+            return pointsLog.count()
         }
     }
 
     /** Returns the last valid point for segment-gap recovery after restart. */
     fun lastPoint(): RecordedActivityPointData? {
         synchronized(lock) {
-            if (!pointsFile.exists()) {
-                return null
-            }
-            var lastPoint: RecordedActivityPointData? = null
-            pointsFile.forEachLine { line ->
-                RecordedActivityPointData.tryParseLine(line)?.let {
-                    lastPoint = it
-                }
-            }
-            return lastPoint
+            return pointsLog.last()
         }
     }
 
@@ -150,29 +115,6 @@ class ActiveActivityStore private constructor(appContext: Context) {
         if (!activeDir.exists()) {
             activeDir.mkdirs()
         }
-    }
-
-    private fun orphanedSession(): ActiveActivitySessionData? {
-        val points = readPoints()
-        if (points.isEmpty()) return null
-        val first = points.first()
-        val last = points.last()
-        val startedMillis = IsoTime.toEpochMillis(first.timestamp)
-        val endedMillis = IsoTime.toEpochMillis(last.timestamp)
-        val elapsedSeconds = if (startedMillis != null && endedMillis != null) {
-            kotlin.math.max(0, ((endedMillis - startedMillis) / 1000L).toInt())
-        } else {
-            0
-        }
-        return ActiveActivitySessionData(
-            localSessionId = "recovered_${pointsFile.lastModified()}",
-            activityType = "other",
-            status = ActiveActivitySessionData.STATUS_FAILED,
-            startedAt = first.timestamp,
-            endedAt = last.timestamp,
-            elapsedDurationSeconds = elapsedSeconds,
-            currentSegmentIndex = last.segmentIndex,
-        )
     }
 
     companion object {

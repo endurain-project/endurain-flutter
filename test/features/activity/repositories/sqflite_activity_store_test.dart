@@ -309,12 +309,12 @@ void main() {
       final db = await databaseFactoryFfi.openDatabase(dbPath);
       final rows = await db.query('schema_version');
       expect(rows, hasLength(1));
-      expect(rows.first['version'], 7);
+      expect(rows.first['version'], 8);
       final columns = await db.rawQuery('PRAGMA table_info(local_activity)');
-      expect(
-        columns.map((column) => column['name']),
-        isNot(contains('server_activity_id')),
-      );
+      final columnNames = columns.map((column) => column['name']);
+      expect(columnNames, isNot(contains('server_activity_id')));
+      expect(columnNames, contains('max_speed_meters_per_second'));
+      expect(columnNames, contains('elevation_gain_meters'));
       await db.close();
       await store.close();
     });
@@ -357,6 +357,29 @@ void main() {
         databasePath: dbPath,
       );
       expect((await reopened.get('manual-only'))?.autoRetryEligible, isFalse);
+      await reopened.close();
+    });
+
+    test('persists max speed and elevation gain', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      await store.upsert(
+        _record(
+          id: 'metrics',
+        ).copyWith(maxSpeedMetersPerSecond: 8.5, elevationGainMeters: 240.0),
+      );
+      await store.close();
+
+      final reopened = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      final restored = await reopened.get('metrics');
+      expect(restored?.maxSpeedMetersPerSecond, 8.5);
+      expect(restored?.elevationGainMeters, 240.0);
       await reopened.close();
     });
 
@@ -412,6 +435,77 @@ void main() {
         await store.close();
       },
     );
+
+    test('upgrades a v1 database with the richer summary metrics', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+      // Simulate a v1 database that predates the summary metric columns.
+      final legacy = await databaseFactoryFfi.openDatabase(
+        dbPath,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) async {
+            await db.execute(
+              'CREATE TABLE schema_version (version INTEGER NOT NULL)',
+            );
+            await db.insert('schema_version', {'version': 1});
+            await db.execute('''
+              CREATE TABLE local_activity (
+                id                               TEXT PRIMARY KEY,
+                activity_type                    TEXT NOT NULL,
+                started_at                       TEXT NOT NULL,
+                ended_at                         TEXT NOT NULL,
+                elapsed_duration_seconds         INTEGER NOT NULL,
+                distance_meters                  REAL NOT NULL,
+                average_speed_meters_per_second  REAL,
+                point_count                      INTEGER NOT NULL,
+                gpx_file_name                    TEXT NOT NULL,
+                upload_status                    TEXT NOT NULL,
+                created_at                       TEXT NOT NULL,
+                updated_at                       TEXT NOT NULL,
+                uploaded_at                      TEXT,
+                last_upload_attempt_at           TEXT,
+                last_upload_error_code           TEXT,
+                server_activity_id               TEXT
+              )
+            ''');
+            await db.insert('local_activity', {
+              'id': 'legacy',
+              'activity_type': 'run',
+              'started_at': '2026-06-02T10:00:00.000Z',
+              'ended_at': '2026-06-02T10:05:00.000Z',
+              'elapsed_duration_seconds': 300,
+              'distance_meters': 1200.0,
+              'point_count': 8,
+              'gpx_file_name': 'legacy.gpx',
+              'upload_status': 'pending',
+              'created_at': '2026-06-02T10:05:00.000Z',
+              'updated_at': '2026-06-02T10:05:00.000Z',
+            });
+          },
+        ),
+      );
+      await legacy.close();
+
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+      // Rows written before the migration read back with null metrics.
+      final migrated = await store.get('legacy');
+      expect(migrated?.maxSpeedMetersPerSecond, isNull);
+      expect(migrated?.elevationGainMeters, isNull);
+
+      // New writes exercise the added columns end to end.
+      await store.upsert(
+        _record(
+          id: 'fresh',
+        ).copyWith(maxSpeedMetersPerSecond: 6.0, elevationGainMeters: 88.0),
+      );
+      final fresh = await store.get('fresh');
+      expect(fresh?.maxSpeedMetersPerSecond, 6.0);
+      expect(fresh?.elevationGainMeters, 88.0);
+      await store.close();
+    });
   });
 }
 

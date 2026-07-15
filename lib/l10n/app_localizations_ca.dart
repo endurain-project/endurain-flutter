@@ -403,6 +403,12 @@ class AppLocalizationsCa extends AppLocalizations {
   String get activityStatPace => 'Ritme';
 
   @override
+  String get activityStatMaxSpeed => 'Velocitat màxima';
+
+  @override
+  String get activityStatElevationGain => 'Desnivell positiu';
+
+  @override
   String get activityStop => 'Atura';
 
   @override

@@ -43,6 +43,8 @@ class LocalActivitySummaryBuilder {
       elapsedDurationSeconds: elapsedDurationSeconds,
       distanceMeters: stats.distanceMeters,
       averageSpeedMetersPerSecond: stats.averageSpeedMetersPerSecond,
+      maxSpeedMetersPerSecond: stats.maxSpeedMetersPerSecond,
+      elevationGainMeters: stats.elevationGainMeters,
       pointCount: points.length,
       gpxFileName: gpxFileName,
       uploadStatus: LocalActivityUploadStatus.pending,

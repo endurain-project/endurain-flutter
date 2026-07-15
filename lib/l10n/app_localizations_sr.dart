@@ -397,6 +397,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get activityStatPace => 'Темпо';
 
   @override
+  String get activityStatMaxSpeed => 'Макс. брзина';
+
+  @override
+  String get activityStatElevationGain => 'Успон';
+
+  @override
   String get activityStop => 'Заустави';
 
   @override

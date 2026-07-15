@@ -403,6 +403,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Max. Geschwindigkeit';
+
+  @override
+  String get activityStatElevationGain => 'Höhenmeter';
+
+  @override
   String get activityStop => 'Stopp';
 
   @override

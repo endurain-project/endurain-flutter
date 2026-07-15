@@ -30,11 +30,13 @@ class HealthWorkoutGpxBuilder {
 
     try {
       final trackType = workout.type.toActivityType().apiValue;
+      final points = workout.route.map(_toGpxPoint).toList(growable: false);
       return buildGpxDocument(
         name: trackType,
         type: trackType,
         metadataTime: workout.startedAt,
-        segments: [workout.route.map(_toGpxPoint).toList(growable: false)],
+        bounds: GpxBounds.fromPoints(points),
+        segments: [points],
       );
     } catch (e) {
       if (e is AppException) rethrow;

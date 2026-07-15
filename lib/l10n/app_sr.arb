@@ -1,5 +1,7 @@
 {
   "@@locale": "sr",
+  "activityStatMaxSpeed": "Макс. брзина",
+  "activityStatElevationGain": "Успон",
   "error": "Грешка",
   "ok": "OK",
   "cancel": "Откажи",

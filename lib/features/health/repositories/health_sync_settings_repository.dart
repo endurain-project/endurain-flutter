@@ -1,7 +1,5 @@
-import 'dart:convert';
-
 import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:crypto/crypto.dart';
+import 'package:endurain/core/utils/scoped_storage_key.dart';
 
 /// User-facing settings for the health sync feature.
 ///
@@ -25,14 +23,14 @@ class HealthSyncSettingsRepository {
   /// subsequent launches.
   Future<bool> isConnected(String profileId) async {
     final value = await _storage.read(
-      key: _scopedKey(_keyConnected, profileId),
+      key: scopedStorageKey(_keyConnected, profileId),
     );
     return value == 'true';
   }
 
   Future<void> setConnected(String profileId, bool connected) {
     return _storage.write(
-      key: _scopedKey(_keyConnected, profileId),
+      key: scopedStorageKey(_keyConnected, profileId),
       value: connected ? 'true' : 'false',
     );
   }
@@ -58,16 +56,11 @@ class HealthSyncSettingsRepository {
   Future<void> clearForProfile(String profileId) {
     return Future.wait([
       _storage.delete(key: _autoSyncKey(profileId)),
-      _storage.delete(key: _scopedKey(_keyConnected, profileId)),
+      _storage.delete(key: scopedStorageKey(_keyConnected, profileId)),
     ]);
   }
 
   String _autoSyncKey(String profileId) {
-    return _scopedKey(_keyAutoSyncOnResume, profileId);
-  }
-
-  String _scopedKey(String prefix, String scope) {
-    final digest = sha256.convert(utf8.encode(scope)).toString();
-    return '${prefix}_$digest';
+    return scopedStorageKey(_keyAutoSyncOnResume, profileId);
   }
 }

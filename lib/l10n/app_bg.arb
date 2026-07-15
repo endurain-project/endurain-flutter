@@ -1,5 +1,7 @@
 {
   "@@locale": "bg",
+  "activityStatMaxSpeed": "Макс. скорост",
+  "activityStatElevationGain": "Изкачване",
   "error": "Грешка",
   "ok": "OK",
   "cancel": "Отказ",

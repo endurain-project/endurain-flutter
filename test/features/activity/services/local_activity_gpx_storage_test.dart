@@ -49,6 +49,28 @@ void main() {
       expect(await storage.exists(fileName), isFalse);
     });
 
+    test('reads back written GPX contents', () async {
+      final fileName = await storage.write(
+        id: 'activity_1',
+        gpx: '<gpx>route</gpx>',
+      );
+
+      expect(await storage.read(fileName), '<gpx>route</gpx>');
+    });
+
+    test('reading a missing file throws activityLocalGpxMissing', () async {
+      expect(
+        () => storage.read('missing.gpx'),
+        throwsA(
+          isA<AppException>().having(
+            (exception) => exception.code,
+            'code',
+            AppErrorCode.activityLocalGpxMissing,
+          ),
+        ),
+      );
+    });
+
     test('rejects unsafe file names without exposing paths', () async {
       expect(
         () => storage.readFilePath('../private.gpx'),

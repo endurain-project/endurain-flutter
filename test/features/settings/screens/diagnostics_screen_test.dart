@@ -288,6 +288,9 @@ class _FakeDiagnosticsStore implements DiagnosticsStore {
   Future<String?> readReportText() async => report?.rawText;
 
   @override
+  Future<void> flush() async {}
+
+  @override
   void recordBreadcrumbSync(
     String event, {
     Map<String, Object?> details = const {},

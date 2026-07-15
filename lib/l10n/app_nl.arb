@@ -1,5 +1,7 @@
 {
   "@@locale": "nl",
+  "activityStatMaxSpeed": "Max. snelheid",
+  "activityStatElevationGain": "Stijging",
   "error": "Fout",
   "ok": "OK",
   "cancel": "Annuleren",

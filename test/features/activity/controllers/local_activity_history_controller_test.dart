@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/utils/gpx_document_builder.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -43,6 +44,66 @@ void main() {
       expect(controller.isLoading, isFalse);
       expect(controller.error, isNull);
       expect(controller.records, isEmpty);
+    });
+
+    test('loadRoute parses the stored GPX into a route', () async {
+      final gpx = buildGpxDocument(
+        name: 'run',
+        type: 'run',
+        segments: [
+          [
+            GpxTrackPoint(
+              latitude: 41.1,
+              longitude: -8.6,
+              time: DateTime.utc(2026),
+            ),
+            GpxTrackPoint(
+              latitude: 41.2,
+              longitude: -8.5,
+              time: DateTime.utc(2026, 1, 1, 0, 1),
+            ),
+          ],
+        ],
+      );
+      final fileName = await repository.writeGpx(id: 'route_1', gpx: gpx);
+      final record = _recordWithGpx(id: 'route_1', gpxFileName: fileName);
+      await repository.upsert(record);
+      final controller = LocalActivityHistoryController(
+        repository: repository,
+        uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
+      );
+      addTearDown(controller.dispose);
+
+      final route = await controller.loadRoute(record);
+
+      expect(route, isNotNull);
+      expect(route!.points, hasLength(2));
+    });
+
+    test('loadRoute returns null when the GPX has no track points', () async {
+      final record = await _createRecord(repository, id: 'empty_route');
+      final controller = LocalActivityHistoryController(
+        repository: repository,
+        uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
+      );
+      addTearDown(controller.dispose);
+
+      expect(await controller.loadRoute(record), isNull);
+    });
+
+    test('loadRoute returns null when the GPX file is missing', () async {
+      final record = _recordWithGpx(id: 'ghost', gpxFileName: 'ghost.gpx');
+      await repository.upsert(record);
+      final controller = LocalActivityHistoryController(
+        repository: repository,
+        uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
+      );
+      addTearDown(controller.dispose);
+
+      expect(await controller.loadRoute(record), isNull);
     });
 
     test(
@@ -272,6 +333,25 @@ Future<LocalActivityRecord> _createRecord(
   );
   await repository.upsert(record);
   return record;
+}
+
+LocalActivityRecord _recordWithGpx({
+  required String id,
+  required String gpxFileName,
+}) {
+  return LocalActivityRecord(
+    id: id,
+    activityType: ActivityType.run,
+    startedAt: DateTime.utc(2026, 6, 2, 10),
+    endedAt: DateTime.utc(2026, 6, 2, 10, 30),
+    elapsedDurationSeconds: 1800,
+    distanceMeters: 5000,
+    pointCount: 2,
+    gpxFileName: gpxFileName,
+    uploadStatus: LocalActivityUploadStatus.pending,
+    createdAt: DateTime.utc(2026, 6, 2, 10, 31),
+    updatedAt: DateTime.utc(2026, 6, 2, 10, 31),
+  );
 }
 
 ActivityUploadService _uploadServiceReturning(int statusCode) {

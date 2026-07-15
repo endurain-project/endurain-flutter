@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "@@context": "Endurain Mobile - English translations organized by feature",
+  "@@context": "Endurain mobile app - English translations organized by feature",
   "@sectionCommon": "=== COMMON / SHARED (core/utils/dialog_utils.dart, core/utils/validators.dart) ===",
   "error": "Error",
   "@error": {
@@ -508,6 +508,14 @@
   "activityStatPace": "Pace",
   "@activityStatPace": {
     "description": "Recording stats pace label for runs - Used in: activity_stats_display.dart"
+  },
+  "activityStatMaxSpeed": "Max speed",
+  "@activityStatMaxSpeed": {
+    "description": "Post-recording summary maximum speed label - Used in: activity_completion_summary.dart"
+  },
+  "activityStatElevationGain": "Elevation gain",
+  "@activityStatElevationGain": {
+    "description": "Post-recording summary total ascent label - Used in: activity_completion_summary.dart"
   },
   "activityStop": "Stop",
   "@activityStop": {

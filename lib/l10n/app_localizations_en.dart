@@ -389,6 +389,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityStatPace => 'Pace';
 
   @override
+  String get activityStatMaxSpeed => 'Max speed';
+
+  @override
+  String get activityStatElevationGain => 'Elevation gain';
+
+  @override
   String get activityStop => 'Stop';
 
   @override

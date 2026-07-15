@@ -1,5 +1,7 @@
 {
   "@@locale": "da",
+  "activityStatMaxSpeed": "Maks. hastighed",
+  "activityStatElevationGain": "Stigning",
   "error": "Fejl",
   "ok": "OK",
   "cancel": "Annuller",

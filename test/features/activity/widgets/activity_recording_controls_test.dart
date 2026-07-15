@@ -382,6 +382,39 @@ void main() {
       expect(retried, isTrue);
       expect(deleted, isTrue);
     });
+
+    testWidgets('shows the richer summary for completed recordings', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityRecordingControls(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.completed,
+              activityType: ActivityType.ride,
+            ),
+            selectedActivityType: ActivityType.ride,
+            onActivityTypeChanged: null,
+            onStart: null,
+            onPause: null,
+            onResume: null,
+            onStop: null,
+            uploadStatus: ActivityUploadStatus.uploaded,
+            onDone: () {},
+            onDelete: () {},
+          ),
+        ),
+      );
+
+      expect(
+        find.text(AppLocalizationsEn().activityHistorySummary),
+        findsOneWidget,
+      );
+      expect(
+        find.text(AppLocalizationsEn().activityStatMaxSpeed),
+        findsOneWidget,
+      );
+    });
   });
 }
 

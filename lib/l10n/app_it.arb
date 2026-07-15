@@ -1,5 +1,7 @@
 {
   "@@locale": "it",
+  "activityStatMaxSpeed": "Velocità massima",
+  "activityStatElevationGain": "Dislivello positivo",
   "error": "Errore",
   "ok": "OK",
   "cancel": "Annulla",

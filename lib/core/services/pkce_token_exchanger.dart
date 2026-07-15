@@ -1,4 +1,5 @@
 import 'package:endurain/core/config/api_endpoints.dart';
+import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_response.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
@@ -117,7 +118,9 @@ class PkceTokenExchanger {
       try {
         return await _http.getJsonObject(
           profileUrl,
-          extraHeaders: {'Authorization': 'Bearer $accessToken'},
+          extraHeaders: {
+            ApiConstants.authorizationHeader: 'Bearer $accessToken',
+          },
           failureCode: failureCode,
         );
       } catch (error, stackTrace) {

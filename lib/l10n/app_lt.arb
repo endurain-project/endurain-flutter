@@ -1,5 +1,7 @@
 {
   "@@locale": "lt",
+  "activityStatMaxSpeed": "Didž. greitis",
+  "activityStatElevationGain": "Pakilimas",
   "error": "Klaida",
   "ok": "Gerai",
   "cancel": "Atšaukti",

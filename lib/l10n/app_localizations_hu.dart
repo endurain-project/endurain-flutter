@@ -400,6 +400,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityStatPace => 'Tempó';
 
   @override
+  String get activityStatMaxSpeed => 'Max. sebesség';
+
+  @override
+  String get activityStatElevationGain => 'Szintemelkedés';
+
+  @override
   String get activityStop => 'Leállítás';
 
   @override

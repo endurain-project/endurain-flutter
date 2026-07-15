@@ -7,6 +7,7 @@ import 'package:endurain/features/activity/models/activity_recording_error.dart'
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/widgets/activity_completion_summary.dart';
 import 'package:endurain/features/activity/widgets/activity_stats_display.dart';
 import 'package:endurain/features/activity/widgets/activity_type_picker.dart';
 import 'package:endurain/features/activity/widgets/activity_upload_status_panel.dart';
@@ -133,7 +134,10 @@ class ActivityRecordingControls extends StatelessWidget {
                         ],
                         const SizedBox(height: 8),
                       ],
-                      ActivityStatsDisplay(state: state),
+                      if (state.status == ActivityRecordingStatus.completed)
+                        ActivityCompletionSummary(state: state)
+                      else
+                        ActivityStatsDisplay(state: state),
                       if (state.isActive ||
                           state.status == ActivityRecordingStatus.stopping ||
                           state.status == ActivityRecordingStatus.completed)

@@ -1,4 +1,5 @@
 import 'package:endurain/features/activity/models/activity_recording_stats.dart';
+import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/services/geo_distance.dart';
 import 'package:latlong2/latlong.dart';
@@ -24,6 +25,8 @@ class ActivityStatsCalculator {
     var distanceMeters = 0.0;
     var durationSeconds = 0;
     double? currentSpeedMetersPerSecond;
+    double? maxSpeedMetersPerSecond;
+    double? elevationGainMeters;
 
     for (final segment in segments) {
       final points = segment.points;
@@ -49,6 +52,28 @@ class ActivityStatsCalculator {
                 pairDistanceMeters / pairDurationSeconds;
           }
         }
+
+        final pairSpeed = _pairSpeedMetersPerSecond(
+          current: current,
+          pairDistanceMeters: pairDistanceMeters,
+          pairDurationSeconds: pairDurationSeconds,
+        );
+        if (pairSpeed != null &&
+            (maxSpeedMetersPerSecond == null ||
+                pairSpeed > maxSpeedMetersPerSecond)) {
+          maxSpeedMetersPerSecond = pairSpeed;
+        }
+
+        final previousElevation = previous.elevationMeters;
+        final currentElevation = current.elevationMeters;
+        if (previousElevation != null && currentElevation != null) {
+          final climb = currentElevation - previousElevation;
+          if (climb > 0) {
+            elevationGainMeters = (elevationGainMeters ?? 0) + climb;
+          } else {
+            elevationGainMeters ??= 0;
+          }
+        }
       }
     }
 
@@ -69,6 +94,26 @@ class ActivityStatsCalculator {
       durationSeconds: durationSeconds,
       averageSpeedMetersPerSecond: averageSpeedMetersPerSecond,
       currentSpeedMetersPerSecond: currentSpeedMetersPerSecond,
+      maxSpeedMetersPerSecond: maxSpeedMetersPerSecond,
+      elevationGainMeters: elevationGainMeters,
     );
+  }
+
+  /// Instantaneous speed for the [current] point: its reported GPS speed when
+  /// available, otherwise the average speed across the pair when the pair spans
+  /// a positive duration. Returns `null` when neither is usable.
+  double? _pairSpeedMetersPerSecond({
+    required ActivityTrackPoint current,
+    required double pairDistanceMeters,
+    required int pairDurationSeconds,
+  }) {
+    final reported = current.speedMetersPerSecond;
+    if (reported != null) {
+      return reported;
+    }
+    if (pairDurationSeconds > 0) {
+      return pairDistanceMeters / pairDurationSeconds;
+    }
+    return null;
   }
 }

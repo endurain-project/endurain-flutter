@@ -1,5 +1,7 @@
 {
   "@@locale": "nb",
+  "activityStatMaxSpeed": "Maks. fart",
+  "activityStatElevationGain": "Stigning",
   "error": "Feil",
   "ok": "OK",
   "cancel": "Avbryt",

@@ -1,5 +1,7 @@
 {
   "@@locale": "de",
+  "activityStatMaxSpeed": "Max. Geschwindigkeit",
+  "activityStatElevationGain": "Höhenmeter",
   "error": "Fehler",
   "ok": "OK",
   "cancel": "Abbrechen",

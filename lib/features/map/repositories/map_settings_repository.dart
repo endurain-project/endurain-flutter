@@ -1,11 +1,9 @@
-import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
+import 'package:endurain/core/utils/scoped_storage_key.dart';
 
 class MapSettingsRepository {
   const MapSettingsRepository({
@@ -87,7 +85,6 @@ class MapSettingsRepository {
 
   String _keyForOrigin(String? origin) {
     if (origin == null || origin.isEmpty) return _tileServerUrlKey;
-    final digest = sha256.convert(utf8.encode(origin)).toString();
-    return '${_tileServerUrlKey}_$digest';
+    return scopedStorageKey(_tileServerUrlKey, origin);
   }
 }

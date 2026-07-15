@@ -15,8 +15,10 @@ import 'package:endurain/features/activity/services/activity_stats_formatter.dar
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -28,6 +30,7 @@ class ActivityHistoryScreen extends StatefulWidget {
     this.uploadService,
     this.retentionSettingsRepository,
     this.uploadQueue,
+    this.mapSettingsRepository,
   });
 
   final LocalActivityHistoryController? controller;
@@ -35,28 +38,37 @@ class ActivityHistoryScreen extends StatefulWidget {
   final ActivityUploadService? uploadService;
   final ActivityRetentionSettingsRepository? retentionSettingsRepository;
   final ActivityUploadQueue? uploadQueue;
+  final MapSettingsRepository? mapSettingsRepository;
 
   @override
   State<ActivityHistoryScreen> createState() => _ActivityHistoryScreenState();
 }
 
 class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, OwnedControllers {
   late final LocalActivityHistoryController _controller;
-  late final bool _ownsController;
   ActivityUploadQueue? _uploadQueue;
+  MapSettingsRepository? _mapSettings;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _ownsController = widget.controller == null;
-    _controller = widget.controller ?? _createController();
-    _uploadQueue =
-        widget.uploadQueue ??
-        (_ownsController
-            ? AppScope.servicesOf(context, listen: false).activityUploadQueue
-            : null);
+    _controller = registerController(widget.controller, _createController);
+    final services = widget.controller == null
+        ? AppScope.servicesOf(context, listen: false)
+        : null;
+    _uploadQueue = widget.uploadQueue ?? services?.activityUploadQueue;
+    _mapSettings =
+        widget.mapSettingsRepository ??
+        (services == null
+            ? null
+            : MapSettingsRepository(
+                preferences: services.preferences,
+                config: services.config,
+                activeConnectionOrigin:
+                    services.authSession.getAuthenticatedOrigin,
+              ));
     _controller.load();
   }
 
@@ -90,9 +102,6 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (_ownsController) {
-      _controller.dispose();
-    }
     super.dispose();
   }
 
@@ -130,10 +139,17 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
   }
 
   void _openDetails(LocalActivityRecord record) {
+    final mapSettings = _mapSettings;
     adaptivePush<void>(
       context,
-      (context) =>
-          ActivityDetailsScreen(recordId: record.id, controller: _controller),
+      (context) => ActivityDetailsScreen(
+        recordId: record.id,
+        controller: _controller,
+        tileServerUrlProvider: mapSettings == null
+            ? null
+            : () =>
+                  mapSettings.getTileServerUrl(origin: record.connectionOrigin),
+      ),
     );
   }
 

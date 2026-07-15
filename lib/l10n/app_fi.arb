@@ -1,5 +1,7 @@
 {
   "@@locale": "fi",
+  "activityStatMaxSpeed": "Huippunopeus",
+  "activityStatElevationGain": "Nousu",
   "error": "Virhe",
   "ok": "OK",
   "cancel": "Peruuta",

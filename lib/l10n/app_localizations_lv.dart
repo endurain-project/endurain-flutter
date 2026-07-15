@@ -393,6 +393,12 @@ class AppLocalizationsLv extends AppLocalizations {
   String get activityStatPace => 'Temps';
 
   @override
+  String get activityStatMaxSpeed => 'Maks. ātrums';
+
+  @override
+  String get activityStatElevationGain => 'Kāpums';
+
+  @override
   String get activityStop => 'Apturēt';
 
   @override

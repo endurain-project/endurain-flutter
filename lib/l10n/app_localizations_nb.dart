@@ -394,6 +394,12 @@ class AppLocalizationsNb extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Maks. fart';
+
+  @override
+  String get activityStatElevationGain => 'Stigning';
+
+  @override
   String get activityStop => 'Stopp';
 
   @override

@@ -1,5 +1,7 @@
 {
   "@@locale": "hu",
+  "activityStatMaxSpeed": "Max. sebesség",
+  "activityStatElevationGain": "Szintemelkedés",
   "error": "Hiba",
   "ok": "OK",
   "cancel": "Mégse",

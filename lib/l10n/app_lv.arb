@@ -1,5 +1,7 @@
 {
   "@@locale": "lv",
+  "activityStatMaxSpeed": "Maks. ātrums",
+  "activityStatElevationGain": "Kāpums",
   "error": "Kļūda",
   "ok": "Labi",
   "cancel": "Atcelt",

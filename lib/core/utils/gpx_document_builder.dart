@@ -89,7 +89,7 @@ String buildGpxDocument({
 
   final buffer = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
-    ..write('<gpx version="1.1" creator="Endurain Mobile" ')
+    ..write('<gpx version="1.1" creator="Endurain mobile app" ')
     ..write('xmlns="http://www.topografix.com/GPX/1/1"');
   if (hasHeartRate) {
     buffer.write(' $_gpxtpxNamespace');

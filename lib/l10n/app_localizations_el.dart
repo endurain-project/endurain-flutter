@@ -403,6 +403,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get activityStatPace => 'Ρυθμός';
 
   @override
+  String get activityStatMaxSpeed => 'Μέγιστη ταχύτητα';
+
+  @override
+  String get activityStatElevationGain => 'Ανάβαση';
+
+  @override
   String get activityStop => 'Διακοπή';
 
   @override

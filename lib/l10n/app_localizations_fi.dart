@@ -398,6 +398,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get activityStatPace => 'Vauhti';
 
   @override
+  String get activityStatMaxSpeed => 'Huippunopeus';
+
+  @override
+  String get activityStatElevationGain => 'Nousu';
+
+  @override
   String get activityStop => 'Lopeta';
 
   @override

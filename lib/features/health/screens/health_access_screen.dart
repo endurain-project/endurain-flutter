@@ -7,6 +7,7 @@ import 'package:endurain/features/health/models/health_data_access_details.dart'
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:flutter/material.dart';
 
 /// Shows the health data Endurain requests and its platform permission state.
@@ -22,29 +23,21 @@ class HealthAccessScreen extends StatefulWidget {
   State<HealthAccessScreen> createState() => _HealthAccessScreenState();
 }
 
-class _HealthAccessScreenState extends State<HealthAccessScreen> {
+class _HealthAccessScreenState extends State<HealthAccessScreen>
+    with OwnedControllers {
   late final HealthSyncController _controller;
-  late final bool _ownsController;
 
   @override
   void initState() {
     super.initState();
-    _ownsController = widget.controller == null;
-    _controller =
-        widget.controller ??
-        AppScope.servicesOf(
-          context,
-          listen: false,
-        ).createHealthSyncController();
+    _controller = registerController(
+      widget.controller,
+      () => AppScope.servicesOf(
+        context,
+        listen: false,
+      ).createHealthSyncController(),
+    );
     _controller.loadStatus();
-  }
-
-  @override
-  void dispose() {
-    if (_ownsController) {
-      _controller.dispose();
-    }
-    super.dispose();
   }
 
   @override

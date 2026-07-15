@@ -396,6 +396,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Max. snelheid';
+
+  @override
+  String get activityStatElevationGain => 'Stijging';
+
+  @override
   String get activityStop => 'Stoppen';
 
   @override

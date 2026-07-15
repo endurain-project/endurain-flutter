@@ -11,9 +11,12 @@ import 'package:endurain/features/activity/repositories/activity_retention_setti
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:endurain/features/activity/services/gpx_route_parser.dart';
+import 'package:endurain/features/activity/widgets/activity_route_map.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -25,6 +28,7 @@ class ActivityDetailsScreen extends StatefulWidget {
     this.repository,
     this.uploadService,
     this.retentionSettingsRepository,
+    this.tileServerUrlProvider,
   });
 
   final String recordId;
@@ -33,20 +37,25 @@ class ActivityDetailsScreen extends StatefulWidget {
   final ActivityUploadService? uploadService;
   final ActivityRetentionSettingsRepository? retentionSettingsRepository;
 
+  /// Supplies the tile-server URL for the route preview map. When null, the map
+  /// is not shown (e.g. in tests that do not exercise the map).
+  final Future<String> Function()? tileServerUrlProvider;
+
   @override
   State<ActivityDetailsScreen> createState() => _ActivityDetailsScreenState();
 }
 
-class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
+class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
+    with OwnedControllers {
   late final LocalActivityHistoryController _controller;
-  late final bool _ownsController;
+  Future<_ActivityRouteMapData?>? _routeMapFuture;
+  String? _routeMapKey;
 
   @override
   void initState() {
     super.initState();
-    _ownsController = widget.controller == null;
-    _controller = widget.controller ?? _createController();
-    if (_ownsController) {
+    _controller = registerController(widget.controller, _createController);
+    if (widget.controller == null) {
       _controller.loadRecord(widget.recordId);
     }
   }
@@ -58,14 +67,6 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
       uploadService: widget.uploadService,
       retentionSettingsRepository: widget.retentionSettingsRepository,
     );
-  }
-
-  @override
-  void dispose() {
-    if (_ownsController) {
-      _controller.dispose();
-    }
-    super.dispose();
   }
 
   Future<void> _retry(LocalActivityRecord record) async {
@@ -149,6 +150,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
           return ListView(
             padding: const EdgeInsets.all(UIConstants.paddingStandard),
             children: [
+              _RouteMapSection(future: _routeMapFor(record)),
               _SummarySection(record: record, controller: _controller),
               const SizedBox(height: UIConstants.paddingStandard),
               FutureBuilder<bool>(
@@ -175,6 +177,34 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
       ),
     );
   }
+
+  /// Memoizes the route-map load per record so scrolling and controller
+  /// notifications do not re-read and re-parse the GPX on every rebuild. The
+  /// key includes the upload status so the map re-evaluates if the GPX is
+  /// cleaned up after a successful upload.
+  Future<_ActivityRouteMapData?> _routeMapFor(LocalActivityRecord record) {
+    final key = '${record.id}:${record.uploadStatus.name}';
+    if (_routeMapKey != key || _routeMapFuture == null) {
+      _routeMapKey = key;
+      _routeMapFuture = _loadRouteMap(record);
+    }
+    return _routeMapFuture!;
+  }
+
+  Future<_ActivityRouteMapData?> _loadRouteMap(
+    LocalActivityRecord record,
+  ) async {
+    final provider = widget.tileServerUrlProvider;
+    if (provider == null) {
+      return null;
+    }
+    final route = await _controller.loadRoute(record);
+    if (route == null) {
+      return null;
+    }
+    final tileServerUrl = await provider();
+    return _ActivityRouteMapData(route: route, tileServerUrl: tileServerUrl);
+  }
 }
 
 class _DetailsMessage extends StatelessWidget {
@@ -191,6 +221,42 @@ class _DetailsMessage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _RouteMapSection extends StatelessWidget {
+  const _RouteMapSection({required this.future});
+
+  final Future<_ActivityRouteMapData?> future;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<_ActivityRouteMapData?>(
+      future: future,
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        if (data == null) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: UIConstants.paddingStandard),
+          child: ActivityRouteMap(
+            route: data.route,
+            tileServerUrl: data.tileServerUrl,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ActivityRouteMapData {
+  const _ActivityRouteMapData({
+    required this.route,
+    required this.tileServerUrl,
+  });
+
+  final GpxRoute route;
+  final String tileServerUrl;
 }
 
 class _SummarySection extends StatelessWidget {
@@ -238,6 +304,22 @@ class _SummarySection extends StatelessWidget {
             locale: locale,
           ),
         ),
+        if (record.maxSpeedMetersPerSecond != null)
+          AdaptiveListTile(
+            title: l10n.activityStatMaxSpeed,
+            subtitle: formatter.formatSpeed(
+              record.maxSpeedMetersPerSecond,
+              locale: locale,
+            ),
+          ),
+        if (record.elevationGainMeters != null)
+          AdaptiveListTile(
+            title: l10n.activityStatElevationGain,
+            subtitle: formatter.formatElevation(
+              record.elevationGainMeters,
+              locale: locale,
+            ),
+          ),
         AdaptiveListTile(
           title: l10n.activityHistoryPointCount,
           subtitle: record.pointCount.toString(),

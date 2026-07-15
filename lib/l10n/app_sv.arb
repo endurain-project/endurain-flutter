@@ -1,5 +1,7 @@
 {
   "@@locale": "sv",
+  "activityStatMaxSpeed": "Maxhastighet",
+  "activityStatElevationGain": "Stigning",
   "error": "Fel",
   "ok": "OK",
   "cancel": "Avbryt",

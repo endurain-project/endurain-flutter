@@ -1,5 +1,7 @@
 {
   "@@locale": "zh",
+  "activityStatMaxSpeed": "最高速度",
+  "activityStatElevationGain": "累计爬升",
   "error": "错误",
   "ok": "确定",
   "cancel": "取消",

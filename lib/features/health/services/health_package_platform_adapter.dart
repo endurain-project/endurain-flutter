@@ -72,7 +72,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       // Record the raw platform SDK status (sanitized enum name only) so the
       // Diagnostics screen shows the ground-truth Health Connect availability.
       _diagnostics.recordBreadcrumbSync(
-        'health_connect_sdk_status',
+        DiagnosticsEvents.healthConnectSdkStatus,
         details: {'status': status?.name ?? 'null'},
       );
       return switch (status) {
@@ -103,7 +103,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
             true;
       }
       _diagnostics.recordBreadcrumbSync(
-        'health_request_authorization',
+        DiagnosticsEvents.healthRequestAuthorization,
         details: {'granted': granted},
       );
       return granted
@@ -111,7 +111,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
           : HealthAuthorizationStatus.denied;
     } catch (e) {
       _diagnostics.recordBreadcrumbSync(
-        'health_request_authorization_error',
+        DiagnosticsEvents.healthRequestAuthorizationError,
         details: {'type': e.runtimeType.toString()},
       );
       throw const AppException(AppErrorCode.healthPermissionDenied);
@@ -179,7 +179,9 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   @override
   Future<void> installHealthConnect() async {
     if (_targetPlatform() != TargetPlatform.android) return;
-    _diagnostics.recordBreadcrumbSync('health_install_provider_requested');
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.healthInstallProviderRequested,
+    );
     await _health.installHealthConnect();
   }
 
@@ -234,7 +236,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       // Sanitized observability (counts only, never coordinates/PII): lets the
       // Diagnostics screen show where route correlation may be failing.
       _diagnostics.recordBreadcrumbSync(
-        'health_read_workouts',
+        DiagnosticsEvents.healthReadWorkouts,
         details: {
           'workouts': workouts.length,
           'route_samples': routes.length,

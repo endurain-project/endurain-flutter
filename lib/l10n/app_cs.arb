@@ -1,5 +1,7 @@
 {
   "@@locale": "cs",
+  "activityStatMaxSpeed": "Nejvyšší rychlost",
+  "activityStatElevationGain": "Převýšení",
   "error": "Chyba",
   "ok": "OK",
   "cancel": "Zrušit",

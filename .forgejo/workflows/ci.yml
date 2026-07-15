@@ -89,3 +89,28 @@ jobs:
           --exclude 'lib/shared/widgets/app_bottom_nav.dart'
           --exclude 'lib/core/services/platform/*.dart'
           --exclude 'lib/features/health/services/health_package_platform_adapter.dart'
+
+  android-unit-test:
+    name: Android unit tests
+    runs-on: local-runner
+    container:
+      image: ${{ env.CI_IMAGE_BASE }}:${{ env.FLUTTER_VERSION }}
+    steps:
+      - name: Checkout code
+        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.forgejo/actions/setup-flutter
+
+      - name: Generate Gradle config
+        shell: bash
+        # Writes android/local.properties (Flutter + Android SDK paths) so the
+        # Gradle wrapper can resolve the Flutter plugin without a full build.
+        run: flutter build apk --config-only
+
+      - name: Run native (Kotlin) unit tests
+        shell: bash
+        run: cd android && ./gradlew :app:testDebugUnitTest --console=plain
+

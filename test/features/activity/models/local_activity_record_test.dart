@@ -61,6 +61,8 @@ void main() {
       });
 
       expect(parsed.averageSpeedMetersPerSecond, isNull);
+      expect(parsed.maxSpeedMetersPerSecond, isNull);
+      expect(parsed.elevationGainMeters, isNull);
       expect(parsed.uploadedAt, isNull);
       expect(parsed.lastUploadAttemptAt, isNull);
       expect(parsed.lastUploadErrorCode, isNull);
@@ -73,6 +75,17 @@ void main() {
       );
 
       expect(parsed.autoRetryEligible, isFalse);
+    });
+
+    test('round trips max speed and elevation gain', () {
+      final parsed = LocalActivityRecord.fromJson(
+        _record()
+            .copyWith(maxSpeedMetersPerSecond: 7.5, elevationGainMeters: 312.0)
+            .toJson(),
+      );
+
+      expect(parsed.maxSpeedMetersPerSecond, 7.5);
+      expect(parsed.elevationGainMeters, 312.0);
     });
   });
 }

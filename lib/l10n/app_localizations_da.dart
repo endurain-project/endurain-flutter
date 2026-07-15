@@ -395,6 +395,12 @@ class AppLocalizationsDa extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Maks. hastighed';
+
+  @override
+  String get activityStatElevationGain => 'Stigning';
+
+  @override
   String get activityStop => 'Stop';
 
   @override

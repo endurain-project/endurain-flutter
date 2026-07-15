@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/utils/scoped_storage_key.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -19,7 +19,6 @@ import 'package:endurain/features/health/repositories/health_import_repository.d
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
-import 'package:crypto/crypto.dart';
 
 const Duration _discoveryPageWindow = Duration(days: 30);
 const int _defaultImportedPageSize = 20;
@@ -153,7 +152,7 @@ class HealthSyncService {
         await _syncSettings.setConnected(profile.id, true);
       }
       _diagnostics.recordBreadcrumbSync(
-        'health_auth_requested',
+        DiagnosticsEvents.healthAuthRequested,
         details: {'result': result.name},
       );
       return result;
@@ -320,7 +319,7 @@ class HealthSyncService {
     _availableHasMore = pageStart.isAfter(bounds.startInclusive);
     _routeConsentDeniedCount += _adapter.routeConsentDeniedCount;
     _diagnostics.recordBreadcrumbSync(
-      'health_list_importable',
+      DiagnosticsEvents.healthListImportable,
       details: {
         'total': all.length,
         'importable': candidates.where((w) => w.hasRoute).length,
@@ -463,7 +462,7 @@ class HealthSyncService {
       } catch (error) {
         failed++;
         _diagnostics.recordBreadcrumbSync(
-          'health_import_workout_failed',
+          DiagnosticsEvents.healthImportWorkoutFailed,
           details: {'type': error.runtimeType.toString()},
         );
       }
@@ -475,7 +474,7 @@ class HealthSyncService {
     }
 
     _diagnostics.recordBreadcrumbSync(
-      'health_import_workouts',
+      DiagnosticsEvents.healthImportWorkouts,
       details: {'imported': imported, 'failed': failed},
     );
     return (imported: imported, failed: failed);
@@ -604,8 +603,7 @@ class HealthSyncService {
   }
 
   String _localIdFor(String profileId, String sourceId) {
-    final digest = sha256.convert(utf8.encode('$profileId\n$sourceId'));
-    return 'health_$digest';
+    return scopedStorageKey('health', '$profileId\n$sourceId');
   }
 
   Future<T> _serialize<T>(Future<T> Function() operation) =>

@@ -361,6 +361,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityStatPace => '配速';
 
   @override
+  String get activityStatMaxSpeed => '最高速度';
+
+  @override
+  String get activityStatElevationGain => '累计爬升';
+
+  @override
   String get activityStop => '停止';
 
   @override
@@ -1241,6 +1247,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityStatPace => '配速';
+
+  @override
+  String get activityStatMaxSpeed => '最高速度';
+
+  @override
+  String get activityStatElevationGain => '累計爬升';
 
   @override
   String get activityStop => '停止';

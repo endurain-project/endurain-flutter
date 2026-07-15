@@ -397,6 +397,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get activityStatPace => 'Tempo';
 
   @override
+  String get activityStatMaxSpeed => 'Nejvyšší rychlost';
+
+  @override
+  String get activityStatElevationGain => 'Převýšení';
+
+  @override
   String get activityStop => 'Zastavit';
 
   @override
