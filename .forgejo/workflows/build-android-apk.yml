@@ -150,7 +150,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s "$APK_PATH"
-          apksigner="$(find "$ANDROID_HOME/build-tools" -path '*/apksigner' -type f | sort -V | tail -n 1)"
+          apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -path '*/apksigner' -type f | sort -V | tail -n 1)"
           test -n "$apksigner"
           "$apksigner" verify --verbose --print-certs "$APK_PATH"
           actual_fingerprint="$(
