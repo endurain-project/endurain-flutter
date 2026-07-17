@@ -21,6 +21,7 @@ class RecordedActivityPoint {
     this.headingAccuracyDegrees,
     this.speedMetersPerSecond,
     this.speedAccuracyMetersPerSecond,
+    this.heartRateBpm,
   });
 
   factory RecordedActivityPoint.fromTrackPoint(
@@ -39,6 +40,7 @@ class RecordedActivityPoint {
       headingAccuracyDegrees: point.headingAccuracyDegrees,
       speedMetersPerSecond: point.speedMetersPerSecond,
       speedAccuracyMetersPerSecond: point.speedAccuracyMetersPerSecond,
+      heartRateBpm: point.heartRateBpm,
     );
   }
 
@@ -53,6 +55,7 @@ class RecordedActivityPoint {
   final double? headingAccuracyDegrees;
   final double? speedMetersPerSecond;
   final double? speedAccuracyMetersPerSecond;
+  final int? heartRateBpm;
 
   ActivityTrackPoint toTrackPoint() {
     return ActivityTrackPoint(
@@ -66,6 +69,7 @@ class RecordedActivityPoint {
       verticalAccuracyMeters: verticalAccuracyMeters,
       speedAccuracyMetersPerSecond: speedAccuracyMetersPerSecond,
       headingAccuracyDegrees: headingAccuracyDegrees,
+      heartRateBpm: heartRateBpm,
     );
   }
 
@@ -83,6 +87,7 @@ class RecordedActivityPoint {
       if (speedMetersPerSecond != null) 'spd': speedMetersPerSecond,
       if (speedAccuracyMetersPerSecond != null)
         'spdAcc': speedAccuracyMetersPerSecond,
+      if (heartRateBpm != null) 'hr': heartRateBpm,
     };
   }
 
@@ -115,6 +120,7 @@ class RecordedActivityPoint {
       headingAccuracyDegrees: jsonDouble(json['headAcc']),
       speedMetersPerSecond: jsonDouble(json['spd']),
       speedAccuracyMetersPerSecond: jsonDouble(json['spdAcc']),
+      heartRateBpm: jsonInt(json['hr']),
     );
   }
 

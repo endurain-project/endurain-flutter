@@ -15,12 +15,6 @@ on:
     types:
       - published
 
-permissions:
-  # Needed so a `release: published` run can attach the APK to the release page.
-  # Manual `workflow_dispatch` runs do not attach assets; they keep the
-  # workflow-run artifact instead.
-  contents: write
-
 env:
   # Flutter version, used for the builder-image tag. Keep in sync with
   # docker/flutter-build/Dockerfile and build-ci-docker-image.yml.
@@ -117,21 +111,25 @@ jobs:
         # essentially all modern devices and keeps the output as app-release.apk.
         #
         # Memory tuning for a 6 GB, 4-vCPU runner:
-        # - GRADLE_OPTS: caps main Gradle JVM to 1GB
+        # - gen_snapshot (non-JVM, ~1.5-3 GB) runs and exits before Gradle
+        #   starts, so it never competes with the JVM heap below.
+        # - GRADLE_OPTS: caps main Gradle JVM. R8 minification runs in-process
+        #   in this same JVM (no isolated worker), so it needs headroom beyond
+        #   the 1GB previously set here, which OOM'd on minifyReleaseWithR8.
         # - Kotlin compilation runs in-process with one Gradle worker
         # - JAVA_TOOL_OPTIONS: applies the same limits to lint worker JVMs
         # - --split-debug-info: reduces gen_snapshot memory by externalizing debug symbols
         env:
           GRADLE_OPTS: >-
-            -Xmx1024m
-            -XX:MaxMetaspaceSize=512m
+            -Xmx3072m
+            -XX:MaxMetaspaceSize=768m
             -XX:ReservedCodeCacheSize=128m
             -Dorg.gradle.daemon=false
             -Dorg.gradle.workers.max=1
             -Dkotlin.compiler.execution.strategy=in-process
           JAVA_TOOL_OPTIONS: >-
-            -Xmx1024m
-            -XX:MaxMetaspaceSize=512m
+            -Xmx3072m
+            -XX:MaxMetaspaceSize=768m
             -XX:ReservedCodeCacheSize=128m
         run: |
           # Stop any stale Gradle daemons

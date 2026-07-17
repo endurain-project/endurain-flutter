@@ -80,6 +80,7 @@ class ActivityRecorderStartRequest {
     this.connectionOrigin,
     this.connectionProfileId,
     this.backgroundConfig,
+    this.heartRateDeviceId,
   });
 
   final String localSessionId;
@@ -88,6 +89,11 @@ class ActivityRecorderStartRequest {
   final String? connectionOrigin;
   final String? connectionProfileId;
   final BackgroundLocationConfig? backgroundConfig;
+
+  /// BLE device id of the paired heart-rate sensor to capture from during the
+  /// recording, or `null` when none is paired. Recorders that support native
+  /// heart-rate capture connect to this device; others ignore it.
+  final String? heartRateDeviceId;
 }
 
 /// Abstraction over the platform mechanism that collects and persists location

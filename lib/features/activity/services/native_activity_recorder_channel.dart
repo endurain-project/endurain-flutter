@@ -90,6 +90,8 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
           'connectionOrigin': request.connectionOrigin,
         if (request.connectionProfileId != null)
           'connectionProfileId': request.connectionProfileId,
+        if (request.heartRateDeviceId != null)
+          'hrDeviceId': request.heartRateDeviceId,
         if (request.backgroundConfig != null) ...{
           'notificationTitle': request.backgroundConfig!.notificationTitle,
           'notificationText': request.backgroundConfig!.notificationText,

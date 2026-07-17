@@ -49,6 +49,12 @@ Future<void> main() async {
       };
 
       runApp(App(services: services));
+
+      // Reconnect a remembered heart-rate sensor in the background so it is
+      // ready before the user starts recording. Touching the coordinator also
+      // starts it listening for Bluetooth becoming ready. Best-effort and
+      // self-guarded; a no-op when no sensor was ever paired.
+      unawaited(services.heartRateSensorService.tryReconnectRemembered());
     },
     (error, stackTrace) {
       diagnostics.recordErrorSync(

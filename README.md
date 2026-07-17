@@ -57,7 +57,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 ✅ **Activity Recording**
 - Activity type selection for running, riding, walking, hiking, and other activities
 - Start, pause, resume, stop, and discard recording controls directly on the map
-- Live activity statistics for duration, distance, and speed
+- Live activity statistics for duration, distance, speed, and live heart rate when a Bluetooth sensor is connected
 - GPS track capture with elapsed-time tracking across pauses and resumes
 - Background location tracking while a recording is active, including Android foreground-service notification support and iOS Always-location guidance
 - Location permission and disabled-location error handling, including app settings shortcut
@@ -79,6 +79,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Persisted language selection with a system-default option
 - Local activity history entry point and uploaded-GPX retention preference
 - Device access overview for location and health-data permissions
+- Bluetooth heart-rate sensor pairing and connection status (Sensors screen)
 - Health sync settings and optional automatic import on app resume
 - Logged-in server and username summary
 - Local diagnostics view with privacy-filtered crash context, recording breadcrumbs, copy, and clear actions
@@ -98,6 +99,14 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Health-derived activity files and databases live in dedicated no-backup storage on Android and iOS; imported data can be deleted from local activity history or reset from Health access settings
 - Import provenance is scoped to the active connection profile, and health UI controllers are route-owned so imported rows and selections cannot survive a logout/login transition. A backend account UUID is still required before separate login profiles can safely share imported history across sign-out and
   sign-in cycles
+
+✅ **External Sensors (Bluetooth heart rate)**
+- Pair a Bluetooth Low Energy heart-rate monitor from **Settings > Sensors** and see the live BPM
+- Live heart rate on the map: a pill at the top of the map when idle, and a live value in the recording statistics while an activity records
+- Heart rate is stamped onto recorded GPX track points, so the uploaded activity includes it
+- A remembered sensor reconnects automatically when the app opens, with a "searching" indicator and bounded retry, so the strap does not need re-pairing each session
+- Heart-rate capture continues in the background during a recording: on Android the foreground-service recorder owns the connection, while on iOS the in-app connection is kept via the Bluetooth background mode
+- Uses `universal_ble` (BSD-3-Clause, no Google Play Services, F-Droid compatible); the app requests the Bluetooth runtime permissions itself
 
 ✅ **User Experience**
 - Multi-language support for 30 locales, including English and European Portuguese
@@ -120,7 +129,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 - **Framework:** Flutter 3.44+ (Dart 3.12+)
 - **Platforms:** iOS, Android
-- **State Management:** Stateful widgets plus focused `ChangeNotifier` controllers
+- **State Management:** Focused `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and obtained via `AppScope`
 - **Navigation:** `go_router` for top-level, auth-guarded routing that redirects off the session state and is ready for deep links
 - **Map Provider:** OpenStreetMap with `flutter_map` and `latlong2`
 - **Location Services:** `geolocator`, including position streams and movement heading
@@ -130,8 +139,10 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 - **HTTP Client:** `http` for Endurain API communication and multipart uploads
 - **SSO/OAuth:** `app_links` for deep-link callbacks, `url_launcher` for the system browser OAuth flow, and `flutter_svg` for provider icons
 - **Health Data:** `health` for Apple HealthKit and Android Health Connect workout import
+- **External Sensors:** `universal_ble` for Bluetooth Low Energy heart-rate monitors (BSD-3-Clause, no Google Play Services)
 - **App Metadata:** `package_info_plus`
 - **Local App Files:** `path_provider` for private app-support diagnostics and retained activity GPX storage
+- **Preferences:** `shared_preferences` for non-secret display and language settings
 - **Security:** `crypto` for PKCE challenge generation
 - **Localization:** Flutter gen-l10n from ARB files with 30 supported locales
 - **SQLite:** `sqflite` for on-device metadata storage and `sqflite_common_ffi` for test-only in-process coverage
@@ -282,7 +293,8 @@ dart run tool/check_coverage.dart \
   --exclude "lib/core/navigation/app_routes.dart" \
   --exclude "lib/shared/widgets/app_bottom_nav.dart" \
   --exclude "lib/core/services/platform/*.dart" \
-  --exclude "lib/features/health/services/health_package_platform_adapter.dart"
+  --exclude "lib/features/health/services/health_package_platform_adapter.dart" \
+  --exclude "lib/features/sensors/services/universal_ble_heart_rate_sensor_adapter.dart"
 ```
 
 Regenerate localization classes after changing ARB files:
@@ -345,6 +357,7 @@ lib/
 │   ├── auth/                 # Login, MFA, SSO, and session controllers
 │   ├── health/               # HealthKit/Health Connect import, sync, and access screens
 │   ├── map/                  # Map screen, map settings, and location state
+│   ├── sensors/              # Bluetooth heart-rate sensor pairing and live BPM
 │   └── settings/             # Settings and server configuration screens
 ├── shared/
 │   ├── adaptive/             # Material/Cupertino adaptive components
@@ -378,14 +391,14 @@ Completed recordings are stored under the app's private support directory:
         └── <activity-id>.gpx      # Raw GPX 1.1 file for each recording
 ```
 
-Activity metadata lives in a SQLite database (`activity.db`, schema v1) under the platform databases directory. The database holds two tables:
+Activity metadata lives in a SQLite database (`activity.db`, schema v8) under the platform databases directory. The database holds two tables:
 
 | Table                  | Purpose                                                  |
 |------------------------|----------------------------------------------------------|
 | `schema_version`       | Single-row version counter used to gate migrations.      |
 | `local_activity`       | One row per activity, all metadata columns.              |
 
-Each `local_activity` row contains: `id`, `activity_type`, `started_at`, `ended_at`, `elapsed_duration_seconds`, `distance_meters`, `average_speed_meters_per_second`, `max_speed_meters_per_second`, `elevation_gain_meters`, `point_count`, `gpx_file_name`, `upload_status`, `created_at`, `updated_at`, `uploaded_at`, `last_upload_attempt_at`, `last_upload_error_code`, and `server_activity_id`. GPX files live on disk under `gpx/` — only the metadata is stored in the database.
+Each `local_activity` row contains: `id`, `activity_type`, `started_at`, `ended_at`, `elapsed_duration_seconds`, `distance_meters`, `average_speed_meters_per_second`, `max_speed_meters_per_second`, `elevation_gain_meters`, `point_count`, `gpx_file_name`, `upload_status`, `idempotency_key`, `connection_origin`, `connection_profile_id`, `auto_retry_eligible`, `gpx_cleanup_pending`, `created_at`, `updated_at`, `uploaded_at`, `last_upload_attempt_at`, and `last_upload_error_code`. GPX files live on disk under `gpx/` — only the metadata is stored in the database. Health-imported activities are additionally tracked for provenance and de-duplication in a separate `health_import.db` (schema v3).
 
 ### Schema migrations
 

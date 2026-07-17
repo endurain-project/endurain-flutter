@@ -15,6 +15,7 @@ import 'package:endurain/features/settings/screens/device_access_screen.dart';
 import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
+import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 
@@ -254,6 +255,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           );
                         },
                       ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
+                        materialIcon: Icons.sensors,
+                        cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
+                      ),
+                      title: l10n.sensorsTitle,
+                      subtitle: l10n.sensorsSettingsSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const SensorSettingsScreen(),
+                        );
+                      },
+                    ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
                         materialIcon: Icons.bug_report,

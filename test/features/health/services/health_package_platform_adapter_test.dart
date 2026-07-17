@@ -262,6 +262,198 @@ void main() {
     });
   });
 
+  group('HealthPackagePlatformAdapter — Health Connect history window', () {
+    final now = DateTime.utc(2026, 7, 17, 12);
+    final cutoff = now.subtract(const Duration(days: 30));
+    final safeRecentStart = cutoff.add(const Duration(minutes: 5));
+
+    _FakeHealth fakeWith({
+      required DateTime workoutStart,
+      bool historyAvailable = false,
+      bool historyAuthorized = false,
+      bool requestHistoryResult = false,
+    }) {
+      return _FakeHealth(
+        hasPermissionsResult: true,
+        historyAvailable: historyAvailable,
+        historyAuthorized: historyAuthorized,
+        requestHistoryResult: requestHistoryResult,
+        dataByType: {
+          HealthDataType.WORKOUT: [
+            _workoutPoint(
+              start: workoutStart,
+              end: workoutStart.add(const Duration(hours: 1)),
+            ),
+          ],
+        },
+      );
+    }
+
+    test('recent window reads as-is without touching history', () async {
+      final requestedStart = now.subtract(const Duration(days: 10));
+      final health = fakeWith(workoutStart: requestedStart);
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+        now: () => now,
+      );
+
+      final workouts = await adapter.readWorkouts(
+        start: requestedStart,
+        end: now,
+      );
+
+      expect(workouts, hasLength(1));
+      expect(health.lastWorkoutReadStart, requestedStart);
+      expect(health.historyAvailableCallCount, 0);
+      expect(health.requestHistoryCallCount, 0);
+    });
+
+    test(
+      'historical window reads full range when already authorized',
+      () async {
+        final requestedStart = now.subtract(const Duration(days: 90));
+        final health = fakeWith(
+          workoutStart: requestedStart,
+          historyAvailable: true,
+          historyAuthorized: true,
+        );
+        final adapter = HealthPackagePlatformAdapter(
+          health: health,
+          targetPlatform: () => TargetPlatform.android,
+          now: () => now,
+        );
+
+        final workouts = await adapter.readWorkouts(
+          start: requestedStart,
+          end: now,
+        );
+
+        expect(workouts, hasLength(1));
+        expect(health.lastWorkoutReadStart, requestedStart);
+        expect(health.requestHistoryCallCount, 0);
+      },
+    );
+
+    test('historical window requests history and reads full range when '
+        'granted', () async {
+      final requestedStart = now.subtract(const Duration(days: 90));
+      final health = fakeWith(
+        workoutStart: requestedStart,
+        historyAvailable: true,
+        requestHistoryResult: true,
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+        now: () => now,
+      );
+
+      final workouts = await adapter.readWorkouts(
+        start: requestedStart,
+        end: now,
+      );
+
+      expect(workouts, hasLength(1));
+      expect(health.requestHistoryCallCount, 1);
+      expect(health.lastWorkoutReadStart, requestedStart);
+    });
+
+    test(
+      'clamps to the recent window when history is declined (no throw)',
+      () async {
+        final requestedStart = now.subtract(const Duration(days: 90));
+        final health = fakeWith(
+          workoutStart: now.subtract(const Duration(days: 10)),
+          historyAvailable: true,
+          requestHistoryResult: false,
+        );
+        final adapter = HealthPackagePlatformAdapter(
+          health: health,
+          targetPlatform: () => TargetPlatform.android,
+          now: () => now,
+        );
+
+        final workouts = await adapter.readWorkouts(
+          start: requestedStart,
+          end: now,
+        );
+
+        expect(workouts, hasLength(1));
+        expect(health.requestHistoryCallCount, 1);
+        expect(health.lastWorkoutReadStart, safeRecentStart);
+      },
+    );
+
+    test('reads full range when the history feature is unavailable', () async {
+      final requestedStart = now.subtract(const Duration(days: 90));
+      final health = fakeWith(workoutStart: requestedStart);
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+        now: () => now,
+      );
+
+      final workouts = await adapter.readWorkouts(
+        start: requestedStart,
+        end: now,
+      );
+
+      expect(workouts, hasLength(1));
+      expect(health.lastWorkoutReadStart, requestedStart);
+      expect(health.requestHistoryCallCount, 0);
+    });
+
+    test(
+      'older-than-window page skips the read when history is declined',
+      () async {
+        final requestedStart = now.subtract(const Duration(days: 90));
+        final pageEnd = now.subtract(const Duration(days: 40));
+        final health = fakeWith(
+          workoutStart: requestedStart,
+          historyAvailable: true,
+          requestHistoryResult: false,
+        );
+        final adapter = HealthPackagePlatformAdapter(
+          health: health,
+          targetPlatform: () => TargetPlatform.android,
+          now: () => now,
+        );
+
+        final workouts = await adapter.readWorkouts(
+          start: requestedStart,
+          end: pageEnd,
+        );
+
+        expect(workouts, isEmpty);
+        expect(health.lastWorkoutReadStart, isNull);
+      },
+    );
+
+    test('non-Android platforms ignore the 30-day window', () async {
+      final requestedStart = now.subtract(const Duration(days: 365));
+      final health = fakeWith(
+        workoutStart: requestedStart,
+        historyAvailable: true,
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.iOS,
+        now: () => now,
+      );
+
+      final workouts = await adapter.readWorkouts(
+        start: requestedStart,
+        end: now,
+      );
+
+      expect(workouts, hasLength(1));
+      expect(health.lastWorkoutReadStart, requestedStart);
+      expect(health.historyAvailableCallCount, 0);
+      expect(health.requestHistoryCallCount, 0);
+    });
+  });
+
   group('healthRouteMatchesWorkout', () {
     final workoutStart = DateTime.utc(2025, 6, 1, 9, 0);
     final workoutEnd = DateTime.utc(2025, 6, 1, 10, 0);
@@ -344,12 +536,22 @@ class _FakeHealth extends Health {
     required this.hasPermissionsResult,
     this.requestAuthorizationResult = false,
     this.dataByType = const {},
+    this.historyAvailable = false,
+    this.historyAuthorized = false,
+    this.requestHistoryResult = false,
   });
 
   final bool? hasPermissionsResult;
   final bool requestAuthorizationResult;
   final Map<HealthDataType, List<HealthDataPoint>> dataByType;
+  final bool historyAvailable;
+  final bool historyAuthorized;
+  final bool requestHistoryResult;
   int configureCallCount = 0;
+  int historyAvailableCallCount = 0;
+  int historyAuthorizedCallCount = 0;
+  int requestHistoryCallCount = 0;
+  DateTime? lastWorkoutReadStart;
   List<HealthDataType>? lastHasPermissionTypes;
   List<HealthDataAccess>? lastHasPermissionAccess;
   List<HealthDataType>? lastRequestAuthorizationTypes;
@@ -358,6 +560,24 @@ class _FakeHealth extends Health {
   @override
   Future<void> configure() async {
     configureCallCount++;
+  }
+
+  @override
+  Future<bool> isHealthDataHistoryAvailable() async {
+    historyAvailableCallCount++;
+    return historyAvailable;
+  }
+
+  @override
+  Future<bool> isHealthDataHistoryAuthorized() async {
+    historyAuthorizedCallCount++;
+    return historyAuthorized;
+  }
+
+  @override
+  Future<bool> requestHealthDataHistoryAuthorization() async {
+    requestHistoryCallCount++;
+    return requestHistoryResult;
   }
 
   @override
@@ -388,6 +608,9 @@ class _FakeHealth extends Health {
     required DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter = const [],
   }) async {
+    if (types.contains(HealthDataType.WORKOUT)) {
+      lastWorkoutReadStart = startTime;
+    }
     return [for (final type in types) ...?dataByType[type]];
   }
 }

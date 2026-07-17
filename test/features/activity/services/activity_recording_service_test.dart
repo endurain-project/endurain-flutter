@@ -552,6 +552,143 @@ void main() {
         expect(details?.containsKey('secondsSinceLastPoint'), isFalse);
       },
     );
+
+    group('heart rate stamping', () {
+      final pointTime = DateTime.utc(2026, 5, 30, 10, 0, 30);
+
+      test('stamps the nearest live reading onto recorded points', () async {
+        final recorder = _ControllableRecorder();
+        final heartRate =
+            StreamController<({DateTime timestamp, int bpm})>.broadcast();
+        addTearDown(heartRate.close);
+        final service = _buildService(
+          recorder: recorder,
+          heartRateReadings: heartRate.stream,
+        );
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        heartRate.add((timestamp: pointTime, bpm: 142));
+        await pumpEventQueue();
+        recorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+
+        expect(service.state.points.single.heartRateBpm, 142);
+      });
+
+      test('exposes the live bpm immediately, before any point', () async {
+        final recorder = _ControllableRecorder();
+        final heartRate =
+            StreamController<({DateTime timestamp, int bpm})>.broadcast();
+        addTearDown(heartRate.close);
+        final service = _buildService(
+          recorder: recorder,
+          heartRateReadings: heartRate.stream,
+        );
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        expect(service.state.currentHeartRateBpm, isNull);
+
+        heartRate.add((timestamp: pointTime, bpm: 142));
+        await pumpEventQueue();
+
+        // No GPS point recorded yet, but the live bpm is already surfaced.
+        expect(service.state.points, isEmpty);
+        expect(service.state.currentHeartRateBpm, 142);
+
+        heartRate.add((timestamp: pointTime, bpm: 150));
+        await pumpEventQueue();
+        expect(service.state.currentHeartRateBpm, 150);
+      });
+
+      test(
+        'leaves heart rate null when no reading is within the window',
+        () async {
+          final recorder = _ControllableRecorder();
+          final heartRate =
+              StreamController<({DateTime timestamp, int bpm})>.broadcast();
+          addTearDown(heartRate.close);
+          final service = _buildService(
+            recorder: recorder,
+            heartRateReadings: heartRate.stream,
+          );
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+          // 30s before the point is outside the 10s freshness window.
+          heartRate.add((
+            timestamp: pointTime.subtract(const Duration(seconds: 30)),
+            bpm: 142,
+          ));
+          await pumpEventQueue();
+          recorder.emitPoints([
+            _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+          ]);
+          await pumpEventQueue();
+
+          expect(service.state.points.single.heartRateBpm, isNull);
+        },
+      );
+
+      test('keeps heart rate through the finalized stopped state', () async {
+        final recorder = _ControllableRecorder();
+        final heartRate =
+            StreamController<({DateTime timestamp, int bpm})>.broadcast();
+        addTearDown(heartRate.close);
+        final service = _buildService(
+          recorder: recorder,
+          heartRateReadings: heartRate.stream,
+        );
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        heartRate.add((timestamp: pointTime, bpm: 150));
+        await pumpEventQueue();
+        recorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+
+        await service.stop();
+        await pumpEventQueue();
+
+        expect(service.state.status, ActivityRecordingStatus.completed);
+        expect(service.state.points.single.heartRateBpm, 150);
+      });
+
+      test('leaves heart rate null without a heart-rate source', () async {
+        final recorder = _ControllableRecorder();
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        recorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+
+        expect(service.state.points.single.heartRateBpm, isNull);
+      });
+
+      test(
+        'passes the prepared heart-rate device id to the recorder',
+        () async {
+          final recorder = _ControllableRecorder();
+          final service = _buildService(
+            recorder: recorder,
+            prepareHeartRateSource: () async => 'AA:BB:CC',
+          );
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+
+          expect(recorder.lastStartRequest?.heartRateDeviceId, 'AA:BB:CC');
+        },
+      );
+    });
   });
 }
 
@@ -560,6 +697,9 @@ ActivityRecordingService _buildService({
   LocationService? locationService,
   DiagnosticsRecorder? diagnostics,
   DateTime Function()? now,
+  Stream<({DateTime timestamp, int bpm})>? heartRateReadings,
+  Duration heartRateFreshness = const Duration(seconds: 10),
+  Future<String?> Function()? prepareHeartRateSource,
 }) {
   return ActivityRecordingService(
     recorder: recorder,
@@ -568,6 +708,9 @@ ActivityRecordingService _buildService({
         LocationService(platformAdapter: RecordingLocationPlatformAdapter()),
     diagnostics: diagnostics,
     now: now,
+    heartRateReadings: heartRateReadings,
+    heartRateFreshness: heartRateFreshness,
+    prepareHeartRateSource: prepareHeartRateSource,
   );
 }
 

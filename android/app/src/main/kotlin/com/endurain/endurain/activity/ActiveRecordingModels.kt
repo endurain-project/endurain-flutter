@@ -21,6 +21,7 @@ data class ActiveActivitySessionData(
     val startedAt: String,
     val connectionOrigin: String? = null,
     val connectionProfileId: String? = null,
+    val heartRateDeviceId: String? = null,
     val resumedAt: String? = null,
     val pausedAt: String? = null,
     val endedAt: String? = null,
@@ -40,6 +41,7 @@ data class ActiveActivitySessionData(
             put("startedAt", startedAt)
             connectionOrigin?.let { put("connectionOrigin", it) }
             connectionProfileId?.let { put("connectionProfileId", it) }
+            heartRateDeviceId?.let { put("hrDeviceId", it) }
             resumedAt?.let { put("resumedAt", it) }
             pausedAt?.let { put("pausedAt", it) }
             endedAt?.let { put("endedAt", it) }
@@ -58,6 +60,7 @@ data class ActiveActivitySessionData(
         map["startedAt"] = startedAt
         connectionOrigin?.let { map["connectionOrigin"] = it }
         connectionProfileId?.let { map["connectionProfileId"] = it }
+        heartRateDeviceId?.let { map["hrDeviceId"] = it }
         resumedAt?.let { map["resumedAt"] = it }
         pausedAt?.let { map["pausedAt"] = it }
         endedAt?.let { map["endedAt"] = it }
@@ -88,6 +91,7 @@ data class ActiveActivitySessionData(
                 startedAt = startedAt,
                 connectionOrigin = json.optStringOrNull("connectionOrigin"),
                 connectionProfileId = json.optStringOrNull("connectionProfileId"),
+                heartRateDeviceId = json.optStringOrNull("hrDeviceId"),
                 resumedAt = json.optStringOrNull("resumedAt"),
                 pausedAt = json.optStringOrNull("pausedAt"),
                 endedAt = json.optStringOrNull("endedAt"),
@@ -117,6 +121,7 @@ data class RecordedActivityPointData(
     val headingAccuracyDegrees: Double? = null,
     val speedMetersPerSecond: Double? = null,
     val speedAccuracyMetersPerSecond: Double? = null,
+    val heartRateBpm: Int? = null,
 ) {
     fun toJson(): JSONObject {
         return JSONObject().apply {
@@ -131,6 +136,7 @@ data class RecordedActivityPointData(
             headingAccuracyDegrees?.let { put("headAcc", it) }
             speedMetersPerSecond?.let { put("spd", it) }
             speedAccuracyMetersPerSecond?.let { put("spdAcc", it) }
+            heartRateBpm?.let { put("hr", it) }
         }
     }
 
@@ -151,6 +157,7 @@ data class RecordedActivityPointData(
         headingAccuracyDegrees?.let { map["headAcc"] = it }
         speedMetersPerSecond?.let { map["spd"] = it }
         speedAccuracyMetersPerSecond?.let { map["spdAcc"] = it }
+        heartRateBpm?.let { map["hr"] = it }
         return map
     }
 
@@ -182,6 +189,7 @@ data class RecordedActivityPointData(
                 headingAccuracyDegrees = json.optDoubleOrNull("headAcc"),
                 speedMetersPerSecond = json.optDoubleOrNull("spd"),
                 speedAccuracyMetersPerSecond = json.optDoubleOrNull("spdAcc"),
+                heartRateBpm = json.optIntOrNull("hr"),
             )
         }
 
@@ -249,4 +257,11 @@ internal fun JSONObject.optDoubleOrNull(key: String): Double? {
     }
     val value = optDouble(key, Double.NaN)
     return if (value.isNaN()) null else value
+}
+
+internal fun JSONObject.optIntOrNull(key: String): Int? {
+    if (!has(key) || isNull(key)) {
+        return null
+    }
+    return optInt(key)
 }

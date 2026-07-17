@@ -82,6 +82,7 @@ class ActivityRecorderChannel(context: Context) :
         val startedAt = call.argument<String>("startedAt") ?: IsoTime.nowUtc()
         val connectionOrigin = call.argument<String>("connectionOrigin")
         val connectionProfileId = call.argument<String>("connectionProfileId")
+        val heartRateDeviceId = call.argument<String>("hrDeviceId")
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
 
@@ -92,6 +93,7 @@ class ActivityRecorderChannel(context: Context) :
             startedAt = startedAt,
             connectionOrigin = connectionOrigin,
             connectionProfileId = connectionProfileId,
+            heartRateDeviceId = heartRateDeviceId,
             currentSegmentIndex = 0,
         )
         store.saveSession(session)

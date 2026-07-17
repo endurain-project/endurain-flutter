@@ -813,6 +813,18 @@ abstract class AppLocalizations {
   /// **'Elevation gain'**
   String get activityStatElevationGain;
 
+  /// Recording stats current heart rate label - Used in: activity_stats_display.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate'**
+  String get activityStatHeartRate;
+
+  /// Post-recording summary average heart rate label - Used in: activity_completion_summary.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Avg heart rate'**
+  String get activityStatAvgHeartRate;
+
   /// Stop recording button label and tooltip - Used in: activity_recording_controls.dart
   ///
   /// In en, this message translates to:
@@ -1796,6 +1808,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restore'**
   String get healthSyncRestore;
+
+  /// Sensors screen title and settings tile - Used in: sensor_settings_screen.dart, settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Sensors'**
+  String get sensorsTitle;
+
+  /// Settings tile subtitle - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate monitors and other external sensors'**
+  String get sensorsSettingsSubtitle;
+
+  /// Section header for heart-rate sensors - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate'**
+  String get sensorsHeartRateSection;
+
+  /// Intro text explaining external heart-rate sensors - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pair a Bluetooth heart rate monitor to see your live heart rate.'**
+  String get sensorsHeartRateHelp;
+
+  /// Shown when the Bluetooth adapter is off - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth is off. Turn it on to connect a sensor.'**
+  String get sensorsBluetoothOff;
+
+  /// Shown when Bluetooth permission is not granted - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Bluetooth access to connect a sensor.'**
+  String get sensorsBluetoothUnauthorized;
+
+  /// Shown when the device has no BLE support - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This device doesn\'t support Bluetooth Low Energy.'**
+  String get sensorsBluetoothUnsupported;
+
+  /// Button to start scanning for sensors - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Scan for sensors'**
+  String get sensorsScan;
+
+  /// Status shown while scanning - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning…'**
+  String get sensorsScanning;
+
+  /// Button to stop scanning - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get sensorsStopScan;
+
+  /// Empty state when no sensors are discovered - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No heart rate sensors found yet.'**
+  String get sensorsNoDevices;
+
+  /// Section header for discovered sensors - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Available sensors'**
+  String get sensorsAvailableSection;
+
+  /// Section header for the remembered sensor - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Saved sensor'**
+  String get sensorsSavedSection;
+
+  /// Action to connect to a sensor - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get sensorsConnect;
+
+  /// Status shown while connecting - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get sensorsConnecting;
+
+  /// Status shown when a sensor is connected - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get sensorsConnected;
+
+  /// Action to disconnect the sensor - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get sensorsDisconnect;
+
+  /// Action to forget the remembered sensor - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Forget'**
+  String get sensorsForget;
+
+  /// Shown when a connection attempt fails - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t connect. Try again.'**
+  String get sensorsConnectionFailed;
+
+  /// Shown when scan permission is denied - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth permission is required to find sensors.'**
+  String get sensorsPermissionRequired;
+
+  /// Fallback name for an unnamed sensor - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown sensor'**
+  String get sensorsUnknownDevice;
+
+  /// Heart rate value with unit - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{bpm} bpm'**
+  String sensorsBpm(String bpm);
 }
 
 class _AppLocalizationsDelegate

@@ -45,6 +45,8 @@
 	<string>This app uses location to show your position on the map and record activities while you are using the app.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Endurain reads your workout history from HealthKit to let you import activities and keep your training log in sync.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Endurain connects to Bluetooth heart rate monitors and other sensors to record your live data during activities.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<!--
@@ -74,6 +76,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<string>bluetooth-central</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

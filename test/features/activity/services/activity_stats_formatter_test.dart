@@ -37,5 +37,10 @@ void main() {
       expect(formatter.formatElevation(124.6), '125 m');
       expect(formatter.formatElevation(1235, locale: 'en-US'), '1,235 m');
     });
+
+    test('formats heart rate only when available', () {
+      expect(formatter.formatHeartRate(null), '-');
+      expect(formatter.formatHeartRate(142), '142 bpm');
+    });
   });
 }

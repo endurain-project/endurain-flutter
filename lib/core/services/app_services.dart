@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/api_client.dart';
@@ -15,6 +17,7 @@ import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
+import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -33,6 +36,10 @@ import 'package:endurain/features/health/services/health_package_platform_adapte
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_sync_service.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
+import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
+import 'package:endurain/features/sensors/services/heart_rate_sensor_adapter.dart';
+import 'package:endurain/features/sensors/services/heart_rate_sensor_service.dart';
+import 'package:endurain/features/sensors/services/universal_ble_heart_rate_sensor_adapter.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -130,15 +137,27 @@ class AppServices {
   /// non-map screens. Consumers obtain it from the app scope and must NOT
   /// dispose it — its lifetime is tied to [AppServices].
   late final ActivityRecordingController activityRecordingController =
-      ActivityRecordingController(
-        recordingService: createActivityRecordingService(),
-        uploadService: activityUpload,
-        localActivityRepository: localActivities,
-        retentionSettingsRepository: activityRetentionSettings,
-        isUploadAuthorized: auth.isAuthenticated,
-        activeConnectionProfile: authSession.getConnectionProfile,
-        diagnostics: diagnostics,
-      );
+      _buildActivityRecordingController();
+
+  ActivityRecordingController _buildActivityRecordingController() {
+    final controller = ActivityRecordingController(
+      recordingService: createActivityRecordingService(),
+      uploadService: activityUpload,
+      localActivityRepository: localActivities,
+      retentionSettingsRepository: activityRetentionSettings,
+      isUploadAuthorized: auth.isAuthenticated,
+      activeConnectionProfile: authSession.getConnectionProfile,
+      diagnostics: diagnostics,
+    );
+    // When a recording ends, the native recorder releases the heart-rate
+    // handoff (see _prepareNativeHeartRateSource); bring the Dart-side sensor
+    // link back so it is ready again without the user reconnecting on the
+    // Sensors screen.
+    controller.addListener(
+      () => _handleRecordingStatusForHeartRate(controller.state.status),
+    );
+    return controller;
+  }
 
   final AppLinksService appLinks = DefaultAppLinksService();
   final UrlLauncherService urlLauncher = const UrlLauncherService();
@@ -193,6 +212,33 @@ class AppServices {
     return const UnsupportedHealthPlatformAdapter();
   }
 
+  // ── External sensors (BLE) ─────────────────────────────────────────────────
+
+  /// App-lifetime coordinator for external heart-rate sensors.
+  ///
+  /// Owned here so a live BLE connection survives navigation between screens
+  /// and can feed the recording pipeline. Route controllers observe it but must
+  /// not dispose it.
+  late final HeartRateSensorService heartRateSensorService =
+      HeartRateSensorService(
+        adapter: createHeartRateSensorAdapter(),
+        preferences: SensorPreferencesRepository(preferences: preferences),
+        canAutoReconnect: _canAutoReconnectHeartRate,
+      );
+
+  /// Builds the BLE heart-rate sensor adapter for the current platform.
+  ///
+  /// Returns the `universal_ble`-backed adapter on Android/iOS; falls back
+  /// to [UnsupportedHeartRateSensorAdapter] elsewhere (desktop, web, or the
+  /// host test runtime) so the feature degrades gracefully without a BLE stack.
+  HeartRateSensorAdapter createHeartRateSensorAdapter() {
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return UniversalBleHeartRateSensorAdapter();
+    }
+    return const UnsupportedHeartRateSensorAdapter();
+  }
+
   /// Builds the active-recording recorder for the current platform.
   ///
   /// Android and iOS use the native background-capable recorder. Other
@@ -221,10 +267,107 @@ class AppServices {
     LocationService? locationService,
   }) {
     final loc = locationService ?? location;
+    final usesNativeHeartRate = usesNativeHeartRateHandoff(
+      defaultTargetPlatform,
+    );
     return ActivityRecordingService(
       diagnostics: diagnostics,
       locationService: loc,
       recorder: createActivityLocationRecorder(locationService: loc),
+      // Only Android hands the sensor off to the native foreground service,
+      // whose FOREGROUND_SERVICE_CONNECTED_DEVICE model must own the single GATT
+      // link. iOS keeps the Dart (universal_ble) connection — alive in the
+      // background during an active recording via the bluetooth-central mode —
+      // and feeds its live stream into the recording pipeline, so the sensor
+      // stays connected and its BPM is shown live and stamped onto points.
+      heartRateReadings: usesNativeHeartRate
+          ? null
+          : heartRateSensorService.heartRate.map(
+              (sample) => (timestamp: sample.timestamp, bpm: sample.bpm),
+            ),
+      prepareHeartRateSource: usesNativeHeartRate
+          ? _prepareNativeHeartRateSource
+          : null,
     );
+  }
+
+  /// Whether [platform] hands the paired heart-rate sensor off to the native
+  /// recorder for the duration of a recording.
+  ///
+  /// Only Android needs this: its foreground-service model
+  /// (`FOREGROUND_SERVICE_CONNECTED_DEVICE`) owns the single GATT connection, so
+  /// the Dart-side link is released and the native service captures BPM. iOS and
+  /// every other platform keep the Dart (universal_ble) connection and feed its
+  /// live stream into the recording pipeline instead, which keeps the sensor
+  /// connected and its live BPM visible while recording.
+  @visibleForTesting
+  static bool usesNativeHeartRateHandoff(TargetPlatform platform) =>
+      platform == TargetPlatform.android;
+
+  /// Hands the paired heart-rate sensor off to the native recorder for the
+  /// duration of a recording: disconnects the Dart-side BLE link (so the native
+  /// foreground service can own the single GATT connection) and returns the
+  /// device id to record from, or `null` when no sensor is paired.
+  Future<String?> _prepareNativeHeartRateSource() async {
+    final device =
+        heartRateSensorService.connectedDevice ??
+        await heartRateSensorService.rememberedDevice();
+    if (device == null) {
+      return null;
+    }
+    await heartRateSensorService.disconnect();
+    return device.id;
+  }
+
+  /// Whether the heart-rate service may auto-reconnect right now.
+  ///
+  /// Only Android hands the sensor off: while a recording is active (or
+  /// stopping) the native recorder owns the single BLE link handed off in
+  /// [_prepareNativeHeartRateSource], so reconnecting the Dart side then would
+  /// fight that connection and is suppressed until the recording finishes. On
+  /// iOS and elsewhere the Dart link stays connected throughout, so reconnection
+  /// is always allowed.
+  bool _canAutoReconnectHeartRate() {
+    if (!usesNativeHeartRateHandoff(defaultTargetPlatform)) {
+      return true;
+    }
+    final status = activityRecordingController.state.status;
+    return status != ActivityRecordingStatus.recording &&
+        status != ActivityRecordingStatus.paused &&
+        status != ActivityRecordingStatus.stopping;
+  }
+
+  ActivityRecordingStatus? _previousRecordingStatus;
+
+  /// Reconnects the remembered heart-rate sensor when a recording leaves the
+  /// phase that owns it (recording/paused/stopping) for a terminal one
+  /// (completed/failed/idle). By this point the native recorder has released
+  /// the BLE link, so the Dart side can reclaim it. No-ops on the non-native
+  /// path, where the link was never handed off (still connected).
+  void _handleRecordingStatusForHeartRate(ActivityRecordingStatus status) {
+    final previous = _previousRecordingStatus;
+    _previousRecordingStatus = status;
+    if (heartRateHandoffReleased(previous, status)) {
+      unawaited(heartRateSensorService.tryReconnectRemembered());
+    }
+  }
+
+  /// Whether a recording status transition from [previous] to [current] means
+  /// the native heart-rate handoff has just been released (the recording left
+  /// the recording/paused/stopping phase for a terminal one).
+  @visibleForTesting
+  static bool heartRateHandoffReleased(
+    ActivityRecordingStatus? previous,
+    ActivityRecordingStatus current,
+  ) {
+    if (previous == null) {
+      return false;
+    }
+    const owningSensor = {
+      ActivityRecordingStatus.recording,
+      ActivityRecordingStatus.paused,
+      ActivityRecordingStatus.stopping,
+    };
+    return owningSensor.contains(previous) && !owningSensor.contains(current);
   }
 }

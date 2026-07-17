@@ -10,12 +10,14 @@ import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/map/controllers/map_heart_rate_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -26,12 +28,14 @@ class MapScreen extends StatefulWidget {
     super.key,
     this.controller,
     this.activityController,
+    this.heartRateController,
     this.locationService,
     this.mapSettings,
   });
 
   final MapStateController? controller;
   final ActivityRecordingController? activityController;
+  final MapHeartRateController? heartRateController;
   final LocationService? locationService;
   final MapSettingsRepository? mapSettings;
 
@@ -47,6 +51,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   final MapController _mapController = MapController();
   late final MapStateController _controller;
   late final ActivityRecordingController _activityController;
+  late final MapHeartRateController _heartRateController;
   LatLng? _lastFollowedLocation;
   bool _centeredInitialLocation = false;
   bool _isStopConfirmationOpen = false;
@@ -71,6 +76,18 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       () => throw StateError('unreachable: activity controller not in scope'),
       onChanged: _handleControllerChanged,
     );
+    _heartRateController = registerController(
+      widget.heartRateController,
+      () => MapHeartRateController(
+        service: AppScope.servicesOf(
+          context,
+          listen: false,
+        ).heartRateSensorService,
+      ),
+    );
+    // Reconnect a remembered sensor on map open so the user does not have to
+    // visit the Sensors screen first; drives the top-of-map indicator.
+    _heartRateController.initialize();
     _controller.initialize();
     if (widget.activityController == null) {
       unawaited(_activityController.recoverActiveRecording());
@@ -342,6 +359,37 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
           ),
           if (_controller.isLoadingLocation)
             const Center(child: AdaptiveLoadingIndicator()),
+          if (!_activityController.state.isActive)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(
+                    LocationMarkerConstants.buttonOuterPadding,
+                  ),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ListenableBuilder(
+                      listenable: _heartRateController,
+                      builder: (context, _) {
+                        switch (_heartRateController.status) {
+                          case MapHeartRateStatus.connected:
+                            return _MapHeartRateChip(
+                              bpm: _heartRateController.currentBpm!,
+                            );
+                          case MapHeartRateStatus.searching:
+                            return const _MapSensorSearchingChip();
+                          case MapHeartRateStatus.idle:
+                            return const SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ActivityRecordingControls(
             state: _activityController.state,
             selectedActivityType: _activityController.selectedActivityType,
@@ -370,6 +418,99 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
         cupertinoIcon: _controller.isLocationLocked
             ? CupertinoIcons.location_solid
             : CupertinoIcons.location,
+      ),
+    );
+  }
+}
+
+/// Shared rounded pill container for the top-of-map indicators.
+class _MapPill extends StatelessWidget {
+  const _MapPill({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final isApplePlatform = PlatformUtils.isApplePlatform;
+    final backgroundColor = isApplePlatform
+        ? CupertinoDynamicColor.resolve(
+            CupertinoTheme.of(context).barBackgroundColor,
+            context,
+          )
+        : Theme.of(context).colorScheme.surface;
+    final textColor = isApplePlatform
+        ? CupertinoColors.label.resolveFrom(context)
+        : Theme.of(context).colorScheme.onSurface;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 8,
+            color: Color(0x33000000),
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact pill showing the live heart rate on the map.
+class _MapHeartRateChip extends StatelessWidget {
+  const _MapHeartRateChip({required this.bpm});
+
+  final int bpm;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return _MapPill(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const AdaptiveIcon(
+            materialIcon: Icons.favorite,
+            cupertinoIcon: CupertinoIcons.heart_fill,
+            color: Color(0xFFE53935),
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Text(l10n.sensorsBpm(bpm.toString())),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact pill shown while a remembered sensor is being (re)connected.
+class _MapSensorSearchingChip extends StatelessWidget {
+  const _MapSensorSearchingChip();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return _MapPill(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(l10n.sensorsScanning),
+        ],
       ),
     );
   }

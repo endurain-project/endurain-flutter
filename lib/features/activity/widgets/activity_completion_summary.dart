@@ -72,6 +72,11 @@ class ActivityCompletionSummary extends StatelessWidget {
             locale: locale,
           ),
         ),
+      if (stats.averageHeartRateBpm != null)
+        _SummaryMetricTile(
+          label: l10n.activityStatAvgHeartRate,
+          value: formatter.formatHeartRate(stats.averageHeartRateBpm),
+        ),
       _SummaryMetricTile(
         label: l10n.activityHistoryPointCount,
         value: state.points.length.toString(),

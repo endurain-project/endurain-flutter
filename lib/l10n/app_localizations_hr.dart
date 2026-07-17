@@ -405,6 +405,12 @@ class AppLocalizationsHr extends AppLocalizations {
   String get activityStatElevationGain => 'Uspon';
 
   @override
+  String get activityStatHeartRate => 'Heart rate';
+
+  @override
+  String get activityStatAvgHeartRate => 'Avg heart rate';
+
+  @override
   String get activityStop => 'Zaustavi';
 
   @override
@@ -949,4 +955,78 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get healthSyncRestore => 'Vrati';
+
+  @override
+  String get sensorsTitle => 'Sensors';
+
+  @override
+  String get sensorsSettingsSubtitle =>
+      'Heart rate monitors and other external sensors';
+
+  @override
+  String get sensorsHeartRateSection => 'Heart rate';
+
+  @override
+  String get sensorsHeartRateHelp =>
+      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+
+  @override
+  String get sensorsBluetoothOff =>
+      'Bluetooth is off. Turn it on to connect a sensor.';
+
+  @override
+  String get sensorsBluetoothUnauthorized =>
+      'Allow Bluetooth access to connect a sensor.';
+
+  @override
+  String get sensorsBluetoothUnsupported =>
+      'This device doesn\'t support Bluetooth Low Energy.';
+
+  @override
+  String get sensorsScan => 'Scan for sensors';
+
+  @override
+  String get sensorsScanning => 'Scanning…';
+
+  @override
+  String get sensorsStopScan => 'Stop';
+
+  @override
+  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+
+  @override
+  String get sensorsAvailableSection => 'Available sensors';
+
+  @override
+  String get sensorsSavedSection => 'Saved sensor';
+
+  @override
+  String get sensorsConnect => 'Connect';
+
+  @override
+  String get sensorsConnecting => 'Connecting…';
+
+  @override
+  String get sensorsConnected => 'Connected';
+
+  @override
+  String get sensorsDisconnect => 'Disconnect';
+
+  @override
+  String get sensorsForget => 'Forget';
+
+  @override
+  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+
+  @override
+  String get sensorsPermissionRequired =>
+      'Bluetooth permission is required to find sensors.';
+
+  @override
+  String get sensorsUnknownDevice => 'Unknown sensor';
+
+  @override
+  String sensorsBpm(String bpm) {
+    return '$bpm bpm';
+  }
 }

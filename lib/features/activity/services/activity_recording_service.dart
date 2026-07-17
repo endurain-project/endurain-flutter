@@ -17,18 +17,38 @@ import 'package:geolocator/geolocator.dart' hide ActivityType;
 
 class ActivityRecordingService {
   ActivityRecordingService({
-    required this._recorder,
+    required ActivityLocationRecorder recorder,
     DateTime Function()? now,
     DiagnosticsRecorder? diagnostics,
     LocationService? locationService,
-  }) : _now = now ?? DateTime.now,
+    Stream<({DateTime timestamp, int bpm})>? heartRateReadings,
+    Duration heartRateFreshness = const Duration(seconds: 10),
+    Future<String?> Function()? prepareHeartRateSource,
+  }) : _recorder = recorder,
+       _now = now ?? DateTime.now,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
-       _locationService = locationService ?? LocationService();
+       _locationService = locationService ?? LocationService(),
+       _heartRateFreshness = heartRateFreshness,
+       _prepareHeartRateSource = prepareHeartRateSource {
+    _heartRateSubscription = heartRateReadings?.listen(_onHeartRateReading);
+  }
 
   final DateTime Function() _now;
   final DiagnosticsRecorder _diagnostics;
   final LocationService _locationService;
   final ActivityLocationRecorder _recorder;
+  final Duration _heartRateFreshness;
+
+  /// Resolves the paired heart-rate sensor's device id for the native recorder
+  /// (and frees the Dart-side BLE connection) at recording start. `null` when
+  /// native heart-rate capture is not in use.
+  final Future<String?> Function()? _prepareHeartRateSource;
+
+  /// Time-ordered buffer of heart-rate readings captured while recording, used
+  /// to stamp the nearest reading onto each track point.
+  final List<({DateTime timestamp, int bpm})> _heartRateBuffer =
+      <({DateTime timestamp, int bpm})>[];
+  StreamSubscription<({DateTime timestamp, int bpm})>? _heartRateSubscription;
 
   final StreamController<ActivityRecordingState> _stateController =
       StreamController<ActivityRecordingState>.broadcast();
@@ -120,6 +140,7 @@ class ActivityRecordingService {
     _recordingSegmentStartedAt = startedAt;
     _elapsedBeforeCurrentSegmentSeconds = 0;
     _lastBreadcrumbPointCount = 0;
+    _heartRateBuffer.clear();
     _emit(
       ActivityRecordingState(
         status: ActivityRecordingStatus.recording,
@@ -137,6 +158,13 @@ class ActivityRecordingService {
     );
     _startElapsedTimer();
     _startRecorderEvents();
+    String? heartRateDeviceId;
+    try {
+      heartRateDeviceId = await _prepareHeartRateSource?.call();
+    } catch (_) {
+      // A heart-rate handoff failure must never block the recording start.
+      heartRateDeviceId = null;
+    }
     try {
       await _recorder.start(
         ActivityRecorderStartRequest(
@@ -146,6 +174,7 @@ class ActivityRecordingService {
           connectionOrigin: connectionOrigin,
           connectionProfileId: connectionProfileId,
           backgroundConfig: _backgroundConfig,
+          heartRateDeviceId: heartRateDeviceId,
         ),
       );
     } catch (error, stackTrace) {
@@ -356,6 +385,8 @@ class ActivityRecordingService {
     _cancelElapsedTimer();
     _recorderSubscription?.cancel();
     _recorderSubscription = null;
+    _heartRateSubscription?.cancel();
+    _heartRateSubscription = null;
     _disposeRecorderWithoutThrow();
     _stateController.close();
   }
@@ -503,7 +534,7 @@ class ActivityRecordingService {
       while (segmentPoints.length <= recordedPoint.segmentIndex) {
         segmentPoints.add(<ActivityTrackPoint>[]);
       }
-      segmentPoints.last.add(recordedPoint.toTrackPoint());
+      segmentPoints.last.add(_toTrackPointWithHeartRate(recordedPoint));
     }
 
     final segments = [
@@ -713,12 +744,65 @@ class ActivityRecordingService {
         currentPoints = <ActivityTrackPoint>[];
         currentSegmentIndex = point.segmentIndex;
       }
-      currentPoints.add(point.toTrackPoint());
+      currentPoints.add(_toTrackPointWithHeartRate(point));
     }
     if (currentPoints.isNotEmpty) {
       segments.add(ActivityTrackSegment(points: currentPoints));
     }
     return segments;
+  }
+
+  ActivityTrackPoint _toTrackPointWithHeartRate(RecordedActivityPoint point) {
+    final trackPoint = point.toTrackPoint();
+    final bpm = _heartRateBpmForTimestamp(point.timestamp);
+    return bpm == null ? trackPoint : trackPoint.withHeartRateBpm(bpm);
+  }
+
+  void _onHeartRateReading(({DateTime timestamp, int bpm}) reading) {
+    // Only buffer while actively recording; readings while idle or paused are
+    // not associated with any track point.
+    if (_state.status == ActivityRecordingStatus.recording) {
+      _heartRateBuffer.add(reading);
+      // Surface the live reading immediately so the UI shows a current bpm even
+      // before the next (distance-filtered) GPS point is recorded. The durable
+      // per-point heart rate is still stamped from the buffer when points land.
+      if (reading.bpm != _state.currentHeartRateBpm) {
+        _emit(_state.copyWith(currentHeartRateBpm: reading.bpm));
+      }
+    }
+  }
+
+  /// Returns the buffered heart rate nearest to [timestamp] within
+  /// [_heartRateFreshness], or `null` when no reading is close enough. Buffered
+  /// readings are time-ordered, so a binary search locates the neighbours.
+  int? _heartRateBpmForTimestamp(DateTime timestamp) {
+    final readings = _heartRateBuffer;
+    if (readings.isEmpty) {
+      return null;
+    }
+    var low = 0;
+    var high = readings.length;
+    while (low < high) {
+      final mid = (low + high) >> 1;
+      if (readings[mid].timestamp.isBefore(timestamp)) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    int? nearestBpm;
+    var nearestDiff = _heartRateFreshness;
+    for (final index in [low - 1, low]) {
+      if (index < 0 || index >= readings.length) {
+        continue;
+      }
+      final diff = readings[index].timestamp.difference(timestamp).abs();
+      if (diff <= nearestDiff) {
+        nearestDiff = diff;
+        nearestBpm = readings[index].bpm;
+      }
+    }
+    return nearestBpm;
   }
 
   void _ensureNotDisposed() {

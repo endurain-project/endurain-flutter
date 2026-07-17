@@ -405,6 +405,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get activityStatElevationGain => 'Ganho de elevação';
 
   @override
+  String get activityStatHeartRate => 'Frequência cardíaca';
+
+  @override
+  String get activityStatAvgHeartRate => 'FC média';
+
+  @override
   String get activityStop => 'Parar';
 
   @override
@@ -949,4 +955,80 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get healthSyncRestore => 'Restaurar';
+
+  @override
+  String get sensorsTitle => 'Sensores';
+
+  @override
+  String get sensorsSettingsSubtitle =>
+      'Monitores de frequência cardíaca e outros sensores externos';
+
+  @override
+  String get sensorsHeartRateSection => 'Frequência cardíaca';
+
+  @override
+  String get sensorsHeartRateHelp =>
+      'Emparelhe um monitor de frequência cardíaca Bluetooth para ver a sua frequência cardíaca em tempo real.';
+
+  @override
+  String get sensorsBluetoothOff =>
+      'O Bluetooth está desligado. Ligue-o para conectar um sensor.';
+
+  @override
+  String get sensorsBluetoothUnauthorized =>
+      'Permita o acesso ao Bluetooth para conectar um sensor.';
+
+  @override
+  String get sensorsBluetoothUnsupported =>
+      'Este dispositivo não suporta Bluetooth Low Energy.';
+
+  @override
+  String get sensorsScan => 'Procurar sensores';
+
+  @override
+  String get sensorsScanning => 'A procurar…';
+
+  @override
+  String get sensorsStopScan => 'Parar';
+
+  @override
+  String get sensorsNoDevices =>
+      'Ainda não foram encontrados sensores de frequência cardíaca.';
+
+  @override
+  String get sensorsAvailableSection => 'Sensores disponíveis';
+
+  @override
+  String get sensorsSavedSection => 'Sensor guardado';
+
+  @override
+  String get sensorsConnect => 'Conectar';
+
+  @override
+  String get sensorsConnecting => 'A conectar…';
+
+  @override
+  String get sensorsConnected => 'Conectado';
+
+  @override
+  String get sensorsDisconnect => 'Desconectar';
+
+  @override
+  String get sensorsForget => 'Esquecer';
+
+  @override
+  String get sensorsConnectionFailed =>
+      'Não foi possível conectar. Tente novamente.';
+
+  @override
+  String get sensorsPermissionRequired =>
+      'É necessária permissão de Bluetooth para encontrar sensores.';
+
+  @override
+  String get sensorsUnknownDevice => 'Sensor desconhecido';
+
+  @override
+  String sensorsBpm(String bpm) {
+    return '$bpm bpm';
+  }
 }

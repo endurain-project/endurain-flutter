@@ -13,6 +13,7 @@ struct ActiveActivitySessionData {
     let startedAt: String
     let connectionOrigin: String?
     let connectionProfileId: String?
+    let heartRateDeviceId: String?
     let resumedAt: String?
     let pausedAt: String?
     let endedAt: String?
@@ -27,6 +28,7 @@ struct ActiveActivitySessionData {
         startedAt: String,
         connectionOrigin: String? = nil,
         connectionProfileId: String? = nil,
+        heartRateDeviceId: String? = nil,
         resumedAt: String? = nil,
         pausedAt: String? = nil,
         endedAt: String? = nil,
@@ -40,6 +42,7 @@ struct ActiveActivitySessionData {
         self.startedAt = startedAt
         self.connectionOrigin = connectionOrigin
         self.connectionProfileId = connectionProfileId
+        self.heartRateDeviceId = heartRateDeviceId
         self.resumedAt = resumedAt
         self.pausedAt = pausedAt
         self.endedAt = endedAt
@@ -64,6 +67,7 @@ struct ActiveActivitySessionData {
         map["startedAt"] = startedAt
         if let connectionOrigin = connectionOrigin { map["connectionOrigin"] = connectionOrigin }
         if let connectionProfileId = connectionProfileId { map["connectionProfileId"] = connectionProfileId }
+        if let heartRateDeviceId = heartRateDeviceId { map["hrDeviceId"] = heartRateDeviceId }
         if let resumedAt = resumedAt { map["resumedAt"] = resumedAt }
         if let pausedAt = pausedAt { map["pausedAt"] = pausedAt }
         if let endedAt = endedAt { map["endedAt"] = endedAt }
@@ -97,6 +101,7 @@ struct ActiveActivitySessionData {
             startedAt: startedAt,
             connectionOrigin: connectionOrigin,
             connectionProfileId: connectionProfileId,
+            heartRateDeviceId: heartRateDeviceId,
             resumedAt: resumedAt ?? self.resumedAt,
             pausedAt: pausedAt ?? self.pausedAt,
             endedAt: endedAt ?? self.endedAt,
@@ -122,6 +127,7 @@ struct ActiveActivitySessionData {
             startedAt: startedAt,
             connectionOrigin: json["connectionOrigin"] as? String,
             connectionProfileId: json["connectionProfileId"] as? String,
+            heartRateDeviceId: json["hrDeviceId"] as? String,
             resumedAt: json["resumedAt"] as? String,
             pausedAt: json["pausedAt"] as? String,
             endedAt: json["endedAt"] as? String,
@@ -156,6 +162,7 @@ struct RecordedActivityPointData {
     let headingAccuracyDegrees: Double?
     let speedMetersPerSecond: Double?
     let speedAccuracyMetersPerSecond: Double?
+    let heartRateBpm: Int?
 
     init(
         timestamp: String,
@@ -168,7 +175,8 @@ struct RecordedActivityPointData {
         headingDegrees: Double? = nil,
         headingAccuracyDegrees: Double? = nil,
         speedMetersPerSecond: Double? = nil,
-        speedAccuracyMetersPerSecond: Double? = nil
+        speedAccuracyMetersPerSecond: Double? = nil,
+        heartRateBpm: Int? = nil
     ) {
         self.timestamp = timestamp
         self.latitude = latitude
@@ -181,6 +189,7 @@ struct RecordedActivityPointData {
         self.headingAccuracyDegrees = headingAccuracyDegrees
         self.speedMetersPerSecond = speedMetersPerSecond
         self.speedAccuracyMetersPerSecond = speedAccuracyMetersPerSecond
+        self.heartRateBpm = heartRateBpm
     }
 
     /// Channel-safe / JSON-safe dictionary. Optional fields omitted when nil.
@@ -197,6 +206,7 @@ struct RecordedActivityPointData {
         if let headingAccuracyDegrees = headingAccuracyDegrees { map["headAcc"] = headingAccuracyDegrees }
         if let speedMetersPerSecond = speedMetersPerSecond { map["spd"] = speedMetersPerSecond }
         if let speedAccuracyMetersPerSecond = speedAccuracyMetersPerSecond { map["spdAcc"] = speedAccuracyMetersPerSecond }
+        if let heartRateBpm = heartRateBpm { map["hr"] = heartRateBpm }
         return map
     }
 
@@ -235,7 +245,8 @@ struct RecordedActivityPointData {
             headingDegrees: JsonScalar.double(json["head"]),
             headingAccuracyDegrees: JsonScalar.double(json["headAcc"]),
             speedMetersPerSecond: JsonScalar.double(json["spd"]),
-            speedAccuracyMetersPerSecond: JsonScalar.double(json["spdAcc"])
+            speedAccuracyMetersPerSecond: JsonScalar.double(json["spdAcc"]),
+            heartRateBpm: JsonScalar.int(json["hr"])
         )
     }
 

@@ -29,6 +29,10 @@ class ActivityStatsDisplay extends StatelessWidget {
     final durationSeconds = stats.durationSeconds > state.elapsedDurationSeconds
         ? stats.durationSeconds
         : state.elapsedDurationSeconds;
+    // Prefer the live sensor reading so a current bpm shows immediately, even
+    // before the next distance-filtered GPS point lands. Fall back to the
+    // per-point value (e.g. Android, where the native recorder stamps points).
+    final heartRateBpm = state.currentHeartRateBpm ?? stats.currentHeartRateBpm;
 
     return Wrap(
       alignment: WrapAlignment.center,
@@ -57,6 +61,11 @@ class ActivityStatsDisplay extends StatelessWidget {
                       stats.averageSpeedMetersPerSecond,
                   locale: locale,
                 ),
+        ),
+        // Always shown (like pace/speed): displays "-" until a reading arrives.
+        _StatItem(
+          label: l10n.activityStatHeartRate,
+          value: formatter.formatHeartRate(heartRateBpm),
         ),
       ],
     );

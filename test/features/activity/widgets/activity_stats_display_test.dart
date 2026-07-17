@@ -26,7 +26,12 @@ void main() {
       );
       expect(find.text('0:00'), findsOneWidget);
       expect(find.text('0 m'), findsOneWidget);
-      expect(find.text('-'), findsOneWidget);
+      // Pace/speed and heart rate both show "-" when there is no data yet.
+      expect(find.text('-'), findsNWidgets(2));
+      expect(
+        find.text(AppLocalizationsEn().activityStatHeartRate),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows elapsed recording time before GPS duration exists', (
@@ -98,6 +103,110 @@ void main() {
         findsNothing,
       );
     });
+
+    testWidgets('shows the latest heart rate when points carry it', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.recording,
+              points: [
+                _point(latitude: 0, longitude: 0, seconds: 0, heartRate: 120),
+                _point(
+                  latitude: 0,
+                  longitude: 0.001,
+                  seconds: 60,
+                  speed: 2,
+                  heartRate: 138,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.text(AppLocalizationsEn().activityStatHeartRate),
+        findsOneWidget,
+      );
+      expect(find.text('138 bpm'), findsOneWidget);
+    });
+
+    testWidgets('shows the live heart rate before any point is recorded', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.recording,
+              currentHeartRateBpm: 129,
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.text(AppLocalizationsEn().activityStatHeartRate),
+        findsOneWidget,
+      );
+      expect(find.text('129 bpm'), findsOneWidget);
+    });
+
+    testWidgets('prefers the live heart rate over the per-point value', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.recording,
+              currentHeartRateBpm: 150,
+              points: [
+                _point(latitude: 0, longitude: 0, seconds: 0, heartRate: 120),
+                _point(
+                  latitude: 0,
+                  longitude: 0.001,
+                  seconds: 60,
+                  speed: 2,
+                  heartRate: 138,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('150 bpm'), findsOneWidget);
+      expect(find.text('138 bpm'), findsNothing);
+    });
+
+    testWidgets('shows a placeholder heart rate without a reading', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.recording,
+              points: [
+                _point(latitude: 0, longitude: 0, seconds: 0),
+                _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 2),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // Always shown, like pace/speed: the label is present with a "-" value.
+      expect(
+        find.text(AppLocalizationsEn().activityStatHeartRate),
+        findsOneWidget,
+      );
+      expect(find.text('-'), findsOneWidget);
+    });
   });
 }
 
@@ -121,11 +230,13 @@ ActivityTrackPoint _point({
   required double longitude,
   required int seconds,
   double? speed,
+  int? heartRate,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
     longitude: longitude,
     timestamp: DateTime.utc(2026).add(Duration(seconds: seconds)),
     speedMetersPerSecond: speed,
+    heartRateBpm: heartRate,
   );
 }

@@ -19,6 +19,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../helpers/fake_location_platform_adapter.dart';
 import '../../../helpers/fake_preferences_store.dart';
@@ -33,6 +35,11 @@ void main() {
   setUp(() {
     debugDefaultTargetPlatformOverride = null;
     PlatformUtils.debugIsApplePlatformOverride = false;
+    // The map screen builds a MapHeartRateController from the heart-rate sensor
+    // service, which reaches the (non-secret) preferences store, so the async
+    // shared-preferences platform must be mocked here.
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
   });
 
   tearDown(() {

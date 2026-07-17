@@ -517,6 +517,14 @@
   "@activityStatElevationGain": {
     "description": "Post-recording summary total ascent label - Used in: activity_completion_summary.dart"
   },
+  "activityStatHeartRate": "Heart rate",
+  "@activityStatHeartRate": {
+    "description": "Recording stats current heart rate label - Used in: activity_stats_display.dart"
+  },
+  "activityStatAvgHeartRate": "Avg heart rate",
+  "@activityStatAvgHeartRate": {
+    "description": "Post-recording summary average heart rate label - Used in: activity_completion_summary.dart"
+  },
   "activityStop": "Stop",
   "@activityStop": {
     "description": "Stop recording button label and tooltip - Used in: activity_recording_controls.dart"
@@ -1249,5 +1257,99 @@
   "healthSyncRestore": "Restore",
   "@healthSyncRestore": {
     "description": "Makes a deleted imported workout available to import again - Used in: health_sync_screen.dart"
+  },
+  "@sectionSensors": "=== SENSORS (features/sensors/) ===",
+  "sensorsTitle": "Sensors",
+  "@sensorsTitle": {
+    "description": "Sensors screen title and settings tile - Used in: sensor_settings_screen.dart, settings_screen.dart"
+  },
+  "sensorsSettingsSubtitle": "Heart rate monitors and other external sensors",
+  "@sensorsSettingsSubtitle": {
+    "description": "Settings tile subtitle - Used in: settings_screen.dart"
+  },
+  "sensorsHeartRateSection": "Heart rate",
+  "@sensorsHeartRateSection": {
+    "description": "Section header for heart-rate sensors - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsHeartRateHelp": "Pair a Bluetooth heart rate monitor to see your live heart rate.",
+  "@sensorsHeartRateHelp": {
+    "description": "Intro text explaining external heart-rate sensors - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsBluetoothOff": "Bluetooth is off. Turn it on to connect a sensor.",
+  "@sensorsBluetoothOff": {
+    "description": "Shown when the Bluetooth adapter is off - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsBluetoothUnauthorized": "Allow Bluetooth access to connect a sensor.",
+  "@sensorsBluetoothUnauthorized": {
+    "description": "Shown when Bluetooth permission is not granted - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsBluetoothUnsupported": "This device doesn't support Bluetooth Low Energy.",
+  "@sensorsBluetoothUnsupported": {
+    "description": "Shown when the device has no BLE support - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsScan": "Scan for sensors",
+  "@sensorsScan": {
+    "description": "Button to start scanning for sensors - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsScanning": "Scanning…",
+  "@sensorsScanning": {
+    "description": "Status shown while scanning - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsStopScan": "Stop",
+  "@sensorsStopScan": {
+    "description": "Button to stop scanning - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsNoDevices": "No heart rate sensors found yet.",
+  "@sensorsNoDevices": {
+    "description": "Empty state when no sensors are discovered - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsAvailableSection": "Available sensors",
+  "@sensorsAvailableSection": {
+    "description": "Section header for discovered sensors - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsSavedSection": "Saved sensor",
+  "@sensorsSavedSection": {
+    "description": "Section header for the remembered sensor - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsConnect": "Connect",
+  "@sensorsConnect": {
+    "description": "Action to connect to a sensor - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsConnecting": "Connecting…",
+  "@sensorsConnecting": {
+    "description": "Status shown while connecting - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsConnected": "Connected",
+  "@sensorsConnected": {
+    "description": "Status shown when a sensor is connected - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsDisconnect": "Disconnect",
+  "@sensorsDisconnect": {
+    "description": "Action to disconnect the sensor - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsForget": "Forget",
+  "@sensorsForget": {
+    "description": "Action to forget the remembered sensor - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsConnectionFailed": "Couldn't connect. Try again.",
+  "@sensorsConnectionFailed": {
+    "description": "Shown when a connection attempt fails - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsPermissionRequired": "Bluetooth permission is required to find sensors.",
+  "@sensorsPermissionRequired": {
+    "description": "Shown when scan permission is denied - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsUnknownDevice": "Unknown sensor",
+  "@sensorsUnknownDevice": {
+    "description": "Fallback name for an unnamed sensor - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsBpm": "{bpm} bpm",
+  "@sensorsBpm": {
+    "description": "Heart rate value with unit - Used in: sensor_settings_screen.dart",
+    "placeholders": {
+      "bpm": {
+        "type": "String"
+      }
+    }
   }
 }

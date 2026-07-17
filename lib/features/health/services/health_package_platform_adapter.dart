@@ -18,6 +18,14 @@ const _coreReadTypes = [
 
 const _healthConnectHistoryWindow = Duration(days: 30);
 
+/// Absorbs the small skew between when a caller computes a read window and when
+/// this adapter actually reaches Health Connect. Reading exactly the last 30
+/// days must never depend on (or prompt for) the history permission, and the
+/// native read rejects the whole window if its start slips a moment past the
+/// rolling cutoff. Trimming the oldest few minutes of an unauthorized window is
+/// negligible next to guaranteeing recent workouts still load.
+const _historyCutoffSafetyMargin = Duration(minutes: 5);
+
 /// [HealthPlatformAdapter] backed by the `health` Flutter package.
 ///
 /// Connects to HealthKit on iOS and Health Connect on Android. Inject a
@@ -27,13 +35,16 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     Health? health,
     DiagnosticsRecorder? diagnostics,
     TargetPlatform Function()? targetPlatform,
+    DateTime Function()? now,
   }) : _health = health ?? Health(),
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
-       _targetPlatform = targetPlatform ?? _defaultTargetPlatform;
+       _targetPlatform = targetPlatform ?? _defaultTargetPlatform,
+       _now = now ?? DateTime.now;
 
   final Health _health;
   final DiagnosticsRecorder _diagnostics;
   final TargetPlatform Function() _targetPlatform;
+  final DateTime Function() _now;
   int _routeConsentDeniedCount = 0;
   Future<void>? _configureOnce;
 
@@ -204,12 +215,16 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   }) async {
     try {
       await _ensureConfigured();
-      await _ensureHistoryAuthorization(start);
+      final window = await _resolveReadWindow(start);
+      final effectiveStart = window.start;
+      // An unauthorized historical page can clamp its start past [end]; reading
+      // an inverted window would only return an empty list, so skip it.
+      if (!effectiveStart.isBefore(end)) return const [];
       _routeConsentDeniedCount = 0;
       // Step 1 — Fetch workout metadata.
       final workoutPoints = await _health.getHealthDataFromTypes(
         types: [HealthDataType.WORKOUT],
-        startTime: start,
+        startTime: effectiveStart,
         endTime: end,
       );
 
@@ -217,13 +232,16 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
 
       // Step 2 — Fetch GPS routes for the same window.
       final routes = await _fetchRoutes(
-        start: start,
+        start: effectiveStart,
         end: end,
         workoutCount: workoutPoints.length,
       );
 
       // Step 3 — Fetch heart rate samples for the same window.
-      final hrPoints = await _fetchHeartRateSamples(start: start, end: end);
+      final hrPoints = await _fetchHeartRateSamples(
+        start: effectiveStart,
+        end: end,
+      );
 
       // Step 4 — Map each workout data point to a HealthWorkout.
       final workouts = workoutPoints
@@ -247,6 +265,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
           'routes_with_uuid': routes.where((r) => r.workoutUuid != null).length,
           'workouts_with_route': workouts.where((w) => w.hasRoute).length,
           'route_read_failed': _routeConsentDeniedCount > 0,
+          'history_clamped': window.historyClamped,
         },
       );
 
@@ -258,18 +277,52 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     }
   }
 
-  Future<void> _ensureHistoryAuthorization(DateTime start) async {
-    if (_targetPlatform() != TargetPlatform.android ||
-        !start.isBefore(
-          DateTime.now().toUtc().subtract(_healthConnectHistoryWindow),
-        )) {
-      return;
+  /// Resolves the widest start Endurain can actually read for [requestedStart].
+  ///
+  /// Health Connect only grants access to the last [_healthConnectHistoryWindow]
+  /// unless the app holds `READ_HEALTH_DATA_HISTORY`. Reading a window that
+  /// begins before that rolling cutoff without the permission makes Health
+  /// Connect reject the whole request (the plugin then returns an empty list),
+  /// so recent workouts would silently vanish too. This requests history access
+  /// only when a window genuinely reaches older data, and clamps to the safe
+  /// recent start when that access is unavailable or declined — never throwing,
+  /// so the readable window always loads.
+  Future<({DateTime start, bool historyClamped})> _resolveReadWindow(
+    DateTime requestedStart,
+  ) async {
+    if (_targetPlatform() != TargetPlatform.android) {
+      return (start: requestedStart, historyClamped: false);
     }
-    if (!await _health.isHealthDataHistoryAvailable()) return;
-    if (await _health.isHealthDataHistoryAuthorized()) return;
-    if (!await _health.requestHealthDataHistoryAuthorization()) {
-      throw const AppException(AppErrorCode.healthPermissionDenied);
+    final cutoff = _now().toUtc().subtract(_healthConnectHistoryWindow);
+    final safeRecentStart = cutoff.add(_historyCutoffSafetyMargin);
+    // Comfortably inside the always-readable 30-day window: never touch (or
+    // prompt for) the history permission.
+    if (!requestedStart.isBefore(safeRecentStart)) {
+      return (start: requestedStart, historyClamped: false);
     }
+    // Wants data meaningfully older than the cutoff (beyond clock skew): Health
+    // Connect needs the history permission to return it.
+    final wantsHistory = requestedStart.isBefore(
+      cutoff.subtract(_historyCutoffSafetyMargin),
+    );
+    if (wantsHistory && await _hasHistoryAccess()) {
+      return (start: requestedStart, historyClamped: false);
+    }
+    // Either history is needed but unavailable/declined, or the requested start
+    // straddles the boundary where skew could push the native read just outside
+    // the window. Clamp so the readable recent workouts still load.
+    return (start: safeRecentStart, historyClamped: wantsHistory);
+  }
+
+  /// Whether Endurain can read Health Connect data older than the 30-day window.
+  ///
+  /// Devices without the history feature do not enforce the window, so older
+  /// data is already readable. Otherwise the permission must be held, requesting
+  /// it when it has not yet been granted.
+  Future<bool> _hasHistoryAccess() async {
+    if (!await _health.isHealthDataHistoryAvailable()) return true;
+    if (await _health.isHealthDataHistoryAuthorized()) return true;
+    return _health.requestHealthDataHistoryAuthorization();
   }
 
   // ── Private helpers ─────────────────────────────────────────────────────

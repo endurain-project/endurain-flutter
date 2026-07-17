@@ -39,6 +39,7 @@ class ActivityRecorderService : Service() {
     private var activeNotificationTitle: String? = null
     private var activeNotificationText: String? = null
     private var resumedFromPause = false
+    private var heartRateClient: HeartRateGattClient? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -77,6 +78,7 @@ class ActivityRecorderService : Service() {
             return
         }
         beginCollection()
+        startHeartRateCapture()
     }
 
     private fun handleResume() {
@@ -98,6 +100,7 @@ class ActivityRecorderService : Service() {
         }
         if (session != null && session.status == ActiveActivitySessionData.STATUS_RECORDING) {
             beginCollection()
+            startHeartRateCapture()
         }
     }
 
@@ -108,6 +111,7 @@ class ActivityRecorderService : Service() {
 
     private fun handleStop() {
         stopCollection()
+        stopHeartRateCapture()
         resumedFromPause = false
         stopForegroundCompat()
         stopSelf()
@@ -136,6 +140,7 @@ class ActivityRecorderService : Service() {
         }
         if (session.status == ActiveActivitySessionData.STATUS_RECORDING) {
             beginCollection()
+            startHeartRateCapture()
         }
     }
 
@@ -279,6 +284,25 @@ class ActivityRecorderService : Service() {
         beginCollection()
     }
 
+    /**
+     * Connects to the paired heart-rate sensor (if any) recorded in the active
+     * session, so its latest BPM can be stamped onto points inside the same
+     * foreground service that owns GPS.
+     */
+    private fun startHeartRateCapture() {
+        val deviceId = store.loadSession()?.heartRateDeviceId
+        stopHeartRateCapture()
+        if (deviceId.isNullOrEmpty()) {
+            return
+        }
+        heartRateClient = HeartRateGattClient(applicationContext).also { it.start(deviceId) }
+    }
+
+    private fun stopHeartRateCapture() {
+        heartRateClient?.stop()
+        heartRateClient = null
+    }
+
     private fun onLocationFix(location: Location) {
         val session = store.loadSession() ?: return
         if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
@@ -324,6 +348,7 @@ class ActivityRecorderService : Service() {
             headingAccuracyDegrees = bearingAccuracy(location),
             speedMetersPerSecond = if (location.hasSpeed()) location.speed.toDouble() else null,
             speedAccuracyMetersPerSecond = speedAccuracy(location),
+            heartRateBpm = heartRateClient?.latestBpm,
         )
         try {
             store.appendPoints(listOf(point))
@@ -420,7 +445,8 @@ class ActivityRecorderService : Service() {
             startForeground(
                 NOTIFICATION_ID,
                 notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE,
             )
         } else {
             startForeground(NOTIFICATION_ID, notification)
@@ -508,6 +534,7 @@ class ActivityRecorderService : Service() {
 
     override fun onDestroy() {
         stopCollection()
+        stopHeartRateCapture()
         super.onDestroy()
     }
 

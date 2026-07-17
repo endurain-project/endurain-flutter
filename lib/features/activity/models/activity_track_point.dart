@@ -12,6 +12,7 @@ class ActivityTrackPoint {
     this.verticalAccuracyMeters,
     this.speedAccuracyMetersPerSecond,
     this.headingAccuracyDegrees,
+    this.heartRateBpm,
   }) : assert(latitude >= -90 && latitude <= 90),
        assert(longitude >= -180 && longitude <= 180);
 
@@ -40,6 +41,27 @@ class ActivityTrackPoint {
   final double? verticalAccuracyMeters;
   final double? speedAccuracyMetersPerSecond;
   final double? headingAccuracyDegrees;
+
+  /// Heart rate in beats per minute from a paired external sensor, when one is
+  /// connected. `null` when no heart-rate source contributed to this point.
+  final int? heartRateBpm;
+
+  /// Returns a copy of this point with [heartRateBpm] set to [bpm].
+  ActivityTrackPoint withHeartRateBpm(int bpm) {
+    return ActivityTrackPoint(
+      latitude: latitude,
+      longitude: longitude,
+      timestamp: timestamp,
+      elevationMeters: elevationMeters,
+      speedMetersPerSecond: speedMetersPerSecond,
+      headingDegrees: headingDegrees,
+      horizontalAccuracyMeters: horizontalAccuracyMeters,
+      verticalAccuracyMeters: verticalAccuracyMeters,
+      speedAccuracyMetersPerSecond: speedAccuracyMetersPerSecond,
+      headingAccuracyDegrees: headingAccuracyDegrees,
+      heartRateBpm: bpm,
+    );
+  }
 
   static double? _finiteOrNull(double value) {
     return value.isFinite ? value : null;

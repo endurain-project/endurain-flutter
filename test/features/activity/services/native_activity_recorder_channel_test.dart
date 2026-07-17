@@ -70,6 +70,33 @@ void main() {
       expect(args['activityType'], 'run');
     });
 
+    test('includes the heart-rate device id when provided', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+          heartRateDeviceId: 'AA:BB:CC:DD',
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args['hrDeviceId'], 'AA:BB:CC:DD');
+    });
+
+    test('omits the heart-rate device id when absent', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args.containsKey('hrDeviceId'), isFalse);
+    });
+
     test('invokes the expected command methods', () async {
       await channel.pause();
       await channel.resume();

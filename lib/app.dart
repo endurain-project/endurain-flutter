@@ -89,6 +89,10 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       if (_services.config.healthSyncEnabled) {
         unawaited(_autoSyncHealthOnResume());
       }
+      // Reconnect a remembered heart-rate sensor that may have dropped while
+      // backgrounded. Best-effort and self-guarded: it no-ops when none is
+      // paired, Bluetooth is off, or a recording currently owns the sensor.
+      unawaited(_services.heartRateSensorService.tryReconnectRemembered());
     }
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {

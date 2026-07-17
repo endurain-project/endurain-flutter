@@ -102,6 +102,39 @@ void main() {
 
       expect(find.text(l10n.activityStatElevationGain), findsNothing);
       expect(find.text(l10n.activityStatMaxSpeed), findsOneWidget);
+      expect(find.text(l10n.activityStatAvgHeartRate), findsNothing);
+    });
+
+    testWidgets('shows the average heart rate when recorded', (tester) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityCompletionSummary(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.completed,
+              activityType: ActivityType.ride,
+              points: [
+                _point(
+                  latitude: 0,
+                  longitude: 0,
+                  seconds: 0,
+                  speed: 2,
+                  heartRate: 130,
+                ),
+                _point(
+                  latitude: 0,
+                  longitude: 0.001,
+                  seconds: 60,
+                  speed: 3,
+                  heartRate: 150,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(l10n.activityStatAvgHeartRate), findsOneWidget);
+      expect(find.text('140 bpm'), findsOneWidget);
     });
 
     testWidgets('renders safely for an empty completed recording', (
@@ -131,6 +164,7 @@ ActivityTrackPoint _point({
   int seconds = 0,
   double? speed,
   double? elevation,
+  int? heartRate,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
@@ -138,6 +172,7 @@ ActivityTrackPoint _point({
     timestamp: DateTime.utc(2026).add(Duration(seconds: seconds)),
     speedMetersPerSecond: speed,
     elevationMeters: elevation,
+    heartRateBpm: heartRate,
   );
 }
 

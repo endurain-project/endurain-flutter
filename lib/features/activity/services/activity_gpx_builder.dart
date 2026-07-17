@@ -27,6 +27,7 @@ class ActivityGpxBuilder {
     longitude: point.longitude,
     elevationMeters: point.elevationMeters,
     time: point.timestamp,
+    heartRate: point.heartRateBpm,
   );
 
   String _defaultTrackName(ActivityType? activityType) {

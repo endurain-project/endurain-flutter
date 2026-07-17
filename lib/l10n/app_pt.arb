@@ -1228,5 +1228,29 @@
   "healthSyncRestore": "Restaurar",
   "@healthSyncRestore": {
     "description": "Volta a disponibilizar um treino apagado para importação - Usado em: health_sync_screen.dart"
-  }
+  },
+  "sensorsTitle": "Sensores",
+  "sensorsSettingsSubtitle": "Monitores de frequência cardíaca e outros sensores externos",
+  "sensorsHeartRateSection": "Frequência cardíaca",
+  "sensorsHeartRateHelp": "Emparelhe um monitor de frequência cardíaca Bluetooth para ver a sua frequência cardíaca em tempo real.",
+  "sensorsBluetoothOff": "O Bluetooth está desligado. Ligue-o para conectar um sensor.",
+  "sensorsBluetoothUnauthorized": "Permita o acesso ao Bluetooth para conectar um sensor.",
+  "sensorsBluetoothUnsupported": "Este dispositivo não suporta Bluetooth Low Energy.",
+  "sensorsScan": "Procurar sensores",
+  "sensorsScanning": "A procurar…",
+  "sensorsStopScan": "Parar",
+  "sensorsNoDevices": "Ainda não foram encontrados sensores de frequência cardíaca.",
+  "sensorsAvailableSection": "Sensores disponíveis",
+  "sensorsSavedSection": "Sensor guardado",
+  "sensorsConnect": "Conectar",
+  "sensorsConnecting": "A conectar…",
+  "sensorsConnected": "Conectado",
+  "sensorsDisconnect": "Desconectar",
+  "sensorsForget": "Esquecer",
+  "sensorsConnectionFailed": "Não foi possível conectar. Tente novamente.",
+  "sensorsPermissionRequired": "É necessária permissão de Bluetooth para encontrar sensores.",
+  "sensorsUnknownDevice": "Sensor desconhecido",
+  "sensorsBpm": "{bpm} bpm",
+  "activityStatHeartRate": "Frequência cardíaca",
+  "activityStatAvgHeartRate": "FC média"
 }

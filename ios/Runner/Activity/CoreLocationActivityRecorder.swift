@@ -25,6 +25,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
+    private var heartRateClient: HeartRatePeripheralClient?
 
     init(store: ActiveActivityStore) {
         self.store = store
@@ -76,6 +77,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
         manager.startUpdatingLocation()
         isCollecting = true
+        startHeartRateCapture()
         return true
     }
 
@@ -83,12 +85,34 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         manager.stopUpdatingLocation()
         manager.allowsBackgroundLocationUpdates = false
         isCollecting = false
+        stopHeartRateCapture()
     }
 
     /// Marks that collection is resuming from a pause so the next fix opens a
     /// new segment, matching the Dart segment policy.
     func markResumed() {
         resumedFromPause = true
+    }
+
+    /// Connects to the paired heart-rate sensor recorded in the active session
+    /// (if any) so its latest BPM can be stamped onto points, captured with the
+    /// same lifetime as GPS.
+    private func startHeartRateCapture() {
+        stopHeartRateCapture()
+        guard
+            let deviceId = store.loadSession()?.heartRateDeviceId,
+            !deviceId.isEmpty
+        else {
+            return
+        }
+        let client = HeartRatePeripheralClient()
+        heartRateClient = client
+        client.start(deviceIdentifier: deviceId)
+    }
+
+    private func stopHeartRateCapture() {
+        heartRateClient?.stop()
+        heartRateClient = nil
     }
 
     // MARK: - CLLocationManagerDelegate
@@ -258,7 +282,8 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             speedMetersPerSecond: location.speed >= 0 ? location.speed : nil,
             speedAccuracyMetersPerSecond: location.speedAccuracy >= 0
                 ? location.speedAccuracy
-                : nil
+                : nil,
+            heartRateBpm: heartRateClient?.latestBpm
         )
     }
 }

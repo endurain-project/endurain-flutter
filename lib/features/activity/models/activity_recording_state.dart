@@ -30,6 +30,7 @@ class ActivityRecordingState {
     this.localActivityId,
     this.lastError,
     this.elapsedDurationSeconds = 0,
+    this.currentHeartRateBpm,
     List<ActivityTrackPoint> points = const [],
     List<ActivityTrackSegment> segments = const [],
   }) : _segments = List<ActivityTrackSegment>.unmodifiable(
@@ -46,6 +47,15 @@ class ActivityRecordingState {
   final String? localActivityId;
   final ActivityRecordingError? lastError;
   final int elapsedDurationSeconds;
+
+  /// Most recent live heart rate (bpm) from a connected sensor, updated as
+  /// readings arrive rather than only when a GPS point is recorded. `null` when
+  /// no live heart-rate stream is feeding the recording (e.g. Android, where
+  /// the native recorder stamps heart rate onto points instead). Surfaced live
+  /// while recording; the durable per-point heart rate still lives on the
+  /// track points.
+  final int? currentHeartRateBpm;
+
   final List<ActivityTrackPoint> _points;
   final List<ActivityTrackSegment> _segments;
 
@@ -66,6 +76,7 @@ class ActivityRecordingState {
     Object? localActivityId = kUnset,
     Object? lastError = kUnset,
     int? elapsedDurationSeconds,
+    Object? currentHeartRateBpm = kUnset,
     List<ActivityTrackPoint>? points,
     List<ActivityTrackSegment>? segments,
   }) {
@@ -86,6 +97,9 @@ class ActivityRecordingState {
           : lastError as ActivityRecordingError?,
       elapsedDurationSeconds:
           elapsedDurationSeconds ?? this.elapsedDurationSeconds,
+      currentHeartRateBpm: identical(currentHeartRateBpm, kUnset)
+          ? this.currentHeartRateBpm
+          : currentHeartRateBpm as int?,
       points: points ?? _points,
       segments: segments ?? (points == null ? _segments : const []),
     );

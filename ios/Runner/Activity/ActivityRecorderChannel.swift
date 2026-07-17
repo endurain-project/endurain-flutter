@@ -105,6 +105,7 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
         let startedAt = (arguments?["startedAt"] as? String) ?? IsoTime.nowUtc()
         let connectionOrigin = arguments?["connectionOrigin"] as? String
         let connectionProfileId = arguments?["connectionProfileId"] as? String
+        let heartRateDeviceId = arguments?["hrDeviceId"] as? String
 
         let session = ActiveActivitySessionData(
             localSessionId: localSessionId,
@@ -113,6 +114,7 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             startedAt: startedAt,
             connectionOrigin: connectionOrigin,
             connectionProfileId: connectionProfileId,
+            heartRateDeviceId: heartRateDeviceId,
             currentSegmentIndex: 0
         )
         store.saveSession(session)

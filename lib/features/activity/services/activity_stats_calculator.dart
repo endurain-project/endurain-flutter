@@ -27,9 +27,20 @@ class ActivityStatsCalculator {
     double? currentSpeedMetersPerSecond;
     double? maxSpeedMetersPerSecond;
     double? elevationGainMeters;
+    int? currentHeartRateBpm;
+    var heartRateSum = 0;
+    var heartRateCount = 0;
 
     for (final segment in segments) {
       final points = segment.points;
+      for (final point in points) {
+        final bpm = point.heartRateBpm;
+        if (bpm != null) {
+          currentHeartRateBpm = bpm;
+          heartRateSum += bpm;
+          heartRateCount += 1;
+        }
+      }
       for (var index = 1; index < points.length; index += 1) {
         final previous = points[index - 1];
         final current = points[index];
@@ -89,6 +100,10 @@ class ActivityStatsCalculator {
         ? distanceMeters / durationSeconds
         : null;
 
+    final averageHeartRateBpm = heartRateCount > 0
+        ? (heartRateSum / heartRateCount).round()
+        : null;
+
     return ActivityRecordingStats(
       distanceMeters: distanceMeters,
       durationSeconds: durationSeconds,
@@ -96,6 +111,8 @@ class ActivityStatsCalculator {
       currentSpeedMetersPerSecond: currentSpeedMetersPerSecond,
       maxSpeedMetersPerSecond: maxSpeedMetersPerSecond,
       elevationGainMeters: elevationGainMeters,
+      currentHeartRateBpm: currentHeartRateBpm,
+      averageHeartRateBpm: averageHeartRateBpm,
     );
   }
 

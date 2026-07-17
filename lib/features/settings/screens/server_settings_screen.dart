@@ -3,14 +3,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/settings/controllers/server_settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 
 class ServerSettingsScreen extends StatefulWidget {
   const ServerSettingsScreen({
@@ -32,26 +35,31 @@ class ServerSettingsScreen extends StatefulWidget {
   State<ServerSettingsScreen> createState() => _ServerSettingsScreenState();
 }
 
-class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
+class _ServerSettingsScreenState extends State<ServerSettingsScreen>
+    with OwnedControllers {
   final _formKey = GlobalKey<FormState>();
   final _tileServerUrlController = TextEditingController();
-  late final ServerSettingsRepository _repository;
+  late final ServerSettingsController _controller;
   late final AppConfig _config;
-  bool _isLoading = true;
-  String _serverUrl = '';
-  String _username = '';
 
   @override
   void initState() {
     super.initState();
-    _repository = widget.repository ?? _createRepository();
-    _config =
-        widget.config ?? AppScope.servicesOf(context, listen: false).config;
-    _loadSettings();
+    final services = AppScope.servicesOf(context, listen: false);
+    _config = widget.config ?? services.config;
+    // The screen always owns the controller; its test seam is the repository
+    // (built here) rather than the controller itself.
+    _controller = registerController(
+      null,
+      () => ServerSettingsController(
+        repository: widget.repository ?? _createRepository(services),
+        config: _config,
+      ),
+    );
+    _initialize();
   }
 
-  ServerSettingsRepository _createRepository() {
-    final services = AppScope.servicesOf(context, listen: false);
+  ServerSettingsRepository _createRepository(AppServices services) {
     final storage = widget.storage ?? services.secureStorage;
     return ServerSettingsRepository(
       storage: storage,
@@ -70,18 +78,10 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
     super.dispose();
   }
 
-  Future<void> _loadSettings() async {
-    final settings = await _repository.loadSettings();
-
+  Future<void> _initialize() async {
+    await _controller.load();
     if (mounted) {
-      final l10n = AppLocalizations.of(context)!;
-
-      setState(() {
-        _serverUrl = settings.serverUrl ?? l10n.notConfigured;
-        _username = settings.username ?? l10n.notLoggedIn;
-        _tileServerUrlController.text = settings.tileServerUrl;
-        _isLoading = false;
-      });
+      _tileServerUrlController.text = _controller.tileServerUrl;
     }
   }
 
@@ -98,7 +98,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
     }
 
     try {
-      await _repository.saveTileServerUrl(tileUrl);
+      await _controller.saveTileServerUrl(tileUrl);
 
       if (mounted) {
         await DialogUtils.showSuccessDialog(
@@ -114,46 +114,35 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
     }
   }
 
-  /// Returns true when saving may proceed. Shows a warning dialog and returns
-  /// false if the tile server host differs from the Endurain server host and
-  /// the user does not confirm. In managed mode with an allowlist, rejects
-  /// out-of-policy hosts outright without offering a confirmation option.
+  /// Applies the controller's tile-host policy and shows the matching UI.
+  /// Returns true when saving may proceed.
   Future<bool> _confirmTileHostIfNeeded(
     String tileUrl,
     AppLocalizations l10n,
   ) async {
-    final serverHost = Uri.tryParse(_serverUrl)?.host;
-    final tileHost = Uri.tryParse(tileUrl)?.host;
-
-    if (tileHost == null || tileHost.isEmpty) {
-      return true;
-    }
-
-    // Managed policy: reject disallowed hosts without any confirmation.
-    if (!_config.isTileServerHostAllowed(tileHost)) {
-      if (mounted) {
-        await DialogUtils.showErrorDialog(
+    switch (_controller.evaluateTileHost(tileUrl)) {
+      case TileServerHostDecision.allowed:
+        return true;
+      case TileServerHostDecision.blocked:
+        // Managed policy: reject disallowed hosts without any confirmation.
+        if (mounted) {
+          await DialogUtils.showErrorDialog(
+            context,
+            l10n.tileServerHostWarningTitle,
+          );
+        }
+        return false;
+      case TileServerHostDecision.needsConfirmation:
+        if (!mounted) {
+          return false;
+        }
+        return DialogUtils.showConfirmDialog(
           context,
-          l10n.tileServerHostWarningTitle,
+          title: l10n.tileServerHostWarningTitle,
+          message: l10n.tileServerHostWarningMessage,
+          confirmText: l10n.save,
         );
-      }
-      return false;
     }
-
-    if (serverHost == null || serverHost.isEmpty || serverHost == tileHost) {
-      return true;
-    }
-
-    if (!mounted) {
-      return false;
-    }
-
-    return DialogUtils.showConfirmDialog(
-      context,
-      title: l10n.tileServerHostWarningTitle,
-      message: l10n.tileServerHostWarningMessage,
-      confirmText: l10n.save,
-    );
   }
 
   Future<void> _handleLogout() async {
@@ -168,7 +157,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
     );
 
     if (confirmed && mounted) {
-      final serverLogoutSuccess = await _repository.logout();
+      final serverLogoutSuccess = await _controller.logout();
       if (mounted) {
         if (!serverLogoutSuccess) {
           await DialogUtils.showMessage(
@@ -193,56 +182,62 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen> {
 
     return AdaptiveScaffold(
       title: l10n.serverSettingsTitle,
-      body: _isLoading
-          ? const Center(child: AdaptiveLoadingIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(UIConstants.paddingStandard),
-                children: [
-                  AdaptiveListSection(
-                    header: l10n.loggedIn,
-                    children: [
-                      AdaptiveListTile(
-                        title: l10n.serverUrl,
-                        subtitle: _serverUrl,
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          if (_controller.isLoading) {
+            return const Center(child: AdaptiveLoadingIndicator());
+          }
+          return Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(UIConstants.paddingStandard),
+              children: [
+                AdaptiveListSection(
+                  header: l10n.loggedIn,
+                  children: [
+                    AdaptiveListTile(
+                      title: l10n.serverUrl,
+                      subtitle: _controller.serverUrl ?? l10n.notConfigured,
+                    ),
+                    AdaptiveListTile(
+                      title: l10n.username,
+                      subtitle: _controller.username ?? l10n.notLoggedIn,
+                    ),
+                    AdaptiveListTile(
+                      leading: AdaptiveIcon(
+                        materialIcon: Icons.logout,
+                        cupertinoIcon: CupertinoIcons.square_arrow_right,
+                        color: Theme.of(context).colorScheme.error,
                       ),
-                      AdaptiveListTile(
-                        title: l10n.username,
-                        subtitle: _username,
-                      ),
-                      AdaptiveListTile(
-                        leading: AdaptiveIcon(
-                          materialIcon: Icons.logout,
-                          cupertinoIcon: CupertinoIcons.square_arrow_right,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        title: l10n.logout,
-                        destructive: true,
-                        onTap: _handleLogout,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: UIConstants.paddingStandard),
-                  AdaptiveTextFormField(
-                    label: l10n.tileServerUrl,
-                    placeholder: l10n.tileServerUrlHint,
-                    controller: _tileServerUrlController,
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.done,
-                    validator: (value) =>
-                        Validators.validateUrl(value, l10n, config: _config),
-                    onFieldSubmitted: (_) => _saveSettings(),
-                  ),
-                  const SizedBox(height: UIConstants.paddingLarge),
-                  AdaptiveButton(
-                    label: l10n.save,
-                    onPressed: _saveSettings,
-                    expand: true,
-                  ),
-                ],
-              ),
+                      title: l10n.logout,
+                      destructive: true,
+                      onTap: _handleLogout,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: UIConstants.paddingStandard),
+                AdaptiveTextFormField(
+                  label: l10n.tileServerUrl,
+                  placeholder: l10n.tileServerUrlHint,
+                  controller: _tileServerUrlController,
+                  keyboardType: TextInputType.url,
+                  textInputAction: TextInputAction.done,
+                  validator: (value) =>
+                      Validators.validateUrl(value, l10n, config: _config),
+                  onFieldSubmitted: (_) => _saveSettings(),
+                ),
+                const SizedBox(height: UIConstants.paddingLarge),
+                AdaptiveButton(
+                  label: l10n.save,
+                  onPressed: _saveSettings,
+                  expand: true,
+                ),
+              ],
             ),
+          );
+        },
+      ),
     );
   }
 }

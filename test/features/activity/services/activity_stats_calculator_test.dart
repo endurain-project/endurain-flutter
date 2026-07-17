@@ -225,6 +225,57 @@ void main() {
       // across the pause boundary is not counted.
       expect(stats.elevationGainMeters, closeTo(30, 0.001));
     });
+
+    // -------------------------------------------------------------------------
+    // Heart rate (live current + summary average).
+    // -------------------------------------------------------------------------
+
+    test('reports null heart rate when no point carries a reading', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0),
+          _point(latitude: 0, longitude: 0.001, seconds: 60),
+        ]),
+      );
+
+      expect(stats.currentHeartRateBpm, isNull);
+      expect(stats.averageHeartRateBpm, isNull);
+    });
+
+    test('tracks the latest and average heart rate across segments', () {
+      final seg1 = ActivityTrackSegment(
+        points: [
+          _point(latitude: 0, longitude: 0, seconds: 0, heartRate: 100),
+          _point(latitude: 0, longitude: 0.001, seconds: 60, heartRate: 120),
+        ],
+      );
+      final seg2 = ActivityTrackSegment(
+        points: [
+          _point(latitude: 0, longitude: 5, seconds: 120, heartRate: 140),
+          _point(latitude: 0, longitude: 5.001, seconds: 180, heartRate: 160),
+        ],
+      );
+
+      final stats = calculator.calculate([seg1, seg2]);
+
+      // Latest reading is the last point's; average is (100+120+140+160)/4.
+      expect(stats.currentHeartRateBpm, 160);
+      expect(stats.averageHeartRateBpm, 130);
+    });
+
+    test('rounds the average heart rate and ignores points without one', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0, heartRate: 100),
+          _point(latitude: 0, longitude: 0.001, seconds: 60),
+          _point(latitude: 0, longitude: 0.002, seconds: 120, heartRate: 121),
+        ]),
+      );
+
+      // Only the two HR-bearing points count: (100+121)/2 = 110.5 -> 111.
+      expect(stats.averageHeartRateBpm, 111);
+      expect(stats.currentHeartRateBpm, 121);
+    });
   });
 }
 
@@ -234,6 +285,7 @@ ActivityTrackPoint _point({
   int seconds = 0,
   double? speed,
   double? elevation,
+  int? heartRate,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
@@ -241,5 +293,6 @@ ActivityTrackPoint _point({
     timestamp: DateTime.utc(2026).add(Duration(seconds: seconds)),
     speedMetersPerSecond: speed,
     elevationMeters: elevation,
+    heartRateBpm: heartRate,
   );
 }

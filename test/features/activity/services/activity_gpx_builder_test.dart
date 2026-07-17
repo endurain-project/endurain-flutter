@@ -123,6 +123,25 @@ void main() {
         contains('<name>A&amp;B &quot;run&quot; &lt;test&gt;</name>'),
       );
     });
+
+    test('emits heart rate as a Garmin TrackPointExtension', () {
+      final gpx = builder.build(
+        ActivityRecordingState(
+          status: ActivityRecordingStatus.completed,
+          activityType: ActivityType.run,
+          points: [_point(latitude: 41.1, longitude: -8.6, heartRateBpm: 142)],
+        ),
+      );
+
+      expect(
+        gpx,
+        contains(
+          'xmlns:gpxtpx="http://www.garmin.com/xmlschemas/'
+          'TrackPointExtension/v1"',
+        ),
+      );
+      expect(gpx, contains('<gpxtpx:hr>142</gpxtpx:hr>'));
+    });
   });
 }
 
@@ -130,11 +149,13 @@ ActivityTrackPoint _point({
   double latitude = 41,
   double longitude = -8,
   double? elevationMeters = 20,
+  int? heartRateBpm,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
     longitude: longitude,
     elevationMeters: elevationMeters,
     timestamp: DateTime.utc(2026, 5, 30, 10),
+    heartRateBpm: heartRateBpm,
   );
 }

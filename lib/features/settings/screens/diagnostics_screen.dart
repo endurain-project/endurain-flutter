@@ -4,8 +4,10 @@ import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/features/settings/controllers/diagnostics_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,31 +21,27 @@ class DiagnosticsScreen extends StatefulWidget {
   State<DiagnosticsScreen> createState() => _DiagnosticsScreenState();
 }
 
-class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
-  late final DiagnosticsStore _diagnostics;
-  late Future<DiagnosticsReport?> _reportFuture;
-  late bool _enabled;
+class _DiagnosticsScreenState extends State<DiagnosticsScreen>
+    with OwnedControllers {
+  late final DiagnosticsController _controller;
 
   @override
   void initState() {
     super.initState();
-    _diagnostics =
-        widget.diagnostics ??
-        AppScope.servicesOf(context, listen: false).diagnostics;
-    _enabled = _diagnostics.isEnabled;
-    _reportFuture = _diagnostics.readReport();
+    // The screen always owns the controller; its test seam is the diagnostics
+    // store (injected here) rather than the controller itself.
+    _controller = registerController(
+      null,
+      () => DiagnosticsController(
+        diagnostics:
+            widget.diagnostics ??
+            AppScope.servicesOf(context, listen: false).diagnostics,
+      ),
+    );
+    _controller.load();
   }
 
-  Future<void> _setEnabled(bool value) async {
-    await _diagnostics.setEnabled(value);
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _enabled = value;
-      _reportFuture = _diagnostics.readReport();
-    });
-  }
+  Future<void> _setEnabled(bool value) => _controller.setEnabled(value);
 
   Future<void> _copyReport(DiagnosticsReport report) async {
     final l10n = AppLocalizations.of(context)!;
@@ -56,13 +54,10 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
 
   Future<void> _clearReport() async {
     final l10n = AppLocalizations.of(context)!;
-    await _diagnostics.clearReport();
+    await _controller.clearReport();
     if (!mounted) {
       return;
     }
-    setState(() {
-      _reportFuture = _diagnostics.readReport();
-    });
     await DialogUtils.showMessage(context, l10n.diagnosticsCleared);
   }
 
@@ -72,41 +67,37 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
 
     return AdaptiveScaffold(
       title: l10n.diagnosticsTitle,
-      body: ListView(
-        padding: const EdgeInsets.all(UIConstants.paddingStandard),
-        children: [
-          AdaptiveListSection(
-            header: l10n.diagnosticsCollection,
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          final report = _controller.report;
+          return ListView(
+            padding: const EdgeInsets.all(UIConstants.paddingStandard),
             children: [
-              AdaptiveSwitchListTile(
-                leading: const AdaptiveIcon(
-                  materialIcon: Icons.bug_report,
-                  cupertinoIcon: CupertinoIcons.waveform_path_ecg,
-                ),
-                title: l10n.diagnosticsEnable,
-                subtitle: l10n.diagnosticsEnableSubtitle,
-                value: _enabled,
-                onChanged: _setEnabled,
+              AdaptiveListSection(
+                header: l10n.diagnosticsCollection,
+                children: [
+                  AdaptiveSwitchListTile(
+                    leading: const AdaptiveIcon(
+                      materialIcon: Icons.bug_report,
+                      cupertinoIcon: CupertinoIcons.waveform_path_ecg,
+                    ),
+                    title: l10n.diagnosticsEnable,
+                    subtitle: l10n.diagnosticsEnableSubtitle,
+                    value: _controller.isEnabled,
+                    onChanged: _setEnabled,
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: UIConstants.paddingStandard),
-          if (!_enabled)
-            AdaptiveEmptyStateText(message: l10n.diagnosticsDisabled)
-          else
-            FutureBuilder<DiagnosticsReport?>(
-              future: _reportFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return const Center(child: AdaptiveLoadingIndicator());
-                }
-
-                final report = snapshot.data;
-                if (report == null || report.isEmpty) {
-                  return AdaptiveEmptyStateText(message: l10n.diagnosticsEmpty);
-                }
-
-                return Column(
+              const SizedBox(height: UIConstants.paddingStandard),
+              if (!_controller.isEnabled)
+                AdaptiveEmptyStateText(message: l10n.diagnosticsDisabled)
+              else if (_controller.isLoadingReport)
+                const Center(child: AdaptiveLoadingIndicator())
+              else if (report == null || report.isEmpty)
+                AdaptiveEmptyStateText(message: l10n.diagnosticsEmpty)
+              else
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _DiagnosticsSummarySection(report: report),
@@ -142,10 +133,10 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                     const SizedBox(height: UIConstants.paddingStandard),
                     _RawReportSection(report: report.rawText),
                   ],
-                );
-              },
-            ),
-        ],
+                ),
+            ],
+          );
+        },
       ),
     );
   }

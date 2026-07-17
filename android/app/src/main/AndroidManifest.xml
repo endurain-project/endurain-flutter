@@ -9,6 +9,9 @@
          declared. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <!-- Lets the recording foreground service keep a BLE heart-rate sensor
+         connected (Android 14+ requires this for the connectedDevice type). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- Shows the ongoing recording notification on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -24,6 +27,19 @@
     <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
     <!-- Required for Health Connect reads older than its standard 30-day window. -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+
+    <!-- Bluetooth Low Energy for external sensors (e.g. heart-rate straps).
+         BLUETOOTH_SCAN declares neverForLocation so scanning does not require
+         location access on Android 12+ (API 31+); BLUETOOTH_CONNECT is needed to
+         talk to a connected sensor. The legacy BLUETOOTH/BLUETOOTH_ADMIN
+         permissions cover Android 11 and below, which scans via the existing
+         ACCESS_FINE_LOCATION permission. BLE hardware is optional so the app
+         still installs on devices without it. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
 
     <application
         android:label="Endurain"
@@ -87,7 +103,7 @@
         <service
             android:name="com.endurain.endurain.activity.ActivityRecorderService"
             android:exported="false"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location|connectedDevice" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

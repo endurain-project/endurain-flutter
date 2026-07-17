@@ -51,6 +51,13 @@ class ActivityStatsFormatter {
         '${_twoDigits(secondsPerKilometer % Duration.secondsPerMinute)} min/km';
   }
 
+  String formatHeartRate(int? bpm) {
+    if (bpm == null) {
+      return '-';
+    }
+    return '$bpm bpm';
+  }
+
   String _twoDigits(int value) {
     return value.toString().padLeft(2, '0');
   }
