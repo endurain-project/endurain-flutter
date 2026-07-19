@@ -16,6 +16,9 @@ class AdaptiveTextFormField extends StatelessWidget {
     this.obscureText = false,
     this.prefixIcon,
     this.suffix,
+    this.autofillHints,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
   });
 
   final String label;
@@ -28,6 +31,13 @@ class AdaptiveTextFormField extends StatelessWidget {
   final bool obscureText;
   final Widget? prefixIcon;
   final Widget? suffix;
+
+  /// Autofill hints (e.g. [AutofillHints.username], [AutofillHints.password])
+  /// so password managers such as Bitwarden can recognize and fill this
+  /// field. The field should also be wrapped in an [AutofillGroup].
+  final Iterable<String>? autofillHints;
+  final bool autocorrect;
+  final bool enableSuggestions;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +81,9 @@ class AdaptiveTextFormField extends StatelessWidget {
                 validator: validator,
                 onFieldSubmitted: onFieldSubmitted,
                 obscureText: obscureText,
+                autofillHints: autofillHints,
+                autocorrect: autocorrect,
+                enableSuggestions: enableSuggestions,
                 prefix: prefixIcon,
                 padding: const EdgeInsets.symmetric(
                   horizontal: UIConstants.paddingStandard,
@@ -97,6 +110,9 @@ class AdaptiveTextFormField extends StatelessWidget {
       validator: validator,
       onFieldSubmitted: onFieldSubmitted,
       obscureText: obscureText,
+      autofillHints: autofillHints,
+      autocorrect: autocorrect,
+      enableSuggestions: enableSuggestions,
     );
   }
 }

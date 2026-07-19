@@ -281,28 +281,30 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
           ? const Center(child: AdaptiveLoadingIndicator())
           : Form(
               key: _controller.formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(UIConstants.paddingStandard),
-                children: [
-                  const SizedBox(height: 40),
-                  Center(
-                    child: Image.asset(
-                      MediaQuery.platformBrightnessOf(context) ==
-                              Brightness.dark
-                          ? 'assets/logo/brand_logo_dark_theme.png'
-                          : 'assets/logo/brand_logo_light_theme.png',
-                      width: 120,
-                      height: 120,
+              child: AutofillGroup(
+                child: ListView(
+                  padding: const EdgeInsets.all(UIConstants.paddingStandard),
+                  children: [
+                    const SizedBox(height: 40),
+                    Center(
+                      child: Image.asset(
+                        MediaQuery.platformBrightnessOf(context) ==
+                                Brightness.dark
+                            ? 'assets/logo/brand_logo_dark_theme.png'
+                            : 'assets/logo/brand_logo_light_theme.png',
+                        width: 120,
+                        height: 120,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
-                  if (_controller.showMfaInput)
-                    ..._buildMfaFields(l10n)
-                  else if (_controller.isStep2)
-                    ..._buildLoginFields(l10n)
-                  else
-                    ..._buildServerUrlFields(l10n),
-                ],
+                    const SizedBox(height: 40),
+                    if (_controller.showMfaInput)
+                      ..._buildMfaFields(l10n)
+                    else if (_controller.isStep2)
+                      ..._buildLoginFields(l10n)
+                    else
+                      ..._buildServerUrlFields(l10n),
+                  ],
+                ),
               ),
             ),
     );
@@ -363,6 +365,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
           placeholder: l10n.usernameHint,
           controller: _controller.usernameController,
           textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.username],
           prefixIcon: const AdaptiveIcon(
             materialIcon: Icons.person,
             cupertinoIcon: CupertinoIcons.person,
@@ -377,6 +380,9 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
           controller: _controller.passwordController,
           obscureText: _controller.obscurePassword,
           textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          autocorrect: false,
+          enableSuggestions: false,
           prefixIcon: const AdaptiveIcon(
             materialIcon: Icons.lock,
             cupertinoIcon: CupertinoIcons.lock,
@@ -435,6 +441,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         controller: _controller.mfaCodeController,
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.done,
+        autofillHints: const [AutofillHints.oneTimeCode],
         prefixIcon: const AdaptiveIcon(
           materialIcon: Icons.security,
           cupertinoIcon: CupertinoIcons.shield,
