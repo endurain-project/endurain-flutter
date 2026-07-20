@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Android declares the Health Connect route read permission', () {
+  test('Android declares every Health Connect workout read permission', () {
     final manifest = File(
       'android/app/src/main/AndroidManifest.xml',
     ).readAsStringSync();
@@ -13,7 +13,15 @@ void main() {
 
     expect(
       permissions,
-      contains('android.permission.health.READ_EXERCISE_ROUTES'),
+      containsAll(<String>{
+        'android.permission.health.READ_EXERCISE',
+        'android.permission.health.READ_DISTANCE',
+        'android.permission.health.READ_TOTAL_CALORIES_BURNED',
+        'android.permission.health.READ_STEPS',
+        'android.permission.health.READ_HEART_RATE',
+        'android.permission.health.READ_EXERCISE_ROUTES',
+        'android.permission.health.READ_HEALTH_DATA_HISTORY',
+      }),
     );
     expect(
       permissions,

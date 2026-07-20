@@ -16,6 +16,12 @@ const _coreReadTypes = [
   HealthDataType.HEART_RATE,
 ];
 
+const _androidWorkoutSummaryReadTypes = [
+  HealthDataType.DISTANCE_DELTA,
+  HealthDataType.TOTAL_CALORIES_BURNED,
+  HealthDataType.STEPS,
+];
+
 const _healthConnectHistoryWindow = Duration(days: 30);
 
 /// Absorbs the small skew between when a caller computes a read window and when
@@ -50,7 +56,11 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
 
   static TargetPlatform _defaultTargetPlatform() => defaultTargetPlatform;
 
-  List<HealthDataType> get _readTypes => _coreReadTypes;
+  List<HealthDataType> get _readTypes => [
+    ..._coreReadTypes,
+    if (_targetPlatform() == TargetPlatform.android)
+      ..._androidWorkoutSummaryReadTypes,
+  ];
 
   List<HealthDataAccess> get _readAccess =>
       List.filled(_readTypes.length, HealthDataAccess.READ);

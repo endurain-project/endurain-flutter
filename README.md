@@ -22,6 +22,7 @@
 - [Roadmap](#roadmap)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
+- [Health Platform Permissions](#health-platform-permissions)
 - [SSO/OAuth Callback](#ssooauth-callback)
 - [Local Diagnostics](#local-diagnostics)
 - [Development Workflow](#development-workflow)
@@ -208,6 +209,43 @@ The Android build scripts use Kotlin DSL (`.kts` files). Flutter's Built-in Kotl
 ### Android Health Sync Availability
 
 Health sync is optional. Android 14 and later include Health Connect as a system component. On earlier Android versions, the user must install the separate Health Connect provider before importing workouts. On devices where the provider is unavailable, the app keeps GPS recording and manual GPX upload available and shows health sync as unavailable.
+
+### Health Platform Permissions
+
+Health sync is read-only. Endurain requests only the health data needed to find
+workouts and convert route-bearing workouts to GPX. Users grant access through
+the platform authorization screen and can revoke it later in Apple Health or
+Health Connect settings.
+
+On iOS, the Runner target requires the HealthKit capability
+(`com.apple.developer.healthkit`) and `NSHealthShareUsageDescription`. At
+runtime, Endurain requests read access to:
+
+- Workouts, to discover activity sessions and their start/end times.
+- Workout routes, to build the GPX track required for import.
+- Heart rate, to attach available samples to GPX track points.
+
+Endurain does not request HealthKit write access. HealthKit intentionally does
+not reveal individual read-grant status, so users manage those choices in the
+Health app or iOS Settings.
+
+On Android, the manifest declares these Health Connect permissions:
+
+- `READ_EXERCISE`, to discover exercise sessions.
+- `READ_DISTANCE`, `READ_TOTAL_CALORIES_BURNED`, and `READ_STEPS`, because the
+  pinned `health` package reads those records while constructing every workout
+  summary. Omitting any of them can make its Android workout query return an
+  empty list.
+- `READ_HEART_RATE`, to attach available samples to GPX track points.
+- `READ_EXERCISE_ROUTES`, to retrieve the GPS route. Health Connect may require
+  separate user consent for routes written by another app.
+- `READ_HEALTH_DATA_HISTORY`, to read beyond Health Connect's standard 30-day
+  window. Endurain requests this only when the selected range reaches older
+  data and falls back to the readable recent window if the user declines.
+
+After an app update adds a new Health Connect permission, existing users must
+open Health sync and authorize access again; Android does not add the new grant
+automatically.
 
 ## SSO/OAuth Callback
 

@@ -17,11 +17,16 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Health Connect permissions (health sync feature).
-         Declare ONLY what the feature actually requests/reads:
-            - READ_EXERCISE: workout sessions.
+         The health package enriches every exercise with distance, total
+         calories, and steps, so those reads are required for workouts to load:
+         - READ_EXERCISE: workout sessions.
+         - READ_DISTANCE, READ_TOTAL_CALORIES_BURNED, READ_STEPS: summary.
          - READ_HEART_RATE: HR samples merged into the GPX route.
-            - READ_EXERCISE_ROUTES: route access surfaced by Health Connect. -->
+         - READ_EXERCISE_ROUTES: route access surfaced by Health Connect. -->
     <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <!-- Required to read GPS exercise routes from Health Connect. -->
     <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
