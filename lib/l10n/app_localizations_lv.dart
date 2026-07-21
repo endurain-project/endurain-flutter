@@ -109,10 +109,6 @@ class AppLocalizationsLv extends AppLocalizations {
   String get errorHealthReadFailed => 'Nevarēja nolasīt veselības datus';
 
   @override
-  String get errorHealthUnavailable =>
-      'Veselības sinhronizācija šajā ierīcē nav pieejama';
-
-  @override
   String get errorLoginError => 'Neizdevās pieteikties';
 
   @override
@@ -403,6 +399,18 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get activityStatAvgHeartRate => 'Avg heart rate';
+
+  @override
+  String get activityStatPower => 'Power';
+
+  @override
+  String get activityStatAvgPower => 'Avg power';
+
+  @override
+  String get activityStatCadence => 'Cadence';
+
+  @override
+  String get activityStatAvgCadence => 'Avg cadence';
 
   @override
   String get activityStop => 'Apturēt';
@@ -1023,5 +1031,35 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String sensorsBpm(String bpm) {
     return '$bpm bpm';
+  }
+
+  @override
+  String get sensorsPowerSection => 'Power';
+
+  @override
+  String get sensorsPowerHelp =>
+      'Pair a Bluetooth power meter to see your live power.';
+
+  @override
+  String get sensorsNoPowerDevices => 'No power meters found yet.';
+
+  @override
+  String sensorsWatts(String watts) {
+    return '$watts W';
+  }
+
+  @override
+  String get sensorsCadenceSection => 'Cadence';
+
+  @override
+  String get sensorsCadenceHelp =>
+      'Pair a Bluetooth cadence sensor to see your live cadence.';
+
+  @override
+  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+
+  @override
+  String sensorsRpm(String rpm) {
+    return '$rpm rpm';
   }
 }

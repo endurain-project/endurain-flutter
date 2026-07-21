@@ -14,6 +14,8 @@ struct ActiveActivitySessionData {
     let connectionOrigin: String?
     let connectionProfileId: String?
     let heartRateDeviceId: String?
+    let powerDeviceId: String?
+    let cadenceDeviceId: String?
     let resumedAt: String?
     let pausedAt: String?
     let endedAt: String?
@@ -29,6 +31,8 @@ struct ActiveActivitySessionData {
         connectionOrigin: String? = nil,
         connectionProfileId: String? = nil,
         heartRateDeviceId: String? = nil,
+        powerDeviceId: String? = nil,
+        cadenceDeviceId: String? = nil,
         resumedAt: String? = nil,
         pausedAt: String? = nil,
         endedAt: String? = nil,
@@ -43,6 +47,8 @@ struct ActiveActivitySessionData {
         self.connectionOrigin = connectionOrigin
         self.connectionProfileId = connectionProfileId
         self.heartRateDeviceId = heartRateDeviceId
+        self.powerDeviceId = powerDeviceId
+        self.cadenceDeviceId = cadenceDeviceId
         self.resumedAt = resumedAt
         self.pausedAt = pausedAt
         self.endedAt = endedAt
@@ -68,6 +74,8 @@ struct ActiveActivitySessionData {
         if let connectionOrigin = connectionOrigin { map["connectionOrigin"] = connectionOrigin }
         if let connectionProfileId = connectionProfileId { map["connectionProfileId"] = connectionProfileId }
         if let heartRateDeviceId = heartRateDeviceId { map["hrDeviceId"] = heartRateDeviceId }
+        if let powerDeviceId = powerDeviceId { map["powerDeviceId"] = powerDeviceId }
+        if let cadenceDeviceId = cadenceDeviceId { map["cadenceDeviceId"] = cadenceDeviceId }
         if let resumedAt = resumedAt { map["resumedAt"] = resumedAt }
         if let pausedAt = pausedAt { map["pausedAt"] = pausedAt }
         if let endedAt = endedAt { map["endedAt"] = endedAt }
@@ -102,6 +110,8 @@ struct ActiveActivitySessionData {
             connectionOrigin: connectionOrigin,
             connectionProfileId: connectionProfileId,
             heartRateDeviceId: heartRateDeviceId,
+            powerDeviceId: powerDeviceId,
+            cadenceDeviceId: cadenceDeviceId,
             resumedAt: resumedAt ?? self.resumedAt,
             pausedAt: pausedAt ?? self.pausedAt,
             endedAt: endedAt ?? self.endedAt,
@@ -128,6 +138,8 @@ struct ActiveActivitySessionData {
             connectionOrigin: json["connectionOrigin"] as? String,
             connectionProfileId: json["connectionProfileId"] as? String,
             heartRateDeviceId: json["hrDeviceId"] as? String,
+            powerDeviceId: json["powerDeviceId"] as? String,
+            cadenceDeviceId: json["cadenceDeviceId"] as? String,
             resumedAt: json["resumedAt"] as? String,
             pausedAt: json["pausedAt"] as? String,
             endedAt: json["endedAt"] as? String,
@@ -163,6 +175,8 @@ struct RecordedActivityPointData {
     let speedMetersPerSecond: Double?
     let speedAccuracyMetersPerSecond: Double?
     let heartRateBpm: Int?
+    let powerWatts: Int?
+    let cadenceRpm: Int?
 
     init(
         timestamp: String,
@@ -176,7 +190,9 @@ struct RecordedActivityPointData {
         headingAccuracyDegrees: Double? = nil,
         speedMetersPerSecond: Double? = nil,
         speedAccuracyMetersPerSecond: Double? = nil,
-        heartRateBpm: Int? = nil
+        heartRateBpm: Int? = nil,
+        powerWatts: Int? = nil,
+        cadenceRpm: Int? = nil
     ) {
         self.timestamp = timestamp
         self.latitude = latitude
@@ -190,6 +206,8 @@ struct RecordedActivityPointData {
         self.speedMetersPerSecond = speedMetersPerSecond
         self.speedAccuracyMetersPerSecond = speedAccuracyMetersPerSecond
         self.heartRateBpm = heartRateBpm
+        self.powerWatts = powerWatts
+        self.cadenceRpm = cadenceRpm
     }
 
     /// Channel-safe / JSON-safe dictionary. Optional fields omitted when nil.
@@ -207,6 +225,8 @@ struct RecordedActivityPointData {
         if let speedMetersPerSecond = speedMetersPerSecond { map["spd"] = speedMetersPerSecond }
         if let speedAccuracyMetersPerSecond = speedAccuracyMetersPerSecond { map["spdAcc"] = speedAccuracyMetersPerSecond }
         if let heartRateBpm = heartRateBpm { map["hr"] = heartRateBpm }
+        if let powerWatts = powerWatts { map["pow"] = powerWatts }
+        if let cadenceRpm = cadenceRpm { map["cad"] = cadenceRpm }
         return map
     }
 
@@ -246,7 +266,9 @@ struct RecordedActivityPointData {
             headingAccuracyDegrees: JsonScalar.double(json["headAcc"]),
             speedMetersPerSecond: JsonScalar.double(json["spd"]),
             speedAccuracyMetersPerSecond: JsonScalar.double(json["spdAcc"]),
-            heartRateBpm: JsonScalar.int(json["hr"])
+            heartRateBpm: JsonScalar.int(json["hr"]),
+            powerWatts: JsonScalar.int(json["pow"]),
+            cadenceRpm: JsonScalar.int(json["cad"])
         )
     }
 

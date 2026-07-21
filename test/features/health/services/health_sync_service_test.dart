@@ -313,6 +313,20 @@ void main() {
       expect(service.routeConsentDeniedCount, 2);
     });
 
+    test(
+      'clearDiscoveryCache drops cached candidates and consent count',
+      () async {
+        adapter.routeConsentDeniedCountValue = 2;
+        adapter.workouts = [makeWorkout('w1', hasRoute: false)];
+        await service.listImportable();
+        expect(service.routeConsentDeniedCount, 2);
+
+        await service.clearDiscoveryCache();
+
+        expect(service.routeConsentDeniedCount, 0);
+      },
+    );
+
     test('returns empty list when no workouts from adapter', () async {
       adapter.workouts = [];
       expect(await service.listImportable(), isEmpty);

@@ -206,7 +206,6 @@
   "errorHealthImportFailedWithDetails": "Nu s-a putut importa antrenamentul: {details}",
   "errorHealthPermissionDenied": "Accesul la datele de sănătate a fost interzis",
   "errorHealthReadFailed": "Nu s-au putut citi datele de sănătate",
-  "errorHealthUnavailable": "Sincronizarea sănătății nu este disponibilă pe acest dispozitiv",
   "healthSyncSettingsTitle": "Sincronizarea sănătății",
   "healthSyncSettingsSubtitle": "Importați antrenamente de pe platforma dvs. de sănătate",
   "healthSyncScreenTitle": "Sincronizarea sănătății",
@@ -297,5 +296,17 @@
   "sensorsUnknownDevice": "Unknown sensor",
   "sensorsBpm": "{bpm} bpm",
   "activityStatHeartRate": "Heart rate",
-  "activityStatAvgHeartRate": "Avg heart rate"
+  "activityStatAvgHeartRate": "Avg heart rate",
+  "sensorsPowerSection": "Power",
+  "sensorsPowerHelp": "Pair a Bluetooth power meter to see your live power.",
+  "sensorsNoPowerDevices": "No power meters found yet.",
+  "sensorsWatts": "{watts} W",
+  "sensorsCadenceSection": "Cadence",
+  "sensorsCadenceHelp": "Pair a Bluetooth cadence sensor to see your live cadence.",
+  "sensorsNoCadenceDevices": "No cadence sensors found yet.",
+  "sensorsRpm": "{rpm} rpm",
+  "activityStatPower": "Power",
+  "activityStatAvgPower": "Avg power",
+  "activityStatCadence": "Cadence",
+  "activityStatAvgCadence": "Avg cadence"
 }

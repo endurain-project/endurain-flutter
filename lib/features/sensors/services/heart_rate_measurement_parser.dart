@@ -1,4 +1,4 @@
-import 'package:endurain/features/sensors/models/heart_rate_sample.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 
 /// Decodes the BLE Heart Rate Measurement characteristic (GATT `0x2A37`).
 ///
@@ -19,9 +19,10 @@ class HeartRateMeasurementParser {
   static const int _flagEnergyPresent = 0x08;
   static const int _flagRrPresent = 0x10;
 
-  /// Parses [data] (the raw characteristic bytes) into a [HeartRateSample], or
-  /// returns `null` when the payload is empty, truncated, or not byte-valued.
-  static HeartRateSample? parse(List<int> data, {DateTime? timestamp}) {
+  /// Parses [data] (the raw characteristic bytes) into a heart-rate
+  /// [SensorMeasurement], or returns `null` when the payload is empty,
+  /// truncated, or not byte-valued.
+  static SensorMeasurement? parse(List<int> data, {DateTime? timestamp}) {
     if (data.isEmpty) {
       return null;
     }
@@ -81,8 +82,9 @@ class HeartRateMeasurementParser {
               : SensorContactStatus.notDetected)
         : SensorContactStatus.notSupported;
 
-    return HeartRateSample(
-      bpm: bpm,
+    return SensorMeasurement(
+      kind: SensorMeasurementKind.heartRate,
+      value: bpm,
       timestamp: timestamp ?? DateTime.now(),
       energyExpendedKilojoules: energyKilojoules,
       rrIntervals: rrIntervals,

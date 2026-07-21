@@ -30,6 +30,12 @@ class ActivityStatsCalculator {
     int? currentHeartRateBpm;
     var heartRateSum = 0;
     var heartRateCount = 0;
+    int? currentPowerWatts;
+    var powerSum = 0;
+    var powerCount = 0;
+    int? currentCadenceRpm;
+    var cadenceSum = 0;
+    var cadenceCount = 0;
 
     for (final segment in segments) {
       final points = segment.points;
@@ -39,6 +45,18 @@ class ActivityStatsCalculator {
           currentHeartRateBpm = bpm;
           heartRateSum += bpm;
           heartRateCount += 1;
+        }
+        final watts = point.powerWatts;
+        if (watts != null) {
+          currentPowerWatts = watts;
+          powerSum += watts;
+          powerCount += 1;
+        }
+        final rpm = point.cadenceRpm;
+        if (rpm != null) {
+          currentCadenceRpm = rpm;
+          cadenceSum += rpm;
+          cadenceCount += 1;
         }
       }
       for (var index = 1; index < points.length; index += 1) {
@@ -103,6 +121,12 @@ class ActivityStatsCalculator {
     final averageHeartRateBpm = heartRateCount > 0
         ? (heartRateSum / heartRateCount).round()
         : null;
+    final averagePowerWatts = powerCount > 0
+        ? (powerSum / powerCount).round()
+        : null;
+    final averageCadenceRpm = cadenceCount > 0
+        ? (cadenceSum / cadenceCount).round()
+        : null;
 
     return ActivityRecordingStats(
       distanceMeters: distanceMeters,
@@ -113,6 +137,10 @@ class ActivityStatsCalculator {
       elevationGainMeters: elevationGainMeters,
       currentHeartRateBpm: currentHeartRateBpm,
       averageHeartRateBpm: averageHeartRateBpm,
+      currentPowerWatts: currentPowerWatts,
+      averagePowerWatts: averagePowerWatts,
+      currentCadenceRpm: currentCadenceRpm,
+      averageCadenceRpm: averageCadenceRpm,
     );
   }
 

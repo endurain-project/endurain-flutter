@@ -17,8 +17,9 @@ import 'package:endurain/features/activity/screens/activity_history_screen.dart'
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
-import 'package:endurain/features/map/controllers/map_heart_rate_controller.dart';
+import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
@@ -28,14 +29,14 @@ class MapScreen extends StatefulWidget {
     super.key,
     this.controller,
     this.activityController,
-    this.heartRateController,
+    this.sensorControllers,
     this.locationService,
     this.mapSettings,
   });
 
   final MapStateController? controller;
   final ActivityRecordingController? activityController;
-  final MapHeartRateController? heartRateController;
+  final Map<SensorMeasurementKind, MapSensorController>? sensorControllers;
   final LocationService? locationService;
   final MapSettingsRepository? mapSettings;
 
@@ -51,7 +52,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   final MapController _mapController = MapController();
   late final MapStateController _controller;
   late final ActivityRecordingController _activityController;
-  late final MapHeartRateController _heartRateController;
+  late final Map<SensorMeasurementKind, MapSensorController> _sensorControllers;
   LatLng? _lastFollowedLocation;
   bool _centeredInitialLocation = false;
   bool _isStopConfirmationOpen = false;
@@ -65,29 +66,32 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       _createController,
       onChanged: _handleControllerChanged,
     );
-    _activityController = registerController(
+    _activityController = observeController(
       widget.activityController ??
           AppScope.servicesOf(
             context,
             listen: false,
           ).activityRecordingController,
-      // create() is unreachable because we always supply an injected value
-      // above; the controller is owned by AppServices for the app lifetime.
-      () => throw StateError('unreachable: activity controller not in scope'),
       onChanged: _handleControllerChanged,
     );
-    _heartRateController = registerController(
-      widget.heartRateController,
-      () => MapHeartRateController(
-        service: AppScope.servicesOf(
-          context,
-          listen: false,
-        ).heartRateSensorService,
-      ),
-    );
-    // Reconnect a remembered sensor on map open so the user does not have to
-    // visit the Sensors screen first; drives the top-of-map indicator.
-    _heartRateController.initialize();
+    final injectedSensorControllers = widget.sensorControllers;
+    final sensorServices = AppScope.servicesOf(
+      context,
+      listen: false,
+    ).sensorServices;
+    _sensorControllers = {
+      for (final entry in sensorServices.entries)
+        entry.key: registerController(
+          injectedSensorControllers?[entry.key],
+          () => MapSensorController(service: entry.value, kind: entry.key),
+        ),
+    };
+    // Reconnect any remembered sensors on map open so the user does not have to
+    // visit the Sensors screen first; drives the top-of-map indicators (one
+    // pill per connected/searching sensor).
+    for (final controller in _sensorControllers.values) {
+      controller.initialize();
+    }
     _controller.initialize();
     if (widget.activityController == null) {
       unawaited(_activityController.recoverActiveRecording());
@@ -107,12 +111,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     return MapStateController(
       locationService: widget.locationService ?? services.location,
       mapSettingsRepository:
-          widget.mapSettings ??
-          MapSettingsRepository(
-            preferences: services.preferences,
-            config: services.config,
-            activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
-          ),
+          widget.mapSettings ?? services.createMapSettingsRepository(),
     );
   }
 
@@ -372,19 +371,12 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: ListenableBuilder(
-                      listenable: _heartRateController,
-                      builder: (context, _) {
-                        switch (_heartRateController.status) {
-                          case MapHeartRateStatus.connected:
-                            return _MapHeartRateChip(
-                              bpm: _heartRateController.currentBpm!,
-                            );
-                          case MapHeartRateStatus.searching:
-                            return const _MapSensorSearchingChip();
-                          case MapHeartRateStatus.idle:
-                            return const SizedBox.shrink();
-                        }
-                      },
+                      listenable: Listenable.merge(
+                        _sensorControllers.values.toList(),
+                      ),
+                      builder: (context, _) => _MapSensorIndicators(
+                        controllers: _sensorControllers.values.toList(),
+                      ),
                     ),
                   ),
                 ),
@@ -465,11 +457,87 @@ class _MapPill extends StatelessWidget {
   }
 }
 
-/// Compact pill showing the live heart rate on the map.
-class _MapHeartRateChip extends StatelessWidget {
-  const _MapHeartRateChip({required this.bpm});
+/// The top-of-map row of live sensor indicators.
+///
+/// Renders one pill per heart-rate, power, or cadence sensor that is connected
+/// (live value) or searching (a remembered sensor still (re)connecting).
+/// Sensors with no remembered device contribute nothing.
+class _MapSensorIndicators extends StatelessWidget {
+  const _MapSensorIndicators({required this.controllers});
 
-  final int bpm;
+  final List<MapSensorController> controllers;
+
+  @override
+  Widget build(BuildContext context) {
+    final chips = <Widget>[];
+    for (final controller in controllers) {
+      switch (controller.status) {
+        case MapSensorStatus.connected:
+          chips.add(
+            _MapSensorChip(
+              kind: controller.kind,
+              value: controller.currentValue!,
+            ),
+          );
+        case MapSensorStatus.searching:
+          chips.add(_MapSensorSearchingChip(kind: controller.kind));
+        case MapSensorStatus.idle:
+          break;
+      }
+    }
+    if (chips.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: chips,
+    );
+  }
+}
+
+/// The icon for a map sensor pill of [kind], matching the Sensors screen glyphs.
+AdaptiveIcon _mapSensorIcon(SensorMeasurementKind kind) {
+  return switch (kind) {
+    SensorMeasurementKind.heartRate => const AdaptiveIcon(
+      materialIcon: Icons.favorite,
+      cupertinoIcon: CupertinoIcons.heart_fill,
+      color: Color(0xFFE53935),
+      size: 16,
+    ),
+    SensorMeasurementKind.power => const AdaptiveIcon(
+      materialIcon: Icons.bolt,
+      cupertinoIcon: CupertinoIcons.bolt_fill,
+      size: 16,
+    ),
+    SensorMeasurementKind.cadence => const AdaptiveIcon(
+      materialIcon: Icons.autorenew,
+      cupertinoIcon: CupertinoIcons.arrow_2_circlepath,
+      size: 16,
+    ),
+  };
+}
+
+/// The localized live value for a map sensor pill of [kind].
+String _mapSensorValueLabel(
+  AppLocalizations l10n,
+  SensorMeasurementKind kind,
+  int value,
+) {
+  return switch (kind) {
+    SensorMeasurementKind.heartRate => l10n.sensorsBpm('$value'),
+    SensorMeasurementKind.power => l10n.sensorsWatts('$value'),
+    SensorMeasurementKind.cadence => l10n.sensorsRpm('$value'),
+  };
+}
+
+/// Compact pill showing a live sensor value on the map.
+class _MapSensorChip extends StatelessWidget {
+  const _MapSensorChip({required this.kind, required this.value});
+
+  final SensorMeasurementKind kind;
+  final int value;
 
   @override
   Widget build(BuildContext context) {
@@ -478,23 +546,21 @@ class _MapHeartRateChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const AdaptiveIcon(
-            materialIcon: Icons.favorite,
-            cupertinoIcon: CupertinoIcons.heart_fill,
-            color: Color(0xFFE53935),
-            size: 16,
-          ),
+          _mapSensorIcon(kind),
           const SizedBox(width: 6),
-          Text(l10n.sensorsBpm(bpm.toString())),
+          Text(_mapSensorValueLabel(l10n, kind, value)),
         ],
       ),
     );
   }
 }
 
-/// Compact pill shown while a remembered sensor is being (re)connected.
+/// Compact pill shown while a remembered sensor of [kind] is being
+/// (re)connected.
 class _MapSensorSearchingChip extends StatelessWidget {
-  const _MapSensorSearchingChip();
+  const _MapSensorSearchingChip({required this.kind});
+
+  final SensorMeasurementKind kind;
 
   @override
   Widget build(BuildContext context) {
@@ -503,6 +569,8 @@ class _MapSensorSearchingChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          _mapSensorIcon(kind),
+          const SizedBox(width: 6),
           const SizedBox(
             width: 14,
             height: 14,

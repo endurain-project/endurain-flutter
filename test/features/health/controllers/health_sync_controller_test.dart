@@ -48,6 +48,18 @@ void main() {
   tearDown(() => controller.dispose());
 
   group('HealthSyncController', () {
+    test('dispose clears the route-scoped service discovery cache', () {
+      final localService = FakeHealthSyncService();
+      final localController = HealthSyncController(
+        service: localService,
+        diagnostics: const NoopDiagnosticsRecorder(),
+      );
+
+      localController.dispose();
+
+      expect(localService.clearDiscoveryCacheCallCount, 1);
+    });
+
     // ── loadStatus ──────────────────────────────────────────────────────────
 
     group('loadStatus', () {
@@ -71,11 +83,11 @@ void main() {
       });
 
       test('stores error on failure', () async {
-        service.nextError = const AppException(AppErrorCode.healthUnavailable);
+        service.nextError = const AppException(AppErrorCode.healthReadFailed);
         await controller.loadStatus();
 
         expect(controller.state.error, isNotNull);
-        expect(controller.state.error!.code, AppErrorCode.healthUnavailable);
+        expect(controller.state.error!.code, AppErrorCode.healthReadFailed);
       });
 
       test('does not query authStatus when sdk is unsupported', () async {

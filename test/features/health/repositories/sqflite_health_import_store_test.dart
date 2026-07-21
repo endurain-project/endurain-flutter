@@ -13,10 +13,12 @@ void main() {
     sqfliteFfiInit();
   });
 
-  SqfliteHealthImportStore makeStore() => SqfliteHealthImportStore(
-    databaseFactory: databaseFactoryFfi,
-    databasePath: inMemoryDatabasePath,
-  );
+  SqfliteHealthImportStore makeStore({DateTime Function()? now}) =>
+      SqfliteHealthImportStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: inMemoryDatabasePath,
+        now: now,
+      );
 
   group('SqfliteHealthImportStore', () {
     test('isImported returns false for unknown sourceId', () async {
@@ -139,13 +141,31 @@ void main() {
     });
 
     test('lists imported workouts newest-first with pagination', () async {
-      final store = makeStore();
+      // Isolated on-disk database + monotonic clock so import timestamps are
+      // strictly increasing and independent of rows other tests leave in the
+      // shared in-memory database, keeping the newest-first ordering
+      // deterministic without a wall-clock delay.
+      final tempDir = await Directory.systemTemp.createTemp(
+        'health_import_order_',
+      );
+      addTearDown(() {
+        if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+      });
+      var tick = DateTime.utc(2026, 6, 2, 10);
+      final store = SqfliteHealthImportStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath:
+            '${tempDir.path}${Platform.pathSeparator}health_import.db',
+        now: () {
+          tick = tick.add(const Duration(seconds: 1));
+          return tick;
+        },
+      );
       await store.markImported(
         profileId: profileA,
         sourceId: 'uuid-1',
         localActivityId: 'local-1',
       );
-      await Future<void>.delayed(const Duration(milliseconds: 1));
       await store.markImported(
         profileId: profileA,
         sourceId: 'uuid-2',

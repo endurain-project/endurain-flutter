@@ -23,8 +23,10 @@ class SqfliteHealthImportStore implements HealthImportStore {
   SqfliteHealthImportStore({
     DatabaseFactory? databaseFactory,
     String? databasePath,
+    DateTime Function()? now,
   }) : _factory = databaseFactory ?? _platformFactory(),
-       _path = databasePath;
+       _path = databasePath,
+       _now = now ?? DateTime.now;
 
   static const int _schemaVersion = 3;
   static const String _dbFileName = 'health_import.db';
@@ -35,6 +37,7 @@ class SqfliteHealthImportStore implements HealthImportStore {
 
   final DatabaseFactory _factory;
   final String? _path;
+  final DateTime Function() _now;
   Database? _db;
 
   late final SqliteMigrationRunner _migrationRunner = SqliteMigrationRunner(
@@ -260,7 +263,7 @@ class SqfliteHealthImportStore implements HealthImportStore {
       'profile_id': profileId,
       'source_id': sourceId,
       'local_activity_id': localActivityId,
-      'imported_at': DateTime.now().toUtc().toIso8601String(),
+      'imported_at': _now().toUtc().toIso8601String(),
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 

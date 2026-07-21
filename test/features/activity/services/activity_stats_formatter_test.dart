@@ -42,5 +42,15 @@ void main() {
       expect(formatter.formatHeartRate(null), '-');
       expect(formatter.formatHeartRate(142), '142 bpm');
     });
+
+    test('formats power only when available', () {
+      expect(formatter.formatPower(null), '-');
+      expect(formatter.formatPower(250), '250 W');
+    });
+
+    test('formats cadence only when available', () {
+      expect(formatter.formatCadence(null), '-');
+      expect(formatter.formatCadence(88), '88 rpm');
+    });
   });
 }

@@ -28,6 +28,8 @@ class ActivityGpxBuilder {
     elevationMeters: point.elevationMeters,
     time: point.timestamp,
     heartRate: point.heartRateBpm,
+    cadence: point.cadenceRpm,
+    powerWatts: point.powerWatts,
   );
 
   String _defaultTrackName(ActivityType? activityType) {

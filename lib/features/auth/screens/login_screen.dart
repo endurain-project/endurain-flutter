@@ -15,7 +15,6 @@ import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 
@@ -52,7 +51,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   late final LoginController _controller;
   late final UrlLauncherService _urlLauncherService;
+  final _formKey = GlobalKey<FormState>();
   final _serverHostController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _mfaCodeController = TextEditingController();
   String _serverScheme = 'https';
 
   @override
@@ -66,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       _createController,
       onChanged: _handleControllerChanged,
     );
-    _populateServerAddressFields();
     _controller.startSsoCallbackListener(
       onLoginSuccess: () => widget.onLoginSuccess?.call(),
       onError: _showError,
@@ -83,35 +85,13 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
             widget.serverSettingsService ?? services.serverSettings,
       ),
       appLinksService: widget.appLinksService ?? services.appLinks,
-      mapSettingsRepository: MapSettingsRepository(
-        preferences: services.preferences,
-        config: services.config,
-        activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
-      ),
+      mapSettingsRepository: services.createMapSettingsRepository(),
       config: services.config,
       diagnostics: services.diagnostics,
     );
   }
 
-  void _populateServerAddressFields() {
-    final uri = Uri.tryParse(_controller.serverUrlController.text.trim());
-    if (uri == null ||
-        uri.host.isEmpty ||
-        (!uri.isScheme('http') && !uri.isScheme('https'))) {
-      return;
-    }
-
-    _serverScheme = uri.scheme;
-    _serverHostController.text = uri.authority + uri.path + uri.query;
-  }
-
   String _serverUrlFor(String host) => '$_serverScheme://${host.trim()}';
-
-  void _syncServerUrl() {
-    _controller.serverUrlController.text = _serverUrlFor(
-      _serverHostController.text,
-    );
-  }
 
   void _handleControllerChanged() {
     if (mounted) {
@@ -121,12 +101,12 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
 
   /// Step 1: Validate server URL, fetch server settings and available IdPs
   Future<void> _handleServerUrlNext() async {
-    _syncServerUrl();
-    if (!_controller.formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_controller.serverUrlIsHttp && mounted) {
+    final serverUrl = _serverUrlFor(_serverHostController.text);
+    if (_controller.isInsecureHttpUrl(serverUrl) && mounted) {
       final l10n = AppLocalizations.of(context)!;
       final confirmed = await DialogUtils.showConfirmDialog(
         context,
@@ -140,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       }
     }
 
-    final autoRedirectProvider = await _controller.submitServerUrl();
+    final autoRedirectProvider = await _controller.submitServerUrl(serverUrl);
     if (autoRedirectProvider != null) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
       if (mounted) {
@@ -151,7 +131,10 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
 
   /// Handle SSO provider selection
   Future<void> _handleSsoLogin(IdentityProvider idp) async {
-    final oauthUrl = await _controller.beginSsoLogin(idp);
+    final oauthUrl = await _controller.beginSsoLogin(
+      idp,
+      serverUrl: _serverUrlFor(_serverHostController.text),
+    );
     if (oauthUrl == null || !mounted) {
       return;
     }
@@ -168,21 +151,25 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   }
 
   Future<void> _handleLogin() async {
-    if (!_controller.formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    await _controller.submitLogin();
+    await _controller.submitLogin(
+      serverUrl: _serverUrlFor(_serverHostController.text),
+      username: _usernameController.text,
+      password: _passwordController.text,
+    );
   }
 
   Future<void> _handleMfaVerification() async {
     final l10n = AppLocalizations.of(context)!;
-    if (_controller.mfaCodeController.text.trim().isEmpty) {
+    if (_mfaCodeController.text.trim().isEmpty) {
       _showError(l10n.mfaCodeRequired);
       return;
     }
 
-    await _controller.submitMfa();
+    await _controller.submitMfa(_mfaCodeController.text);
   }
 
   void _showError(Object message) {
@@ -196,6 +183,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   }
 
   void _goBackFromMfa() {
+    _mfaCodeController.clear();
     _controller.backFromMfa();
   }
 
@@ -267,6 +255,9 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   @override
   void dispose() {
     _serverHostController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _mfaCodeController.dispose();
     super.dispose();
   }
 
@@ -280,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       body: _controller.isLoading
           ? const Center(child: AdaptiveLoadingIndicator())
           : Form(
-              key: _controller.formKey,
+              key: _formKey,
               child: AutofillGroup(
                 child: ListView(
                   padding: const EdgeInsets.all(UIConstants.paddingStandard),
@@ -363,7 +354,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         AdaptiveTextFormField(
           label: l10n.username,
           placeholder: l10n.usernameHint,
-          controller: _controller.usernameController,
+          controller: _usernameController,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.username],
           prefixIcon: const AdaptiveIcon(
@@ -377,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         AdaptiveTextFormField(
           label: l10n.password,
           placeholder: l10n.passwordHint,
-          controller: _controller.passwordController,
+          controller: _passwordController,
           obscureText: _controller.obscurePassword,
           textInputAction: TextInputAction.done,
           autofillHints: const [AutofillHints.password],
@@ -438,7 +429,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       AdaptiveTextFormField(
         label: l10n.mfaCode,
         placeholder: l10n.mfaCodeHint,
-        controller: _controller.mfaCodeController,
+        controller: _mfaCodeController,
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.done,
         autofillHints: const [AutofillHints.oneTimeCode],

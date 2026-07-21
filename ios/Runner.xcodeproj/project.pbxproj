@@ -22,6 +22,8 @@
 		AA00000000000000000000B4 /* CoreLocationActivityRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */; };
 		AA00000000000000000000B5 /* ActivityRecorderChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A5 /* ActivityRecorderChannel.swift */; };
 		AA00000000000000000000B6 /* HeartRatePeripheralClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A6 /* HeartRatePeripheralClient.swift */; };
+		AA00000000000000000000B7 /* PowerPeripheralClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A7 /* PowerPeripheralClient.swift */; };
+		AA00000000000000000000B8 /* CadencePeripheralClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A8 /* CadencePeripheralClient.swift */; };
 		D7A5761A833B9261D8B82E47 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C79F4228D2DD0B9347A515C2 /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
 
@@ -77,6 +79,8 @@
 		AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/CoreLocationActivityRecorder.swift; sourceTree = "<group>"; };
 		AA00000000000000000000A5 /* ActivityRecorderChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/ActivityRecorderChannel.swift; sourceTree = "<group>"; };
 		AA00000000000000000000A6 /* HeartRatePeripheralClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/HeartRatePeripheralClient.swift; sourceTree = "<group>"; };
+		AA00000000000000000000A7 /* PowerPeripheralClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/PowerPeripheralClient.swift; sourceTree = "<group>"; };
+		AA00000000000000000000A8 /* CadencePeripheralClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/CadencePeripheralClient.swift; sourceTree = "<group>"; };
 		C2271C0B4B4214044EDDBAC2 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		C79F4228D2DD0B9347A515C2 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -182,6 +186,8 @@
 				AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */,
 				AA00000000000000000000A5 /* ActivityRecorderChannel.swift */,
 				AA00000000000000000000A6 /* HeartRatePeripheralClient.swift */,
+				AA00000000000000000000A7 /* PowerPeripheralClient.swift */,
+				AA00000000000000000000A8 /* CadencePeripheralClient.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -412,6 +418,8 @@
 				AA00000000000000000000B4 /* CoreLocationActivityRecorder.swift in Sources */,
 				AA00000000000000000000B5 /* ActivityRecorderChannel.swift in Sources */,
 				AA00000000000000000000B6 /* HeartRatePeripheralClient.swift in Sources */,
+				AA00000000000000000000B7 /* PowerPeripheralClient.swift in Sources */,
+				AA00000000000000000000B8 /* CadencePeripheralClient.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

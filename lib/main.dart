@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 
 Future<void> main() async {
   // The composition root owns the single production [AppServices] instance and
-  // passes it down to the root [App]. Production never routes through the
-  // `AppServices.instance` global — that global is only a last-resort fallback
-  // for tests that build widgets without an [AppScope] (see `app_scope.dart`).
+  // passes it down to the root [App], which exposes it through [AppScope].
+  // There is no global instance: widgets obtain services from the scope, and
+  // `App` builds its own fallback only when constructed without one (tests).
   // Holding the instance here also keeps the same diagnostics object available
   // to the root-zone error handler below, which runs outside the widget tree.
   final services = AppServices(
@@ -50,11 +50,11 @@ Future<void> main() async {
 
       runApp(App(services: services));
 
-      // Reconnect a remembered heart-rate sensor in the background so it is
-      // ready before the user starts recording. Touching the coordinator also
-      // starts it listening for Bluetooth becoming ready. Best-effort and
-      // self-guarded; a no-op when no sensor was ever paired.
-      unawaited(services.heartRateSensorService.tryReconnectRemembered());
+      // Reconnect any remembered heart-rate, power, and cadence sensors in the
+      // background so they are ready before the user starts recording. Touching
+      // each coordinator also starts it listening for Bluetooth becoming ready.
+      // Best-effort and self-guarded; a no-op when no sensor was ever paired.
+      unawaited(services.reconnectRememberedSensors());
     },
     (error, stackTrace) {
       diagnostics.recordErrorSync(

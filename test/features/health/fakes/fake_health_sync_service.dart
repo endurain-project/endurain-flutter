@@ -31,6 +31,7 @@ class FakeHealthSyncService implements HealthSyncService {
   int loadMoreAvailableCallCount = 0;
   int listImportedCallCount = 0;
   int restoreMissingImportCallCount = 0;
+  int clearDiscoveryCacheCallCount = 0;
   HealthImportRange? lastRange;
 
   /// Set to an [AppException] to make the next call throw.
@@ -165,6 +166,11 @@ class FakeHealthSyncService implements HealthSyncService {
     disconnectCallCount++;
     authStatus = HealthAuthorizationStatus.notDetermined;
     autoSyncOnResumeEnabled = false;
+  }
+
+  @override
+  Future<void> clearDiscoveryCache() async {
+    clearDiscoveryCacheCallCount++;
   }
 
   @override

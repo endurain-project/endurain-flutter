@@ -2,35 +2,36 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
-import 'package:endurain/features/sensors/models/heart_rate_sample.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
-import 'package:endurain/features/sensors/services/heart_rate_measurement_parser.dart';
-import 'package:endurain/features/sensors/services/heart_rate_sensor_adapter.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
+import 'package:endurain/features/sensors/services/sensor_measurement_decoder.dart';
+import 'package:endurain/features/sensors/services/sensor_profile.dart';
 import 'package:universal_ble/universal_ble.dart';
 
-/// [HeartRateSensorAdapter] backed by `universal_ble` (BSD-3-Clause, no Google
+/// [SensorConnectionAdapter] backed by `universal_ble` (BSD-3-Clause, no Google
 /// Play Services, F-Droid compatible).
 ///
-/// This is the concrete BLE boundary. It keeps all plugin types contained here
-/// so nothing else in the app imports the Bluetooth stack, and it requests the
-/// runtime BLE permissions itself (universal_ble handles the platform
-/// differences), so no separate permission plugin is needed.
-class UniversalBleHeartRateSensorAdapter implements HeartRateSensorAdapter {
-  UniversalBleHeartRateSensorAdapter();
+/// This is the concrete BLE boundary for cycling/running sensors. It keeps all
+/// plugin types contained here so nothing else in the app imports the Bluetooth
+/// stack, and it requests the runtime BLE permissions itself. An instance is
+/// constructed for one measurement's [SensorProfile]s (power, or cadence): it
+/// scans for any of their services and, on connect, subscribes to whichever
+/// profile the device actually exposes.
+class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
+  UniversalBleSensorConnectionAdapter({required List<SensorProfile> profiles})
+    : assert(profiles.isNotEmpty),
+      _profiles = List<SensorProfile>.unmodifiable(profiles);
 
-  /// GATT Heart Rate Service (`0x180D`).
-  static const String _heartRateService = '180D';
-
-  /// GATT Heart Rate Measurement characteristic (`0x2A37`).
-  static const String _heartRateMeasurement = '2A37';
+  final List<SensorProfile> _profiles;
 
   static const Duration _connectTimeout = Duration(seconds: 20);
 
   final StreamController<SensorConnectionStatus> _statusController =
       StreamController<SensorConnectionStatus>.broadcast();
-  final StreamController<HeartRateSample> _heartRateController =
-      StreamController<HeartRateSample>.broadcast();
+  final StreamController<SensorMeasurement> _measurementController =
+      StreamController<SensorMeasurement>.broadcast();
 
   String? _deviceId;
   String? _serviceUuid;
@@ -43,7 +44,7 @@ class UniversalBleHeartRateSensorAdapter implements HeartRateSensorAdapter {
       _statusController.stream;
 
   @override
-  Stream<HeartRateSample> get heartRate => _heartRateController.stream;
+  Stream<SensorMeasurement> get measurements => _measurementController.stream;
 
   @override
   Stream<SensorBluetoothState> get bluetoothState =>
@@ -65,7 +66,7 @@ class UniversalBleHeartRateSensorAdapter implements HeartRateSensorAdapter {
   }
 
   @override
-  Stream<List<BleSensorDevice>> scanForHeartRateSensors({
+  Stream<List<BleSensorDevice>> scanForSensors({
     Duration timeout = const Duration(seconds: 15),
   }) {
     late final StreamController<List<BleSensorDevice>> controller;
@@ -89,7 +90,11 @@ class UniversalBleHeartRateSensorAdapter implements HeartRateSensorAdapter {
       }, onError: controller.addError);
       try {
         await UniversalBle.startScan(
-          scanFilter: ScanFilter(withServices: [_heartRateService]),
+          scanFilter: ScanFilter(
+            withServices: _profiles
+                .map((profile) => profile.serviceUuid)
+                .toList(growable: false),
+          ),
         );
       } catch (error, stackTrace) {
         if (!controller.isClosed) {
@@ -143,7 +148,7 @@ class UniversalBleHeartRateSensorAdapter implements HeartRateSensorAdapter {
 
     try {
       await UniversalBle.connect(deviceId, timeout: _connectTimeout);
-      await _subscribeToHeartRate(deviceId);
+      await _subscribeToMeasurements(deviceId);
       _emitStatus(SensorConnectionStatus.connected);
     } catch (error) {
       _emitStatus(SensorConnectionStatus.failed);
@@ -162,48 +167,59 @@ class UniversalBleHeartRateSensorAdapter implements HeartRateSensorAdapter {
   Future<void> dispose() async {
     await _teardownConnection();
     await _statusController.close();
-    await _heartRateController.close();
+    await _measurementController.close();
   }
 
-  Future<void> _subscribeToHeartRate(String deviceId) async {
+  Future<void> _subscribeToMeasurements(String deviceId) async {
     final services = await UniversalBle.discoverServices(deviceId);
-    final service = _firstOrNull(
-      services,
-      (candidate) => _uuidEquals(candidate.uuid, _heartRateService),
-    );
-    if (service == null) {
-      throw StateError('Heart Rate service not found on device');
+
+    // Pick the first supported profile the device actually exposes (a cadence
+    // adapter may support both CSC and RSC; a device advertises one of them).
+    for (final profile in _profiles) {
+      final service = _firstOrNull(
+        services,
+        (candidate) => _uuidEquals(candidate.uuid, profile.serviceUuid),
+      );
+      if (service == null) {
+        continue;
+      }
+      final characteristic = _firstOrNull(
+        service.characteristics,
+        (candidate) =>
+            _uuidEquals(candidate.uuid, profile.measurementCharacteristicUuid),
+      );
+      if (characteristic == null) {
+        continue;
+      }
+
+      _serviceUuid = service.uuid;
+      _characteristicUuid = characteristic.uuid;
+      final decoder = profile.createDecoder();
+
+      _valueSubscription =
+          UniversalBle.characteristicValueStream(
+            deviceId,
+            characteristic.uuid,
+          ).listen((data) => _onValue(decoder, data));
+
+      await UniversalBle.subscribeNotifications(
+        deviceId,
+        service.uuid,
+        characteristic.uuid,
+      );
+      return;
     }
-    final characteristic = _firstOrNull(
-      service.characteristics,
-      (candidate) => _uuidEquals(candidate.uuid, _heartRateMeasurement),
-    );
-    if (characteristic == null) {
-      throw StateError('Heart Rate Measurement characteristic not found');
+
+    throw StateError('No supported sensor profile found on device');
+  }
+
+  void _onValue(SensorMeasurementDecoder decoder, List<int> data) {
+    if (_measurementController.isClosed) {
+      return;
     }
-
-    _serviceUuid = service.uuid;
-    _characteristicUuid = characteristic.uuid;
-
-    _valueSubscription =
-        UniversalBle.characteristicValueStream(
-          deviceId,
-          characteristic.uuid,
-        ).listen((data) {
-          final sample = HeartRateMeasurementParser.parse(
-            data,
-            timestamp: DateTime.now(),
-          );
-          if (sample != null && !_heartRateController.isClosed) {
-            _heartRateController.add(sample);
-          }
-        });
-
-    await UniversalBle.subscribeNotifications(
-      deviceId,
-      service.uuid,
-      characteristic.uuid,
-    );
+    for (final measurement in decoder.decode(data, DateTime.now())) {
+      _measurementController.add(measurement);
+    }
   }
 
   Future<void> _teardownConnection() async {

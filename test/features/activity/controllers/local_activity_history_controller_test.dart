@@ -357,8 +357,12 @@ LocalActivityRecord _recordWithGpx({
 ActivityUploadService _uploadServiceReturning(int statusCode) {
   return ActivityUploadService(
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
-    uploadFile: (_, _, _, {idempotencyKey}) async {
-      return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
-    },
+    uploadFile:
+        (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {
+          return http.StreamedResponse(
+            const Stream<List<int>>.empty(),
+            statusCode,
+          );
+        },
   );
 }

@@ -206,7 +206,6 @@
   "errorHealthImportFailedWithDetails": "Неуспешно импортиране на тренировка: {details}",
   "errorHealthPermissionDenied": "Достъпът до здравни данни беше отказан",
   "errorHealthReadFailed": "Не може да се прочетат здравни данни",
-  "errorHealthUnavailable": "Синхронизирането на здравето не е налично на това устройство",
   "healthSyncSettingsTitle": "Синхронизиране на здравето",
   "healthSyncSettingsSubtitle": "Импортирайте тренировки от вашата здравна платформа",
   "healthSyncScreenTitle": "Синхронизиране на здравето",
@@ -297,5 +296,17 @@
   "sensorsUnknownDevice": "Unknown sensor",
   "sensorsBpm": "{bpm} bpm",
   "activityStatHeartRate": "Heart rate",
-  "activityStatAvgHeartRate": "Avg heart rate"
+  "activityStatAvgHeartRate": "Avg heart rate",
+  "sensorsPowerSection": "Power",
+  "sensorsPowerHelp": "Pair a Bluetooth power meter to see your live power.",
+  "sensorsNoPowerDevices": "No power meters found yet.",
+  "sensorsWatts": "{watts} W",
+  "sensorsCadenceSection": "Cadence",
+  "sensorsCadenceHelp": "Pair a Bluetooth cadence sensor to see your live cadence.",
+  "sensorsNoCadenceDevices": "No cadence sensors found yet.",
+  "sensorsRpm": "{rpm} rpm",
+  "activityStatPower": "Power",
+  "activityStatAvgPower": "Avg power",
+  "activityStatCadence": "Cadence",
+  "activityStatAvgCadence": "Avg cadence"
 }

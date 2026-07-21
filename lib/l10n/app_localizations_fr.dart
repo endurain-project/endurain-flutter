@@ -112,10 +112,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get errorHealthReadFailed => 'Impossible de lire les données de santé';
 
   @override
-  String get errorHealthUnavailable =>
-      'La synchronisation de l\'état de santé n\'est pas disponible sur cet appareil';
-
-  @override
   String get errorLoginError => 'Impossible de se connecter';
 
   @override
@@ -411,6 +407,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get activityStatAvgHeartRate => 'Avg heart rate';
+
+  @override
+  String get activityStatPower => 'Power';
+
+  @override
+  String get activityStatAvgPower => 'Avg power';
+
+  @override
+  String get activityStatCadence => 'Cadence';
+
+  @override
+  String get activityStatAvgCadence => 'Avg cadence';
 
   @override
   String get activityStop => 'Arrêter';
@@ -1034,5 +1042,35 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String sensorsBpm(String bpm) {
     return '$bpm bpm';
+  }
+
+  @override
+  String get sensorsPowerSection => 'Power';
+
+  @override
+  String get sensorsPowerHelp =>
+      'Pair a Bluetooth power meter to see your live power.';
+
+  @override
+  String get sensorsNoPowerDevices => 'No power meters found yet.';
+
+  @override
+  String sensorsWatts(String watts) {
+    return '$watts W';
+  }
+
+  @override
+  String get sensorsCadenceSection => 'Cadence';
+
+  @override
+  String get sensorsCadenceHelp =>
+      'Pair a Bluetooth cadence sensor to see your live cadence.';
+
+  @override
+  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+
+  @override
+  String sensorsRpm(String rpm) {
+    return '$rpm rpm';
   }
 }

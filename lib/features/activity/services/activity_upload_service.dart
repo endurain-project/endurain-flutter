@@ -4,19 +4,27 @@ import 'dart:io';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:http/http.dart' as http;
 
+/// Uploads a GPX file to the activity import endpoint.
+///
+/// The single injection seam for the transport. In production this is
+/// `ApiClient.uploadFile` (token-refreshing, profile-scoped multipart); tests
+/// pass a fake. The named parameters mirror `ApiClient.uploadFile` so the
+/// method tear-off is a drop-in, preserving the idempotency key and the
+/// origin/profile scoping.
 typedef ActivityFileUploader =
     Future<http.StreamedResponse> Function(
       String endpoint,
       String filePath,
       String fieldName, {
       String? idempotencyKey,
+      String? expectedOrigin,
+      String? expectedProfileId,
     });
 
 /// Controls how many times [ActivityUploadService.performUploadAttempt]
@@ -81,46 +89,38 @@ class ActivityUploadRequest {
 
 class ActivityUploadService {
   ActivityUploadService({
-    ApiClient? apiClient,
-    this._config,
+    ActivityUploadConfig? config,
     ActivityFileUploader? uploadFile,
     ActivityUploadRetryPolicy? retryPolicy,
-  }) : _apiClient = apiClient ?? (uploadFile == null ? ApiClient() : null),
+  }) : _config = config,
        _uploadFile = uploadFile,
        _retryPolicy = retryPolicy ?? const ActivityUploadRetryPolicy();
 
   final ActivityUploadConfig? _config;
-  final ApiClient? _apiClient;
   final ActivityFileUploader? _uploadFile;
   final ActivityUploadRetryPolicy _retryPolicy;
   final Map<String, Future<LocalActivityRecord>> _inFlightAttempts = {};
 
-  bool get isConfigured => _config?.isConfigured ?? false;
+  bool get isConfigured =>
+      (_config?.isConfigured ?? false) && _uploadFile != null;
 
   Future<void> uploadGpx(ActivityUploadRequest request) async {
     final config = _config;
-    if (config == null || !config.isConfigured) {
+    final uploader = _uploadFile;
+    if (config == null || !config.isConfigured || uploader == null) {
       throw const AppException(AppErrorCode.activityUploadNotConfigured);
     }
 
     late final http.StreamedResponse response;
     try {
-      final apiClient = _apiClient;
-      response = apiClient != null
-          ? await apiClient.uploadFile(
-              config.endpoint,
-              request.filePath,
-              config.fieldName,
-              idempotencyKey: request.idempotencyKey,
-              expectedOrigin: request.expectedOrigin,
-              expectedProfileId: request.expectedProfileId,
-            )
-          : await _uploadFile!(
-              config.endpoint,
-              request.filePath,
-              config.fieldName,
-              idempotencyKey: request.idempotencyKey,
-            );
+      response = await uploader(
+        config.endpoint,
+        request.filePath,
+        config.fieldName,
+        idempotencyKey: request.idempotencyKey,
+        expectedOrigin: request.expectedOrigin,
+        expectedProfileId: request.expectedProfileId,
+      );
     } on AppException {
       rethrow;
     } catch (error) {

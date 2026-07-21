@@ -9,7 +9,6 @@ import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/settings/controllers/server_settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -64,11 +63,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
     return ServerSettingsRepository(
       storage: storage,
       authService: widget.authService ?? services.auth,
-      mapSettingsRepository: MapSettingsRepository(
-        preferences: services.preferences,
-        config: services.config,
-        activeConnectionOrigin: services.authSession.getAuthenticatedOrigin,
-      ),
+      mapSettingsRepository: services.createMapSettingsRepository(),
     );
   }
 

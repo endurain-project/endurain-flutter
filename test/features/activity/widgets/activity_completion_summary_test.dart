@@ -137,6 +137,64 @@ void main() {
       expect(find.text('140 bpm'), findsOneWidget);
     });
 
+    testWidgets('shows average power and cadence when recorded', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityCompletionSummary(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.completed,
+              activityType: ActivityType.ride,
+              points: [
+                _point(
+                  latitude: 0,
+                  longitude: 0,
+                  seconds: 0,
+                  speed: 2,
+                  power: 200,
+                  cadence: 80,
+                ),
+                _point(
+                  latitude: 0,
+                  longitude: 0.001,
+                  seconds: 60,
+                  speed: 3,
+                  power: 300,
+                  cadence: 90,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(l10n.activityStatAvgPower), findsOneWidget);
+      expect(find.text('250 W'), findsOneWidget);
+      expect(find.text(l10n.activityStatAvgCadence), findsOneWidget);
+      expect(find.text('85 rpm'), findsOneWidget);
+    });
+
+    testWidgets('omits power and cadence when not recorded', (tester) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityCompletionSummary(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.completed,
+              activityType: ActivityType.ride,
+              points: [
+                _point(latitude: 0, longitude: 0, seconds: 0, speed: 2),
+                _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 3),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(l10n.activityStatAvgPower), findsNothing);
+      expect(find.text(l10n.activityStatAvgCadence), findsNothing);
+    });
+
     testWidgets('renders safely for an empty completed recording', (
       tester,
     ) async {
@@ -165,6 +223,8 @@ ActivityTrackPoint _point({
   double? speed,
   double? elevation,
   int? heartRate,
+  int? power,
+  int? cadence,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
@@ -173,6 +233,8 @@ ActivityTrackPoint _point({
     speedMetersPerSecond: speed,
     elevationMeters: elevation,
     heartRateBpm: heartRate,
+    powerWatts: power,
+    cadenceRpm: cadence,
   );
 }
 

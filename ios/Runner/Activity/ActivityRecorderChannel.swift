@@ -106,6 +106,8 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
         let connectionOrigin = arguments?["connectionOrigin"] as? String
         let connectionProfileId = arguments?["connectionProfileId"] as? String
         let heartRateDeviceId = arguments?["hrDeviceId"] as? String
+        let powerDeviceId = arguments?["powerDeviceId"] as? String
+        let cadenceDeviceId = arguments?["cadenceDeviceId"] as? String
 
         let session = ActiveActivitySessionData(
             localSessionId: localSessionId,
@@ -115,6 +117,8 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             connectionOrigin: connectionOrigin,
             connectionProfileId: connectionProfileId,
             heartRateDeviceId: heartRateDeviceId,
+            powerDeviceId: powerDeviceId,
+            cadenceDeviceId: cadenceDeviceId,
             currentSegmentIndex: 0
         )
         store.saveSession(session)

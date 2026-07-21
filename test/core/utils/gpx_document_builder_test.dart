@@ -9,6 +9,8 @@ void main() {
     double lon = -9.1,
     double? ele,
     int? hr,
+    int? cad,
+    int? power,
     int offsetSeconds = 0,
   }) => GpxTrackPoint(
     latitude: lat,
@@ -16,6 +18,8 @@ void main() {
     elevationMeters: ele,
     time: t0.add(Duration(seconds: offsetSeconds)),
     heartRate: hr,
+    cadence: cad,
+    powerWatts: power,
   );
 
   group('GpxBounds.fromPoints', () {
@@ -131,6 +135,63 @@ void main() {
       );
 
       expect(gpx, isNot(contains('gpxtpx')));
+    });
+
+    test('adds the gpxtpx cadence extension when cadence present', () {
+      final gpx = buildGpxDocument(
+        name: 'ride',
+        type: 'ride',
+        segments: [
+          [point(cad: 82)],
+        ],
+      );
+
+      expect(gpx, contains('xmlns:gpxtpx='));
+      expect(gpx, contains('<gpxtpx:TrackPointExtension>'));
+      expect(gpx, contains('<gpxtpx:cad>82</gpxtpx:cad>'));
+    });
+
+    test('adds the ns3 power wrapper extension when power present', () {
+      final gpx = buildGpxDocument(
+        name: 'ride',
+        type: 'ride',
+        segments: [
+          [point(power: 250)],
+        ],
+      );
+
+      expect(gpx, contains('xmlns:ns3='));
+      expect(gpx, contains('<ns3:wrapper>'));
+      expect(gpx, contains('<ns3:power>250</ns3:power>'));
+      expect(gpx, contains('</ns3:wrapper>'));
+    });
+
+    test('nests hr, cadence, and power in one TrackPointExtension', () {
+      final gpx = buildGpxDocument(
+        name: 'ride',
+        type: 'ride',
+        segments: [
+          [point(hr: 150, cad: 82, power: 250)],
+        ],
+      );
+
+      // A single extensions block carries all three sensor values.
+      expect('<extensions>'.allMatches(gpx).length, 1);
+      expect(gpx, contains('<gpxtpx:hr>150</gpxtpx:hr>'));
+      expect(gpx, contains('<gpxtpx:cad>82</gpxtpx:cad>'));
+      expect(gpx, contains('<ns3:power>250</ns3:power>'));
+    });
+
+    test('omits the ns3 namespace when no power present', () {
+      final gpx = buildGpxDocument(
+        name: 'run',
+        type: 'run',
+        segments: [
+          [point(hr: 150)],
+        ],
+      );
+
+      expect(gpx, isNot(contains('ns3')));
     });
 
     test('emits one trkseg per segment, including empty segments', () {

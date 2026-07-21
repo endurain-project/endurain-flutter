@@ -14,6 +14,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/fake_url_launcher_service.dart';
+import '../../../helpers/widget_test_app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -42,11 +43,13 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: SettingsScreen(
-          packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
-          activityRetentionSettings: _FakeActivityRetentionSettings(),
-          localeController: localeController,
-          urlLauncherService: FakeUrlLauncherService(launched: true),
+        home: TestAppScope(
+          child: SettingsScreen(
+            packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
+            activityRetentionSettings: _FakeActivityRetentionSettings(),
+            localeController: localeController,
+            urlLauncherService: FakeUrlLauncherService(launched: true),
+          ),
         ),
       ),
     );
@@ -88,11 +91,13 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: SettingsScreen(
-          packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
-          activityRetentionSettings: _FakeActivityRetentionSettings(),
-          localeController: localeController,
-          urlLauncherService: launcher,
+        home: TestAppScope(
+          child: SettingsScreen(
+            packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
+            activityRetentionSettings: _FakeActivityRetentionSettings(),
+            localeController: localeController,
+            urlLauncherService: launcher,
+          ),
         ),
       ),
     );
@@ -120,11 +125,13 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: SettingsScreen(
-          packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
-          activityRetentionSettings: _FakeActivityRetentionSettings(),
-          localeController: localeController,
-          urlLauncherService: launcher,
+        home: TestAppScope(
+          child: SettingsScreen(
+            packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
+            activityRetentionSettings: _FakeActivityRetentionSettings(),
+            localeController: localeController,
+            urlLauncherService: launcher,
+          ),
         ),
       ),
     );
@@ -151,13 +158,15 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: SettingsScreen(
-          isGuest: true,
-          onSignIn: () => signInTapped = true,
-          packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
-          activityRetentionSettings: _FakeActivityRetentionSettings(),
-          localeController: localeController,
-          urlLauncherService: FakeUrlLauncherService(launched: true),
+        home: TestAppScope(
+          child: SettingsScreen(
+            isGuest: true,
+            onSignIn: () => signInTapped = true,
+            packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
+            activityRetentionSettings: _FakeActivityRetentionSettings(),
+            localeController: localeController,
+            urlLauncherService: FakeUrlLauncherService(launched: true),
+          ),
         ),
       ),
     );

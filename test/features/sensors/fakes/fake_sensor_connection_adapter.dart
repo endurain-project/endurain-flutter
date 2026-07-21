@@ -1,23 +1,23 @@
 import 'dart:async';
 
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
-import 'package:endurain/features/sensors/models/heart_rate_sample.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
-import 'package:endurain/features/sensors/services/heart_rate_sensor_adapter.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 
-/// A controllable [HeartRateSensorAdapter] for unit tests, standing in for the
-/// real BLE stack. Tests drive it by setting the configurable fields and
-/// pushing events through the `emit*` helpers.
+/// A controllable [SensorConnectionAdapter] for unit tests, standing in for the
+/// real BLE stack for cycling/running sensors. Tests drive it by setting the
+/// configurable fields and pushing events through the `emit*` helpers.
 ///
 /// The event streams use synchronous broadcast controllers so a pushed event is
 /// delivered to the service's listener immediately, keeping widget-test timing
 /// deterministic (no reliance on the fake-async microtask clock).
-class FakeHeartRateSensorAdapter implements HeartRateSensorAdapter {
+class FakeSensorConnectionAdapter implements SensorConnectionAdapter {
   final StreamController<SensorConnectionStatus> _statusController =
       StreamController<SensorConnectionStatus>.broadcast(sync: true);
-  final StreamController<HeartRateSample> _heartRateController =
-      StreamController<HeartRateSample>.broadcast(sync: true);
+  final StreamController<SensorMeasurement> _measurementController =
+      StreamController<SensorMeasurement>.broadcast(sync: true);
   final StreamController<SensorBluetoothState> _bluetoothController =
       StreamController<SensorBluetoothState>.broadcast(sync: true);
 
@@ -51,8 +51,8 @@ class FakeHeartRateSensorAdapter implements HeartRateSensorAdapter {
 
   void emitStatus(SensorConnectionStatus status) =>
       _statusController.add(status);
-  void emitHeartRate(HeartRateSample sample) =>
-      _heartRateController.add(sample);
+  void emitMeasurement(SensorMeasurement measurement) =>
+      _measurementController.add(measurement);
   void emitBluetoothState(SensorBluetoothState state) =>
       _bluetoothController.add(state);
 
@@ -61,7 +61,7 @@ class FakeHeartRateSensorAdapter implements HeartRateSensorAdapter {
       _statusController.stream;
 
   @override
-  Stream<HeartRateSample> get heartRate => _heartRateController.stream;
+  Stream<SensorMeasurement> get measurements => _measurementController.stream;
 
   @override
   Stream<SensorBluetoothState> get bluetoothState =>
@@ -83,7 +83,7 @@ class FakeHeartRateSensorAdapter implements HeartRateSensorAdapter {
   }
 
   @override
-  Stream<List<BleSensorDevice>> scanForHeartRateSensors({
+  Stream<List<BleSensorDevice>> scanForSensors({
     Duration timeout = const Duration(seconds: 15),
   }) async* {
     lastScanTimeout = timeout;
@@ -121,7 +121,7 @@ class FakeHeartRateSensorAdapter implements HeartRateSensorAdapter {
   Future<void> dispose() async {
     disposed = true;
     await _statusController.close();
-    await _heartRateController.close();
+    await _measurementController.close();
     await _bluetoothController.close();
   }
 }

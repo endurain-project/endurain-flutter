@@ -46,7 +46,7 @@ class AuthService {
   late final PkceTokenExchanger _exchanger;
 
   // Store PKCE temporarily during auth flow
-  Map<String, String>? _pkce;
+  PkcePair? _pkce;
   String? _pendingLoginOrigin;
 
   // Refreshes are single-flight per session revision. A replacement login may
@@ -82,7 +82,7 @@ class AuthService {
     _pkce = PkceUtils.generatePkce();
 
     final apiUrl = Uri.parse(
-      '$url${_endpoints.tokenEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
+      '$url${_endpoints.tokenEndpoint}?code_challenge=${_pkce!.challenge}&code_challenge_method=S256',
     );
 
     return _withPkceCleanup(() async {
@@ -125,13 +125,13 @@ class AuthService {
   Future<AuthResult> verifyMfa(String username, String mfaCode) async {
     final serverUrl = _pendingLoginOrigin ?? await _urlResolver.resolve();
 
-    if (_pkce == null || _pkce!['verifier'] == null) {
+    if (_pkce == null) {
       throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
     }
 
     // MFA verification with PKCE uses query parameters
     final url = Uri.parse(
-      '$serverUrl${_endpoints.mfaVerifyEndpoint}?code_challenge=${_pkce!['challenge']}&code_challenge_method=S256',
+      '$serverUrl${_endpoints.mfaVerifyEndpoint}?code_challenge=${_pkce!.challenge}&code_challenge_method=S256',
     );
 
     return _withPkceCleanup(() async {
@@ -159,11 +159,11 @@ class AuthService {
     String sessionId,
     String username,
   ) async {
-    if (_pkce == null || _pkce!['verifier'] == null) {
+    if (_pkce == null) {
       throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
     }
 
-    final verifier = _pkce!['verifier']!;
+    final verifier = _pkce!.verifier;
     // Clear verifier before the network call — one-time exchange.
     _pkce = null;
     _pendingLoginOrigin = null;

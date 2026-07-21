@@ -8,6 +8,10 @@ class ActivityRecordingStats {
     this.elevationGainMeters,
     this.currentHeartRateBpm,
     this.averageHeartRateBpm,
+    this.currentPowerWatts,
+    this.averagePowerWatts,
+    this.currentCadenceRpm,
+    this.averageCadenceRpm,
   });
 
   final double distanceMeters;
@@ -31,4 +35,21 @@ class ActivityRecordingStats {
   /// Mean heart rate (bpm) across every point that carried a reading, or `null`
   /// when none did. Surfaced in the post-recording summary.
   final int? averageHeartRateBpm;
+
+  /// Most recent power (watts) stamped onto a track point, or `null` when no
+  /// power source contributed to the recording. Surfaced live while recording.
+  final int? currentPowerWatts;
+
+  /// Mean power (watts) across every point that carried a reading, or `null`
+  /// when none did. Surfaced in the post-recording summary.
+  final int? averagePowerWatts;
+
+  /// Most recent cadence (rpm) stamped onto a track point, or `null` when no
+  /// cadence source contributed to the recording. Surfaced live while
+  /// recording.
+  final int? currentCadenceRpm;
+
+  /// Mean cadence (rpm) across every point that carried a reading, or `null`
+  /// when none did. Surfaced in the post-recording summary.
+  final int? averageCadenceRpm;
 }

@@ -50,11 +50,32 @@ class ActivityUploadQueue {
 
   static Future<bool> _alwaysAuthorized() async => true;
 
+  /// Upload statuses the drain query loads. `pending`/`failed` records may still
+  /// need an upload attempt; `uploaded` records are loaded only so one with a
+  /// *deferred* post-upload GPX cleanup (`gpxCleanupPending`) can have that
+  /// cleanup retried — such records are never re-uploaded. [_requiresDrainPass]
+  /// then decides which of the loaded records are actually processed.
   static const Set<LocalActivityUploadStatus> _drainableStatuses = {
     LocalActivityUploadStatus.pending,
     LocalActivityUploadStatus.failed,
     LocalActivityUploadStatus.uploaded,
   };
+
+  /// Whether the drain must act on [record]. The pass carries two distinct
+  /// responsibilities, both resolved by
+  /// [ActivityUploadService.performUploadAttempt] (which uploads a not-yet-
+  /// uploaded record and, for an already-uploaded one, only finishes its GPX
+  /// cleanup):
+  /// - **upload**: a fresh `pending` record, or a `failed` one whose failure
+  ///   was transient and so stays auto-retryable (`autoRetryEligible`); or
+  /// - **cleanup**: an already-`uploaded` record whose post-upload GPX cleanup
+  ///   was deferred (`gpxCleanupPending`) and must be retried, with no network
+  ///   upload.
+  static bool _requiresDrainPass(LocalActivityRecord record) {
+    return record.uploadStatus == LocalActivityUploadStatus.pending ||
+        record.autoRetryEligible ||
+        record.gpxCleanupPending;
+  }
 
   final LocalActivityRepository _repository;
   final ActivityUploadService _uploadService;
@@ -125,12 +146,7 @@ class ActivityUploadQueue {
     }
 
     final records = await _repository.listByUploadStatus(_drainableStatuses);
-    final retryableRecords = records.where(
-      (record) =>
-          record.uploadStatus == LocalActivityUploadStatus.pending ||
-          record.autoRetryEligible ||
-          record.gpxCleanupPending,
-    );
+    final retryableRecords = records.where(_requiresDrainPass);
     final pending = profileProvider == null
         ? retryableRecords.toList()
         : _recordsForActiveProfile(retryableRecords.toList(), activeProfile);

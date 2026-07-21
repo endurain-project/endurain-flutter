@@ -54,21 +54,24 @@ void main() {
       expect(identical(resolved, services), isTrue);
     });
 
-    testWidgets('falls back to AppServices.instance without a scope', (
-      tester,
-    ) async {
-      late final AppServices resolved;
+    testWidgets('throws a clear error when there is no scope', (tester) async {
+      Object? caught;
 
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            resolved = AppScope.servicesOf(context, listen: false);
+            try {
+              AppScope.servicesOf(context, listen: false);
+            } catch (error) {
+              caught = error;
+            }
             return const SizedBox.shrink();
           },
         ),
       );
 
-      expect(identical(resolved, AppServices.instance), isTrue);
+      expect(caught, isA<FlutterError>());
+      expect('$caught', contains('AppScope'));
     });
   });
 

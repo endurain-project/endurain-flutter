@@ -56,17 +56,11 @@ class HealthSyncService {
   final Future<ConnectionProfile?> Function() _activeConnectionProfile;
   final DateTime Function() _now;
 
-  List<HealthWorkout> _lastCandidates = const [];
-  String? _candidateProfileId;
-  HealthImportRange? _candidateRange;
-  HealthImportBounds? _candidateBounds;
-  DateTime? _nextPageEndExclusive;
-  bool _availableHasMore = false;
-  int _routeConsentDeniedCount = 0;
+  final _DiscoveryCursor _cursor = _DiscoveryCursor();
   final SerialTaskQueue _queue = SerialTaskQueue();
 
   /// Number of workouts in the latest read whose route data could not be read.
-  int get routeConsentDeniedCount => _routeConsentDeniedCount;
+  int get routeConsentDeniedCount => _cursor.routeConsentDeniedCount;
 
   /// Returns `true` when auto-sync on app resume has been enabled by the user.
   ///
@@ -178,18 +172,18 @@ class HealthSyncService {
       await _adapter.revokePermissions();
       await _syncSettings.clearForProfile(profile.id);
       await _importRepo.clearForProfile(profile.id);
-      _lastCandidates = const [];
-      _candidateProfileId = null;
-      _candidateRange = null;
-      _candidateBounds = null;
-      _nextPageEndExclusive = null;
-      _availableHasMore = false;
-      _routeConsentDeniedCount = 0;
+      _cursor.reset();
     });
   }
 
-  Future<void> removeImportProvenance(String localActivityId) {
-    return _importRepo.removeByLocalActivityId(localActivityId);
+  /// Clears the route-scoped discovery cursor and candidate cache.
+  ///
+  /// The owning `HealthSyncController` calls this on dispose so the importable
+  /// list's view state does not linger on this app-lifetime service after the
+  /// user leaves the health-sync route. Serialized against in-flight discovery
+  /// so any concurrent page read completes first.
+  Future<void> clearDiscoveryCache() {
+    return _serialize(() async => _cursor.reset());
   }
 
   Future<DateTime?> lastSyncAt() async {
@@ -199,7 +193,12 @@ class HealthSyncService {
 
   // ── Preview ─────────────────────────────────────────────────────────────
 
-  /// Loads the first page from the default 30-day range.
+  /// Loads the first page of importable workouts from the default 30-day
+  /// range, discarding pagination metadata.
+  ///
+  /// A convenience wrapper over [loadAvailable] for callers and tests that only
+  /// need the items; the controller uses [loadAvailable] directly so it can
+  /// page with `hasMore`.
   Future<List<HealthWorkout>> listImportable() {
     return loadAvailable().then((page) => page.items);
   }
@@ -218,7 +217,7 @@ class HealthSyncService {
       final profile = await _requireActiveProfile();
       return _loadAvailableForProfile(
         profile,
-        range: _candidateRange ?? HealthImportRange.defaultRange,
+        range: _cursor.range ?? HealthImportRange.defaultRange,
         reset: false,
       );
     });
@@ -230,35 +229,24 @@ class HealthSyncService {
     required bool reset,
   }) async {
     if (!_healthSyncEnabled) {
-      _lastCandidates = const [];
-      _candidateProfileId = null;
-      _candidateRange = null;
-      _candidateBounds = null;
-      _nextPageEndExclusive = null;
-      _availableHasMore = false;
+      _cursor.reset();
       return const HealthWorkoutPage(items: [], hasMore: false);
     }
 
-    if (reset ||
-        _candidateProfileId != profile.id ||
-        _candidateRange != range) {
-      final bounds = range.resolve(_now());
-      _lastCandidates = const [];
-      _candidateProfileId = profile.id;
-      _candidateRange = range;
-      _candidateBounds = bounds;
-      _nextPageEndExclusive = bounds.endExclusive;
-      _availableHasMore = bounds.endExclusive.isAfter(bounds.startInclusive);
-      _routeConsentDeniedCount = 0;
+    if (reset || _cursor.profileId != profile.id || _cursor.range != range) {
+      _cursor.begin(
+        profileId: profile.id,
+        range: range,
+        bounds: range.resolve(_now()),
+      );
     }
 
-    final bounds = _candidateBounds!;
-    final pageEndExclusive = _nextPageEndExclusive!;
-    if (!_availableHasMore ||
-        !pageEndExclusive.isAfter(bounds.startInclusive)) {
-      _availableHasMore = false;
+    final bounds = _cursor.bounds!;
+    final pageEndExclusive = _cursor.nextPageEndExclusive!;
+    if (!_cursor.hasMore || !pageEndExclusive.isAfter(bounds.startInclusive)) {
+      _cursor.hasMore = false;
       return HealthWorkoutPage(
-        items: List.unmodifiable(_lastCandidates),
+        items: List.unmodifiable(_cursor.candidates),
         hasMore: false,
       );
     }
@@ -309,27 +297,27 @@ class HealthSyncService {
 
     await _ensureProfileUnchanged(profile);
 
-    final candidatesById = {
-      for (final workout in _lastCandidates) workout.sourceId: workout,
+    final mergedById = {
+      for (final workout in _cursor.candidates) workout.sourceId: workout,
       for (final workout in candidates) workout.sourceId: workout,
     };
-    _lastCandidates = candidatesById.values.toList()
+    _cursor.candidates = mergedById.values.toList()
       ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-    _nextPageEndExclusive = pageStart;
-    _availableHasMore = pageStart.isAfter(bounds.startInclusive);
-    _routeConsentDeniedCount += _adapter.routeConsentDeniedCount;
+    _cursor.nextPageEndExclusive = pageStart;
+    _cursor.hasMore = pageStart.isAfter(bounds.startInclusive);
+    _cursor.routeConsentDeniedCount += _adapter.routeConsentDeniedCount;
     _diagnostics.recordBreadcrumbSync(
       DiagnosticsEvents.healthListImportable,
       details: {
         'total': all.length,
         'importable': candidates.where((w) => w.hasRoute).length,
         'no_route': candidates.where((w) => !w.hasRoute).length,
-        'has_more': _availableHasMore,
+        'has_more': _cursor.hasMore,
       },
     );
     return HealthWorkoutPage(
-      items: List.unmodifiable(_lastCandidates),
-      hasMore: _availableHasMore,
+      items: List.unmodifiable(_cursor.candidates),
+      hasMore: _cursor.hasMore,
     );
   }
 
@@ -408,7 +396,7 @@ class HealthSyncService {
 
   /// Imports the workouts identified by [sourceIds].
   ///
-  /// Resolves each ID against the most recent [listImportable] result. Skips
+  /// Resolves each ID against the most recent [loadAvailable] result. Skips
   /// IDs that are non-importable (no GPS route), already imported, or not in
   /// the current candidate list (idempotent / safe to call twice).
   ///
@@ -424,7 +412,7 @@ class HealthSyncService {
     final ids = Set<String>.of(sourceIds);
     return _serialize(() async {
       final profile = await _requireActiveProfile();
-      if (_candidateProfileId != profile.id) {
+      if (_cursor.profileId != profile.id) {
         await _loadAvailableForProfile(
           profile,
           range: HealthImportRange.defaultRange,
@@ -439,7 +427,7 @@ class HealthSyncService {
     ConnectionProfile profile,
     Set<String> sourceIds,
   ) async {
-    final candidates = List<HealthWorkout>.of(_lastCandidates);
+    final candidates = List<HealthWorkout>.of(_cursor.candidates);
 
     final toImport = candidates
         .where((w) => sourceIds.contains(w.sourceId) && w.hasRoute)
@@ -480,10 +468,13 @@ class HealthSyncService {
     return (imported: imported, failed: failed);
   }
 
-  /// Imports **all** importable candidates from the most recent
-  /// [listImportable] result.
+  /// Imports **all** route-bearing candidates discovered in the default
+  /// 30-day range.
   ///
-  /// Bounded convenience operation for the auto-sync-on-resume path.
+  /// Ignores any wider range from a prior [loadAvailable] preview and
+  /// re-discovers the default range before importing. The resume path performs
+  /// the same import through [autoSyncOnResume]; this is the unconditional
+  /// entry point for one-shot "import everything" flows.
   Future<({int imported, int failed})> importAll() {
     if (!_healthSyncEnabled) {
       return Future.value((imported: 0, failed: 0));
@@ -519,7 +510,7 @@ class HealthSyncService {
       range: HealthImportRange.defaultRange,
       reset: true,
     );
-    final ids = _lastCandidates
+    final ids = _cursor.candidates
         .where((workout) => workout.hasRoute)
         .map((workout) => workout.sourceId)
         .toSet();
@@ -532,11 +523,12 @@ class HealthSyncService {
     ConnectionProfile profile,
     HealthWorkout workout,
   ) async {
-    final legacyLocalId = await _importRepo.localActivityIdFor(
+    final existingMappedLocalId = await _importRepo.localActivityIdFor(
       profileId: profile.id,
       sourceId: workout.sourceId,
     );
-    final localId = legacyLocalId ?? _localIdFor(profile.id, workout.sourceId);
+    final localId =
+        existingMappedLocalId ?? _localIdFor(profile.id, workout.sourceId);
     final existing = await _localActivities.get(localId);
     if (existing != null) {
       if (existing.connectionOrigin != profile.origin ||
@@ -572,7 +564,7 @@ class HealthSyncService {
       // Derive the upload idempotency key from the stable source workout UUID
       // so a re-import (e.g. after the local dedup table is lost) collapses to
       // the same server activity instead of creating a duplicate.
-      idempotencyKey: legacyLocalId == null
+      idempotencyKey: existingMappedLocalId == null
           ? localId
           : 'health_${workout.sourceId}',
       connectionOrigin: profile.origin,
@@ -608,4 +600,46 @@ class HealthSyncService {
 
   Future<T> _serialize<T>(Future<T> Function() operation) =>
       _queue.run(operation);
+}
+
+/// Route-scoped discovery/pagination state for the importable-workout list.
+///
+/// Groups the candidate cache and paging bounds that back a single health-sync
+/// route so this view state is a cohesive unit rather than seven loose fields
+/// on the service. `HealthSyncService.clearDiscoveryCache` resets it when the
+/// route is torn down.
+class _DiscoveryCursor {
+  List<HealthWorkout> candidates = const [];
+  String? profileId;
+  HealthImportRange? range;
+  HealthImportBounds? bounds;
+  DateTime? nextPageEndExclusive;
+  bool hasMore = false;
+  int routeConsentDeniedCount = 0;
+
+  /// Starts a fresh discovery pass for [profileId] over [range]/[bounds].
+  void begin({
+    required String profileId,
+    required HealthImportRange range,
+    required HealthImportBounds bounds,
+  }) {
+    candidates = const [];
+    this.profileId = profileId;
+    this.range = range;
+    this.bounds = bounds;
+    nextPageEndExclusive = bounds.endExclusive;
+    hasMore = bounds.endExclusive.isAfter(bounds.startInclusive);
+    routeConsentDeniedCount = 0;
+  }
+
+  /// Drops all cursor state so no route-scoped candidates linger.
+  void reset() {
+    candidates = const [];
+    profileId = null;
+    range = null;
+    bounds = null;
+    nextPageEndExclusive = null;
+    hasMore = false;
+    routeConsentDeniedCount = 0;
+  }
 }

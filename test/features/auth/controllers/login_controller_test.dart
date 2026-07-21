@@ -53,9 +53,10 @@ void main() {
         ),
         appLinksService: const EmptyAppLinksService(),
       );
-      controller.serverUrlController.text = 'https://example.test';
 
-      final autoRedirectProvider = await controller.submitServerUrl();
+      final autoRedirectProvider = await controller.submitServerUrl(
+        'https://example.test',
+      );
 
       expect(autoRedirectProvider, isNull);
       expect(controller.isStep2, isTrue);
@@ -79,11 +80,11 @@ void main() {
         ),
         appLinksService: const EmptyAppLinksService(),
       );
-      controller.serverUrlController.text = 'https://example.test';
-      controller.usernameController.text = 'joao';
-      controller.passwordController.text = 'secret';
-
-      await controller.submitLogin();
+      await controller.submitLogin(
+        serverUrl: 'https://example.test',
+        username: 'joao',
+        password: 'secret',
+      );
 
       expect(controller.showMfaInput, isTrue);
       expect(controller.isLoading, isFalse);
@@ -114,13 +115,15 @@ void main() {
         appLinksService: appLinks,
       );
       final loginCompleted = Completer<void>();
-      controller.serverUrlController.text = 'https://example.test';
       controller.startSsoCallbackListener(
         onLoginSuccess: loginCompleted.complete,
         onError: (error) => fail(error.toString()),
       );
 
-      await controller.beginSsoLogin(const IdentityProviderFixture().provider);
+      await controller.beginSsoLogin(
+        const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
+      );
       appLinks.add(
         Uri.parse('endurain://auth/sso/callback?session_id=session-1'),
       );
@@ -219,9 +222,8 @@ void main() {
         ),
         appLinksService: const EmptyAppLinksService(),
       );
-      controller.serverUrlController.text = 'https://example.test';
 
-      final provider = await controller.submitServerUrl();
+      final provider = await controller.submitServerUrl('https://example.test');
 
       expect(provider?.slug, 'keycloak');
       controller.dispose();
@@ -241,9 +243,8 @@ void main() {
         ),
         appLinksService: const EmptyAppLinksService(),
       );
-      controller.serverUrlController.text = 'https://example.test';
 
-      final provider = await controller.submitServerUrl();
+      final provider = await controller.submitServerUrl('https://example.test');
 
       expect(provider, isNull);
       expect(controller.isStep2, isTrue);
@@ -266,9 +267,8 @@ void main() {
         onLoginSuccess: () => fail('Login should not complete.'),
         onError: errors.add,
       );
-      controller.serverUrlController.text = 'https://example.test';
 
-      final provider = await controller.submitServerUrl();
+      final provider = await controller.submitServerUrl('https://example.test');
 
       expect(provider, isNull);
       expect(controller.isStep2, isFalse);
@@ -287,10 +287,10 @@ void main() {
         ),
         appLinksService: const EmptyAppLinksService(),
       );
-      controller.serverUrlController.text = 'https://example.test';
 
       final oauthUrl = await controller.beginSsoLogin(
         const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
       );
 
       expect(oauthUrl, isNotNull);
@@ -318,10 +318,9 @@ void main() {
         onError: errors.add,
       );
       // No server URL configured, so initiateOAuth throws.
-      controller.serverUrlController.text = '';
-
       final oauthUrl = await controller.beginSsoLogin(
         const IdentityProviderFixture().provider,
+        serverUrl: '',
       );
 
       expect(oauthUrl, isNull);
@@ -362,11 +361,11 @@ void main() {
         onLoginSuccess: loginCompleted.complete,
         onError: (error) => fail(error.toString()),
       );
-      controller.serverUrlController.text = 'https://example.test';
-      controller.usernameController.text = 'joao';
-      controller.passwordController.text = 'secret';
-
-      await controller.submitLogin();
+      await controller.submitLogin(
+        serverUrl: 'https://example.test',
+        username: 'joao',
+        password: 'secret',
+      );
       await loginCompleted.future.timeout(const Duration(seconds: 1));
 
       expect(
@@ -391,11 +390,11 @@ void main() {
         onLoginSuccess: () => fail('Login should not complete.'),
         onError: errors.add,
       );
-      controller.serverUrlController.text = 'https://example.test';
-      controller.usernameController.text = 'joao';
-      controller.passwordController.text = 'wrong';
-
-      await controller.submitLogin();
+      await controller.submitLogin(
+        serverUrl: 'https://example.test',
+        username: 'joao',
+        password: 'wrong',
+      );
 
       expect(controller.isLoading, isFalse);
       expect(errors, hasLength(1));
@@ -433,15 +432,14 @@ void main() {
         onLoginSuccess: loginCompleted.complete,
         onError: (error) => fail(error.toString()),
       );
-      controller.serverUrlController.text = 'https://example.test';
-      controller.usernameController.text = 'joao';
-      controller.passwordController.text = 'secret';
-
-      await controller.submitLogin();
+      await controller.submitLogin(
+        serverUrl: 'https://example.test',
+        username: 'joao',
+        password: 'secret',
+      );
       expect(controller.showMfaInput, isTrue);
 
-      controller.mfaCodeController.text = '123456';
-      await controller.submitMfa();
+      await controller.submitMfa('123456');
       await loginCompleted.future.timeout(const Duration(seconds: 1));
 
       expect(
@@ -467,7 +465,7 @@ void main() {
         onError: errors.add,
       );
 
-      await controller.submitMfa();
+      await controller.submitMfa('123456');
 
       expect(
         errors.single,
@@ -538,18 +536,17 @@ void main() {
         appLinksService: const EmptyAppLinksService(),
       );
 
-      controller.serverUrlController.text = 'https://example.test';
-      await controller.submitServerUrl();
+      await controller.submitServerUrl('https://example.test');
       expect(controller.isStep2, isTrue);
       expect(controller.availableIdPs, isNotEmpty);
       expect(controller.serverSettings, isNotNull);
 
-      controller.usernameController.text = 'joao';
-      controller.passwordController.text = 'secret';
-      await controller.submitLogin();
+      await controller.submitLogin(
+        serverUrl: 'https://example.test',
+        username: 'joao',
+        password: 'secret',
+      );
       expect(controller.showMfaInput, isTrue);
-
-      controller.mfaCodeController.text = '123456';
 
       controller.backToServerStep();
       expect(controller.isStep2, isFalse);
@@ -558,7 +555,6 @@ void main() {
 
       controller.backFromMfa();
       expect(controller.showMfaInput, isFalse);
-      expect(controller.mfaCodeController.text, isEmpty);
 
       controller.setPasswordVisible(true);
       expect(controller.obscurePassword, isFalse);
@@ -568,7 +564,7 @@ void main() {
       controller.dispose();
     });
 
-    group('serverUrlIsHttp', () {
+    group('isInsecureHttpUrl', () {
       LoginController makeController() => LoginController(
         authCoordinator: _repository(
           storage: SecureStorageService(),
@@ -579,24 +575,20 @@ void main() {
 
       test('is false when URL is https', () {
         final controller = makeController();
-        controller.serverUrlController.text = 'https://example.test';
-        expect(controller.serverUrlIsHttp, isFalse);
+        expect(controller.isInsecureHttpUrl('https://example.test'), isFalse);
         controller.dispose();
       });
 
       test('is true when URL is http', () {
         final controller = makeController();
-        controller.serverUrlController.text = 'http://example.test';
-        expect(controller.serverUrlIsHttp, isTrue);
+        expect(controller.isInsecureHttpUrl('http://example.test'), isTrue);
         controller.dispose();
       });
 
       test('is false for empty or invalid input', () {
         final controller = makeController();
-        controller.serverUrlController.text = '';
-        expect(controller.serverUrlIsHttp, isFalse);
-        controller.serverUrlController.text = 'not-a-url';
-        expect(controller.serverUrlIsHttp, isFalse);
+        expect(controller.isInsecureHttpUrl(''), isFalse);
+        expect(controller.isInsecureHttpUrl('not-a-url'), isFalse);
         controller.dispose();
       });
 
@@ -609,8 +601,7 @@ void main() {
           appLinksService: const EmptyAppLinksService(),
           config: const AppConfig(cloudBaseUrl: 'https://example.test'),
         );
-        controller.serverUrlController.text = 'http://example.test';
-        expect(controller.serverUrlIsHttp, isFalse);
+        expect(controller.isInsecureHttpUrl('http://example.test'), isFalse);
         controller.dispose();
       });
     });
@@ -655,17 +646,17 @@ void main() {
         appLinksService: const EmptyAppLinksService(),
         mapSettingsRepository: mapRepo,
       );
-      controller.serverUrlController.text = 'https://example.test';
-
-      await controller.submitServerUrl();
+      await controller.submitServerUrl('https://example.test');
       expect(
         await mapRepo.getTileServerUrl(origin: 'https://example.test'),
         MapConstants.defaultTileServerUrl,
       );
 
-      controller.usernameController.text = 'joao';
-      controller.passwordController.text = 'secret';
-      await controller.submitLogin();
+      await controller.submitLogin(
+        serverUrl: 'https://example.test',
+        username: 'joao',
+        password: 'secret',
+      );
 
       expect(
         await mapRepo.getTileServerUrl(origin: 'https://example.test'),

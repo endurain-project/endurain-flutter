@@ -1,6 +1,7 @@
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
@@ -8,6 +9,7 @@ import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:fake_async/fake_async.dart';
@@ -688,6 +690,134 @@ void main() {
           expect(recorder.lastStartRequest?.heartRateDeviceId, 'AA:BB:CC');
         },
       );
+
+      test(
+        'passes the prepared power and cadence device ids to the recorder',
+        () async {
+          final recorder = _ControllableRecorder();
+          final service = _buildService(
+            recorder: recorder,
+            preparePowerSource: () async => 'PW:11:22',
+            prepareCadenceSource: () async => 'CA:33:44',
+          );
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+
+          expect(recorder.lastStartRequest?.powerDeviceId, 'PW:11:22');
+          expect(recorder.lastStartRequest?.cadenceDeviceId, 'CA:33:44');
+        },
+      );
+    });
+
+    group('power and cadence stamping', () {
+      final pointTime = DateTime.utc(2026, 5, 30, 10, 0, 30);
+
+      test('stamps the nearest live power and cadence onto points', () async {
+        final recorder = _ControllableRecorder();
+        final power =
+            StreamController<({DateTime timestamp, int watts})>.broadcast();
+        final cadence =
+            StreamController<({DateTime timestamp, int rpm})>.broadcast();
+        addTearDown(power.close);
+        addTearDown(cadence.close);
+        final service = _buildService(
+          recorder: recorder,
+          powerReadings: power.stream,
+          cadenceReadings: cadence.stream,
+        );
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        power.add((timestamp: pointTime, watts: 240));
+        cadence.add((timestamp: pointTime, rpm: 88));
+        await pumpEventQueue();
+        recorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+
+        expect(service.state.points.single.powerWatts, 240);
+        expect(service.state.points.single.cadenceRpm, 88);
+      });
+
+      test('exposes live power and cadence before any point', () async {
+        final recorder = _ControllableRecorder();
+        final power =
+            StreamController<({DateTime timestamp, int watts})>.broadcast();
+        final cadence =
+            StreamController<({DateTime timestamp, int rpm})>.broadcast();
+        addTearDown(power.close);
+        addTearDown(cadence.close);
+        final service = _buildService(
+          recorder: recorder,
+          powerReadings: power.stream,
+          cadenceReadings: cadence.stream,
+        );
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        expect(service.state.currentPowerWatts, isNull);
+        expect(service.state.currentCadenceRpm, isNull);
+
+        power.add((timestamp: pointTime, watts: 240));
+        cadence.add((timestamp: pointTime, rpm: 88));
+        await pumpEventQueue();
+
+        expect(service.state.points, isEmpty);
+        expect(service.state.currentPowerWatts, 240);
+        expect(service.state.currentCadenceRpm, 88);
+      });
+
+      test('leaves power and cadence null outside the window', () async {
+        final recorder = _ControllableRecorder();
+        final power =
+            StreamController<({DateTime timestamp, int watts})>.broadcast();
+        final cadence =
+            StreamController<({DateTime timestamp, int rpm})>.broadcast();
+        addTearDown(power.close);
+        addTearDown(cadence.close);
+        final service = _buildService(
+          recorder: recorder,
+          powerReadings: power.stream,
+          cadenceReadings: cadence.stream,
+        );
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        // 30s before the point is outside the 10s freshness window.
+        power.add((
+          timestamp: pointTime.subtract(const Duration(seconds: 30)),
+          watts: 240,
+        ));
+        cadence.add((
+          timestamp: pointTime.subtract(const Duration(seconds: 30)),
+          rpm: 88,
+        ));
+        await pumpEventQueue();
+        recorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+
+        expect(service.state.points.single.powerWatts, isNull);
+        expect(service.state.points.single.cadenceRpm, isNull);
+      });
+
+      test('leaves power and cadence null without a source', () async {
+        final recorder = _ControllableRecorder();
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        recorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+
+        expect(service.state.points.single.powerWatts, isNull);
+        expect(service.state.points.single.cadenceRpm, isNull);
+      });
     });
   });
 }
@@ -698,9 +828,41 @@ ActivityRecordingService _buildService({
   DiagnosticsRecorder? diagnostics,
   DateTime Function()? now,
   Stream<({DateTime timestamp, int bpm})>? heartRateReadings,
-  Duration heartRateFreshness = const Duration(seconds: 10),
+  Stream<({DateTime timestamp, int watts})>? powerReadings,
+  Stream<({DateTime timestamp, int rpm})>? cadenceReadings,
+  Duration sensorFreshness = const Duration(seconds: 10),
   Future<String?> Function()? prepareHeartRateSource,
+  Future<String?> Function()? preparePowerSource,
+  Future<String?> Function()? prepareCadenceSource,
 }) {
+  // Adapt the per-kind test streams/preparers to the unified sensor pipeline so
+  // the individual test bodies keep expressing intent in typed terms.
+  final sensorStreams = <Stream<RecordedSensorSample>>[
+    if (heartRateReadings != null)
+      heartRateReadings.map(
+        (reading) => RecordedSensorSample(
+          kind: RecordedSensorKind.heartRate,
+          timestamp: reading.timestamp,
+          value: reading.bpm,
+        ),
+      ),
+    if (powerReadings != null)
+      powerReadings.map(
+        (reading) => RecordedSensorSample(
+          kind: RecordedSensorKind.power,
+          timestamp: reading.timestamp,
+          value: reading.watts,
+        ),
+      ),
+    if (cadenceReadings != null)
+      cadenceReadings.map(
+        (reading) => RecordedSensorSample(
+          kind: RecordedSensorKind.cadence,
+          timestamp: reading.timestamp,
+          value: reading.rpm,
+        ),
+      ),
+  ];
   return ActivityRecordingService(
     recorder: recorder,
     locationService:
@@ -708,9 +870,15 @@ ActivityRecordingService _buildService({
         LocationService(platformAdapter: RecordingLocationPlatformAdapter()),
     diagnostics: diagnostics,
     now: now,
-    heartRateReadings: heartRateReadings,
-    heartRateFreshness: heartRateFreshness,
-    prepareHeartRateSource: prepareHeartRateSource,
+    sensorReadings: sensorStreams.isEmpty
+        ? null
+        : StreamGroup.merge(sensorStreams),
+    prepareSensorSources: <RecordedSensorKind, Future<String?> Function()>{
+      RecordedSensorKind.heartRate: ?prepareHeartRateSource,
+      RecordedSensorKind.power: ?preparePowerSource,
+      RecordedSensorKind.cadence: ?prepareCadenceSource,
+    },
+    sensorFreshness: sensorFreshness,
   );
 }
 

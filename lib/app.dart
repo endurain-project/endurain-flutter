@@ -36,9 +36,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     // Production always injects `services` from the composition root (`main`).
-    // The `AppServices.instance` fallback is only reached by tests that build
-    // `App()` without supplying services.
-    _services = widget.services ?? AppServices.instance;
+    // A locally-constructed fallback keeps `App()` self-sufficient for tests
+    // that build it without supplying services — there is no shared global.
+    _services = widget.services ?? AppServices();
     WidgetsBinding.instance.addObserver(this);
     _ownsSessionController = widget.sessionController == null;
     _sessionController =
@@ -89,10 +89,11 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       if (_services.config.healthSyncEnabled) {
         unawaited(_autoSyncHealthOnResume());
       }
-      // Reconnect a remembered heart-rate sensor that may have dropped while
-      // backgrounded. Best-effort and self-guarded: it no-ops when none is
-      // paired, Bluetooth is off, or a recording currently owns the sensor.
-      unawaited(_services.heartRateSensorService.tryReconnectRemembered());
+      // Reconnect any remembered heart-rate, power, and cadence sensors that
+      // may have dropped while backgrounded. Best-effort and self-guarded: each
+      // no-ops when none is paired, Bluetooth is off, or a recording currently
+      // owns the sensor.
+      unawaited(_services.reconnectRememberedSensors());
     }
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {

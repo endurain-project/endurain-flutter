@@ -33,6 +33,8 @@ class ActivityStatsDisplay extends StatelessWidget {
     // before the next distance-filtered GPS point lands. Fall back to the
     // per-point value (e.g. Android, where the native recorder stamps points).
     final heartRateBpm = state.currentHeartRateBpm ?? stats.currentHeartRateBpm;
+    final powerWatts = state.currentPowerWatts ?? stats.currentPowerWatts;
+    final cadenceRpm = state.currentCadenceRpm ?? stats.currentCadenceRpm;
 
     return Wrap(
       alignment: WrapAlignment.center,
@@ -67,6 +69,18 @@ class ActivityStatsDisplay extends StatelessWidget {
           label: l10n.activityStatHeartRate,
           value: formatter.formatHeartRate(heartRateBpm),
         ),
+        // Power and cadence are shown only once a reading arrives, so users
+        // without those sensors are not shown perpetually empty tiles.
+        if (powerWatts != null)
+          _StatItem(
+            label: l10n.activityStatPower,
+            value: formatter.formatPower(powerWatts),
+          ),
+        if (cadenceRpm != null)
+          _StatItem(
+            label: l10n.activityStatCadence,
+            value: formatter.formatCadence(cadenceRpm),
+          ),
       ],
     );
   }

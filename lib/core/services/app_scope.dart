@@ -12,11 +12,17 @@ class AppScope extends InheritedWidget {
         : context.getElementForInheritedWidgetOfExactType<AppScope>()?.widget
               as AppScope?;
 
-    // Last-resort fallback for contexts not wrapped in an [AppScope] (e.g. some
-    // tests). Production widgets are always built under the root [AppScope], so
-    // this should resolve the scoped services; the global is only a safety net,
-    // never the intended path.
-    return scope?.services ?? AppServices.instance;
+    // Production widgets are always built under the root [AppScope] (provided by
+    // `App`), and the widget test harness provides one too. A missing scope is a
+    // wiring bug, so fail loudly rather than silently reaching for a global.
+    if (scope == null) {
+      throw FlutterError(
+        'AppScope.servicesOf() was called with a context that has no AppScope '
+        'ancestor. The root App provides an AppScope in production; wrap the '
+        'widget under test in one (the widget test harness does this).',
+      );
+    }
+    return scope.services;
   }
 
   @override

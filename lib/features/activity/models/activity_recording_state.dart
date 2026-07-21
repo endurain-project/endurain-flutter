@@ -5,6 +5,7 @@ import 'package:endurain/features/activity/models/activity_recording_error.dart'
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 
 /// Ephemeral UI/recording status used by [ActivityRecordingState], the live
 /// state pushed to the controller/screen during a session. The durable,
@@ -31,6 +32,8 @@ class ActivityRecordingState {
     this.lastError,
     this.elapsedDurationSeconds = 0,
     this.currentHeartRateBpm,
+    this.currentPowerWatts,
+    this.currentCadenceRpm,
     List<ActivityTrackPoint> points = const [],
     List<ActivityTrackSegment> segments = const [],
   }) : _segments = List<ActivityTrackSegment>.unmodifiable(
@@ -56,6 +59,18 @@ class ActivityRecordingState {
   /// track points.
   final int? currentHeartRateBpm;
 
+  /// Most recent live power (watts) from a connected power meter, updated as
+  /// readings arrive rather than only when a GPS point is recorded. `null` when
+  /// no live power stream is feeding the recording. Surfaced live while
+  /// recording; the durable per-point power still lives on the track points.
+  final int? currentPowerWatts;
+
+  /// Most recent live cadence (rpm) from a connected cadence sensor, updated as
+  /// readings arrive rather than only when a GPS point is recorded. `null` when
+  /// no live cadence stream is feeding the recording. Surfaced live while
+  /// recording; the durable per-point cadence still lives on the track points.
+  final int? currentCadenceRpm;
+
   final List<ActivityTrackPoint> _points;
   final List<ActivityTrackSegment> _segments;
 
@@ -77,6 +92,8 @@ class ActivityRecordingState {
     Object? lastError = kUnset,
     int? elapsedDurationSeconds,
     Object? currentHeartRateBpm = kUnset,
+    Object? currentPowerWatts = kUnset,
+    Object? currentCadenceRpm = kUnset,
     List<ActivityTrackPoint>? points,
     List<ActivityTrackSegment>? segments,
   }) {
@@ -100,6 +117,12 @@ class ActivityRecordingState {
       currentHeartRateBpm: identical(currentHeartRateBpm, kUnset)
           ? this.currentHeartRateBpm
           : currentHeartRateBpm as int?,
+      currentPowerWatts: identical(currentPowerWatts, kUnset)
+          ? this.currentPowerWatts
+          : currentPowerWatts as int?,
+      currentCadenceRpm: identical(currentCadenceRpm, kUnset)
+          ? this.currentCadenceRpm
+          : currentCadenceRpm as int?,
       points: points ?? _points,
       segments: segments ?? (points == null ? _segments : const []),
     );
@@ -119,6 +142,27 @@ class ActivityRecordingState {
 
   ActivityRecordingState startNewSegment() {
     return copyWith(segments: [..._segments, ActivityTrackSegment()]);
+  }
+
+  /// The current live value for [kind], or `null` when none has been reported.
+  int? currentSensorValue(RecordedSensorKind kind) {
+    return switch (kind) {
+      RecordedSensorKind.heartRate => currentHeartRateBpm,
+      RecordedSensorKind.power => currentPowerWatts,
+      RecordedSensorKind.cadence => currentCadenceRpm,
+    };
+  }
+
+  /// Returns a copy with the live value for [kind] set to [value].
+  ActivityRecordingState withCurrentSensorValue(
+    RecordedSensorKind kind,
+    int value,
+  ) {
+    return switch (kind) {
+      RecordedSensorKind.heartRate => copyWith(currentHeartRateBpm: value),
+      RecordedSensorKind.power => copyWith(currentPowerWatts: value),
+      RecordedSensorKind.cadence => copyWith(currentCadenceRpm: value),
+    };
   }
 
   static List<ActivityTrackSegment> _segmentsFromPoints(

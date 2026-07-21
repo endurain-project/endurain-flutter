@@ -1,35 +1,39 @@
 import 'dart:async';
 
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
-import 'package:endurain/features/sensors/models/heart_rate_sample.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
-import 'package:endurain/features/sensors/services/heart_rate_sensor_adapter.dart';
+import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 
-/// App-lifetime coordinator for the external heart-rate sensor.
+/// App-lifetime coordinator for a single external sensor (a heart-rate strap,
+/// power meter, or cadence sensor).
 ///
-/// Wraps the [HeartRateSensorAdapter] boundary and adds the small amount of
-/// state the rest of the app needs: the latest sample, the current connection
-/// status, the connected device, and a remembered device for reconnecting.
+/// Wraps a [SensorConnectionAdapter] and adds the small amount of state the rest
+/// of the app needs: the latest measurement, the current connection status, the
+/// connected device, and a remembered device for reconnecting. One instance is
+/// created per measurement (heart rate, power, cadence), each remembering its
+/// device under a distinct preferences `rememberedKey`.
 ///
-/// It is owned by `AppServices` so a live sensor connection survives navigation
-/// between screens and is available to the recording pipeline later. Route
-/// controllers observe it; they must not dispose it.
-class HeartRateSensorService {
-  HeartRateSensorService({
-    required HeartRateSensorAdapter adapter,
+/// It is owned by `AppServices` so a live connection survives navigation between
+/// screens. Route controllers observe it; they must not dispose it.
+class SensorService {
+  SensorService({
+    required SensorConnectionAdapter adapter,
     required SensorPreferencesRepository preferences,
+    required String rememberedKey,
     bool Function()? canAutoReconnect,
     int autoReconnectAttempts = 4,
     Duration autoReconnectRetryDelay = const Duration(seconds: 2),
   }) : _adapter = adapter,
        _preferences = preferences,
+       _rememberedKey = rememberedKey,
        _canAutoReconnect = canAutoReconnect ?? _alwaysAllowReconnect,
        _autoReconnectAttempts = autoReconnectAttempts,
        _autoReconnectRetryDelay = autoReconnectRetryDelay {
     _statusSubscription = _adapter.connectionStatus.listen(_handleStatus);
-    _sampleSubscription = _adapter.heartRate.listen(_handleSample);
+    _measurementSubscription = _adapter.measurements.listen(_handleMeasurement);
     _bluetoothSubscription = _adapter.bluetoothState.listen(
       _handleBluetoothState,
     );
@@ -37,12 +41,13 @@ class HeartRateSensorService {
 
   static bool _alwaysAllowReconnect() => true;
 
-  final HeartRateSensorAdapter _adapter;
+  final SensorConnectionAdapter _adapter;
   final SensorPreferencesRepository _preferences;
+  final String _rememberedKey;
 
   /// Gate for automatic reconnection. Returns `false` while another owner (the
-  /// native recorder during a recording) holds the sensor, so best-effort
-  /// reconnect attempts never fight that handoff connection.
+  /// native recorder during an Android recording) holds the sensor, so
+  /// best-effort reconnect attempts never fight that handoff connection.
   final bool Function() _canAutoReconnect;
 
   /// Auto-connect retry policy. Right after a cold launch the platform may not
@@ -56,17 +61,17 @@ class HeartRateSensorService {
 
   final StreamController<SensorConnectionStatus> _statusController =
       StreamController<SensorConnectionStatus>.broadcast();
-  final StreamController<HeartRateSample> _sampleController =
-      StreamController<HeartRateSample>.broadcast();
+  final StreamController<SensorMeasurement> _measurementController =
+      StreamController<SensorMeasurement>.broadcast();
   final StreamController<SensorBluetoothState> _bluetoothController =
       StreamController<SensorBluetoothState>.broadcast();
 
   StreamSubscription<SensorConnectionStatus>? _statusSubscription;
-  StreamSubscription<HeartRateSample>? _sampleSubscription;
+  StreamSubscription<SensorMeasurement>? _measurementSubscription;
   StreamSubscription<SensorBluetoothState>? _bluetoothSubscription;
 
   SensorConnectionStatus _status = SensorConnectionStatus.disconnected;
-  HeartRateSample? _latestSample;
+  SensorMeasurement? _latestMeasurement;
   BleSensorDevice? _connectedDevice;
   SensorBluetoothState _bluetoothState = SensorBluetoothState.unknown;
   bool _reconnectInProgress = false;
@@ -74,8 +79,8 @@ class HeartRateSensorService {
   /// The most recent connection status.
   SensorConnectionStatus get status => _status;
 
-  /// The most recent heart-rate sample, or `null` before the first reading.
-  HeartRateSample? get latestSample => _latestSample;
+  /// The most recent measurement, or `null` before the first reading.
+  SensorMeasurement? get latestMeasurement => _latestMeasurement;
 
   /// The device currently connected or being connected to, or `null`.
   BleSensorDevice? get connectedDevice => _connectedDevice;
@@ -87,8 +92,8 @@ class HeartRateSensorService {
   Stream<SensorConnectionStatus> get connectionStatus =>
       _statusController.stream;
 
-  /// Live heart-rate measurements from the connected sensor.
-  Stream<HeartRateSample> get heartRate => _sampleController.stream;
+  /// Live measurements from the connected sensor.
+  Stream<SensorMeasurement> get measurements => _measurementController.stream;
 
   /// Host Bluetooth adapter state changes.
   Stream<SensorBluetoothState> get bluetoothState =>
@@ -101,10 +106,10 @@ class HeartRateSensorService {
   /// Requests the runtime permissions needed to scan and connect.
   Future<bool> ensurePermissions() => _adapter.ensurePermissions();
 
-  /// Scans for nearby heart-rate sensors.
+  /// Scans for nearby sensors of this service's kind.
   Stream<List<BleSensorDevice>> scan({
     Duration timeout = const Duration(seconds: 15),
-  }) => _adapter.scanForHeartRateSensors(timeout: timeout);
+  }) => _adapter.scanForSensors(timeout: timeout);
 
   /// Stops an in-progress scan.
   Future<void> stopScan() => _adapter.stopScan();
@@ -121,7 +126,7 @@ class HeartRateSensorService {
       _connectedDevice = null;
       rethrow;
     }
-    await _preferences.saveRememberedDevice(device);
+    await _preferences.saveRemembered(key: _rememberedKey, device: device);
   }
 
   /// Disconnects the active sensor without forgetting it.
@@ -130,23 +135,26 @@ class HeartRateSensorService {
     _connectedDevice = null;
   }
 
-  /// Returns the remembered heart-rate sensor, if any.
+  /// Returns the remembered sensor, if any.
   Future<BleSensorDevice?> rememberedDevice() =>
-      _preferences.getRememberedDevice();
+      _preferences.getRemembered(key: _rememberedKey);
+
+  /// Whether a sensor has been paired and remembered.
+  Future<bool> hasRememberedDevice() async =>
+      await _preferences.getRemembered(key: _rememberedKey) != null;
 
   /// Disconnects and clears the remembered sensor.
   Future<void> forget() async {
     await disconnect();
-    await _preferences.clearRememberedDevice();
+    await _preferences.clearRemembered(key: _rememberedKey);
   }
 
   /// Attempts to reconnect to the remembered sensor when Bluetooth is ready.
   ///
   /// Returns `true` when a reconnect was attempted. No-ops (returning `false`)
-  /// when reconnection is currently suppressed (see [_canAutoReconnect]), an
-  /// attempt is already in flight, a sensor is already connected/connecting,
-  /// nothing is remembered, or Bluetooth is not ready. Failures are swallowed:
-  /// automatic reconnection is best-effort and must not surface errors.
+  /// when an attempt is already in flight, a sensor is already
+  /// connected/connecting, nothing is remembered, or Bluetooth is not ready.
+  /// Failures are swallowed: automatic reconnection is best-effort.
   Future<bool> tryReconnectRemembered() async {
     if (!_canAutoReconnect() ||
         _reconnectInProgress ||
@@ -154,7 +162,7 @@ class HeartRateSensorService {
         _status == SensorConnectionStatus.connecting) {
       return false;
     }
-    final remembered = await _preferences.getRememberedDevice();
+    final remembered = await _preferences.getRemembered(key: _rememberedKey);
     if (remembered == null) {
       return false;
     }
@@ -172,11 +180,7 @@ class HeartRateSensorService {
     return true;
   }
 
-  /// Whether a heart-rate sensor has been paired and remembered.
-  Future<bool> hasRememberedDevice() async =>
-      await _preferences.getRememberedDevice() != null;
-
-  /// Best-effort automatic reconnect for app/map open.
+  /// Best-effort automatic reconnect for app/screen open.
   ///
   /// Activates the Bluetooth stack — requesting permission is a no-op when it
   /// was already granted for a previously-paired sensor — and reconnects the
@@ -193,7 +197,7 @@ class HeartRateSensorService {
         _status == SensorConnectionStatus.connecting) {
       return;
     }
-    if (await _preferences.getRememberedDevice() == null) {
+    if (await _preferences.getRemembered(key: _rememberedKey) == null) {
       return;
     }
     _autoConnectInProgress = true;
@@ -221,10 +225,10 @@ class HeartRateSensorService {
 
   Future<void> dispose() async {
     await _statusSubscription?.cancel();
-    await _sampleSubscription?.cancel();
+    await _measurementSubscription?.cancel();
     await _bluetoothSubscription?.cancel();
     await _statusController.close();
-    await _sampleController.close();
+    await _measurementController.close();
     await _bluetoothController.close();
     await _adapter.dispose();
   }
@@ -233,17 +237,17 @@ class HeartRateSensorService {
     _status = status;
     if (status == SensorConnectionStatus.disconnected ||
         status == SensorConnectionStatus.failed) {
-      _latestSample = null;
+      _latestMeasurement = null;
     }
     if (!_statusController.isClosed) {
       _statusController.add(status);
     }
   }
 
-  void _handleSample(HeartRateSample sample) {
-    _latestSample = sample;
-    if (!_sampleController.isClosed) {
-      _sampleController.add(sample);
+  void _handleMeasurement(SensorMeasurement measurement) {
+    _latestMeasurement = measurement;
+    if (!_measurementController.isClosed) {
+      _measurementController.add(measurement);
     }
   }
 
@@ -255,8 +259,6 @@ class HeartRateSensorService {
     }
     // Re-establish a remembered connection as soon as Bluetooth becomes ready
     // again (the user re-enabled it, or it powered up shortly after launch).
-    // Guarded inside [tryReconnectRemembered] so it never runs during a
-    // recording handoff.
     if (state == SensorBluetoothState.ready &&
         previous != SensorBluetoothState.ready) {
       unawaited(tryReconnectRemembered());

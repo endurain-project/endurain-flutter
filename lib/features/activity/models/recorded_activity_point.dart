@@ -22,6 +22,8 @@ class RecordedActivityPoint {
     this.speedMetersPerSecond,
     this.speedAccuracyMetersPerSecond,
     this.heartRateBpm,
+    this.powerWatts,
+    this.cadenceRpm,
   });
 
   factory RecordedActivityPoint.fromTrackPoint(
@@ -41,6 +43,8 @@ class RecordedActivityPoint {
       speedMetersPerSecond: point.speedMetersPerSecond,
       speedAccuracyMetersPerSecond: point.speedAccuracyMetersPerSecond,
       heartRateBpm: point.heartRateBpm,
+      powerWatts: point.powerWatts,
+      cadenceRpm: point.cadenceRpm,
     );
   }
 
@@ -56,6 +60,8 @@ class RecordedActivityPoint {
   final double? speedMetersPerSecond;
   final double? speedAccuracyMetersPerSecond;
   final int? heartRateBpm;
+  final int? powerWatts;
+  final int? cadenceRpm;
 
   ActivityTrackPoint toTrackPoint() {
     return ActivityTrackPoint(
@@ -70,6 +76,8 @@ class RecordedActivityPoint {
       speedAccuracyMetersPerSecond: speedAccuracyMetersPerSecond,
       headingAccuracyDegrees: headingAccuracyDegrees,
       heartRateBpm: heartRateBpm,
+      powerWatts: powerWatts,
+      cadenceRpm: cadenceRpm,
     );
   }
 
@@ -88,6 +96,8 @@ class RecordedActivityPoint {
       if (speedAccuracyMetersPerSecond != null)
         'spdAcc': speedAccuracyMetersPerSecond,
       if (heartRateBpm != null) 'hr': heartRateBpm,
+      if (powerWatts != null) 'pow': powerWatts,
+      if (cadenceRpm != null) 'cad': cadenceRpm,
     };
   }
 
@@ -121,6 +131,8 @@ class RecordedActivityPoint {
       speedMetersPerSecond: jsonDouble(json['spd']),
       speedAccuracyMetersPerSecond: jsonDouble(json['spdAcc']),
       heartRateBpm: jsonInt(json['hr']),
+      powerWatts: jsonInt(json['pow']),
+      cadenceRpm: jsonInt(json['cad']),
     );
   }
 

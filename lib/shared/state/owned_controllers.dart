@@ -12,6 +12,9 @@ import 'package:flutter/widgets.dart';
 /// This mixin centralizes that logic. Register controllers in `initState` with
 /// [registerController]; the mixin attaches the optional listener and, on
 /// dispose, detaches the listener and disposes only the controllers it created.
+/// For an app-lifetime controller the screen only observes (e.g. one obtained
+/// from `AppScope`), use [observeController] so its listener is detached on
+/// dispose but the controller itself is never disposed.
 ///
 /// Example:
 /// ```dart
@@ -50,6 +53,33 @@ mixin OwnedControllers<T extends StatefulWidget> on State<T> {
       _OwnedController(
         controller: controller,
         owns: injected == null,
+        onChanged: onChanged,
+      ),
+    );
+    return controller;
+  }
+
+  /// Registers an externally-owned [controller] the [State] observes but never
+  /// disposes.
+  ///
+  /// Attaches [onChanged] (removed automatically on dispose) but leaves the
+  /// controller's lifetime to its owner. Use this for app-lifetime controllers
+  /// obtained from the composition root (e.g. `AppScope`), whose lifetime is
+  /// not tied to the route — it avoids the "always injected, so the factory is
+  /// unreachable" awkwardness of passing a throwing `create` to
+  /// [registerController]. For a controller the screen builds locally
+  /// (own-or-injected), use [registerController] instead.
+  C observeController<C extends ChangeNotifier>(
+    C controller, {
+    VoidCallback? onChanged,
+  }) {
+    if (onChanged != null) {
+      controller.addListener(onChanged);
+    }
+    _ownedControllers.add(
+      _OwnedController(
+        controller: controller,
+        owns: false,
         onChanged: onChanged,
       ),
     );

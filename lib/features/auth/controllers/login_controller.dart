@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
@@ -29,12 +29,6 @@ class LoginController extends ChangeNotifier {
   final AppConfig _config;
   final DiagnosticsRecorder _diagnostics;
 
-  final formKey = GlobalKey<FormState>();
-  final serverUrlController = TextEditingController();
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
-  final mfaCodeController = TextEditingController();
-
   StreamSubscription<Uri>? _linkSubscription;
   VoidCallback? _onLoginSuccess;
   ValueChanged<Object>? _onError;
@@ -46,6 +40,7 @@ class LoginController extends ChangeNotifier {
   String? _mfaUsername;
   List<IdentityProvider> _availableIdPs = const [];
   ServerSettings? _serverSettings;
+  String _serverUrl = '';
 
   bool get isLoading => _isLoading;
   bool get obscurePassword => _obscurePassword;
@@ -54,20 +49,23 @@ class LoginController extends ChangeNotifier {
   List<IdentityProvider> get availableIdPs => List.unmodifiable(_availableIdPs);
   ServerSettings? get serverSettings => _serverSettings;
 
+  /// The server origin submitted for the current login flow.
+  String get serverUrl => _serverUrl;
+
   bool get localLoginEnabled => _serverSettings?.localLoginEnabled ?? true;
 
   /// The transport and build configuration for this controller.
   AppConfig get config => _config;
 
-  /// Returns `true` when the current server URL uses plain HTTP (not HTTPS)
-  /// AND the transport policy permits insecure transport for that URL.
+  /// Returns `true` when [rawUrl] uses plain HTTP (not HTTPS) AND the transport
+  /// policy permits insecure transport for that URL.
   ///
   /// Evaluated per-URL via [AppConfig.allowInsecureTransportFor], so the
   /// managed cloud origin (and any managed build) yields `false`: the UI then
   /// hides the "proceed anyway" warning and the submit path rejects the URL
   /// instead.
-  bool get serverUrlIsHttp {
-    final raw = serverUrlController.text.trim();
+  bool isInsecureHttpUrl(String rawUrl) {
+    final raw = rawUrl.trim();
     if (!_config.allowInsecureTransportFor(raw)) return false;
     final uri = Uri.tryParse(raw);
     return uri != null && uri.isScheme('http');
@@ -85,17 +83,18 @@ class LoginController extends ChangeNotifier {
     );
   }
 
-  Future<IdentityProvider?> submitServerUrl() async {
+  Future<IdentityProvider?> submitServerUrl(String serverUrl) async {
     _setLoading(true);
 
     try {
-      final serverUrl = serverUrlController.text.trim();
-      final settings = await _authCoordinator.getServerSettings(serverUrl);
+      final url = serverUrl.trim();
+      _serverUrl = url;
+      final settings = await _authCoordinator.getServerSettings(url);
 
       List<IdentityProvider> providers = const [];
       if (settings.ssoEnabled) {
         try {
-          providers = await _authCoordinator.getEnabledProviders(serverUrl);
+          providers = await _authCoordinator.getEnabledProviders(url);
         } catch (error) {
           // SSO discovery is best-effort: the server settings already loaded,
           // so fall back to local login. Record a sanitized breadcrumb so the
@@ -126,13 +125,17 @@ class LoginController extends ChangeNotifier {
     }
   }
 
-  Future<String?> beginSsoLogin(IdentityProvider provider) async {
+  Future<String?> beginSsoLogin(
+    IdentityProvider provider, {
+    required String serverUrl,
+  }) async {
     _setLoading(true);
 
     try {
+      _serverUrl = serverUrl.trim();
       final oauthUrl = await _authCoordinator.initiateSsoLogin(
         provider,
-        serverUrl: serverUrlController.text.trim(),
+        serverUrl: _serverUrl,
       );
       _setLoading(false);
       return oauthUrl;
@@ -143,14 +146,19 @@ class LoginController extends ChangeNotifier {
     }
   }
 
-  Future<void> submitLogin() async {
+  Future<void> submitLogin({
+    required String serverUrl,
+    required String username,
+    required String password,
+  }) async {
     _setLoading(true);
 
     try {
+      _serverUrl = serverUrl.trim();
       final result = await _authCoordinator.login(
-        username: usernameController.text.trim(),
-        password: passwordController.text,
-        serverUrl: serverUrlController.text.trim(),
+        username: username.trim(),
+        password: password,
+        serverUrl: _serverUrl,
       );
 
       if (result.mfaRequired) {
@@ -167,7 +175,7 @@ class LoginController extends ChangeNotifier {
     }
   }
 
-  Future<void> submitMfa() async {
+  Future<void> submitMfa(String mfaCode) async {
     final username = _mfaUsername;
     if (username == null || username.isEmpty) {
       _notifyError(const AppException(AppErrorCode.noSessionIdReceived));
@@ -179,7 +187,7 @@ class LoginController extends ChangeNotifier {
     try {
       await _authCoordinator.verifyMfa(
         username: username,
-        mfaCode: mfaCodeController.text.trim(),
+        mfaCode: mfaCode.trim(),
       );
       await _commitServerSettings();
       _onLoginSuccess?.call();
@@ -198,7 +206,6 @@ class LoginController extends ChangeNotifier {
 
   void backFromMfa() {
     _showMfaInput = false;
-    mfaCodeController.clear();
     notifyListeners();
   }
 
@@ -257,10 +264,7 @@ class LoginController extends ChangeNotifier {
 
   Future<void> _commitServerSettings() async {
     final settings = _serverSettings;
-    final origin = ServerUrlResolver.normalize(
-      serverUrlController.text,
-      config: _config,
-    );
+    final origin = ServerUrlResolver.normalize(_serverUrl, config: _config);
     if (settings == null || origin.isEmpty) return;
     await _mapSettingsRepository?.saveFromServerSettings(
       settings,
@@ -270,10 +274,6 @@ class LoginController extends ChangeNotifier {
 
   @override
   void dispose() {
-    serverUrlController.dispose();
-    usernameController.dispose();
-    passwordController.dispose();
-    mfaCodeController.dispose();
     _linkSubscription?.cancel();
     super.dispose();
   }

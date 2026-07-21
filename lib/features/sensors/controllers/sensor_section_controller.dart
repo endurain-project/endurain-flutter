@@ -1,38 +1,41 @@
 import 'dart:async';
 
+import 'package:endurain/features/sensors/controllers/sensor_section_view.dart';
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
-import 'package:endurain/features/sensors/models/heart_rate_sample.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
-import 'package:endurain/features/sensors/services/heart_rate_sensor_service.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:flutter/foundation.dart';
 
-/// Route-scoped controller for the Sensors settings screen.
+/// Route-scoped controller for one measurement section (heart rate, power, or
+/// cadence) of the Sensors settings screen.
 ///
-/// Observes the app-lifetime [HeartRateSensorService] and exposes the state the
-/// screen renders: Bluetooth availability, discovered devices, connection
-/// status, and the live heart rate. It owns only its stream subscriptions and
-/// must be disposed with the route; the underlying service is not disposed
-/// here.
-class SensorSettingsController extends ChangeNotifier {
-  SensorSettingsController({required HeartRateSensorService service})
+/// Observes an app-lifetime [SensorService] and exposes the state the section
+/// renders: Bluetooth availability, discovered devices, connection status, and
+/// the live value. One instance drives each section, differing only in the
+/// [SensorService] it wraps. It owns only its stream subscriptions and must be
+/// disposed with the route; the underlying service is not disposed here.
+class SensorSectionController extends ChangeNotifier
+    implements SensorSectionView {
+  SensorSectionController({required SensorService service})
     : _service = service;
 
-  final HeartRateSensorService _service;
+  final SensorService _service;
 
   /// How long a manual scan runs before it stops on its own. Kept generous so
-  /// slower-advertising heart-rate straps have time to be discovered.
+  /// slower-advertising sensors have time to be discovered.
   static const Duration _scanTimeout = Duration(seconds: 30);
 
   StreamSubscription<SensorBluetoothState>? _bluetoothSubscription;
   StreamSubscription<SensorConnectionStatus>? _statusSubscription;
-  StreamSubscription<HeartRateSample>? _sampleSubscription;
+  StreamSubscription<SensorMeasurement>? _measurementSubscription;
   StreamSubscription<List<BleSensorDevice>>? _scanSubscription;
 
   SensorBluetoothState _bluetoothState = SensorBluetoothState.unknown;
   SensorConnectionStatus _connectionStatus =
       SensorConnectionStatus.disconnected;
-  HeartRateSample? _latestSample;
+  SensorMeasurement? _latestMeasurement;
   List<BleSensorDevice> _scanResults = const <BleSensorDevice>[];
   bool _isScanning = false;
   bool _permissionDenied = false;
@@ -40,39 +43,39 @@ class SensorSettingsController extends ChangeNotifier {
   BleSensorDevice? _rememberedDevice;
   bool _isDisposed = false;
 
+  @override
   SensorBluetoothState get bluetoothState => _bluetoothState;
+  @override
   SensorConnectionStatus get connectionStatus => _connectionStatus;
+  @override
   List<BleSensorDevice> get scanResults => _scanResults;
+  @override
   bool get isScanning => _isScanning;
+  @override
   bool get permissionDenied => _permissionDenied;
-
-  /// Whether the initial Bluetooth availability check (including the up-front
-  /// permission request) is still in progress. While true the screen shows a
-  /// spinner instead of a possibly-wrong "Bluetooth is off" message.
+  @override
   bool get isCheckingBluetooth => _isCheckingBluetooth;
-
+  @override
   BleSensorDevice? get rememberedDevice => _rememberedDevice;
+  @override
   BleSensorDevice? get connectedDevice => _service.connectedDevice;
 
-  /// The latest heart rate in beats per minute, or `null` when not connected or
-  /// before the first reading.
-  int? get currentBpm => _latestSample?.bpm;
+  /// The latest measurement value (watts or rpm), or `null` when not connected
+  /// or before the first reading.
+  @override
+  int? get currentValue => _latestMeasurement?.value;
 
   /// Loads the initial state and begins observing the sensor service.
   ///
   /// Requests the Bluetooth runtime permissions up front so the system prompt
   /// appears when the user opens the Sensors screen, then reads the adapter
-  /// state. Ordering matters: on iOS the adapter state is `unknown` until the
-  /// central manager finishes initializing, and some Android devices only
-  /// report an accurate state once the Bluetooth permission is granted — so
-  /// reading before requesting would surface an available adapter as "off".
+  /// state. Ordering mirrors the heart-rate section: some platforms only report
+  /// an accurate adapter state once the Bluetooth permission is granted.
   Future<void> initialize() async {
     _connectionStatus = _service.status;
-    _latestSample = _service.latestSample;
+    _latestMeasurement = _service.latestMeasurement;
     _rememberedDevice = await _service.rememberedDevice();
 
-    // Subscribe before the permission round-trip so any state change that
-    // arrives while the prompt is up is still captured.
     _bluetoothSubscription = _service.bluetoothState.listen((state) {
       _bluetoothState = state;
       _notify();
@@ -81,8 +84,8 @@ class SensorSettingsController extends ChangeNotifier {
       _connectionStatus = status;
       _notify();
     });
-    _sampleSubscription = _service.heartRate.listen((sample) {
-      _latestSample = sample;
+    _measurementSubscription = _service.measurements.listen((measurement) {
+      _latestMeasurement = measurement;
       _notify();
     });
     _notify();
@@ -93,7 +96,8 @@ class SensorSettingsController extends ChangeNotifier {
     _notify();
   }
 
-  /// Requests permission if needed, then scans for nearby heart-rate sensors.
+  /// Requests permission if needed, then scans for nearby sensors.
+  @override
   Future<void> startScan() async {
     if (_isScanning) {
       return;
@@ -127,6 +131,7 @@ class SensorSettingsController extends ChangeNotifier {
   }
 
   /// Stops an in-progress scan.
+  @override
   Future<void> stopScan() async {
     await _scanSubscription?.cancel();
     _scanSubscription = null;
@@ -139,6 +144,7 @@ class SensorSettingsController extends ChangeNotifier {
 
   /// Connects to [device] and remembers it. Connection failures surface through
   /// [connectionStatus]; this method does not throw.
+  @override
   Future<void> connect(BleSensorDevice device) async {
     await stopScan();
     try {
@@ -151,12 +157,14 @@ class SensorSettingsController extends ChangeNotifier {
   }
 
   /// Disconnects the active sensor without forgetting it.
+  @override
   Future<void> disconnect() async {
     await _service.disconnect();
     _notify();
   }
 
   /// Disconnects and forgets the remembered sensor.
+  @override
   Future<void> forget() async {
     await _service.forget();
     _rememberedDevice = null;
@@ -168,7 +176,7 @@ class SensorSettingsController extends ChangeNotifier {
     _isDisposed = true;
     _bluetoothSubscription?.cancel();
     _statusSubscription?.cancel();
-    _sampleSubscription?.cancel();
+    _measurementSubscription?.cancel();
     _scanSubscription?.cancel();
     unawaited(_service.stopScan());
     super.dispose();

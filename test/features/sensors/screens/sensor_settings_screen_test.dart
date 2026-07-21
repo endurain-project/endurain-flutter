@@ -1,46 +1,72 @@
 import 'dart:async';
 
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/sensors/controllers/sensor_settings_controller.dart';
+import 'package:endurain/features/sensors/controllers/sensor_section_controller.dart';
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
-import 'package:endurain/features/sensors/models/heart_rate_sample.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
-import 'package:endurain/features/sensors/services/heart_rate_sensor_service.dart';
+import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
+import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
-import '../fakes/fake_heart_rate_sensor_adapter.dart';
+import '../../../helpers/widget_test_app.dart';
+import '../fakes/fake_sensor_connection_adapter.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();
 
-  late FakeHeartRateSensorAdapter adapter;
+  late FakeSensorConnectionAdapter adapter;
   late SensorPreferencesRepository preferences;
-  late HeartRateSensorService service;
-  late SensorSettingsController controller;
+  late SensorService service;
+  late SensorSectionController controller;
+  late SensorService powerService;
+  late SensorService cadenceService;
+  late SensorSectionController powerController;
+  late SensorSectionController cadenceController;
 
   setUp(() {
     // Force Material rendering so ListTile hit-testing is deterministic on the
     // (Apple) host test runner.
     PlatformUtils.debugIsApplePlatformOverride = false;
-    adapter = FakeHeartRateSensorAdapter();
+    adapter = FakeSensorConnectionAdapter();
     preferences = SensorPreferencesRepository(
       preferences: FakePreferencesStore(),
     );
-    service = HeartRateSensorService(
+    service = SensorService(
       adapter: adapter,
       preferences: preferences,
+      rememberedKey: SensorPreferencesRepository.rememberedHeartRateSensorKey,
     );
-    controller = SensorSettingsController(service: service);
+    controller = SensorSectionController(service: service);
+    // The power and cadence sections are not under test here; back them with an
+    // unsupported adapter so they render a stable "unsupported" state and never
+    // reach a real BLE stack or shared preferences.
+    powerService = SensorService(
+      adapter: const UnsupportedSensorConnectionAdapter(),
+      preferences: preferences,
+      rememberedKey: SensorPreferencesRepository.rememberedPowerSensorKey,
+    );
+    cadenceService = SensorService(
+      adapter: const UnsupportedSensorConnectionAdapter(),
+      preferences: preferences,
+      rememberedKey: SensorPreferencesRepository.rememberedCadenceSensorKey,
+    );
+    powerController = SensorSectionController(service: powerService);
+    cadenceController = SensorSectionController(service: cadenceService);
   });
 
   tearDown(() async {
     controller.dispose();
+    powerController.dispose();
+    cadenceController.dispose();
     await service.dispose();
+    await powerService.dispose();
+    await cadenceService.dispose();
     PlatformUtils.debugResetOverrides();
   });
 
@@ -48,7 +74,13 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: SensorSettingsScreen(controller: controller),
+        home: TestAppScope(
+          child: SensorSettingsScreen(
+            controller: controller,
+            powerController: powerController,
+            cadenceController: cadenceController,
+          ),
+        ),
       ),
     );
     await tester.pump();
@@ -149,8 +181,12 @@ void main() {
     // The fake delivers events synchronously, so priming the service here caches
     // the connected state and latest sample that the screen reads on init.
     unawaited(service.connect(device));
-    adapter.emitHeartRate(
-      HeartRateSample(bpm: 72, timestamp: DateTime.utc(2026)),
+    adapter.emitMeasurement(
+      SensorMeasurement(
+        kind: SensorMeasurementKind.heartRate,
+        value: 72,
+        timestamp: DateTime.utc(2026),
+      ),
     );
 
     await pumpScreen(tester);

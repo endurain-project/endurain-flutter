@@ -2,6 +2,22 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 
+/// A PKCE (RFC 7636) code verifier paired with its S256-derived challenge.
+///
+/// Replaces the previous string-keyed map so callers access the two values as
+/// non-nullable, self-documenting fields instead of `map['verifier']!`.
+class PkcePair {
+  const PkcePair({required this.verifier, required this.challenge});
+
+  /// The high-entropy random code verifier, kept secret and sent only during
+  /// the token exchange.
+  final String verifier;
+
+  /// `BASE64URL(SHA256(verifier))`, sent as `code_challenge` when starting the
+  /// authorization flow.
+  final String challenge;
+}
+
 /// Utility class for PKCE (Proof Key for Code Exchange) implementation
 /// Implements RFC 7636 for enhanced security in OAuth flows
 class PkceUtils {
@@ -28,11 +44,10 @@ class PkceUtils {
     return base64Url.encode(digest.bytes).replaceAll('=', '');
   }
 
-  /// Generate both code verifier and challenge
-  /// Returns a map with 'verifier' and 'challenge' keys
-  static Map<String, String> generatePkce() {
+  /// Generate a fresh [PkcePair] (code verifier and its S256 challenge).
+  static PkcePair generatePkce() {
     final verifier = generateCodeVerifier();
     final challenge = generateCodeChallenge(verifier);
-    return {'verifier': verifier, 'challenge': challenge};
+    return PkcePair(verifier: verifier, challenge: challenge);
   }
 }

@@ -12,6 +12,8 @@ class GpxTrackPoint {
     required this.time,
     this.elevationMeters,
     this.heartRate,
+    this.cadence,
+    this.powerWatts,
   });
 
   final double latitude;
@@ -19,6 +21,8 @@ class GpxTrackPoint {
   final DateTime time;
   final double? elevationMeters;
   final int? heartRate;
+  final int? cadence;
+  final int? powerWatts;
 }
 
 /// Geographic bounding box for a GPX `<bounds>` element.
@@ -66,15 +70,21 @@ const String _gpxtpxNamespace =
     'xmlns:gpxtpx="http://www.garmin.com/xmlschemas/'
     'TrackPointExtension/v1"';
 
+/// Namespace for the cycling-power extension. Endurain's GPX parser matches the
+/// `power` element by local name regardless of namespace URI, so any well-formed
+/// binding works; this uses the recognized Garmin power-extension namespace.
+const String _powerNamespace =
+    'xmlns:ns3="http://www.garmin.com/xmlschemas/PowerExtension/v1"';
+
 /// Serializes a GPX 1.1 document shared by every track source, guaranteeing an
 /// identical structure and byte-for-byte formatting regardless of origin.
 ///
 /// [name] fills the `<metadata><name>` and `<trk><name>` elements; [type] fills
 /// `<trk><type>`. [metadataTime] and [bounds] are written only when non-null.
 /// Each entry in [segments] becomes a `<trkseg>` (an empty list still emits an
-/// empty `<trkseg>`). The Garmin TrackPointExtension namespace and per-point
-/// `<gpxtpx:hr>` extensions are emitted only when a point carries a
-/// [GpxTrackPoint.heartRate].
+/// empty `<trkseg>`). Per-point `<gpxtpx:hr>` / `<gpxtpx:cad>` and a nested
+/// `<ns3:wrapper><ns3:power>` are emitted only when a point carries the
+/// corresponding value, and their namespaces are declared only when needed.
 String buildGpxDocument({
   required String name,
   required String type,
@@ -85,14 +95,23 @@ String buildGpxDocument({
   final hasHeartRate = segments.any(
     (segment) => segment.any((point) => point.heartRate != null),
   );
+  final hasCadence = segments.any(
+    (segment) => segment.any((point) => point.cadence != null),
+  );
+  final hasPower = segments.any(
+    (segment) => segment.any((point) => point.powerWatts != null),
+  );
   final escapedName = gpxEscapeXml(name);
 
   final buffer = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
     ..write('<gpx version="1.1" creator="Endurain mobile app" ')
     ..write('xmlns="http://www.topografix.com/GPX/1/1"');
-  if (hasHeartRate) {
+  if (hasHeartRate || hasCadence) {
     buffer.write(' $_gpxtpxNamespace');
+  }
+  if (hasPower) {
+    buffer.write(' $_powerNamespace');
   }
 
   buffer
@@ -151,11 +170,25 @@ void _writeTrackPoint(StringBuffer buffer, GpxTrackPoint point) {
   buffer.writeln('        <time>${gpxFormatTimestamp(point.time)}</time>');
 
   final heartRate = point.heartRate;
-  if (heartRate != null) {
+  final cadence = point.cadence;
+  final power = point.powerWatts;
+  if (heartRate != null || cadence != null || power != null) {
     buffer
       ..writeln('        <extensions>')
-      ..writeln('          <gpxtpx:TrackPointExtension>')
-      ..writeln('            <gpxtpx:hr>$heartRate</gpxtpx:hr>')
+      ..writeln('          <gpxtpx:TrackPointExtension>');
+    if (heartRate != null) {
+      buffer.writeln('            <gpxtpx:hr>$heartRate</gpxtpx:hr>');
+    }
+    if (cadence != null) {
+      buffer.writeln('            <gpxtpx:cad>$cadence</gpxtpx:cad>');
+    }
+    if (power != null) {
+      buffer
+        ..writeln('            <ns3:wrapper>')
+        ..writeln('              <ns3:power>$power</ns3:power>')
+        ..writeln('            </ns3:wrapper>');
+    }
+    buffer
       ..writeln('          </gpxtpx:TrackPointExtension>')
       ..writeln('        </extensions>');
   }

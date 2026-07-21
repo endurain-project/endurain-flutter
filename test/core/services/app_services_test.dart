@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_services.dart';
-import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -76,102 +74,6 @@ void main() {
         isTrue,
       );
       expect(services.localActivities, isA<LocalActivityRepository>());
-    });
-
-    test('heartRateHandoffReleased detects the end of a recording handoff', () {
-      // The first observation (null previous) is never treated as a release.
-      expect(
-        AppServices.heartRateHandoffReleased(
-          null,
-          ActivityRecordingStatus.recording,
-        ),
-        isFalse,
-      );
-
-      // Leaving an owning phase (recording/paused/stopping) for a terminal one
-      // releases the native heart-rate handoff.
-      for (final previous in const [
-        ActivityRecordingStatus.recording,
-        ActivityRecordingStatus.paused,
-        ActivityRecordingStatus.stopping,
-      ]) {
-        expect(
-          AppServices.heartRateHandoffReleased(
-            previous,
-            ActivityRecordingStatus.completed,
-          ),
-          isTrue,
-          reason: '$previous -> completed should release',
-        );
-      }
-      expect(
-        AppServices.heartRateHandoffReleased(
-          ActivityRecordingStatus.recording,
-          ActivityRecordingStatus.failed,
-        ),
-        isTrue,
-      );
-      expect(
-        AppServices.heartRateHandoffReleased(
-          ActivityRecordingStatus.stopping,
-          ActivityRecordingStatus.idle,
-        ),
-        isTrue,
-      );
-
-      // Transitions within owning phases, or between terminal phases, do not.
-      expect(
-        AppServices.heartRateHandoffReleased(
-          ActivityRecordingStatus.recording,
-          ActivityRecordingStatus.paused,
-        ),
-        isFalse,
-      );
-      expect(
-        AppServices.heartRateHandoffReleased(
-          ActivityRecordingStatus.recording,
-          ActivityRecordingStatus.stopping,
-        ),
-        isFalse,
-      );
-      expect(
-        AppServices.heartRateHandoffReleased(
-          ActivityRecordingStatus.completed,
-          ActivityRecordingStatus.idle,
-        ),
-        isFalse,
-      );
-      expect(
-        AppServices.heartRateHandoffReleased(
-          ActivityRecordingStatus.idle,
-          ActivityRecordingStatus.recording,
-        ),
-        isFalse,
-      );
-    });
-
-    test('usesNativeHeartRateHandoff is Android-only', () {
-      // Only Android releases the Dart BLE link to the native foreground
-      // service (FOREGROUND_SERVICE_CONNECTED_DEVICE). iOS and every other
-      // platform keep the Dart sensor connected and stream its BPM into the
-      // recording pipeline, so live heart rate stays visible while recording.
-      expect(
-        AppServices.usesNativeHeartRateHandoff(TargetPlatform.android),
-        isTrue,
-      );
-      for (final platform in const [
-        TargetPlatform.iOS,
-        TargetPlatform.macOS,
-        TargetPlatform.linux,
-        TargetPlatform.windows,
-        TargetPlatform.fuchsia,
-      ]) {
-        expect(
-          AppServices.usesNativeHeartRateHandoff(platform),
-          isFalse,
-          reason: '$platform should keep the Dart heart-rate connection',
-        );
-      }
     });
   });
 }

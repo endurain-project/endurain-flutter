@@ -17,7 +17,6 @@ enum AppErrorCode {
   healthImportFailed,
   healthPermissionDenied,
   healthReadFailed,
-  healthUnavailable,
   insecureTransportNotAllowed,
   invalidTileServerUrl,
   loginError,

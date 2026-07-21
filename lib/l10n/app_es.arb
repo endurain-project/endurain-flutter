@@ -206,7 +206,6 @@
   "errorHealthImportFailedWithDetails": "No se pudo importar el entrenamiento: {details}",
   "errorHealthPermissionDenied": "Se denegó el acceso a los datos de salud",
   "errorHealthReadFailed": "No se pudieron leer los datos de salud",
-  "errorHealthUnavailable": "La sincronización de salud no está disponible en este dispositivo",
   "healthSyncSettingsTitle": "Sincronización de salud",
   "healthSyncSettingsSubtitle": "Importa entrenamientos desde tu plataforma de salud",
   "healthSyncScreenTitle": "Sincronización de salud",
@@ -297,5 +296,17 @@
   "sensorsUnknownDevice": "Unknown sensor",
   "sensorsBpm": "{bpm} bpm",
   "activityStatHeartRate": "Heart rate",
-  "activityStatAvgHeartRate": "Avg heart rate"
+  "activityStatAvgHeartRate": "Avg heart rate",
+  "sensorsPowerSection": "Power",
+  "sensorsPowerHelp": "Pair a Bluetooth power meter to see your live power.",
+  "sensorsNoPowerDevices": "No power meters found yet.",
+  "sensorsWatts": "{watts} W",
+  "sensorsCadenceSection": "Cadence",
+  "sensorsCadenceHelp": "Pair a Bluetooth cadence sensor to see your live cadence.",
+  "sensorsNoCadenceDevices": "No cadence sensors found yet.",
+  "sensorsRpm": "{rpm} rpm",
+  "activityStatPower": "Power",
+  "activityStatAvgPower": "Avg power",
+  "activityStatCadence": "Cadence",
+  "activityStatAvgCadence": "Avg cadence"
 }

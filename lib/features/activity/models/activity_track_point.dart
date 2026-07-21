@@ -1,3 +1,4 @@
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:geolocator/geolocator.dart';
 
 class ActivityTrackPoint {
@@ -13,6 +14,8 @@ class ActivityTrackPoint {
     this.speedAccuracyMetersPerSecond,
     this.headingAccuracyDegrees,
     this.heartRateBpm,
+    this.powerWatts,
+    this.cadenceRpm,
   }) : assert(latitude >= -90 && latitude <= 90),
        assert(longitude >= -180 && longitude <= 180);
 
@@ -46,6 +49,15 @@ class ActivityTrackPoint {
   /// connected. `null` when no heart-rate source contributed to this point.
   final int? heartRateBpm;
 
+  /// Mechanical power in watts from a paired external power meter, when one is
+  /// connected. `null` when no power source contributed to this point.
+  final int? powerWatts;
+
+  /// Cadence in revolutions per minute (cycling) or steps per minute (running)
+  /// from a paired external sensor. `null` when no cadence source contributed
+  /// to this point.
+  final int? cadenceRpm;
+
   /// Returns a copy of this point with [heartRateBpm] set to [bpm].
   ActivityTrackPoint withHeartRateBpm(int bpm) {
     return ActivityTrackPoint(
@@ -60,7 +72,56 @@ class ActivityTrackPoint {
       speedAccuracyMetersPerSecond: speedAccuracyMetersPerSecond,
       headingAccuracyDegrees: headingAccuracyDegrees,
       heartRateBpm: bpm,
+      powerWatts: powerWatts,
+      cadenceRpm: cadenceRpm,
     );
+  }
+
+  /// Returns a copy of this point with [powerWatts] set to [watts].
+  ActivityTrackPoint withPowerWatts(int watts) {
+    return ActivityTrackPoint(
+      latitude: latitude,
+      longitude: longitude,
+      timestamp: timestamp,
+      elevationMeters: elevationMeters,
+      speedMetersPerSecond: speedMetersPerSecond,
+      headingDegrees: headingDegrees,
+      horizontalAccuracyMeters: horizontalAccuracyMeters,
+      verticalAccuracyMeters: verticalAccuracyMeters,
+      speedAccuracyMetersPerSecond: speedAccuracyMetersPerSecond,
+      headingAccuracyDegrees: headingAccuracyDegrees,
+      heartRateBpm: heartRateBpm,
+      powerWatts: watts,
+      cadenceRpm: cadenceRpm,
+    );
+  }
+
+  /// Returns a copy of this point with [cadenceRpm] set to [rpm].
+  ActivityTrackPoint withCadenceRpm(int rpm) {
+    return ActivityTrackPoint(
+      latitude: latitude,
+      longitude: longitude,
+      timestamp: timestamp,
+      elevationMeters: elevationMeters,
+      speedMetersPerSecond: speedMetersPerSecond,
+      headingDegrees: headingDegrees,
+      horizontalAccuracyMeters: horizontalAccuracyMeters,
+      verticalAccuracyMeters: verticalAccuracyMeters,
+      speedAccuracyMetersPerSecond: speedAccuracyMetersPerSecond,
+      headingAccuracyDegrees: headingAccuracyDegrees,
+      heartRateBpm: heartRateBpm,
+      powerWatts: powerWatts,
+      cadenceRpm: rpm,
+    );
+  }
+
+  /// Returns a copy of this point with the value for [kind] set to [value].
+  ActivityTrackPoint withSensorValue(RecordedSensorKind kind, int value) {
+    return switch (kind) {
+      RecordedSensorKind.heartRate => withHeartRateBpm(value),
+      RecordedSensorKind.power => withPowerWatts(value),
+      RecordedSensorKind.cadence => withCadenceRpm(value),
+    };
   }
 
   static double? _finiteOrNull(double value) {

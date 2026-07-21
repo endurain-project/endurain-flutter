@@ -51,6 +51,8 @@ void main() {
               uploadPath,
               uploadFieldName, {
               idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
             }) async {
               endpoint = uploadEndpoint;
               filePath = uploadPath;
@@ -81,10 +83,21 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          capturedKey = idempotencyKey;
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              capturedKey = idempotencyKey;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
 
       await service.uploadGpx(
@@ -163,8 +176,15 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async =>
-            throw const FormatException('offline'),
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async => throw const FormatException('offline'),
       );
 
       await expectLater(
@@ -225,10 +245,21 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          uploadCalls++;
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploadCalls++;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
 
       await expectLater(
@@ -254,14 +285,25 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          uploadCalls++;
-          if (!started.isCompleted) {
-            started.complete();
-          }
-          await finish.future;
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploadCalls++;
+              if (!started.isCompleted) {
+                started.complete();
+              }
+              await finish.future;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
 
       final first = service.performUploadAttempt(
@@ -294,11 +336,22 @@ void main() {
             endpoint: '/upload',
             fieldName: 'file',
           ),
-          uploadFile: (_, _, _, {idempotencyKey}) async {
-            uploadStarted.complete();
-            await releaseUpload.future;
-            return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-          },
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                uploadStarted.complete();
+                await releaseUpload.future;
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  201,
+                );
+              },
         );
 
         final attempt = service.performUploadAttempt(
@@ -337,10 +390,21 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          uploadCalls++;
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploadCalls++;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
 
       final result = await service.performUploadAttempt(
@@ -391,10 +455,21 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          uploads++;
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploads++;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
       const retained = _FakeRetentionSettings(enabled: true);
       final first = await service.performUploadAttempt(
@@ -476,10 +551,21 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          keys.add(idempotencyKey);
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              keys.add(idempotencyKey);
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
 
       await service.performUploadAttempt(
@@ -532,9 +618,20 @@ void main() {
           maxAttempts: 3,
           delay: (_) async {},
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 401);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                401,
+              );
+            },
       );
 
       await expectLater(
@@ -566,9 +663,20 @@ void main() {
           maxAttempts: 3,
           delay: (_) async => delayCalls++,
         ),
-        uploadFile: (_, _, _, {idempotencyKey}) async {
-          return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-        },
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
       );
 
       await expectLater(
@@ -626,9 +734,13 @@ class _FakeRetentionSettings implements ActivityRetentionSettingsRepository {
 ActivityUploadService _serviceReturningStatus(int statusCode) {
   return ActivityUploadService(
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
-    uploadFile: (_, _, _, {idempotencyKey}) async {
-      return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
-    },
+    uploadFile:
+        (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {
+          return http.StreamedResponse(
+            const Stream<List<int>>.empty(),
+            statusCode,
+          );
+        },
   );
 }
 
@@ -640,10 +752,11 @@ ActivityUploadService _serviceWithResponses(List<int> statusCodes) {
       maxAttempts: statusCodes.length,
       delay: (_) async {},
     ),
-    uploadFile: (_, _, _, {idempotencyKey}) async {
-      final code = statusCodes[callCount++];
-      return http.StreamedResponse(const Stream<List<int>>.empty(), code);
-    },
+    uploadFile:
+        (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {
+          final code = statusCodes[callCount++];
+          return http.StreamedResponse(const Stream<List<int>>.empty(), code);
+        },
   );
 }
 

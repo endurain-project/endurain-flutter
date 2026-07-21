@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
-import 'package:endurain/features/activity/controllers/local_activity_history_controller_factory.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -15,7 +14,7 @@ import '../../../helpers/fake_share_service.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
-  group('createLocalActivityHistoryController', () {
+  group('AppServices.createLocalActivityHistoryController', () {
     late Directory tempDirectory;
 
     setUp(() async {
@@ -40,8 +39,7 @@ void main() {
           retainUploadedGpx: true,
         ),
       );
-      final controller = createLocalActivityHistoryController(
-        services: services,
+      final controller = services.createLocalActivityHistoryController(
         removeImportProvenance: (_) async {},
       );
       addTearDown(controller.dispose);
@@ -55,8 +53,7 @@ void main() {
       final repository = _repositoryFor(tempDirectory);
       final record = await _createRecord(repository, id: 'override_record');
       final services = _ThrowingAppServices();
-      final controller = createLocalActivityHistoryController(
-        services: services,
+      final controller = services.createLocalActivityHistoryController(
         repository: repository,
         uploadService: _uploadServiceReturning(201),
         retentionSettingsRepository: const _FakeRetentionSettings(
@@ -156,8 +153,12 @@ Future<LocalActivityRecord> _createRecord(
 ActivityUploadService _uploadServiceReturning(int statusCode) {
   return ActivityUploadService(
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
-    uploadFile: (_, _, _, {idempotencyKey}) async {
-      return http.StreamedResponse(const Stream<List<int>>.empty(), statusCode);
-    },
+    uploadFile:
+        (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {
+          return http.StreamedResponse(
+            const Stream<List<int>>.empty(),
+            statusCode,
+          );
+        },
   );
 }

@@ -135,10 +135,6 @@
   "@errorHealthReadFailed": {
     "description": "Health data read error - Used in: error_localizations.dart"
   },
-  "errorHealthUnavailable": "Health sync is not available on this device",
-  "@errorHealthUnavailable": {
-    "description": "Health platform unavailable error - Used in: error_localizations.dart"
-  },
   "errorLoginError": "Could not sign in",
   "@errorLoginError": {
     "description": "Generic login error - Used in: error_localizations.dart"
@@ -524,6 +520,22 @@
   "activityStatAvgHeartRate": "Avg heart rate",
   "@activityStatAvgHeartRate": {
     "description": "Post-recording summary average heart rate label - Used in: activity_completion_summary.dart"
+  },
+  "activityStatPower": "Power",
+  "@activityStatPower": {
+    "description": "Recording stats current power label - Used in: activity_stats_display.dart"
+  },
+  "activityStatAvgPower": "Avg power",
+  "@activityStatAvgPower": {
+    "description": "Post-recording summary average power label - Used in: activity_completion_summary.dart"
+  },
+  "activityStatCadence": "Cadence",
+  "@activityStatCadence": {
+    "description": "Recording stats current cadence label - Used in: activity_stats_display.dart"
+  },
+  "activityStatAvgCadence": "Avg cadence",
+  "@activityStatAvgCadence": {
+    "description": "Post-recording summary average cadence label - Used in: activity_completion_summary.dart"
   },
   "activityStop": "Stop",
   "@activityStop": {
@@ -1348,6 +1360,48 @@
     "description": "Heart rate value with unit - Used in: sensor_settings_screen.dart",
     "placeholders": {
       "bpm": {
+        "type": "String"
+      }
+    }
+  },
+  "sensorsPowerSection": "Power",
+  "@sensorsPowerSection": {
+    "description": "Section header for power sensors - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsPowerHelp": "Pair a Bluetooth power meter to see your live power.",
+  "@sensorsPowerHelp": {
+    "description": "Intro text explaining external power meters - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsNoPowerDevices": "No power meters found yet.",
+  "@sensorsNoPowerDevices": {
+    "description": "Empty state when no power meters are discovered - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsWatts": "{watts} W",
+  "@sensorsWatts": {
+    "description": "Power value with unit - Used in: sensor_settings_screen.dart",
+    "placeholders": {
+      "watts": {
+        "type": "String"
+      }
+    }
+  },
+  "sensorsCadenceSection": "Cadence",
+  "@sensorsCadenceSection": {
+    "description": "Section header for cadence sensors - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsCadenceHelp": "Pair a Bluetooth cadence sensor to see your live cadence.",
+  "@sensorsCadenceHelp": {
+    "description": "Intro text explaining external cadence sensors - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsNoCadenceDevices": "No cadence sensors found yet.",
+  "@sensorsNoCadenceDevices": {
+    "description": "Empty state when no cadence sensors are discovered - Used in: sensor_settings_screen.dart"
+  },
+  "sensorsRpm": "{rpm} rpm",
+  "@sensorsRpm": {
+    "description": "Cadence value with unit (revolutions or steps per minute) - Used in: sensor_settings_screen.dart",
+    "placeholders": {
+      "rpm": {
         "type": "String"
       }
     }

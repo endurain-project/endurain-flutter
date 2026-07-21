@@ -5,7 +5,6 @@ import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
-import 'package:endurain/features/activity/controllers/local_activity_history_controller_factory.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -61,8 +60,10 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   }
 
   LocalActivityHistoryController _createController() {
-    return createLocalActivityHistoryController(
-      services: AppScope.servicesOf(context, listen: false),
+    return AppScope.servicesOf(
+      context,
+      listen: false,
+    ).createLocalActivityHistoryController(
       repository: widget.repository,
       uploadService: widget.uploadService,
       retentionSettingsRepository: widget.retentionSettingsRepository,

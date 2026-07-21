@@ -94,10 +94,21 @@ void main() {
             endpoint: '/upload',
             fieldName: 'file',
           ),
-          uploadFile: (_, _, _, {idempotencyKey}) async {
-            calls++;
-            return http.StreamedResponse(const Stream<List<int>>.empty(), 500);
-          },
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                calls++;
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  500,
+                );
+              },
         ),
       );
 
@@ -143,10 +154,21 @@ void main() {
       final queue = ActivityUploadQueue(
         repository: repository,
         uploadService: ActivityUploadService(
-          uploadFile: (_, _, _, {idempotencyKey}) async {
-            calls++;
-            return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-          },
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                calls++;
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  201,
+                );
+              },
         ),
       );
 
@@ -280,11 +302,22 @@ void main() {
             endpoint: '/upload',
             fieldName: 'file',
           ),
-          uploadFile: (_, _, _, {idempotencyKey}) async {
-            calls++;
-            await Future<void>.delayed(Duration.zero);
-            return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-          },
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                calls++;
+                await Future<void>.delayed(Duration.zero);
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  201,
+                );
+              },
         ),
       );
 
@@ -310,14 +343,25 @@ void main() {
             endpoint: '/upload',
             fieldName: 'file',
           ),
-          uploadFile: (_, _, _, {idempotencyKey}) async {
-            attemptedKeys.add(idempotencyKey);
-            if (!uploadStarted.isCompleted) {
-              uploadStarted.complete();
-              await releaseUpload.future;
-            }
-            return http.StreamedResponse(const Stream<List<int>>.empty(), 201);
-          },
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                attemptedKeys.add(idempotencyKey);
+                if (!uploadStarted.isCompleted) {
+                  uploadStarted.complete();
+                  await releaseUpload.future;
+                }
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  201,
+                );
+              },
         ),
       );
 
@@ -371,10 +415,11 @@ ActivityUploadService _uploadServiceCapturing(
 }) {
   return ActivityUploadService(
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
-    uploadFile: (_, _, _, {idempotencyKey}) async {
-      keys.add(idempotencyKey);
-      return http.StreamedResponse(const Stream<List<int>>.empty(), status);
-    },
+    uploadFile:
+        (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {
+          keys.add(idempotencyKey);
+          return http.StreamedResponse(const Stream<List<int>>.empty(), status);
+        },
   );
 }
 

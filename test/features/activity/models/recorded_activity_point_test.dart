@@ -19,6 +19,8 @@ void main() {
         speedMetersPerSecond: 3.4,
         speedAccuracyMetersPerSecond: 0.5,
         heartRateBpm: 142,
+        powerWatts: 250,
+        cadenceRpm: 82,
       );
 
       final restored = RecordedActivityPoint.fromJson(point.toJson());
@@ -35,6 +37,8 @@ void main() {
       expect(restored.speedMetersPerSecond, 3.4);
       expect(restored.speedAccuracyMetersPerSecond, 0.5);
       expect(restored.heartRateBpm, 142);
+      expect(restored.powerWatts, 250);
+      expect(restored.cadenceRpm, 82);
     });
 
     test('round trips through a JSON line', () {
@@ -64,11 +68,15 @@ void main() {
       expect(json.containsKey('ele'), isFalse);
       expect(json.containsKey('spd'), isFalse);
       expect(json.containsKey('hr'), isFalse);
+      expect(json.containsKey('pow'), isFalse);
+      expect(json.containsKey('cad'), isFalse);
 
       final restored = RecordedActivityPoint.fromJson(json);
       expect(restored.elevationMeters, isNull);
       expect(restored.speedMetersPerSecond, isNull);
       expect(restored.heartRateBpm, isNull);
+      expect(restored.powerWatts, isNull);
+      expect(restored.cadenceRpm, isNull);
       expect(restored.segmentIndex, 1);
     });
 

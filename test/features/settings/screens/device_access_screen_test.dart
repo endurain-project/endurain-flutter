@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../health/fakes/fake_health_sync_service.dart';
+import '../../../helpers/widget_test_app.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();
@@ -29,9 +30,11 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: DeviceAccessScreen(
-          controller: controller,
-          healthSyncEnabled: false,
+        home: TestAppScope(
+          child: DeviceAccessScreen(
+            controller: controller,
+            healthSyncEnabled: false,
+          ),
         ),
       ),
     );
@@ -62,9 +65,11 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: DeviceAccessScreen(
-          controller: controller,
-          healthSyncEnabled: false,
+        home: TestAppScope(
+          child: DeviceAccessScreen(
+            controller: controller,
+            healthSyncEnabled: false,
+          ),
         ),
       ),
     );
@@ -91,9 +96,11 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: DeviceAccessScreen(
-          controller: controller,
-          healthSyncEnabled: false,
+        home: TestAppScope(
+          child: DeviceAccessScreen(
+            controller: controller,
+            healthSyncEnabled: false,
+          ),
         ),
       ),
     );
@@ -124,10 +131,12 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: DeviceAccessScreen(
-          controller: controller,
-          healthController: healthController,
-          healthSyncEnabled: true,
+        home: TestAppScope(
+          child: DeviceAccessScreen(
+            controller: controller,
+            healthController: healthController,
+            healthSyncEnabled: true,
+          ),
         ),
       ),
     );

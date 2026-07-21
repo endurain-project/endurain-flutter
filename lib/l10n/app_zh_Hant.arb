@@ -206,7 +206,6 @@
   "errorHealthImportFailedWithDetails": "無法匯入鍛鍊：{details}",
   "errorHealthPermissionDenied": "健康數據存取被拒絕",
   "errorHealthReadFailed": "無法讀取健康數據",
-  "errorHealthUnavailable": "健康同步在此裝置上不可用",
   "healthSyncSettingsTitle": "健康同步",
   "healthSyncSettingsSubtitle": "從您的健康平台匯入鍛鍊數據",
   "healthSyncScreenTitle": "健康同步",
@@ -297,5 +296,17 @@
   "sensorsUnknownDevice": "Unknown sensor",
   "sensorsBpm": "{bpm} bpm",
   "activityStatHeartRate": "Heart rate",
-  "activityStatAvgHeartRate": "Avg heart rate"
+  "activityStatAvgHeartRate": "Avg heart rate",
+  "sensorsPowerSection": "Power",
+  "sensorsPowerHelp": "Pair a Bluetooth power meter to see your live power.",
+  "sensorsNoPowerDevices": "No power meters found yet.",
+  "sensorsWatts": "{watts} W",
+  "sensorsCadenceSection": "Cadence",
+  "sensorsCadenceHelp": "Pair a Bluetooth cadence sensor to see your live cadence.",
+  "sensorsNoCadenceDevices": "No cadence sensors found yet.",
+  "sensorsRpm": "{rpm} rpm",
+  "activityStatPower": "Power",
+  "activityStatAvgPower": "Avg power",
+  "activityStatCadence": "Cadence",
+  "activityStatAvgCadence": "Avg cadence"
 }

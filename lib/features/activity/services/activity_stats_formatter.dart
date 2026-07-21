@@ -58,6 +58,20 @@ class ActivityStatsFormatter {
     return '$bpm bpm';
   }
 
+  String formatPower(int? watts) {
+    if (watts == null) {
+      return '-';
+    }
+    return '$watts W';
+  }
+
+  String formatCadence(int? rpm) {
+    if (rpm == null) {
+      return '-';
+    }
+    return '$rpm rpm';
+  }
+
   String _twoDigits(int value) {
     return value.toString().padLeft(2, '0');
   }

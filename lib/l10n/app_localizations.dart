@@ -315,12 +315,6 @@ abstract class AppLocalizations {
   /// **'Could not read health data'**
   String get errorHealthReadFailed;
 
-  /// Health platform unavailable error - Used in: error_localizations.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Health sync is not available on this device'**
-  String get errorHealthUnavailable;
-
   /// Generic login error - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
@@ -824,6 +818,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Avg heart rate'**
   String get activityStatAvgHeartRate;
+
+  /// Recording stats current power label - Used in: activity_stats_display.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Power'**
+  String get activityStatPower;
+
+  /// Post-recording summary average power label - Used in: activity_completion_summary.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Avg power'**
+  String get activityStatAvgPower;
+
+  /// Recording stats current cadence label - Used in: activity_stats_display.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence'**
+  String get activityStatCadence;
+
+  /// Post-recording summary average cadence label - Used in: activity_completion_summary.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Avg cadence'**
+  String get activityStatAvgCadence;
 
   /// Stop recording button label and tooltip - Used in: activity_recording_controls.dart
   ///
@@ -1940,6 +1958,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{bpm} bpm'**
   String sensorsBpm(String bpm);
+
+  /// Section header for power sensors - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Power'**
+  String get sensorsPowerSection;
+
+  /// Intro text explaining external power meters - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pair a Bluetooth power meter to see your live power.'**
+  String get sensorsPowerHelp;
+
+  /// Empty state when no power meters are discovered - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No power meters found yet.'**
+  String get sensorsNoPowerDevices;
+
+  /// Power value with unit - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{watts} W'**
+  String sensorsWatts(String watts);
+
+  /// Section header for cadence sensors - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence'**
+  String get sensorsCadenceSection;
+
+  /// Intro text explaining external cadence sensors - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pair a Bluetooth cadence sensor to see your live cadence.'**
+  String get sensorsCadenceHelp;
+
+  /// Empty state when no cadence sensors are discovered - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No cadence sensors found yet.'**
+  String get sensorsNoCadenceDevices;
+
+  /// Cadence value with unit (revolutions or steps per minute) - Used in: sensor_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{rpm} rpm'**
+  String sensorsRpm(String rpm);
 }
 
 class _AppLocalizationsDelegate

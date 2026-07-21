@@ -1,3 +1,6 @@
+> [!NOTE]
+> **GitHub Mirror** - If you are viewing this on GitHub, please be aware that this repository is a read-only mirror. Issues, pull requests, and all project activity are tracked on Codeberg: [https://codeberg.org/endurain-project/endurain-flutter](https://codeberg.org/endurain-project/endurain-flutter)
+
 <div align="center">
   <img src="assets/logo/brand_logo_light_theme.png" width="128" height="128">
 
@@ -332,7 +335,7 @@ dart run tool/check_coverage.dart \
   --exclude "lib/shared/widgets/app_bottom_nav.dart" \
   --exclude "lib/core/services/platform/*.dart" \
   --exclude "lib/features/health/services/health_package_platform_adapter.dart" \
-  --exclude "lib/features/sensors/services/universal_ble_heart_rate_sensor_adapter.dart"
+  --exclude "lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart"
 ```
 
 Regenerate localization classes after changing ARB files:

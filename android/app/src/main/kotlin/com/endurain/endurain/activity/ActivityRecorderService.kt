@@ -40,6 +40,8 @@ class ActivityRecorderService : Service() {
     private var activeNotificationText: String? = null
     private var resumedFromPause = false
     private var heartRateClient: HeartRateGattClient? = null
+    private var powerClient: CyclingPowerGattClient? = null
+    private var cadenceClient: CadenceGattClient? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -78,7 +80,7 @@ class ActivityRecorderService : Service() {
             return
         }
         beginCollection()
-        startHeartRateCapture()
+        startSensorCapture()
     }
 
     private fun handleResume() {
@@ -100,7 +102,7 @@ class ActivityRecorderService : Service() {
         }
         if (session != null && session.status == ActiveActivitySessionData.STATUS_RECORDING) {
             beginCollection()
-            startHeartRateCapture()
+            startSensorCapture()
         }
     }
 
@@ -111,7 +113,7 @@ class ActivityRecorderService : Service() {
 
     private fun handleStop() {
         stopCollection()
-        stopHeartRateCapture()
+        stopSensorCapture()
         resumedFromPause = false
         stopForegroundCompat()
         stopSelf()
@@ -140,7 +142,7 @@ class ActivityRecorderService : Service() {
         }
         if (session.status == ActiveActivitySessionData.STATUS_RECORDING) {
             beginCollection()
-            startHeartRateCapture()
+            startSensorCapture()
         }
     }
 
@@ -285,22 +287,31 @@ class ActivityRecorderService : Service() {
     }
 
     /**
-     * Connects to the paired heart-rate sensor (if any) recorded in the active
-     * session, so its latest BPM can be stamped onto points inside the same
-     * foreground service that owns GPS.
+     * Connects to the paired external sensors (if any) recorded in the active
+     * session, so their latest readings can be stamped onto points inside the
+     * same foreground service that owns GPS.
      */
-    private fun startHeartRateCapture() {
-        val deviceId = store.loadSession()?.heartRateDeviceId
-        stopHeartRateCapture()
-        if (deviceId.isNullOrEmpty()) {
-            return
+    private fun startSensorCapture() {
+        val session = store.loadSession()
+        stopSensorCapture()
+        session?.heartRateDeviceId?.takeIf { it.isNotEmpty() }?.let { deviceId ->
+            heartRateClient = HeartRateGattClient(applicationContext).also { it.start(deviceId) }
         }
-        heartRateClient = HeartRateGattClient(applicationContext).also { it.start(deviceId) }
+        session?.powerDeviceId?.takeIf { it.isNotEmpty() }?.let { deviceId ->
+            powerClient = CyclingPowerGattClient(applicationContext).also { it.start(deviceId) }
+        }
+        session?.cadenceDeviceId?.takeIf { it.isNotEmpty() }?.let { deviceId ->
+            cadenceClient = CadenceGattClient(applicationContext).also { it.start(deviceId) }
+        }
     }
 
-    private fun stopHeartRateCapture() {
+    private fun stopSensorCapture() {
         heartRateClient?.stop()
         heartRateClient = null
+        powerClient?.stop()
+        powerClient = null
+        cadenceClient?.stop()
+        cadenceClient = null
     }
 
     private fun onLocationFix(location: Location) {
@@ -349,6 +360,8 @@ class ActivityRecorderService : Service() {
             speedMetersPerSecond = if (location.hasSpeed()) location.speed.toDouble() else null,
             speedAccuracyMetersPerSecond = speedAccuracy(location),
             heartRateBpm = heartRateClient?.latestBpm,
+            powerWatts = powerClient?.latestWatts,
+            cadenceRpm = cadenceClient?.latestRpm,
         )
         try {
             store.appendPoints(listOf(point))
@@ -534,7 +547,7 @@ class ActivityRecorderService : Service() {
 
     override fun onDestroy() {
         stopCollection()
-        stopHeartRateCapture()
+        stopSensorCapture()
         super.onDestroy()
     }
 

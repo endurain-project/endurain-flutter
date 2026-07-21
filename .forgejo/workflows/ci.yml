@@ -86,7 +86,7 @@ jobs:
           --exclude 'lib/shared/widgets/app_bottom_nav.dart'
           --exclude 'lib/core/services/platform/*.dart'
           --exclude 'lib/features/health/services/health_package_platform_adapter.dart'
-          --exclude 'lib/features/sensors/services/universal_ble_heart_rate_sensor_adapter.dart'
+          --exclude 'lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart'
 
   android-unit-test:
     name: Android unit tests

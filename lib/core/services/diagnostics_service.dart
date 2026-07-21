@@ -221,6 +221,18 @@ class DiagnosticsEvents {
   static const String healthInstallProviderRequested =
       'health.install_provider_requested';
   static const String healthReadWorkouts = 'health.read_workouts';
+  static const String healthLoadStatusFailed = 'health.load_status_failed';
+  static const String healthAutoSyncSettingFailed =
+      'health.auto_sync_setting_failed';
+  static const String healthRequestAccessFailed =
+      'health.request_access_failed';
+  static const String healthInstallProviderFailed =
+      'health.install_provider_failed';
+  static const String healthDisconnectFailed = 'health.disconnect_failed';
+  static const String healthLoadImportableFailed =
+      'health.load_importable_failed';
+  static const String healthImportSelectedFailed =
+      'health.import_selected_failed';
   static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
 }
 

@@ -6,14 +6,14 @@ void main() {
     test('generates verifier and challenge values for S256 flow', () {
       final pkce = PkceUtils.generatePkce();
 
-      expect(pkce['verifier'], isNotNull);
-      expect(pkce['challenge'], isNotNull);
-      expect(pkce['verifier'], isNot(equals(pkce['challenge'])));
-      expect(pkce['verifier']!.length, greaterThanOrEqualTo(43));
-      expect(pkce['challenge']!.length, greaterThanOrEqualTo(43));
-      expect(pkce['challenge'], isNot(contains('=')));
-      expect(pkce['challenge'], isNot(contains('+')));
-      expect(pkce['challenge'], isNot(contains('/')));
+      expect(pkce.verifier, isNotEmpty);
+      expect(pkce.challenge, isNotEmpty);
+      expect(pkce.verifier, isNot(equals(pkce.challenge)));
+      expect(pkce.verifier.length, greaterThanOrEqualTo(43));
+      expect(pkce.challenge.length, greaterThanOrEqualTo(43));
+      expect(pkce.challenge, isNot(contains('=')));
+      expect(pkce.challenge, isNot(contains('+')));
+      expect(pkce.challenge, isNot(contains('/')));
     });
   });
 }

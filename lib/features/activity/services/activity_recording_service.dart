@@ -11,7 +11,9 @@ import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/sensor_reading_buffer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
@@ -21,34 +23,39 @@ class ActivityRecordingService {
     DateTime Function()? now,
     DiagnosticsRecorder? diagnostics,
     LocationService? locationService,
-    Stream<({DateTime timestamp, int bpm})>? heartRateReadings,
-    Duration heartRateFreshness = const Duration(seconds: 10),
-    Future<String?> Function()? prepareHeartRateSource,
+    Stream<RecordedSensorSample>? sensorReadings,
+    Map<RecordedSensorKind, Future<String?> Function()> prepareSensorSources =
+        const {},
+    Duration sensorFreshness = const Duration(seconds: 10),
   }) : _recorder = recorder,
        _now = now ?? DateTime.now,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _locationService = locationService ?? LocationService(),
-       _heartRateFreshness = heartRateFreshness,
-       _prepareHeartRateSource = prepareHeartRateSource {
-    _heartRateSubscription = heartRateReadings?.listen(_onHeartRateReading);
+       _sensorFreshness = sensorFreshness,
+       _prepareSensorSources = prepareSensorSources {
+    _sensorSubscription = sensorReadings?.listen(_onSensorReading);
   }
 
   final DateTime Function() _now;
   final DiagnosticsRecorder _diagnostics;
   final LocationService _locationService;
   final ActivityLocationRecorder _recorder;
-  final Duration _heartRateFreshness;
+  final Duration _sensorFreshness;
 
-  /// Resolves the paired heart-rate sensor's device id for the native recorder
-  /// (and frees the Dart-side BLE connection) at recording start. `null` when
-  /// native heart-rate capture is not in use.
-  final Future<String?> Function()? _prepareHeartRateSource;
+  /// Resolves each paired sensor's device id for the native recorder (and frees
+  /// the Dart-side BLE connection) at recording start, keyed by sensor kind.
+  /// Empty when native sensor capture is not in use (e.g. iOS keeps the Dart
+  /// BLE connection and streams readings in instead).
+  final Map<RecordedSensorKind, Future<String?> Function()>
+  _prepareSensorSources;
 
-  /// Time-ordered buffer of heart-rate readings captured while recording, used
-  /// to stamp the nearest reading onto each track point.
-  final List<({DateTime timestamp, int bpm})> _heartRateBuffer =
-      <({DateTime timestamp, int bpm})>[];
-  StreamSubscription<({DateTime timestamp, int bpm})>? _heartRateSubscription;
+  /// Time-ordered buffers of sensor readings captured while recording, keyed by
+  /// sensor kind, used to stamp the nearest reading onto each track point.
+  late final Map<RecordedSensorKind, SensorReadingBuffer> _sensorBuffers = {
+    for (final kind in RecordedSensorKind.values)
+      kind: SensorReadingBuffer(_sensorFreshness),
+  };
+  StreamSubscription<RecordedSensorSample>? _sensorSubscription;
 
   final StreamController<ActivityRecordingState> _stateController =
       StreamController<ActivityRecordingState>.broadcast();
@@ -140,7 +147,9 @@ class ActivityRecordingService {
     _recordingSegmentStartedAt = startedAt;
     _elapsedBeforeCurrentSegmentSeconds = 0;
     _lastBreadcrumbPointCount = 0;
-    _heartRateBuffer.clear();
+    for (final buffer in _sensorBuffers.values) {
+      buffer.clear();
+    }
     _emit(
       ActivityRecordingState(
         status: ActivityRecordingStatus.recording,
@@ -158,12 +167,16 @@ class ActivityRecordingService {
     );
     _startElapsedTimer();
     _startRecorderEvents();
-    String? heartRateDeviceId;
-    try {
-      heartRateDeviceId = await _prepareHeartRateSource?.call();
-    } catch (_) {
-      // A heart-rate handoff failure must never block the recording start.
-      heartRateDeviceId = null;
+    // Hand each paired sensor off to the native recorder (Android), resolving
+    // its device id and releasing the Dart-side BLE link. A handoff failure for
+    // any kind must never block the recording start.
+    final sensorDeviceIds = <RecordedSensorKind, String?>{};
+    for (final entry in _prepareSensorSources.entries) {
+      try {
+        sensorDeviceIds[entry.key] = await entry.value();
+      } catch (_) {
+        sensorDeviceIds[entry.key] = null;
+      }
     }
     try {
       await _recorder.start(
@@ -174,7 +187,9 @@ class ActivityRecordingService {
           connectionOrigin: connectionOrigin,
           connectionProfileId: connectionProfileId,
           backgroundConfig: _backgroundConfig,
-          heartRateDeviceId: heartRateDeviceId,
+          heartRateDeviceId: sensorDeviceIds[RecordedSensorKind.heartRate],
+          powerDeviceId: sensorDeviceIds[RecordedSensorKind.power],
+          cadenceDeviceId: sensorDeviceIds[RecordedSensorKind.cadence],
         ),
       );
     } catch (error, stackTrace) {
@@ -385,8 +400,8 @@ class ActivityRecordingService {
     _cancelElapsedTimer();
     _recorderSubscription?.cancel();
     _recorderSubscription = null;
-    _heartRateSubscription?.cancel();
-    _heartRateSubscription = null;
+    _sensorSubscription?.cancel();
+    _sensorSubscription = null;
     _disposeRecorderWithoutThrow();
     _stateController.close();
   }
@@ -534,7 +549,7 @@ class ActivityRecordingService {
       while (segmentPoints.length <= recordedPoint.segmentIndex) {
         segmentPoints.add(<ActivityTrackPoint>[]);
       }
-      segmentPoints.last.add(_toTrackPointWithHeartRate(recordedPoint));
+      segmentPoints.last.add(_toTrackPointWithSensors(recordedPoint));
     }
 
     final segments = [
@@ -744,7 +759,7 @@ class ActivityRecordingService {
         currentPoints = <ActivityTrackPoint>[];
         currentSegmentIndex = point.segmentIndex;
       }
-      currentPoints.add(_toTrackPointWithHeartRate(point));
+      currentPoints.add(_toTrackPointWithSensors(point));
     }
     if (currentPoints.isNotEmpty) {
       segments.add(ActivityTrackSegment(points: currentPoints));
@@ -752,57 +767,34 @@ class ActivityRecordingService {
     return segments;
   }
 
-  ActivityTrackPoint _toTrackPointWithHeartRate(RecordedActivityPoint point) {
-    final trackPoint = point.toTrackPoint();
-    final bpm = _heartRateBpmForTimestamp(point.timestamp);
-    return bpm == null ? trackPoint : trackPoint.withHeartRateBpm(bpm);
+  ActivityTrackPoint _toTrackPointWithSensors(RecordedActivityPoint point) {
+    // Overlay live sensor readings captured this session onto the point,
+    // preserving any values the recorder already persisted (e.g. heart rate
+    // stamped by the native recorder). Each buffer returns the nearest reading
+    // within its freshness window, or null when none is close enough.
+    var trackPoint = point.toTrackPoint();
+    for (final entry in _sensorBuffers.entries) {
+      final value = entry.value.nearest(point.timestamp);
+      if (value != null) {
+        trackPoint = trackPoint.withSensorValue(entry.key, value);
+      }
+    }
+    return trackPoint;
   }
 
-  void _onHeartRateReading(({DateTime timestamp, int bpm}) reading) {
+  void _onSensorReading(RecordedSensorSample sample) {
     // Only buffer while actively recording; readings while idle or paused are
     // not associated with any track point.
-    if (_state.status == ActivityRecordingStatus.recording) {
-      _heartRateBuffer.add(reading);
-      // Surface the live reading immediately so the UI shows a current bpm even
-      // before the next (distance-filtered) GPS point is recorded. The durable
-      // per-point heart rate is still stamped from the buffer when points land.
-      if (reading.bpm != _state.currentHeartRateBpm) {
-        _emit(_state.copyWith(currentHeartRateBpm: reading.bpm));
-      }
+    if (_state.status != ActivityRecordingStatus.recording) {
+      return;
     }
-  }
-
-  /// Returns the buffered heart rate nearest to [timestamp] within
-  /// [_heartRateFreshness], or `null` when no reading is close enough. Buffered
-  /// readings are time-ordered, so a binary search locates the neighbours.
-  int? _heartRateBpmForTimestamp(DateTime timestamp) {
-    final readings = _heartRateBuffer;
-    if (readings.isEmpty) {
-      return null;
+    _sensorBuffers[sample.kind]!.add(sample.timestamp, sample.value);
+    // Surface the live reading immediately so the UI shows a current value even
+    // before the next (distance-filtered) GPS point is recorded. The durable
+    // per-point value is still stamped from the buffer when points land.
+    if (sample.value != _state.currentSensorValue(sample.kind)) {
+      _emit(_state.withCurrentSensorValue(sample.kind, sample.value));
     }
-    var low = 0;
-    var high = readings.length;
-    while (low < high) {
-      final mid = (low + high) >> 1;
-      if (readings[mid].timestamp.isBefore(timestamp)) {
-        low = mid + 1;
-      } else {
-        high = mid;
-      }
-    }
-    int? nearestBpm;
-    var nearestDiff = _heartRateFreshness;
-    for (final index in [low - 1, low]) {
-      if (index < 0 || index >= readings.length) {
-        continue;
-      }
-      final diff = readings[index].timestamp.difference(timestamp).abs();
-      if (diff <= nearestDiff) {
-        nearestDiff = diff;
-        nearestBpm = readings[index].bpm;
-      }
-    }
-    return nearestBpm;
   }
 
   void _ensureNotDisposed() {
@@ -811,3 +803,4 @@ class ActivityRecordingService {
     }
   }
 }
+

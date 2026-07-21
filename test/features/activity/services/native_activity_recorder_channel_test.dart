@@ -97,6 +97,36 @@ void main() {
       expect(args.containsKey('hrDeviceId'), isFalse);
     });
 
+    test('includes the power and cadence device ids when provided', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.ride,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+          powerDeviceId: 'PW:11:22:33',
+          cadenceDeviceId: 'CA:44:55:66',
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args['powerDeviceId'], 'PW:11:22:33');
+      expect(args['cadenceDeviceId'], 'CA:44:55:66');
+    });
+
+    test('omits the power and cadence device ids when absent', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.ride,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args.containsKey('powerDeviceId'), isFalse);
+      expect(args.containsKey('cadenceDeviceId'), isFalse);
+    });
+
     test('invokes the expected command methods', () async {
       await channel.pause();
       await channel.resume();

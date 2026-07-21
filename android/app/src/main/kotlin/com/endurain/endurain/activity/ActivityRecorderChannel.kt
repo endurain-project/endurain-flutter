@@ -83,6 +83,8 @@ class ActivityRecorderChannel(context: Context) :
         val connectionOrigin = call.argument<String>("connectionOrigin")
         val connectionProfileId = call.argument<String>("connectionProfileId")
         val heartRateDeviceId = call.argument<String>("hrDeviceId")
+        val powerDeviceId = call.argument<String>("powerDeviceId")
+        val cadenceDeviceId = call.argument<String>("cadenceDeviceId")
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
 
@@ -94,6 +96,8 @@ class ActivityRecorderChannel(context: Context) :
             connectionOrigin = connectionOrigin,
             connectionProfileId = connectionProfileId,
             heartRateDeviceId = heartRateDeviceId,
+            powerDeviceId = powerDeviceId,
+            cadenceDeviceId = cadenceDeviceId,
             currentSegmentIndex = 0,
         )
         store.saveSession(session)

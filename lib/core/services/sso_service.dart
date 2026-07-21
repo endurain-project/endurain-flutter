@@ -141,7 +141,7 @@ class SsoService {
     final pkce = PkceUtils.generatePkce();
 
     _pendingPkce = _SsoPkceState(
-      verifier: pkce['verifier']!,
+      verifier: pkce.verifier,
       serverUrl: url,
       createdAt: _now(),
     );
@@ -150,7 +150,7 @@ class SsoService {
     final oauthUrl = Uri.parse('$url${_endpoints.idpLoginEndpoint}/$idpSlug')
         .replace(
           queryParameters: {
-            'code_challenge': pkce['challenge'],
+            'code_challenge': pkce.challenge,
             'code_challenge_method': 'S256',
             'redirect': callbackUrl,
           },

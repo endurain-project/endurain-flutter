@@ -11,7 +11,12 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/map/screens/map_screen.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
+import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
+import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive_floating_action_button.dart';
 import 'package:flutter/foundation.dart';
@@ -26,6 +31,7 @@ import '../../../helpers/fake_location_platform_adapter.dart';
 import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
 import '../../../helpers/widget_test_app.dart';
+import '../../sensors/fakes/fake_sensor_connection_adapter.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -35,9 +41,9 @@ void main() {
   setUp(() {
     debugDefaultTargetPlatformOverride = null;
     PlatformUtils.debugIsApplePlatformOverride = false;
-    // The map screen builds a MapHeartRateController from the heart-rate sensor
-    // service, which reaches the (non-secret) preferences store, so the async
-    // shared-preferences platform must be mocked here.
+    // The map screen builds a MapSensorController per sensor kind from the
+    // sensor services, which reach the (non-secret) preferences store, so the
+    // async shared-preferences platform must be mocked here.
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
   });
@@ -80,6 +86,72 @@ void main() {
 
       expect(find.byIcon(Icons.location_searching), findsOneWidget);
       expect(mapController.isLocationLocked, isFalse);
+
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
+    testWidgets('shows a live pill for each connected sensor', (tester) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+
+      final heartRate = _fakeSensor(
+        SensorPreferencesRepository.rememberedHeartRateSensorKey,
+      );
+      final power = _fakeSensor(
+        SensorPreferencesRepository.rememberedPowerSensorKey,
+      );
+      addTearDown(() async {
+        await heartRate.service.dispose();
+        await power.service.dispose();
+      });
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            controller: mapController,
+            activityController: activityController,
+            sensorControllers: {
+              SensorMeasurementKind.heartRate: MapSensorController(
+                service: heartRate.service,
+                kind: SensorMeasurementKind.heartRate,
+              ),
+              SensorMeasurementKind.power: MapSensorController(
+                service: power.service,
+                kind: SensorMeasurementKind.power,
+              ),
+            },
+          ),
+        ),
+      );
+      await _pumpMapFrame(tester);
+
+      heartRate.adapter.emitStatus(SensorConnectionStatus.connected);
+      heartRate.adapter.emitMeasurement(
+        SensorMeasurement(
+          kind: SensorMeasurementKind.heartRate,
+          value: 142,
+          timestamp: DateTime(2026, 1, 1, 12),
+        ),
+      );
+      power.adapter.emitStatus(SensorConnectionStatus.connected);
+      power.adapter.emitMeasurement(
+        SensorMeasurement(
+          kind: SensorMeasurementKind.power,
+          value: 210,
+          timestamp: DateTime(2026, 1, 1, 12),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      // One pill per connected sensor, each formatted for its own unit.
+      expect(find.text(l10n.sensorsBpm('142')), findsOneWidget);
+      expect(find.text(l10n.sensorsWatts('210')), findsOneWidget);
 
       activityController.dispose();
       mapController.dispose();
@@ -478,6 +550,20 @@ ActivityRecordingController _activityController(
 
 class _MapTestApp extends TestMaterialApp {
   const _MapTestApp({required super.child});
+}
+
+({SensorService service, FakeSensorConnectionAdapter adapter}) _fakeSensor(
+  String rememberedKey,
+) {
+  final adapter = FakeSensorConnectionAdapter();
+  final service = SensorService(
+    adapter: adapter,
+    preferences: SensorPreferencesRepository(
+      preferences: FakePreferencesStore(),
+    ),
+    rememberedKey: rememberedKey,
+  );
+  return (service: service, adapter: adapter);
 }
 
 Future<void> _pumpMapFrame(WidgetTester tester) async {

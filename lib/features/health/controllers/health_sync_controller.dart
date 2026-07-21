@@ -88,7 +88,10 @@ class HealthSyncController extends ChangeNotifier {
       }
     } catch (error) {
       final e = _asAppException(error);
-      _diagnostics.recordBreadcrumbSync('health.loadStatus.error: ${e.code}');
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.healthLoadStatusFailed,
+        details: {'code': e.code.name},
+      );
       _update(_state.copyWith(isCheckingStatus: false, error: e));
     }
   }
@@ -109,7 +112,8 @@ class HealthSyncController extends ChangeNotifier {
     } catch (error) {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
-        'health.setAutoSyncOnResume.error: ${e.code}',
+        DiagnosticsEvents.healthAutoSyncSettingFailed,
+        details: {'code': e.code.name},
       );
       _update(_state.copyWith(isUpdatingAutoSync: false, error: e));
     }
@@ -146,7 +150,8 @@ class HealthSyncController extends ChangeNotifier {
     } catch (error) {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
-        'health.requestAccess.error: ${e.code}',
+        DiagnosticsEvents.healthRequestAccessFailed,
+        details: {'code': e.code.name},
       );
       _update(_state.copyWith(isCheckingStatus: false, error: e));
     }
@@ -165,7 +170,8 @@ class HealthSyncController extends ChangeNotifier {
     } catch (error) {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
-        'health.installHealthConnect.error: ${e.code}',
+        DiagnosticsEvents.healthInstallProviderFailed,
+        details: {'code': e.code.name},
       );
       _update(_state.copyWith(isCheckingStatus: false, error: e));
     }
@@ -184,7 +190,8 @@ class HealthSyncController extends ChangeNotifier {
     } catch (error) {
       final appError = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
-        'health.disconnect.error: ${appError.code}',
+        DiagnosticsEvents.healthDisconnectFailed,
+        details: {'code': appError.code.name},
       );
       _update(_state.copyWith(error: appError));
     }
@@ -215,7 +222,8 @@ class HealthSyncController extends ChangeNotifier {
       );
     } on AppException catch (e) {
       _diagnostics.recordBreadcrumbSync(
-        'health.listImportable.error: ${e.code}',
+        DiagnosticsEvents.healthLoadImportableFailed,
+        details: {'code': e.code.name},
       );
       _update(
         _state.copyWith(
@@ -356,7 +364,8 @@ class HealthSyncController extends ChangeNotifier {
     } catch (error) {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
-        'health.importSelected.error: ${e.code}',
+        DiagnosticsEvents.healthImportSelectedFailed,
+        details: {'code': e.code.name},
       );
       _update(_state.copyWith(isImporting: false, error: e));
     }
@@ -430,6 +439,9 @@ class HealthSyncController extends ChangeNotifier {
     _isDisposed = true;
     unawaited(_uploadCompletedSubscription?.cancel());
     _uploadCompletedSubscription = null;
+    // Drop the route-scoped importable-list cursor so its candidate cache does
+    // not linger on the app-lifetime service after this route is torn down.
+    unawaited(_service.clearDiscoveryCache());
     super.dispose();
   }
 }

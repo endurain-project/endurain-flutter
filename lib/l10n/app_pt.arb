@@ -135,10 +135,6 @@
   "@errorHealthReadFailed": {
     "description": "Erro de leitura de dados de saúde - Usado em: error_localizations.dart"
   },
-  "errorHealthUnavailable": "A sincronização de saúde não está disponível neste dispositivo",
-  "@errorHealthUnavailable": {
-    "description": "Erro de plataforma de saúde indisponível - Usado em: error_localizations.dart"
-  },
   "errorLoginError": "Não foi possível iniciar sessão",
   "@errorLoginError": {
     "description": "Erro genérico de login - Usado em: error_localizations.dart"
@@ -1251,6 +1247,18 @@
   "sensorsPermissionRequired": "É necessária permissão de Bluetooth para encontrar sensores.",
   "sensorsUnknownDevice": "Sensor desconhecido",
   "sensorsBpm": "{bpm} bpm",
+  "sensorsPowerSection": "Potência",
+  "sensorsPowerHelp": "Emparelhe um medidor de potência Bluetooth para ver a sua potência em tempo real.",
+  "sensorsNoPowerDevices": "Ainda não foram encontrados medidores de potência.",
+  "sensorsWatts": "{watts} W",
+  "sensorsCadenceSection": "Cadência",
+  "sensorsCadenceHelp": "Emparelhe um sensor de cadência Bluetooth para ver a sua cadência em tempo real.",
+  "sensorsNoCadenceDevices": "Ainda não foram encontrados sensores de cadência.",
+  "sensorsRpm": "{rpm} rpm",
   "activityStatHeartRate": "Frequência cardíaca",
-  "activityStatAvgHeartRate": "FC média"
+  "activityStatAvgHeartRate": "FC média",
+  "activityStatPower": "Potência",
+  "activityStatAvgPower": "Potência média",
+  "activityStatCadence": "Cadência",
+  "activityStatAvgCadence": "Cadência média"
 }

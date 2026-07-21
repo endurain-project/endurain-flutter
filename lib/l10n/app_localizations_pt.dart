@@ -111,10 +111,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get errorHealthReadFailed => 'Não foi possível ler os dados de saúde';
 
   @override
-  String get errorHealthUnavailable =>
-      'A sincronização de saúde não está disponível neste dispositivo';
-
-  @override
   String get errorLoginError => 'Não foi possível iniciar sessão';
 
   @override
@@ -409,6 +405,18 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get activityStatAvgHeartRate => 'FC média';
+
+  @override
+  String get activityStatPower => 'Potência';
+
+  @override
+  String get activityStatAvgPower => 'Potência média';
+
+  @override
+  String get activityStatCadence => 'Cadência';
+
+  @override
+  String get activityStatAvgCadence => 'Cadência média';
 
   @override
   String get activityStop => 'Parar';
@@ -1030,5 +1038,37 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String sensorsBpm(String bpm) {
     return '$bpm bpm';
+  }
+
+  @override
+  String get sensorsPowerSection => 'Potência';
+
+  @override
+  String get sensorsPowerHelp =>
+      'Emparelhe um medidor de potência Bluetooth para ver a sua potência em tempo real.';
+
+  @override
+  String get sensorsNoPowerDevices =>
+      'Ainda não foram encontrados medidores de potência.';
+
+  @override
+  String sensorsWatts(String watts) {
+    return '$watts W';
+  }
+
+  @override
+  String get sensorsCadenceSection => 'Cadência';
+
+  @override
+  String get sensorsCadenceHelp =>
+      'Emparelhe um sensor de cadência Bluetooth para ver a sua cadência em tempo real.';
+
+  @override
+  String get sensorsNoCadenceDevices =>
+      'Ainda não foram encontrados sensores de cadência.';
+
+  @override
+  String sensorsRpm(String rpm) {
+    return '$rpm rpm';
   }
 }

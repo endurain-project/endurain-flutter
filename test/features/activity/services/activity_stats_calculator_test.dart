@@ -276,6 +276,49 @@ void main() {
       expect(stats.averageHeartRateBpm, 111);
       expect(stats.currentHeartRateBpm, 121);
     });
+
+    test('reports null power and cadence when no point carries them', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0),
+          _point(latitude: 0, longitude: 0.001, seconds: 60),
+        ]),
+      );
+
+      expect(stats.currentPowerWatts, isNull);
+      expect(stats.averagePowerWatts, isNull);
+      expect(stats.currentCadenceRpm, isNull);
+      expect(stats.averageCadenceRpm, isNull);
+    });
+
+    test('tracks the latest and average power and cadence', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(
+            latitude: 0,
+            longitude: 0,
+            seconds: 0,
+            power: 200,
+            cadence: 80,
+          ),
+          _point(latitude: 0, longitude: 0.001, seconds: 60),
+          _point(
+            latitude: 0,
+            longitude: 0.002,
+            seconds: 120,
+            power: 300,
+            cadence: 90,
+          ),
+        ]),
+      );
+
+      // Only the two sensor-bearing points count: avg power (200+300)/2 = 250,
+      // avg cadence (80+90)/2 = 85; current is the last non-null of each.
+      expect(stats.currentPowerWatts, 300);
+      expect(stats.averagePowerWatts, 250);
+      expect(stats.currentCadenceRpm, 90);
+      expect(stats.averageCadenceRpm, 85);
+    });
   });
 }
 
@@ -286,6 +329,8 @@ ActivityTrackPoint _point({
   double? speed,
   double? elevation,
   int? heartRate,
+  int? power,
+  int? cadence,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
@@ -294,5 +339,7 @@ ActivityTrackPoint _point({
     speedMetersPerSecond: speed,
     elevationMeters: elevation,
     heartRateBpm: heartRate,
+    powerWatts: power,
+    cadenceRpm: cadence,
   );
 }

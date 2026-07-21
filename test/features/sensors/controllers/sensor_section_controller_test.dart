@@ -1,31 +1,33 @@
-import 'package:endurain/features/sensors/controllers/sensor_settings_controller.dart';
+import 'package:endurain/features/sensors/controllers/sensor_section_controller.dart';
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
+import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
-import 'package:endurain/features/sensors/services/heart_rate_sensor_service.dart';
+import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
-import '../fakes/fake_heart_rate_sensor_adapter.dart';
+import '../fakes/fake_sensor_connection_adapter.dart';
 
 void main() {
-  group('SensorSettingsController', () {
-    late FakeHeartRateSensorAdapter adapter;
-    late HeartRateSensorService service;
-    late SensorSettingsController controller;
+  group('SensorSectionController', () {
+    late FakeSensorConnectionAdapter adapter;
+    late SensorService service;
+    late SensorSectionController controller;
 
-    const device = BleSensorDevice(id: 'X', name: 'Strap');
+    const device = BleSensorDevice(id: 'C1', name: 'Cadence');
 
     setUp(() {
-      adapter = FakeHeartRateSensorAdapter();
-      service = HeartRateSensorService(
+      adapter = FakeSensorConnectionAdapter();
+      service = SensorService(
         adapter: adapter,
         preferences: SensorPreferencesRepository(
           preferences: FakePreferencesStore(),
         ),
+        rememberedKey: SensorPreferencesRepository.rememberedCadenceSensorKey,
       );
-      controller = SensorSettingsController(service: service);
+      controller = SensorSectionController(service: service);
     });
 
     tearDown(() async {
@@ -39,6 +41,7 @@ void main() {
       await controller.initialize();
 
       expect(controller.bluetoothState, SensorBluetoothState.ready);
+      expect(controller.isCheckingBluetooth, isFalse);
     });
 
     test(
@@ -54,17 +57,6 @@ void main() {
 
         expect(adapter.ensurePermissionsCalls, 1);
         expect(controller.bluetoothState, SensorBluetoothState.ready);
-      },
-    );
-
-    test(
-      'initialize clears the checking flag once the state resolves',
-      () async {
-        expect(controller.isCheckingBluetooth, isTrue);
-
-        await controller.initialize();
-
-        expect(controller.isCheckingBluetooth, isFalse);
       },
     );
 
@@ -109,6 +101,22 @@ void main() {
 
       expect(controller.connectionStatus, SensorConnectionStatus.connected);
       expect(controller.rememberedDevice, device);
+    });
+
+    test('currentValue reflects the latest measurement', () async {
+      await controller.initialize();
+      await controller.connect(device);
+
+      adapter.emitMeasurement(
+        SensorMeasurement(
+          kind: SensorMeasurementKind.cadence,
+          value: 88,
+          timestamp: DateTime.utc(2026),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.currentValue, 88);
     });
 
     test('disconnect resets the connection status', () async {

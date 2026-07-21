@@ -207,6 +207,52 @@ void main() {
       );
       expect(find.text('-'), findsOneWidget);
     });
+
+    testWidgets('shows live power and cadence when present', (tester) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.recording,
+              currentPowerWatts: 250,
+              currentCadenceRpm: 88,
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.text(AppLocalizationsEn().activityStatPower),
+        findsOneWidget,
+      );
+      expect(find.text('250 W'), findsOneWidget);
+      expect(
+        find.text(AppLocalizationsEn().activityStatCadence),
+        findsOneWidget,
+      );
+      expect(find.text('88 rpm'), findsOneWidget);
+    });
+
+    testWidgets('omits power and cadence tiles without a reading', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.recording,
+              points: [
+                _point(latitude: 0, longitude: 0, seconds: 0),
+                _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 2),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(AppLocalizationsEn().activityStatPower), findsNothing);
+      expect(find.text(AppLocalizationsEn().activityStatCadence), findsNothing);
+    });
   });
 }
 
@@ -231,6 +277,8 @@ ActivityTrackPoint _point({
   required int seconds,
   double? speed,
   int? heartRate,
+  int? power,
+  int? cadence,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
@@ -238,5 +286,7 @@ ActivityTrackPoint _point({
     timestamp: DateTime.utc(2026).add(Duration(seconds: seconds)),
     speedMetersPerSecond: speed,
     heartRateBpm: heartRate,
+    powerWatts: power,
+    cadenceRpm: cadence,
   );
 }

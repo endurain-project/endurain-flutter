@@ -98,9 +98,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorHealthReadFailed => '无法读取健康数据';
 
   @override
-  String get errorHealthUnavailable => '健康同步在此设备上不可用';
-
-  @override
   String get errorLoginError => '无法登录';
 
   @override
@@ -371,6 +368,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get activityStatAvgHeartRate => 'Avg heart rate';
+
+  @override
+  String get activityStatPower => 'Power';
+
+  @override
+  String get activityStatAvgPower => 'Avg power';
+
+  @override
+  String get activityStatCadence => 'Cadence';
+
+  @override
+  String get activityStatAvgCadence => 'Avg cadence';
 
   @override
   String get activityStop => '停止';
@@ -970,6 +979,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String sensorsBpm(String bpm) {
     return '$bpm bpm';
   }
+
+  @override
+  String get sensorsPowerSection => 'Power';
+
+  @override
+  String get sensorsPowerHelp =>
+      'Pair a Bluetooth power meter to see your live power.';
+
+  @override
+  String get sensorsNoPowerDevices => 'No power meters found yet.';
+
+  @override
+  String sensorsWatts(String watts) {
+    return '$watts W';
+  }
+
+  @override
+  String get sensorsCadenceSection => 'Cadence';
+
+  @override
+  String get sensorsCadenceHelp =>
+      'Pair a Bluetooth cadence sensor to see your live cadence.';
+
+  @override
+  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+
+  @override
+  String sensorsRpm(String rpm) {
+    return '$rpm rpm';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1064,9 +1103,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorHealthReadFailed => '無法讀取健康數據';
-
-  @override
-  String get errorHealthUnavailable => '健康同步在此裝置上不可用';
 
   @override
   String get errorLoginError => '無法登入';
@@ -1339,6 +1375,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityStatAvgHeartRate => 'Avg heart rate';
+
+  @override
+  String get activityStatPower => 'Power';
+
+  @override
+  String get activityStatAvgPower => 'Avg power';
+
+  @override
+  String get activityStatCadence => 'Cadence';
+
+  @override
+  String get activityStatAvgCadence => 'Avg cadence';
 
   @override
   String get activityStop => '停止';
@@ -1938,5 +1986,35 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String sensorsBpm(String bpm) {
     return '$bpm bpm';
+  }
+
+  @override
+  String get sensorsPowerSection => 'Power';
+
+  @override
+  String get sensorsPowerHelp =>
+      'Pair a Bluetooth power meter to see your live power.';
+
+  @override
+  String get sensorsNoPowerDevices => 'No power meters found yet.';
+
+  @override
+  String sensorsWatts(String watts) {
+    return '$watts W';
+  }
+
+  @override
+  String get sensorsCadenceSection => 'Cadence';
+
+  @override
+  String get sensorsCadenceHelp =>
+      'Pair a Bluetooth cadence sensor to see your live cadence.';
+
+  @override
+  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+
+  @override
+  String sensorsRpm(String rpm) {
+    return '$rpm rpm';
   }
 }

@@ -31,6 +31,8 @@ class ActiveRecordingModelsTest {
             connectionOrigin = "https://example.test",
             connectionProfileId = "42",
             heartRateDeviceId = "AA:BB:CC:DD",
+            powerDeviceId = "PW:11:22:33",
+            cadenceDeviceId = "CA:44:55:66",
             resumedAt = "2026-07-15T10:05:00.000Z",
             pausedAt = "2026-07-15T10:10:00.000Z",
             endedAt = "2026-07-15T10:20:00.000Z",
@@ -155,6 +157,8 @@ class ActiveRecordingModelsTest {
             speedMetersPerSecond = 3.2,
             speedAccuracyMetersPerSecond = 0.5,
             heartRateBpm = 142,
+            powerWatts = 250,
+            cadenceRpm = 82,
         )
 
         val decoded = RecordedActivityPointData.fromJson(point.toJson())

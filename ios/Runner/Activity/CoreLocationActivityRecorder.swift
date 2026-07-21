@@ -26,6 +26,8 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private var resumedFromPause = false
     private var isCollecting = false
     private var heartRateClient: HeartRatePeripheralClient?
+    private var powerClient: PowerPeripheralClient?
+    private var cadenceClient: CadencePeripheralClient?
 
     init(store: ActiveActivityStore) {
         self.store = store
@@ -77,7 +79,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
         manager.startUpdatingLocation()
         isCollecting = true
-        startHeartRateCapture()
+        startSensorCapture()
         return true
     }
 
@@ -85,7 +87,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         manager.stopUpdatingLocation()
         manager.allowsBackgroundLocationUpdates = false
         isCollecting = false
-        stopHeartRateCapture()
+        stopSensorCapture()
     }
 
     /// Marks that collection is resuming from a pause so the next fix opens a
@@ -94,25 +96,36 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         resumedFromPause = true
     }
 
-    /// Connects to the paired heart-rate sensor recorded in the active session
-    /// (if any) so its latest BPM can be stamped onto points, captured with the
-    /// same lifetime as GPS.
-    private func startHeartRateCapture() {
-        stopHeartRateCapture()
-        guard
-            let deviceId = store.loadSession()?.heartRateDeviceId,
-            !deviceId.isEmpty
-        else {
-            return
+    /// Connects to the paired external sensors recorded in the active session
+    /// (if any) so their latest readings can be stamped onto points, captured
+    /// with the same lifetime as GPS.
+    private func startSensorCapture() {
+        stopSensorCapture()
+        let session = store.loadSession()
+        if let deviceId = session?.heartRateDeviceId, !deviceId.isEmpty {
+            let client = HeartRatePeripheralClient()
+            heartRateClient = client
+            client.start(deviceIdentifier: deviceId)
         }
-        let client = HeartRatePeripheralClient()
-        heartRateClient = client
-        client.start(deviceIdentifier: deviceId)
+        if let deviceId = session?.powerDeviceId, !deviceId.isEmpty {
+            let client = PowerPeripheralClient()
+            powerClient = client
+            client.start(deviceIdentifier: deviceId)
+        }
+        if let deviceId = session?.cadenceDeviceId, !deviceId.isEmpty {
+            let client = CadencePeripheralClient()
+            cadenceClient = client
+            client.start(deviceIdentifier: deviceId)
+        }
     }
 
-    private func stopHeartRateCapture() {
+    private func stopSensorCapture() {
         heartRateClient?.stop()
         heartRateClient = nil
+        powerClient?.stop()
+        powerClient = nil
+        cadenceClient?.stop()
+        cadenceClient = nil
     }
 
     // MARK: - CLLocationManagerDelegate
@@ -283,7 +296,9 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             speedAccuracyMetersPerSecond: location.speedAccuracy >= 0
                 ? location.speedAccuracy
                 : nil,
-            heartRateBpm: heartRateClient?.latestBpm
+            heartRateBpm: heartRateClient?.latestBpm,
+            powerWatts: powerClient?.latestWatts,
+            cadenceRpm: cadenceClient?.latestRpm
         )
     }
 }

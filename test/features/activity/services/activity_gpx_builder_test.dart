@@ -142,6 +142,27 @@ void main() {
       );
       expect(gpx, contains('<gpxtpx:hr>142</gpxtpx:hr>'));
     });
+
+    test('emits cadence and power extensions from track points', () {
+      final gpx = builder.build(
+        ActivityRecordingState(
+          status: ActivityRecordingStatus.completed,
+          activityType: ActivityType.ride,
+          points: [
+            _point(
+              latitude: 41.1,
+              longitude: -8.6,
+              heartRateBpm: 142,
+              powerWatts: 250,
+              cadenceRpm: 82,
+            ),
+          ],
+        ),
+      );
+
+      expect(gpx, contains('<gpxtpx:cad>82</gpxtpx:cad>'));
+      expect(gpx, contains('<ns3:power>250</ns3:power>'));
+    });
   });
 }
 
@@ -150,6 +171,8 @@ ActivityTrackPoint _point({
   double longitude = -8,
   double? elevationMeters = 20,
   int? heartRateBpm,
+  int? powerWatts,
+  int? cadenceRpm,
 }) {
   return ActivityTrackPoint(
     latitude: latitude,
@@ -157,5 +180,7 @@ ActivityTrackPoint _point({
     elevationMeters: elevationMeters,
     timestamp: DateTime.utc(2026, 5, 30, 10),
     heartRateBpm: heartRateBpm,
+    powerWatts: powerWatts,
+    cadenceRpm: cadenceRpm,
   );
 }
