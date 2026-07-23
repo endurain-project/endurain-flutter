@@ -196,11 +196,10 @@ class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
       _characteristicUuid = characteristic.uuid;
       final decoder = profile.createDecoder();
 
-      _valueSubscription =
-          UniversalBle.characteristicValueStream(
-            deviceId,
-            characteristic.uuid,
-          ).listen((data) => _onValue(decoder, data));
+      _valueSubscription = UniversalBle.characteristicValueStream(
+        deviceId,
+        characteristic.uuid,
+      ).listen((data) => _onValue(decoder, data));
 
       await UniversalBle.subscribeNotifications(
         deviceId,

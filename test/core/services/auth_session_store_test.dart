@@ -20,7 +20,7 @@ void main() {
         accessToken: 'access-1',
         refreshToken: 'refresh-1',
         sessionId: 'session-1',
-        profileId: '42',
+        accountId: '42',
         username: 'joao',
         expiresInSeconds: 3600,
       );
@@ -34,6 +34,8 @@ void main() {
       final session = await store.readSession();
       expect(session?.origin, 'https://example.test');
       expect(session?.accessToken, 'access-1');
+      expect(session?.accountId, '42');
+      expect(session?.profileId, 'https://example.test#42');
     });
 
     test('normalizes the committed origin', () async {
@@ -44,11 +46,13 @@ void main() {
         accessToken: 'access-1',
         refreshToken: 'refresh-1',
         sessionId: 'session-1',
-        profileId: '42',
+        accountId: '42',
         expiresInSeconds: 3600,
       );
 
-      expect((await store.readSession())?.origin, 'https://example.test');
+      final session = await store.readSession();
+      expect(session?.origin, 'https://example.test');
+      expect(session?.profileId, 'https://example.test#42');
     });
 
     test('stale session cannot replace or clear a newer login', () async {
@@ -58,7 +62,7 @@ void main() {
         accessToken: 'access-a',
         refreshToken: 'refresh-a',
         sessionId: 'session-a',
-        profileId: '42',
+        accountId: '42',
         expiresInSeconds: 3600,
       );
       final stale = (await store.readSession())!;
@@ -68,7 +72,7 @@ void main() {
         accessToken: 'access-b',
         refreshToken: 'refresh-b',
         sessionId: 'session-b',
-        profileId: '43',
+        accountId: '43',
         expiresInSeconds: 3600,
       );
 
@@ -97,7 +101,7 @@ void main() {
         accessToken: 'access-1',
         refreshToken: 'refresh-1',
         sessionId: 'session-1',
-        profileId: '42',
+        accountId: '42',
         expiresInSeconds: 3600,
       );
 
@@ -124,34 +128,33 @@ void main() {
       expect(await store.getLastServerUrl(), isNull);
     });
 
-    test(
-      'migrates a complete legacy session into the committed bundle',
-      () async {
-        final storage = SecureStorageService();
-        final store = AuthSessionStore(storage: storage);
-        await storage.setServerUrl('https://legacy.example');
-        await storage.setAccessToken('access-1');
-        await storage.setRefreshToken('refresh-1');
-        await storage.setSessionId('session-1');
-        await storage.setAccessTokenExpiresAt(
-          DateTime.now().toUtc().add(const Duration(hours: 1)),
-        );
+    test('does not restore pre-v2 individual-key sessions', () async {
+      // The legacy per-key session migration was removed: such installs must
+      // re-authenticate rather than have a partial, account-less session
+      // silently restored under a fabricated identity.
+      final storage = SecureStorageService();
+      final store = AuthSessionStore(storage: storage);
+      await storage.setServerUrl('https://legacy.example');
+      await storage.setAccessToken('access-1');
+      await storage.setRefreshToken('refresh-1');
+      await storage.setSessionId('session-1');
+      await storage.setAccessTokenExpiresAt(
+        DateTime.now().toUtc().add(const Duration(hours: 1)),
+      );
 
-        final session = await store.readSession();
+      expect(await store.readSession(), isNull);
+      // The server URL is left intact so the login screen can prefill it.
+      expect(await storage.getServerUrl(), 'https://legacy.example');
+    });
 
-        expect(session?.origin, 'https://legacy.example');
-        expect(session?.refreshToken, 'refresh-1');
-        expect(await storage.getAuthSession(), isNotNull);
-        expect(await storage.getAccessToken(), isNull);
-        expect(await storage.getRefreshToken(), isNull);
-      },
-    );
-
-    test('migrates the previous auth_session_v2 JSON shape', () async {
+    test('migrates a pre-accountId auth_session_v2 blob', () async {
+      // Older v2 blobs stored the raw account id under `profileId` and carried
+      // no `accountId`/`revision`. They are upgraded in place: the account id
+      // is adopted and the profile id becomes origin-qualified.
       final expiresAt = DateTime.now().toUtc().add(const Duration(hours: 1));
       FlutterSecureStorage.setMockInitialValues({
         'auth_session_v2':
-            '{"origin":"https://EXAMPLE.test/",'
+            '{"profileId":"42","origin":"https://EXAMPLE.test/",'
             '"accessToken":"access-1","refreshToken":"refresh-1",'
             '"sessionId":"session-1",'
             '"accessTokenExpiresAt":"${expiresAt.toIso8601String()}"}',
@@ -162,9 +165,9 @@ void main() {
       final session = await store.readSession();
 
       expect(session?.origin, 'https://example.test');
-      expect(session?.profileId, isNotEmpty);
+      expect(session?.accountId, '42');
+      expect(session?.profileId, 'https://example.test#42');
       expect(session?.revision, isNotEmpty);
-      expect(await storage.isAuthSessionAuthoritative(), isTrue);
     });
 
     test(
@@ -177,7 +180,7 @@ void main() {
           accessToken: 'access-1',
           refreshToken: 'refresh-1',
           sessionId: 'session-1',
-          profileId: '42',
+          accountId: '42',
           expiresInSeconds: 3600,
         );
         final first = (await store.readSession())!;
@@ -187,12 +190,13 @@ void main() {
           accessToken: 'access-2',
           refreshToken: 'refresh-2',
           sessionId: 'session-2',
-          profileId: '42',
+          accountId: '42',
           expiresInSeconds: 3600,
         );
         final second = (await store.readSession())!;
 
         expect(second.profileId, first.profileId);
+        expect(second.profileId, 'https://example.test#42');
         expect(second.revision, isNot(first.revision));
       },
     );
@@ -200,7 +204,6 @@ void main() {
     test('malformed canonical session clears without deadlocking', () async {
       FlutterSecureStorage.setMockInitialValues({
         'auth_session_v2': '{not json',
-        'auth_session_authoritative': 'true',
       });
       final store = AuthSessionStore(storage: SecureStorageService());
 

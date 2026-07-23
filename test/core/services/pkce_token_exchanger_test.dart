@@ -63,8 +63,9 @@ void main() {
         expect(profileAttempts, 3);
         final session = await AuthSessionStore(storage: storage).readSession();
         expect(session?.accessToken, 'at');
-        // The stable profile id is derived from the server account id.
-        expect(session?.profileId, '42');
+        // The stable profile id is origin-qualified from the server account id.
+        expect(session?.accountId, '42');
+        expect(session?.profileId, 'https://example.test#42');
       },
     );
 

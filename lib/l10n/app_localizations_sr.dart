@@ -399,22 +399,22 @@ class AppLocalizationsSr extends AppLocalizations {
   String get activityStatElevationGain => 'Успон';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Пулс';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Прос. пулс';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Снага';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Прос. снага';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Каденца';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Прос. каденца';
 
   @override
   String get activityStop => 'Заустави';
@@ -964,73 +964,73 @@ class AppLocalizationsSr extends AppLocalizations {
   String get healthSyncRestore => 'Врати';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Сензори';
 
   @override
-  String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+  String get sensorsSettingsSubtitle => 'Мерачи пулса и други спољни сензори';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Пулс';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Упари Bluetooth мерач пулса да видиш свој пулс уживо.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth је искључен. Укључи га да повежеш сензор.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Дозволи приступ Bluetooth-у да повежеш сензор.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Овај уређај не подржава Bluetooth Low Energy.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Тражи сензоре';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Тражење…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Заустави';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Још нема пронађених сензора пулса.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Доступни сензори';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Сачувани сензор';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Повежи';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Повезивање…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Повезано';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Прекини везу';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Заборави';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed =>
+      'Повезивање није успело. Покушај поново.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'За проналажење сензора потребна је дозвола за Bluetooth.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Непознат сензор';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1038,14 +1038,14 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Снага';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Упари Bluetooth мерач снаге да видиш своју снагу уживо.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Још нема пронађених мерача снаге.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1053,17 +1053,34 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Каденца';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Упари Bluetooth сензор каденце да видиш своју каденцу уживо.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => 'Још нема пронађених сензора каденце.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Удаљено пријављивање падова';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Шаљи извештаје о падовима';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Шаљи извештаје о падовима и грешкама на дијагностички сервер. Независно је од локалне дијагностике — можеш укључити обоје, једно или ништа.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Удаљено пријављивање падова није доступно у овој верзији.';
 }

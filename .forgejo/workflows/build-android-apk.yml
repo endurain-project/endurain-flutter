@@ -131,6 +131,12 @@ jobs:
             -Xmx3072m
             -XX:MaxMetaspaceSize=768m
             -XX:ReservedCodeCacheSize=128m
+          # Managed diagnostics DSN baked into official release builds so the
+          # opt-in remote crash reporting has a default target. A Sentry/GlitchTip
+          # DSN is a public client identifier (send-only), so this is a repository
+          # VARIABLE, not a secret. When unset it renders empty and the build
+          # ships no managed default, leaving remote crash reporting inactive.
+          ENDURAIN_CRASH_REPORTING_DSN: ${{ vars.ENDURAIN_CRASH_REPORTING_DSN }}
         run: |
           # Stop any stale Gradle daemons
           pkill -f 'GradleDaemon' || true
@@ -139,7 +145,8 @@ jobs:
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE" \
             --target-platform android-arm64 \
-            --split-debug-info=build/debug-info
+            --split-debug-info=build/debug-info \
+            --dart-define=ENDURAIN_CRASH_REPORTING_DSN="${ENDURAIN_CRASH_REPORTING_DSN:-}"
 
       - name: Verify signed APK
         shell: bash

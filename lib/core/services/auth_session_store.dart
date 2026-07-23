@@ -23,10 +23,7 @@ class AuthSessionStore {
   Future<AuthSession?> _readSessionUnlocked() async {
     final raw = await _storage.getAuthSession();
     if (raw == null || raw.isEmpty) {
-      if (await _storage.isAuthSessionAuthoritative()) {
-        return null;
-      }
-      return _readLegacySession();
+      return null;
     }
     try {
       final decodedValue = jsonDecode(raw);
@@ -40,11 +37,13 @@ class AuthSessionStore {
         }
         decoded[entry.key as String] = entry.value;
       }
+      // Blobs written before the `accountId` field existed are upgraded in
+      // place: `accountId` falls back to the legacy `profileId` value inside
+      // `fromJson`, and a missing `revision` receives a fresh token.
       final needsMigration =
-          decoded['profileId'] == null || decoded['revision'] == null;
+          decoded['accountId'] == null || decoded['revision'] == null;
       final session = AuthSession.fromJson(
         decoded,
-        fallbackProfileId: needsMigration ? connectionRevision() : null,
         fallbackRevision: needsMigration ? connectionRevision() : null,
       );
       final normalized = _normalizeSession(session);
@@ -80,7 +79,7 @@ class AuthSessionStore {
     required String accessToken,
     required String refreshToken,
     required String sessionId,
-    required String profileId,
+    required String accountId,
     String? username,
     required int expiresInSeconds,
   }) async {
@@ -96,7 +95,7 @@ class AuthSessionStore {
         sessionId: sessionId,
         username: username,
         expiresInSeconds: expiresInSeconds,
-        profileId: profileId,
+        accountId: accountId,
       );
       await _writeCanonicalSession(session);
     });
@@ -123,7 +122,7 @@ class AuthSessionStore {
         username: expected.username,
         expiresInSeconds: expiresInSeconds,
         connectionKind: expected.connectionKind,
-        profileId: expected.profileId,
+        accountId: expected.accountId,
       );
       await _writeCanonicalSession(replacement);
       replaced = true;
@@ -165,10 +164,10 @@ class AuthSessionStore {
     required int expiresInSeconds,
     String? username,
     ConnectionKind? connectionKind,
-    required String profileId,
+    required String accountId,
   }) {
     final session = AuthSession(
-      profileId: profileId,
+      accountId: accountId,
       revision: connectionRevision(),
       origin: origin,
       connectionKind:
@@ -190,7 +189,6 @@ class AuthSessionStore {
   Future<void> _writeCanonicalSession(AuthSession session) async {
     await _storage.setServerUrl(session.origin);
     await _storage.setAuthSession(jsonEncode(session.toJson()));
-    await _storage.markAuthSessionAuthoritative();
     await _storage.clearLegacyAuthTokens();
     if (session.username != null) {
       await _storage.setUsername(session.username!);
@@ -209,36 +207,6 @@ class AuthSessionStore {
 
   Future<T> _serialize<T>(Future<T> Function() action) => _queue.run(action);
 
-  Future<AuthSession?> _readLegacySession() async {
-    final origin = await _storage.getServerUrl();
-    final accessToken = await _storage.getAccessToken();
-    final refreshToken = await _storage.getRefreshToken();
-    final sessionId = await _storage.getSessionId();
-    final expiresAt = await _storage.getAccessTokenExpiresAt();
-    if (origin == null ||
-        accessToken == null ||
-        refreshToken == null ||
-        sessionId == null ||
-        expiresAt == null) {
-      return null;
-    }
-    final session = AuthSession(
-      profileId: connectionRevision(),
-      revision: connectionRevision(),
-      origin: ServerUrlResolver.normalize(origin, config: _config),
-      connectionKind: _config.isManagedOrigin(origin)
-          ? ConnectionKind.managed
-          : ConnectionKind.selfHosted,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      sessionId: sessionId,
-      accessTokenExpiresAt: expiresAt.toUtc(),
-      username: await _storage.getUsername(),
-    );
-    await _writeCanonicalSession(session);
-    return session;
-  }
-
   AuthSession _normalizeSession(AuthSession session) {
     final origin = ServerUrlResolver.normalize(session.origin, config: _config);
     final connectionKind = _config.isManagedOrigin(origin)
@@ -248,7 +216,7 @@ class AuthSessionStore {
       return session;
     }
     return AuthSession(
-      profileId: session.profileId,
+      accountId: session.accountId,
       revision: session.revision,
       origin: origin,
       connectionKind: connectionKind,

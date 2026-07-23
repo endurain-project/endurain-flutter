@@ -57,12 +57,12 @@ class CyclingPowerMeasurementDecoder implements SensorMeasurementDecoder {
 
 /// Decodes RSC Measurement (`0x2A53`) notifications into running cadence in
 /// steps per minute. Cadence is carried directly, so this decoder is stateless.
-class RunningSpeedCadenceMeasurementDecoder implements SensorMeasurementDecoder {
+class RunningSpeedCadenceMeasurementDecoder
+    implements SensorMeasurementDecoder {
   @override
   List<SensorMeasurement> decode(List<int> data, DateTime timestamp) {
-    final spm = RunningSpeedCadenceMeasurementParser.parseInstantaneousCadenceSpm(
-      data,
-    );
+    final spm =
+        RunningSpeedCadenceMeasurementParser.parseInstantaneousCadenceSpm(data);
     if (spm == null) {
       return const <SensorMeasurement>[];
     }

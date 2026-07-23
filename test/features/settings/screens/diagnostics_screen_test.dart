@@ -7,17 +7,27 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/inert_crash_reporting.dart';
+
+/// Wraps [DiagnosticsScreen] with an injected diagnostics store and an inert
+/// crash-reporting service, so these tests render the screen without needing an
+/// AppScope.
+Widget _diagnosticsApp(DiagnosticsStore diagnostics) {
+  return AdaptiveApp(
+    title: 'Test',
+    home: DiagnosticsScreen(
+      diagnostics: diagnostics,
+      crashReporting: inertCrashReportingService(),
+    ),
+  );
+}
+
 void main() {
   final l10n = AppLocalizationsEn();
 
   testWidgets('DiagnosticsScreen shows empty state', (tester) async {
     await tester.pumpWidget(
-      AdaptiveApp(
-        title: 'Test',
-        home: DiagnosticsScreen(
-          diagnostics: _FakeDiagnosticsStore(enabled: true),
-        ),
-      ),
+      _diagnosticsApp(_FakeDiagnosticsStore(enabled: true)),
     );
 
     await tester.pumpAndSettle();
@@ -32,12 +42,7 @@ void main() {
     PlatformUtils.debugIsApplePlatformOverride = false;
     addTearDown(PlatformUtils.debugResetOverrides);
 
-    await tester.pumpWidget(
-      AdaptiveApp(
-        title: 'Test',
-        home: DiagnosticsScreen(diagnostics: _FakeDiagnosticsStore()),
-      ),
-    );
+    await tester.pumpWidget(_diagnosticsApp(_FakeDiagnosticsStore()));
 
     await tester.pumpAndSettle();
 
@@ -53,17 +58,12 @@ void main() {
     addTearDown(PlatformUtils.debugResetOverrides);
     final store = _FakeDiagnosticsStore();
 
-    await tester.pumpWidget(
-      AdaptiveApp(
-        title: 'Test',
-        home: DiagnosticsScreen(diagnostics: store),
-      ),
-    );
+    await tester.pumpWidget(_diagnosticsApp(store));
 
     await tester.pumpAndSettle();
     expect(find.text(l10n.diagnosticsDisabled), findsOneWidget);
 
-    await tester.tap(find.byType(Switch));
+    await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
 
     expect(store.isEnabled, isTrue);
@@ -77,12 +77,7 @@ void main() {
     _useIosDarkMode(tester);
 
     await tester.pumpWidget(
-      AdaptiveApp(
-        title: 'Test',
-        home: DiagnosticsScreen(
-          diagnostics: _FakeDiagnosticsStore(enabled: true),
-        ),
-      ),
+      _diagnosticsApp(_FakeDiagnosticsStore(enabled: true)),
     );
 
     await tester.pumpAndSettle();
@@ -116,12 +111,7 @@ void main() {
     });
 
     await tester.pumpWidget(
-      AdaptiveApp(
-        title: 'Test',
-        home: DiagnosticsScreen(
-          diagnostics: _FakeDiagnosticsStore(report: report, enabled: true),
-        ),
-      ),
+      _diagnosticsApp(_FakeDiagnosticsStore(report: report, enabled: true)),
     );
 
     await tester.pumpAndSettle();
@@ -158,12 +148,7 @@ void main() {
       }),
     );
 
-    await tester.pumpWidget(
-      AdaptiveApp(
-        title: 'Test',
-        home: DiagnosticsScreen(diagnostics: store),
-      ),
-    );
+    await tester.pumpWidget(_diagnosticsApp(store));
     await tester.pumpAndSettle();
 
     await _scrollToDiagnosticsActions(tester, l10n);
@@ -195,12 +180,7 @@ void main() {
       });
 
       await tester.pumpWidget(
-        AdaptiveApp(
-          title: 'Test',
-          home: DiagnosticsScreen(
-            diagnostics: _FakeDiagnosticsStore(report: report, enabled: true),
-          ),
-        ),
+        _diagnosticsApp(_FakeDiagnosticsStore(report: report, enabled: true)),
       );
 
       await tester.pumpAndSettle();

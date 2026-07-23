@@ -224,32 +224,50 @@ class SqfliteHealthImportStore implements HealthImportStore {
   }
 
   @override
-  Future<String?> legacyLocalActivityIdFor(String sourceId) async {
+  Future<List<({String profileId, String localActivityId})>> importsForSource(
+    String sourceId,
+  ) async {
     final db = await _open();
-    final legacyRows = await db.query(
+    final rows = await db.query(
       _tableImported,
-      columns: ['local_activity_id'],
-      where: 'profile_id = ? AND source_id = ?',
-      whereArgs: [_legacyProfileId, sourceId],
-      limit: 1,
+      columns: ['profile_id', 'local_activity_id'],
+      where: 'source_id = ?',
+      whereArgs: [sourceId],
     );
-    return legacyRows.isEmpty
-        ? null
-        : legacyRows.first['local_activity_id'] as String?;
+    return [
+      for (final row in rows)
+        (
+          profileId: row['profile_id'] as String,
+          localActivityId: row['local_activity_id'] as String,
+        ),
+    ];
   }
 
   @override
-  Future<void> adoptLegacyImport({
-    required String profileId,
+  Future<void> reassignImportProfile({
     required String sourceId,
+    required String fromProfileId,
+    required String toProfileId,
   }) async {
+    if (fromProfileId == toProfileId) {
+      return;
+    }
     final db = await _open();
-    await db.update(
-      _tableImported,
-      {'profile_id': profileId},
-      where: 'profile_id = ? AND source_id = ?',
-      whereArgs: [_legacyProfileId, sourceId],
-    );
+    await db.transaction((txn) async {
+      // Clear any stale target row so re-keying can never hit the
+      // (profile_id, source_id) primary key constraint.
+      await txn.delete(
+        _tableImported,
+        where: 'profile_id = ? AND source_id = ?',
+        whereArgs: [toProfileId, sourceId],
+      );
+      await txn.update(
+        _tableImported,
+        {'profile_id': toProfileId},
+        where: 'profile_id = ? AND source_id = ?',
+        whereArgs: [fromProfileId, sourceId],
+      );
+    });
   }
 
   @override

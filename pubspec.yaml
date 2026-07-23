@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.6.0+6
+version: 0.7.0+7
 
 environment:
   sdk: ^3.12.0
@@ -56,7 +56,7 @@ dependencies:
   geolocator: ^14.0.3
 
   # Package info for app version
-  package_info_plus: ^10.2.0
+  package_info_plus: ^10.2.1
 
   # Local app-support storage for privacy-safe diagnostics
   path_provider: ^2.1.6
@@ -69,6 +69,15 @@ dependencies:
 
   # Crypto utilities for PKCE
   crypto: ^3.0.6
+
+  # Opt-in remote crash/error reporting. The pure-Dart Sentry SDK speaks the
+  # Sentry protocol used by the managed Endurain diagnostics endpoint. The
+  # Flutter-specific `sentry_flutter` package is intentionally NOT used: it is
+  # currently held back to an old major on this dependency set, whereas the
+  # pure-Dart package resolves to the latest and captures the same Dart/Flutter
+  # errors the local diagnostics recorder already hooks. Native-crash capture
+  # can be added later by swapping the injected CrashReporter adapter.
+  sentry: ^9.24.0
 
   # System browser OAuth/SSO flow with deep-link callback
   app_links: ^7.2.1
@@ -83,10 +92,10 @@ dependencies:
 
   # Network connectivity signal for retrying activity uploads when connectivity
   # returns.
-  connectivity_plus: ^7.2.0
+  connectivity_plus: ^7.3.0
 
   # OS share sheet for GPX file export.
-  share_plus: ^13.2.0
+  share_plus: ^13.2.1
 
   # Declarative, deep-link-ready routing for top-level auth-guarded navigation.
   go_router: ^17.3.0

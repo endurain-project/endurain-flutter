@@ -343,7 +343,7 @@ class _FakeMultipartUploadAdapter implements MultipartUploadAdapter {
 Future<void> _seedSession(
   SecureStorageService storage, {
   String origin = 'https://example.test',
-  String profileId = '42',
+  String accountId = '42',
   int expiresInSeconds = 3600,
 }) {
   return AuthSessionStore(storage: storage).saveSession(
@@ -351,7 +351,7 @@ Future<void> _seedSession(
     accessToken: 'access-1',
     refreshToken: 'refresh-1',
     sessionId: 'session-1',
-    profileId: profileId,
+    accountId: accountId,
     expiresInSeconds: expiresInSeconds,
   );
 }

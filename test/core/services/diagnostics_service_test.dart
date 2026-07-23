@@ -127,6 +127,21 @@ void main() {
           mustNotContain: ['/private/var/containers'],
           mustContain: '<path>',
         ),
+        'android app data paths (data/user)': _RedactionCase(
+          input: 'wrote /data/user/0/com.app/track.gpx',
+          mustNotContain: ['/data/user/0/com.app'],
+          mustContain: '<path>',
+        ),
+        'android app data paths (data/data)': _RedactionCase(
+          input: 'reading /data/data/com.app/app.db',
+          mustNotContain: ['/data/data/com.app'],
+          mustContain: '<path>',
+        ),
+        'android external storage paths': _RedactionCase(
+          input: 'export /storage/emulated/0/track.gpx',
+          mustNotContain: ['/storage/emulated/0'],
+          mustContain: '<path>',
+        ),
         'gps coordinates': _RedactionCase(
           input: 'position 41.123456, -8.678901 captured',
           mustNotContain: ['41.123456', '-8.678901'],

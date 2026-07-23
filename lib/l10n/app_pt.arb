@@ -278,7 +278,7 @@
     }
   },
   "@sectionAuth": "=== AUTENTICAÇÃO (features/auth/screens/login_screen.dart) ===",
-  "loginTitle": "Login",
+  "loginTitle": "Iniciar sessão",
   "@loginTitle": {
     "description": "Título do ecrã de login"
   },
@@ -873,7 +873,7 @@
   "@serverProtocol": {
     "description": "Rótulo do seletor de protocolo do servidor - Usado em: login_screen.dart"
   },
-  "serverUrlHint": "example.com",
+  "serverUrlHint": "exemplo.com",
   "@serverUrlHint": {
     "description": "Texto de dica do campo de endereço do servidor sem protocolo - Usado em: login_screen.dart"
   },
@@ -1016,7 +1016,6 @@
   "@diagnosticsRawReport": {
     "description": "Cabeçalho da secção do relatório bruto de diagnóstico - Usado em: diagnostics_screen.dart"
   },
-
   "@@healthSection": "Sincronização de saúde",
   "healthSyncSettingsTitle": "Sincronização de saúde",
   "@healthSyncSettingsTitle": {
@@ -1260,5 +1259,10 @@
   "activityStatPower": "Potência",
   "activityStatAvgPower": "Potência média",
   "activityStatCadence": "Cadência",
-  "activityStatAvgCadence": "Cadência média"
+  "activityStatAvgCadence": "Cadência média",
+  "diagnosticsRemoteTitle": "Relatórios de falhas remotos",
+  "diagnosticsRemoteEnable": "Enviar relatórios de falhas",
+  "diagnosticsRemoteEnableSubtitle": "Enviar relatórios de falhas e de erros para um servidor de diagnóstico. É independente do diagnóstico local — pode ativar ambos, um ou nenhum.",
+  "diagnosticsRemoteActive": "Crash reports are being sent.",
+  "diagnosticsRemoteNeedsServer": "O relatório remoto de falhas não está disponível nesta versão."
 }

@@ -402,22 +402,22 @@ class AppLocalizationsPl extends AppLocalizations {
   String get activityStatElevationGain => 'Przewyższenie';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Tętno';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Śr. tętno';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Moc';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Śr. moc';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Kadencja';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Śr. kadencja';
 
   @override
   String get activityStop => 'Zatrzymaj';
@@ -968,73 +968,75 @@ class AppLocalizationsPl extends AppLocalizations {
   String get healthSyncRestore => 'Przywróć';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Czujniki';
 
   @override
   String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+      'Monitory tętna i inne czujniki zewnętrzne';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Tętno';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Sparuj monitor tętna Bluetooth, aby widzieć swoje tętno na żywo.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth jest wyłączony. Włącz go, aby połączyć czujnik.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Zezwól na dostęp do Bluetooth, aby połączyć czujnik.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'To urządzenie nie obsługuje Bluetooth Low Energy.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Szukaj czujników';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Szukanie…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Zatrzymaj';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices =>
+      'Nie znaleziono jeszcze żadnych czujników tętna.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Dostępne czujniki';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Zapisany czujnik';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Połącz';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Łączenie…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Połączono';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Rozłącz';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Zapomnij';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed =>
+      'Nie udało się połączyć. Spróbuj ponownie.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Do znalezienia czujników wymagane jest uprawnienie Bluetooth.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Nieznany czujnik';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1042,14 +1044,15 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Moc';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Sparuj miernik mocy Bluetooth, aby widzieć swoją moc na żywo.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices =>
+      'Nie znaleziono jeszcze żadnych mierników mocy.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1057,17 +1060,35 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Kadencja';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Sparuj czujnik kadencji Bluetooth, aby widzieć swoją kadencję na żywo.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices =>
+      'Nie znaleziono jeszcze żadnych czujników kadencji.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Zdalne raportowanie awarii';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Wysyłaj raporty o awariach';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Wysyłaj raporty o awariach i błędach na serwer diagnostyczny. Jest to niezależne od lokalnej diagnostyki — możesz włączyć oba, jedno lub żadne.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Zdalne raportowanie awarii nie jest dostępne w tej wersji.';
 }

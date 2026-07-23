@@ -45,7 +45,10 @@ class TestScaffoldApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TestMaterialApp(services: services, child: Scaffold(body: child));
+    return TestMaterialApp(
+      services: services,
+      child: Scaffold(body: child),
+    );
   }
 }
 

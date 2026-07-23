@@ -400,22 +400,22 @@ class AppLocalizationsFi extends AppLocalizations {
   String get activityStatElevationGain => 'Nousu';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Syke';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Keskisyke';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Teho';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Keskiteho';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Kadenssi';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Keskikadenssi';
 
   @override
   String get activityStop => 'Lopeta';
@@ -964,73 +964,73 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthSyncRestore => 'Palauta';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Anturit';
 
   @override
-  String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+  String get sensorsSettingsSubtitle => 'Sykemittarit ja muut ulkoiset anturit';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Syke';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Yhdistä Bluetooth-sykemittari nähdäksesi sykkeesi reaaliajassa.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth on pois päältä. Ota se käyttöön yhdistääksesi anturin.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Salli Bluetooth-käyttöoikeus yhdistääksesi anturin.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Tämä laite ei tue Bluetooth Low Energyä.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Etsi antureita';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Etsitään…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Pysäytä';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Sykeantureita ei löytynyt vielä.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Saatavilla olevat anturit';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Tallennettu anturi';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Yhdistä';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Yhdistetään…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Yhdistetty';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Katkaise yhteys';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Unohda';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed =>
+      'Yhdistäminen epäonnistui. Yritä uudelleen.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Antureiden etsimiseen tarvitaan Bluetooth-lupa.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Tuntematon anturi';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1038,14 +1038,14 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Teho';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Yhdistä Bluetooth-tehomittari nähdäksesi tehosi reaaliajassa.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Tehomittareita ei löytynyt vielä.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1053,17 +1053,34 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Kadenssi';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Yhdistä Bluetooth-kadenssianturi nähdäksesi kadenssisi reaaliajassa.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => 'Kadenssiantureita ei löytynyt vielä.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Etäkaatumisraportointi';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Lähetä kaatumisraportteja';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Lähetä kaatumis- ja virheraportteja diagnostiikkapalvelimelle. Tämä on erillään paikallisesta diagnostiikasta — voit ottaa käyttöön molemmat, toisen tai ei kumpaakaan.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Etäkaatumisraportointi ei ole käytettävissä tässä versiossa.';
 }

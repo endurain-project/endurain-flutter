@@ -397,22 +397,22 @@ class AppLocalizationsUk extends AppLocalizations {
   String get activityStatElevationGain => 'Набір висоти';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Пульс';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Сер. пульс';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Потужність';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Сер. потужність';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Каденс';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Сер. каденс';
 
   @override
   String get activityStop => 'Зупинити';
@@ -961,73 +961,74 @@ class AppLocalizationsUk extends AppLocalizations {
   String get healthSyncRestore => 'Відновити';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Датчики';
 
   @override
   String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+      'Монітори пульсу та інші зовнішні датчики';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Пульс';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Підключіть Bluetooth-монітор пульсу, щоб бачити свій пульс у реальному часі.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth вимкнено. Увімкніть його, щоб підключити датчик.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Дозвольте доступ до Bluetooth, щоб підключити датчик.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Цей пристрій не підтримує Bluetooth Low Energy.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Шукати датчики';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Пошук…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Зупинити';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Датчиків пульсу ще не знайдено.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Доступні датчики';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Збережений датчик';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Підключити';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Підключення…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Підключено';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Відключити';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Забути';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed =>
+      'Не вдалося підключитися. Спробуйте ще раз.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Для пошуку датчиків потрібен дозвіл на Bluetooth.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Невідомий датчик';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1035,14 +1036,14 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Потужність';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Підключіть Bluetooth-вимірювач потужності, щоб бачити свою потужність у реальному часі.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Вимірювачів потужності ще не знайдено.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1050,17 +1051,34 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Каденс';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Підключіть Bluetooth-датчик каденсу, щоб бачити свій каденс у реальному часі.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => 'Датчиків каденсу ще не знайдено.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Віддалене звітування про збої';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Надсилати звіти про збої';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Надсилайте звіти про збої та помилки на діагностичний сервер. Це незалежно від локальної діагностики — можна ввімкнути обидва, одне або жодного.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Віддалене звітування про збої недоступне в цій версії.';
 }

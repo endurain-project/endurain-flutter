@@ -2006,6 +2006,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{rpm} rpm'**
   String sensorsRpm(String rpm);
+
+  /// Remote crash reporting section header - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Remote crash reporting'**
+  String get diagnosticsRemoteTitle;
+
+  /// Toggle label to enable remote crash reporting - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Send crash reports'**
+  String get diagnosticsRemoteEnable;
+
+  /// Subtitle explaining remote crash reporting - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Send crash and error reports to a diagnostics server. This is separate from local diagnostics — you can enable either, both, or neither.'**
+  String get diagnosticsRemoteEnableSubtitle;
+
+  /// Status shown when remote crash reporting is active - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Crash reports are being sent'**
+  String get diagnosticsRemoteActive;
+
+  /// Status shown when remote crash reporting is on but this build has no managed diagnostics endpoint - Used in: diagnostics_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Remote crash reporting isn\'t available in this build.'**
+  String get diagnosticsRemoteNeedsServer;
 }
 
 class _AppLocalizationsDelegate

@@ -393,22 +393,22 @@ class AppLocalizationsLt extends AppLocalizations {
   String get activityStatElevationGain => 'Pakilimas';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Pulsas';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Vid. pulsas';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Galia';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Vid. galia';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Kadencija';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Vid. kadencija';
 
   @override
   String get activityStop => 'Sustabdyti';
@@ -954,73 +954,74 @@ class AppLocalizationsLt extends AppLocalizations {
   String get healthSyncRestore => 'Atkurti';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Jutikliai';
 
   @override
   String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+      'Pulso matuokliai ir kiti išoriniai jutikliai';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Pulsas';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Susiekite Bluetooth pulso matuoklį, kad matytumėte savo pulsą tiesiogiai.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth išjungtas. Įjunkite jį, kad prijungtumėte jutiklį.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Leiskite prieigą prie Bluetooth, kad prijungtumėte jutiklį.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Šis įrenginys nepalaiko Bluetooth Low Energy.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Ieškoti jutiklių';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Ieškoma…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Stabdyti';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Pulso jutiklių dar nerasta.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Pasiekiami jutikliai';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Išsaugotas jutiklis';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Prijungti';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Jungiamasi…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Prijungta';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Atjungti';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Pamiršti';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed =>
+      'Nepavyko prisijungti. Bandykite dar kartą.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Norint rasti jutiklius, reikalingas Bluetooth leidimas.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Nežinomas jutiklis';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1028,14 +1029,14 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Galia';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Susiekite Bluetooth galios matuoklį, kad matytumėte savo galią tiesiogiai.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Galios matuoklių dar nerasta.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1043,17 +1044,34 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Kadencija';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Susiekite Bluetooth kadencijos jutiklį, kad matytumėte savo kadenciją tiesiogiai.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => 'Kadencijos jutiklių dar nerasta.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Nuotolinis strigčių pranešimas';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Siųsti strigčių ataskaitas';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Siųskite strigčių ir klaidų ataskaitas į diagnostikos serverį. Tai nepriklauso nuo vietinės diagnostikos — galite įjungti abu, vieną arba nė vieno.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Nuotolinis strigčių pranešimas šioje versijoje nepasiekiamas.';
 }

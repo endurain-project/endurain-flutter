@@ -2,15 +2,19 @@ import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/connectivity_service.dart';
+import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
+import 'package:endurain/core/services/platform/sentry_crash_reporter.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
+import 'package:endurain/features/settings/repositories/crash_reporting_settings_repository.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
+import 'package:flutter/foundation.dart';
 
 /// Shared, feature-agnostic infrastructure wired once and handed to every
 /// feature module.
@@ -54,5 +58,16 @@ class AppInfrastructure {
   /// tree when the user switches languages in Settings.
   late final LocaleController localeController = LocaleController(
     repository: LocaleSettingsRepository(preferences: preferences),
+  );
+
+  /// Opt-in remote crash reporting, independent of the local [diagnostics]
+  /// recorder. Inactive until the user enables it and the managed DSN
+  /// (`config.crashReportingDsn`) is available, so no build transmits crash
+  /// data by default.
+  late final CrashReportingService crashReporting = CrashReportingService(
+    reporter: SentryCrashReporter(),
+    settings: CrashReportingSettingsRepository(preferences: preferences),
+    defaultDsn: config.crashReportingDsn,
+    environment: kReleaseMode ? 'production' : 'development',
   );
 }

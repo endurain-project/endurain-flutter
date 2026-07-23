@@ -364,22 +364,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityStatElevationGain => '累计爬升';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => '心率';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => '平均心率';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => '功率';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => '平均功率';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => '踏频';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => '平均踏频';
 
   @override
   String get activityStop => '停止';
@@ -907,73 +907,68 @@ class AppLocalizationsZh extends AppLocalizations {
   String get healthSyncRestore => '恢复';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => '传感器';
 
   @override
-  String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+  String get sensorsSettingsSubtitle => '心率监测器和其他外部传感器';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => '心率';
 
   @override
-  String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+  String get sensorsHeartRateHelp => '配对蓝牙心率监测器以实时查看您的心率。';
 
   @override
-  String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+  String get sensorsBluetoothOff => '蓝牙已关闭。请开启以连接传感器。';
 
   @override
-  String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+  String get sensorsBluetoothUnauthorized => '请允许蓝牙访问以连接传感器。';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      '此设备不支持蓝牙低功耗（Bluetooth Low Energy）。';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => '扫描传感器';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => '正在扫描…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => '停止';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => '尚未找到心率传感器。';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => '可用传感器';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => '已保存的传感器';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => '连接';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => '正在连接…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => '已连接';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => '断开连接';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => '忘记';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed => '无法连接。请重试。';
 
   @override
-  String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+  String get sensorsPermissionRequired => '查找传感器需要蓝牙权限。';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => '未知传感器';
 
   @override
   String sensorsBpm(String bpm) {
@@ -981,14 +976,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => '功率';
 
   @override
-  String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+  String get sensorsPowerHelp => '配对蓝牙功率计以实时查看您的功率。';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => '尚未找到功率计。';
 
   @override
   String sensorsWatts(String watts) {
@@ -996,19 +990,34 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => '踏频';
 
   @override
-  String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+  String get sensorsCadenceHelp => '配对蓝牙踏频传感器以实时查看您的踏频。';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => '尚未找到踏频传感器。';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => '远程崩溃报告';
+
+  @override
+  String get diagnosticsRemoteEnable => '发送崩溃报告';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      '将崩溃和错误报告发送到诊断服务器。这与本地诊断相互独立——您可以同时启用两者、其中之一或都不启用。';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer => '此版本不支持远程崩溃报告。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1371,22 +1380,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get activityStatElevationGain => '累計爬升';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => '心率';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => '平均心率';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => '功率';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => '平均功率';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => '踏頻';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => '平均踏頻';
 
   @override
   String get activityStop => '停止';
@@ -1915,73 +1924,68 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get healthSyncRestore => '恢復';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => '感測器';
 
   @override
-  String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+  String get sensorsSettingsSubtitle => '心率監測器和其他外部感測器';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => '心率';
 
   @override
-  String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+  String get sensorsHeartRateHelp => '配對藍牙心率監測器以即時查看您的心率。';
 
   @override
-  String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+  String get sensorsBluetoothOff => '藍牙已關閉。請開啟以連接感測器。';
 
   @override
-  String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+  String get sensorsBluetoothUnauthorized => '請允許藍牙存取以連接感測器。';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      '此裝置不支援藍牙低功耗（Bluetooth Low Energy）。';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => '掃描感測器';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => '正在掃描…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => '停止';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => '尚未找到心率感測器。';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => '可用感測器';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => '已儲存的感測器';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => '連接';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => '正在連接…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => '已連接';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => '中斷連接';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => '忘記';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed => '無法連接。請重試。';
 
   @override
-  String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+  String get sensorsPermissionRequired => '尋找感測器需要藍牙權限。';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => '未知感測器';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1989,14 +1993,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => '功率';
 
   @override
-  String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+  String get sensorsPowerHelp => '配對藍牙功率計以即時查看您的功率。';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => '尚未找到功率計。';
 
   @override
   String sensorsWatts(String watts) {
@@ -2004,17 +2007,32 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => '踏頻';
 
   @override
-  String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+  String get sensorsCadenceHelp => '配對藍牙踏頻感測器以即時查看您的踏頻。';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => '尚未找到踏頻感測器。';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => '遠端當機報告';
+
+  @override
+  String get diagnosticsRemoteEnable => '傳送當機報告';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      '將當機和錯誤報告傳送到診斷伺服器。這與本機診斷相互獨立——您可以同時啟用兩者、其中之一或都不啟用。';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer => '此版本不支援遠端當機報告。';
 }

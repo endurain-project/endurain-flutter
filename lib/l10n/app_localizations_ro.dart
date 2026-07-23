@@ -402,22 +402,22 @@ class AppLocalizationsRo extends AppLocalizations {
   String get activityStatElevationGain => 'Urcare';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Ritm cardiac';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Ritm cardiac mediu';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Putere';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Putere medie';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Cadență';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Cadență medie';
 
   @override
   String get activityStop => 'Oprește';
@@ -967,73 +967,73 @@ class AppLocalizationsRo extends AppLocalizations {
   String get healthSyncRestore => 'Restaurează';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Senzori';
 
   @override
   String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+      'Monitoare de ritm cardiac și alți senzori externi';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Ritm cardiac';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Asociază un monitor de ritm cardiac Bluetooth pentru a-ți vedea ritmul cardiac în timp real.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth este dezactivat. Activează-l pentru a conecta un senzor.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Permite accesul la Bluetooth pentru a conecta un senzor.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Acest dispozitiv nu acceptă Bluetooth Low Energy.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Caută senzori';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Se caută…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Oprește';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Nu s-au găsit încă senzori de ritm cardiac.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Senzori disponibili';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Senzor salvat';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Conectează';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Se conectează…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Conectat';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Deconectează';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Uită';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed => 'Conectarea a eșuat. Încearcă din nou.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Este necesară permisiunea Bluetooth pentru a găsi senzori.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Senzor necunoscut';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1041,14 +1041,14 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Putere';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Asociază un senzor de putere Bluetooth pentru a-ți vedea puterea în timp real.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Nu s-au găsit încă senzori de putere.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1056,17 +1056,35 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Cadență';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Asociază un senzor de cadență Bluetooth pentru a-ți vedea cadența în timp real.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices =>
+      'Nu s-au găsit încă senzori de cadență.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Raportare de la distanță a blocărilor';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Trimite rapoarte de blocare';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Trimite rapoarte de blocare și de eroare către un server de diagnosticare. Este independent de diagnosticarea locală — poți activa ambele, una sau niciuna.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Raportarea de la distanță a blocărilor nu este disponibilă în această versiune.';
 }

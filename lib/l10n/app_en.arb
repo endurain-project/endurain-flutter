@@ -1405,5 +1405,25 @@
         "type": "String"
       }
     }
+  },
+  "diagnosticsRemoteTitle": "Remote crash reporting",
+  "@diagnosticsRemoteTitle":   {
+    "description": "Remote crash reporting section header - Used in: diagnostics_screen.dart"
+  },
+  "diagnosticsRemoteEnable": "Send crash reports",
+  "@diagnosticsRemoteEnable":   {
+    "description": "Toggle label to enable remote crash reporting - Used in: diagnostics_screen.dart"
+  },
+  "diagnosticsRemoteEnableSubtitle": "Send crash and error reports to a diagnostics server. This is separate from local diagnostics — you can enable either, both, or neither.",
+  "@diagnosticsRemoteEnableSubtitle":   {
+    "description": "Subtitle explaining remote crash reporting - Used in: diagnostics_screen.dart"
+  },
+  "diagnosticsRemoteActive": "Crash reports are being sent",
+  "@diagnosticsRemoteActive":   {
+    "description": "Status shown when remote crash reporting is active - Used in: diagnostics_screen.dart"
+  },
+  "diagnosticsRemoteNeedsServer": "Remote crash reporting isn't available in this build.",
+  "@diagnosticsRemoteNeedsServer":   {
+    "description": "Status shown when remote crash reporting is on but this build has no managed diagnostics endpoint - Used in: diagnostics_screen.dart"
   }
 }

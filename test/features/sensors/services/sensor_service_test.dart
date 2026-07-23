@@ -150,17 +150,20 @@ void main() {
       expect(statuses, contains(SensorConnectionStatus.connected));
     });
 
-    test('autoConnectRemembered activates permissions then reconnects', () async {
-      await preferences.saveRemembered(key: key, device: device);
-      adapter.bluetoothStateValue = SensorBluetoothState.ready;
+    test(
+      'autoConnectRemembered activates permissions then reconnects',
+      () async {
+        await preferences.saveRemembered(key: key, device: device);
+        adapter.bluetoothStateValue = SensorBluetoothState.ready;
 
-      await service.autoConnectRemembered();
+        await service.autoConnectRemembered();
 
-      // Activates the Bluetooth stack (what iOS needs to reach ready) and then
-      // reconnects the remembered sensor without visiting the Sensors screen.
-      expect(adapter.ensurePermissionsCalls, greaterThanOrEqualTo(1));
-      expect(adapter.connectCalls, [device]);
-    });
+        // Activates the Bluetooth stack (what iOS needs to reach ready) and then
+        // reconnects the remembered sensor without visiting the Sensors screen.
+        expect(adapter.ensurePermissionsCalls, greaterThanOrEqualTo(1));
+        expect(adapter.connectCalls, [device]);
+      },
+    );
 
     test('autoConnectRemembered no-ops without a remembered device', () async {
       await service.autoConnectRemembered();
@@ -192,21 +195,24 @@ void main() {
       expect(retryService.isConnected, isTrue);
     });
 
-    test('does not auto-reconnect while suppressed by canAutoReconnect', () async {
-      final suppressed = SensorService(
-        adapter: adapter,
-        preferences: preferences,
-        rememberedKey: key,
-        canAutoReconnect: () => false,
-      );
-      addTearDown(suppressed.dispose);
-      await preferences.saveRemembered(key: key, device: device);
-      adapter.bluetoothStateValue = SensorBluetoothState.ready;
+    test(
+      'does not auto-reconnect while suppressed by canAutoReconnect',
+      () async {
+        final suppressed = SensorService(
+          adapter: adapter,
+          preferences: preferences,
+          rememberedKey: key,
+          canAutoReconnect: () => false,
+        );
+        addTearDown(suppressed.dispose);
+        await preferences.saveRemembered(key: key, device: device);
+        adapter.bluetoothStateValue = SensorBluetoothState.ready;
 
-      final attempted = await suppressed.tryReconnectRemembered();
+        final attempted = await suppressed.tryReconnectRemembered();
 
-      expect(attempted, isFalse);
-      expect(adapter.connectCalls, isEmpty);
-    });
+        expect(attempted, isFalse);
+        expect(adapter.connectCalls, isEmpty);
+      },
+    );
   });
 }

@@ -1,5 +1,6 @@
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
@@ -13,9 +14,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class DiagnosticsScreen extends StatefulWidget {
-  const DiagnosticsScreen({super.key, this.diagnostics});
+  const DiagnosticsScreen({super.key, this.diagnostics, this.crashReporting});
 
   final DiagnosticsStore? diagnostics;
+  final CrashReportingService? crashReporting;
 
   @override
   State<DiagnosticsScreen> createState() => _DiagnosticsScreenState();
@@ -28,20 +30,32 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen>
   @override
   void initState() {
     super.initState();
-    // The screen always owns the controller; its test seam is the diagnostics
-    // store (injected here) rather than the controller itself.
-    _controller = registerController(
-      null,
-      () => DiagnosticsController(
-        diagnostics:
-            widget.diagnostics ??
-            AppScope.servicesOf(context, listen: false).diagnostics,
-      ),
-    );
+    // The screen always owns the controller; its test seams are the diagnostics
+    // store and crash-reporting service (injected here) rather than the
+    // controller itself. Only resolve the scope when a seam is not injected, so
+    // fully-injected widget tests need no AppScope.
+    _controller = registerController(null, () {
+      final diagnostics = widget.diagnostics;
+      final crashReporting = widget.crashReporting;
+      if (diagnostics != null && crashReporting != null) {
+        return DiagnosticsController(
+          diagnostics: diagnostics,
+          crashReporting: crashReporting,
+        );
+      }
+      final services = AppScope.servicesOf(context, listen: false);
+      return DiagnosticsController(
+        diagnostics: diagnostics ?? services.diagnostics,
+        crashReporting: crashReporting ?? services.crashReporting,
+      );
+    });
     _controller.load();
   }
 
   Future<void> _setEnabled(bool value) => _controller.setEnabled(value);
+
+  Future<void> _setCrashReportingEnabled(bool value) =>
+      _controller.setCrashReportingEnabled(value);
 
   Future<void> _copyReport(DiagnosticsReport report) async {
     final l10n = AppLocalizations.of(context)!;
@@ -134,6 +148,11 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen>
                     _RawReportSection(report: report.rawText),
                   ],
                 ),
+              const SizedBox(height: UIConstants.paddingStandard),
+              _CrashReportingSection(
+                controller: _controller,
+                onToggle: _setCrashReportingEnabled,
+              ),
             ],
           );
         },
@@ -291,4 +310,54 @@ String _formatDetails(Map<String, Object?> details) {
   return details.entries
       .map((entry) => '${entry.key}: ${entry.value ?? ''}')
       .join(', ');
+}
+
+/// Opt-in remote crash reporting controls.
+///
+/// Independent of local diagnostics collection above: a switch to opt in and,
+/// when on, a live status line. Reports always go to Endurain's managed
+/// diagnostics endpoint — there is no user-configurable server.
+class _CrashReportingSection extends StatelessWidget {
+  const _CrashReportingSection({
+    required this.controller,
+    required this.onToggle,
+  });
+
+  final DiagnosticsController controller;
+  final ValueChanged<bool> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return AdaptiveListSection(
+      header: l10n.diagnosticsRemoteTitle,
+      children: [
+        AdaptiveSwitchListTile(
+          leading: const AdaptiveIcon(
+            materialIcon: Icons.cloud_upload_outlined,
+            cupertinoIcon: CupertinoIcons.cloud_upload,
+          ),
+          title: l10n.diagnosticsRemoteEnable,
+          subtitle: l10n.diagnosticsRemoteEnableSubtitle,
+          value: controller.crashReportingEnabled,
+          onChanged: onToggle,
+        ),
+        if (controller.crashReportingEnabled)
+          AdaptiveListTile(
+            leading: AdaptiveIcon(
+              materialIcon: controller.crashReportingActive
+                  ? Icons.check_circle_outline
+                  : Icons.info_outline,
+              cupertinoIcon: controller.crashReportingActive
+                  ? CupertinoIcons.check_mark_circled
+                  : CupertinoIcons.info,
+            ),
+            title: controller.crashReportingActive
+                ? l10n.diagnosticsRemoteActive
+                : l10n.diagnosticsRemoteNeedsServer,
+          ),
+      ],
+    );
+  }
 }

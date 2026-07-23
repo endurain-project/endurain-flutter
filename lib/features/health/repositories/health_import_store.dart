@@ -26,11 +26,25 @@ abstract class HealthImportStore {
     required String sourceId,
   });
 
-  Future<String?> legacyLocalActivityIdFor(String sourceId);
+  /// Returns every stored import for [sourceId] across all connection profiles.
+  ///
+  /// Health-platform workout ids are device-global, so the same [sourceId] can
+  /// appear under more than one profile (e.g. imported to a self-hosted and a
+  /// managed connection). Callers reconcile these against the authoritative
+  /// local activity record before adopting one (see [reassignImportProfile]).
+  Future<List<({String profileId, String localActivityId})>> importsForSource(
+    String sourceId,
+  );
 
-  Future<void> adoptLegacyImport({
-    required String profileId,
+  /// Re-keys the import for [sourceId] from [fromProfileId] to [toProfileId].
+  ///
+  /// Used to migrate a provenance row written under a pre-origin-qualified
+  /// profile id onto the current globally-unique profile id once the linked
+  /// local activity confirms it belongs to that connection.
+  Future<void> reassignImportProfile({
     required String sourceId,
+    required String fromProfileId,
+    required String toProfileId,
   });
 
   /// Marks [sourceId] as imported, recording the [localActivityId] of the

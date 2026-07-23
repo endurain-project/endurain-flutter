@@ -5,6 +5,7 @@ import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/connectivity_service.dart';
+import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/modules/activity_module.dart';
@@ -84,6 +85,7 @@ class AppServices {
   // ── Infrastructure ─────────────────────────────────────────────────────────
 
   DiagnosticsService get diagnostics => _infra.diagnostics;
+  CrashReportingService get crashReporting => _infra.crashReporting;
   SecureStorageService get secureStorage => _infra.secureStorage;
   AppPreferencesStore get preferences => _infra.preferences;
   LocaleController get localeController => _infra.localeController;

@@ -337,7 +337,7 @@ void main() {
     test('rejects a request scoped to another login profile before the '
         'network call', () async {
       final storage = SecureStorageService();
-      await _seedSession(storage, profileId: '42');
+      await _seedSession(storage, accountId: '42');
       final client = ApiClient(
         storage: storage,
         authService: AuthService(storage: storage),
@@ -369,7 +369,7 @@ void main() {
 Future<void> _seedSession(
   SecureStorageService storage, {
   String origin = 'https://example.test',
-  String profileId = '42',
+  String accountId = '42',
   int expiresInSeconds = 3600,
 }) {
   return AuthSessionStore(storage: storage).saveSession(
@@ -377,7 +377,7 @@ Future<void> _seedSession(
     accessToken: 'access-1',
     refreshToken: 'refresh-1',
     sessionId: 'session-1',
-    profileId: profileId,
+    accountId: accountId,
     expiresInSeconds: expiresInSeconds,
   );
 }

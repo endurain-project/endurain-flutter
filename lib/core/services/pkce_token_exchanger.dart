@@ -72,7 +72,7 @@ class PkceTokenExchanger {
         accessToken: accessToken,
         failureCode: failureCode,
       );
-      final profileId = ApiResponse.requiredPositiveInt(
+      final accountId = ApiResponse.requiredPositiveInt(
         profile,
         'id',
       ).toString();
@@ -82,7 +82,7 @@ class PkceTokenExchanger {
         accessToken: accessToken,
         refreshToken: refreshToken,
         sessionId: returnedSessionId,
-        profileId: profileId,
+        accountId: accountId,
         username: username,
         expiresInSeconds: expiresIn,
       );
@@ -96,7 +96,8 @@ class PkceTokenExchanger {
   }
 
   /// Fetches the authenticated user's profile to derive the stable server-side
-  /// account id used as the connection profile id.
+  /// account id. The session store origin-qualifies it into the globally-unique
+  /// connection profile id (see `ConnectionIdentity`).
   ///
   /// Retries transient failures with a short backoff. The bearer token was
   /// issued moments earlier, so a failure here is almost always a temporary

@@ -16,6 +16,7 @@ class AppConfig {
     this.allowedTileServerHosts,
     this.healthSyncEnabled = true,
     this.cloudBaseUrl,
+    this.crashReportingDsn,
   });
 
   /// Base path prefix for all Endurain API endpoints.
@@ -60,6 +61,25 @@ class AppConfig {
   /// a user-chosen self-hosted instance. This is the seam a future server
   /// picker uses to pre-fill the official cloud origin.
   final String? cloudBaseUrl;
+
+  /// Default DSN for the managed ("Endurain Cloud") diagnostics endpoint,
+  /// `diagnostics.endurain.com`.
+  ///
+  /// Opt-in remote crash reporting is Sentry-protocol based and always targets
+  /// this managed Endurain endpoint; users do not configure a DSN of their own.
+  ///
+  /// Injected at build time from the `ENDURAIN_CRASH_REPORTING_DSN` environment
+  /// value (`--dart-define`), which the official CI supplies for published
+  /// builds. It is deliberately NOT hardcoded in source: builds from source
+  /// (forks, F-Droid) omit it, so no third-party build points crash reports at
+  /// the Endurain-operated endpoint by default. A Sentry DSN is a public client
+  /// identifier — it only permits *sending* events, never reading them — so
+  /// baking it into official release binaries carries no secret-exposure risk.
+  ///
+  /// A `null` or empty value means "no managed default": remote reporting stays
+  /// inactive because there is no endpoint to send to. Nothing is ever
+  /// transmitted until the user opts in AND this managed DSN exists.
+  final String? crashReportingDsn;
 
   /// Returns `true` when [host] is acceptable as a tile server for this build.
   ///

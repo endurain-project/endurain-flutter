@@ -221,10 +221,7 @@ void main() {
         ),
       );
 
-      expect(
-        find.text(AppLocalizationsEn().activityStatPower),
-        findsOneWidget,
-      );
+      expect(find.text(AppLocalizationsEn().activityStatPower), findsOneWidget);
       expect(find.text('250 W'), findsOneWidget);
       expect(
         find.text(AppLocalizationsEn().activityStatCadence),

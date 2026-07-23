@@ -396,22 +396,22 @@ class AppLocalizationsEt extends AppLocalizations {
   String get activityStatElevationGain => 'Tõus';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Pulss';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Keskm. pulss';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Võimsus';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Keskm. võimsus';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Kadents';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Keskm. kadents';
 
   @override
   String get activityStop => 'Peata';
@@ -960,73 +960,73 @@ class AppLocalizationsEt extends AppLocalizations {
   String get healthSyncRestore => 'Taasta';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Andurid';
 
   @override
-  String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+  String get sensorsSettingsSubtitle => 'Pulsimõõdikud ja muud välised andurid';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Pulss';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Ühenda Bluetooth-pulsimõõdik, et näha oma pulssi reaalajas.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth on väljas. Lülita see sisse anduri ühendamiseks.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Luba Bluetoothi juurdepääs anduri ühendamiseks.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'See seade ei toeta Bluetooth Low Energy\'t.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Otsi andureid';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Otsimine…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Peata';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Pulsiandureid pole veel leitud.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Saadaolevad andurid';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Salvestatud andur';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Ühenda';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Ühendamine…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Ühendatud';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Katkesta ühendus';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Unusta';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed =>
+      'Ühendamine ebaõnnestus. Proovi uuesti.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Andurite leidmiseks on vaja Bluetoothi luba.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Tundmatu andur';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1034,14 +1034,14 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Võimsus';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Ühenda Bluetooth-võimsusmõõdik, et näha oma võimsust reaalajas.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Võimsusmõõdikuid pole veel leitud.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1049,17 +1049,34 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Kadents';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Ühenda Bluetooth-kadentsiandur, et näha oma kadentsi reaalajas.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => 'Kadentsiandureid pole veel leitud.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Kaug-krahhiraportid';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Saada krahhiraporteid';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Saada krahhi- ja vearaporteid diagnostikaserverisse. See on eraldi kohalikust diagnostikast — võid lubada mõlemad, ühe või mitte kumbagi.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Kaug-krahhiraportid pole selles versioonis saadaval.';
 }

@@ -1,22 +1,31 @@
+import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// View-model for the diagnostics screen.
 ///
-/// Owns the diagnostics on/off state and the loaded [DiagnosticsReport] so the
-/// screen renders [ChangeNotifier] state instead of driving the
-/// [DiagnosticsStore] directly through `setState`/`FutureBuilder`. Clipboard
-/// copy and user messaging remain in the screen (UI concerns).
+/// Owns two independent opt-ins the screen renders as [ChangeNotifier] state
+/// rather than driving the services directly through `setState`/`FutureBuilder`:
+/// the local [DiagnosticsStore] recorder (and its loaded [DiagnosticsReport]),
+/// and the opt-in remote [CrashReportingService]. The two are independent — the
+/// user may enable neither, either, or both. Clipboard copy and user messaging
+/// remain in the screen (UI concerns).
 class DiagnosticsController extends ChangeNotifier {
-  DiagnosticsController({required DiagnosticsStore diagnostics})
-    : _diagnostics = diagnostics,
-      _isEnabled = diagnostics.isEnabled;
+  DiagnosticsController({
+    required DiagnosticsStore diagnostics,
+    required CrashReportingService crashReporting,
+  }) : _diagnostics = diagnostics,
+       _crashReporting = crashReporting,
+       _isEnabled = diagnostics.isEnabled;
 
   final DiagnosticsStore _diagnostics;
+  final CrashReportingService _crashReporting;
 
   bool _isEnabled;
   bool _isLoadingReport = false;
   DiagnosticsReport? _report;
+
+  bool _crashReportingEnabled = false;
 
   /// Whether diagnostics collection is currently enabled.
   bool get isEnabled => _isEnabled;
@@ -26,6 +35,15 @@ class DiagnosticsController extends ChangeNotifier {
 
   /// The most recently loaded report, or `null` when disabled or empty.
   DiagnosticsReport? get report => _report;
+
+  /// Whether the user has opted in to remote crash reporting.
+  bool get crashReportingEnabled => _crashReportingEnabled;
+
+  /// Whether remote crash reporting is currently active (opted in + usable DSN).
+  bool get crashReportingActive => _crashReporting.isActive;
+
+  /// Whether the managed diagnostics endpoint is available to send to.
+  bool get crashReportingHasUsableServer => _crashReporting.hasUsableDsn;
 
   /// Loads the current report (when enabled), emitting a loading state first.
   ///
@@ -37,6 +55,8 @@ class DiagnosticsController extends ChangeNotifier {
   Future<void> load() async {
     await _diagnostics.initialize();
     _isEnabled = _diagnostics.isEnabled;
+    await _crashReporting.load();
+    _crashReportingEnabled = _crashReporting.isEnabled;
     await _refreshReport();
   }
 
@@ -46,6 +66,13 @@ class DiagnosticsController extends ChangeNotifier {
     await _diagnostics.setEnabled(value);
     _isEnabled = value;
     await _refreshReport();
+  }
+
+  /// Toggles remote crash reporting and applies the change immediately.
+  Future<void> setCrashReportingEnabled(bool value) async {
+    await _crashReporting.setEnabled(value);
+    _crashReportingEnabled = _crashReporting.isEnabled;
+    notifyListeners();
   }
 
   /// Clears the persisted report and refreshes the in-memory view.

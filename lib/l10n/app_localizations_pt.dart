@@ -212,7 +212,7 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get loginTitle => 'Login';
+  String get loginTitle => 'Iniciar sessão';
 
   @override
   String get login => 'Entrar';
@@ -684,7 +684,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get serverProtocol => 'Protocolo';
 
   @override
-  String get serverUrlHint => 'example.com';
+  String get serverUrlHint => 'exemplo.com';
 
   @override
   String get warnHttpServerUrlTitle => 'Ligação não segura';
@@ -1071,4 +1071,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Relatórios de falhas remotos';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Enviar relatórios de falhas';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Enviar relatórios de falhas e de erros para um servidor de diagnóstico. É independente do diagnóstico local — pode ativar ambos, um ou nenhum.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'O relatório remoto de falhas não está disponível nesta versão.';
 }

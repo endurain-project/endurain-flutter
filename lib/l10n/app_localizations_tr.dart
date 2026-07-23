@@ -390,22 +390,22 @@ class AppLocalizationsTr extends AppLocalizations {
   String get activityStatElevationGain => 'Yükselti kazancı';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Nabız';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Ort. nabız';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Güç';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Ort. güç';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Kadans';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Ort. kadans';
 
   @override
   String get activityStop => 'Durdur';
@@ -953,73 +953,73 @@ class AppLocalizationsTr extends AppLocalizations {
   String get healthSyncRestore => 'Geri yükle';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Sensörler';
 
   @override
   String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+      'Nabız monitörleri ve diğer harici sensörler';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Nabız';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Nabzını canlı görmek için bir Bluetooth nabız monitörü eşleştir.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Bluetooth kapalı. Bir sensör bağlamak için aç.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Bir sensör bağlamak için Bluetooth erişimine izin ver.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Bu cihaz Bluetooth Low Energy\'yi desteklemiyor.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Sensör ara';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Aranıyor…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Durdur';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Henüz nabız sensörü bulunamadı.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Kullanılabilir sensörler';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Kayıtlı sensör';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Bağlan';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Bağlanıyor…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Bağlandı';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Bağlantıyı kes';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Unut';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed => 'Bağlanılamadı. Tekrar dene.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Sensörleri bulmak için Bluetooth izni gerekli.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Bilinmeyen sensör';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1027,14 +1027,14 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Güç';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Gücünü canlı görmek için bir Bluetooth güç ölçer eşleştir.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Henüz güç ölçer bulunamadı.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1042,17 +1042,34 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Kadans';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Kadansını canlı görmek için bir Bluetooth kadans sensörü eşleştir.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => 'Henüz kadans sensörü bulunamadı.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Uzaktan çökme raporlama';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Çökme raporları gönder';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Çökme ve hata raporlarını bir tanılama sunucusuna gönder. Bu, yerel tanılamadan bağımsızdır — ikisini de, birini ya da hiçbirini etkinleştirebilirsin.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Uzaktan çökme raporlama bu sürümde kullanılamıyor.';
 }

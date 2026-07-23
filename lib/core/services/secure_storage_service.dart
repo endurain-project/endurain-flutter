@@ -38,7 +38,6 @@ class SecureStorageService {
   static const _sessionIdKey = 'session_id';
   static const _accessTokenExpiresAtKey = 'access_token_expires_at';
   static const _authSessionKey = 'auth_session_v2';
-  static const _authSessionAuthorityKey = 'auth_session_authoritative';
 
   // Read a value. Returns null when the key is absent.
   // Throws [AppException] with [AppErrorCode.secureStorageReadFailed] when the
@@ -149,14 +148,9 @@ class SecureStorageService {
 
   Future<void> deleteAuthSession() => delete(key: _authSessionKey);
 
-  Future<bool> isAuthSessionAuthoritative() async {
-    return await read(key: _authSessionAuthorityKey) == 'true';
-  }
-
-  Future<void> markAuthSessionAuthoritative() {
-    return write(key: _authSessionAuthorityKey, value: 'true');
-  }
-
+  /// Purges the individual credential keys written by app versions before the
+  /// single `auth_session_v2` blob. Called on every canonical session write so
+  /// stale pre-v2 keys never linger in the keychain.
   Future<void> clearLegacyAuthTokens() async {
     await deleteAccessToken();
     await deleteRefreshToken();
@@ -166,7 +160,6 @@ class SecureStorageService {
 
   // Clear all auth tokens
   Future<void> clearAuthTokens() async {
-    await markAuthSessionAuthoritative();
     await deleteAuthSession();
     await clearLegacyAuthTokens();
   }

@@ -20,7 +20,7 @@ void main() {
         accessToken: 'access-1',
         refreshToken: 'refresh-1',
         sessionId: 'session-1',
-        profileId: '42',
+        accountId: '42',
         expiresInSeconds: 3600,
       );
       final controller = AuthSessionController(

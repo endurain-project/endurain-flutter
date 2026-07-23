@@ -63,7 +63,7 @@ void main() {
       expect(session?.accessToken, 'access-1');
       expect(session?.refreshToken, 'refresh-1');
       expect(session?.sessionId, 'session-2');
-      expect(session?.profileId, '42');
+      expect(session?.accountId, '42');
       expect(await storage.getUsername(), 'joao');
       expect(requests, hasLength(3));
     });
@@ -559,7 +559,7 @@ void main() {
         accessToken: 'access-b',
         refreshToken: 'refresh-b',
         sessionId: 'session-b',
-        profileId: '43',
+        accountId: '43',
       );
       response.complete(
         http.Response(
@@ -643,7 +643,7 @@ void main() {
         accessToken: 'access-b',
         refreshToken: 'refresh-b',
         sessionId: 'session-b',
-        profileId: '43',
+        accountId: '43',
       );
       response.complete(http.Response('', 200));
 
@@ -903,7 +903,7 @@ Future<void> _seedSession(
   String accessToken = 'access-1',
   String refreshToken = 'refresh-1',
   String sessionId = 'session-1',
-  String profileId = '42',
+  String accountId = '42',
   int expiresInSeconds = 3600,
 }) {
   return (store ?? AuthSessionStore(storage: storage)).saveSession(
@@ -911,7 +911,7 @@ Future<void> _seedSession(
     accessToken: accessToken,
     refreshToken: refreshToken,
     sessionId: sessionId,
-    profileId: profileId,
+    accountId: accountId,
     expiresInSeconds: expiresInSeconds,
   );
 }

@@ -35,7 +35,10 @@ void main() {
 
     test('returns null for a truncated payload', () {
       expect(
-        CyclingPowerMeasurementParser.parseInstantaneousPowerWatts([0x00, 0x00]),
+        CyclingPowerMeasurementParser.parseInstantaneousPowerWatts([
+          0x00,
+          0x00,
+        ]),
         isNull,
       );
     });

@@ -20,9 +20,19 @@ Future<void> main() async {
         'ENABLE_HEALTH_SYNC',
         defaultValue: true,
       ),
+      // Managed diagnostics DSN, injected at build time by the official CI via
+      // `--dart-define=ENDURAIN_CRASH_REPORTING_DSN=...`. Source and F-Droid
+      // builds omit it, so no fork points its opt-in crash reports at the
+      // Endurain-operated endpoint by default. An empty value means "no managed
+      // default", which keeps remote reporting inactive.
+      crashReportingDsn: String.fromEnvironment('ENDURAIN_CRASH_REPORTING_DSN'),
     ),
   );
   final diagnostics = services.diagnostics;
+  // Opt-in remote crash reporting, independent of local diagnostics. Held here
+  // so the root-zone error handler below (which runs outside the widget tree)
+  // can forward to it just like it does to diagnostics.
+  final crashReporting = services.crashReporting;
 
   final appRunner = runZonedGuarded<Future<void>>(
     () async {
@@ -35,15 +45,34 @@ Future<void> main() async {
       // starts in the user's chosen locale rather than flashing the system one.
       await services.localeController.load();
 
+      // Start remote crash reporting only if the user previously opted in.
+      // No-op (and no network) otherwise; the two diagnostics channels are
+      // independent.
+      await crashReporting.initializeIfEnabled();
+
       FlutterError.onError = (details) {
         FlutterError.presentError(details);
         diagnostics.recordFlutterErrorSync(details);
+        unawaited(
+          crashReporting.recordError(
+            details.exception,
+            details.stack ?? StackTrace.empty,
+            source: DiagnosticsSources.flutter,
+          ),
+        );
       };
       PlatformDispatcher.instance.onError = (error, stackTrace) {
         diagnostics.recordErrorSync(
           error,
           stackTrace,
           source: DiagnosticsSources.platformDispatcher,
+        );
+        unawaited(
+          crashReporting.recordError(
+            error,
+            stackTrace,
+            source: DiagnosticsSources.platformDispatcher,
+          ),
         );
         return false;
       };
@@ -61,6 +90,13 @@ Future<void> main() async {
         error,
         stackTrace,
         source: DiagnosticsSources.rootZone,
+      );
+      unawaited(
+        crashReporting.recordError(
+          error,
+          stackTrace,
+          source: DiagnosticsSources.rootZone,
+        ),
       );
     },
   );

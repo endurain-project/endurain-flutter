@@ -405,22 +405,22 @@ class AppLocalizationsEl extends AppLocalizations {
   String get activityStatElevationGain => 'Ανάβαση';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Καρδιακός ρυθμός';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Μέσος καρδιακός ρυθμός';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Ισχύς';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Μέση ισχύς';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Καντένς';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Μέση καντένς';
 
   @override
   String get activityStop => 'Διακοπή';
@@ -974,73 +974,74 @@ class AppLocalizationsEl extends AppLocalizations {
   String get healthSyncRestore => 'Επαναφορά';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Αισθητήρες';
 
   @override
   String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+      'Μετρητές καρδιακών παλμών και άλλοι εξωτερικοί αισθητήρες';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Καρδιακός ρυθμός';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Συζεύξτε έναν μετρητή καρδιακών παλμών Bluetooth για να βλέπετε τον καρδιακό σας ρυθμό σε πραγματικό χρόνο.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'Το Bluetooth είναι απενεργοποιημένο. Ενεργοποιήστε το για να συνδέσετε έναν αισθητήρα.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Επιτρέψτε την πρόσβαση στο Bluetooth για να συνδέσετε έναν αισθητήρα.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Αυτή η συσκευή δεν υποστηρίζει Bluetooth Low Energy.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Αναζήτηση αισθητήρων';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Αναζήτηση…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Διακοπή';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices =>
+      'Δεν βρέθηκαν ακόμη αισθητήρες καρδιακών παλμών.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Διαθέσιμοι αισθητήρες';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Αποθηκευμένος αισθητήρας';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Σύνδεση';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Σύνδεση…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Συνδέθηκε';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Αποσύνδεση';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Κατάργηση';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed => 'Η σύνδεση απέτυχε. Δοκιμάστε ξανά.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Απαιτείται άδεια Bluetooth για την εύρεση αισθητήρων.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Άγνωστος αισθητήρας';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1048,14 +1049,14 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Ισχύς';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Συζεύξτε έναν μετρητή ισχύος Bluetooth για να βλέπετε την ισχύ σας σε πραγματικό χρόνο.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Δεν βρέθηκαν ακόμη μετρητές ισχύος.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1063,17 +1064,35 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Καντένς';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Συζεύξτε έναν αισθητήρα καντένς Bluetooth για να βλέπετε την καντένς σας σε πραγματικό χρόνο.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices =>
+      'Δεν βρέθηκαν ακόμη αισθητήρες καντένς.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Απομακρυσμένη αναφορά καταρρεύσεων';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Αποστολή αναφορών κατάρρευσης';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Στείλτε αναφορές κατάρρευσης και σφαλμάτων σε έναν διακομιστή διαγνωστικών. Είναι ανεξάρτητο από τα τοπικά διαγνωστικά — μπορείτε να ενεργοποιήσετε και τα δύο, ένα ή κανένα.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Η απομακρυσμένη αναφορά καταρρεύσεων δεν είναι διαθέσιμη σε αυτήν την έκδοση.';
 }

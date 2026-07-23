@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import 'package:endurain/core/utils/connection_identity.dart';
 import 'package:endurain/features/health/repositories/sqflite_health_import_store.dart';
 
 void main() {
@@ -113,31 +114,81 @@ void main() {
       );
     });
 
-    test('adopts a quarantined legacy marker into an explicit scope', () async {
+    test('re-keys an import from one profile to another', () async {
       final store = makeStore();
       await store.markImported(
-        profileId: 'legacy://unassigned',
-        sourceId: 'uuid-legacy',
-        localActivityId: 'local-legacy',
+        profileId: profileA,
+        sourceId: 'uuid-reassign',
+        localActivityId: 'local-reassign',
       );
 
-      expect(
-        await store.legacyLocalActivityIdFor('uuid-legacy'),
-        'local-legacy',
-      );
-      await store.adoptLegacyImport(
-        profileId: profileA,
-        sourceId: 'uuid-legacy',
+      expect(await store.importsForSource('uuid-reassign'), [
+        (profileId: profileA, localActivityId: 'local-reassign'),
+      ]);
+
+      await store.reassignImportProfile(
+        sourceId: 'uuid-reassign',
+        fromProfileId: profileA,
+        toProfileId: profileB,
       );
 
       expect(
         await store.localActivityIdFor(
           profileId: profileA,
-          sourceId: 'uuid-legacy',
+          sourceId: 'uuid-reassign',
         ),
-        'local-legacy',
+        isNull,
       );
-      expect(await store.legacyLocalActivityIdFor('uuid-legacy'), isNull);
+      expect(
+        await store.localActivityIdFor(
+          profileId: profileB,
+          sourceId: 'uuid-reassign',
+        ),
+        'local-reassign',
+      );
+    });
+
+    test('isolates imports across origins that share an account id', () async {
+      // Regression guard for the cross-instance identity fix: a self-hosted
+      // connection and the managed service can both assign server account id
+      // "1", and health workout ids are device-global, so provenance must key
+      // on the origin-qualified profile id, never the raw account id.
+      final store = makeStore();
+      final selfHosted = ConnectionIdentity.profileId(
+        origin: 'https://home.example',
+        accountId: '1',
+      );
+      final managed = ConnectionIdentity.profileId(
+        origin: 'https://app.endurain.example',
+        accountId: '1',
+      );
+
+      await store.markImported(
+        profileId: selfHosted,
+        sourceId: 'shared-workout',
+        localActivityId: 'local-self-hosted',
+      );
+
+      // The same device workout is not considered imported for the managed
+      // connection despite the shared account id.
+      expect(
+        await store.isImported(profileId: managed, sourceId: 'shared-workout'),
+        isFalse,
+      );
+      expect(
+        await store.localActivityIdFor(
+          profileId: selfHosted,
+          sourceId: 'shared-workout',
+        ),
+        'local-self-hosted',
+      );
+      expect(
+        await store.localActivityIdFor(
+          profileId: managed,
+          sourceId: 'shared-workout',
+        ),
+        isNull,
+      );
     });
 
     test('lists imported workouts newest-first with pagination', () async {

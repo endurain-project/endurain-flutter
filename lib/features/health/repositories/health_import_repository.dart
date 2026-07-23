@@ -26,14 +26,20 @@ class HealthImportRepository {
     () => _store.localActivityIdFor(profileId: profileId, sourceId: sourceId),
   );
 
-  Future<String?> legacyLocalActivityIdFor(String sourceId) =>
-      _run(() => _store.legacyLocalActivityIdFor(sourceId));
+  Future<List<({String profileId, String localActivityId})>> importsForSource(
+    String sourceId,
+  ) => _run(() => _store.importsForSource(sourceId));
 
-  Future<void> adoptLegacyImport({
-    required String profileId,
+  Future<void> reassignImportProfile({
     required String sourceId,
+    required String fromProfileId,
+    required String toProfileId,
   }) => _run(
-    () => _store.adoptLegacyImport(profileId: profileId, sourceId: sourceId),
+    () => _store.reassignImportProfile(
+      sourceId: sourceId,
+      fromProfileId: fromProfileId,
+      toProfileId: toProfileId,
+    ),
   );
 
   Future<void> markImported({

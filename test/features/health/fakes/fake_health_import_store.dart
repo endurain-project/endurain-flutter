@@ -21,20 +21,37 @@ class FakeHealthImportStore implements HealthImportStore {
   }) async => _localIds['$profileId::$sourceId'];
 
   @override
-  Future<String?> legacyLocalActivityIdFor(String sourceId) async =>
-      _localIds['legacy://unassigned::$sourceId'];
+  Future<List<({String profileId, String localActivityId})>> importsForSource(
+    String sourceId,
+  ) async {
+    final suffix = '::$sourceId';
+    return [
+      for (final entry in _localIds.entries)
+        if (entry.key.endsWith(suffix))
+          (
+            profileId: entry.key.substring(0, entry.key.length - suffix.length),
+            localActivityId: entry.value,
+          ),
+    ];
+  }
 
   @override
-  Future<void> adoptLegacyImport({
-    required String profileId,
+  Future<void> reassignImportProfile({
     required String sourceId,
+    required String fromProfileId,
+    required String toProfileId,
   }) async {
-    final legacyKey = 'legacy://unassigned::$sourceId';
-    final localId = _localIds.remove(legacyKey);
-    _imported.remove(legacyKey);
+    final fromKey = '$fromProfileId::$sourceId';
+    final toKey = '$toProfileId::$sourceId';
+    final localId = _localIds.remove(fromKey);
+    final importedAt = _importedAt.remove(fromKey);
+    _imported.remove(fromKey);
     if (localId != null) {
-      _localIds['$profileId::$sourceId'] = localId;
-      _imported.add('$profileId::$sourceId');
+      _localIds[toKey] = localId;
+      _imported.add(toKey);
+      if (importedAt != null) {
+        _importedAt[toKey] = importedAt;
+      }
     }
   }
 

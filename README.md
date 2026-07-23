@@ -87,6 +87,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Health sync settings and optional automatic import on app resume
 - Logged-in server and username summary
 - Local diagnostics view with privacy-filtered crash context, recording breadcrumbs, copy, and clear actions
+- Optional, opt-in remote crash reporting to Endurain's managed diagnostics service (`diagnostics.endurain.com`), independent of local diagnostics
 - Session management with server-side logout attempt and secure local cleanup
 - App version display
 
@@ -148,6 +149,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 - **Local App Files:** `path_provider` for private app-support diagnostics and retained activity GPX storage
 - **Preferences:** `shared_preferences` for non-secret display and language settings
 - **Security:** `crypto` for PKCE challenge generation
+- **Crash Reporting:** opt-in `sentry` (pure-Dart, Sentry protocol) for remote error reports to Endurain's managed diagnostics endpoint, behind an injectable `CrashReporter` adapter
 - **Localization:** Flutter gen-l10n from ARB files with 30 supported locales
 - **SQLite:** `sqflite` for on-device metadata storage and `sqflite_common_ffi` for test-only in-process coverage
 - **Quality:** `flutter_lints` with strict casts, strict inference, strict raw types, and additional lint rules
@@ -283,6 +285,8 @@ The app keeps a local diagnostics report to help investigate field issues when a
 
 Diagnostics are stored only in the app's private support directory and are never uploaded automatically. The report keeps high-level lifecycle context such as app startup, activity recording start/pause/resume/stop, failure reasons, point-count milestones, and catchable Flutter/Dart errors. It intentionally avoids raw GPS coordinates and sanitizes token-like values, home/container paths, and coordinate-looking strings before saving.
 
+Separately, **opt-in remote crash reporting** can forward captured Flutter/Dart errors to Endurain's managed diagnostics service. It is off by default and fully independent of local diagnostics — the user may enable neither, either, or both. Reporting uses the Sentry protocol and always targets the managed Endurain diagnostics endpoint (`diagnostics.endurain.com`); there is no user-configurable DSN. The same privacy redaction applied to local diagnostics scrubs error payloads before they leave the device, and nothing is transmitted until the user opts in and the managed endpoint is configured in the build.
+
 iOS `.ips` crash reports remain separate system-generated native crash reports. The local diagnostics report complements them by preserving app-side context from before the crash.
 
 ## Manual QA Checklists
@@ -373,6 +377,27 @@ Forgejo release builds require these repository secrets:
 
 For a published release, CI derives `versionName` from its `vX.Y.Z` tag and uses the Forgejo release ID as the monotonic Android `versionCode`. Manual workflow runs require an explicit semantic `version_name` and positive, monotonically increasing `version_code`.
 
+Release builds may also bake in the managed diagnostics DSN for opt-in remote crash reporting. Set the optional Forgejo repository **variable** `ENDURAIN_CRASH_REPORTING_DSN` (a Sentry/GlitchTip DSN — a public, send-only client identifier, so it is a variable rather than a secret). CI passes it to the build as `--dart-define=ENDURAIN_CRASH_REPORTING_DSN=...`. It is intentionally not hardcoded in source, so builds from source (forks, F-Droid) omit it and never point crash reports at the Endurain-operated endpoint by default. Remote crash reporting always targets this managed endpoint when the user opts in — there is no user-configurable DSN. When the variable is unset, the build simply ships no managed default and opt-in remote crash reporting stays inactive. For local runs or local/iOS release builds, pass the same flag to `flutter run` or `flutter build`:
+
+```bash
+# Run a release build on a connected device with the DSN baked in
+flutter run -d <device-id> --release \
+  --dart-define=ENDURAIN_CRASH_REPORTING_DSN='https://<key>@diagnostics.endurain.com/<project>'
+
+# Or build a release artifact
+flutter build apk --release \
+  --dart-define=ENDURAIN_CRASH_REPORTING_DSN='https://<key>@diagnostics.endurain.com/<project>'
+```
+
+To avoid repeating long values (and to keep them out of shell history), put your `--dart-define` values in a git-ignored JSON file and pass `--dart-define-from-file=dart-defines.json` instead:
+
+```jsonc
+// dart-defines.json (git-ignored)
+{
+  "ENDURAIN_CRASH_REPORTING_DSN": "https://<key>@diagnostics.endurain.com/<project>"
+}
+```
+
 ```bash
 flutter build apk --release
 # or for App Bundle
@@ -432,7 +457,7 @@ Completed recordings are stored under the app's private support directory:
         └── <activity-id>.gpx      # Raw GPX 1.1 file for each recording
 ```
 
-Activity metadata lives in a SQLite database (`activity.db`, schema v8) under the platform databases directory. The database holds two tables:
+Activity metadata lives in a SQLite database (`activity.db`, schema v9) under the platform databases directory. The database holds two tables:
 
 | Table                  | Purpose                                                  |
 |------------------------|----------------------------------------------------------|

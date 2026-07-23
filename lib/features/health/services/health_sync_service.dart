@@ -271,21 +271,7 @@ class HealthSyncService {
         profileId: profile.id,
         sourceId: workout.sourceId,
       );
-      if (importedLocalId == null) {
-        final legacyLocalId = await _importRepo.legacyLocalActivityIdFor(
-          workout.sourceId,
-        );
-        if (legacyLocalId != null) {
-          final legacyRecord = await _localActivities.get(legacyLocalId);
-          if (legacyRecord?.connectionOrigin == profile.origin) {
-            await _importRepo.adoptLegacyImport(
-              profileId: profile.id,
-              sourceId: workout.sourceId,
-            );
-            importedLocalId = legacyLocalId;
-          }
-        }
-      }
+      importedLocalId ??= await _adoptStrayImport(profile, workout.sourceId);
       if (importedLocalId != null) {
         // Discovery is read-only. A missing local record stays in Imported
         // history until the user explicitly restores it (or deletes it through
@@ -577,6 +563,41 @@ class HealthSyncService {
       sourceId: workout.sourceId,
       localActivityId: localId,
     );
+  }
+
+  /// Reconciles a workout imported under a pre-origin-qualified profile id.
+  ///
+  /// Older app versions keyed health provenance on the raw server account id,
+  /// which is not unique across origins. Returns the adopted local activity id
+  /// when a stray provenance row for [sourceId] is confirmed — by its linked
+  /// local activity's origin and (migrated) profile id — to belong to the
+  /// active [profile], re-keying that row onto the current profile id. Returns
+  /// `null` when there is nothing to adopt, so discovery treats the workout as
+  /// importable. The linked activity is the source of truth, so a workout
+  /// imported for a *different* connection on the same device is never adopted.
+  Future<String?> _adoptStrayImport(
+    ConnectionProfile profile,
+    String sourceId,
+  ) async {
+    final strays = await _importRepo.importsForSource(sourceId);
+    for (final stray in strays) {
+      if (stray.profileId == profile.id) {
+        // Already keyed to the active profile; the direct lookup handled it.
+        continue;
+      }
+      final record = await _localActivities.get(stray.localActivityId);
+      if (record != null &&
+          record.connectionOrigin == profile.origin &&
+          record.connectionProfileId == profile.id) {
+        await _importRepo.reassignImportProfile(
+          sourceId: sourceId,
+          fromProfileId: stray.profileId,
+          toProfileId: profile.id,
+        );
+        return stray.localActivityId;
+      }
+    }
+    return null;
   }
 
   Future<ConnectionProfile> _requireActiveProfile() async {

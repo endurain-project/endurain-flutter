@@ -21,7 +21,7 @@ class SqfliteActivityStore implements LocalActivityStore {
     : _factory = databaseFactory ?? _platformFactory(),
       _path = databasePath;
 
-  static const int _schemaVersion = 8;
+  static const int _schemaVersion = 9;
   static const String _dbFileName = 'activity.db';
   static const String _tableVersion = 'schema_version';
   static const String _tableActivity = 'local_activity';
@@ -53,6 +53,7 @@ class SqfliteActivityStore implements LocalActivityStore {
       6: _migrateToV6,
       7: _migrateToV7,
       8: _migrateToV8,
+      9: _migrateToV9,
     },
     recordVersion: _recordSchemaVersion,
   );
@@ -211,6 +212,24 @@ class SqfliteActivityStore implements LocalActivityStore {
     );
     await db.execute(
       'ALTER TABLE $_tableActivity ADD COLUMN elevation_gain_meters REAL',
+    );
+  }
+
+  /// Schema version 9: origin-qualifies `connection_profile_id`.
+  ///
+  /// Earlier versions stored the raw server account id (e.g. `"1"`) here, which
+  /// is only unique within one server. This rewrites every scoped row to the
+  /// globally-unique `<origin>#<accountId>` form (see `ConnectionIdentity`), so
+  /// a self-hosted and a managed connection that happen to share an account id
+  /// can never be treated as the same profile. The rewrite is lossless because
+  /// both `connection_origin` and the account id are already present, and the
+  /// `#` separator can never occur in a normalized origin. Rows recorded in
+  /// guest mode (both columns null) are left untouched.
+  Future<void> _migrateToV9(Database db) async {
+    await db.execute(
+      'UPDATE $_tableActivity '
+      "SET connection_profile_id = connection_origin || '#' || connection_profile_id "
+      'WHERE connection_origin IS NOT NULL AND connection_profile_id IS NOT NULL',
     );
   }
 

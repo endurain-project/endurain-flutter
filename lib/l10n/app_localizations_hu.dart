@@ -402,22 +402,22 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityStatElevationGain => 'Szintemelkedés';
 
   @override
-  String get activityStatHeartRate => 'Heart rate';
+  String get activityStatHeartRate => 'Pulzus';
 
   @override
-  String get activityStatAvgHeartRate => 'Avg heart rate';
+  String get activityStatAvgHeartRate => 'Átl. pulzus';
 
   @override
-  String get activityStatPower => 'Power';
+  String get activityStatPower => 'Teljesítmény';
 
   @override
-  String get activityStatAvgPower => 'Avg power';
+  String get activityStatAvgPower => 'Átl. teljesítmény';
 
   @override
-  String get activityStatCadence => 'Cadence';
+  String get activityStatCadence => 'Pedálütem';
 
   @override
-  String get activityStatAvgCadence => 'Avg cadence';
+  String get activityStatAvgCadence => 'Átl. pedálütem';
 
   @override
   String get activityStop => 'Leállítás';
@@ -968,73 +968,73 @@ class AppLocalizationsHu extends AppLocalizations {
   String get healthSyncRestore => 'Visszaállítás';
 
   @override
-  String get sensorsTitle => 'Sensors';
+  String get sensorsTitle => 'Érzékelők';
 
   @override
-  String get sensorsSettingsSubtitle =>
-      'Heart rate monitors and other external sensors';
+  String get sensorsSettingsSubtitle => 'Pulzusmérők és más külső érzékelők';
 
   @override
-  String get sensorsHeartRateSection => 'Heart rate';
+  String get sensorsHeartRateSection => 'Pulzus';
 
   @override
   String get sensorsHeartRateHelp =>
-      'Pair a Bluetooth heart rate monitor to see your live heart rate.';
+      'Párosíts egy Bluetooth-pulzusmérőt, hogy élőben lásd a pulzusodat.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth is off. Turn it on to connect a sensor.';
+      'A Bluetooth ki van kapcsolva. Kapcsold be egy érzékelő csatlakoztatásához.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Allow Bluetooth access to connect a sensor.';
+      'Engedélyezd a Bluetooth-hozzáférést egy érzékelő csatlakoztatásához.';
 
   @override
   String get sensorsBluetoothUnsupported =>
-      'This device doesn\'t support Bluetooth Low Energy.';
+      'Ez az eszköz nem támogatja a Bluetooth Low Energy-t.';
 
   @override
-  String get sensorsScan => 'Scan for sensors';
+  String get sensorsScan => 'Érzékelők keresése';
 
   @override
-  String get sensorsScanning => 'Scanning…';
+  String get sensorsScanning => 'Keresés…';
 
   @override
-  String get sensorsStopScan => 'Stop';
+  String get sensorsStopScan => 'Leállítás';
 
   @override
-  String get sensorsNoDevices => 'No heart rate sensors found yet.';
+  String get sensorsNoDevices => 'Még nem található pulzusérzékelő.';
 
   @override
-  String get sensorsAvailableSection => 'Available sensors';
+  String get sensorsAvailableSection => 'Elérhető érzékelők';
 
   @override
-  String get sensorsSavedSection => 'Saved sensor';
+  String get sensorsSavedSection => 'Mentett érzékelő';
 
   @override
-  String get sensorsConnect => 'Connect';
+  String get sensorsConnect => 'Csatlakozás';
 
   @override
-  String get sensorsConnecting => 'Connecting…';
+  String get sensorsConnecting => 'Csatlakozás…';
 
   @override
-  String get sensorsConnected => 'Connected';
+  String get sensorsConnected => 'Csatlakoztatva';
 
   @override
-  String get sensorsDisconnect => 'Disconnect';
+  String get sensorsDisconnect => 'Leválasztás';
 
   @override
-  String get sensorsForget => 'Forget';
+  String get sensorsForget => 'Elfelejtés';
 
   @override
-  String get sensorsConnectionFailed => 'Couldn\'t connect. Try again.';
+  String get sensorsConnectionFailed =>
+      'A csatlakozás sikertelen. Próbáld újra.';
 
   @override
   String get sensorsPermissionRequired =>
-      'Bluetooth permission is required to find sensors.';
+      'Az érzékelők kereséséhez Bluetooth-engedély szükséges.';
 
   @override
-  String get sensorsUnknownDevice => 'Unknown sensor';
+  String get sensorsUnknownDevice => 'Ismeretlen érzékelő';
 
   @override
   String sensorsBpm(String bpm) {
@@ -1042,14 +1042,14 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
-  String get sensorsPowerSection => 'Power';
+  String get sensorsPowerSection => 'Teljesítmény';
 
   @override
   String get sensorsPowerHelp =>
-      'Pair a Bluetooth power meter to see your live power.';
+      'Párosíts egy Bluetooth-teljesítménymérőt, hogy élőben lásd a teljesítményedet.';
 
   @override
-  String get sensorsNoPowerDevices => 'No power meters found yet.';
+  String get sensorsNoPowerDevices => 'Még nem található teljesítménymérő.';
 
   @override
   String sensorsWatts(String watts) {
@@ -1057,17 +1057,34 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
-  String get sensorsCadenceSection => 'Cadence';
+  String get sensorsCadenceSection => 'Pedálütem';
 
   @override
   String get sensorsCadenceHelp =>
-      'Pair a Bluetooth cadence sensor to see your live cadence.';
+      'Párosíts egy Bluetooth-pedálütem-érzékelőt, hogy élőben lásd a pedálütemedet.';
 
   @override
-  String get sensorsNoCadenceDevices => 'No cadence sensors found yet.';
+  String get sensorsNoCadenceDevices => 'Még nem található pedálütem-érzékelő.';
 
   @override
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Távoli összeomlásjelentés';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Összeomlásjelentések küldése';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Küldj összeomlás- és hibajelentéseket egy diagnosztikai kiszolgálóra. Ez független a helyi diagnosztikától — bekapcsolhatod mindkettőt, az egyiket vagy egyiket sem.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'A távoli összeomlásjelentés nem érhető el ebben a verzióban.';
 }

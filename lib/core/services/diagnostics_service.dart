@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:endurain/core/utils/diagnostics_redaction.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -571,33 +572,7 @@ class DiagnosticsService implements DiagnosticsStore {
   }
 
   String _sanitize(String value, {int maxLength = 500}) {
-    var sanitized = value
-        .replaceAll(
-          RegExp(r'Bearer\s+[A-Za-z0-9._~+/=-]+', caseSensitive: false),
-          'Bearer <redacted>',
-        )
-        .replaceAllMapped(
-          RegExp(
-            r'(token|password|secret|authorization|cookie|session)[=:]\s*[^,\s]+',
-            caseSensitive: false,
-          ),
-          (match) => '${match.group(1)}=<redacted>',
-        )
-        .replaceAllMapped(
-          RegExp(r'([?&][^=\s]+)=([^&\s]+)'),
-          (match) => '${match.group(1)}=<redacted>',
-        )
-        .replaceAll(RegExp(r'/Users/[^\s:]+'), '<path>')
-        .replaceAll(RegExp(r'/private/var/containers/[^\s:]+'), '<path>')
-        .replaceAll(
-          RegExp(r'[-+]?\d{1,2}\.\d{4,}\s*,\s*[-+]?\d{1,3}\.\d{4,}'),
-          '<coordinates>',
-        );
-
-    if (sanitized.length > maxLength) {
-      sanitized = '${sanitized.substring(0, maxLength)}...';
-    }
-    return sanitized;
+    return redactDiagnosticText(value, maxLength: maxLength);
   }
 }
 

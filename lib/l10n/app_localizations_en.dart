@@ -1052,4 +1052,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String sensorsRpm(String rpm) {
     return '$rpm rpm';
   }
+
+  @override
+  String get diagnosticsRemoteTitle => 'Remote crash reporting';
+
+  @override
+  String get diagnosticsRemoteEnable => 'Send crash reports';
+
+  @override
+  String get diagnosticsRemoteEnableSubtitle =>
+      'Send crash and error reports to a diagnostics server. This is separate from local diagnostics — you can enable either, both, or neither.';
+
+  @override
+  String get diagnosticsRemoteActive => 'Crash reports are being sent';
+
+  @override
+  String get diagnosticsRemoteNeedsServer =>
+      'Remote crash reporting isn\'t available in this build.';
 }
