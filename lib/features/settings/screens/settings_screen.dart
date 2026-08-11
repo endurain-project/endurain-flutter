@@ -21,7 +21,7 @@ import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 
-/// Public source repository for the project, opened from the settings screen.
+/// Public GitHub organization for the project, opened from the settings screen.
 const String _sourceCodeUrl = 'https://github.com/endurain-project';
 
 class SettingsScreen extends StatefulWidget {

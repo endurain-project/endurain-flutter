@@ -177,7 +177,7 @@
   "savedSuccessfully": "Ustawienia zostały zapisane",
   "diagnostics": "Diagnostyka",
   "diagnosticsSubtitle": "Lokalny kontekst awarii",
-  "sourceCode": "Kod źródłowy",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Nie można otworzyć linku",
   "diagnosticsTitle": "Diagnostyka",

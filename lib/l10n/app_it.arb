@@ -177,7 +177,7 @@
   "savedSuccessfully": "Impostazioni salvate correttamente",
   "diagnostics": "Diagnostica",
   "diagnosticsSubtitle": "Contesto locale degli arresti anomali",
-  "sourceCode": "Codice sorgente",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Impossibile aprire il collegamento",
   "diagnosticsTitle": "Diagnostica",

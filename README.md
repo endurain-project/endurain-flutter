@@ -3,8 +3,7 @@
 
   # Endurain mobile app
 
-  ![License](https://img.shields.io/github/license/endurain-project/endurain-flutter)
-  [![GitHub release](https://img.shields.io/github/v/release/endurain-project/endurain-flutter)](https://github.com/endurain-project/endurain-flutter/releases)
+  [![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
   [![Trademark Policy](https://img.shields.io/badge/trademark-Endurain%E2%84%A2-blue)](TRADEMARK.md)
 
   **Mobile companion app for Endurain fitness tracking service**  
@@ -160,6 +159,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 - Xcode (for iOS development)
 - Android Studio (for Android development)
 - A running Endurain server instance
+- GitHub access to the private `endurain-project/endurain-flutter` repository
 
 ### Installation
 

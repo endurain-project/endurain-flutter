@@ -177,7 +177,7 @@
   "savedSuccessfully": "Налаштування успішно збережено",
   "diagnostics": "Діагностика",
   "diagnosticsSubtitle": "Локальний контекст збоїв",
-  "sourceCode": "Вихідний код",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Не вдалося відкрити посилання",
   "diagnosticsTitle": "Діагностика",

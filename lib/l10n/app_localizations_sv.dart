@@ -717,11 +717,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokal kraschkontext';
 
   @override
-  String get sourceCode => 'Källkod';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Det gick inte att öppna länken';

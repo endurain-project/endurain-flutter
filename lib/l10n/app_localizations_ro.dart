@@ -721,11 +721,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get diagnosticsSubtitle => 'Context local de blocare';
 
   @override
-  String get sourceCode => 'Cod sursă';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Linkul nu a putut fi deschis';

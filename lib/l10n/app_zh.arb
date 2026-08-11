@@ -177,7 +177,7 @@
   "savedSuccessfully": "设置已成功保存",
   "diagnostics": "诊断",
   "diagnosticsSubtitle": "本地崩溃上下文",
-  "sourceCode": "源代码",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "无法打开链接",
   "diagnosticsTitle": "诊断",

@@ -724,11 +724,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get diagnosticsSubtitle => 'Contesto locale degli arresti anomali';
 
   @override
-  String get sourceCode => 'Codice sorgente';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Impossibile aprire il collegamento';

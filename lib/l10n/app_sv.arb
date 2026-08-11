@@ -177,7 +177,7 @@
   "savedSuccessfully": "Inställningarna har sparats",
   "diagnostics": "Diagnostik",
   "diagnosticsSubtitle": "Lokal kraschkontext",
-  "sourceCode": "Källkod",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Det gick inte att öppna länken",
   "diagnosticsTitle": "Diagnostik",

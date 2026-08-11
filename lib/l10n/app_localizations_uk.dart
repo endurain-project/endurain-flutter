@@ -715,11 +715,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get diagnosticsSubtitle => 'Локальний контекст збоїв';
 
   @override
-  String get sourceCode => 'Вихідний код';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Не вдалося відкрити посилання';

@@ -177,7 +177,7 @@
   "savedSuccessfully": "Instellingen opgeslagen",
   "diagnostics": "Diagnostiek",
   "diagnosticsSubtitle": "Lokale crashcontext",
-  "sourceCode": "Broncode",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Kan de link niet openen",
   "diagnosticsTitle": "Diagnostiek",

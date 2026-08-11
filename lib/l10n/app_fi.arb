@@ -177,7 +177,7 @@
   "savedSuccessfully": "Asetukset tallennettu onnistuneesti",
   "diagnostics": "Diagnostiikka",
   "diagnosticsSubtitle": "Paikallinen kaatumiskonteksti",
-  "sourceCode": "Lähdekoodi",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Linkkiä ei voitu avata",
   "diagnosticsTitle": "Diagnostiikka",

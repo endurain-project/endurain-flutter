@@ -716,11 +716,10 @@ class AppLocalizationsSl extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokalni kontekst sesutij';
 
   @override
-  String get sourceCode => 'Izvorna koda';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Povezave ni mogoče odpreti';

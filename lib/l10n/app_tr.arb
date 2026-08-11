@@ -177,7 +177,7 @@
   "savedSuccessfully": "Ayarlar başarıyla kaydedildi",
   "diagnostics": "Tanılama",
   "diagnosticsSubtitle": "Yerel çökme bağlamı",
-  "sourceCode": "Kaynak kodu",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Bağlantı açılamadı",
   "diagnosticsTitle": "Tanılama",

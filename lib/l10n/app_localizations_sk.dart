@@ -720,11 +720,10 @@ class AppLocalizationsSk extends AppLocalizations {
   String get diagnosticsSubtitle => 'Miestny kontext pádov';
 
   @override
-  String get sourceCode => 'Zdrojový kód';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Odkaz sa nepodarilo otvoriť';

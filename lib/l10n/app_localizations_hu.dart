@@ -721,11 +721,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get diagnosticsSubtitle => 'Helyi összeomlási kontextus';
 
   @override
-  String get sourceCode => 'Forráskód';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'A hivatkozás nem nyitható meg';

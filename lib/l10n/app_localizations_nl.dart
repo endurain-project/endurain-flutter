@@ -716,11 +716,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokale crashcontext';
 
   @override
-  String get sourceCode => 'Broncode';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Kan de link niet openen';

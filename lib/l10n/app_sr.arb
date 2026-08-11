@@ -177,7 +177,7 @@
   "savedSuccessfully": "Подешавања су успешно сачувана",
   "diagnostics": "Дијагностика",
   "diagnosticsSubtitle": "Локални контекст падова",
-  "sourceCode": "Изворни код",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Није могуће отворити везу",
   "diagnosticsTitle": "Дијагностика",

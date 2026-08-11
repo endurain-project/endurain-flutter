@@ -177,7 +177,7 @@
   "savedSuccessfully": "Настройките са записани успешно",
   "diagnostics": "Диагностика",
   "diagnosticsSubtitle": "Локален контекст на сривове",
-  "sourceCode": "Изходен код",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Връзката не може да бъде отворена",
   "diagnosticsTitle": "Диагностика",

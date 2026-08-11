@@ -708,11 +708,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get diagnosticsSubtitle => 'Yerel çökme bağlamı';
 
   @override
-  String get sourceCode => 'Kaynak kodu';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Bağlantı açılamadı';

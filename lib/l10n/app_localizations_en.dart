@@ -705,11 +705,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diagnosticsSubtitle => 'Local crash context';
 
   @override
-  String get sourceCode => 'Source code';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Could not open the link';

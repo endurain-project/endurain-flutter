@@ -1395,13 +1395,13 @@ abstract class AppLocalizations {
   /// **'Local crash context'**
   String get diagnosticsSubtitle;
 
-  /// Settings entry that opens the project's public source repository - Used in: settings_screen.dart
+  /// Settings entry that opens the project's public GitHub organization - Used in: settings_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Source code'**
+  /// **'GitHub'**
   String get sourceCode;
 
-  /// Subtitle showing the destination of the source code entry; the repository host is not translated - Used in: settings_screen.dart
+  /// Subtitle showing the destination of the source code entry; the GitHub organization is not translated - Used in: settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'github.com/endurain-project'**

@@ -724,11 +724,10 @@ class AppLocalizationsCa extends AppLocalizations {
   String get diagnosticsSubtitle => 'Context local de fallades';
 
   @override
-  String get sourceCode => 'Codi font';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'No s\'ha pogut obrir l\'enllaç';

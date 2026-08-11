@@ -718,11 +718,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get diagnosticsSubtitle => 'Paikallinen kaatumiskonteksti';
 
   @override
-  String get sourceCode => 'Lähdekoodi';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Linkkiä ei voitu avata';

@@ -728,11 +728,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get diagnosticsSubtitle => 'Τοπικό πλαίσιο σφαλμάτων';
 
   @override
-  String get sourceCode => 'Πηγαίος κώδικας';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Δεν ήταν δυνατό το άνοιγμα του συνδέσμου';

@@ -177,7 +177,7 @@
   "savedSuccessfully": "Paramètres enregistrés avec succès",
   "diagnostics": "Diagnostics",
   "diagnosticsSubtitle": "Contexte local des plantages",
-  "sourceCode": "Code source",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Impossible d'ouvrir le lien",
   "diagnosticsTitle": "Diagnostics",

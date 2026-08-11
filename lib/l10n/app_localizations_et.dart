@@ -714,11 +714,10 @@ class AppLocalizationsEt extends AppLocalizations {
   String get diagnosticsSubtitle => 'Kohalik krahhikontekst';
 
   @override
-  String get sourceCode => 'Lähtekood';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Lingi avamine ebaõnnestus';

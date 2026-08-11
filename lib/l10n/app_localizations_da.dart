@@ -714,11 +714,10 @@ class AppLocalizationsDa extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokal nedbrudskontekst';
 
   @override
-  String get sourceCode => 'Kildekode';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Linket kunne ikke åbnes';

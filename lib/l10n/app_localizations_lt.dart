@@ -709,11 +709,10 @@ class AppLocalizationsLt extends AppLocalizations {
   String get diagnosticsSubtitle => 'Vietinis strigčių kontekstas';
 
   @override
-  String get sourceCode => 'Pradinis kodas';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Nepavyko atidaryti nuorodos';

@@ -670,11 +670,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diagnosticsSubtitle => '本地崩溃上下文';
 
   @override
-  String get sourceCode => '源代码';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => '无法打开链接';
@@ -1766,11 +1765,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get diagnosticsSubtitle => '本機當機內容';
 
   @override
-  String get sourceCode => '原始碼';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => '無法開啟連結';

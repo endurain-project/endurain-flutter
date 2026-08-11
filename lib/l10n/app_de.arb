@@ -177,7 +177,7 @@
   "savedSuccessfully": "Einstellungen erfolgreich gespeichert",
   "diagnostics": "Diagnose",
   "diagnosticsSubtitle": "Lokaler Absturzkontext",
-  "sourceCode": "Quellcode",
+  "sourceCode": "GitHub",
   "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Der Link konnte nicht geöffnet werden",
   "diagnosticsTitle": "Diagnose",

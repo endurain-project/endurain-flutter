@@ -714,11 +714,10 @@ class AppLocalizationsLv extends AppLocalizations {
   String get diagnosticsSubtitle => 'Lokālais avāriju konteksts';
 
   @override
-  String get sourceCode => 'Pirmkods';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Neizdevās atvērt saiti';

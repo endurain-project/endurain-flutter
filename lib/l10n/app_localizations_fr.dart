@@ -724,11 +724,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get diagnosticsSubtitle => 'Contexte local des plantages';
 
   @override
-  String get sourceCode => 'Code source';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Impossible d\'ouvrir le lien';

@@ -720,11 +720,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get diagnosticsSubtitle => 'Contexto local de falhas';
 
   @override
-  String get sourceCode => 'Código-fonte';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Não foi possível abrir a ligação';

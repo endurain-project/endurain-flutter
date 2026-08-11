@@ -718,11 +718,10 @@ class AppLocalizationsBg extends AppLocalizations {
   String get diagnosticsSubtitle => 'Локален контекст на сривове';
 
   @override
-  String get sourceCode => 'Изходен код';
+  String get sourceCode => 'GitHub';
 
   @override
-  String get sourceCodeSubtitle =>
-      'github.com/endurain-project';
+  String get sourceCodeSubtitle => 'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Връзката не може да бъде отворена';
