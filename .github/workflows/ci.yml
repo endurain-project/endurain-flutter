@@ -123,4 +123,4 @@ jobs:
       # Debug signing keeps this gate safe for forks and pull requests.
       - name: Build debug APK
         shell: bash
-        run: flutter build apk --debug
+        run: flutter build apk --debug --target-platform android-arm64

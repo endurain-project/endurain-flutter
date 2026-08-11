@@ -23,13 +23,16 @@ ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/rel
 
 # Android SDK. The command-line tools SHA256 is verified against the archive
 # (Google only publishes SHA1 in its manifest, so it was cross-checked against
-# that SHA1). The platform/build-tools versions must satisfy the Flutter-derived
-# compileSdk.
+# that SHA1). Flutter uses API 36, while Android dependencies still compile
+# against APIs 35 and 34. CMake is required by the native-assets toolchain.
 ARG ANDROID_CMDLINE_TOOLS_VERSION=14742923
 ARG ANDROID_CMDLINE_TOOLS_SHA256=04453066b540409d975c676d781da1477479dde3761310f1a7eb92a1dfb15af7
 ARG ANDROID_PLATFORM=android-36
-ARG ANDROID_BUILD_TOOLS=36.1.0
+ARG ANDROID_PLUGIN_PLATFORM=android-35
+ARG ANDROID_LEGACY_PLATFORM=android-34
+ARG ANDROID_BUILD_TOOLS=35.0.0
 ARG ANDROID_NDK_VERSION=28.2.13676358
+ARG CMAKE_VERSION=3.22.1
 
 # Node.js runtime. Forgejo/act runs JavaScript actions (actions/checkout,
 # actions/cache) by exec'ing `node` inside this image, so the runtime must be
@@ -83,8 +86,11 @@ RUN set -eu; \
     sdkmanager \
         "platform-tools" \
         "platforms;${ANDROID_PLATFORM}" \
+        "platforms;${ANDROID_PLUGIN_PLATFORM}" \
+        "platforms;${ANDROID_LEGACY_PLATFORM}" \
         "build-tools;${ANDROID_BUILD_TOOLS}" \
-        "ndk;${ANDROID_NDK_VERSION}"
+        "ndk;${ANDROID_NDK_VERSION}" \
+        "cmake;${CMAKE_VERSION}"
 
 # --- Flutter SDK ------------------------------------------------------------
 RUN set -eu; \
