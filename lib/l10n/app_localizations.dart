@@ -1404,7 +1404,7 @@ abstract class AppLocalizations {
   /// Subtitle showing the destination of the source code entry; the repository host is not translated - Used in: settings_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'codeberg.org/endurain-project'**
+  /// **'github.com/endurain-project'**
   String get sourceCodeSubtitle;
 
   /// Error shown when an external link cannot be opened in the browser - Used in: settings_screen.dart

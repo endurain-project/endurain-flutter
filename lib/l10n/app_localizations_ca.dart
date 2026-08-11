@@ -727,7 +727,8 @@ class AppLocalizationsCa extends AppLocalizations {
   String get sourceCode => 'Codi font';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'No s\'ha pogut obrir l\'enllaç';

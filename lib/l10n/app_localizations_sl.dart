@@ -719,7 +719,8 @@ class AppLocalizationsSl extends AppLocalizations {
   String get sourceCode => 'Izvorna koda';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Povezave ni mogoče odpreti';

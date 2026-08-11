@@ -723,7 +723,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sourceCode => 'Código-fonte';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Não foi possível abrir a ligação';

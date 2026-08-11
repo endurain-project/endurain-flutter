@@ -719,7 +719,8 @@ class AppLocalizationsNl extends AppLocalizations {
   String get sourceCode => 'Broncode';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Kan de link niet openen';

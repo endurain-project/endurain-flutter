@@ -721,7 +721,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get sourceCode => 'Lähdekoodi';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Linkkiä ei voitu avata';

@@ -125,7 +125,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(launcher.launchedUris, [
-      Uri.parse('https://codeberg.org/endurain-project'),
+      Uri.parse('https://github.com/endurain-project'),
     ]);
   });
 
@@ -160,7 +160,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(launcher.launchedUris, [
-      Uri.parse('https://codeberg.org/endurain-project'),
+      Uri.parse('https://github.com/endurain-project'),
     ]);
     expect(find.text(l10n.openLinkFailed), findsOneWidget);
   });

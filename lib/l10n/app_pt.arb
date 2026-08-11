@@ -915,7 +915,7 @@
   },
   "diagnosticsSubtitle": "Contexto local de falhas",
   "sourceCode": "Código-fonte",
-  "sourceCodeSubtitle": "codeberg.org/endurain-project",
+  "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Não foi possível abrir a ligação",
   "@diagnosticsSubtitle": {
     "description": "Subtítulo de navegação para diagnóstico - Usado em: settings_screen.dart"

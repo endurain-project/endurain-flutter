@@ -712,7 +712,8 @@ class AppLocalizationsLt extends AppLocalizations {
   String get sourceCode => 'Pradinis kodas';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Nepavyko atidaryti nuorodos';

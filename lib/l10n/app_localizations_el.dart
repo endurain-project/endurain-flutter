@@ -731,7 +731,8 @@ class AppLocalizationsEl extends AppLocalizations {
   String get sourceCode => 'Πηγαίος κώδικας';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Δεν ήταν δυνατό το άνοιγμα του συνδέσμου';

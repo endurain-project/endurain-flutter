@@ -724,7 +724,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get sourceCode => 'Cod sursă';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Linkul nu a putut fi deschis';

@@ -711,7 +711,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get sourceCode => 'Kaynak kodu';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Bağlantı açılamadı';

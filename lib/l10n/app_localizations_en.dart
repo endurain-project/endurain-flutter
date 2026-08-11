@@ -708,7 +708,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sourceCode => 'Source code';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Could not open the link';

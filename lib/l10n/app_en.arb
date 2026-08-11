@@ -945,7 +945,7 @@
   "@sourceCode": {
     "description": "Settings entry that opens the project's public source repository - Used in: settings_screen.dart"
   },
-  "sourceCodeSubtitle": "codeberg.org/endurain-project",
+  "sourceCodeSubtitle": "github.com/endurain-project",
   "@sourceCodeSubtitle": {
     "description": "Subtitle showing the destination of the source code entry; the repository host is not translated - Used in: settings_screen.dart"
   },

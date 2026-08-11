@@ -721,7 +721,8 @@ class AppLocalizationsCs extends AppLocalizations {
   String get sourceCode => 'Zdrojový kód';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Odkaz se nepodařilo otevřít';

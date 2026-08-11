@@ -178,7 +178,7 @@
   "diagnostics": "Діагностика",
   "diagnosticsSubtitle": "Локальний контекст збоїв",
   "sourceCode": "Вихідний код",
-  "sourceCodeSubtitle": "codeberg.org/endurain-project",
+  "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Не вдалося відкрити посилання",
   "diagnosticsTitle": "Діагностика",
   "diagnosticsCollection": "Збір",

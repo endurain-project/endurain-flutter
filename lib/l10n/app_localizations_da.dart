@@ -717,7 +717,8 @@ class AppLocalizationsDa extends AppLocalizations {
   String get sourceCode => 'Kildekode';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Linket kunne ikke åbnes';

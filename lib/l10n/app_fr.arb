@@ -178,7 +178,7 @@
   "diagnostics": "Diagnostics",
   "diagnosticsSubtitle": "Contexte local des plantages",
   "sourceCode": "Code source",
-  "sourceCodeSubtitle": "codeberg.org/endurain-project",
+  "sourceCodeSubtitle": "github.com/endurain-project",
   "openLinkFailed": "Impossible d'ouvrir le lien",
   "diagnosticsTitle": "Diagnostics",
   "diagnosticsCollection": "Collecte",

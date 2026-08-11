@@ -724,7 +724,8 @@ class AppLocalizationsHu extends AppLocalizations {
   String get sourceCode => 'Forráskód';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'A hivatkozás nem nyitható meg';

@@ -8,7 +8,7 @@ import 'package:endurain/core/utils/json_parsing.dart';
 /// source produced the track, so the server receives a consistent GPX shape.
 
 /// Project URL embedded in generated GPX `<metadata><link>` elements.
-const String gpxProjectUrl = 'https://codeberg.org/endurain-project';
+const String gpxProjectUrl = 'https://github.com/endurain-project';
 
 /// Formats [timestamp] as a UTC ISO-8601 string for GPX `<time>` elements.
 String gpxFormatTimestamp(DateTime timestamp) => timestamp.toUtcIso8601();

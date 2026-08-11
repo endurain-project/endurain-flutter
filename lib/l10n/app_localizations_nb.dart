@@ -717,7 +717,8 @@ class AppLocalizationsNb extends AppLocalizations {
   String get sourceCode => 'Kildekode';
 
   @override
-  String get sourceCodeSubtitle => 'codeberg.org/endurain-project';
+  String get sourceCodeSubtitle =>
+      'github.com/endurain-project';
 
   @override
   String get openLinkFailed => 'Kunne ikke åpne lenken';
