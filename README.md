@@ -1,6 +1,3 @@
-> [!NOTE]
-> **GitHub Mirror** - If you are viewing this on GitHub, please be aware that this repository is a read-only mirror. Issues, pull requests, and all project activity are tracked on Codeberg: [https://codeberg.org/endurain-project/endurain-flutter](https://codeberg.org/endurain-project/endurain-flutter)
-
 <div align="center">
   <img src="assets/logo/brand_logo_light_theme.png" width="128" height="128">
 
