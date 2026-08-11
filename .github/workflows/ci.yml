@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  # Keep in sync with docker/flutter-build/Dockerfile and the image workflow.
+  FLUTTER_VERSION: 3.44.6
+  CI_IMAGE: ghcr.io/endurain-project/endurain-flutter-ci:3.44.6
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Never cancel verification of a commit that has landed on main.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.CI_IMAGE }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.CI_IMAGE }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      - name: Analyze Dart code
+        run: flutter analyze
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.CI_IMAGE }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Check coverage threshold
+        run: >-
+          dart run tool/check_coverage.dart
+          --min-line-coverage 80
+          --min-file-line-coverage 60
+          --exclude 'lib/l10n/app_localizations*.dart'
+          --exclude 'lib/core/theme/app_theme_tokens.dart'
+          --exclude 'lib/core/navigation/app_routes.dart'
+          --exclude 'lib/shared/widgets/app_bottom_nav.dart'
+          --exclude 'lib/core/services/platform/*.dart'
+          --exclude 'lib/features/health/services/health_package_platform_adapter.dart'
+          --exclude 'lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart'
+
+  android-unit-test:
+    name: Android unit tests
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.CI_IMAGE }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      - name: Generate Gradle config
+        shell: bash
+        run: flutter build apk --config-only
+
+      - name: Run native Kotlin unit tests
+        shell: bash
+        run: cd android && ./gradlew :app:testDebugUnitTest --console=plain
+
+  android-build:
+    name: Android build
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.CI_IMAGE }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      # Debug signing keeps this gate safe for forks and pull requests.
+      - name: Build debug APK
+        shell: bash
+        run: flutter build apk --debug

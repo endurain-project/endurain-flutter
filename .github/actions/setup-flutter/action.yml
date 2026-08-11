@@ -2,14 +2,13 @@ name: Set up Flutter dependencies
 description: >-
   Restore the pub cache and fetch project dependencies with the lockfile
   enforced. The Flutter and Android SDKs are provided by the CI builder image
-  (docker/flutter-build/Dockerfile), so this action no longer downloads the
-  Flutter SDK itself.
+  (docker/flutter-build/Dockerfile), so this action does not download Flutter.
 
 runs:
   using: composite
   steps:
     - name: Restore pub cache
-      uses: https://data.forgejo.org/actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       with:
         path: ~/.pub-cache
         key: pub-cache-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}

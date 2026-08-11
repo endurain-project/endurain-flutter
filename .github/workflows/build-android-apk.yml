@@ -12,42 +12,41 @@ on:
         required: true
         type: string
   release:
-    types:
-      - published
+    types: [published]
 
 env:
-  # Flutter version, used for the builder-image tag. Keep in sync with
-  # docker/flutter-build/Dockerfile and build-ci-docker-image.yml.
   FLUTTER_VERSION: 3.44.6
-  # Prebuilt Flutter + Android + JDK image (see build-ci-docker-image.yml).
-  CI_IMAGE_BASE: codeberg.org/${{ forgejo.repository }}-ci
+  CI_IMAGE: ghcr.io/endurain-project/endurain-flutter-ci:3.44.6
 
 concurrency:
-  group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-jobs:
+permissions:
+  contents: write
+  packages: read
 
+jobs:
   build-android:
     name: Build Android APK
-    runs-on: local-runner
+    runs-on: ubuntu-latest
     container:
-      image: ${{ env.CI_IMAGE_BASE }}:${{ env.FLUTTER_VERSION }}
+      image: ${{ env.CI_IMAGE }}
     steps:
       - name: Checkout code
-        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
 
       - name: Set up Flutter
-        uses: ./.forgejo/actions/setup-flutter
+        uses: ./.github/actions/setup-flutter
 
       - name: Prepare signed release inputs
         shell: bash
         env:
-          EVENT_NAME: ${{ forgejo.event_name }}
-          RELEASE_TAG: ${{ forgejo.event.release.tag_name }}
-          RELEASE_ID: ${{ forgejo.event.release.id }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_ID: ${{ github.event.release.id }}
           INPUT_VERSION_NAME: ${{ inputs.version_name }}
           INPUT_VERSION_CODE: ${{ inputs.version_code }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -105,20 +104,6 @@ jobs:
 
       - name: Build release APK
         shell: bash
-        # Build for arm64-v8a only. A fat APK runs gen_snapshot (the native Dart
-        # AOT compiler, ~1.5-3 GB each) once per ABI, which OOM-kills the Gradle
-        # daemon on the memory-constrained 8 GB runner. arm64-v8a covers
-        # essentially all modern devices and keeps the output as app-release.apk.
-        #
-        # Memory tuning for a 6 GB, 4-vCPU runner:
-        # - gen_snapshot (non-JVM, ~1.5-3 GB) runs and exits before Gradle
-        #   starts, so it never competes with the JVM heap below.
-        # - GRADLE_OPTS: caps main Gradle JVM. R8 minification runs in-process
-        #   in this same JVM (no isolated worker), so it needs headroom beyond
-        #   the 1GB previously set here, which OOM'd on minifyReleaseWithR8.
-        # - Kotlin compilation runs in-process with one Gradle worker
-        # - JAVA_TOOL_OPTIONS: applies the same limits to lint worker JVMs
-        # - --split-debug-info: reduces gen_snapshot memory by externalizing debug symbols
         env:
           GRADLE_OPTS: >-
             -Xmx3072m
@@ -131,16 +116,9 @@ jobs:
             -Xmx3072m
             -XX:MaxMetaspaceSize=768m
             -XX:ReservedCodeCacheSize=128m
-          # Managed diagnostics DSN baked into official release builds so the
-          # opt-in remote crash reporting has a default target. A Sentry/GlitchTip
-          # DSN is a public client identifier (send-only), so this is a repository
-          # VARIABLE, not a secret. When unset it renders empty and the build
-          # ships no managed default, leaving remote crash reporting inactive.
           ENDURAIN_CRASH_REPORTING_DSN: ${{ vars.ENDURAIN_CRASH_REPORTING_DSN }}
         run: |
-          # Stop any stale Gradle daemons
           pkill -f 'GradleDaemon' || true
-          # Build with split debug info to reduce gen_snapshot memory
           flutter build apk --release \
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE" \
@@ -164,38 +142,28 @@ jobs:
           )"
           [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
 
-      # For manual builds there is no release to attach to, so keep the APK as a
-      # workflow-run artifact for download/inspection.
       - name: Upload APK as workflow artifact
-        if: forgejo.event_name == 'workflow_dispatch'
-        # Codeberg's Forgejo artifact backend is detected as GHES by
-        # @actions/artifact. upload-artifact v4+ (which bundles @actions/artifact
-        # v2) hard-fails on GHES with "GHESNotSupportedError", so we must use the
-        # v3 line (@actions/artifact v1). v3-node20 is the v3 build rebuilt to run
-        # on Node 20 instead of the deprecated Node 16.
-        uses: https://data.forgejo.org/forgejo/upload-artifact@97a0fba1372883ab732affbe8f94b823f91727db # v3-node20
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: endurain-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
 
-      # For published releases, attach the APK directly to the release page so
-      # users can download it without digging through CI runs.
       - name: Attach APK to the release
-        if: forgejo.event_name == 'release'
+        if: github.event_name == 'release'
         shell: bash
-        # The token and release id come from the event context; the APK is sent
-        # as a multipart attachment to the Forgejo release-assets API.
         env:
-          API_URL: ${{ forgejo.api_url }}
-          REPOSITORY: ${{ forgejo.repository }}
-          RELEASE_ID: ${{ forgejo.event.release.id }}
-          TOKEN: ${{ forgejo.token }}
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APK_PATH: build/app/outputs/flutter-apk/app-release.apk
         run: |
           set -euo pipefail
+          upload_url="${UPLOAD_URL%%\{*}"
           curl --fail --show-error --location \
             --request POST \
-            --header "Authorization: token $TOKEN" \
-            --form "attachment=@${APK_PATH}" \
-            "${API_URL}/repos/${REPOSITORY}/releases/${RELEASE_ID}/assets?name=app-release.apk"
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer $TOKEN" \
+            --header "Content-Type: application/vnd.android.package-archive" \
+            --data-binary "@$APK_PATH" \
+            "${upload_url}?name=app-release.apk"
