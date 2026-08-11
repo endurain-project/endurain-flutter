@@ -28,8 +28,7 @@ void main() {
       expect(
         gpx,
         contains(
-          '    <link href="https://github.com/endurain-project/'
-          'endurain-flutter">\n'
+          '    <link href="https://github.com/endurain-project">\n'
           '      <text>Endurain Project</text>\n'
           '    </link>',
         ),
