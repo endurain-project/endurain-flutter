@@ -48,6 +48,9 @@ class ActiveActivitySession {
     required this.startedAt,
     this.connectionOrigin,
     this.connectionProfileId,
+    this.heartRateDeviceId,
+    this.powerDeviceId,
+    this.cadenceDeviceId,
     this.resumedAt,
     this.pausedAt,
     this.endedAt,
@@ -64,6 +67,16 @@ class ActiveActivitySession {
   final DateTime startedAt;
   final String? connectionOrigin;
   final String? connectionProfileId;
+
+  /// Identifiers of the external BLE sensors bound to this recording.
+  ///
+  /// The native Android/iOS recorders persist these in `session.json` so a
+  /// sticky restart can reconnect the same straps. They are part of the same
+  /// `schemaVersion` and must round-trip here too: dropping them on a Dart
+  /// write would silently unbind the sensors from a recoverable session.
+  final String? heartRateDeviceId;
+  final String? powerDeviceId;
+  final String? cadenceDeviceId;
   final DateTime? resumedAt;
   final DateTime? pausedAt;
   final DateTime? endedAt;
@@ -82,6 +95,9 @@ class ActiveActivitySession {
     DateTime? startedAt,
     Object? connectionOrigin = kUnset,
     Object? connectionProfileId = kUnset,
+    Object? heartRateDeviceId = kUnset,
+    Object? powerDeviceId = kUnset,
+    Object? cadenceDeviceId = kUnset,
     Object? resumedAt = kUnset,
     Object? pausedAt = kUnset,
     Object? endedAt = kUnset,
@@ -100,6 +116,15 @@ class ActiveActivitySession {
       connectionProfileId: identical(connectionProfileId, kUnset)
           ? this.connectionProfileId
           : connectionProfileId as String?,
+      heartRateDeviceId: identical(heartRateDeviceId, kUnset)
+          ? this.heartRateDeviceId
+          : heartRateDeviceId as String?,
+      powerDeviceId: identical(powerDeviceId, kUnset)
+          ? this.powerDeviceId
+          : powerDeviceId as String?,
+      cadenceDeviceId: identical(cadenceDeviceId, kUnset)
+          ? this.cadenceDeviceId
+          : cadenceDeviceId as String?,
       resumedAt: identical(resumedAt, kUnset)
           ? this.resumedAt
           : resumedAt as DateTime?,
@@ -124,6 +149,10 @@ class ActiveActivitySession {
       if (connectionOrigin != null) 'connectionOrigin': connectionOrigin,
       if (connectionProfileId != null)
         'connectionProfileId': connectionProfileId,
+      // Short keys mirror the native `ActiveRecordingModels` serialization.
+      if (heartRateDeviceId != null) 'hrDeviceId': heartRateDeviceId,
+      if (powerDeviceId != null) 'powerDeviceId': powerDeviceId,
+      if (cadenceDeviceId != null) 'cadenceDeviceId': cadenceDeviceId,
       if (resumedAt != null) 'resumedAt': resumedAt!.toUtcIso8601(),
       if (pausedAt != null) 'pausedAt': pausedAt!.toUtcIso8601(),
       if (endedAt != null) 'endedAt': endedAt!.toUtcIso8601(),
@@ -151,6 +180,9 @@ class ActiveActivitySession {
       startedAt: startedAt,
       connectionOrigin: jsonString(json['connectionOrigin']),
       connectionProfileId: jsonString(json['connectionProfileId']),
+      heartRateDeviceId: jsonString(json['hrDeviceId']),
+      powerDeviceId: jsonString(json['powerDeviceId']),
+      cadenceDeviceId: jsonString(json['cadenceDeviceId']),
       resumedAt: jsonDateTime(json['resumedAt']),
       pausedAt: jsonDateTime(json['pausedAt']),
       endedAt: jsonDateTime(json['endedAt']),

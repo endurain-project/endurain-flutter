@@ -1,23 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/platform/package_info_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
-import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
+import 'package:endurain/features/settings/controllers/settings_controller.dart';
 import 'package:endurain/features/settings/screens/device_access_screen.dart';
 import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
+import 'package:endurain/features/settings/screens/units_settings_screen.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 
 /// Public source repository for the project, opened from the settings screen.
 const String _sourceCodeUrl = 'https://codeberg.org/endurain-project';
@@ -28,11 +30,9 @@ class SettingsScreen extends StatefulWidget {
     this.onLogout,
     this.isGuest = false,
     this.onSignIn,
-    this.packageInfoService,
+    this.controller,
     this.diagnostics,
-    this.activityRetentionSettings,
     this.localeController,
-    this.secureStorage,
     this.urlLauncherService,
   });
 
@@ -46,24 +46,19 @@ class SettingsScreen extends StatefulWidget {
   /// Invoked when a guest chooses to connect a server / sign in.
   final VoidCallback? onSignIn;
 
-  final PackageInfoService? packageInfoService;
+  /// Optional route-owned controller override (tests).
+  final SettingsController? controller;
+
   final DiagnosticsStore? diagnostics;
-  final ActivityRetentionSettingsRepository? activityRetentionSettings;
   final LocaleController? localeController;
-  final SecureStorageService? secureStorage;
   final UrlLauncherService? urlLauncherService;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  String _version = '';
-  String? _serverUrl;
-  bool _retainUploadedGpx = true;
-  late final PackageInfoService _packageInfoService;
-  late final ActivityRetentionSettingsRepository _activityRetentionSettings;
-  late final SecureStorageService _secureStorage;
+class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
+  late final SettingsController _controller;
   late final bool _healthSyncEnabled;
   late final UrlLauncherService _urlLauncherService;
 
@@ -71,15 +66,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     final services = AppScope.servicesOf(context, listen: false);
-    _packageInfoService = widget.packageInfoService ?? services.packageInfo;
-    _activityRetentionSettings =
-        widget.activityRetentionSettings ?? services.activityRetentionSettings;
-    _secureStorage = widget.secureStorage ?? services.secureStorage;
     _healthSyncEnabled = services.config.healthSyncEnabled;
     _urlLauncherService = widget.urlLauncherService ?? services.urlLauncher;
-    _loadVersion();
-    _loadServerUrl();
-    _loadActivityRetentionSetting();
+    _controller = registerController(
+      widget.controller,
+      services.createSettingsController,
+      onChanged: _onControllerChanged,
+    );
+    unawaited(_controller.load());
+  }
+
+  void _onControllerChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _openSourceCode() async {
@@ -92,48 +92,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _loadVersion() async {
-    final packageInfo = await _packageInfoService.fromPlatform();
-    final currentYear = DateTime.now().year;
-    if (mounted) {
-      setState(() {
-        _version =
-            '© ${UIConstants.copyrightStartYear} - $currentYear Endurain • ${packageInfo.version}';
-      });
-    }
-  }
-
-  Future<void> _loadActivityRetentionSetting() async {
-    final retainUploadedGpx = await _activityRetentionSettings
-        .isRetainUploadedGpxEnabled();
-    if (mounted) {
-      setState(() {
-        _retainUploadedGpx = retainUploadedGpx;
-      });
-    }
-  }
-
-  Future<void> _loadServerUrl() async {
-    try {
-      final serverUrl = await _secureStorage.getServerUrl();
-      if (mounted) {
-        setState(() {
-          _serverUrl = serverUrl;
-        });
-      }
-    } catch (_) {
-      // The settings page remains usable if secure storage is temporarily
-      // unavailable; the server details screen exposes storage errors directly.
-    }
-  }
-
-  Future<void> _setRetainUploadedGpx(bool value) async {
-    setState(() {
-      _retainUploadedGpx = value;
-    });
-    await _activityRetentionSettings.setRetainUploadedGpxEnabled(value);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -144,6 +102,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final languageSubtitle = currentLocale == null
         ? l10n.languageSystemDefault
         : languageDisplayName(currentLocale);
+    final serverUrl = _controller.serverUrl;
+    final appVersion = _controller.appVersion;
+    final versionText = appVersion == null
+        ? ''
+        : '© ${UIConstants.copyrightStartYear} - ${DateTime.now().year} '
+              'Endurain • $appVersion';
     final footerTextStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
@@ -175,9 +139,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           cupertinoIcon: CupertinoIcons.globe,
                         ),
                         title: l10n.serverSettings,
-                        subtitle: _serverUrl == null || _serverUrl!.isEmpty
+                        subtitle: serverUrl == null || serverUrl.isEmpty
                             ? null
-                            : l10n.connectedToServer(_serverUrl!),
+                            : l10n.connectedToServer(serverUrl),
                         onTap: () {
                           adaptivePush<void>(
                             context,
@@ -202,6 +166,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
+                        materialIcon: Icons.straighten,
+                        cupertinoIcon: CupertinoIcons.arrow_left_right,
+                      ),
+                      title: l10n.unitsTitle,
+                      subtitle: l10n.unitsSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const UnitsSettingsScreen(),
+                        );
+                      },
+                    ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
                         materialIcon: Icons.history,
                         cupertinoIcon: CupertinoIcons.time,
                       ),
@@ -221,8 +199,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       title: l10n.activityRetainUploadedGpx,
                       subtitle: l10n.activityRetainUploadedGpxSubtitle,
-                      value: _retainUploadedGpx,
-                      onChanged: _setRetainUploadedGpx,
+                      value: _controller.retainUploadedGpx,
+                      onChanged: _controller.setRetainUploadedGpx,
                     ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(
@@ -316,7 +294,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _version,
+                  versionText,
                   textAlign: TextAlign.center,
                   style: footerTextStyle,
                 ),

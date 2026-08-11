@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// The high-level session state that drives top-level routing.
 ///
@@ -21,7 +21,7 @@ enum SessionMode {
   authenticated,
 }
 
-class AuthSessionController extends ChangeNotifier {
+class AuthSessionController extends SafeNotifier {
   AuthSessionController({required this._authService});
 
   final AuthService _authService;
@@ -38,12 +38,12 @@ class AuthSessionController extends ChangeNotifier {
   /// [SessionMode.guest] so the user lands on the map without a login gate.
   Future<void> initialize() async {
     _mode = SessionMode.loading;
-    notifyListeners();
+    notify();
 
     _mode = await _authService.isAuthenticated()
         ? SessionMode.authenticated
         : SessionMode.guest;
-    notifyListeners();
+    notify();
   }
 
   void markAuthenticated() {
@@ -78,6 +78,6 @@ class AuthSessionController extends ChangeNotifier {
       return;
     }
     _mode = mode;
-    notifyListeners();
+    notify();
   }
 }

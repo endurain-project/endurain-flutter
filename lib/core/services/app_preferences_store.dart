@@ -100,9 +100,19 @@ abstract interface class AppPreferencesBackend {
 /// [AppPreferencesBackend] backed by the official asynchronous plugin API.
 final class SharedPreferencesAsyncBackend implements AppPreferencesBackend {
   SharedPreferencesAsyncBackend({SharedPreferencesAsync? preferences})
-    : _preferences = preferences ?? SharedPreferencesAsync();
+    : _injected = preferences;
 
-  final SharedPreferencesAsync _preferences;
+  final SharedPreferencesAsync? _injected;
+
+  /// Resolved on first use rather than at construction.
+  ///
+  /// `SharedPreferencesAsync()` asserts that the platform implementation is
+  /// registered, so building it eagerly makes merely *constructing* the
+  /// composition root depend on plugin registration. Deferring it keeps
+  /// unrelated widgets (which only read an in-memory preference value) working
+  /// in tests and previews that never touch preference storage.
+  late final SharedPreferencesAsync _preferences =
+      _injected ?? SharedPreferencesAsync();
 
   @override
   Future<String?> read(String key) => _preferences.getString(key);

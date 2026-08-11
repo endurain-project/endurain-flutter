@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
@@ -11,8 +10,10 @@ import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
+import 'package:flutter/foundation.dart' show ValueChanged, VoidCallback;
 
-class LoginController extends ChangeNotifier {
+class LoginController extends SafeNotifier {
   LoginController({
     required this._authCoordinator,
     AppLinksService? appLinksService,
@@ -201,17 +202,17 @@ class LoginController extends ChangeNotifier {
     _isStep2 = false;
     _availableIdPs = const [];
     _serverSettings = null;
-    notifyListeners();
+    notify();
   }
 
   void backFromMfa() {
     _showMfaInput = false;
-    notifyListeners();
+    notify();
   }
 
   void setPasswordVisible(bool visible) {
     _obscurePassword = !visible;
-    notifyListeners();
+    notify();
   }
 
   void clearSsoPkce() {
@@ -255,7 +256,7 @@ class LoginController extends ChangeNotifier {
 
   void _setLoading(bool value) {
     _isLoading = value;
-    notifyListeners();
+    notify();
   }
 
   void _notifyError(Object error) {

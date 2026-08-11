@@ -20,9 +20,9 @@ import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
-import 'package:flutter/foundation.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
-class ActivityRecordingController extends ChangeNotifier {
+class ActivityRecordingController extends SafeNotifier {
   ActivityRecordingController({
     required this._recordingService,
     ActivityGpxBuilder gpxBuilder = const ActivityGpxBuilder(),
@@ -68,7 +68,6 @@ class ActivityRecordingController extends ChangeNotifier {
   final DateTime Function() _now;
   final bool _ownsService;
   late final StreamSubscription<ActivityRecordingState> _stateSubscription;
-  bool _isDisposed = false;
 
   ActivityRecordingState _state = ActivityRecordingState();
   ActivityType _selectedActivityType = ActivityType.run;
@@ -108,7 +107,7 @@ class ActivityRecordingController extends ChangeNotifier {
       return;
     }
     _selectedActivityType = type;
-    _notifyListeners();
+    notify();
   }
 
   Future<void> start(ActivityType type) async {
@@ -408,24 +407,17 @@ class ActivityRecordingController extends ChangeNotifier {
       state = state.copyWith(localActivityId: _state.localActivityId);
     }
     _state = state;
-    _notifyListeners();
+    notify();
   }
 
   void _setUploadState(ActivityUploadStatus status, {AppException? error}) {
     _uploadStatus = status;
     _uploadError = error;
-    _notifyListeners();
-  }
-
-  void _notifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
+    notify();
   }
 
   @override
   void dispose() {
-    _isDisposed = true;
     unawaited(_stateSubscription.cancel());
     if (_ownsService) {
       _recordingService.dispose();

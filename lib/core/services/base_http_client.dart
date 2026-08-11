@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/api_response.dart';
+import 'package:endurain/core/services/redirect_policy_client.dart';
 
 /// A thin wrapper around [http.Client] that provides standard unauthenticated
 /// request helpers used by auth, SSO, and server-settings services.
@@ -19,10 +20,13 @@ import 'package:endurain/core/services/api_response.dart';
 /// the outer try/catch and supply the appropriate typed error code for their
 /// context (e.g. `loginError`, `ssoTokenExchangeError`).
 ///
+/// Every request goes through [RedirectPolicyClient], so a redirect can never
+/// carry the bearer token to a different origin or downgrade to plain HTTP.
+///
 /// Bearer-token refresh and injection belong in `ApiClient`, not here.
 class BaseHttpClient {
   BaseHttpClient({http.Client? httpClient, Duration? timeout})
-    : _client = httpClient ?? http.Client(),
+    : _client = RedirectPolicyClient(httpClient ?? http.Client()),
       _timeout = timeout ?? ApiConstants.defaultRequestTimeout;
 
   final http.Client _client;

@@ -1089,4 +1089,82 @@ class AppLocalizationsSk extends AppLocalizations {
   @override
   String get diagnosticsRemoteNeedsServer =>
       'Vzdialené hlásenie pádov nie je v tejto verzii dostupné.';
+
+  @override
+  String unitMeter(String value) {
+    return '$value m';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value km';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value ft';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value mi';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value km/h';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value mph';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value min/km';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value min/mi';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Jednotky';
+
+  @override
+  String get unitsSubtitle => 'Jednotky vzdialenosti, rýchlosti a prevýšenia';
+
+  @override
+  String get unitsSystemDefault => 'Podľa regiónu zariadenia';
+
+  @override
+  String get unitsMetric => 'Metrické (km)';
+
+  @override
+  String get unitsImperial => 'Imperiálne (mi)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }

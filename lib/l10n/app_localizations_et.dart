@@ -1079,4 +1079,82 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get diagnosticsRemoteNeedsServer =>
       'Kaug-krahhiraportid pole selles versioonis saadaval.';
+
+  @override
+  String unitMeter(String value) {
+    return '$value m';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value km';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value ft';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value mi';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value km/h';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value mph';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value min/km';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value min/mi';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Ühikud';
+
+  @override
+  String get unitsSubtitle => 'Vahemaa, kiiruse ja kõrguse ühikud';
+
+  @override
+  String get unitsSystemDefault => 'Järgi seadme piirkonda';
+
+  @override
+  String get unitsMetric => 'Meetermõõdustik (km)';
+
+  @override
+  String get unitsImperial => 'Imperiaalne (mi)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }

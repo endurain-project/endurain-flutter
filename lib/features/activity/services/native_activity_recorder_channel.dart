@@ -41,6 +41,27 @@ class NativeActivityRecorderChannelContract {
   static const String eventStopped = 'stopped';
   static const String eventFailed = 'failed';
   static const String eventRecoverableStateChanged = 'recoverableStateChanged';
+
+  // PlatformException codes raised by the native handlers. Declared here (next
+  // to the method names) so Dart callers can branch on a specific native
+  // failure instead of collapsing every one into a generic error.
+  //
+  /// Required argument missing or malformed.
+  static const String errorInvalidArguments = 'invalid_arguments';
+
+  /// The native store still holds a recoverable session, so the requested
+  /// transition is not legal. Recoverable: discarding the stale session and
+  /// retrying is the correct response.
+  static const String errorInvalidState = 'invalid_state';
+
+  /// The native recorder/foreground service could not be started.
+  static const String errorServiceStartFailed = 'service_start_failed';
+
+  /// The native side rejected [payloadVersion].
+  static const String errorUnsupportedVersion = 'unsupported_version';
+
+  /// The durable point store could not be read.
+  static const String errorStoreReadFailed = 'store_read_failed';
 }
 
 /// [ActivityLocationRecorder] backed by native platform channels.

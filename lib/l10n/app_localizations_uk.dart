@@ -1081,4 +1081,82 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get diagnosticsRemoteNeedsServer =>
       'Віддалене звітування про збої недоступне в цій версії.';
+
+  @override
+  String unitMeter(String value) {
+    return '$value м';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value км';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value фут';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value ми';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value км/год';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value ми/год';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value хв/км';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value хв/ми';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Одиниці виміру';
+
+  @override
+  String get unitsSubtitle => 'Одиниці відстані, швидкості та висоти';
+
+  @override
+  String get unitsSystemDefault => 'За регіоном пристрою';
+
+  @override
+  String get unitsMetric => 'Метричні (км)';
+
+  @override
+  String get unitsImperial => 'Імперські (ми)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }

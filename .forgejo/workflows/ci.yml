@@ -112,3 +112,39 @@ jobs:
         shell: bash
         run: cd android && ./gradlew :app:testDebugUnitTest --console=plain
 
+  # Compile verification for the native layer.
+  #
+  # `analyze` and `test` only cover Dart: neither compiles Kotlin, evaluates the
+  # Gradle configuration, nor links the Android app. Without this job a change
+  # to android/**, the manifest, or a Gradle script can break the build while
+  # CI stays green.
+  #
+  # KNOWN GAP — iOS is not verified here. Building iOS and running the XCTest
+  # suite both require a macOS runner, which this project does not have. So:
+  #   - Swift changes and edits to ios/Runner.xcodeproj are NOT checked by CI.
+  #     Build them locally with `flutter build ios --simulator --debug` before
+  #     opening a PR that touches ios/**.
+  #   - The tests in ios/RunnerTests never run automatically. Run them from
+  #     Xcode when changing ios/Runner/Activity/**.
+  # Revisit if a macOS runner becomes available.
+  android-build:
+    name: Android build
+    runs-on: local-runner
+    container:
+      image: ${{ env.CI_IMAGE_BASE }}:${{ env.FLUTTER_VERSION }}
+    steps:
+      - name: Checkout code
+        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.forgejo/actions/setup-flutter
+
+      - name: Build debug APK
+        shell: bash
+        # Debug signing only: the release-signing guard in
+        # android/app/build.gradle.kts is gated on a release task, so this needs
+        # no keystore credentials and works on forks and PRs from contributors.
+        run: flutter build apk --debug
+

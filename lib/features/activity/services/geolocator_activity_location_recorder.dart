@@ -63,6 +63,9 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       startedAt: request.startedAt,
       connectionOrigin: request.connectionOrigin,
       connectionProfileId: request.connectionProfileId,
+      heartRateDeviceId: request.heartRateDeviceId,
+      powerDeviceId: request.powerDeviceId,
+      cadenceDeviceId: request.cadenceDeviceId,
     );
     _session = session;
     _backgroundConfig = request.backgroundConfig;

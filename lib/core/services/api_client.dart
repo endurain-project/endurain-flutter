@@ -52,7 +52,7 @@ class ApiClient {
         AuthService(sessionStore: resolvedStore, storage: storage);
     _baseClient = baseClient ?? BaseHttpClient();
     _uploadTimeout = uploadTimeout ?? ApiConstants.defaultUploadTimeout;
-    _uploadAdapter = uploadAdapter ?? const HttpMultipartUploadAdapter();
+    _uploadAdapter = uploadAdapter ?? HttpMultipartUploadAdapter();
     _config = config;
   }
 

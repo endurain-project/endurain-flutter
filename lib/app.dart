@@ -131,9 +131,13 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return AppScope(
       services: _services,
-      // Rebuild the localized app tree when the user changes languages.
+      // Rebuild the localized app tree when the user changes languages, and the
+      // whole tree when the unit preference changes so every stat re-renders.
       child: ListenableBuilder(
-        listenable: _services.localeController,
+        listenable: Listenable.merge([
+          _services.localeController,
+          _services.measurementSystemController,
+        ]),
         builder: (context, _) => AdaptiveApp.router(
           title: 'Endurain',
           routerConfig: _router,

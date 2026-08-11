@@ -34,6 +34,19 @@ data class ActiveActivitySessionData(
     val isActive: Boolean
         get() = status == STATUS_RECORDING || status == STATUS_PAUSED
 
+    /**
+     * Whether this session binds at least one external BLE sensor.
+     *
+     * Drives whether the foreground service may declare the `connectedDevice`
+     * service type on Android 14+ (see
+     * `ActivityRecorderService.canDeclareConnectedDeviceType`).
+     */
+    fun hasAnySensorBinding(): Boolean {
+        return !heartRateDeviceId.isNullOrEmpty() ||
+            !powerDeviceId.isNullOrEmpty() ||
+            !cadenceDeviceId.isNullOrEmpty()
+    }
+
     fun toJson(): JSONObject {
         return JSONObject().apply {
             put("schemaVersion", schemaVersion)

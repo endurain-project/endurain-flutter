@@ -7,7 +7,14 @@ import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/device_locale.dart';
+
 void main() {
+  // Unit rendering follows the device region, and the test harness
+  // reports en-US (imperial) by default. Pin a metric region so these
+  // metric assertions are explicit rather than harness-dependent.
+  setUp(() => useDeviceLocale(metricDeviceLocale));
+
   group('ActivityCompletionSummary', () {
     final l10n = AppLocalizationsEn();
 

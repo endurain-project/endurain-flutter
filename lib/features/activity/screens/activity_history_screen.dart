@@ -10,7 +10,7 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
-import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
+import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
@@ -272,7 +272,7 @@ class _ActivityRecordTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    const formatter = ActivityStatsFormatter();
+    final formatter = context.statsFormatter;
     final title = l10n.activityHistoryEntryTitle(
       record.activityType.localizedLabel(l10n),
       formatLocalDateTime(context, record.endedAt),

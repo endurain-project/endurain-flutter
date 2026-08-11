@@ -63,6 +63,42 @@ class ActiveRecordingModelsTest {
         assertFalse(json.has("endedAt"))
     }
 
+    // ── Sensor binding (drives the Android 14+ foreground-service type) ────
+
+    @Test
+    fun sessionWithoutSensorIdsHasNoSensorBinding() {
+        val session = baseSession()
+
+        assertFalse(session.hasAnySensorBinding())
+    }
+
+    @Test
+    fun sessionWithEmptySensorIdsHasNoSensorBinding() {
+        val session = baseSession().copy(
+            heartRateDeviceId = "",
+            powerDeviceId = "",
+            cadenceDeviceId = "",
+        )
+
+        assertFalse(session.hasAnySensorBinding())
+    }
+
+    @Test
+    fun sessionWithAnySingleSensorIdHasSensorBinding() {
+        val base = baseSession()
+
+        assertTrue(base.copy(heartRateDeviceId = "AA:BB").hasAnySensorBinding())
+        assertTrue(base.copy(powerDeviceId = "CC:DD").hasAnySensorBinding())
+        assertTrue(base.copy(cadenceDeviceId = "EE:FF").hasAnySensorBinding())
+    }
+
+    private fun baseSession() = ActiveActivitySessionData(
+        localSessionId = "activity_1",
+        activityType = "run",
+        status = ActiveActivitySessionData.STATUS_RECORDING,
+        startedAt = "2026-07-15T10:00:00.000Z",
+    )
+
     @Test
     fun sessionMapCarriesSchemaVersionAndCanonicalKeys() {
         val session = ActiveActivitySessionData(

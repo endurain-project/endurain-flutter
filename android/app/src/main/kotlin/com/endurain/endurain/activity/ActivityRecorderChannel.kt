@@ -104,9 +104,12 @@ class ActivityRecorderChannel(context: Context) :
         try {
             ActivityRecorderService.start(appContext, title, text)
         } catch (_: RuntimeException) {
-            store.saveSession(
-                session.copy(status = ActiveActivitySessionData.STATUS_FAILED),
-            )
+            // The service never started, so no point was ever collected. Clear
+            // the store rather than persisting an empty `failed` session:
+            // leaving it behind makes `hasRecoverableData()` true forever, so
+            // every later `start` is rejected with `invalid_state` and
+            // recording stays broken until the process is restarted.
+            store.clear()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED,
             )

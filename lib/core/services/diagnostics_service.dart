@@ -197,6 +197,8 @@ class DiagnosticsEvents {
   static const String activityRecorderFailed = 'activity.recorder_failed';
   static const String activityActiveSessionRecovered =
       'activity.active_session_recovered';
+  static const String activityStaleSessionCleared =
+      'activity.stale_session_cleared';
   static const String activityPointBatchDrained =
       'activity.point_batch_drained';
   static const String activityTrackingStall = 'activity.tracking_stall';

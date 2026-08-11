@@ -14,6 +14,8 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../helpers/fake_share_service.dart';
 
+import '../../../helpers/device_locale.dart';
+
 final _l10n = AppLocalizationsEn();
 
 final _baseRecord = LocalActivityRecord(
@@ -36,6 +38,11 @@ final _baseRecord = LocalActivityRecord(
 // ---------------------------------------------------------------------------
 
 void main() {
+  // Unit rendering follows the device region, and the test harness
+  // reports en-US (imperial) by default. Pin a metric region so these
+  // metric assertions are explicit rather than harness-dependent.
+  setUp(() => useDeviceLocale(metricDeviceLocale));
+
   group('ActivityDetailsScreen – Phase 14: loading/missing states', () {
     testWidgets('loading state shows AdaptiveLoadingIndicator', (tester) async {
       final controller = _LoadingController();

@@ -19,6 +19,7 @@ import 'package:endurain/features/activity/repositories/active_activity_store.da
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
+import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
@@ -311,10 +312,8 @@ void main() {
     });
 
     test(
-      'localSaveFailed is terminal: stopping/completed transitions are ignored',
+      'a real stop with a failing repository reaches failed/localSaveFailed',
       () async {
-        // Arrange: controller whose repository always throws on write, so
-        // stop() results in failed/localSaveFailed.
         final adapter = RecordingLocationPlatformAdapter();
         final service = _recordingService(adapter: adapter);
         final controller = ActivityRecordingController(
@@ -329,24 +328,167 @@ void main() {
         await pumpEventQueue();
         await controller.stop();
 
-        // Pre-condition: terminal state reached.
+        expect(controller.state.status, ActivityRecordingStatus.failed);
+        expect(
+          controller.state.lastError,
+          ActivityRecordingError.localSaveFailed,
+        );
+      },
+    );
+
+    test(
+      'localSaveFailed is terminal: stopping/completed transitions are ignored',
+      () async {
+        // Drives `_setState` directly through the recording service's state
+        // stream — the only path that reaches the guard. Going through
+        // `uploadCompletedGpx()` does NOT work: it early-returns while the
+        // status is not `completed`, so the guard is never evaluated and the
+        // assertion would hold even with the guard deleted.
+        final service = _StatePushingRecordingService();
+        final controller = ActivityRecordingController(
+          recordingService: service,
+        );
+        addTearDown(controller.dispose);
+
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.failed,
+            activityType: ActivityType.run,
+            lastError: ActivityRecordingError.localSaveFailed,
+          ),
+        );
+        await pumpEventQueue();
+        expect(controller.state.status, ActivityRecordingStatus.failed);
+
+        // Act: push the two statuses the guard must reject.
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.stopping,
+            activityType: ActivityType.run,
+          ),
+        );
+        await pumpEventQueue();
+
         expect(controller.state.status, ActivityRecordingStatus.failed);
         expect(
           controller.state.lastError,
           ActivityRecordingError.localSaveFailed,
         );
 
-        // Act: attempt to push the state back to stopping or completed —
-        // this exercises the _setState guard directly by trying an upload.
-        await controller.uploadCompletedGpx();
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.completed,
+            activityType: ActivityType.run,
+          ),
+        );
+        await pumpEventQueue();
 
-        // Assert: state must remain failed/localSaveFailed; upload attempt
-        // should have bailed immediately without changing the status.
         expect(controller.state.status, ActivityRecordingStatus.failed);
         expect(
           controller.state.lastError,
           ActivityRecordingError.localSaveFailed,
         );
+      },
+    );
+
+    test(
+      'gpxGenerationFailed is terminal: stopping/completed are ignored',
+      () async {
+        final service = _StatePushingRecordingService();
+        final controller = ActivityRecordingController(
+          recordingService: service,
+        );
+        addTearDown(controller.dispose);
+
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.failed,
+            activityType: ActivityType.run,
+            lastError: ActivityRecordingError.gpxGenerationFailed,
+          ),
+        );
+        await pumpEventQueue();
+
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.completed,
+            activityType: ActivityType.run,
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(controller.state.status, ActivityRecordingStatus.failed);
+        expect(
+          controller.state.lastError,
+          ActivityRecordingError.gpxGenerationFailed,
+        );
+      },
+    );
+
+    test(
+      'a non-terminal failure still allows a later completed state',
+      () async {
+        // Guard scope check: only localSaveFailed/gpxGenerationFailed are
+        // terminal. Any other failure must not block a subsequent completion.
+        final service = _StatePushingRecordingService();
+        final controller = ActivityRecordingController(
+          recordingService: service,
+        );
+        addTearDown(controller.dispose);
+
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.failed,
+            activityType: ActivityType.run,
+            lastError: ActivityRecordingError.locationStreamFailed,
+          ),
+        );
+        await pumpEventQueue();
+
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.completed,
+            activityType: ActivityType.run,
+            localActivityId: 'activity_1',
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(controller.state.status, ActivityRecordingStatus.completed);
+      },
+    );
+
+    test(
+      'carries the local activity id forward onto a completed state',
+      () async {
+        // Covers the carry-forward branch: a completed state that arrives
+        // without a localActivityId must inherit the one already held.
+        final service = _StatePushingRecordingService();
+        final controller = ActivityRecordingController(
+          recordingService: service,
+        );
+        addTearDown(controller.dispose);
+
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.recording,
+            activityType: ActivityType.run,
+            localActivityId: 'activity_42',
+          ),
+        );
+        await pumpEventQueue();
+        expect(controller.state.localActivityId, 'activity_42');
+
+        service.push(
+          ActivityRecordingState(
+            status: ActivityRecordingStatus.completed,
+            activityType: ActivityType.run,
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(controller.state.status, ActivityRecordingStatus.completed);
+        expect(controller.state.localActivityId, 'activity_42');
       },
     );
 
@@ -693,6 +835,66 @@ class _ThrowingLocalActivityRepository extends LocalActivityRepository {
   Future<String> writeGpx({required String id, required String gpx}) {
     throw const AppException(AppErrorCode.activityLocalSaveFailed);
   }
+}
+
+/// Recording service double that lets a test push arbitrary states onto the
+/// stream `ActivityRecordingController` subscribes to.
+///
+/// This is the only way to reach the controller's `_setState` guard: the
+/// public API (`stop`, `uploadCompletedGpx`, ...) early-returns before the
+/// guard whenever the controller is already in a terminal failed state, so a
+/// test driving those methods cannot distinguish a working guard from a
+/// deleted one.
+class _StatePushingRecordingService extends ActivityRecordingService {
+  _StatePushingRecordingService()
+    : super(recorder: _InertActivityLocationRecorder());
+
+  final StreamController<ActivityRecordingState> _pushed =
+      StreamController<ActivityRecordingState>.broadcast();
+
+  @override
+  Stream<ActivityRecordingState> get stateStream => _pushed.stream;
+
+  void push(ActivityRecordingState state) => _pushed.add(state);
+
+  @override
+  void dispose() {
+    unawaited(_pushed.close());
+    super.dispose();
+  }
+}
+
+/// Minimal recorder that never emits and never fails; the state-pushing
+/// service drives the controller directly instead.
+class _InertActivityLocationRecorder implements ActivityLocationRecorder {
+  @override
+  Stream<ActivityRecorderEvent> get events =>
+      const Stream<ActivityRecorderEvent>.empty();
+
+  @override
+  Future<void> start(ActivityRecorderStartRequest request) async {}
+
+  @override
+  Future<void> pause() async {}
+
+  @override
+  Future<void> resume() async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> discard() async {}
+
+  @override
+  Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0}) async =>
+      const [];
+
+  @override
+  Future<ActiveActivitySession?> recoverActiveSession() async => null;
+
+  @override
+  Future<void> dispose() async {}
 }
 
 class _DeleteGpxThrowingRepository extends LocalActivityRepository {

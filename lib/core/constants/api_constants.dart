@@ -19,6 +19,10 @@ class ApiConstants {
   static const Duration defaultRequestTimeout = Duration(seconds: 30);
   static const Duration defaultUploadTimeout = Duration(seconds: 120);
 
+  /// Maximum redirect hops followed by `RedirectPolicyClient`. Matches the
+  /// `dart:io` default so behaviour is unchanged for well-behaved servers.
+  static const int maxRedirects = 5;
+
   // SSO PKCE flow TTL — flows older than this are rejected on exchange.
   static const Duration ssoPkceTtl = Duration(minutes: 10);
 

@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/models/activity_recording_state.dart'
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
+import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -16,17 +17,21 @@ class ActivityCompletionSummary extends StatelessWidget {
     super.key,
     required this.state,
     ActivityStatsCalculator? calculator,
-    this.formatter = const ActivityStatsFormatter(),
+    this.formatter,
   }) : calculator = calculator ?? ActivityStatsCalculator();
 
   final ActivityRecordingState state;
   final ActivityStatsCalculator calculator;
-  final ActivityStatsFormatter formatter;
+
+  /// Optional override (tests). When null the formatter is resolved from the
+  /// active locale and unit preference.
+  final ActivityStatsFormatter? formatter;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
+    final formatter = this.formatter ?? context.statsFormatter;
     final theme = Theme.of(context);
     final stats = calculator.calculate(state.segments);
     final activityType = state.activityType ?? ActivityType.other;

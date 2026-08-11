@@ -313,5 +313,133 @@
   "diagnosticsRemoteEnable": "Надсилати звіти про збої",
   "diagnosticsRemoteEnableSubtitle": "Надсилайте звіти про збої та помилки на діагностичний сервер. Це незалежно від локальної діагностики — можна ввімкнути обидва, одне або жодного.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
-  "diagnosticsRemoteNeedsServer": "Віддалене звітування про збої недоступне в цій версії."
+  "diagnosticsRemoteNeedsServer": "Віддалене звітування про збої недоступне в цій версії.",
+  "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",
+  "unitMeter": "{value} м",
+  "@unitMeter": {
+    "description": "Distance in metres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometer": "{value} км",
+  "@unitKilometer": {
+    "description": "Distance in kilometres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitFoot": "{value} фут",
+  "@unitFoot": {
+    "description": "Elevation in feet - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMile": "{value} ми",
+  "@unitMile": {
+    "description": "Distance in miles - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometersPerHour": "{value} км/год",
+  "@unitKilometersPerHour": {
+    "description": "Speed in kilometres per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMilesPerHour": "{value} ми/год",
+  "@unitMilesPerHour": {
+    "description": "Speed in miles per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerKilometer": "{value} хв/км",
+  "@unitMinutesPerKilometer": {
+    "description": "Pace in minutes per kilometre - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerMile": "{value} хв/ми",
+  "@unitMinutesPerMile": {
+    "description": "Pace in minutes per mile - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitBpm": "{value} bpm",
+  "@unitBpm": {
+    "description": "Heart rate in beats per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitWatt": "{value} W",
+  "@unitWatt": {
+    "description": "Power in watts - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitRpm": "{value} rpm",
+  "@unitRpm": {
+    "description": "Cadence in revolutions per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsTitle": "Одиниці виміру",
+  "@unitsTitle": {
+    "description": "Units settings entry title - Used in: settings_screen.dart"
+  },
+  "unitsSubtitle": "Одиниці відстані, швидкості та висоти",
+  "@unitsSubtitle": {
+    "description": "Units settings entry subtitle - Used in: settings_screen.dart"
+  },
+  "unitsSystemDefault": "За регіоном пристрою",
+  "@unitsSystemDefault": {
+    "description": "Follow-device-region units option - Used in: units_settings_screen.dart"
+  },
+  "unitsMetric": "Метричні (км)",
+  "@unitsMetric": {
+    "description": "Metric units option - Used in: units_settings_screen.dart"
+  },
+  "unitsImperial": "Імперські (ми)",
+  "@unitsImperial": {
+    "description": "Imperial units option - Used in: units_settings_screen.dart"
+  },
+  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "@errorInsecureRedirectRejected": {
+    "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
+  },
+  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "@errorTooManyRedirects": {
+    "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  }
 }

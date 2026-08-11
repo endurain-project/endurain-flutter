@@ -1,15 +1,14 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// App-wide selected [Locale], persisted as a BCP 47 tag.
 ///
 /// A `null` [locale] means "follow the system locale". Owned by `AppServices`
 /// so the root `App` can listen and rebuild the localized widget tree when the
 /// user changes languages in Settings.
-class LocaleController extends ChangeNotifier {
+class LocaleController extends SafeNotifier {
   LocaleController({required this._repository});
 
   final LocaleSettingsRepository _repository;
@@ -32,7 +31,7 @@ class LocaleController extends ChangeNotifier {
       _locale = null;
     }
     _isLoaded = true;
-    notifyListeners();
+    notify();
   }
 
   /// Selects [locale] (or `null` for the system default), notifies listeners
@@ -42,7 +41,7 @@ class LocaleController extends ChangeNotifier {
       return;
     }
     _locale = locale;
-    notifyListeners();
+    notify();
     await _repository.setLocale(locale);
   }
 }

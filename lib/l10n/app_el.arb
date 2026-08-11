@@ -313,5 +313,133 @@
   "diagnosticsRemoteEnable": "Αποστολή αναφορών κατάρρευσης",
   "diagnosticsRemoteEnableSubtitle": "Στείλτε αναφορές κατάρρευσης και σφαλμάτων σε έναν διακομιστή διαγνωστικών. Είναι ανεξάρτητο από τα τοπικά διαγνωστικά — μπορείτε να ενεργοποιήσετε και τα δύο, ένα ή κανένα.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
-  "diagnosticsRemoteNeedsServer": "Η απομακρυσμένη αναφορά καταρρεύσεων δεν είναι διαθέσιμη σε αυτήν την έκδοση."
+  "diagnosticsRemoteNeedsServer": "Η απομακρυσμένη αναφορά καταρρεύσεων δεν είναι διαθέσιμη σε αυτήν την έκδοση.",
+  "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",
+  "unitMeter": "{value} μ",
+  "@unitMeter": {
+    "description": "Distance in metres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometer": "{value} χλμ",
+  "@unitKilometer": {
+    "description": "Distance in kilometres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitFoot": "{value} πόδ",
+  "@unitFoot": {
+    "description": "Elevation in feet - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMile": "{value} μί",
+  "@unitMile": {
+    "description": "Distance in miles - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometersPerHour": "{value} χλμ/ώ",
+  "@unitKilometersPerHour": {
+    "description": "Speed in kilometres per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMilesPerHour": "{value} μί/ώ",
+  "@unitMilesPerHour": {
+    "description": "Speed in miles per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerKilometer": "{value} λεπ/χλμ",
+  "@unitMinutesPerKilometer": {
+    "description": "Pace in minutes per kilometre - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerMile": "{value} λεπ/μί",
+  "@unitMinutesPerMile": {
+    "description": "Pace in minutes per mile - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitBpm": "{value} bpm",
+  "@unitBpm": {
+    "description": "Heart rate in beats per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitWatt": "{value} W",
+  "@unitWatt": {
+    "description": "Power in watts - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitRpm": "{value} rpm",
+  "@unitRpm": {
+    "description": "Cadence in revolutions per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsTitle": "Μονάδες",
+  "@unitsTitle": {
+    "description": "Units settings entry title - Used in: settings_screen.dart"
+  },
+  "unitsSubtitle": "Μονάδες απόστασης, ταχύτητας και υψομέτρου",
+  "@unitsSubtitle": {
+    "description": "Units settings entry subtitle - Used in: settings_screen.dart"
+  },
+  "unitsSystemDefault": "Σύμφωνα με την περιοχή συσκευής",
+  "@unitsSystemDefault": {
+    "description": "Follow-device-region units option - Used in: units_settings_screen.dart"
+  },
+  "unitsMetric": "Μετρικές (χλμ)",
+  "@unitsMetric": {
+    "description": "Metric units option - Used in: units_settings_screen.dart"
+  },
+  "unitsImperial": "Αυτοκρατορικές (μί)",
+  "@unitsImperial": {
+    "description": "Imperial units option - Used in: units_settings_screen.dart"
+  },
+  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "@errorInsecureRedirectRejected": {
+    "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
+  },
+  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "@errorTooManyRedirects": {
+    "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  }
 }

@@ -101,10 +101,16 @@ final class ActiveActivityStore {
             if !fileManager.fileExists(atPath: pointsFile.path) {
                 try payload.write(to: pointsFile)
             } else {
+                // Throwing variants (iOS 13.4+) rather than the ObjC-bridged
+                // `seekToEndOfFile()`/`write(_:)`/`closeFile()`, which raise an
+                // NSException on I/O failure. Swift cannot catch NSException, so
+                // those would bypass the caller's do/catch — which exists
+                // specifically to convert an append failure into a typed
+                // `persistenceFailed` — and hard-crash the app mid-recording.
                 let handle = try FileHandle(forWritingTo: pointsFile)
-                defer { handle.closeFile() }
-                handle.seekToEndOfFile()
-                handle.write(payload)
+                defer { try? handle.close() }
+                try handle.seekToEnd()
+                try handle.write(contentsOf: payload)
             }
         }
     }

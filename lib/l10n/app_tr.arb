@@ -313,5 +313,133 @@
   "diagnosticsRemoteEnable": "Çökme raporları gönder",
   "diagnosticsRemoteEnableSubtitle": "Çökme ve hata raporlarını bir tanılama sunucusuna gönder. Bu, yerel tanılamadan bağımsızdır — ikisini de, birini ya da hiçbirini etkinleştirebilirsin.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
-  "diagnosticsRemoteNeedsServer": "Uzaktan çökme raporlama bu sürümde kullanılamıyor."
+  "diagnosticsRemoteNeedsServer": "Uzaktan çökme raporlama bu sürümde kullanılamıyor.",
+  "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",
+  "unitMeter": "{value} m",
+  "@unitMeter": {
+    "description": "Distance in metres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometer": "{value} km",
+  "@unitKilometer": {
+    "description": "Distance in kilometres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitFoot": "{value} ft",
+  "@unitFoot": {
+    "description": "Elevation in feet - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMile": "{value} mi",
+  "@unitMile": {
+    "description": "Distance in miles - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometersPerHour": "{value} km/h",
+  "@unitKilometersPerHour": {
+    "description": "Speed in kilometres per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMilesPerHour": "{value} mph",
+  "@unitMilesPerHour": {
+    "description": "Speed in miles per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerKilometer": "{value} min/km",
+  "@unitMinutesPerKilometer": {
+    "description": "Pace in minutes per kilometre - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerMile": "{value} min/mi",
+  "@unitMinutesPerMile": {
+    "description": "Pace in minutes per mile - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitBpm": "{value} bpm",
+  "@unitBpm": {
+    "description": "Heart rate in beats per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitWatt": "{value} W",
+  "@unitWatt": {
+    "description": "Power in watts - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitRpm": "{value} rpm",
+  "@unitRpm": {
+    "description": "Cadence in revolutions per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsTitle": "Birimler",
+  "@unitsTitle": {
+    "description": "Units settings entry title - Used in: settings_screen.dart"
+  },
+  "unitsSubtitle": "Mesafe, hız ve yükseklik birimleri",
+  "@unitsSubtitle": {
+    "description": "Units settings entry subtitle - Used in: settings_screen.dart"
+  },
+  "unitsSystemDefault": "Cihaz bölgesini takip et",
+  "@unitsSystemDefault": {
+    "description": "Follow-device-region units option - Used in: units_settings_screen.dart"
+  },
+  "unitsMetric": "Metrik (km)",
+  "@unitsMetric": {
+    "description": "Metric units option - Used in: units_settings_screen.dart"
+  },
+  "unitsImperial": "İngiliz (mi)",
+  "@unitsImperial": {
+    "description": "Imperial units option - Used in: units_settings_screen.dart"
+  },
+  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "@errorInsecureRedirectRejected": {
+    "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
+  },
+  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "@errorTooManyRedirects": {
+    "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  }
 }

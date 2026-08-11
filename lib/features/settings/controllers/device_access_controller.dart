@@ -1,8 +1,8 @@
 import 'package:endurain/core/services/location_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
-class DeviceAccessController extends ChangeNotifier {
+class DeviceAccessController extends SafeNotifier {
   DeviceAccessController({required LocationService locationService})
     : _locationService = locationService;
 
@@ -18,17 +18,17 @@ class DeviceAccessController extends ChangeNotifier {
 
   Future<void> load() async {
     _isLoading = true;
-    notifyListeners();
+    notify();
     _isLocationServiceEnabled = await _locationService
         .isLocationServiceEnabled();
     _locationPermission = await _locationService.checkPermission();
     _isLoading = false;
-    notifyListeners();
+    notify();
   }
 
   Future<void> requestLocationAccess() async {
     _locationPermission = await _locationService.requestPermission();
-    notifyListeners();
+    notify();
   }
 
   Future<void> openLocationSettings() async {

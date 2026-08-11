@@ -56,6 +56,7 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
           : l10n.errorHealthImportFailedWithDetails(details),
     AppErrorCode.healthPermissionDenied => l10n.errorHealthPermissionDenied,
     AppErrorCode.healthReadFailed => l10n.errorHealthReadFailed,
+    AppErrorCode.insecureRedirectRejected => l10n.errorInsecureRedirectRejected,
     AppErrorCode.insecureTransportNotAllowed =>
       l10n.errorInsecureTransportNotAllowed,
     AppErrorCode.invalidTileServerUrl => l10n.invalidUrl,
@@ -94,6 +95,7 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorTokenExchangeFailed
           : l10n.errorTokenExchangeFailedWithDetails(details),
+    AppErrorCode.tooManyRedirects => l10n.errorTooManyRedirects,
     // Reuses the timeout copy: to the user this is the same "temporarily
     // unavailable, try again" situation. The distinct code exists so internal
     // retry logic can recognize a transient auth-refresh failure.

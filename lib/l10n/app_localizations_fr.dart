@@ -1093,4 +1093,82 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get diagnosticsRemoteNeedsServer =>
       'Les rapports de plantage à distance ne sont pas disponibles dans cette version.';
+
+  @override
+  String unitMeter(String value) {
+    return '$value m';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value km';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value ft';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value mi';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value km/h';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value mph';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value min/km';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value min/mi';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Unités';
+
+  @override
+  String get unitsSubtitle => 'Unités de distance, de vitesse et d\'altitude';
+
+  @override
+  String get unitsSystemDefault => 'Suivre la région de l\'appareil';
+
+  @override
+  String get unitsMetric => 'Métrique (km)';
+
+  @override
+  String get unitsImperial => 'Impérial (mi)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'Le serveur a tenté une redirection vers une connexion non sécurisée. La requête a été bloquée pour protéger vos identifiants.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'Le serveur a redirigé trop de fois. Vérifiez l\'adresse du serveur.';
 }

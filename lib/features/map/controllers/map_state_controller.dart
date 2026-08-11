@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
-class MapStateController extends ChangeNotifier {
+class MapStateController extends SafeNotifier {
   MapStateController({
     required this._locationService,
     required MapSettingsRepository mapSettingsRepository,
@@ -18,7 +18,6 @@ class MapStateController extends ChangeNotifier {
 
   StreamSubscription<Position>? _positionSubscription;
   bool _initialized = false;
-  bool _isDisposed = false;
 
   LatLng _currentLocation = const LatLng(
     MapConstants.defaultLatitude,
@@ -50,17 +49,17 @@ class MapStateController extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     _tileServerUrl = await _mapSettingsRepository.getTileServerUrl();
-    _notifyListeners();
+    notify();
   }
 
   Future<void> _loadUserLocation() async {
     _isLoadingLocation = true;
     _hasLocationError = false;
-    _notifyListeners();
+    notify();
 
     final position = await _locationService.getCurrentPosition();
 
-    if (_isDisposed) {
+    if (isDisposed) {
       return;
     }
 
@@ -70,14 +69,14 @@ class MapStateController extends ChangeNotifier {
       _hasLocationPermission = true;
       _hasLocationError = false;
       _isLoadingLocation = false;
-      _notifyListeners();
+      notify();
       _startPositionUpdates();
       return;
     }
 
     _hasLocationPermission = false;
     _isLoadingLocation = false;
-    _notifyListeners();
+    notify();
   }
 
   void _startPositionUpdates() {
@@ -93,14 +92,14 @@ class MapStateController extends ChangeNotifier {
     _updateHeading(position);
     _hasLocationPermission = true;
     _hasLocationError = false;
-    _notifyListeners();
+    notify();
   }
 
   void _handlePositionError(Object error, StackTrace stackTrace) {
     _hasLocationPermission = false;
     _hasLocationError = true;
     _isLoadingLocation = false;
-    _notifyListeners();
+    notify();
   }
 
   void _updateHeading(Position position) {
@@ -112,7 +111,7 @@ class MapStateController extends ChangeNotifier {
 
   void toggleLocationLock() {
     _isLocationLocked = !_isLocationLocked;
-    _notifyListeners();
+    notify();
   }
 
   void unlockLocation() {
@@ -120,7 +119,7 @@ class MapStateController extends ChangeNotifier {
       return;
     }
     _isLocationLocked = false;
-    _notifyListeners();
+    notify();
   }
 
   /// Pauses or resumes the map position stream based on whether an activity
@@ -141,15 +140,8 @@ class MapStateController extends ChangeNotifier {
     }
   }
 
-  void _notifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
-  }
-
   @override
   void dispose() {
-    _isDisposed = true;
     _positionSubscription?.cancel();
     super.dispose();
   }

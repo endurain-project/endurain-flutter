@@ -17,7 +17,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 import com.endurain.endurain.R
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import java.util.Date
@@ -42,6 +44,7 @@ class ActivityRecorderService : Service() {
     private var heartRateClient: HeartRateGattClient? = null
     private var powerClient: CyclingPowerGattClient? = null
     private var cadenceClient: CadenceGattClient? = null
+    private var wakeLock: PowerManager.WakeLock? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -225,6 +228,54 @@ class ActivityRecorderService : Service() {
                     ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE
                 },
             )
+            return
+        }
+        acquireWakeLock()
+    }
+
+    /**
+     * Holds a partial wake lock for the duration of active collection.
+     *
+     * A foreground service is not kept awake by itself: between distance-
+     * filtered GPS fixes the AP can suspend, which drops BLE
+     * `onCharacteristicChanged` callbacks and delays the `points.jsonl` append
+     * that must happen on the same wake window. This is what the declared
+     * `WAKE_LOCK` permission is for.
+     *
+     * Deliberately acquired without a timeout: the lock's lifetime is bounded by
+     * [stopCollection]/[onDestroy] instead, because any fixed timeout long
+     * enough for an ultra-distance activity would be useless as a leak guard,
+     * and a shorter one would silently degrade a long recording.
+     */
+    private fun acquireWakeLock() {
+        if (wakeLock?.isHeld == true) {
+            return
+        }
+        val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+        val lock = powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            WAKE_LOCK_TAG,
+        )
+        lock.setReferenceCounted(false)
+        try {
+            lock.acquire()
+        } catch (_: RuntimeException) {
+            // Losing the wake lock degrades sampling but must never abort the
+            // recording; GPS delivery still holds its own wakelock per fix.
+            return
+        }
+        wakeLock = lock
+    }
+
+    private fun releaseWakeLock() {
+        val lock = wakeLock ?: return
+        wakeLock = null
+        try {
+            if (lock.isHeld) {
+                lock.release()
+            }
+        } catch (_: RuntimeException) {
+            // Already released or never held.
         }
     }
 
@@ -241,6 +292,10 @@ class ActivityRecorderService : Service() {
     }
 
     private fun stopCollection() {
+        // Released first and unconditionally: the listener may already be null
+        // (e.g. a start that never registered a provider), and the wake lock
+        // must never outlive collection.
+        releaseWakeLock()
         val listener = locationListener ?: return
         try {
             locationManager?.removeUpdates(listener)
@@ -452,15 +507,40 @@ class ActivityRecorderService : Service() {
             hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
     }
 
+    /**
+     * Whether this service may declare [ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE].
+     *
+     * Android 14 (API 34) validates every declared foreground-service type at
+     * `startForeground` time. The `connectedDevice` type requires the app to
+     * *hold at runtime* one of the nearby-device permissions; the only ones this
+     * app declares (`BLUETOOTH_CONNECT`/`BLUETOOTH_SCAN`) are runtime
+     * permissions that a user who never paired a sensor has never granted.
+     *
+     * Requesting the type unconditionally therefore threw `SecurityException`
+     * for plain GPS-only recordings, which `startForegroundOrFail` reported as
+     * a lost location permission and the recording never started. Only claim
+     * the type when the session actually binds a sensor AND the permission is
+     * granted.
+     */
+    @VisibleForTesting
+    internal fun canDeclareConnectedDeviceType(session: ActiveActivitySessionData?): Boolean {
+        if (session == null || !session.hasAnySensorBinding()) {
+            return false
+        }
+        return hasPermission(Manifest.permission.BLUETOOTH_CONNECT) ||
+            hasPermission(Manifest.permission.BLUETOOTH_SCAN)
+    }
+
     private fun startForegroundCompat(title: String, text: String) {
         val notification = buildNotification(title, text)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE,
-            )
+            // `location` is always required; `connectedDevice` is added only
+            // when it is both needed and permitted (see the doc above).
+            var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            if (canDeclareConnectedDeviceType(store.loadSession())) {
+                types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+            }
+            startForeground(NOTIFICATION_ID, notification, types)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
@@ -548,6 +628,7 @@ class ActivityRecorderService : Service() {
     override fun onDestroy() {
         stopCollection()
         stopSensorCapture()
+        releaseWakeLock()
         super.onDestroy()
     }
 
@@ -564,6 +645,9 @@ class ActivityRecorderService : Service() {
 
         private const val CHANNEL_ID = "activity_recording"
         private const val NOTIFICATION_ID = 4711
+
+        /** Namespaced so this lock is attributable in `dumpsys power`. */
+        private const val WAKE_LOCK_TAG = "endurain:activity-recording"
 
         // Mirror the Dart location/segment policy constants.
         private const val MIN_UPDATE_INTERVAL_MS = 1000L

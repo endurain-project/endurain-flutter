@@ -1061,7 +1061,6 @@
   "@diagnosticsRawReport": {
     "description": "Diagnostics raw report section header - Used in: diagnostics_screen.dart"
   },
-
   "@@healthSection": "Health sync",
   "healthSyncSettingsTitle": "Health sync",
   "@healthSyncSettingsTitle": {
@@ -1407,23 +1406,151 @@
     }
   },
   "diagnosticsRemoteTitle": "Remote crash reporting",
-  "@diagnosticsRemoteTitle":   {
+  "@diagnosticsRemoteTitle": {
     "description": "Remote crash reporting section header - Used in: diagnostics_screen.dart"
   },
   "diagnosticsRemoteEnable": "Send crash reports",
-  "@diagnosticsRemoteEnable":   {
+  "@diagnosticsRemoteEnable": {
     "description": "Toggle label to enable remote crash reporting - Used in: diagnostics_screen.dart"
   },
   "diagnosticsRemoteEnableSubtitle": "Send crash and error reports to a diagnostics server. This is separate from local diagnostics — you can enable either, both, or neither.",
-  "@diagnosticsRemoteEnableSubtitle":   {
+  "@diagnosticsRemoteEnableSubtitle": {
     "description": "Subtitle explaining remote crash reporting - Used in: diagnostics_screen.dart"
   },
   "diagnosticsRemoteActive": "Crash reports are being sent",
-  "@diagnosticsRemoteActive":   {
+  "@diagnosticsRemoteActive": {
     "description": "Status shown when remote crash reporting is active - Used in: diagnostics_screen.dart"
   },
   "diagnosticsRemoteNeedsServer": "Remote crash reporting isn't available in this build.",
-  "@diagnosticsRemoteNeedsServer":   {
+  "@diagnosticsRemoteNeedsServer": {
     "description": "Status shown when remote crash reporting is on but this build has no managed diagnostics endpoint - Used in: diagnostics_screen.dart"
+  },
+  "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",
+  "unitMeter": "{value} m",
+  "@unitMeter": {
+    "description": "Distance in metres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometer": "{value} km",
+  "@unitKilometer": {
+    "description": "Distance in kilometres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitFoot": "{value} ft",
+  "@unitFoot": {
+    "description": "Elevation in feet - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMile": "{value} mi",
+  "@unitMile": {
+    "description": "Distance in miles - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometersPerHour": "{value} km/h",
+  "@unitKilometersPerHour": {
+    "description": "Speed in kilometres per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMilesPerHour": "{value} mph",
+  "@unitMilesPerHour": {
+    "description": "Speed in miles per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerKilometer": "{value} min/km",
+  "@unitMinutesPerKilometer": {
+    "description": "Pace in minutes per kilometre - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerMile": "{value} min/mi",
+  "@unitMinutesPerMile": {
+    "description": "Pace in minutes per mile - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitBpm": "{value} bpm",
+  "@unitBpm": {
+    "description": "Heart rate in beats per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitWatt": "{value} W",
+  "@unitWatt": {
+    "description": "Power in watts - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitRpm": "{value} rpm",
+  "@unitRpm": {
+    "description": "Cadence in revolutions per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsTitle": "Units",
+  "@unitsTitle": {
+    "description": "Units settings entry title - Used in: settings_screen.dart"
+  },
+  "unitsSubtitle": "Distance, speed, and elevation units",
+  "@unitsSubtitle": {
+    "description": "Units settings entry subtitle - Used in: settings_screen.dart"
+  },
+  "unitsSystemDefault": "Follow device region",
+  "@unitsSystemDefault": {
+    "description": "Follow-device-region units option - Used in: units_settings_screen.dart"
+  },
+  "unitsMetric": "Metric (km)",
+  "@unitsMetric": {
+    "description": "Metric units option - Used in: units_settings_screen.dart"
+  },
+  "unitsImperial": "Imperial (mi)",
+  "@unitsImperial": {
+    "description": "Imperial units option - Used in: units_settings_screen.dart"
+  },
+  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "@errorInsecureRedirectRejected": {
+    "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
+  },
+  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "@errorTooManyRedirects": {
+    "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   }
 }

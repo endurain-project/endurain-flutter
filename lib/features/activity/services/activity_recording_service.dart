@@ -13,8 +13,10 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/features/activity/services/sensor_reading_buffer.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
 class ActivityRecordingService {
@@ -179,7 +181,7 @@ class ActivityRecordingService {
       }
     }
     try {
-      await _recorder.start(
+      await _startRecorder(
         ActivityRecorderStartRequest(
           localSessionId: resolvedSessionId,
           activityType: activityType,
@@ -492,6 +494,32 @@ class ActivityRecordingService {
       _recordRecorderError(error, stackTrace);
       _fail(errorKey);
       return false;
+    }
+  }
+
+  /// Starts the native recorder, self-healing a stale durable session.
+  ///
+  /// The native side rejects `start` with
+  /// [NativeActivityRecorderChannelContract.errorInvalidState] while its store
+  /// still holds a recoverable session. That can be left behind by a start that
+  /// failed before any point was collected. Because the recorder never began
+  /// collecting, there is nothing to preserve: discard the stale session once
+  /// and retry, instead of leaving recording permanently blocked until the
+  /// process restarts.
+  Future<void> _startRecorder(ActivityRecorderStartRequest request) async {
+    try {
+      await _recorder.start(request);
+    } on PlatformException catch (error) {
+      if (error.code !=
+          NativeActivityRecorderChannelContract.errorInvalidState) {
+        rethrow;
+      }
+      _recordBreadcrumb(
+        DiagnosticsEvents.activityStaleSessionCleared,
+        details: {'activityType': request.activityType.name},
+      );
+      await _recorder.discard();
+      await _recorder.start(request);
     }
   }
 

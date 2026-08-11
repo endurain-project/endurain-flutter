@@ -1079,4 +1079,82 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get diagnosticsRemoteNeedsServer =>
       'Fjärrkraschrapportering är inte tillgänglig i den här versionen.';
+
+  @override
+  String unitMeter(String value) {
+    return '$value m';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value km';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value ft';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value mi';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value km/h';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value mph';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value min/km';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value min/mi';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Enheter';
+
+  @override
+  String get unitsSubtitle => 'Enheter för distans, hastighet och höjd';
+
+  @override
+  String get unitsSystemDefault => 'Följ enhetens region';
+
+  @override
+  String get unitsMetric => 'Metriskt (km)';
+
+  @override
+  String get unitsImperial => 'Imperiellt (mi)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }

@@ -1018,6 +1018,84 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteNeedsServer => '此版本不支持远程崩溃报告。';
+
+  @override
+  String unitMeter(String value) {
+    return '$value 米';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value 公里';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value 英尺';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value 英里';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value 公里/小时';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value 英里/小时';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value 分钟/公里';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value 分钟/英里';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => '单位';
+
+  @override
+  String get unitsSubtitle => '距离、速度和海拔单位';
+
+  @override
+  String get unitsSystemDefault => '跟随设备区域';
+
+  @override
+  String get unitsMetric => '公制（公里）';
+
+  @override
+  String get unitsImperial => '英制（英里）';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2035,4 +2113,82 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get diagnosticsRemoteNeedsServer => '此版本不支援遠端當機報告。';
+
+  @override
+  String unitMeter(String value) {
+    return '$value m';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value km';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value ft';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value mi';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value km/h';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value mph';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value min/km';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value min/mi';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Units';
+
+  @override
+  String get unitsSubtitle => 'Distance, speed, and elevation units';
+
+  @override
+  String get unitsSystemDefault => 'Follow device region';
+
+  @override
+  String get unitsMetric => 'Metric (km)';
+
+  @override
+  String get unitsImperial => 'Imperial (mi)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }

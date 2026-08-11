@@ -313,5 +313,133 @@
   "diagnosticsRemoteEnable": "Envoyer les rapports de plantage",
   "diagnosticsRemoteEnableSubtitle": "Envoyer les rapports de plantage et d'erreur à un serveur de diagnostic. C'est indépendant des diagnostics locaux — vous pouvez activer les deux, l'un ou aucun.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
-  "diagnosticsRemoteNeedsServer": "Les rapports de plantage à distance ne sont pas disponibles dans cette version."
+  "diagnosticsRemoteNeedsServer": "Les rapports de plantage à distance ne sont pas disponibles dans cette version.",
+  "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",
+  "unitMeter": "{value} m",
+  "@unitMeter": {
+    "description": "Distance in metres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometer": "{value} km",
+  "@unitKilometer": {
+    "description": "Distance in kilometres - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitFoot": "{value} ft",
+  "@unitFoot": {
+    "description": "Elevation in feet - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMile": "{value} mi",
+  "@unitMile": {
+    "description": "Distance in miles - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKilometersPerHour": "{value} km/h",
+  "@unitKilometersPerHour": {
+    "description": "Speed in kilometres per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMilesPerHour": "{value} mph",
+  "@unitMilesPerHour": {
+    "description": "Speed in miles per hour - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerKilometer": "{value} min/km",
+  "@unitMinutesPerKilometer": {
+    "description": "Pace in minutes per kilometre - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitMinutesPerMile": "{value} min/mi",
+  "@unitMinutesPerMile": {
+    "description": "Pace in minutes per mile - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitBpm": "{value} bpm",
+  "@unitBpm": {
+    "description": "Heart rate in beats per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitWatt": "{value} W",
+  "@unitWatt": {
+    "description": "Power in watts - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitRpm": "{value} rpm",
+  "@unitRpm": {
+    "description": "Cadence in revolutions per minute - Used in: activity_stats_formatter.dart",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsTitle": "Unités",
+  "@unitsTitle": {
+    "description": "Units settings entry title - Used in: settings_screen.dart"
+  },
+  "unitsSubtitle": "Unités de distance, de vitesse et d'altitude",
+  "@unitsSubtitle": {
+    "description": "Units settings entry subtitle - Used in: settings_screen.dart"
+  },
+  "unitsSystemDefault": "Suivre la région de l'appareil",
+  "@unitsSystemDefault": {
+    "description": "Follow-device-region units option - Used in: units_settings_screen.dart"
+  },
+  "unitsMetric": "Métrique (km)",
+  "@unitsMetric": {
+    "description": "Metric units option - Used in: units_settings_screen.dart"
+  },
+  "unitsImperial": "Impérial (mi)",
+  "@unitsImperial": {
+    "description": "Imperial units option - Used in: units_settings_screen.dart"
+  },
+  "errorInsecureRedirectRejected": "Le serveur a tenté une redirection vers une connexion non sécurisée. La requête a été bloquée pour protéger vos identifiants.",
+  "@errorInsecureRedirectRejected": {
+    "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
+  },
+  "errorTooManyRedirects": "Le serveur a redirigé trop de fois. Vérifiez l'adresse du serveur.",
+  "@errorTooManyRedirects": {
+    "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  }
 }

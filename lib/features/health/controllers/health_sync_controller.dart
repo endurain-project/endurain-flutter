@@ -9,7 +9,7 @@ import 'package:endurain/features/health/models/health_imported_workout.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/models/health_sync_state.dart';
 import 'package:endurain/features/health/services/health_sync_service.dart';
-import 'package:flutter/foundation.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// Controller that drives the health-sync UI.
 ///
@@ -18,7 +18,7 @@ import 'package:flutter/foundation.dart';
 ///
 /// Route-owned in production. A screen that creates it must dispose it; an
 /// injected controller remains owned by the caller.
-class HealthSyncController extends ChangeNotifier {
+class HealthSyncController extends SafeNotifier {
   HealthSyncController({
     required this._service,
     DiagnosticsRecorder? diagnostics,
@@ -38,7 +38,6 @@ class HealthSyncController extends ChangeNotifier {
 
   final HealthSyncService _service;
   final DiagnosticsRecorder _diagnostics;
-  bool _isDisposed = false;
   bool _refreshImportedAfterCurrentLoad = false;
   StreamSubscription<void>? _uploadCompletedSubscription;
 
@@ -303,7 +302,7 @@ class HealthSyncController extends ChangeNotifier {
   }
 
   void _runPendingImportedRefresh() {
-    if (!_refreshImportedAfterCurrentLoad || _isDisposed) return;
+    if (!_refreshImportedAfterCurrentLoad || isDisposed) return;
     _refreshImportedAfterCurrentLoad = false;
     unawaited(loadImported());
   }
@@ -421,7 +420,7 @@ class HealthSyncController extends ChangeNotifier {
 
   void _update(HealthSyncState next) {
     _state = next;
-    _notifyListeners();
+    notify();
   }
 
   AppException _asAppException(Object error) {
@@ -430,13 +429,8 @@ class HealthSyncController extends ChangeNotifier {
         : AppException(AppErrorCode.healthImportFailed, cause: error);
   }
 
-  void _notifyListeners() {
-    if (!_isDisposed) notifyListeners();
-  }
-
   @override
   void dispose() {
-    _isDisposed = true;
     unawaited(_uploadCompletedSubscription?.cancel());
     _uploadCompletedSubscription = null;
     // Drop the route-scoped importable-list cursor so its candidate cache does

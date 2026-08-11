@@ -17,6 +17,17 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
     private var methodChannel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
 
+    /// Re-arms location collection after iOS relaunched the app in the
+    /// background for a significant location change.
+    ///
+    /// Called by `AppDelegate` on a location-triggered launch so a recording
+    /// that was interrupted by process termination keeps collecting, without
+    /// waiting for Flutter to attach and drive `recover`.
+    @discardableResult
+    func resumeAfterRelaunch() -> Bool {
+        return recorder.resumeAfterRelaunch()
+    }
+
     func register(with messenger: FlutterBinaryMessenger) {
         let methodChannel = FlutterMethodChannel(
             name: ActivityRecorderChannel.methodChannelName,
@@ -124,7 +135,12 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
         store.saveSession(session)
 
         if !recorder.startCollection() {
-            store.saveSession(session.copyWith(status: ActiveActivitySessionData.statusFailed))
+            // Collection never started, so no point was ever captured. Clear the
+            // store rather than persisting an empty `failed` session: leaving it
+            // behind makes `hasRecoverableData()` true forever, so every later
+            // `start` is rejected with `invalid_state` and recording stays
+            // broken until the app is relaunched.
+            store.clear()
             result(FlutterError(
                 code: ActivityRecorderChannel.errorService,
                 message: "Unable to start recorder",

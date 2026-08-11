@@ -1,6 +1,7 @@
 import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// View-model for the diagnostics screen.
 ///
@@ -10,7 +11,7 @@ import 'package:flutter/foundation.dart';
 /// and the opt-in remote [CrashReportingService]. The two are independent — the
 /// user may enable neither, either, or both. Clipboard copy and user messaging
 /// remain in the screen (UI concerns).
-class DiagnosticsController extends ChangeNotifier {
+class DiagnosticsController extends SafeNotifier {
   DiagnosticsController({
     required DiagnosticsStore diagnostics,
     required CrashReportingService crashReporting,
@@ -72,7 +73,7 @@ class DiagnosticsController extends ChangeNotifier {
   Future<void> setCrashReportingEnabled(bool value) async {
     await _crashReporting.setEnabled(value);
     _crashReportingEnabled = _crashReporting.isEnabled;
-    notifyListeners();
+    notify();
   }
 
   /// Clears the persisted report and refreshes the in-memory view.
@@ -85,13 +86,13 @@ class DiagnosticsController extends ChangeNotifier {
     if (!_isEnabled) {
       _report = null;
       _isLoadingReport = false;
-      notifyListeners();
+      notify();
       return;
     }
     _isLoadingReport = true;
-    notifyListeners();
+    notify();
     _report = await _diagnostics.readReport();
     _isLoadingReport = false;
-    notifyListeners();
+    notify();
   }
 }

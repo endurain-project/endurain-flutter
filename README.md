@@ -158,7 +158,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 ### Prerequisites
 
-- Flutter SDK 3.44.1 or higher
+- Flutter SDK 3.44.6 or higher
 - Dart SDK 3.12.0 or higher
 - Xcode (for iOS development)
 - Android Studio (for Android development)
@@ -325,6 +325,23 @@ Run tests:
 ```bash
 flutter test
 ```
+
+### What CI verifies (and what it does not)
+
+CI runs formatting, Dart analysis, the Dart test suite with a coverage
+threshold, the Kotlin unit tests, and a debug Android build.
+
+**iOS is not verified by CI**, because building it and running its XCTest suite
+both require a macOS runner that this project does not have. If your change
+touches `ios/**`, verify it locally before opening a pull request:
+
+```bash
+# Compiles the Swift sources and the Xcode project configuration
+flutter build ios --simulator --debug
+```
+
+Run the native iOS tests in `ios/RunnerTests` from Xcode when changing
+`ios/Runner/Activity/**` — they never run automatically.
 
 Collect coverage and check a minimum line coverage threshold:
 

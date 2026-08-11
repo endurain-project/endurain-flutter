@@ -1,6 +1,7 @@
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// Outcome of the tile-server host policy check for a candidate URL.
 ///
@@ -23,7 +24,7 @@ enum TileServerHostDecision {
 /// the screen stays a thin view: it renders [ChangeNotifier] state and defers
 /// every data read/write and policy decision to this controller. Dialogs,
 /// navigation, and form validation remain in the screen (UI concerns).
-class ServerSettingsController extends ChangeNotifier {
+class ServerSettingsController extends SafeNotifier {
   ServerSettingsController({
     required ServerSettingsRepository repository,
     required AppConfig config,
@@ -60,13 +61,13 @@ class ServerSettingsController extends ChangeNotifier {
   /// first so the screen can show a spinner.
   Future<void> load() async {
     _isLoading = true;
-    notifyListeners();
+    notify();
     final settings = await _repository.loadSettings();
     _serverUrl = settings.serverUrl;
     _username = settings.username;
     _tileServerUrl = settings.tileServerUrl;
     _isLoading = false;
-    notifyListeners();
+    notify();
   }
 
   /// Applies the tile-host policy for a candidate [tileUrl].

@@ -12,8 +12,10 @@ import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
+import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 
@@ -118,6 +120,89 @@ void main() {
         ActivityRecordingError.backgroundPermissionRequired,
       );
       expect(recorder.startCount, 0);
+    });
+
+    // ── Stale native session self-heal (B2) ────────────────────────────────
+    //
+    // The native recorder rejects `start` with `invalid_state` while its
+    // durable store still holds a recoverable session. A start that failed
+    // before collecting any point used to leave one behind, permanently
+    // blocking every later start until the process restarted.
+
+    test('discards a stale native session and retries when start reports '
+        'invalid_state', () async {
+      final recorder = _ControllableRecorder();
+      recorder.startErrors.add(
+        PlatformException(
+          code: NativeActivityRecorderChannelContract.errorInvalidState,
+          message: 'A recoverable session already exists',
+        ),
+      );
+      final diagnostics = _FakeDiagnosticsRecorder();
+      final service = _buildService(
+        recorder: recorder,
+        diagnostics: diagnostics,
+      );
+      addTearDown(service.dispose);
+
+      await service.start(activityType: ActivityType.run);
+
+      // The stale session was discarded and start retried exactly once.
+      expect(recorder.discardCount, 1);
+      expect(recorder.startCount, 2);
+      expect(service.state.status, ActivityRecordingStatus.recording);
+      expect(service.state.lastError, isNull);
+      expect(
+        diagnostics.events,
+        contains(DiagnosticsEvents.activityStaleSessionCleared),
+      );
+    });
+
+    test(
+      'does not retry start for a non invalid_state platform error',
+      () async {
+        final recorder = _ControllableRecorder();
+        recorder.startErrors.add(
+          PlatformException(
+            code: NativeActivityRecorderChannelContract.errorServiceStartFailed,
+            message: 'Unable to start recorder service',
+          ),
+        );
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+
+        // No discard, no retry: a service-start failure is not a stale session.
+        expect(recorder.discardCount, 0);
+        expect(recorder.startCount, 1);
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(
+          service.state.lastError,
+          ActivityRecordingError.locationStreamFailed,
+        );
+      },
+    );
+
+    test('fails when the retry after invalid_state also fails', () async {
+      final recorder = _ControllableRecorder();
+      final staleError = PlatformException(
+        code: NativeActivityRecorderChannelContract.errorInvalidState,
+        message: 'A recoverable session already exists',
+      );
+      recorder.startErrors.addAll([staleError, staleError]);
+      final service = _buildService(recorder: recorder);
+      addTearDown(service.dispose);
+
+      await service.start(activityType: ActivityType.run);
+
+      expect(recorder.discardCount, 1);
+      expect(recorder.startCount, 2);
+      expect(service.state.status, ActivityRecordingStatus.failed);
+      expect(
+        service.state.lastError,
+        ActivityRecordingError.locationStreamFailed,
+      );
     });
 
     test('does not start when location services are disabled', () async {
@@ -914,6 +999,10 @@ class _ControllableRecorder implements ActivityLocationRecorder {
   final List<RecordedActivityPoint> _drained = [];
   final List<RecordedActivityPoint> _pointsPersistedOnStop;
   ActivityRecorderStartRequest? lastStartRequest;
+
+  /// Errors thrown by successive `start` calls. An entry of `null` (or an
+  /// exhausted queue) lets that call succeed.
+  final List<Object?> startErrors = [];
   int startCount = 0;
   int pauseCount = 0;
   int resumeCount = 0;
@@ -927,6 +1016,12 @@ class _ControllableRecorder implements ActivityLocationRecorder {
   Future<void> start(ActivityRecorderStartRequest request) async {
     startCount += 1;
     lastStartRequest = request;
+    if (startErrors.isNotEmpty) {
+      final error = startErrors.removeAt(0);
+      if (error != null) {
+        throw error;
+      }
+    }
   }
 
   @override

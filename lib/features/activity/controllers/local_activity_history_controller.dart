@@ -8,9 +8,9 @@ import 'package:endurain/features/activity/repositories/activity_retention_setti
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
-import 'package:flutter/foundation.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
-class LocalActivityHistoryController extends ChangeNotifier {
+class LocalActivityHistoryController extends SafeNotifier {
   LocalActivityHistoryController({
     required this._repository,
     required ActivityUploadService uploadService,
@@ -38,7 +38,6 @@ class LocalActivityHistoryController extends ChangeNotifier {
   Set<String> _busyRecordIds = const {};
   bool _isLoading = false;
   AppException? _error;
-  bool _isDisposed = false;
   bool _hasMore = true;
 
   List<LocalActivityRecord> get records => List.unmodifiable(_records);
@@ -83,7 +82,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
   Future<void> load() async {
     _isLoading = true;
     _error = null;
-    _notifyListeners();
+    notify();
     try {
       final page = await _repository.listPage(offset: 0, limit: _pageSize);
       _records = page;
@@ -92,7 +91,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       _error = _asAppException(error);
     } finally {
       _isLoading = false;
-      _notifyListeners();
+      notify();
     }
   }
 
@@ -100,7 +99,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
   Future<void> loadRecord(String id) async {
     _isLoading = true;
     _error = null;
-    _notifyListeners();
+    notify();
     try {
       final record = await _repository.get(id);
       _records = record == null ? const [] : [record];
@@ -109,7 +108,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       _error = _asAppException(error);
     } finally {
       _isLoading = false;
-      _notifyListeners();
+      notify();
     }
   }
 
@@ -118,7 +117,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       return;
     }
     _isLoading = true;
-    _notifyListeners();
+    notify();
     try {
       final page = await _repository.listPage(
         offset: _records.length,
@@ -130,7 +129,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       _error = _asAppException(error);
     } finally {
       _isLoading = false;
-      _notifyListeners();
+      notify();
     }
   }
 
@@ -192,7 +191,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       await _repository.delete(id);
       await _removeImportProvenance?.call(id);
       _records = _records.where((record) => record.id != id).toList();
-      _notifyListeners();
+      notify();
     } finally {
       _setBusy(id, busy: false);
     }
@@ -205,7 +204,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       if (index >= 0) {
         _records = [..._records]..removeAt(index);
       }
-      _notifyListeners();
+      notify();
       return;
     }
     if (index < 0) {
@@ -213,7 +212,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
     } else {
       _records = [..._records]..[index] = updated;
     }
-    _notifyListeners();
+    notify();
   }
 
   void _setBusy(String id, {required bool busy}) {
@@ -224,7 +223,7 @@ class LocalActivityHistoryController extends ChangeNotifier {
       ids.remove(id);
     }
     _busyRecordIds = ids;
-    _notifyListeners();
+    notify();
   }
 
   /// Normalizes any caught error into a typed [AppException] so the controller
@@ -233,17 +232,5 @@ class LocalActivityHistoryController extends ChangeNotifier {
     return error is AppException
         ? error
         : AppException(AppErrorCode.activityLocalLoadFailed, cause: error);
-  }
-
-  void _notifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
-  }
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
   }
 }

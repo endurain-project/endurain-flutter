@@ -8,7 +8,7 @@ import 'package:endurain/features/activity/controllers/local_activity_history_co
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
-import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
+import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
 import 'package:endurain/features/activity/widgets/activity_route_map.dart';
@@ -270,7 +270,7 @@ class _SummarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    const formatter = ActivityStatsFormatter();
+    final formatter = context.statsFormatter;
 
     return AdaptiveListSection(
       header: l10n.activityHistorySummary,

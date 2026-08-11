@@ -7,7 +7,14 @@ import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/device_locale.dart';
+
 void main() {
+  // Unit rendering follows the device region, and the test harness
+  // reports en-US (imperial) by default. Pin a metric region so these
+  // metric assertions are explicit rather than harness-dependent.
+  setUp(() => useDeviceLocale(metricDeviceLocale));
+
   group('ActivityStatsDisplay', () {
     testWidgets('shows empty recording stats safely', (tester) async {
       await tester.pumpWidget(
@@ -70,6 +77,35 @@ void main() {
       expect(find.text('1:00'), findsOneWidget);
       expect(find.text('111 m'), findsOneWidget);
       expect(find.text('7.2 km/h'), findsOneWidget);
+    });
+
+    testWidgets('renders imperial units when the device region is imperial', (
+      tester,
+    ) async {
+      // The unit system is resolved from the *device* locale, so override the
+      // metric region pinned in setUp with an imperial one.
+      useDeviceLocale(imperialDeviceLocale);
+
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.recording,
+              points: [
+                _point(latitude: 0, longitude: 0, seconds: 0),
+                _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 2),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // Same track as the metric test above: 111 m is 364 ft, 2 m/s is 4.5 mph.
+      expect(find.text('1:00'), findsOneWidget);
+      expect(find.text('364 ft'), findsOneWidget);
+      expect(find.text('4.5 mph'), findsOneWidget);
+      expect(find.text('111 m'), findsNothing);
+      expect(find.text('7.2 km/h'), findsNothing);
     });
 
     testWidgets('shows pace for a completed run', (tester) async {

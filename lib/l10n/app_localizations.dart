@@ -2036,6 +2036,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remote crash reporting isn\'t available in this build.'**
   String get diagnosticsRemoteNeedsServer;
+
+  /// Distance in metres - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} m'**
+  String unitMeter(String value);
+
+  /// Distance in kilometres - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} km'**
+  String unitKilometer(String value);
+
+  /// Elevation in feet - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} ft'**
+  String unitFoot(String value);
+
+  /// Distance in miles - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} mi'**
+  String unitMile(String value);
+
+  /// Speed in kilometres per hour - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} km/h'**
+  String unitKilometersPerHour(String value);
+
+  /// Speed in miles per hour - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} mph'**
+  String unitMilesPerHour(String value);
+
+  /// Pace in minutes per kilometre - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} min/km'**
+  String unitMinutesPerKilometer(String value);
+
+  /// Pace in minutes per mile - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} min/mi'**
+  String unitMinutesPerMile(String value);
+
+  /// Heart rate in beats per minute - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} bpm'**
+  String unitBpm(String value);
+
+  /// Power in watts - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} W'**
+  String unitWatt(String value);
+
+  /// Cadence in revolutions per minute - Used in: activity_stats_formatter.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{value} rpm'**
+  String unitRpm(String value);
+
+  /// Units settings entry title - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get unitsTitle;
+
+  /// Units settings entry subtitle - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Distance, speed, and elevation units'**
+  String get unitsSubtitle;
+
+  /// Follow-device-region units option - Used in: units_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Follow device region'**
+  String get unitsSystemDefault;
+
+  /// Metric units option - Used in: units_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Metric (km)'**
+  String get unitsMetric;
+
+  /// Imperial units option - Used in: units_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Imperial (mi)'**
+  String get unitsImperial;
+
+  /// Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.'**
+  String get errorInsecureRedirectRejected;
+
+  /// Shown when a request exceeds the redirect limit - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The server redirected too many times. Check the server address.'**
+  String get errorTooManyRedirects;
 }
 
 class _AppLocalizationsDelegate

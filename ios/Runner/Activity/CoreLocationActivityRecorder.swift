@@ -10,6 +10,17 @@ import CoreLocation
 /// `.fitness` activity type. Segment policy matches the Dart recorder: a new
 /// segment starts after a pause/resume boundary or a large time gap between
 /// fixes. Coordinates are never written to diagnostics.
+///
+/// **External sensors are owned by Dart on this platform.** Unlike Android —
+/// where the foreground service takes over the BLE connection because a
+/// backgrounded Dart isolate cannot hold one reliably — iOS keeps the
+/// `universal_ble` connection alive through the `bluetooth-central` background
+/// mode. `ActivityRecordingService` therefore streams readings in and stamps
+/// them onto points itself, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
+/// are never sent to this recorder. Points written here leave the sensor fields
+/// nil by design; do not add a second CoreBluetooth connection here without
+/// first removing the Dart-side one, or the two will fight over the same
+/// peripheral's notifications.
 final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     /// Minimum movement (meters) between delivered fixes.
     private static let distanceFilterMeters: CLLocationDistance = 3
@@ -25,9 +36,6 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
-    private var heartRateClient: HeartRatePeripheralClient?
-    private var powerClient: PowerPeripheralClient?
-    private var cadenceClient: CadencePeripheralClient?
 
     init(store: ActiveActivityStore) {
         self.store = store
@@ -78,54 +86,62 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
 
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
         manager.startUpdatingLocation()
+        startTerminationRecovery()
         isCollecting = true
-        startSensorCapture()
         return true
+    }
+
+    /// Arms significant-location-change monitoring for the duration of a
+    /// recording.
+    ///
+    /// `startUpdatingLocation` alone does not survive the app being terminated
+    /// under memory pressure: the process dies, updates stop, and the rest of
+    /// the ride is lost silently. Significant-location-change is the only
+    /// CoreLocation API that relaunches a terminated app in the background, so
+    /// it is armed alongside the high-accuracy stream purely as a wake-up
+    /// trigger. Its own coarse fixes are ignored for the track — see
+    /// `AppDelegate` and `resumeAfterRelaunch()`, which re-arm the accurate
+    /// stream once the process is back.
+    ///
+    /// Requires Always authorization, which `startCollection` has verified.
+    private func startTerminationRecovery() {
+        guard CLLocationManager.significantLocationChangeMonitoringAvailable() else {
+            return
+        }
+        manager.startMonitoringSignificantLocationChanges()
+    }
+
+    /// Re-arms collection after iOS relaunched the app for a significant
+    /// location change, when a recording session is still active on disk.
+    ///
+    /// Returns `true` when a recording was resumed. Called from `AppDelegate`
+    /// on a location-triggered launch; a no-op for a normal user launch, where
+    /// the Dart layer drives recovery through `recover`/`drain` instead.
+    @discardableResult
+    func resumeAfterRelaunch() -> Bool {
+        guard !isCollecting else {
+            return false
+        }
+        guard
+            let session = store.loadSession(),
+            session.status == ActiveActivitySessionData.statusRecording
+        else {
+            return false
+        }
+        return startCollection()
     }
 
     func stopCollection() {
         manager.stopUpdatingLocation()
+        manager.stopMonitoringSignificantLocationChanges()
         manager.allowsBackgroundLocationUpdates = false
         isCollecting = false
-        stopSensorCapture()
     }
 
     /// Marks that collection is resuming from a pause so the next fix opens a
     /// new segment, matching the Dart segment policy.
     func markResumed() {
         resumedFromPause = true
-    }
-
-    /// Connects to the paired external sensors recorded in the active session
-    /// (if any) so their latest readings can be stamped onto points, captured
-    /// with the same lifetime as GPS.
-    private func startSensorCapture() {
-        stopSensorCapture()
-        let session = store.loadSession()
-        if let deviceId = session?.heartRateDeviceId, !deviceId.isEmpty {
-            let client = HeartRatePeripheralClient()
-            heartRateClient = client
-            client.start(deviceIdentifier: deviceId)
-        }
-        if let deviceId = session?.powerDeviceId, !deviceId.isEmpty {
-            let client = PowerPeripheralClient()
-            powerClient = client
-            client.start(deviceIdentifier: deviceId)
-        }
-        if let deviceId = session?.cadenceDeviceId, !deviceId.isEmpty {
-            let client = CadencePeripheralClient()
-            cadenceClient = client
-            client.start(deviceIdentifier: deviceId)
-        }
-    }
-
-    private func stopSensorCapture() {
-        heartRateClient?.stop()
-        heartRateClient = nil
-        powerClient?.stop()
-        powerClient = nil
-        cadenceClient?.stop()
-        cadenceClient = nil
     }
 
     // MARK: - CLLocationManagerDelegate
@@ -296,9 +312,11 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             speedAccuracyMetersPerSecond: location.speedAccuracy >= 0
                 ? location.speedAccuracy
                 : nil,
-            heartRateBpm: heartRateClient?.latestBpm,
-            powerWatts: powerClient?.latestWatts,
-            cadenceRpm: cadenceClient?.latestRpm
+            // Sensor values are stamped by the Dart layer on this platform
+            // (see the type doc), so they are intentionally nil here.
+            heartRateBpm: nil,
+            powerWatts: nil,
+            cadenceRpm: nil
         )
     }
 }

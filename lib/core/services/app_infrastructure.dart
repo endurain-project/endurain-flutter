@@ -12,8 +12,10 @@ import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
+import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/repositories/crash_reporting_settings_repository.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
+import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
 import 'package:flutter/foundation.dart';
 
 /// Shared, feature-agnostic infrastructure wired once and handed to every
@@ -59,6 +61,14 @@ class AppInfrastructure {
   late final LocaleController localeController = LocaleController(
     repository: LocaleSettingsRepository(preferences: preferences),
   );
+
+  /// App-wide unit preference (metric/imperial). A `null` preference follows
+  /// the device region. Owned here for the same reason as [localeController]:
+  /// the root `App` listens so switching units re-renders every screen.
+  late final MeasurementSystemController measurementSystemController =
+      MeasurementSystemController(
+        repository: MeasurementSettingsRepository(preferences: preferences),
+      );
 
   /// Opt-in remote crash reporting, independent of the local [diagnostics]
   /// recorder. Inactive until the user enables it and the managed DSN

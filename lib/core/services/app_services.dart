@@ -39,6 +39,8 @@ import 'package:endurain/features/sensors/services/sensor_connection_adapter.dar
 import 'package:endurain/features/sensors/services/sensor_profile.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
+import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
+import 'package:endurain/features/settings/controllers/settings_controller.dart';
 
 /// The application's composition root.
 ///
@@ -89,6 +91,8 @@ class AppServices {
   SecureStorageService get secureStorage => _infra.secureStorage;
   AppPreferencesStore get preferences => _infra.preferences;
   LocaleController get localeController => _infra.localeController;
+  MeasurementSystemController get measurementSystemController =>
+      _infra.measurementSystemController;
   LocationService get location => _infra.location;
   ConnectivityService get connectivity => _infra.connectivity;
   AppLinksService get appLinks => _infra.appLinks;
@@ -194,6 +198,22 @@ class AppServices {
       preferences: _infra.preferences,
       config: config,
       activeConnectionOrigin: _auth.session.getAuthenticatedOrigin,
+    );
+  }
+
+  // ── Settings ───────────────────────────────────────────────────────────────
+
+  /// Builds a route-owned [SettingsController] for the settings screen.
+  ///
+  /// The unit preference is delegated to the app-lifetime
+  /// [measurementSystemController] so a change made here re-renders the rest
+  /// of the app, not just this route.
+  SettingsController createSettingsController() {
+    return SettingsController(
+      packageInfoService: _infra.packageInfo,
+      retentionSettingsRepository: _activity.retentionSettings,
+      measurementSystemController: _infra.measurementSystemController,
+      secureStorage: _infra.secureStorage,
     );
   }
 }

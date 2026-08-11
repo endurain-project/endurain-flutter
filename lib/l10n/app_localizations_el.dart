@@ -1095,4 +1095,82 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get diagnosticsRemoteNeedsServer =>
       'Η απομακρυσμένη αναφορά καταρρεύσεων δεν είναι διαθέσιμη σε αυτήν την έκδοση.';
+
+  @override
+  String unitMeter(String value) {
+    return '$value μ';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value χλμ';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value πόδ';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value μί';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value χλμ/ώ';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value μί/ώ';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value λεπ/χλμ';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value λεπ/μί';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Μονάδες';
+
+  @override
+  String get unitsSubtitle => 'Μονάδες απόστασης, ταχύτητας και υψομέτρου';
+
+  @override
+  String get unitsSystemDefault => 'Σύμφωνα με την περιοχή συσκευής';
+
+  @override
+  String get unitsMetric => 'Μετρικές (χλμ)';
+
+  @override
+  String get unitsImperial => 'Αυτοκρατορικές (μί)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }

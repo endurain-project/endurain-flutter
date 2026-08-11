@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
-import 'package:flutter/foundation.dart';
+import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// What a map sensor indicator should show.
 enum MapSensorStatus {
@@ -25,7 +25,7 @@ enum MapSensorStatus {
 /// while connected and a "searching" state while a remembered sensor is being
 /// (re)connected. Route-scoped: it owns only its stream subscriptions and must
 /// be disposed with the map screen; the underlying service is not disposed here.
-class MapSensorController extends ChangeNotifier {
+class MapSensorController extends SafeNotifier {
   MapSensorController({required SensorService service, required this.kind})
     : _service = service {
     _currentValue = _service.isConnected
@@ -33,7 +33,7 @@ class MapSensorController extends ChangeNotifier {
         : null;
     _sampleSubscription = _service.measurements.listen((measurement) {
       _currentValue = measurement.value;
-      notifyListeners();
+      notify();
     });
     _statusSubscription = _service.connectionStatus.listen((status) {
       // Clear only on a terminal loss; keep the last reading during a transient
@@ -44,7 +44,7 @@ class MapSensorController extends ChangeNotifier {
       if (lost) {
         _currentValue = null;
       }
-      notifyListeners();
+      notify();
     });
   }
 
@@ -78,7 +78,7 @@ class MapSensorController extends ChangeNotifier {
   /// remembered.
   Future<void> initialize() async {
     _hasRememberedDevice = await _service.hasRememberedDevice();
-    notifyListeners();
+    notify();
     if (_hasRememberedDevice && !_service.isConnected) {
       await _service.autoConnectRemembered();
     }

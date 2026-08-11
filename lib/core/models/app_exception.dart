@@ -17,6 +17,11 @@ enum AppErrorCode {
   healthImportFailed,
   healthPermissionDenied,
   healthReadFailed,
+
+  /// A redirect tried to downgrade an `https` request to plain `http`.
+  /// Refused outright rather than followed, because it is the standard way to
+  /// strip TLS before harvesting a credential.
+  insecureRedirectRejected,
   insecureTransportNotAllowed,
   invalidTileServerUrl,
   loginError,
@@ -34,6 +39,10 @@ enum AppErrorCode {
   sessionExpired,
   ssoTokenExchangeError,
   tokenExchangeFailed,
+
+  /// A request exceeded the redirect budget, which usually means a redirect
+  /// loop on the configured server.
+  tooManyRedirects,
 
   /// A token refresh could not be completed due to a transient network or
   /// server condition, but the stored session is still valid. Callers should

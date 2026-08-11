@@ -45,6 +45,10 @@ Future<void> main() async {
       // starts in the user's chosen locale rather than flashing the system one.
       await services.localeController.load();
 
+      // Same for the unit preference, so stats never flash metric before
+      // switching to imperial.
+      await services.measurementSystemController.load();
+
       // Start remote crash reporting only if the user previously opted in.
       // No-op (and no network) otherwise; the two diagnostics channels are
       // independent.

@@ -2,7 +2,7 @@ import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
+import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_import_range.dart';
@@ -386,7 +386,7 @@ class HealthSyncAvailableView extends StatelessWidget {
   }
 
   String? _formatSubtitle(BuildContext context, HealthWorkout workout) {
-    const formatter = ActivityStatsFormatter();
+    final formatter = context.statsFormatter;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final parts = <String>[
       formatter.formatDuration(

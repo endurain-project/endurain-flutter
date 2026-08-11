@@ -1083,4 +1083,83 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get diagnosticsRemoteNeedsServer =>
       'Удаљено пријављивање падова није доступно у овој верзији.';
+
+  @override
+  String unitMeter(String value) {
+    return '$value м';
+  }
+
+  @override
+  String unitKilometer(String value) {
+    return '$value км';
+  }
+
+  @override
+  String unitFoot(String value) {
+    return '$value ст';
+  }
+
+  @override
+  String unitMile(String value) {
+    return '$value ми';
+  }
+
+  @override
+  String unitKilometersPerHour(String value) {
+    return '$value км/ч';
+  }
+
+  @override
+  String unitMilesPerHour(String value) {
+    return '$value ми/ч';
+  }
+
+  @override
+  String unitMinutesPerKilometer(String value) {
+    return '$value мин/км';
+  }
+
+  @override
+  String unitMinutesPerMile(String value) {
+    return '$value мин/ми';
+  }
+
+  @override
+  String unitBpm(String value) {
+    return '$value bpm';
+  }
+
+  @override
+  String unitWatt(String value) {
+    return '$value W';
+  }
+
+  @override
+  String unitRpm(String value) {
+    return '$value rpm';
+  }
+
+  @override
+  String get unitsTitle => 'Јединице';
+
+  @override
+  String get unitsSubtitle =>
+      'Јединице за раздаљину, брзину и надморску висину';
+
+  @override
+  String get unitsSystemDefault => 'Према региону уређаја';
+
+  @override
+  String get unitsMetric => 'Метричке (км)';
+
+  @override
+  String get unitsImperial => 'Империјалне (ми)';
+
+  @override
+  String get errorInsecureRedirectRejected =>
+      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+
+  @override
+  String get errorTooManyRedirects =>
+      'The server redirected too many times. Check the server address.';
 }
