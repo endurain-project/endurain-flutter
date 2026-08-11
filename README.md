@@ -105,12 +105,12 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Import provenance is scoped to the active connection profile, and health UI controllers are route-owned so imported rows and selections cannot survive a logout/login transition. A backend account UUID is still required before separate login profiles can safely share imported history across sign-out and
   sign-in cycles
 
-✅ **External Sensors (Bluetooth heart rate)**
-- Pair a Bluetooth Low Energy heart-rate monitor from **Settings > Sensors** and see the live BPM
-- Live heart rate on the map: a pill at the top of the map when idle, and a live value in the recording statistics while an activity records
-- Heart rate is stamped onto recorded GPX track points, so the uploaded activity includes it
-- A remembered sensor reconnects automatically when the app opens, with a "searching" indicator and bounded retry, so the strap does not need re-pairing each session
-- Heart-rate capture continues in the background during a recording: on Android the foreground-service recorder owns the connection, while on iOS the in-app connection is kept via the Bluetooth background mode
+✅ **External Sensors (Bluetooth)**
+- Pair Bluetooth Low Energy heart-rate monitors, cycling power meters, and cycling or running cadence sensors from **Settings > Sensors**
+- View live heart rate, power, and cadence measurements on the map and in recording statistics
+- Sensor measurements are stamped onto recorded GPX track points when supported by the measurement type
+- A remembered sensor reconnects automatically when the app opens, with a "searching" indicator and bounded retry, so it does not need re-pairing each session
+- Sensor capture continues in the background during a recording: on Android the foreground-service recorder owns the connection, while on iOS the in-app connection is kept via the Bluetooth background mode
 - Uses `universal_ble` (BSD-3-Clause, no Google Play Services, F-Droid compatible); the app requests the Bluetooth runtime permissions itself
 
 ✅ **User Experience**
@@ -144,7 +144,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 - **HTTP Client:** `http` for Endurain API communication and multipart uploads
 - **SSO/OAuth:** `app_links` for deep-link callbacks, `url_launcher` for the system browser OAuth flow, and `flutter_svg` for provider icons
 - **Health Data:** `health` for Apple HealthKit and Android Health Connect workout import
-- **External Sensors:** `universal_ble` for Bluetooth Low Energy heart-rate monitors (BSD-3-Clause, no Google Play Services)
+- **External Sensors:** `universal_ble` for Bluetooth Low Energy heart-rate monitors, cycling power meters, and cadence sensors (BSD-3-Clause, no Google Play Services)
 - **App Metadata:** `package_info_plus`
 - **Local App Files:** `path_provider` for private app-support diagnostics and retained activity GPX storage
 - **Preferences:** `shared_preferences` for non-secret display and language settings
@@ -223,8 +223,10 @@ the platform authorization screen and can revoke it later in Apple Health or
 Health Connect settings.
 
 On iOS, the Runner target requires the HealthKit capability
-(`com.apple.developer.healthkit`) and `NSHealthShareUsageDescription`. At
-runtime, Endurain requests read access to:
+(`com.apple.developer.healthkit`), `NSHealthShareUsageDescription`, and
+`NSHealthUpdateUsageDescription` (required by the HealthKit integration even
+though Endurain imports data only). At runtime, Endurain requests read access
+to:
 
 - Workouts, to discover activity sessions and their start/end times.
 - Workout routes, to build the GPX track required for import.
@@ -371,9 +373,22 @@ Localization source files live in `lib/l10n/app_en.arb` and `lib/l10n/app_pt.arb
 
 ### iOS
 
+For a local release build:
+
 ```bash
 flutter build ios --release
 ```
+
+For TestFlight or App Store Connect, install an Apple Distribution certificate
+for the configured development team, then build the signed IPA:
+
+```bash
+flutter build ipa --release
+```
+
+Upload `build/ios/ipa/Endurain.ipa` with Transporter or Xcode Organizer. Before
+each upload, increment the Flutter build number in `pubspec.yaml`; App Store
+Connect requires a unique, increasing build number.
 
 ### Android
 
