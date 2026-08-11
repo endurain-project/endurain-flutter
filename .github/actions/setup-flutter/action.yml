@@ -7,6 +7,12 @@ description: >-
 runs:
   using: composite
   steps:
+    # GitHub container jobs use a runner-owned HOME, so the image build's
+    # global Git configuration is not available at runtime.
+    - name: Trust the Flutter SDK checkout
+      shell: bash
+      run: git config --global --add safe.directory /opt/flutter
+
     - name: Restore pub cache
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       with:
