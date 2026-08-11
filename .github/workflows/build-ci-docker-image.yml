@@ -1,0 +1,51 @@
+name: Build CI builder image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - docker/flutter-build/Dockerfile
+      - .github/workflows/build-ci-docker-image.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  # Published alongside this repository in GitHub Container Registry.
+  IMAGE_NAME: ghcr.io/endurain-project/endurain-flutter-ci
+  # Keep in sync with docker/flutter-build/Dockerfile and the CI workflows.
+  IMAGE_TAG: '3.44.6'
+
+jobs:
+  build-image:
+    name: Build and push builder image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Log in to GitHub Container Registry
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$REGISTRY_PASSWORD" | docker login ghcr.io \
+            --username "${{ github.actor }}" \
+            --password-stdin
+
+      - name: Build and push image
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            --file docker/flutter-build/Dockerfile \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --push \
+            docker/flutter-build

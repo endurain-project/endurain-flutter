@@ -1,0 +1,41 @@
+name: Conventional Commits
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate PR title and commits
+    runs-on: ubuntu-latest
+    steps:
+      # Check out reviewed base-branch code only. Pull request input is passed
+      # as data, so untrusted changes cannot alter the executed validator.
+      - name: Check out the trusted base ref
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+
+      - name: Validate PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          python3 .github/scripts/check_conventional_commits.py "$PR_TITLE"
+
+      - name: Validate commits in PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA"
+          git log --no-merges --format=%s "$BASE_SHA".."$HEAD_SHA" \
+            | python3 .github/scripts/check_conventional_commits.py --stdin
