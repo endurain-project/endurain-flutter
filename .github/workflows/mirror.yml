@@ -16,11 +16,14 @@ jobs:
     steps:
       - name: Push full mirror to GitLab
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
           set -euo pipefail
           mirror_dir="$RUNNER_TEMP/endurain-flutter.git"
-          git clone --mirror "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "$mirror_dir"
+          git clone --mirror \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "$mirror_dir"
           cd "$mirror_dir"
           git remote set-url --push origin \
             "https://oauth2:${GITLAB_TOKEN}@gitlab.com/endurain-project/endurain-flutter.git"
