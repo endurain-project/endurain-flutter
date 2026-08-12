@@ -10,6 +10,7 @@ import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterFragmentActivity() {
     private var recorderChannel: ActivityRecorderChannel? = null
+    private var deviceMeasurementSystemChannel: DeviceMeasurementSystemChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,12 +19,17 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        deviceMeasurementSystemChannel = DeviceMeasurementSystemChannel().also {
+            it.register(flutterEngine.dartExecutor.binaryMessenger)
+        }
         recorderChannel = ActivityRecorderChannel(applicationContext).also {
             it.register(flutterEngine.dartExecutor.binaryMessenger)
         }
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        deviceMeasurementSystemChannel?.unregister()
+        deviceMeasurementSystemChannel = null
         recorderChannel?.unregister()
         recorderChannel = null
         super.cleanUpFlutterEngine(flutterEngine)
