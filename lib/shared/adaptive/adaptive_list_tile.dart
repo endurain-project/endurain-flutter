@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/shared/adaptive/adaptive_list_tile_subtitle.dart';
 
 class AdaptiveListTile extends StatelessWidget {
   const AdaptiveListTile({
@@ -35,7 +36,9 @@ class AdaptiveListTile extends StatelessWidget {
       return CupertinoListTile(
         leading: leading,
         title: Text(title, style: titleStyle),
-        subtitle: subtitle == null ? null : Text(subtitle!),
+        subtitle: subtitle == null
+            ? null
+            : AdaptiveListTileSubtitle(child: Text(subtitle!)),
         trailing:
             trailing ??
             (onTap == null ? null : const CupertinoListTileChevron()),
@@ -46,7 +49,9 @@ class AdaptiveListTile extends StatelessWidget {
     return ListTile(
       leading: leading,
       title: Text(title, style: titleStyle),
-      subtitle: subtitle == null ? null : Text(subtitle!),
+      subtitle: subtitle == null
+          ? null
+          : AdaptiveListTileSubtitle(child: Text(subtitle!)),
       trailing: trailing,
       onTap: onTap,
     );

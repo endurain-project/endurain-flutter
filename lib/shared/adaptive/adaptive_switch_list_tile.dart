@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/shared/adaptive/adaptive_list_tile_subtitle.dart';
 
 class AdaptiveSwitchListTile extends StatelessWidget {
   const AdaptiveSwitchListTile({
@@ -25,7 +26,9 @@ class AdaptiveSwitchListTile extends StatelessWidget {
         child: CupertinoListTile(
           leading: leading,
           title: Text(title),
-          subtitle: subtitle == null ? null : Text(subtitle!),
+          subtitle: subtitle == null
+              ? null
+              : AdaptiveListTileSubtitle(child: Text(subtitle!)),
           trailing: CupertinoSwitch(value: value, onChanged: onChanged),
           onTap: onChanged == null ? null : () => onChanged?.call(!value),
         ),
@@ -36,7 +39,9 @@ class AdaptiveSwitchListTile extends StatelessWidget {
       return ListTile(
         leading: leading,
         title: Text(title),
-        subtitle: subtitle == null ? null : Text(subtitle!),
+        subtitle: subtitle == null
+            ? null
+            : AdaptiveListTileSubtitle(child: Text(subtitle!)),
         trailing: Switch(value: value, onChanged: onChanged),
         onTap: onChanged == null ? null : () => onChanged?.call(!value),
       );
@@ -44,7 +49,9 @@ class AdaptiveSwitchListTile extends StatelessWidget {
 
     return SwitchListTile(
       title: Text(title),
-      subtitle: subtitle == null ? null : Text(subtitle!),
+      subtitle: subtitle == null
+          ? null
+          : AdaptiveListTileSubtitle(child: Text(subtitle!)),
       value: value,
       onChanged: onChanged,
     );

@@ -1,4 +1,5 @@
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/shared/adaptive/adaptive_list_tile_subtitle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +32,9 @@ class AdaptiveCheckboxListTile extends StatelessWidget {
           child: CupertinoListTile(
             leading: secondary,
             title: title,
-            subtitle: subtitle,
+            subtitle: subtitle == null
+                ? null
+                : AdaptiveListTileSubtitle(child: subtitle!),
             trailing: showControl
                 ? SizedBox.square(
                     dimension: 24,
@@ -51,7 +54,13 @@ class AdaptiveCheckboxListTile extends StatelessWidget {
     }
 
     if (!showControl) {
-      return ListTile(leading: secondary, title: title, subtitle: subtitle);
+      return ListTile(
+        leading: secondary,
+        title: title,
+        subtitle: subtitle == null
+            ? null
+            : AdaptiveListTileSubtitle(child: subtitle!),
+      );
     }
 
     return CheckboxListTile(
@@ -60,7 +69,9 @@ class AdaptiveCheckboxListTile extends StatelessWidget {
       enabled: onChanged != null,
       secondary: secondary,
       title: title,
-      subtitle: subtitle,
+      subtitle: subtitle == null
+          ? null
+          : AdaptiveListTileSubtitle(child: subtitle!),
     );
   }
 }
