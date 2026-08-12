@@ -6,6 +6,7 @@ on:
     branches:
       - main
     paths:
+      - .dockerignore
       - docker/flutter-build/Dockerfile
       - android/gradle/wrapper/gradle-wrapper.properties
       - .github/workflows/build-ci-docker-image.yml
@@ -49,4 +50,4 @@ jobs:
             --file docker/flutter-build/Dockerfile \
             --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
             --push \
-            docker/flutter-build
+            .

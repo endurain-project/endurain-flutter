@@ -1,0 +1,8 @@
+**
+!android/
+!android/gradle/
+!android/gradle/wrapper/
+!android/gradle/wrapper/gradle-wrapper.properties
+!docker/
+!docker/flutter-build/
+!docker/flutter-build/Dockerfile
