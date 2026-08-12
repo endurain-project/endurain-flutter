@@ -6,6 +6,7 @@ import 'package:endurain/core/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
+import 'package:endurain/core/services/platform/device_measurement_system_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/platform/sentry_crash_reporter.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
@@ -63,11 +64,13 @@ class AppInfrastructure {
   );
 
   /// App-wide unit preference (metric/imperial). A `null` preference follows
-  /// the device region. Owned here for the same reason as [localeController]:
-  /// the root `App` listens so switching units re-renders every screen.
+  /// the operating-system measurement setting. Owned here for the same reason
+  /// as [localeController]: the root `App` listens so switching units
+  /// re-renders every screen.
   late final MeasurementSystemController measurementSystemController =
       MeasurementSystemController(
         repository: MeasurementSettingsRepository(preferences: preferences),
+        deviceMeasurementSystem: const PlatformDeviceMeasurementSystemService(),
       );
 
   /// Opt-in remote crash reporting, independent of the local [diagnostics]

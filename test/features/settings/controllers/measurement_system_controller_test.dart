@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/core/services/platform/device_measurement_system_service.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -81,6 +82,23 @@ void main() {
       );
     });
 
+    test('device setting overrides the locale region after load', () async {
+      final controller = MeasurementSystemController(
+        repository: repository,
+        deviceMeasurementSystem: const _FakeDeviceMeasurementSystemService(
+          MeasurementSystem.metric,
+        ),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.load();
+
+      expect(
+        controller.resolve(const Locale('en', 'US')),
+        MeasurementSystem.metric,
+      );
+    });
+
     test('an explicit preference overrides the locale region', () async {
       final controller = buildController();
       addTearDown(controller.dispose);
@@ -152,4 +170,14 @@ class _ThrowingMeasurementSettingsRepository
   Future<MeasurementSystem?> getMeasurementSystem() async {
     throw StateError('preferences unavailable');
   }
+}
+
+class _FakeDeviceMeasurementSystemService
+    implements DeviceMeasurementSystemService {
+  const _FakeDeviceMeasurementSystemService(this.system);
+
+  final MeasurementSystem? system;
+
+  @override
+  Future<MeasurementSystem?> getMeasurementSystem() async => system;
 }

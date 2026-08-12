@@ -27,7 +27,7 @@ class UnitsSettingsScreen extends StatelessWidget {
         AppScope.servicesOf(context, listen: false).measurementSystemController;
     // The device locale (with region), not the app's resolved language-only
     // locale — see `ActivityStatsFormatterScope.deviceLocale`.
-    final deviceDefault = MeasurementSystem.forLocale(context.deviceLocale);
+    final deviceDefault = measurement.deviceDefault(context.deviceLocale);
 
     return AdaptiveScaffold(
       title: l10n.unitsTitle,

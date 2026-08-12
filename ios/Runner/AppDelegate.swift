@@ -7,6 +7,9 @@ import UIKit
   /// setup and keeps its method/event handlers registered.
   private var activityRecorderChannel: ActivityRecorderChannel?
 
+  /// Strong reference for device-region settings queried by Flutter.
+  private var deviceSettingsChannel: FlutterMethodChannel?
+
   /// Whether iOS relaunched the process to deliver a location event.
   ///
   /// Set before the Flutter engine finishes initializing, and consumed in
@@ -52,6 +55,26 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    if let registrar = engineBridge.pluginRegistry.registrar(
+      forPlugin: "EndurainDeviceSettingsChannel"
+    ) {
+      let channel = FlutterMethodChannel(
+        name: "endurain/device_settings",
+        binaryMessenger: registrar.messenger()
+      )
+      channel.setMethodCallHandler { call, result in
+        guard call.method == "getMeasurementSystem" else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        if #available(iOS 16.0, *) {
+          result(Locale.current.measurementSystem == .metric ? "metric" : "imperial")
+        } else {
+          result(Locale.current.usesMetricSystem ? "metric" : "imperial")
+        }
+      }
+      deviceSettingsChannel = channel
+    }
     if let registrar = engineBridge.pluginRegistry.registrar(
       forPlugin: "EndurainActivityRecorderChannel"
     ) {

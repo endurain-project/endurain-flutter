@@ -1,4 +1,5 @@
 import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/core/services/platform/device_measurement_system_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
@@ -88,6 +89,27 @@ void main() {
     expect(find.text(l10n.unitsMetric), findsNWidgets(2));
   });
 
+  testWidgets('uses the device unit setting ahead of its region', (
+    tester,
+  ) async {
+    controller.dispose();
+    controller = MeasurementSystemController(
+      repository: MeasurementSettingsRepository(
+        preferences: FakePreferencesStore(),
+      ),
+      deviceMeasurementSystem: const _FakeDeviceMeasurementSystemService(
+        MeasurementSystem.metric,
+      ),
+    );
+    await controller.load();
+
+    await pumpScreen(tester, deviceLocale: const Locale('en', 'US'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.unitsMetric), findsNWidgets(2));
+    expect(find.text(l10n.unitsImperial), findsOneWidget);
+  });
+
   testWidgets('selecting imperial persists and updates the checkmark', (
     tester,
   ) async {
@@ -113,4 +135,14 @@ void main() {
 
     expect(controller.preference, isNull);
   });
+}
+
+class _FakeDeviceMeasurementSystemService
+    implements DeviceMeasurementSystemService {
+  const _FakeDeviceMeasurementSystemService(this.system);
+
+  final MeasurementSystem system;
+
+  @override
+  Future<MeasurementSystem?> getMeasurementSystem() async => system;
 }

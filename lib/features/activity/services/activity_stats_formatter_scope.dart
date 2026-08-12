@@ -24,7 +24,7 @@ extension ActivityStatsFormatterScope on BuildContext {
   Locale get deviceLocale => View.of(this).platformDispatcher.locale;
 
   /// The unit system to display: the user's explicit choice when set,
-  /// otherwise the convention of the device region.
+  /// otherwise the operating-system setting with a device-region fallback.
   ///
   /// Falls back to the device-region default when there is no [AppScope]
   /// ancestor, so a widget rendered in isolation (previews, widget tests) still
