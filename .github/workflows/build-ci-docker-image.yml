@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - docker/flutter-build/Dockerfile
+      - android/gradle/wrapper/gradle-wrapper.properties
       - .github/workflows/build-ci-docker-image.yml
 
 concurrency:

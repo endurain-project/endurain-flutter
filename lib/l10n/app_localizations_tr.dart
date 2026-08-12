@@ -1064,7 +1064,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Çökme ve hata raporlarını bir tanılama sunucusuna gönder. Bu, yerel tanılamadan bağımsızdır — ikisini de, birini ya da hiçbirini etkinleştirebilirsin.';
+      'Çökme ve hata raporlarını bir tanılama sunucusuna gönder. Bu, yerel tanılamadan bağımsızdır; ikisini de, birini ya da hiçbirini etkinleştirebilirsin.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

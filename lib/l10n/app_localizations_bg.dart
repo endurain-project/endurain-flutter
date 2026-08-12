@@ -1079,7 +1079,7 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Изпращайте доклади за сривове и грешки към диагностичен сървър. Това е независимо от локалната диагностика — можете да включите и двете, едното или нищо.';
+      'Изпращайте доклади за сривове и грешки към диагностичен сървър. Това е независимо от локалната диагностика; можете да включите и двете, едното или нищо.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

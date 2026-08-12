@@ -1075,7 +1075,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Verstuur crash- en foutrapporten naar een diagnoseserver. Dit staat los van lokale diagnostiek — je kunt beide, één of geen van beide inschakelen.';
+      'Verstuur crash- en foutrapporten naar een diagnoseserver. Dit staat los van lokale diagnostiek; je kunt beide, één of geen van beide inschakelen.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

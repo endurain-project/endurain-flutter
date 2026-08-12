@@ -855,7 +855,7 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Atveriet lietotni Health, pieskarieties savam profila attēlam un pēc tam — Programmas un pakalpojumi. Atlasiet Endurain un atjauniniet datu kategorijas.';
+      'Atveriet lietotni Health, pieskarieties savam profila attēlam un pēc tam: Programmas un pakalpojumi. Atlasiet Endurain un atjauniniet datu kategorijas.';
 
   @override
   String get healthSyncAuthorize =>
@@ -1070,7 +1070,7 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Sūtiet avāriju un kļūdu ziņojumus uz diagnostikas serveri. Tas ir neatkarīgs no vietējās diagnostikas — varat iespējot abus, vienu vai nevienu.';
+      'Sūtiet avāriju un kļūdu ziņojumus uz diagnostikas serveri. Tas ir neatkarīgs no vietējās diagnostikas; varat iespējot abus, vienu vai nevienu.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

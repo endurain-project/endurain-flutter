@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Gem. cadans",
   "diagnosticsRemoteTitle": "Externe crashrapportage",
   "diagnosticsRemoteEnable": "Crashrapporten verzenden",
-  "diagnosticsRemoteEnableSubtitle": "Verstuur crash- en foutrapporten naar een diagnoseserver. Dit staat los van lokale diagnostiek — je kunt beide, één of geen van beide inschakelen.",
+  "diagnosticsRemoteEnableSubtitle": "Verstuur crash- en foutrapporten naar een diagnoseserver. Dit staat los van lokale diagnostiek; je kunt beide, één of geen van beide inschakelen.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Externe crashrapportage is niet beschikbaar in deze versie.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

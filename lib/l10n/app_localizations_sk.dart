@@ -1081,7 +1081,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Odosielajte hlásenia o pádoch a chybách na diagnostický server. Je to nezávislé od miestnej diagnostiky — môžete zapnúť oboje, jedno alebo nič.';
+      'Odosielajte hlásenia o pádoch a chybách na diagnostický server. Je to nezávislé od miestnej diagnostiky; môžete zapnúť oboje, jedno alebo nič.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

@@ -1079,7 +1079,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Küldj összeomlás- és hibajelentéseket egy diagnosztikai kiszolgálóra. Ez független a helyi diagnosztikától — bekapcsolhatod mindkettőt, az egyiket vagy egyiket sem.';
+      'Küldj összeomlás- és hibajelentéseket egy diagnosztikai kiszolgálóra. Ez független a helyi diagnosztikától; bekapcsolhatod mindkettőt, az egyiket vagy egyiket sem.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

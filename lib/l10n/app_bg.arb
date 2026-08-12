@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Ср. каденс",
   "diagnosticsRemoteTitle": "Дистанционно докладване за сривове",
   "diagnosticsRemoteEnable": "Изпращане на доклади за сривове",
-  "diagnosticsRemoteEnableSubtitle": "Изпращайте доклади за сривове и грешки към диагностичен сървър. Това е независимо от локалната диагностика — можете да включите и двете, едното или нищо.",
+  "diagnosticsRemoteEnableSubtitle": "Изпращайте доклади за сривове и грешки към диагностичен сървър. Това е независимо от локалната диагностика; можете да включите и двете, едното или нищо.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Дистанционното докладване за сривове не е налично в тази версия.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

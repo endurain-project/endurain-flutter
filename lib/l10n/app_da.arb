@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Gns. kadence",
   "diagnosticsRemoteTitle": "Ekstern nedbrudsrapportering",
   "diagnosticsRemoteEnable": "Send nedbrudsrapporter",
-  "diagnosticsRemoteEnableSubtitle": "Send nedbruds- og fejlrapporter til en diagnosticeringsserver. Dette er adskilt fra lokal diagnostik — du kan slå begge, én eller ingen til.",
+  "diagnosticsRemoteEnableSubtitle": "Send nedbruds- og fejlrapporter til en diagnosticeringsserver. Dette er adskilt fra lokal diagnostik; du kan slå begge, én eller ingen til.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Ekstern nedbrudsrapportering er ikke tilgængelig i denne version.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

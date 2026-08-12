@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Gj.sn. kadens",
   "diagnosticsRemoteTitle": "Ekstern krasjrapportering",
   "diagnosticsRemoteEnable": "Send krasjrapporter",
-  "diagnosticsRemoteEnableSubtitle": "Send krasj- og feilrapporter til en diagnoseserver. Dette er atskilt fra lokal diagnostikk — du kan slå på begge, én eller ingen.",
+  "diagnosticsRemoteEnableSubtitle": "Send krasj- og feilrapporter til en diagnoseserver. Dette er atskilt fra lokal diagnostikk; du kan slå på begge, én eller ingen.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Ekstern krasjrapportering er ikke tilgjengelig i denne versjonen.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

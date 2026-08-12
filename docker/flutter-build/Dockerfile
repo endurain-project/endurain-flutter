@@ -43,6 +43,7 @@ ARG NODE_SHA256=00bbd05e306ea68b6e13e17360d0e2f680b493ef95f2fea1c4296ff7437530bc
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV FLUTTER_HOME=/opt/flutter
+ENV GRADLE_USER_HOME=/opt/gradle-home
 ENV NODE_HOME=/opt/node
 ENV PATH="${FLUTTER_HOME}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${NODE_HOME}/bin:${PATH}"
 
@@ -108,6 +109,23 @@ RUN set -eu; \
     flutter config --android-sdk "${ANDROID_SDK_ROOT}" --no-analytics; \
     yes | flutter doctor --android-licenses >/dev/null || true; \
     flutter precache --android --universal
+
+# Preload the project's Gradle distribution so container jobs do not depend on
+# services.gradle.org. Retries keep image publication resilient to a truncated
+# first download.
+COPY android/gradle/wrapper/gradle-wrapper.properties /tmp/gradle-wrapper.properties
+RUN set -eu; \
+    flutter create --no-pub --platforms=android /tmp/gradle-bootstrap; \
+    cp /tmp/gradle-wrapper.properties \
+        /tmp/gradle-bootstrap/android/gradle/wrapper/gradle-wrapper.properties; \
+    attempt=1; \
+    until (cd /tmp/gradle-bootstrap/android && ./gradlew --version); do \
+        if [ "${attempt}" -ge 3 ]; then \
+            exit 1; \
+        fi; \
+        attempt=$((attempt + 1)); \
+    done; \
+    rm -rf /tmp/gradle-bootstrap /tmp/gradle-wrapper.properties
 
 # Sanity check that the toolchain is wired up.
 RUN flutter doctor -v

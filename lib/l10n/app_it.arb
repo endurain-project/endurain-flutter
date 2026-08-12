@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Cadenza media",
   "diagnosticsRemoteTitle": "Segnalazione arresti anomali da remoto",
   "diagnosticsRemoteEnable": "Invia segnalazioni di arresto anomalo",
-  "diagnosticsRemoteEnableSubtitle": "Invia segnalazioni di arresti anomali ed errori a un server di diagnostica. È indipendente dalla diagnostica locale — puoi attivare entrambe, una o nessuna.",
+  "diagnosticsRemoteEnableSubtitle": "Invia segnalazioni di arresti anomali ed errori a un server di diagnostica. È indipendente dalla diagnostica locale; puoi attivare entrambe, una o nessuna.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "La segnalazione di arresti anomali da remoto non è disponibile in questa versione.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

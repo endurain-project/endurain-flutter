@@ -1071,7 +1071,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Skicka krasch- och felrapporter till en diagnostikserver. Detta är skilt från lokal diagnostik — du kan aktivera båda, en eller ingen.';
+      'Skicka krasch- och felrapporter till en diagnostikserver. Detta är skilt från lokal diagnostik; du kan aktivera båda, en eller ingen.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

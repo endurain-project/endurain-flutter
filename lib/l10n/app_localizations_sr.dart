@@ -1075,7 +1075,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Шаљи извештаје о падовима и грешкама на дијагностички сервер. Независно је од локалне дијагностике — можеш укључити обоје, једно или ништа.';
+      'Шаљи извештаје о падовима и грешкама на дијагностички сервер. Независно је од локалне дијагностике; можеш укључити обоје, једно или ништа.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

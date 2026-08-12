@@ -1070,7 +1070,7 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Send krasj- og feilrapporter til en diagnoseserver. Dette er atskilt fra lokal diagnostikk — du kan slå på begge, én eller ingen.';
+      'Send krasj- og feilrapporter til en diagnoseserver. Dette er atskilt fra lokal diagnostikk; du kan slå på begge, én eller ingen.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

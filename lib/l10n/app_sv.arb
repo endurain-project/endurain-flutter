@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Medelkadens",
   "diagnosticsRemoteTitle": "Fjärrkraschrapportering",
   "diagnosticsRemoteEnable": "Skicka kraschrapporter",
-  "diagnosticsRemoteEnableSubtitle": "Skicka krasch- och felrapporter till en diagnostikserver. Detta är skilt från lokal diagnostik — du kan aktivera båda, en eller ingen.",
+  "diagnosticsRemoteEnableSubtitle": "Skicka krasch- och felrapporter till en diagnostikserver. Detta är skilt från lokal diagnostik; du kan aktivera båda, en eller ingen.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Fjärrkraschrapportering är inte tillgänglig i den här versionen.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

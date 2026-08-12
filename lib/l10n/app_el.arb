@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Μέση καντένς",
   "diagnosticsRemoteTitle": "Απομακρυσμένη αναφορά καταρρεύσεων",
   "diagnosticsRemoteEnable": "Αποστολή αναφορών κατάρρευσης",
-  "diagnosticsRemoteEnableSubtitle": "Στείλτε αναφορές κατάρρευσης και σφαλμάτων σε έναν διακομιστή διαγνωστικών. Είναι ανεξάρτητο από τα τοπικά διαγνωστικά — μπορείτε να ενεργοποιήσετε και τα δύο, ένα ή κανένα.",
+  "diagnosticsRemoteEnableSubtitle": "Στείλτε αναφορές κατάρρευσης και σφαλμάτων σε έναν διακομιστή διαγνωστικών. Είναι ανεξάρτητο από τα τοπικά διαγνωστικά; μπορείτε να ενεργοποιήσετε και τα δύο, ένα ή κανένα.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Η απομακρυσμένη αναφορά καταρρεύσεων δεν είναι διαθέσιμη σε αυτήν την έκδοση.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

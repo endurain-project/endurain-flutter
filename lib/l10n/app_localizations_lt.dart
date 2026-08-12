@@ -1066,7 +1066,7 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Siųskite strigčių ir klaidų ataskaitas į diagnostikos serverį. Tai nepriklauso nuo vietinės diagnostikos — galite įjungti abu, vieną arba nė vieno.';
+      'Siųskite strigčių ir klaidų ataskaitas į diagnostikos serverį. Tai nepriklauso nuo vietinės diagnostikos; galite įjungti abu, vieną arba nė vieno.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

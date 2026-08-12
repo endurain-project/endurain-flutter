@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Átl. pedálütem",
   "diagnosticsRemoteTitle": "Távoli összeomlásjelentés",
   "diagnosticsRemoteEnable": "Összeomlásjelentések küldése",
-  "diagnosticsRemoteEnableSubtitle": "Küldj összeomlás- és hibajelentéseket egy diagnosztikai kiszolgálóra. Ez független a helyi diagnosztikától — bekapcsolhatod mindkettőt, az egyiket vagy egyiket sem.",
+  "diagnosticsRemoteEnableSubtitle": "Küldj összeomlás- és hibajelentéseket egy diagnosztikai kiszolgálóra. Ez független a helyi diagnosztikától; bekapcsolhatod mindkettőt, az egyiket vagy egyiket sem.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "A távoli összeomlásjelentés nem érhető el ebben a verzióban.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

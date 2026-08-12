@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "平均踏频",
   "diagnosticsRemoteTitle": "远程崩溃报告",
   "diagnosticsRemoteEnable": "发送崩溃报告",
-  "diagnosticsRemoteEnableSubtitle": "将崩溃和错误报告发送到诊断服务器。这与本地诊断相互独立——您可以同时启用两者、其中之一或都不启用。",
+  "diagnosticsRemoteEnableSubtitle": "将崩溃和错误报告发送到诊断服务器。这与本地诊断相互独立；您可以同时启用两者、其中之一或都不启用。",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "此版本不支持远程崩溃报告。",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

@@ -1083,7 +1083,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Invia segnalazioni di arresti anomali ed errori a un server di diagnostica. È indipendente dalla diagnostica locale — puoi attivare entrambe, una o nessuna.';
+      'Invia segnalazioni di arresti anomali ed errori a un server di diagnostica. È indipendente dalla diagnostica locale; puoi attivare entrambe, una o nessuna.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

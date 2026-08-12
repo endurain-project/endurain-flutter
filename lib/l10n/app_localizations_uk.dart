@@ -1073,7 +1073,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Надсилайте звіти про збої та помилки на діагностичний сервер. Це незалежно від локальної діагностики — можна ввімкнути обидва, одне або жодного.';
+      'Надсилайте звіти про збої та помилки на діагностичний сервер. Це незалежно від локальної діагностики; можна ввімкнути обидва, одне або жодного.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

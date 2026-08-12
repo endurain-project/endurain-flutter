@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Vid. kadencija",
   "diagnosticsRemoteTitle": "Nuotolinis strigčių pranešimas",
   "diagnosticsRemoteEnable": "Siųsti strigčių ataskaitas",
-  "diagnosticsRemoteEnableSubtitle": "Siųskite strigčių ir klaidų ataskaitas į diagnostikos serverį. Tai nepriklauso nuo vietinės diagnostikos — galite įjungti abu, vieną arba nė vieno.",
+  "diagnosticsRemoteEnableSubtitle": "Siųskite strigčių ir klaidų ataskaitas į diagnostikos serverį. Tai nepriklauso nuo vietinės diagnostikos; galite įjungti abu, vieną arba nė vieno.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Nuotolinis strigčių pranešimas šioje versijoje nepasiekiamas.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

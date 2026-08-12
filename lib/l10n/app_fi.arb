@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Keskikadenssi",
   "diagnosticsRemoteTitle": "Etäkaatumisraportointi",
   "diagnosticsRemoteEnable": "Lähetä kaatumisraportteja",
-  "diagnosticsRemoteEnableSubtitle": "Lähetä kaatumis- ja virheraportteja diagnostiikkapalvelimelle. Tämä on erillään paikallisesta diagnostiikasta — voit ottaa käyttöön molemmat, toisen tai ei kumpaakaan.",
+  "diagnosticsRemoteEnableSubtitle": "Lähetä kaatumis- ja virheraportteja diagnostiikkapalvelimelle. Tämä on erillään paikallisesta diagnostiikasta; voit ottaa käyttöön molemmat, toisen tai ei kumpaakaan.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Etäkaatumisraportointi ei ole käytettävissä tässä versiossa.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

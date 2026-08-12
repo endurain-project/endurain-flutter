@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Priem. kadencia",
   "diagnosticsRemoteTitle": "Vzdialené hlásenie pádov",
   "diagnosticsRemoteEnable": "Odosielať hlásenia o pádoch",
-  "diagnosticsRemoteEnableSubtitle": "Odosielajte hlásenia o pádoch a chybách na diagnostický server. Je to nezávislé od miestnej diagnostiky — môžete zapnúť oboje, jedno alebo nič.",
+  "diagnosticsRemoteEnableSubtitle": "Odosielajte hlásenia o pádoch a chybách na diagnostický server. Je to nezávislé od miestnej diagnostiky; môžete zapnúť oboje, jedno alebo nič.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Vzdialené hlásenie pádov nie je v tejto verzii dostupné.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

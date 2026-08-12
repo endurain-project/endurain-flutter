@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Сер. каденс",
   "diagnosticsRemoteTitle": "Віддалене звітування про збої",
   "diagnosticsRemoteEnable": "Надсилати звіти про збої",
-  "diagnosticsRemoteEnableSubtitle": "Надсилайте звіти про збої та помилки на діагностичний сервер. Це незалежно від локальної діагностики — можна ввімкнути обидва, одне або жодного.",
+  "diagnosticsRemoteEnableSubtitle": "Надсилайте звіти про збої та помилки на діагностичний сервер. Це незалежно від локальної діагностики; можна ввімкнути обидва, одне або жодного.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Віддалене звітування про збої недоступне в цій версії.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

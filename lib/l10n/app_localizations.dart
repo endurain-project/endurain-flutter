@@ -2022,7 +2022,7 @@ abstract class AppLocalizations {
   /// Subtitle explaining remote crash reporting - Used in: diagnostics_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Send crash and error reports to a diagnostics server. This is separate from local diagnostics — you can enable either, both, or neither.'**
+  /// **'Send crash and error reports to a diagnostics server. This is separate from local diagnostics; you can enable either, both, or neither.'**
   String get diagnosticsRemoteEnableSubtitle;
 
   /// Status shown when remote crash reporting is active - Used in: diagnostics_screen.dart

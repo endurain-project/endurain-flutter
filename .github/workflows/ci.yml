@@ -102,6 +102,21 @@ jobs:
         shell: bash
         run: flutter build apk --config-only
 
+      - name: Initialize Gradle wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd android
+          for attempt in 1 2 3; do
+            if ./gradlew --version --console=plain; then
+              break
+            fi
+            if [[ "$attempt" == 3 ]]; then
+              exit 1
+            fi
+            echo "Gradle wrapper download attempt $attempt failed; retrying"
+          done
+
       - name: Run native Kotlin unit tests
         shell: bash
         run: cd android && ./gradlew :app:testDebugUnitTest --console=plain

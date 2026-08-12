@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Keskm. kadents",
   "diagnosticsRemoteTitle": "Kaug-krahhiraportid",
   "diagnosticsRemoteEnable": "Saada krahhiraporteid",
-  "diagnosticsRemoteEnableSubtitle": "Saada krahhi- ja vearaporteid diagnostikaserverisse. See on eraldi kohalikust diagnostikast — võid lubada mõlemad, ühe või mitte kumbagi.",
+  "diagnosticsRemoteEnableSubtitle": "Saada krahhi- ja vearaporteid diagnostikaserverisse. See on eraldi kohalikust diagnostikast; võid lubada mõlemad, ühe või mitte kumbagi.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Kaug-krahhiraportid pole selles versioonis saadaval.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

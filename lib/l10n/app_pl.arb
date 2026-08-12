@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Śr. kadencja",
   "diagnosticsRemoteTitle": "Zdalne raportowanie awarii",
   "diagnosticsRemoteEnable": "Wysyłaj raporty o awariach",
-  "diagnosticsRemoteEnableSubtitle": "Wysyłaj raporty o awariach i błędach na serwer diagnostyczny. Jest to niezależne od lokalnej diagnostyki — możesz włączyć oba, jedno lub żadne.",
+  "diagnosticsRemoteEnableSubtitle": "Wysyłaj raporty o awariach i błędach na serwer diagnostyczny. Jest to niezależne od lokalnej diagnostyki; możesz włączyć oba, jedno lub żadne.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Zdalne raportowanie awarii nie jest dostępne w tej wersji.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

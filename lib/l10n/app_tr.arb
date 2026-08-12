@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Ort. kadans",
   "diagnosticsRemoteTitle": "Uzaktan çökme raporlama",
   "diagnosticsRemoteEnable": "Çökme raporları gönder",
-  "diagnosticsRemoteEnableSubtitle": "Çökme ve hata raporlarını bir tanılama sunucusuna gönder. Bu, yerel tanılamadan bağımsızdır — ikisini de, birini ya da hiçbirini etkinleştirebilirsin.",
+  "diagnosticsRemoteEnableSubtitle": "Çökme ve hata raporlarını bir tanılama sunucusuna gönder. Bu, yerel tanılamadan bağımsızdır; ikisini de, birini ya da hiçbirini etkinleştirebilirsin.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Uzaktan çökme raporlama bu sürümde kullanılamıyor.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

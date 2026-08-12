@@ -1262,7 +1262,7 @@
   "activityStatAvgCadence": "Cadência média",
   "diagnosticsRemoteTitle": "Relatórios de falhas remotos",
   "diagnosticsRemoteEnable": "Enviar relatórios de falhas",
-  "diagnosticsRemoteEnableSubtitle": "Enviar relatórios de falhas e de erros para um servidor de diagnóstico. É independente do diagnóstico local — pode ativar ambos, um ou nenhum.",
+  "diagnosticsRemoteEnableSubtitle": "Enviar relatórios de falhas e de erros para um servidor de diagnóstico. É independente do diagnóstico local; pode ativar ambos, um ou nenhum.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "O relatório remoto de falhas não está disponível nesta versão.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

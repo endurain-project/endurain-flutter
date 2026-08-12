@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Cadence moy.",
   "diagnosticsRemoteTitle": "Rapports de plantage à distance",
   "diagnosticsRemoteEnable": "Envoyer les rapports de plantage",
-  "diagnosticsRemoteEnableSubtitle": "Envoyer les rapports de plantage et d'erreur à un serveur de diagnostic. C'est indépendant des diagnostics locaux — vous pouvez activer les deux, l'un ou aucun.",
+  "diagnosticsRemoteEnableSubtitle": "Envoyer les rapports de plantage et d'erreur à un serveur de diagnostic. C'est indépendant des diagnostics locaux; vous pouvez activer les deux, l'un ou aucun.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Les rapports de plantage à distance ne sont pas disponibles dans cette version.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

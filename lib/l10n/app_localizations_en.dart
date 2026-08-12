@@ -1061,7 +1061,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Send crash and error reports to a diagnostics server. This is separate from local diagnostics — you can enable either, both, or neither.';
+      'Send crash and error reports to a diagnostics server. This is separate from local diagnostics; you can enable either, both, or neither.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent';

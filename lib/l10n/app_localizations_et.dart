@@ -1071,7 +1071,7 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Saada krahhi- ja vearaporteid diagnostikaserverisse. See on eraldi kohalikust diagnostikast — võid lubada mõlemad, ühe või mitte kumbagi.';
+      'Saada krahhi- ja vearaporteid diagnostikaserverisse. See on eraldi kohalikust diagnostikast; võid lubada mõlemad, ühe või mitte kumbagi.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

@@ -1087,7 +1087,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Στείλτε αναφορές κατάρρευσης και σφαλμάτων σε έναν διακομιστή διαγνωστικών. Είναι ανεξάρτητο από τα τοπικά διαγνωστικά — μπορείτε να ενεργοποιήσετε και τα δύο, ένα ή κανένα.';
+      'Στείλτε αναφορές κατάρρευσης και σφαλμάτων σε έναν διακομιστή διαγνωστικών. Είναι ανεξάρτητο από τα τοπικά διαγνωστικά; μπορείτε να ενεργοποιήσετε και τα δύο, ένα ή κανένα.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

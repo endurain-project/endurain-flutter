@@ -1079,7 +1079,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Trimite rapoarte de blocare și de eroare către un server de diagnosticare. Este independent de diagnosticarea locală — poți activa ambele, una sau niciuna.';
+      'Trimite rapoarte de blocare și de eroare către un server de diagnosticare. Este independent de diagnosticarea locală; poți activa ambele, una sau niciuna.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

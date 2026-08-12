@@ -1085,7 +1085,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Envoyer les rapports de plantage et d\'erreur à un serveur de diagnostic. C\'est indépendant des diagnostics locaux — vous pouvez activer les deux, l\'un ou aucun.';
+      'Envoyer les rapports de plantage et d\'erreur à un serveur de diagnostic. C\'est indépendant des diagnostics locaux; vous pouvez activer les deux, l\'un ou aucun.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

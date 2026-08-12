@@ -1075,7 +1075,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Lähetä kaatumis- ja virheraportteja diagnostiikkapalvelimelle. Tämä on erillään paikallisesta diagnostiikasta — voit ottaa käyttöön molemmat, toisen tai ei kumpaakaan.';
+      'Lähetä kaatumis- ja virheraportteja diagnostiikkapalvelimelle. Tämä on erillään paikallisesta diagnostiikasta; voit ottaa käyttöön molemmat, toisen tai ei kumpaakaan.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

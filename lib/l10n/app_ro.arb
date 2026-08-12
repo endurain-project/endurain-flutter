@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Cadență medie",
   "diagnosticsRemoteTitle": "Raportare de la distanță a blocărilor",
   "diagnosticsRemoteEnable": "Trimite rapoarte de blocare",
-  "diagnosticsRemoteEnableSubtitle": "Trimite rapoarte de blocare și de eroare către un server de diagnosticare. Este independent de diagnosticarea locală — poți activa ambele, una sau niciuna.",
+  "diagnosticsRemoteEnableSubtitle": "Trimite rapoarte de blocare și de eroare către un server de diagnosticare. Este independent de diagnosticarea locală; poți activa ambele, una sau niciuna.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Raportarea de la distanță a blocărilor nu este disponibilă în această versiune.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

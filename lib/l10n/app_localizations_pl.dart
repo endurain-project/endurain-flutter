@@ -1083,7 +1083,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Wysyłaj raporty o awariach i błędach na serwer diagnostyczny. Jest to niezależne od lokalnej diagnostyki — możesz włączyć oba, jedno lub żadne.';
+      'Wysyłaj raporty o awariach i błędach na serwer diagnostyczny. Jest to niezależne od lokalnej diagnostyki; możesz włączyć oba, jedno lub żadne.';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

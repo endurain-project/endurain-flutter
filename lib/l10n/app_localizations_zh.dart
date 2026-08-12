@@ -1011,7 +1011,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      '将崩溃和错误报告发送到诊断服务器。这与本地诊断相互独立——您可以同时启用两者、其中之一或都不启用。';
+      '将崩溃和错误报告发送到诊断服务器。这与本地诊断相互独立；您可以同时启用两者、其中之一或都不启用。';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';
@@ -2106,7 +2106,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      '將當機和錯誤報告傳送到診斷伺服器。這與本機診斷相互獨立——您可以同時啟用兩者、其中之一或都不啟用。';
+      '將當機和錯誤報告傳送到診斷伺服器。這與本機診斷相互獨立；您可以同時啟用兩者、其中之一或都不啟用。';
 
   @override
   String get diagnosticsRemoteActive => 'Crash reports are being sent.';

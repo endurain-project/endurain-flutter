@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "Prosj. kadenca",
   "diagnosticsRemoteTitle": "Udaljeno prijavljivanje rušenja",
   "diagnosticsRemoteEnable": "Šalji izvješća o rušenju",
-  "diagnosticsRemoteEnableSubtitle": "Šalji izvješća o rušenjima i pogreškama na dijagnostički poslužitelj. Neovisno je o lokalnoj dijagnostici — možeš uključiti oboje, jedno ili ništa.",
+  "diagnosticsRemoteEnableSubtitle": "Šalji izvješća o rušenjima i pogreškama na dijagnostički poslužitelj. Neovisno je o lokalnoj dijagnostici; možeš uključiti oboje, jedno ili ništa.",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "Udaljeno prijavljivanje rušenja nije dostupno u ovoj verziji.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",

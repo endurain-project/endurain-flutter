@@ -311,7 +311,7 @@
   "activityStatAvgCadence": "平均踏頻",
   "diagnosticsRemoteTitle": "遠端當機報告",
   "diagnosticsRemoteEnable": "傳送當機報告",
-  "diagnosticsRemoteEnableSubtitle": "將當機和錯誤報告傳送到診斷伺服器。這與本機診斷相互獨立——您可以同時啟用兩者、其中之一或都不啟用。",
+  "diagnosticsRemoteEnableSubtitle": "將當機和錯誤報告傳送到診斷伺服器。這與本機診斷相互獨立；您可以同時啟用兩者、其中之一或都不啟用。",
   "diagnosticsRemoteActive": "Crash reports are being sent.",
   "diagnosticsRemoteNeedsServer": "此版本不支援遠端當機報告。",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",
