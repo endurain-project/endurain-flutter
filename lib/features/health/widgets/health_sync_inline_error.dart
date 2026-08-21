@@ -1,7 +1,7 @@
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Inline, centered error message shown within a health-sync workout list
 /// surface. Shared by the "Available" and "Imported" tab views.
@@ -17,9 +17,8 @@ class HealthSyncInlineError extends StatelessWidget {
       padding: const EdgeInsets.only(top: UIConstants.paddingStandard),
       child: Text(
         localizedErrorMessage(error, l10n),
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.error,
-        ),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: Theme.of(context).colorScheme.error),
         textAlign: TextAlign.center,
       ),
     );

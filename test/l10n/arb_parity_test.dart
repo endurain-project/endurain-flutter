@@ -10,9 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const arbDir = 'lib/l10n';
 
-  final template =
-      jsonDecode(File('$arbDir/app_en.arb').readAsStringSync())
-          as Map<String, dynamic>;
+  final template = jsonDecode(
+    File('$arbDir/app_en.arb').readAsStringSync(),
+  ) as Map<String, dynamic>;
   final templateKeys = _messageKeys(template);
   final templateTokens = {
     for (final key in templateKeys) key: _tokens(template[key] as String),
@@ -94,7 +94,8 @@ Set<String> _messageKeys(Map<String, dynamic> arb) {
 /// uses simple placeholders (no plural/select), so a token scan is sufficient
 /// and, unlike reading `@`-metadata, works for lean translation catalogs.
 Set<String> _tokens(String message) {
-  return RegExp(
-    r'\{(\w+)\}',
-  ).allMatches(message).map((match) => match.group(1)!).toSet();
+  return RegExp(r'\{(\w+)\}')
+      .allMatches(message)
+      .map((match) => match.group(1)!)
+      .toSet();
 }

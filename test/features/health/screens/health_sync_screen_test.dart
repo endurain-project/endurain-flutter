@@ -15,8 +15,8 @@ import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../fakes/fake_health_sync_service.dart';
@@ -243,37 +243,27 @@ void main() {
       addTearDown(controller.dispose);
     });
 
-    testWidgets(
-      'shows Health app route guidance on iOS',
-      (tester) async {
-        service = FakeHealthSyncService(
-          sdkStatus: HealthSdkStatus.available,
-          authStatus: HealthAuthorizationStatus.granted,
-          workouts: [makeWorkout('w1', hasRoute: false)],
-          routeConsentDeniedCountValue: 1,
-        );
-        await pumpScreen(tester);
-        final l10n = l10nOf(tester);
+    testWidgets('shows Health app route guidance on iOS', (tester) async {
+      service = FakeHealthSyncService(
+        sdkStatus: HealthSdkStatus.available,
+        authStatus: HealthAuthorizationStatus.granted,
+        workouts: [makeWorkout('w1', hasRoute: false)],
+        routeConsentDeniedCountValue: 1,
+      );
+      await pumpScreen(tester);
+      final l10n = l10nOf(tester);
 
-        expect(
-          find.text(l10n.healthSyncRouteConsentGuidanceIos),
-          findsOneWidget,
-        );
-        expect(find.text(l10n.healthSyncRouteConsentGuidance), findsNothing);
-        expect(find.text(l10n.healthSyncReviewAccess), findsOneWidget);
+      expect(find.text(l10n.healthSyncRouteConsentGuidanceIos), findsOneWidget);
+      expect(find.text(l10n.healthSyncRouteConsentGuidance), findsNothing);
+      expect(find.text(l10n.healthSyncReviewAccess), findsOneWidget);
 
-        await tester.tap(find.text(l10n.healthSyncReviewAccess));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.healthSyncReviewAccess));
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text(l10n.healthAccessReviewIosInstructions),
-          findsOneWidget,
-        );
-        expect(service.requestAccessCallCount, 0);
-        addTearDown(controller.dispose);
-      },
-      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-    );
+      expect(find.text(l10n.healthAccessReviewIosInstructions), findsOneWidget);
+      expect(service.requestAccessCallCount, 0);
+      addTearDown(controller.dispose);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
     testWidgets('hides the no-routes banner when a route-bearing workout '
         'exists', (tester) async {

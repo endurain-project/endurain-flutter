@@ -5,7 +5,7 @@ import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   // The composition root owns the single production [AppServices] instance and

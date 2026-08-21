@@ -196,9 +196,8 @@ void main() {
       'treats notDetermined as granted once the user has connected',
       () async {
         adapter.authStatus = HealthAuthorizationStatus.notDetermined;
-        await HealthSyncSettingsRepository(
-          storage: secureStorage,
-        ).setConnected(profile.id, true);
+        await HealthSyncSettingsRepository(storage: secureStorage)
+            .setConnected(profile.id, true);
 
         expect(
           await service.currentAuthorizationStatus(),
@@ -217,9 +216,8 @@ void main() {
 
     test('respects a platform denial even when previously connected', () async {
       adapter.authStatus = HealthAuthorizationStatus.denied;
-      await HealthSyncSettingsRepository(
-        storage: secureStorage,
-      ).setConnected(profile.id, true);
+      await HealthSyncSettingsRepository(storage: secureStorage)
+          .setConnected(profile.id, true);
 
       expect(
         await service.currentAuthorizationStatus(),
@@ -694,9 +692,8 @@ void main() {
 
       expect(adapter.revokePermissionsCallCount, 1);
       expect(
-        await HealthSyncSettingsRepository(
-          storage: secureStorage,
-        ).isConnected(profile.id),
+        await HealthSyncSettingsRepository(storage: secureStorage)
+            .isConnected(profile.id),
         isFalse,
       );
       expect(await service.isAutoSyncOnResumeEnabled(), isFalse);

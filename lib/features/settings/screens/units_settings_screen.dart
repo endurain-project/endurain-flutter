@@ -5,7 +5,7 @@ import 'package:endurain/features/activity/services/activity_stats_formatter_sco
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Lets the user pick the unit system used to display distances, speeds,
 /// paces, and elevations.

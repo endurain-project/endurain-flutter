@@ -33,14 +33,13 @@ void main() {
   test(
     'imports legacy JSON preferences once without overwriting new values',
     () async {
-      await File(
-        '${tempDir.path}${Platform.pathSeparator}preferences.json',
-      ).writeAsString(
-        jsonEncode(<String, String>{
-          'app_locale': 'pt-BR',
-          'tile_server_url': 'https://tiles.example.test/{z}/{x}/{y}.png',
-        }),
-      );
+      await File('${tempDir.path}${Platform.pathSeparator}preferences.json')
+          .writeAsString(
+            jsonEncode(<String, String>{
+              'app_locale': 'pt-BR',
+              'tile_server_url': 'https://tiles.example.test/{z}/{x}/{y}.png',
+            }),
+          );
       await backend.write('app_locale', 'en');
 
       expect(await store.read(key: 'app_locale'), 'en');
@@ -50,11 +49,10 @@ void main() {
       );
 
       await backend.write('tile_server_url', 'native-value');
-      await File(
-        '${tempDir.path}${Platform.pathSeparator}preferences.json',
-      ).writeAsString(
-        jsonEncode(<String, String>{'tile_server_url': 'legacy'}),
-      );
+      await File('${tempDir.path}${Platform.pathSeparator}preferences.json')
+          .writeAsString(
+            jsonEncode(<String, String>{'tile_server_url': 'legacy'}),
+          );
       final subsequentStore = AppPreferencesStore(
         backend: backend,
         supportDirectoryProvider: () async => tempDir,

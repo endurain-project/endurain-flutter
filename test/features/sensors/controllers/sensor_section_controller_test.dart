@@ -44,21 +44,18 @@ void main() {
       expect(controller.isCheckingBluetooth, isFalse);
     });
 
-    test(
-      'initialize requests permission before reading Bluetooth state',
-      () async {
-        // Mirror a device that only reports an accurate adapter state once the
-        // Bluetooth permission has been granted. Reading before requesting would
-        // surface the ready adapter as `unknown` (which the UI renders as off).
-        adapter.stateHiddenUntilPermission = true;
-        adapter.bluetoothStateValue = SensorBluetoothState.ready;
+    test('initialize requests permission before reading Bluetooth state', () async {
+      // Mirror a device that only reports an accurate adapter state once the
+      // Bluetooth permission has been granted. Reading before requesting would
+      // surface the ready adapter as `unknown` (which the UI renders as off).
+      adapter.stateHiddenUntilPermission = true;
+      adapter.bluetoothStateValue = SensorBluetoothState.ready;
 
-        await controller.initialize();
+      await controller.initialize();
 
-        expect(adapter.ensurePermissionsCalls, 1);
-        expect(controller.bluetoothState, SensorBluetoothState.ready);
-      },
-    );
+      expect(adapter.ensurePermissionsCalls, 1);
+      expect(controller.bluetoothState, SensorBluetoothState.ready);
+    });
 
     test('startScan flags permission denial without scanning', () async {
       adapter.permissionGranted = false;

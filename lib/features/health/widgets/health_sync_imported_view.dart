@@ -9,8 +9,8 @@ import 'package:endurain/features/health/models/health_sync_state.dart';
 import 'package:endurain/features/health/widgets/health_sync_inline_error.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 /// The "Imported" tab: previously imported workouts and their upload status.
@@ -113,9 +113,8 @@ class _ImportedWorkoutTile extends StatelessWidget {
         ? l10n.activityHistoryGpxMissing
         : l10n.activityHistoryEntryTitle(
             activity.activityType.localizedLabel(l10n),
-            DateFormat.yMd(
-              Localizations.localeOf(context).toLanguageTag(),
-            ).format(activity.endedAt.toLocal()),
+            DateFormat.yMd(Localizations.localeOf(context).toLanguageTag())
+                .format(activity.endedAt.toLocal()),
           );
     final subtitle = [
       l10n.healthSyncImportedAt(

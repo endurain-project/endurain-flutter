@@ -4,9 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('Android declares every Health Connect workout read permission', () {
-    final manifest = File(
-      'android/app/src/main/AndroidManifest.xml',
-    ).readAsStringSync();
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
     final permissions = RegExp(
       r'<uses-permission\s+android:name="([^"]+)"\s*/>',
     ).allMatches(manifest).map((match) => match.group(1)).toSet();
@@ -30,17 +29,15 @@ void main() {
   });
 
   test('Android enables user-approved self-hosted cleartext transport', () {
-    final manifest = File(
-      'android/app/src/main/AndroidManifest.xml',
-    ).readAsStringSync();
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
 
     expect(manifest, contains('android:usesCleartextTraffic="true"'));
   });
 
   test('Android references the network security config', () {
-    final manifest = File(
-      'android/app/src/main/AndroidManifest.xml',
-    ).readAsStringSync();
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
 
     expect(
       manifest,

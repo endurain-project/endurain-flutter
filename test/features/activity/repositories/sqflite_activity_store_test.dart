@@ -325,9 +325,8 @@ void main() {
         databaseFactory: databaseFactoryFfi,
         databasePath: dbPath,
       );
-      final record = _record(
-        id: 'idem-1',
-      ).copyWith(idempotencyKey: 'health_uuid');
+      final record = _record(id: 'idem-1')
+          .copyWith(idempotencyKey: 'health_uuid');
       await store.upsert(record);
       await store.close();
 
@@ -367,9 +366,8 @@ void main() {
         databasePath: dbPath,
       );
       await store.upsert(
-        _record(
-          id: 'metrics',
-        ).copyWith(maxSpeedMetersPerSecond: 8.5, elevationGainMeters: 240.0),
+        _record(id: 'metrics')
+            .copyWith(maxSpeedMetersPerSecond: 8.5, elevationGainMeters: 240.0),
       );
       await store.close();
 
@@ -436,22 +434,20 @@ void main() {
       },
     );
 
-    test(
-      'v9 origin-qualifies connection_profile_id from the raw account id',
-      () async {
-        final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
-        // Seed a pre-v9 (version 8) database whose scoped row still stores the
-        // raw server account id in connection_profile_id.
-        final v8 = await databaseFactoryFfi.openDatabase(
-          dbPath,
-          options: OpenDatabaseOptions(
-            version: 8,
-            onCreate: (db, version) async {
-              await db.execute(
-                'CREATE TABLE schema_version (version INTEGER NOT NULL)',
-              );
-              await db.insert('schema_version', {'version': 8});
-              await db.execute('''
+    test('v9 origin-qualifies connection_profile_id from the raw account id', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+      // Seed a pre-v9 (version 8) database whose scoped row still stores the
+      // raw server account id in connection_profile_id.
+      final v8 = await databaseFactoryFfi.openDatabase(
+        dbPath,
+        options: OpenDatabaseOptions(
+          version: 8,
+          onCreate: (db, version) async {
+            await db.execute(
+              'CREATE TABLE schema_version (version INTEGER NOT NULL)',
+            );
+            await db.insert('schema_version', {'version': 8});
+            await db.execute('''
                 CREATE TABLE local_activity (
                   id                               TEXT PRIMARY KEY,
                   activity_type                    TEXT NOT NULL,
@@ -477,59 +473,58 @@ void main() {
                   elevation_gain_meters            REAL
                 )
               ''');
-              await db.insert('local_activity', {
-                'id': 'scoped',
-                'activity_type': 'run',
-                'started_at': '2026-06-02T10:00:00.000Z',
-                'ended_at': '2026-06-02T10:05:00.000Z',
-                'elapsed_duration_seconds': 300,
-                'distance_meters': 1200.0,
-                'point_count': 8,
-                'gpx_file_name': 'scoped.gpx',
-                'upload_status': 'pending',
-                'created_at': '2026-06-02T10:05:00.000Z',
-                'updated_at': '2026-06-02T10:05:00.000Z',
-                'connection_origin': 'https://a.example',
-                'connection_profile_id': '1',
-              });
-              // A guest-mode row left both connection columns null.
-              await db.insert('local_activity', {
-                'id': 'guest',
-                'activity_type': 'run',
-                'started_at': '2026-06-02T11:00:00.000Z',
-                'ended_at': '2026-06-02T11:05:00.000Z',
-                'elapsed_duration_seconds': 300,
-                'distance_meters': 500.0,
-                'point_count': 4,
-                'gpx_file_name': 'guest.gpx',
-                'upload_status': 'pending',
-                'created_at': '2026-06-02T11:05:00.000Z',
-                'updated_at': '2026-06-02T11:05:00.000Z',
-              });
-            },
-          ),
-        );
-        await v8.close();
+            await db.insert('local_activity', {
+              'id': 'scoped',
+              'activity_type': 'run',
+              'started_at': '2026-06-02T10:00:00.000Z',
+              'ended_at': '2026-06-02T10:05:00.000Z',
+              'elapsed_duration_seconds': 300,
+              'distance_meters': 1200.0,
+              'point_count': 8,
+              'gpx_file_name': 'scoped.gpx',
+              'upload_status': 'pending',
+              'created_at': '2026-06-02T10:05:00.000Z',
+              'updated_at': '2026-06-02T10:05:00.000Z',
+              'connection_origin': 'https://a.example',
+              'connection_profile_id': '1',
+            });
+            // A guest-mode row left both connection columns null.
+            await db.insert('local_activity', {
+              'id': 'guest',
+              'activity_type': 'run',
+              'started_at': '2026-06-02T11:00:00.000Z',
+              'ended_at': '2026-06-02T11:05:00.000Z',
+              'elapsed_duration_seconds': 300,
+              'distance_meters': 500.0,
+              'point_count': 4,
+              'gpx_file_name': 'guest.gpx',
+              'upload_status': 'pending',
+              'created_at': '2026-06-02T11:05:00.000Z',
+              'updated_at': '2026-06-02T11:05:00.000Z',
+            });
+          },
+        ),
+      );
+      await v8.close();
 
-        final store = SqfliteActivityStore(
-          databaseFactory: databaseFactoryFfi,
-          databasePath: dbPath,
-        );
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
 
-        // The scoped row's profile id is now origin-qualified and globally
-        // unique, matching ConnectionIdentity.profileId('https://a.example','1').
-        final scoped = await store.get('scoped');
-        expect(scoped?.connectionOrigin, 'https://a.example');
-        expect(scoped?.connectionProfileId, 'https://a.example#1');
+      // The scoped row's profile id is now origin-qualified and globally
+      // unique, matching ConnectionIdentity.profileId('https://a.example','1').
+      final scoped = await store.get('scoped');
+      expect(scoped?.connectionOrigin, 'https://a.example');
+      expect(scoped?.connectionProfileId, 'https://a.example#1');
 
-        // Guest rows keep null scoping and are untouched by the migration.
-        final guest = await store.get('guest');
-        expect(guest?.connectionOrigin, isNull);
-        expect(guest?.connectionProfileId, isNull);
+      // Guest rows keep null scoping and are untouched by the migration.
+      final guest = await store.get('guest');
+      expect(guest?.connectionOrigin, isNull);
+      expect(guest?.connectionProfileId, isNull);
 
-        await store.close();
-      },
-    );
+      await store.close();
+    });
 
     test('upgrades a v1 database with the richer summary metrics', () async {
       final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
@@ -592,9 +587,8 @@ void main() {
 
       // New writes exercise the added columns end to end.
       await store.upsert(
-        _record(
-          id: 'fresh',
-        ).copyWith(maxSpeedMetersPerSecond: 6.0, elevationGainMeters: 88.0),
+        _record(id: 'fresh')
+            .copyWith(maxSpeedMetersPerSecond: 6.0, elevationGainMeters: 88.0),
       );
       final fresh = await store.get('fresh');
       expect(fresh?.maxSpeedMetersPerSecond, 6.0);

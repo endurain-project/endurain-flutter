@@ -325,15 +325,11 @@ class SqfliteActivityStore implements LocalActivityStore {
     required DateTime updatedAt,
   }) async {
     final db = await _open();
-    return db.update(
-      _tableActivity,
-      {
-        'connection_origin': origin,
-        'connection_profile_id': profileId,
-        'updated_at': updatedAt.toUtcIso8601(),
-      },
-      where: 'connection_origin IS NULL AND connection_profile_id IS NULL',
-    );
+    return db.update(_tableActivity, {
+      'connection_origin': origin,
+      'connection_profile_id': profileId,
+      'updated_at': updatedAt.toUtcIso8601(),
+    }, where: 'connection_origin IS NULL AND connection_profile_id IS NULL');
   }
 
   @override

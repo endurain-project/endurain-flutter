@@ -176,15 +176,14 @@ void main() {
           endpoint: '/upload',
           fieldName: 'file',
         ),
-        uploadFile:
-            (
-              _,
-              _,
-              _, {
-              idempotencyKey,
-              expectedOrigin,
-              expectedProfileId,
-            }) async => throw const FormatException('offline'),
+        uploadFile: (
+          _,
+          _,
+          _, {
+          idempotencyKey,
+          expectedOrigin,
+          expectedProfileId,
+        }) async => throw const FormatException('offline'),
       );
 
       await expectLater(

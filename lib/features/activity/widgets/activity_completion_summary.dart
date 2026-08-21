@@ -6,7 +6,7 @@ import 'package:endurain/features/activity/services/activity_stats_formatter.dar
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Richer post-recording summary shown once a recording completes, before or
 /// after the activity is uploaded. It derives its figures from the completed

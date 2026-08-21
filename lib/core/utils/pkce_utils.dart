@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:crypto/crypto.dart';
 
 /// A PKCE (RFC 7636) code verifier paired with its S256-derived challenge.

@@ -17,15 +17,14 @@ import 'package:http/http.dart' as http;
 /// pass a fake. The named parameters mirror `ApiClient.uploadFile` so the
 /// method tear-off is a drop-in, preserving the idempotency key and the
 /// origin/profile scoping.
-typedef ActivityFileUploader =
-    Future<http.StreamedResponse> Function(
-      String endpoint,
-      String filePath,
-      String fieldName, {
-      String? idempotencyKey,
-      String? expectedOrigin,
-      String? expectedProfileId,
-    });
+typedef ActivityFileUploader = Future<http.StreamedResponse> Function(
+  String endpoint,
+  String filePath,
+  String fieldName, {
+  String? idempotencyKey,
+  String? expectedOrigin,
+  String? expectedProfileId,
+});
 
 /// Controls how many times [ActivityUploadService.performUploadAttempt]
 /// retries transient failures and how long it waits between attempts.

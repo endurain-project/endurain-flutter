@@ -13,6 +13,13 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
   errors:
     prefer_initializing_formals: ignore
   language:
@@ -45,7 +52,6 @@ linter:
     require_trailing_commas: true
     sort_child_properties_last: true
     unawaited_futures: true
-    unnecessary_await_in_return: true
     unnecessary_null_aware_assignments: true
     unnecessary_null_checks: true
     unnecessary_nullable_for_final_variable_declarations: true

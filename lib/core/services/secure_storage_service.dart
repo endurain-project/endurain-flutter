@@ -13,8 +13,8 @@ class SecureStorageService {
   /// versions):
   ///
   /// - **Android:** values are stored via Android Keystore-backed AES ciphers
-  ///   (the flutter_secure_storage v10 default; the former
-  ///   `encryptedSharedPreferences` flag is deprecated and migrated
+  ///   (the flutter_secure_storage default since v10; the former
+  ///   `encryptedSharedPreferences` flag was deprecated in v10 and migrated
   ///   automatically).
   /// - **Apple (iOS/macOS):** `first_unlock_this_device` keychain
   ///   accessibility so tokens are unreadable before the first device unlock

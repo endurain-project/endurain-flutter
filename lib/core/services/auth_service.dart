@@ -237,7 +237,7 @@ class AuthService {
         );
         final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
 
-        return _sessionStore.replaceSessionIfCurrent(
+        return await _sessionStore.replaceSessionIfCurrent(
           expected: session,
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,

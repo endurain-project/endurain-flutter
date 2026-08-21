@@ -8,8 +8,8 @@ import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Settings screen to discover, connect, and monitor external Bluetooth Low
 /// Energy sensors: heart-rate monitors, cycling power meters, and cadence
@@ -207,13 +207,10 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
 
   Widget _buildSectionHeader(BuildContext context, String header) {
     final style = PlatformUtils.isApplePlatform
-        ? CupertinoTheme.of(context).textTheme.textStyle.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          )
-        : Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold);
+        ? CupertinoTheme.of(context).textTheme.textStyle
+              .copyWith(fontSize: 20, fontWeight: FontWeight.bold)
+        : Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.bold);
     return Padding(
       padding: const EdgeInsets.only(bottom: UIConstants.paddingCompact),
       child: Text(header, style: style),
@@ -326,12 +323,10 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
   }) {
     if (view.isScanning && view.scanResults.isEmpty) {
       final scanningStyle = PlatformUtils.isApplePlatform
-          ? CupertinoTheme.of(context).textTheme.textStyle.copyWith(
-              color: CupertinoColors.label.resolveFrom(context),
-            )
-          : Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            );
+          ? CupertinoTheme.of(context).textTheme.textStyle
+                .copyWith(color: CupertinoColors.label.resolveFrom(context))
+          : Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: Theme.of(context).colorScheme.onSurface);
       return [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

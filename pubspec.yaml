@@ -16,11 +16,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.7.3+10
+version: 0.8.0+11
 
 environment:
-  sdk: ^3.12.0
-  flutter: '>=3.44.0'
+  sdk: ^3.13.0
+  flutter: '>=3.47.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -46,7 +46,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Secure storage for credentials
-  flutter_secure_storage: ^10.0.0
+  flutter_secure_storage: ^10.3.1
 
   # Map with OpenStreetMap
   flutter_map: ^8.3.1
@@ -110,6 +110,11 @@ dependencies:
   # permission_handler dependency is needed.
   universal_ble: ^2.1.0
 
+  # Standalone Material/Cupertino design packages (Flutter 3.47+), decoupled
+  # from the core SDK so they can ship on their own release cadence.
+  material_ui: ^1.0.1
+  cupertino_ui: ^1.0.0
+
 dev_dependencies:
   fake_async: ^1.3.3
 
@@ -132,11 +137,6 @@ dev_dependencies:
 
   # Generate app icons for all platforms
   flutter_launcher_icons: ^0.14.4
-
-# health ^13.3.1 constrains device_info_plus to ^12.1.0. Override it until
-# health accepts version 13, which supports Flutter 3.44's built-in Kotlin.
-dependency_overrides:
-  device_info_plus: ^13.2.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

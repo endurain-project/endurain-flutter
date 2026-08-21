@@ -1,4 +1,5 @@
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -105,9 +106,8 @@ void main() {
           addTearDown(() => tempDirectory.deleteSync(recursive: true));
           final repository = _repositoryFor(tempDirectory);
           final store = InMemoryActiveActivityStore();
-          store.session = _activeSession(
-            ActiveActivityStatus.completed,
-          ).copyWith(endedAt: DateTime.utc(2026, 6, 3, 9, 30));
+          store.session = _activeSession(ActiveActivityStatus.completed)
+              .copyWith(endedAt: DateTime.utc(2026, 6, 3, 9, 30));
           await store.appendPoints([
             _recordedPoint(segmentIndex: 0, latitude: 41.1),
             _recordedPoint(segmentIndex: 0, latitude: 41.2),

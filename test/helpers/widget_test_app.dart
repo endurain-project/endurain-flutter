@@ -1,7 +1,8 @@
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A [MaterialApp] test harness that provides an [AppScope] so screens which
 /// read services from the scope work without a global fallback.
@@ -29,7 +30,7 @@ class _TestMaterialAppState extends State<TestMaterialApp> {
     return AppScope(
       services: _services,
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: widget.child,
       ),

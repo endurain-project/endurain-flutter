@@ -8,7 +8,7 @@ import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Shows the health data Endurain requests and its platform permission state.
 ///

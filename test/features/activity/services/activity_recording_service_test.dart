@@ -1,4 +1,5 @@
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
+
 import 'dart:async';
 
 import 'package:async/async.dart';

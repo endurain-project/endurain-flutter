@@ -7,8 +7,8 @@ import 'package:endurain/features/health/screens/health_access_screen.dart';
 import 'package:endurain/features/settings/controllers/device_access_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:geolocator/geolocator.dart';
 
 class DeviceAccessScreen extends StatefulWidget {

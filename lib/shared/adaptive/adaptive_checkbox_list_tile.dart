@@ -1,7 +1,7 @@
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/shared/adaptive/adaptive_list_tile_subtitle.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AdaptiveCheckboxListTile extends StatelessWidget {
   const AdaptiveCheckboxListTile({

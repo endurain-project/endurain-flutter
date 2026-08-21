@@ -13,8 +13,8 @@ import 'package:endurain/features/health/widgets/health_sync_inline_error.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 /// The "Available" tab: import range, auto-sync toggle, notices, and the list
@@ -458,9 +458,8 @@ class _WorkoutRow extends StatelessWidget {
               children: [
                 Text(title),
                 _NonImportableBadge(
-                  label: AppLocalizations.of(
-                    context,
-                  )!.healthSyncBadgeNonImportable,
+                  label: AppLocalizations.of(context)!
+                      .healthSyncBadgeNonImportable,
                 ),
               ],
             ),
@@ -504,9 +503,8 @@ class _NonImportableBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelSmall?.copyWith(color: foreground, letterSpacing: 0),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: foreground, letterSpacing: 0),
       ),
     );
   }

@@ -180,31 +180,34 @@ void main() {
       expect(await storage.getSessionId(), isNull);
     });
 
-    test('clears local tokens when refresh returns malformed success', () async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setSessionId('session-1');
-      await storage.setAccessTokenExpiresAt(DateTime.now().toUtc());
-      final service = AuthService(
-        storage: storage,
-        httpClient: MockClient((request) async {
-          expect(request.url.path, ApiEndpoints.defaults.refreshEndpoint);
-          return http.Response(
-            '{"access_token":"access-2","session_id":"session-2","expires_in":3600}',
-            200,
-          );
-        }),
-      );
+    test(
+      'clears local tokens when refresh returns malformed success',
+      () async {
+        final storage = SecureStorageService();
+        await storage.setServerUrl('https://example.test');
+        await storage.setAccessToken('access-1');
+        await storage.setRefreshToken('refresh-1');
+        await storage.setSessionId('session-1');
+        await storage.setAccessTokenExpiresAt(DateTime.now().toUtc());
+        final service = AuthService(
+          storage: storage,
+          httpClient: MockClient((request) async {
+            expect(request.url.path, ApiEndpoints.defaults.refreshEndpoint);
+            return http.Response(
+              '{"access_token":"access-2","session_id":"session-2","expires_in":3600}',
+              200,
+            );
+          }),
+        );
 
-      final refreshed = await service.refreshToken();
+        final refreshed = await service.refreshToken();
 
-      expect(refreshed, isFalse);
-      expect(await storage.getAccessToken(), isNull);
-      expect(await storage.getRefreshToken(), isNull);
-      expect(await storage.getSessionId(), isNull);
-    });
+        expect(refreshed, isFalse);
+        expect(await storage.getAccessToken(), isNull);
+        expect(await storage.getRefreshToken(), isNull);
+        expect(await storage.getSessionId(), isNull);
+      },
+    );
 
     test('clears local tokens when server logout fails', () async {
       final storage = SecureStorageService();
@@ -575,30 +578,27 @@ void main() {
       expect(current?.accessToken, 'access-b');
     });
 
-    test(
-      'refreshToken can run again after an in-flight refresh completes',
-      () async {
-        final storage = SecureStorageService();
-        await _seedSession(storage);
-        var refreshRequests = 0;
-        final service = AuthService(
-          storage: storage,
-          httpClient: MockClient((request) async {
-            refreshRequests++;
-            final next = refreshRequests + 1;
-            return http.Response(
-              '{"access_token":"access-$next","refresh_token":"refresh-$next","session_id":"session-$next","expires_in":3600}',
-              200,
-            );
-          }),
-        );
+    test('refreshToken can run again after an in-flight refresh completes', () async {
+      final storage = SecureStorageService();
+      await _seedSession(storage);
+      var refreshRequests = 0;
+      final service = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          refreshRequests++;
+          final next = refreshRequests + 1;
+          return http.Response(
+            '{"access_token":"access-$next","refresh_token":"refresh-$next","session_id":"session-$next","expires_in":3600}',
+            200,
+          );
+        }),
+      );
 
-        expect(await service.refreshToken(), isTrue);
-        expect(await service.refreshToken(), isTrue);
+      expect(await service.refreshToken(), isTrue);
+      expect(await service.refreshToken(), isTrue);
 
-        expect(refreshRequests, 2);
-      },
-    );
+      expect(refreshRequests, 2);
+    });
 
     test('logout succeeds when the server confirms the logout', () async {
       final storage = SecureStorageService();
@@ -837,31 +837,28 @@ void main() {
       },
     );
 
-    test(
-      'rejects http serverUrl to the cloud origin before making any request',
-      () async {
-        final service = AuthService(
-          storage: SecureStorageService(),
-          httpClient: MockClient((request) async {
-            fail(
-              'No HTTP request should be made with http:// to the cloud origin.',
-            );
-          }),
-          config: const AppConfig(cloudBaseUrl: 'https://example.test'),
-        );
+    test('rejects http serverUrl to the cloud origin before making any request', () async {
+      final service = AuthService(
+        storage: SecureStorageService(),
+        httpClient: MockClient((request) async {
+          fail(
+            'No HTTP request should be made with http:// to the cloud origin.',
+          );
+        }),
+        config: const AppConfig(cloudBaseUrl: 'https://example.test'),
+      );
 
-        await expectLater(
-          service.login('joao', 'secret', serverUrl: 'http://example.test'),
-          throwsA(
-            isA<AppException>().having(
-              (e) => e.code,
-              'code',
-              AppErrorCode.insecureTransportNotAllowed,
-            ),
+      await expectLater(
+        service.login('joao', 'secret', serverUrl: 'http://example.test'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.insecureTransportNotAllowed,
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
 
     test('uses custom apiBasePath from ApiEndpoints', () async {
       const v2Config = AppConfig(apiBasePath: '/api/v2');

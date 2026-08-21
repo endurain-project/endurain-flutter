@@ -10,8 +10,8 @@ import 'package:endurain/features/health/widgets/health_sync_imported_view.dart'
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HealthSyncScreen extends StatefulWidget {
   const HealthSyncScreen({super.key, this.controller});

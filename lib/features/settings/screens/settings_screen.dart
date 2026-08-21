@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
@@ -108,9 +108,8 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
         ? ''
         : '© ${UIConstants.copyrightStartYear} - ${DateTime.now().year} '
               'Endurain • $appVersion';
-    final footerTextStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final footerTextStyle = Theme.of(context).textTheme.bodySmall
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
 
     return AdaptiveScaffold(
       title: l10n.settingsScreen,

@@ -10,7 +10,7 @@ import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
 import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;

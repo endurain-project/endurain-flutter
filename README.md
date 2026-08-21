@@ -128,7 +128,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 ## Tech Stack
 
-- **Framework:** Flutter 3.44+ (Dart 3.12+)
+- **Framework:** Flutter 3.47+ (Dart 3.13+)
 - **Platforms:** iOS, Android
 - **State Management:** Focused `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and obtained via `AppScope`
 - **Navigation:** `go_router` for top-level, auth-guarded routing that redirects off the session state and is ready for deep links
@@ -154,8 +154,8 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 ### Prerequisites
 
-- Flutter SDK 3.44.6 or higher
-- Dart SDK 3.12.0 or higher
+- Flutter SDK 3.47.1 or higher
+- Dart SDK 3.13.0 or higher
 - Xcode (for iOS development)
 - Android Studio (for Android development)
 - A running Endurain server instance

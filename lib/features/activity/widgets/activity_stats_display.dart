@@ -4,7 +4,7 @@ import 'package:endurain/features/activity/services/activity_stats_calculator.da
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ActivityStatsDisplay extends StatelessWidget {
   ActivityStatsDisplay({

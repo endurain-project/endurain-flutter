@@ -1,6 +1,6 @@
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
 import 'package:endurain/features/activity/widgets/activity_route_map.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';

@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/theme/app_theme.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/l10n/app_localizations.dart';
 
 class AdaptiveApp extends StatelessWidget {
   /// Hosts a single [home] widget (used by tests and simple, non-routed apps).
@@ -56,7 +55,7 @@ class AdaptiveApp extends StatelessWidget {
           theme: AppTheme.cupertinoLightTheme,
           builder: cupertinoBuilder,
           locale: locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: appSupportedLocales,
           localeListResolutionCallback: appLocaleListResolution,
           routerConfig: router,
@@ -68,7 +67,7 @@ class AdaptiveApp extends StatelessWidget {
         theme: AppTheme.cupertinoLightTheme,
         builder: cupertinoBuilder,
         locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: appSupportedLocales,
         localeListResolutionCallback: appLocaleListResolution,
         home: home,
@@ -82,7 +81,7 @@ class AdaptiveApp extends StatelessWidget {
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
         locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: appSupportedLocales,
         localeListResolutionCallback: appLocaleListResolution,
         routerConfig: router,
@@ -95,7 +94,7 @@ class AdaptiveApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       locale: locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: appSupportedLocales,
       localeListResolutionCallback: appLocaleListResolution,
       home: home,

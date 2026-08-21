@@ -2,8 +2,8 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ActivityTypePicker extends StatelessWidget {
   const ActivityTypePicker({

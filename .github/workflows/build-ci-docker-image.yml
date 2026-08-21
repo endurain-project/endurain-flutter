@@ -23,7 +23,7 @@ env:
   # Published alongside this repository in GitHub Container Registry.
   IMAGE_NAME: ghcr.io/endurain-project/endurain-flutter-ci
   # Keep in sync with docker/flutter-build/Dockerfile and the CI workflows.
-  IMAGE_TAG: '3.44.6'
+  IMAGE_TAG: '3.47.1'
 
 jobs:
   build-image:

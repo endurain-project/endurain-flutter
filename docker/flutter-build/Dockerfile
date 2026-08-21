@@ -16,17 +16,17 @@ FROM eclipse-temurin:17-jdk-jammy@sha256:beabb759e6f9653c843958d1d1f5cecb881dfb8
 
 # --- Toolchain versions (override via --build-arg to upgrade) ---------------
 # Flutter SDK. The SHA256 is published by the Flutter release storage bucket.
-ARG FLUTTER_VERSION=3.44.6
-ARG FLUTTER_ARCHIVE=flutter_linux_3.44.6-stable.tar.xz
-ARG FLUTTER_SHA256=a6320fd72e9a2690c08e2a6a70874a30cb120dee7c78f49d2c628bd7c9e20525
+ARG FLUTTER_VERSION=3.47.1
+ARG FLUTTER_ARCHIVE=flutter_linux_3.47.1-stable.tar.xz
+ARG FLUTTER_SHA256=a1d8166c0309267cb7dc99f1424eecf08b86946ad3b50723c6f59945964aea45
 ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/releases/stable/linux
 
-# Android SDK. The command-line tools SHA256 is verified against the archive
-# (Google only publishes SHA1 in its manifest, so it was cross-checked against
-# that SHA1). Flutter uses API 36, while Android dependencies still compile
-# against APIs 35 and 34. CMake is required by the native-assets toolchain.
-ARG ANDROID_CMDLINE_TOOLS_VERSION=14742923
-ARG ANDROID_CMDLINE_TOOLS_SHA256=04453066b540409d975c676d781da1477479dde3761310f1a7eb92a1dfb15af7
+# Android SDK. The command-line tools SHA256 is published directly on the
+# SDK download page. Flutter uses API 36, while Android dependencies still
+# compile against APIs 35 and 34. CMake is required by the native-assets
+# toolchain.
+ARG ANDROID_CMDLINE_TOOLS_VERSION=15859902
+ARG ANDROID_CMDLINE_TOOLS_SHA256=4e4c464f145a7512b57d088ac6c278c03c9eea610886b35a5e0804e74eedf583
 ARG ANDROID_PLATFORM=android-36
 ARG ANDROID_PLUGIN_PLATFORM=android-35
 ARG ANDROID_LEGACY_PLATFORM=android-34
@@ -37,9 +37,9 @@ ARG CMAKE_VERSION=3.22.1
 # Node.js runtime. Forgejo/act runs JavaScript actions (actions/checkout,
 # actions/cache) by exec'ing `node` inside this image, so the runtime must be
 # baked in. The SHA256 is published in the release's SHASUMS256.txt.
-ARG NODE_VERSION=22.20.0
-ARG NODE_ARCHIVE=node-v22.20.0-linux-x64.tar.xz
-ARG NODE_SHA256=00bbd05e306ea68b6e13e17360d0e2f680b493ef95f2fea1c4296ff7437530bc
+ARG NODE_VERSION=22.23.2
+ARG NODE_ARCHIVE=node-v22.23.2-linux-x64.tar.xz
+ARG NODE_SHA256=d60acfe00a2932254bb0ad20e01b0d74397a0875595de719654b214f4b03f307
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV FLUTTER_HOME=/opt/flutter
