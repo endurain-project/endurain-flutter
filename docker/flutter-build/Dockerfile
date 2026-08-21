@@ -36,18 +36,10 @@ ARG ANDROID_BUILD_TOOLS=36.0.0
 ARG ANDROID_NDK_VERSION=28.2.13676358
 ARG CMAKE_VERSION=3.22.1
 
-# Node.js runtime. GitHub Actions runs JavaScript actions (actions/checkout,
-# actions/cache) by exec'ing `node` inside this image, so the runtime must be
-# baked in. The SHA256 is published in the release's SHASUMS256.txt.
-ARG NODE_VERSION=22.23.2
-ARG NODE_ARCHIVE=node-v22.23.2-linux-x64.tar.xz
-ARG NODE_SHA256=d60acfe00a2932254bb0ad20e01b0d74397a0875595de719654b214f4b03f307
-
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV FLUTTER_HOME=/opt/flutter
 ENV GRADLE_USER_HOME=/opt/gradle-home
-ENV NODE_HOME=/opt/node
-ENV PATH="${FLUTTER_HOME}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${NODE_HOME}/bin:${PATH}"
+ENV PATH="${FLUTTER_HOME}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${PATH}"
 
 # --- OS dependencies --------------------------------------------------------
 RUN set -eu; \
@@ -59,18 +51,6 @@ RUN set -eu; \
         unzip \
         xz-utils; \
     rm -rf /var/lib/apt/lists/*
-
-# --- Node.js ----------------------------------------------------------------
-RUN set -eu; \
-    archive_path="/tmp/${NODE_ARCHIVE}"; \
-    curl --fail --location --show-error \
-        --output "${archive_path}" \
-        "https://nodejs.org/dist/v${NODE_VERSION}/${NODE_ARCHIVE}"; \
-    echo "${NODE_SHA256}  ${archive_path}" | sha256sum --check -; \
-    mkdir -p "${NODE_HOME}"; \
-    tar -xf "${archive_path}" -C "${NODE_HOME}" --strip-components=1; \
-    rm -f "${archive_path}"; \
-    node --version | grep "v${NODE_VERSION}"
 
 # --- Android SDK ------------------------------------------------------------
 RUN set -eu; \
