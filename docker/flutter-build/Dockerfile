@@ -24,7 +24,9 @@ ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/rel
 # Android SDK. The command-line tools SHA256 is published directly on the
 # SDK download page. Flutter uses API 36, while Android dependencies still
 # compile against APIs 35 and 34. CMake is required by the native-assets
-# toolchain.
+# toolchain. Build-tools tracks AGP's DEFAULT_BUILD_TOOLS_REVISION.
+# Do not bump cmdline-tools past 15859902: build 16111833 replaces sdkmanager
+# with the new `android` CLI, making `sdkmanager --licenses` below a no-op.
 ARG ANDROID_CMDLINE_TOOLS_VERSION=15859902
 ARG ANDROID_CMDLINE_TOOLS_SHA256=4e4c464f145a7512b57d088ac6c278c03c9eea610886b35a5e0804e74eedf583
 ARG ANDROID_PLATFORM=android-36
@@ -115,17 +117,18 @@ RUN set -eu; \
 # first download.
 COPY android/gradle/wrapper/gradle-wrapper.properties /tmp/gradle-wrapper.properties
 RUN set -eu; \
-    flutter create --no-pub --platforms=android /tmp/gradle-bootstrap; \
+    # Underscore: flutter create derives a Dart package name from the directory.
+    flutter create --no-pub --platforms=android /tmp/gradle_bootstrap; \
     cp /tmp/gradle-wrapper.properties \
-        /tmp/gradle-bootstrap/android/gradle/wrapper/gradle-wrapper.properties; \
+        /tmp/gradle_bootstrap/android/gradle/wrapper/gradle-wrapper.properties; \
     attempt=1; \
-    until (cd /tmp/gradle-bootstrap/android && ./gradlew --version); do \
+    until (cd /tmp/gradle_bootstrap/android && ./gradlew --version); do \
         if [ "${attempt}" -ge 3 ]; then \
             exit 1; \
         fi; \
         attempt=$((attempt + 1)); \
     done; \
-    rm -rf /tmp/gradle-bootstrap /tmp/gradle-wrapper.properties
+    rm -rf /tmp/gradle_bootstrap /tmp/gradle-wrapper.properties
 
 # Sanity check that the toolchain is wired up.
 RUN flutter doctor -v
