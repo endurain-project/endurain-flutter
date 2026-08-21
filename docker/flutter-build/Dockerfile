@@ -6,7 +6,7 @@
 # used by the main Endurain repository's Docker images: the base is pinned by
 # digest and every downloaded archive is checksum-verified.
 #
-# Build and publish with .forgejo/workflows/build-ci-docker-image.yml. Bump the ARG
+# Build and publish with .github/workflows/build-ci-docker-image.yml. Bump the ARG
 # defaults (and re-run that workflow) when upgrading the toolchain.
 
 # Pinned base. The digest is the multi-arch manifest digest for the tag in the
@@ -30,11 +30,11 @@ ARG ANDROID_CMDLINE_TOOLS_SHA256=4e4c464f145a7512b57d088ac6c278c03c9eea610886b35
 ARG ANDROID_PLATFORM=android-36
 ARG ANDROID_PLUGIN_PLATFORM=android-35
 ARG ANDROID_LEGACY_PLATFORM=android-34
-ARG ANDROID_BUILD_TOOLS=35.0.0
+ARG ANDROID_BUILD_TOOLS=36.0.0
 ARG ANDROID_NDK_VERSION=28.2.13676358
 ARG CMAKE_VERSION=3.22.1
 
-# Node.js runtime. Forgejo/act runs JavaScript actions (actions/checkout,
+# Node.js runtime. GitHub Actions runs JavaScript actions (actions/checkout,
 # actions/cache) by exec'ing `node` inside this image, so the runtime must be
 # baked in. The SHA256 is published in the release's SHASUMS256.txt.
 ARG NODE_VERSION=22.23.2

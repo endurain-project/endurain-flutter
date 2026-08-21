@@ -206,7 +206,7 @@ flutter devices
 flutter run -d <android-device-id>
 ```
 
-The Android build scripts use Kotlin DSL (`.kts` files). Flutter's Built-in Kotlin Gradle flag (`android.builtInKotlin`) is not yet enabled because `package_info_plus` and `url_launcher_android` still self-apply KGP and are not compatible with the built-in Kotlin path. The Kotlin plugin is applied explicitly at version 2.2.20 in `settings.gradle.kts` instead. Once those plugins ship compatible releases, the explicit declaration can be removed and the flag enabled. Current Android builds can still show upstream plugin warnings for these dependencies; if the debug build succeeds, track them with dependency updates rather than editing files in the local pub cache.
+The Android build scripts use Kotlin DSL (`.kts` files). Flutter's Built-in Kotlin Gradle flag (`android.builtInKotlin`) is not yet enabled because `health` still self-applies KGP and is not compatible with the built-in Kotlin path. The Kotlin plugin is applied explicitly at version 2.4.0 in `settings.gradle.kts` instead. Once that plugin ships a compatible release, the explicit declaration can be removed and the flag enabled. Current Android builds can still show upstream plugin warnings for this dependency; if the debug build succeeds, track them with dependency updates rather than editing files in the local pub cache.
 
 ### Android Health Sync Availability
 
@@ -381,6 +381,10 @@ for the configured development team, then build the signed IPA:
 
 ```bash
 flutter build ipa --release
+
+# Or with ENDURAIN_CRASH_REPORTING_DSN configuration
+flutter build ipa --release \
+  --dart-define=ENDURAIN_CRASH_REPORTING_DSN='https://<key>@diagnostics.endurain.com/<project>'
 ```
 
 Upload `build/ios/ipa/Endurain.ipa` with Transporter or Xcode Organizer. Before
@@ -398,15 +402,15 @@ flutter build apk --debug
 Release builds require Android signing configuration. Copy
 `android/key.properties.example` to ignored `android/key.properties` and fill it locally, or provide the documented `ANDROID_KEYSTORE_*` environment variables in CI. A release build now fails rather than falling back to the debug key when any signing input is missing.
 
-Forgejo release builds require these repository secrets:
+GitHub Actions release builds require these repository secrets:
 
 - `ANDROID_KEYSTORE_BASE64`: base64-encoded upload keystore.
 - `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`: upload-key credentials.
 - `ANDROID_UPLOAD_CERT_SHA256`: expected SHA-256 certificate fingerprint, with or without colon separators.
 
-For a published release, CI derives `versionName` from its `vX.Y.Z` tag and uses the Forgejo release ID as the monotonic Android `versionCode`. Manual workflow runs require an explicit semantic `version_name` and positive, monotonically increasing `version_code`.
+For a published release, CI derives `versionName` from its `vX.Y.Z` tag and uses the GitHub release ID as the monotonic Android `versionCode`. Manual workflow runs require an explicit semantic `version_name` and positive, monotonically increasing `version_code`.
 
-Release builds may also bake in the managed diagnostics DSN for opt-in remote crash reporting. Set the optional Forgejo repository **variable** `ENDURAIN_CRASH_REPORTING_DSN` (a Sentry/GlitchTip DSN — a public, send-only client identifier, so it is a variable rather than a secret). CI passes it to the build as `--dart-define=ENDURAIN_CRASH_REPORTING_DSN=...`. It is intentionally not hardcoded in source, so builds from source (forks, F-Droid) omit it and never point crash reports at the Endurain-operated endpoint by default. Remote crash reporting always targets this managed endpoint when the user opts in — there is no user-configurable DSN. When the variable is unset, the build simply ships no managed default and opt-in remote crash reporting stays inactive. For local runs or local/iOS release builds, pass the same flag to `flutter run` or `flutter build`:
+Release builds may also bake in the managed diagnostics DSN for opt-in remote crash reporting. Set the optional GitHub repository **variable** `ENDURAIN_CRASH_REPORTING_DSN` (a Sentry/GlitchTip DSN — a public, send-only client identifier, so it is a variable rather than a secret). CI passes it to the build as `--dart-define=ENDURAIN_CRASH_REPORTING_DSN=...`. It is intentionally not hardcoded in source, so builds from source (forks, F-Droid) omit it and never point crash reports at the Endurain-operated endpoint by default. Remote crash reporting always targets this managed endpoint when the user opts in — there is no user-configurable DSN. When the variable is unset, the build simply ships no managed default and opt-in remote crash reporting stays inactive. For local runs or local/iOS release builds, pass the same flag to `flutter run` or `flutter build`:
 
 ```bash
 # Run a release build on a connected device with the DSN baked in
