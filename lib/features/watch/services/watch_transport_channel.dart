@@ -86,20 +86,69 @@ class MethodChannelWatchTransport implements WatchTransportAdapter {
   final MethodChannel _methodChannel;
   final EventChannel _eventChannel;
 
-  Stream<WatchTransportEvent>? _events;
+  StreamController<WatchTransportEvent>? _events;
+  StreamSubscription<dynamic>? _nativeEvents;
 
   @override
   Stream<WatchTransportEvent> get events {
-    return _events ??= _eventChannel
-        .receiveBroadcastStream()
-        // A build without the native transport must look inert, not broken.
-        .handleError(
-          (Object _) {},
-          test: (Object error) => error is MissingPluginException,
-        )
-        .map(_parseEvent)
-        .where((event) => event != null)
-        .cast<WatchTransportEvent>();
+    final existing = _events;
+    if (existing != null) {
+      return existing.stream;
+    }
+    final controller = StreamController<WatchTransportEvent>.broadcast();
+    _events = controller;
+    unawaited(_activate(controller));
+    return controller.stream;
+  }
+
+  /// Activates the native broadcast stream only once the transport is known to
+  /// exist.
+  ///
+  /// `EventChannel.receiveBroadcastStream` reports an activation failure (such
+  /// as the [MissingPluginException] raised on a build without the native
+  /// bridge) through `FlutterError.reportError` rather than through the
+  /// returned stream, which would surface as a false crash report. Probing the
+  /// method channel first keeps the seam genuinely inert instead of merely
+  /// quiet.
+  Future<void> _activate(
+    StreamController<WatchTransportEvent> controller,
+  ) async {
+    if (!await _transportIsPresent() || !identical(_events, controller)) {
+      await controller.close();
+      return;
+    }
+    _nativeEvents = _eventChannel.receiveBroadcastStream().listen(
+      (payload) {
+        final event = _parseEvent(payload);
+        if (event != null) {
+          controller.add(event);
+        }
+      },
+      onError: controller.addError,
+      onDone: () => unawaited(controller.close()),
+    );
+  }
+
+  /// Whether the native transport answered the probe at all.
+  ///
+  /// Only a missing bridge or an explicit `unsupported` answer suppresses the
+  /// push stream: a transient native failure must not disable watch events for
+  /// the rest of the process lifetime.
+  Future<bool> _transportIsPresent() async {
+    try {
+      final result = await _methodChannel.invokeMethod<String>(
+        WatchTransportChannelContract.linkStatus,
+        {
+          WatchTransportChannelContract.argVersion:
+              WatchTransportChannelContract.payloadVersion,
+        },
+      );
+      return result != WatchLinkStatus.unsupported.toJson();
+    } on MissingPluginException {
+      return false;
+    } catch (_) {
+      return true;
+    }
   }
 
   @override
@@ -173,10 +222,16 @@ class MethodChannelWatchTransport implements WatchTransportAdapter {
   }
 
   @override
-  // Intentional no-op: the EventChannel is a system broadcast owned by the
-  // native transport, which manages its own lifecycle. Cancelling here would
-  // break other listeners sharing the channel.
-  Future<void> dispose() async {}
+  Future<void> dispose() async {
+    // Cancelling the native subscription deactivates the EventChannel on the
+    // platform side; the broadcast controller is closed so late listeners get
+    // a terminated stream instead of a silent one.
+    await _nativeEvents?.cancel();
+    _nativeEvents = null;
+    final controller = _events;
+    _events = null;
+    await controller?.close();
+  }
 
   WatchTransportEvent? _parseEvent(Object? payload) {
     if (payload is! Map) {

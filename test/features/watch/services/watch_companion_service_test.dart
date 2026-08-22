@@ -151,6 +151,35 @@ void main() {
     await service.dispose();
   });
 
+  test('an upload-queue failure does not escape the sync', () async {
+    final transport = FakeWatchTransport(handoffs: [buildHandoff()]);
+    final service = WatchCompanionService(
+      transport: transport,
+      ingestionService: ingestion,
+      onActivitiesIngested: () async => throw StateError('upload failed'),
+    );
+
+    final summary = await service.syncPendingSessions();
+
+    expect(summary.ingested, 1);
+    expect(transport.acknowledged, ['watch_session_1']);
+    await service.dispose();
+  });
+
+  test('a transport event error does not escape', () async {
+    final transport = FakeWatchTransport();
+    final service = WatchCompanionService(
+      transport: transport,
+      ingestionService: ingestion,
+    );
+
+    transport.controller.addError(StateError('native failure'));
+    await pumpEventQueue();
+
+    expect(transport.drainCount, 0);
+    await service.dispose();
+  });
+
   test('a transport failure leaves handoffs queued', () async {
     final transport = FakeWatchTransport(
       handoffs: [buildHandoff()],

@@ -29,7 +29,7 @@ class WatchSyncSummary {
 ///
 /// It owns no UI state and no upload logic of its own: [WatchTransportAdapter]
 /// provides the sessions, [WatchSessionIngestionService] persists them, and the
-/// injected [onActivitiesIngested] callback (wired to the durable upload queue)
+/// injected `onActivitiesIngested` callback (wired to the durable upload queue)
 /// takes it from there.
 ///
 /// [syncPendingSessions] is single-flight, so a link-status change, a push
@@ -44,7 +44,12 @@ class WatchCompanionService {
        _ingestionService = ingestionService,
        _onActivitiesIngested = onActivitiesIngested,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder() {
-    _eventSubscription = _transport.events.listen(_handleEvent);
+    _eventSubscription = _transport.events.listen(
+      _handleEvent,
+      // A transport-level failure must not escape as an uncaught async error:
+      // the handoffs stay queued and the next sync pass retries them.
+      onError: _recordFailure,
+    );
   }
 
   final WatchTransportAdapter _transport;
@@ -135,7 +140,14 @@ class WatchCompanionService {
 
     final onActivitiesIngested = _onActivitiesIngested;
     if (summary.hasNewActivities && onActivitiesIngested != null) {
-      await onActivitiesIngested();
+      // The upload queue owns its own retries (app resume, connectivity), so a
+      // failure here is contained rather than escaping this fire-and-forget
+      // call: the sessions are already stored locally.
+      try {
+        await onActivitiesIngested();
+      } catch (error) {
+        _recordFailure(error);
+      }
     }
     return summary;
   }
@@ -146,12 +158,18 @@ class WatchCompanionService {
     try {
       return await _transport.drainPendingHandoffs();
     } catch (error) {
-      _diagnostics.recordBreadcrumbSync(
-        DiagnosticsEvents.watchSyncFailed,
-        details: {'type': error.runtimeType.toString()},
-      );
+      _recordFailure(error);
       return null;
     }
+  }
+
+  /// Records a sanitized breadcrumb for a contained failure: the error type
+  /// only, never coordinates or device identifiers.
+  void _recordFailure(Object error) {
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.watchSyncFailed,
+      details: {'type': error.runtimeType.toString()},
+    );
   }
 
   void _handleEvent(WatchTransportEvent event) {

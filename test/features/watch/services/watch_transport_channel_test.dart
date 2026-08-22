@@ -1,4 +1,5 @@
 import 'package:endurain/features/watch/models/watch_link_status.dart';
+import 'package:endurain/features/watch/models/watch_transport_event.dart';
 import 'package:endurain/features/watch/services/watch_transport_channel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,9 @@ void main() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   const methodChannel = MethodChannel(
     WatchTransportChannelContract.methodChannelName,
+  );
+  const eventChannel = EventChannel(
+    WatchTransportChannelContract.eventChannelName,
   );
 
   Map<String, Object?> handoffPayload(String sessionId) => {
@@ -95,6 +99,22 @@ void main() {
       );
     });
 
+    test('does not activate the event stream when unsupported', () async {
+      final calls = <MethodCall>[];
+      messenger.setMockMethodCallHandler(methodChannel, (call) async {
+        calls.add(call);
+        return 'unsupported';
+      });
+
+      final transport = MethodChannelWatchTransport();
+
+      expect(await transport.events.toList(), isEmpty);
+      expect(
+        calls.map((call) => call.method),
+        [WatchTransportChannelContract.linkStatus],
+      );
+    });
+
     test('stays inert when the native transport is absent', () async {
       // No mock handler registered: every invocation raises
       // MissingPluginException, which the adapter must absorb.
@@ -102,7 +122,64 @@ void main() {
 
       expect(await transport.linkStatus(), WatchLinkStatus.unsupported);
       expect(await transport.drainPendingHandoffs(), isEmpty);
+      expect(await transport.events.toList(), isEmpty);
       await expectLater(transport.acknowledgeHandoff('session_1'), completes);
+    });
+
+    test('keeps the push stream alive after a probe failure', () async {
+      messenger.setMockMethodCallHandler(methodChannel, (call) async {
+        throw PlatformException(
+          code: WatchTransportChannelContract.errorStoreReadFailed,
+        );
+      });
+      messenger.setMockStreamHandler(
+        eventChannel,
+        MockStreamHandler.inline(
+          onListen: (arguments, sink) {
+            sink.success({
+              WatchTransportChannelContract.eventType:
+                  WatchTransportChannelContract.eventHandoffAvailable,
+            });
+            sink.endOfStream();
+          },
+        ),
+      );
+      addTearDown(() => messenger.setMockStreamHandler(eventChannel, null));
+
+      final transport = MethodChannelWatchTransport();
+      final events = await transport.events.toList();
+
+      expect(
+        events.map((event) => event.type),
+        [WatchTransportEventType.handoffAvailable],
+      );
+    });
+
+    test('cancels the native subscription on dispose', () async {
+      var cancelled = false;
+      messenger.setMockMethodCallHandler(
+        methodChannel,
+        (call) async => 'connected',
+      );
+      messenger.setMockStreamHandler(
+        eventChannel,
+        MockStreamHandler.inline(
+          onListen: (arguments, sink) {},
+          onCancel: (arguments) {
+            cancelled = true;
+          },
+        ),
+      );
+      addTearDown(() => messenger.setMockStreamHandler(eventChannel, null));
+
+      final transport = MethodChannelWatchTransport();
+      final subscription = transport.events.listen((_) {});
+      await pumpEventQueue();
+
+      await transport.dispose();
+
+      expect(cancelled, isTrue);
+      await subscription.cancel();
     });
   });
 }
