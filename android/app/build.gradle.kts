@@ -53,7 +53,7 @@ if (isReleaseBuild && configuredReleaseStoreFile?.isFile != true) {
 
 android {
     namespace = "com.endurain.endurain"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
