@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/device_locale.dart';
+import '../../../helpers/elevation_profile.dart';
 
 void main() {
   // Unit rendering follows the device region, and the test harness
@@ -20,6 +21,10 @@ void main() {
     final l10n = AppLocalizationsEn();
 
     testWidgets('shows a richer summary for a completed ride', (tester) async {
+      // Elevation gain is smoothed before deltas are summed, so a handful of
+      // points would report no ascent at all; use a realistic sample count.
+      final elevations = climbElevationProfile();
+
       await tester.pumpWidget(
         _TestApp(
           child: ActivityCompletionSummary(
@@ -28,27 +33,13 @@ void main() {
               activityType: ActivityType.ride,
               startedAt: DateTime.utc(2026, 6, 2, 14, 30),
               points: [
-                _point(
-                  latitude: 0,
-                  longitude: 0,
-                  seconds: 0,
-                  speed: 2,
-                  elevation: 100,
-                ),
-                _point(
-                  latitude: 0,
-                  longitude: 0.001,
-                  seconds: 60,
-                  speed: 5,
-                  elevation: 130,
-                ),
-                _point(
-                  latitude: 0,
-                  longitude: 0.002,
-                  seconds: 120,
-                  speed: 3,
-                  elevation: 120,
-                ),
+                for (var index = 0; index < elevations.length; index += 1)
+                  _point(
+                    latitude: 0,
+                    longitude: index * 0.0001,
+                    seconds: index,
+                    elevation: elevations[index],
+                  ),
               ],
             ),
           ),
@@ -57,16 +48,16 @@ void main() {
 
       expect(find.text(l10n.activityHistorySummary), findsOneWidget);
       expect(find.text(l10n.activityTypeRide), findsOneWidget);
-      expect(find.text('2:00'), findsOneWidget);
-      expect(find.text('222 m'), findsOneWidget);
+      expect(find.text('0:29'), findsOneWidget);
+      expect(find.text('323 m'), findsOneWidget);
       expect(find.text(l10n.activityHistoryAverageSpeed), findsOneWidget);
-      expect(find.text('6.7 km/h'), findsOneWidget);
       expect(find.text(l10n.activityStatMaxSpeed), findsOneWidget);
-      expect(find.text('18.0 km/h'), findsOneWidget);
+      // The track advances at a constant rate, so average and max agree.
+      expect(find.text('40.1 km/h'), findsNWidgets(2));
       expect(find.text(l10n.activityStatElevationGain), findsOneWidget);
-      expect(find.text('30 m'), findsOneWidget);
+      expect(find.text('100 m'), findsOneWidget);
       expect(find.text(l10n.activityHistoryPointCount), findsOneWidget);
-      expect(find.text('3'), findsOneWidget);
+      expect(find.text('30'), findsOneWidget);
     });
 
     testWidgets('shows pace instead of average speed for a run', (

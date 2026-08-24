@@ -3,6 +3,8 @@ import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/elevation_profile.dart';
+
 void main() {
   group('ActivityStatsCalculator', () {
     final calculator = ActivityStatsCalculator();
@@ -55,7 +57,7 @@ void main() {
         ]),
       );
 
-      expect(stats.distanceMeters, closeTo(222, 0.5));
+      expect(stats.distanceMeters, closeTo(222.6, 0.1));
       expect(stats.durationSeconds, 120);
       expect(stats.averageSpeedMetersPerSecond, closeTo(1.85, 0.01));
       expect(stats.currentSpeedMetersPerSecond, 2.5);
@@ -70,9 +72,11 @@ void main() {
         ]),
       );
 
-      expect(stats.distanceMeters, closeTo(222, 0.5));
+      expect(stats.distanceMeters, closeTo(222.6, 0.1));
       expect(stats.durationSeconds, 60);
-      expect(stats.averageSpeedMetersPerSecond, closeTo(3.7, 0.01));
+      // The backwards pair contributes a zero speed rather than inflating the
+      // average with distance that has no counted duration.
+      expect(stats.averageSpeedMetersPerSecond, closeTo(0.93, 0.01));
     });
 
     // -------------------------------------------------------------------------
@@ -112,8 +116,8 @@ void main() {
       );
       final seg2 = ActivityTrackSegment(
         points: [
-          _point(latitude: 10, longitude: 10, seconds: 60),
-          _point(latitude: 10, longitude: 10.001, seconds: 90),
+          _point(latitude: 0, longitude: 10, seconds: 60),
+          _point(latitude: 0, longitude: 10.001, seconds: 90),
         ],
       );
 
@@ -136,16 +140,19 @@ void main() {
     // Max speed and elevation gain (post-recording summary metrics).
     // -------------------------------------------------------------------------
 
-    test('tracks the fastest reported instantaneous speed', () {
+    test('derives max speed from movement, not the reported GPS speed', () {
+      // The uploaded GPX carries no speed field, so the server derives speed
+      // from position deltas. Reported GPS speed must not change the summary.
       final stats = calculator.calculate(
         oneSegment([
           _point(latitude: 0, longitude: 0, seconds: 0, speed: 2),
-          _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 5),
-          _point(latitude: 0, longitude: 0.002, seconds: 120, speed: 3),
+          _point(latitude: 0, longitude: 0.001, seconds: 60, speed: 50),
+          _point(latitude: 0, longitude: 0.003, seconds: 120, speed: 3),
         ]),
       );
 
-      expect(stats.maxSpeedMetersPerSecond, 5);
+      // Second leg (~222m/60s) is faster than the first (~111m/60s).
+      expect(stats.maxSpeedMetersPerSecond, closeTo(3.7, 0.1));
     });
 
     test('derives max speed from movement when GPS speed is missing', () {
@@ -161,6 +168,27 @@ void main() {
       expect(stats.maxSpeedMetersPerSecond, closeTo(3.7, 0.1));
     });
 
+    test('uses sub-second timestamp deltas when deriving speed', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          ActivityTrackPoint(
+            latitude: 0,
+            longitude: 0,
+            timestamp: DateTime.utc(2026),
+          ),
+          ActivityTrackPoint(
+            latitude: 0,
+            longitude: 0.001,
+            timestamp: DateTime.utc(2026)
+                .add(const Duration(milliseconds: 1500)),
+          ),
+        ]),
+      );
+
+      // ~111m over 1.5s, not over the 1s a truncated delta would report.
+      expect(stats.maxSpeedMetersPerSecond, closeTo(74.2, 0.5));
+    });
+
     test('reports null max speed for a single-point segment', () {
       final stats = calculator.calculate(
         oneSegment([_point(latitude: 0, longitude: 0)]),
@@ -169,26 +197,34 @@ void main() {
       expect(stats.maxSpeedMetersPerSecond, isNull);
     });
 
-    test('sums positive elevation deltas as elevation gain', () {
+    test('rejects altimeter spikes instead of counting them as climb', () {
+      final elevations = List<double>.filled(12, 100)..[6] = 130;
+
       final stats = calculator.calculate(
-        oneSegment([
-          _point(latitude: 0, longitude: 0, seconds: 0, elevation: 100),
-          _point(latitude: 0, longitude: 0.001, seconds: 60, elevation: 110),
-          _point(latitude: 0, longitude: 0.002, seconds: 120, elevation: 105),
-          _point(latitude: 0, longitude: 0.003, seconds: 180, elevation: 125),
-        ]),
+        oneSegment(_elevationProfile(elevations)),
       );
 
-      // +10, then -5 (ignored), then +20 = 30.
-      expect(stats.elevationGainMeters, closeTo(30, 0.001));
+      expect(stats.elevationGainMeters, 0);
+    });
+
+    test('sums a sustained climb after smoothing', () {
+      final stats = calculator.calculate(
+        oneSegment(_elevationProfile(climbElevationProfile())),
+      );
+
+      expect(
+        stats.elevationGainMeters,
+        closeTo(climbElevationGainMeters, 0.001),
+      );
     });
 
     test('reports zero elevation gain for a pure descent', () {
       final stats = calculator.calculate(
-        oneSegment([
-          _point(latitude: 0, longitude: 0, seconds: 0, elevation: 200),
-          _point(latitude: 0, longitude: 0.001, seconds: 60, elevation: 150),
-        ]),
+        oneSegment(
+          _elevationProfile(
+            climbElevationProfile().reversed.toList(growable: false),
+          ),
+        ),
       );
 
       expect(stats.elevationGainMeters, 0);
@@ -207,23 +243,24 @@ void main() {
 
     test('does not count elevation change between segments', () {
       final seg1 = ActivityTrackSegment(
-        points: [
-          _point(latitude: 0, longitude: 0, seconds: 0, elevation: 100),
-          _point(latitude: 0, longitude: 0.001, seconds: 60, elevation: 110),
-        ],
+        points: _elevationProfile(climbElevationProfile()),
       );
       final seg2 = ActivityTrackSegment(
-        points: [
-          _point(latitude: 0, longitude: 5, seconds: 120, elevation: 500),
-          _point(latitude: 0, longitude: 5.001, seconds: 180, elevation: 520),
-        ],
+        points: _elevationProfile(
+          climbElevationProfile(base: 500),
+          startSecond: 600,
+          startLongitude: 5,
+        ),
       );
 
       final stats = calculator.calculate([seg1, seg2]);
 
-      // +10 in the first segment and +20 in the second; the 110->500 jump
-      // across the pause boundary is not counted.
-      expect(stats.elevationGainMeters, closeTo(30, 0.001));
+      // 100 m of climb in each segment; the 200 -> 500 jump across the pause
+      // boundary is not counted.
+      expect(
+        stats.elevationGainMeters,
+        closeTo(climbElevationGainMeters * 2, 0.001),
+      );
     });
 
     // -------------------------------------------------------------------------
@@ -275,6 +312,38 @@ void main() {
       // Only the two HR-bearing points count: (100+121)/2 = 110.5 -> 111.
       expect(stats.averageHeartRateBpm, 111);
       expect(stats.currentHeartRateBpm, 121);
+    });
+
+    test('treats zero heart rate and power as sensor dropouts', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(
+            latitude: 0,
+            longitude: 0,
+            seconds: 0,
+            heartRate: 140,
+            power: 200,
+            cadence: 90,
+          ),
+          _point(
+            latitude: 0,
+            longitude: 0.001,
+            seconds: 60,
+            heartRate: 0,
+            power: 0,
+            cadence: 0,
+          ),
+        ]),
+      );
+
+      // The zero readings are dropped, so the averages match the single real
+      // sample. Cadence keeps its zeros: coasting is a genuine measurement.
+      expect(stats.averageHeartRateBpm, 140);
+      expect(stats.currentHeartRateBpm, 140);
+      expect(stats.averagePowerWatts, 200);
+      expect(stats.currentPowerWatts, 200);
+      expect(stats.averageCadenceRpm, 45);
+      expect(stats.currentCadenceRpm, 0);
     });
 
     test('reports null power and cadence when no point carries them', () {
@@ -342,4 +411,21 @@ ActivityTrackPoint _point({
     powerWatts: power,
     cadenceRpm: cadence,
   );
+}
+
+/// Turns an elevation series into points sampled one second and ~11 m apart.
+List<ActivityTrackPoint> _elevationProfile(
+  List<double> elevations, {
+  int startSecond = 0,
+  double startLongitude = 0,
+}) {
+  return [
+    for (var index = 0; index < elevations.length; index += 1)
+      _point(
+        latitude: 0,
+        longitude: startLongitude + index * 0.0001,
+        seconds: startSecond + index,
+        elevation: elevations[index],
+      ),
+  ];
 }
