@@ -52,8 +52,9 @@ void main() {
       expect(find.text('323 m'), findsOneWidget);
       expect(find.text(l10n.activityHistoryAverageSpeed), findsOneWidget);
       expect(find.text(l10n.activityStatMaxSpeed), findsOneWidget);
-      // The track advances at a constant rate, so average and max agree.
-      expect(find.text('40.1 km/h'), findsNWidgets(2));
+      // The backend includes the first point's zero velocity in the average.
+      expect(find.text('38.7 km/h'), findsOneWidget);
+      expect(find.text('40.1 km/h'), findsOneWidget);
       expect(find.text(l10n.activityStatElevationGain), findsOneWidget);
       expect(find.text('100 m'), findsOneWidget);
       expect(find.text(l10n.activityHistoryPointCount), findsOneWidget);

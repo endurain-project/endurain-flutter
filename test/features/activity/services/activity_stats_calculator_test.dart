@@ -30,7 +30,7 @@ void main() {
 
       expect(stats.distanceMeters, 0);
       expect(stats.durationSeconds, 0);
-      expect(stats.averageSpeedMetersPerSecond, isNull);
+      expect(stats.averageSpeedMetersPerSecond, 0);
       expect(stats.currentSpeedMetersPerSecond, isNull);
     });
 
@@ -59,7 +59,7 @@ void main() {
 
       expect(stats.distanceMeters, closeTo(222.6, 0.1));
       expect(stats.durationSeconds, 120);
-      expect(stats.averageSpeedMetersPerSecond, closeTo(1.85, 0.01));
+      expect(stats.averageSpeedMetersPerSecond, closeTo(1.24, 0.01));
       expect(stats.currentSpeedMetersPerSecond, 2.5);
     });
 
@@ -74,9 +74,9 @@ void main() {
 
       expect(stats.distanceMeters, closeTo(222.6, 0.1));
       expect(stats.durationSeconds, 60);
-      // The backwards pair contributes a zero speed rather than inflating the
-      // average with distance that has no counted duration.
-      expect(stats.averageSpeedMetersPerSecond, closeTo(0.93, 0.01));
+      // The segment's first point and the backwards pair both contribute zero
+      // velocity samples, matching the uploaded GPX calculation.
+      expect(stats.averageSpeedMetersPerSecond, closeTo(0.62, 0.01));
     });
 
     // -------------------------------------------------------------------------
@@ -105,6 +105,7 @@ void main() {
       // Only ~222m total (two 111m legs), NOT ~555km (including the 5° gap).
       expect(stats.distanceMeters, closeTo(222, 1));
       expect(stats.durationSeconds, 120);
+      expect(stats.averageSpeedMetersPerSecond, closeTo(0.93, 0.01));
     });
 
     test('accumulates distance from multiple segments correctly', () {
@@ -189,12 +190,12 @@ void main() {
       expect(stats.maxSpeedMetersPerSecond, closeTo(74.2, 0.5));
     });
 
-    test('reports null max speed for a single-point segment', () {
+    test('reports zero max speed for a single-point segment', () {
       final stats = calculator.calculate(
         oneSegment([_point(latitude: 0, longitude: 0)]),
       );
 
-      expect(stats.maxSpeedMetersPerSecond, isNull);
+      expect(stats.maxSpeedMetersPerSecond, 0);
     });
 
     test('rejects altimeter spikes instead of counting them as climb', () {
@@ -210,6 +211,25 @@ void main() {
     test('sums a sustained climb after smoothing', () {
       final stats = calculator.calculate(
         oneSegment(_elevationProfile(climbElevationProfile())),
+      );
+
+      expect(
+        stats.elevationGainMeters,
+        closeTo(climbElevationGainMeters, 0.001),
+      );
+    });
+
+    test('ignores non-finite and implausible elevation samples', () {
+      final stats = calculator.calculate(
+        oneSegment(
+          _elevationProfile([
+            ...climbElevationProfile(),
+            double.nan,
+            double.infinity,
+            10000,
+            -10000,
+          ]),
+        ),
       );
 
       expect(
@@ -241,7 +261,7 @@ void main() {
       expect(stats.elevationGainMeters, isNull);
     });
 
-    test('does not count elevation change between segments', () {
+    test('smooths the flattened GPX elevation stream across segments', () {
       final seg1 = ActivityTrackSegment(
         points: _elevationProfile(climbElevationProfile()),
       );
@@ -255,12 +275,9 @@ void main() {
 
       final stats = calculator.calculate([seg1, seg2]);
 
-      // 100 m of climb in each segment; the 200 -> 500 jump across the pause
-      // boundary is not counted.
-      expect(
-        stats.elevationGainMeters,
-        closeTo(climbElevationGainMeters * 2, 0.001),
-      );
+      // The backend flattens elevation waypoints before smoothing, so this is
+      // 100 m + the 300 m segment-boundary rise + another 100 m.
+      expect(stats.elevationGainMeters, closeTo(500, 0.001));
     });
 
     // -------------------------------------------------------------------------
@@ -309,8 +326,9 @@ void main() {
         ]),
       );
 
-      // Only the two HR-bearing points count: (100+121)/2 = 110.5 -> 111.
-      expect(stats.averageHeartRateBpm, 111);
+      // Only HR-bearing points count. Python's round uses ties-to-even, so the
+      // backend rounds (100+121)/2 = 110.5 to 110.
+      expect(stats.averageHeartRateBpm, 110);
       expect(stats.currentHeartRateBpm, 121);
     });
 
@@ -360,6 +378,18 @@ void main() {
       expect(stats.averageCadenceRpm, isNull);
     });
 
+    test('keeps an all-zero cadence out of the summary', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, seconds: 0, cadence: 0),
+          _point(latitude: 0, longitude: 0.001, seconds: 60, cadence: 0),
+        ]),
+      );
+
+      expect(stats.currentCadenceRpm, 0);
+      expect(stats.averageCadenceRpm, isNull);
+    });
+
     test('tracks the latest and average power and cadence', () {
       final stats = calculator.calculate(
         oneSegment([
@@ -381,12 +411,24 @@ void main() {
         ]),
       );
 
-      // Only the two sensor-bearing points count: avg power (200+300)/2 = 250,
-      // avg cadence (80+90)/2 = 85; current is the last non-null of each.
+      // Power omits missing samples. Cadence mirrors the backend's per-point
+      // GPX stream, where the missing middle extension becomes zero:
+      // (80+0+90)/3 = 56.67 -> 57.
       expect(stats.currentPowerWatts, 300);
       expect(stats.averagePowerWatts, 250);
       expect(stats.currentCadenceRpm, 90);
-      expect(stats.averageCadenceRpm, 85);
+      expect(stats.averageCadenceRpm, 57);
+    });
+
+    test('uses backend ties-to-even rounding for average power', () {
+      final stats = calculator.calculate(
+        oneSegment([
+          _point(latitude: 0, longitude: 0, power: 200),
+          _point(latitude: 0, longitude: 0.001, power: 201),
+        ]),
+      );
+
+      expect(stats.averagePowerWatts, 200);
     });
   });
 }

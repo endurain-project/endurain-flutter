@@ -37,7 +37,7 @@ void main() {
       expect(record.activityType, ActivityType.run);
       expect(record.elapsedDurationSeconds, 120);
       expect(record.distanceMeters, closeTo(222.6, 0.1));
-      expect(record.averageSpeedMetersPerSecond, closeTo(1.85, 0.01));
+      expect(record.averageSpeedMetersPerSecond, closeTo(1.24, 0.01));
       expect(record.pointCount, 3);
       expect(record.uploadStatus, LocalActivityUploadStatus.pending);
       expect(record.toJson().containsKey('points'), isFalse);
@@ -69,7 +69,7 @@ void main() {
       },
     );
 
-    test('uses null average speed for absent speed values', () {
+    test('uses zero average speed for a lone GPX point', () {
       final state = ActivityRecordingState(
         status: ActivityRecordingStatus.completed,
         activityType: ActivityType.other,
@@ -85,7 +85,7 @@ void main() {
       );
 
       expect(record.distanceMeters, 0);
-      expect(record.averageSpeedMetersPerSecond, isNull);
+      expect(record.averageSpeedMetersPerSecond, 0);
     });
 
     test('captures max speed and elevation gain from the track', () {

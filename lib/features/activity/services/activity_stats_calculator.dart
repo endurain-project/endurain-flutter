@@ -22,6 +22,8 @@ class ActivityStatsCalculator {
   static const int _elevationMedianWindow = 6;
   static const int _elevationAverageWindow = 3;
   static const double _elevationThresholdMeters = 0.1;
+  static const double _minimumElevationMeters = -9999.99;
+  static const double _maximumElevationMeters = 9999.99;
 
   /// Calculates stats from [segments], computing distance only within each
   /// segment so that gaps between pause-and-resume boundaries are not counted.
@@ -42,14 +44,15 @@ class ActivityStatsCalculator {
     int? currentHeartRateBpm;
     int? currentPowerWatts;
     int? currentCadenceRpm;
+    var hasCadenceReading = false;
     final speeds = <double>[];
     final heartRates = <int>[];
     final powers = <int>[];
     final cadences = <int>[];
+    final elevations = <double>[];
 
     for (final segment in segments) {
       final points = segment.points;
-      final elevations = <double>[];
 
       for (final point in points) {
         // A zero reading means the sensor dropped out, not a real measurement.
@@ -66,14 +69,25 @@ class ActivityStatsCalculator {
         final rpm = point.cadenceRpm;
         if (rpm != null) {
           currentCadenceRpm = rpm;
-          cadences.add(rpm);
+          hasCadenceReading = hasCadenceReading || rpm != 0;
         }
+        // The GPX importer emits a cadence value for every point, using zero
+        // when the extension is absent.
+        cadences.add(rpm ?? 0);
         final elevation = point.elevationMeters;
-        if (elevation != null) {
+        if (elevation != null &&
+            elevation.isFinite &&
+            elevation >= _minimumElevationMeters &&
+            elevation <= _maximumElevationMeters) {
           elevations.add(elevation);
         }
       }
 
+      if (points.isNotEmpty) {
+        // The GPX importer emits one velocity sample for every timed point;
+        // the first point in each segment has no predecessor and is zero.
+        speeds.add(0);
+      }
       for (var index = 1; index < points.length; index += 1) {
         final previous = points[index - 1];
         final current = points[index];
@@ -98,11 +112,10 @@ class ActivityStatsCalculator {
           speeds.add(0);
         }
       }
+    }
 
-      if (elevations.isNotEmpty) {
-        elevationGainMeters =
-            (elevationGainMeters ?? 0) + _elevationGainMeters(elevations);
-      }
+    if (elevations.isNotEmpty) {
+      elevationGainMeters = _elevationGainMeters(elevations);
     }
 
     // The live readout prefers the GPS-reported speed of the last point because
@@ -123,11 +136,13 @@ class ActivityStatsCalculator {
       maxSpeedMetersPerSecond: speeds.isEmpty ? null : speeds.reduce(math.max),
       elevationGainMeters: elevationGainMeters,
       currentHeartRateBpm: currentHeartRateBpm,
-      averageHeartRateBpm: _roundedMean(heartRates),
+      averageHeartRateBpm: _backendRoundedMean(heartRates),
       currentPowerWatts: currentPowerWatts,
-      averagePowerWatts: _roundedMean(powers),
+      averagePowerWatts: _backendRoundedMean(powers),
       currentCadenceRpm: currentCadenceRpm,
-      averageCadenceRpm: _roundedMean(cadences),
+      averageCadenceRpm: hasCadenceReading
+          ? _backendRoundedMean(cadences)
+          : null,
     );
   }
 
@@ -197,10 +212,19 @@ class ActivityStatsCalculator {
     return values.reduce((total, value) => total + value) / values.length;
   }
 
-  static int? _roundedMean(List<int> values) {
+  static int? _backendRoundedMean(List<int> values) {
     if (values.isEmpty) {
       return null;
     }
-    return _mean(values.map((value) => value.toDouble())).round();
+    final mean = _mean(values.map((value) => value.toDouble()));
+    final lower = mean.floor();
+    final fraction = mean - lower;
+    if (fraction < 0.5) {
+      return lower;
+    }
+    if (fraction > 0.5) {
+      return lower + 1;
+    }
+    return lower.isEven ? lower : lower + 1;
   }
 }
