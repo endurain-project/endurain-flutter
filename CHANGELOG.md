@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.1] - 2026-08-26
+## [v0.8.1+12] - 2026-08-26
 
 ### Fixed
 
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `flutter_secure_storage` to 11.0.0 and adjusted Android SDK compile options accordingly.
 - Updated the Android Gradle Plugin to 9.1.1 and the Android platform/`compileSdk` version, with related Dockerfile updates for additional platform support.
 
-## [0.8.0] - 2026-08-21
+## [v0.8.0+11] - 2026-08-21
 
 ### Changed
 
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `flutter_secure_storage_darwin` checksum in `Podfile.lock`.
 - Release tagging logic in the CI workflow.
 
-## [0.7.3] - 2026-08-12
+## [v0.7.3+10] - 2026-08-12
 
 ### Fixed
 
@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `.dockerignore` and updated the CI workflow to respect it.
 
-## [0.7.2] - 2026-08-12
+## [v0.7.2+9] - 2026-08-12
 
 ### Added
 
@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Device measurement system service integration with app infrastructure.
 
-## [0.7.1] - 2026-08-11
+## [v0.7.1+8] - 2026-08-11
 
 ### Added
 
@@ -71,37 +71,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Android build configuration and Dockerfile for improved compatibility.
 - Migrated project URLs and localization strings from Codeberg to GitHub.
 
-## [0.7.0] - 2026-07-23
+## [v0.7.0+7] - 2026-07-23
 
 ### Added
 
 - Remote crash diagnostics with opt-in reporting (#13).
 
-## [0.6.0] - 2026-07-21
+## [v0.6.0+6] - 2026-07-21
 
 ### Added
 
 - Recording of power and cadence from external Bluetooth sensors (#12).
 
-## [0.5.2] - 2026-07-20
+## [v0.5.2+5] - 2026-07-20
 
 ### Added
 
 - Health Connect permissions and enhanced health data handling.
 
-## [0.5.1] - 2026-07-19
+## [v0.5.1+4] - 2026-07-19
 
 ### Added
 
 - Autofill support in the login form.
 
-## [0.5.0] - 2026-07-17
+## [v0.5.0+3] - 2026-07-17
 
 ### Added
 
 - Bluetooth heart rate sensor support (#11).
 
-## [0.4.0] - 2026-07-15
+## [v0.4.0+2] - 2026-07-15
 
 ### Added
 
@@ -111,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `apksigner` path resolution using `ANDROID_SDK_ROOT` in the Android release workflow.
 
-## [0.3.0] - 2026-07-14
+## [v0.3.0+1] - 2026-07-14
 
 ### Added
 
@@ -128,7 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI runner memory tuning for build stability.
 - Profile fetch retry after PKCE token exchange.
 
-## [0.2.0] - 2026-06-29
+## [v0.2.0] - 2026-06-29
 
 ### Added
 
@@ -141,7 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `CupertinoListSection` now uses a transparent background.
 
-## [0.1.0] - 2026-06-01
+## [v0.1.0] - 2026-06-01
 
 ### Added
 
@@ -166,7 +166,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bound `ApiResponse.errorDetail` to prevent arbitrary server text from being rendered in the UI.
 - Single-flight refresh token mechanism in `AuthService`.
 
-## [0.0.1] - 2025-12-11
+## [v0.0.1] - 2025-12-11
 
 ### Added
 
