@@ -28,13 +28,14 @@ class AppConfig {
   /// every service that builds endpoint strings.
   final String apiBasePath;
 
-  /// Optional set of allowed tile-server hostnames for this build.
+  /// Optional set of allowed tile-server hostnames for this build, injected at
+  /// build time from `ENDURAIN_ALLOWED_TILE_HOSTS` (`--dart-define`) as a
+  /// comma-separated list.
   ///
-  /// When `null` (the default for self-hosted), any tile server host is
-  /// permitted. When set, only hostnames in this set are accepted; attempts
-  /// to save an out-of-policy host are rejected by the settings UI.
-  ///
-  /// A build can set this to restrict users to approved tile servers.
+  /// When `null` (the self-hosted default), any tile server host is permitted.
+  /// When set, only hostnames in this set are accepted; attempts to save an
+  /// out-of-policy host are rejected by the settings UI. Hosts must be
+  /// lowercase, since `Uri` normalizes the host it is compared against.
   final Set<String>? allowedTileServerHosts;
 
   /// Safety / rollout flag for the Health platform sync feature.
@@ -94,6 +95,21 @@ class AppConfig {
   bool isTileServerHostAllowed(String host) {
     final allowed = allowedTileServerHosts;
     return allowed == null || allowed.contains(host);
+  }
+
+  /// Parses the comma-separated `ENDURAIN_ALLOWED_TILE_HOSTS` build value into
+  /// [allowedTileServerHosts].
+  ///
+  /// An empty value yields `null`, meaning "unrestricted" — the self-hosted
+  /// default, where the user picks their own tile server. Hosts are trimmed and
+  /// lowercased to match the normalized host `Uri` reports.
+  static Set<String>? parseTileServerHostAllowlist(String value) {
+    final hosts = value
+        .split(',')
+        .map((host) => host.trim().toLowerCase())
+        .where((host) => host.isNotEmpty)
+        .toSet();
+    return hosts.isEmpty ? null : hosts;
   }
 
   /// Whether plain `http://` is permitted when connecting to [url].
