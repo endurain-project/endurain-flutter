@@ -2,6 +2,7 @@ import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
+import 'package:endurain/features/activity/services/activity_duration.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
@@ -35,9 +36,10 @@ class ActivityCompletionSummary extends StatelessWidget {
     final theme = Theme.of(context);
     final stats = calculator.calculate(state.segments);
     final activityType = state.activityType ?? ActivityType.other;
-    final durationSeconds = stats.durationSeconds > state.elapsedDurationSeconds
-        ? stats.durationSeconds
-        : state.elapsedDurationSeconds;
+    final durationSeconds = reportedActivityDurationSeconds(
+      statsDurationSeconds: stats.durationSeconds,
+      elapsedDurationSeconds: state.elapsedDurationSeconds,
+    );
     final isRun = activityType == ActivityType.run;
 
     final tiles = <Widget>[
@@ -52,7 +54,10 @@ class ActivityCompletionSummary extends StatelessWidget {
       if (isRun)
         _SummaryMetricTile(
           label: l10n.activityStatPace,
-          value: formatter.formatPace(stats.averageSpeedMetersPerSecond),
+          value: formatter.formatPaceOverDistance(
+            stats.distanceMeters,
+            durationSeconds,
+          ),
         )
       else
         _SummaryMetricTile(
