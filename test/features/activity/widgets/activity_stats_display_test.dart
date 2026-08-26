@@ -101,9 +101,9 @@ void main() {
         ),
       );
 
-      // Same track as the metric test above: 111 m is 364 ft, 2 m/s is 4.5 mph.
+      // Same track as the metric test above: 111 m is 365 ft, 2 m/s is 4.5 mph.
       expect(find.text('1:00'), findsOneWidget);
-      expect(find.text('364 ft'), findsOneWidget);
+      expect(find.text('365 ft'), findsOneWidget);
       expect(find.text('4.5 mph'), findsOneWidget);
       expect(find.text('111 m'), findsNothing);
       expect(find.text('7.2 km/h'), findsNothing);
