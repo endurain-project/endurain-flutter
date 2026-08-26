@@ -26,6 +26,12 @@ Future<void> main() async {
       // Endurain-operated endpoint by default. An empty value means "no managed
       // default", which keeps remote reporting inactive.
       crashReportingDsn: String.fromEnvironment('ENDURAIN_CRASH_REPORTING_DSN'),
+      // Origin of the managed ("Endurain Cloud") service. No managed service
+      // exists yet, so every current build leaves this empty and treats every
+      // origin as a user-chosen self-hosted instance. Setting it must be paired
+      // with the OS-level pins in the Android network security config and the
+      // iOS Info.plist.
+      cloudBaseUrl: String.fromEnvironment('ENDURAIN_CLOUD_BASE_URL'),
     ),
   );
   final diagnostics = services.diagnostics;
