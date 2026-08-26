@@ -53,7 +53,9 @@ if (isReleaseBuild && configuredReleaseStoreFile?.isFile != true) {
 
 android {
     namespace = "com.endurain.endurain"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
+    // API 37 has no plain SDK platform, only minor releases (37.0, 37.1).
+    compileSdkMinor = 0
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

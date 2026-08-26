@@ -133,7 +133,7 @@ Rules:
 The authoritative list is `pubspec.yaml`; keep this section in sync when adding load-bearing dependencies:
 - `cupertino_icons: ^1.0.8`
 - `flutter_lints: ^6.0.0`
-- `flutter_secure_storage: ^10.3.1`
+- `flutter_secure_storage: ^11.0.0`
 - `geolocator: ^14.0.3`
 - `flutter_map: ^8.3.1`
 - `latlong2: ^0.10.1`
