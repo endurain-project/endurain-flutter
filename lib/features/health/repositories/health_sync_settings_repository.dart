@@ -1,17 +1,17 @@
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/utils/scoped_storage_key.dart';
 
 /// User-facing settings for the health sync feature.
 ///
-/// Persisted via [SecureStorageService], mirroring
-/// `ActivityRetentionSettingsRepository`.
+/// These are feature toggles rather than credentials, so they are persisted in
+/// [AppPreferencesStore] rather than the platform keychain.
 class HealthSyncSettingsRepository {
-  const HealthSyncSettingsRepository({required this._storage});
+  const HealthSyncSettingsRepository({required this._preferences});
 
   static const String _keyAutoSyncOnResume = 'health_auto_sync_on_resume';
   static const String _keyConnected = 'health_connected';
 
-  final SecureStorageService _storage;
+  final AppPreferencesStore _preferences;
 
   /// Whether the user has completed the health authorization flow at least
   /// once.
@@ -22,14 +22,14 @@ class HealthSyncSettingsRepository {
   /// successful authorization request and used to skip the connect screen on
   /// subsequent launches.
   Future<bool> isConnected(String profileId) async {
-    final value = await _storage.read(
+    final value = await _preferences.read(
       key: scopedStorageKey(_keyConnected, profileId),
     );
     return value == 'true';
   }
 
   Future<void> setConnected(String profileId, bool connected) {
-    return _storage.write(
+    return _preferences.write(
       key: scopedStorageKey(_keyConnected, profileId),
       value: connected ? 'true' : 'false',
     );
@@ -42,12 +42,12 @@ class HealthSyncSettingsRepository {
   /// opts in by granting platform health authorization and enabling this
   /// toggle on the health sync screen.
   Future<bool> isAutoSyncOnResumeEnabled(String profileId) async {
-    final value = await _storage.read(key: _autoSyncKey(profileId));
+    final value = await _preferences.read(key: _autoSyncKey(profileId));
     return value == 'true';
   }
 
   Future<void> setAutoSyncOnResumeEnabled(String profileId, bool enabled) {
-    return _storage.write(
+    return _preferences.write(
       key: _autoSyncKey(profileId),
       value: enabled ? 'true' : 'false',
     );
@@ -55,8 +55,8 @@ class HealthSyncSettingsRepository {
 
   Future<void> clearForProfile(String profileId) {
     return Future.wait([
-      _storage.delete(key: _autoSyncKey(profileId)),
-      _storage.delete(key: scopedStorageKey(_keyConnected, profileId)),
+      _preferences.delete(key: _autoSyncKey(profileId)),
+      _preferences.delete(key: scopedStorageKey(_keyConnected, profileId)),
     ]);
   }
 

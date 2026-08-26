@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Moved the "keep uploaded GPX files" and health sync (connected, auto-sync on resume) settings out of the platform keychain into the regular preference store, where non-secret toggles belong. These three settings reset to their defaults once on upgrade; health sync shows its connect screen again.
+- Updated `go_router` to 18.0.0, `material_ui` to 1.1.0, `cupertino_ui` to 1.0.1, and `androidx.core:core-ktx` to 1.19.0.
+
 ## [v0.8.1+12] - 2026-08-26
 
 ### Fixed

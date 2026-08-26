@@ -32,7 +32,7 @@ class HealthModule {
   final ActivityModule _activity;
 
   late final HealthSyncSettingsRepository syncSettings =
-      HealthSyncSettingsRepository(storage: _infra.secureStorage);
+      HealthSyncSettingsRepository(preferences: _infra.preferences);
 
   late final HealthImportRepository importRepository = HealthImportRepository();
 

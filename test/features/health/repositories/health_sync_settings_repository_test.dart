@@ -1,19 +1,15 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
+
+import '../../../helpers/fake_preferences_store.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const profileA = 'profile-a';
   const profileB = 'profile-b';
 
-  setUp(() {
-    FlutterSecureStorage.setMockInitialValues(<String, String>{});
-  });
-
   HealthSyncSettingsRepository makeRepo() =>
-      HealthSyncSettingsRepository(storage: SecureStorageService());
+      HealthSyncSettingsRepository(preferences: FakePreferencesStore());
 
   group('HealthSyncSettingsRepository', () {
     group('isConnected', () {
@@ -46,6 +42,19 @@ void main() {
         await repo.setAutoSyncOnResumeEnabled(profileA, false);
         expect(await repo.isAutoSyncOnResumeEnabled(profileA), isFalse);
       });
+    });
+
+    test('clearForProfile removes both settings for that profile', () async {
+      final repo = makeRepo();
+      await repo.setConnected(profileA, true);
+      await repo.setAutoSyncOnResumeEnabled(profileA, true);
+      await repo.setConnected(profileB, true);
+
+      await repo.clearForProfile(profileA);
+
+      expect(await repo.isConnected(profileA), isFalse);
+      expect(await repo.isAutoSyncOnResumeEnabled(profileA), isFalse);
+      expect(await repo.isConnected(profileB), isTrue);
     });
   });
 }

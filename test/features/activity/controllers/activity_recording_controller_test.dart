@@ -7,7 +7,6 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
@@ -28,6 +27,7 @@ import 'package:endurain/features/activity/services/geolocator_activity_location
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
@@ -912,7 +912,7 @@ class _DeleteGpxThrowingRepository extends LocalActivityRepository {
 
 class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
   _FakeRetentionSettings({required this.enabled})
-    : super(storage: SecureStorageService());
+    : super(preferences: FakePreferencesStore());
 
   final bool enabled;
 

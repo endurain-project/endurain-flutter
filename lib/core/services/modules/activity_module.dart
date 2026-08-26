@@ -59,7 +59,7 @@ class ActivityModule {
   );
 
   late final ActivityRetentionSettingsRepository retentionSettings =
-      ActivityRetentionSettingsRepository(storage: _infra.secureStorage);
+      ActivityRetentionSettingsRepository(preferences: _infra.preferences);
 
   /// App-lifetime durable upload queue. Drains locally-stored activities whose
   /// upload has not yet succeeded; triggered on app-resume (see `app.dart`) and
