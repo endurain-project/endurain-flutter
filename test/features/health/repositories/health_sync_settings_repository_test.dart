@@ -1,5 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/scoped_storage_key.dart';
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
 
@@ -8,8 +11,14 @@ void main() {
   const profileA = 'profile-a';
   const profileB = 'profile-b';
 
-  HealthSyncSettingsRepository makeRepo() =>
-      HealthSyncSettingsRepository(preferences: FakePreferencesStore());
+  setUp(() {
+    FlutterSecureStorage.setMockInitialValues(<String, String>{});
+  });
+
+  HealthSyncSettingsRepository makeRepo() => HealthSyncSettingsRepository(
+    preferences: FakePreferencesStore(),
+    storage: SecureStorageService(),
+  );
 
   group('HealthSyncSettingsRepository', () {
     group('isConnected', () {
@@ -24,6 +33,20 @@ void main() {
         expect(await repo.isConnected(profileA), isTrue);
         expect(await repo.isConnected(profileB), isFalse);
         await repo.setConnected(profileA, false);
+        expect(await repo.isConnected(profileA), isFalse);
+      });
+
+      test('ignores a connected marker restored through preferences', () async {
+        final preferences = FakePreferencesStore();
+        await preferences.write(
+          key: scopedStorageKey('health_connected', profileA),
+          value: 'true',
+        );
+        final repo = HealthSyncSettingsRepository(
+          preferences: preferences,
+          storage: SecureStorageService(),
+        );
+
         expect(await repo.isConnected(profileA), isFalse);
       });
     });
