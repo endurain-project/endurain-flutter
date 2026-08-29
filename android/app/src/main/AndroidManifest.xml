@@ -131,5 +131,11 @@
         <intent>
             <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
         </intent>
+        <!-- Required on Android 11+ (API 30+) package visibility so
+             TextToSpeech can find an installed speech engine for spoken
+             activity announcements; see AudioAnnouncer.kt. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 </manifest>

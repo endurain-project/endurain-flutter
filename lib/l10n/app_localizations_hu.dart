@@ -1166,4 +1166,57 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Hangos bejelentések';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Hangos frissítések a távolságról, időről és tempóról';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Tevékenység haladásának bejelentése';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Felolvassa a távolságot, időt és tempót felvétel közben';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Más hang halkítása beszéd közben';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Ideiglenesen halkítja a többi hangot minden bejelentés alatt';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Bejelentési időköz tevékenységenként';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Távolság';
+
+  @override
+  String get audioAnnouncementsByTime => 'Idő';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Minden $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Minden $minutes perc';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Időköz csökkentése';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Időköz növelése';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Távolság $distance. Idő $duration. Tempó $pace.';
+  }
 }

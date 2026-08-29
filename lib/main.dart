@@ -49,6 +49,10 @@ Future<void> main() async {
       // switching to imperial.
       await services.measurementSystemController.load();
 
+      // Load the audio-announcement preference so a recording started before
+      // the settings screen is ever opened still uses the user's saved choice.
+      await services.audioAnnouncementSettingsController.load();
+
       // Start remote crash reporting only if the user previously opted in.
       // No-op (and no network) otherwise; the two diagnostics channels are
       // independent.

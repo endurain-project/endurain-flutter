@@ -31,6 +31,10 @@ final class ActiveActivityStore {
         return activeDirectory.appendingPathComponent("points.jsonl", isDirectory: false)
     }
 
+    private var announcementFile: URL {
+        return activeDirectory.appendingPathComponent("announcement.json", isDirectory: false)
+    }
+
     private func ensureDirectory() throws {
         if !fileManager.fileExists(atPath: activeDirectory.path) {
             try fileManager.createDirectory(
@@ -171,6 +175,36 @@ final class ActiveActivityStore {
     func clear() {
         queue.sync {
             try? fileManager.removeItem(at: activeDirectory)
+        }
+    }
+
+    /// Persists the audio-announcement config + progress for the active
+    /// recording. Lives inside the same active-recording directory as the
+    /// session/points files, so `clear()` removes it too and
+    /// `hasRecoverableData()` keeps working unchanged.
+    func saveAnnouncementState(_ state: AnnouncementStateData) {
+        queue.sync {
+            guard let json = state.toJsonString() else { return }
+            do {
+                try ensureDirectory()
+                try json.data(using: .utf8)?.write(to: announcementFile, options: .atomic)
+            } catch {
+                // Losing this write only risks a duplicate or skipped
+                // announcement on the next fix, never the recorded track.
+            }
+        }
+    }
+
+    /// Returns the persisted announcement state, or `nil` when absent/corrupt.
+    func loadAnnouncementState() -> AnnouncementStateData? {
+        return queue.sync {
+            guard
+                let data = try? Data(contentsOf: announcementFile),
+                let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            else {
+                return nil
+            }
+            return AnnouncementStateData.fromJson(object)
         }
     }
 

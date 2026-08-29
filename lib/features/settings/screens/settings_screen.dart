@@ -11,6 +11,7 @@ import 'package:endurain/features/activity/screens/activity_history_screen.dart'
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
+import 'package:endurain/features/settings/screens/audio_announcement_settings_screen.dart';
 import 'package:endurain/features/settings/screens/device_access_screen.dart';
 import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
@@ -200,6 +201,20 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       subtitle: l10n.activityRetainUploadedGpxSubtitle,
                       value: _controller.retainUploadedGpx,
                       onChanged: _controller.setRetainUploadedGpx,
+                    ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
+                        materialIcon: Icons.record_voice_over,
+                        cupertinoIcon: CupertinoIcons.speaker_2,
+                      ),
+                      title: l10n.audioAnnouncementsTitle,
+                      subtitle: l10n.audioAnnouncementsSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const AudioAnnouncementSettingsScreen(),
+                        );
+                      },
                     ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(

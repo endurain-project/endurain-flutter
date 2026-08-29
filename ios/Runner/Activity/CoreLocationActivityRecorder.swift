@@ -163,6 +163,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         var segmentIndex = session.currentSegmentIndex
         var segmentChanged = false
         var produced: [RecordedActivityPointData] = []
+        var producedIsNewSegment: [Bool] = []
 
         for location in locations {
             guard location.horizontalAccuracy < 0 ||
@@ -181,20 +182,24 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
                 continue
             }
 
+            var isNewSegment = false
             if resumedFromPause {
                 if lastPointEpochMillis != nil {
                     segmentIndex += 1
                     segmentChanged = true
+                    isNewSegment = true
                 }
                 resumedFromPause = false
             } else if let previous = lastPointEpochMillis,
                 effectiveMillis - previous > CoreLocationActivityRecorder.maxTimeGapMillis {
                 segmentIndex += 1
                 segmentChanged = true
+                isNewSegment = true
             }
 
             lastPointEpochMillis = effectiveMillis
             produced.append(makePoint(location, millis: effectiveMillis, segmentIndex: segmentIndex))
+            producedIsNewSegment.append(isNewSegment)
         }
 
         if produced.isEmpty {
@@ -221,6 +226,46 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         }
 
         ActivityRecorderCoordinator.shared.emitPointBatch(produced)
+        announceForBatch(produced, isNewSegmentFlags: producedIsNewSegment, session: session)
+    }
+
+    /// Advances the durable announcement scheduler by every point in this
+    /// batch and speaks any threshold crossings triggered. Runs after the
+    /// points are durably persisted, so a crash here can never lose recorded
+    /// track data; a missing/unreadable announcement state (announcements
+    /// never enabled, or the file could not be read) is a silent no-op.
+    private func announceForBatch(
+        _ points: [RecordedActivityPointData],
+        isNewSegmentFlags: [Bool],
+        session: ActiveActivitySessionData
+    ) {
+        guard var announcementState = store.loadAnnouncementState(), announcementState.enabled else {
+            return
+        }
+        var announcements: [String] = []
+        for (index, point) in points.enumerated() {
+            guard let millis = IsoTime.toEpochMillis(point.timestamp) else {
+                continue
+            }
+            let elapsedSeconds = SessionTiming.elapsedSeconds(session, referenceMillis: millis)
+            let result = AnnouncementScheduler.onFix(
+                state: announcementState,
+                latitude: point.latitude,
+                longitude: point.longitude,
+                elapsedSeconds: elapsedSeconds,
+                isNewSegment: isNewSegmentFlags[index]
+            )
+            announcementState = result.state
+            announcements.append(contentsOf: result.announcements)
+        }
+        store.saveAnnouncementState(announcementState)
+        for text in announcements {
+            AudioAnnouncer.shared.speak(
+                text,
+                duck: announcementState.duckOtherAudio,
+                languageTag: announcementState.languageTag
+            )
+        }
     }
 
     func locationManager(

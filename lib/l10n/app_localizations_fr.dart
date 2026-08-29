@@ -1172,4 +1172,58 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'Le serveur a redirigé trop de fois. Vérifiez l\'adresse du serveur.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Annonces vocales';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Mises à jour vocales sur la distance, le temps et l\'allure';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Annoncer la progression de l\'activité';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Annonce à voix haute votre distance, votre temps et votre allure pendant un enregistrement';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Baisser les autres sons pendant l\'annonce';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Réduit temporairement le volume des autres sons pendant chaque annonce';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Intervalle d\'annonce par activité';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distance';
+
+  @override
+  String get audioAnnouncementsByTime => 'Temps';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Toutes les $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Toutes les $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Réduire l\'intervalle';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Augmenter l\'intervalle';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Distance $distance. Temps $duration. Allure $pace.';
+  }
 }

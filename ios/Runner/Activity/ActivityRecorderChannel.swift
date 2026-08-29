@@ -119,6 +119,7 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
         let heartRateDeviceId = arguments?["hrDeviceId"] as? String
         let powerDeviceId = arguments?["powerDeviceId"] as? String
         let cadenceDeviceId = arguments?["cadenceDeviceId"] as? String
+        let audioAnnouncements = arguments?["audioAnnouncements"] as? [String: Any]
 
         let session = ActiveActivitySessionData(
             localSessionId: localSessionId,
@@ -133,6 +134,9 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             currentSegmentIndex: 0
         )
         store.saveSession(session)
+        if let announcementState = AnnouncementStateData.fromStartArguments(audioAnnouncements) {
+            store.saveAnnouncementState(announcementState)
+        }
 
         if !recorder.startCollection() {
             // Collection never started, so no point was ever captured. Clear the
@@ -287,14 +291,7 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
         _ session: ActiveActivitySessionData,
         referenceMillis: Int64
     ) -> Int {
-        if session.status == ActiveActivitySessionData.statusPaused {
-            return session.elapsedDurationSeconds
-        }
-        guard let anchor = IsoTime.toEpochMillis(session.resumedAt ?? session.startedAt) else {
-            return session.elapsedDurationSeconds
-        }
-        let segmentSeconds = Int((referenceMillis - anchor) / 1000)
-        return session.elapsedDurationSeconds + max(0, segmentSeconds)
+        return SessionTiming.elapsedSeconds(session, referenceMillis: referenceMillis)
     }
 
     private func isSupportedVersion(_ arguments: [String: Any]?) -> Bool {

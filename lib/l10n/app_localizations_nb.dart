@@ -1157,4 +1157,56 @@ class AppLocalizationsNb extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Lydmeldinger';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Talemeldinger om distanse, tid og tempo';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Annonser aktivitetsfremgang';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Sier distansen, tiden og tempoet ditt høyt under en opptak';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Demp annen lyd mens det snakkes';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Reduserer midlertidig volumet på annen lyd under hver melding';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Meldingsintervall per aktivitet';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distanse';
+
+  @override
+  String get audioAnnouncementsByTime => 'Tid';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Hvert $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Hvert $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Reduser intervall';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Øk intervall';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Distanse $distance. Tid $duration. Tempo $pace.';
+  }
 }

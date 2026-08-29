@@ -5,7 +5,6 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import kotlin.math.max
 
 /**
  * Hosts the method/event channels that bridge the Dart
@@ -87,6 +86,8 @@ class ActivityRecorderChannel(context: Context) :
         val cadenceDeviceId = call.argument<String>("cadenceDeviceId")
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
+        @Suppress("UNCHECKED_CAST")
+        val audioAnnouncements = call.argument<Map<String, Any?>>("audioAnnouncements")
 
         val session = ActiveActivitySessionData(
             localSessionId = localSessionId,
@@ -101,6 +102,9 @@ class ActivityRecorderChannel(context: Context) :
             currentSegmentIndex = 0,
         )
         store.saveSession(session)
+        AnnouncementStateData.fromStartArguments(audioAnnouncements)?.let {
+            store.saveAnnouncementState(it)
+        }
         try {
             ActivityRecorderService.start(appContext, title, text)
         } catch (_: RuntimeException) {
@@ -233,15 +237,7 @@ class ActivityRecorderChannel(context: Context) :
     private fun elapsedSeconds(
         session: ActiveActivitySessionData,
         referenceMillis: Long,
-    ): Int {
-        if (session.status == ActiveActivitySessionData.STATUS_PAUSED) {
-            return session.elapsedDurationSeconds
-        }
-        val anchor = IsoTime.toEpochMillis(session.resumedAt ?: session.startedAt)
-            ?: return session.elapsedDurationSeconds
-        val segmentSeconds = ((referenceMillis - anchor) / 1000L).toInt()
-        return session.elapsedDurationSeconds + max(0, segmentSeconds)
-    }
+    ): Int = SessionTiming.elapsedSeconds(session, referenceMillis)
 
     private fun isSupportedVersion(call: MethodCall): Boolean {
         val version = call.argument<Int>("version") ?: return true

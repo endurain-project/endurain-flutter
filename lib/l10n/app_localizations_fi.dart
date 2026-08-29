@@ -1162,4 +1162,57 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Ääni-ilmoitukset';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Ääni-ilmoitukset matkasta, ajasta ja vauhdista';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Ilmoita harjoituksen edistyminen';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Kertoo ääneen matkasi, aikasi ja vauhtisi tallennuksen aikana';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Vaimenna muu ääni puhumisen ajaksi';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Vähentää tilapäisesti muun äänen voimakkuutta jokaisen ilmoituksen aikana';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader => 'Ilmoitusväli lajin mukaan';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Matka';
+
+  @override
+  String get audioAnnouncementsByTime => 'Aika';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Joka $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Joka $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Pienennä väliä';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Kasvata väliä';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Matka $distance. Aika $duration. Vauhti $pace.';
+  }
 }

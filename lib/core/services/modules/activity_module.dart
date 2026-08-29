@@ -10,6 +10,7 @@ import 'package:endurain/features/activity/controllers/local_activity_history_co
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
@@ -22,6 +23,7 @@ import 'package:endurain/features/activity/services/local_activity_gpx_storage.d
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:flutter/foundation.dart';
 
 /// Wires the activity recording + upload feature: local storage, the durable
@@ -60,6 +62,18 @@ class ActivityModule {
 
   late final ActivityRetentionSettingsRepository retentionSettings =
       ActivityRetentionSettingsRepository(storage: _infra.secureStorage);
+
+  late final AudioAnnouncementSettingsRepository audioAnnouncementSettings =
+      AudioAnnouncementSettingsRepository(preferences: _infra.preferences);
+
+  /// App-lifetime controller for the audio-announcement preferences. Owned
+  /// here (not the settings screen) so the value configured for the next
+  /// recording start always reflects the latest saved preference, even if the
+  /// settings screen was never opened this session.
+  late final AudioAnnouncementSettingsController
+  audioAnnouncementSettingsController = AudioAnnouncementSettingsController(
+    repository: audioAnnouncementSettings,
+  );
 
   /// App-lifetime durable upload queue. Drains locally-stored activities whose
   /// upload has not yet succeeded; triggered on app-resume (see `app.dart`) and

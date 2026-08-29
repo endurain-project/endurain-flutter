@@ -1153,4 +1153,57 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Balso pranešimai';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Balso pranešimai apie atstumą, laiką ir tempą';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Skelbti veiklos eigą';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Įrašymo metu balsu praneša atstumą, laiką ir tempą';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Pritildyti kitą garsą kalbėjimo metu';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Laikinai sumažina kito garso garsumą kiekvieno pranešimo metu';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Pranešimo intervalas pagal veiklą';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Atstumas';
+
+  @override
+  String get audioAnnouncementsByTime => 'Laikas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Kas $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Kas $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Sumažinti intervalą';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Padidinti intervalą';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Atstumas $distance. Laikas $duration. Tempas $pace.';
+  }
 }

@@ -1162,4 +1162,58 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'De server heeft te vaak doorverwezen. Controleer het serveradres.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Audiomeldingen';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Gesproken updates over afstand, tijd en tempo';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Voortgang van activiteit aankondigen';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Spreekt tijdens een opname je afstand, tijd en tempo uit';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Ander geluid dempen tijdens het spreken';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Verlaagt tijdelijk het volume van ander geluid tijdens elke melding';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Meldingsinterval per activiteit';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Afstand';
+
+  @override
+  String get audioAnnouncementsByTime => 'Tijd';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Elke $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Elke $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Interval verkleinen';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Interval vergroten';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Afstand $distance. Tijd $duration. Tempo $pace.';
+  }
 }

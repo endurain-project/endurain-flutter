@@ -1163,4 +1163,56 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Гласовна обавештења';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Гласовна ажурирања о раздаљини, времену и темпу';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Најави напредак активности';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Изговара вашу раздаљину, време и темпо током снимања';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Стишај други звук током говора';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Привремено смањује јачину другог звука током сваког обавештења';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Интервал обавештења по активности';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Раздаљина';
+
+  @override
+  String get audioAnnouncementsByTime => 'Време';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Сваких $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Сваких $minutes мин';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Смањи интервал';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Повећај интервал';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Раздаљина $distance. Време $duration. Темпо $pace.';
+  }
 }

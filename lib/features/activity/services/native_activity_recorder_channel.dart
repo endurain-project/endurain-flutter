@@ -121,6 +121,8 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
           'notificationTitle': request.backgroundConfig!.notificationTitle,
           'notificationText': request.backgroundConfig!.notificationText,
         },
+        if (request.audioAnnouncementConfig != null)
+          'audioAnnouncements': request.audioAnnouncementConfig!.toChannelMap(),
       },
     );
   }

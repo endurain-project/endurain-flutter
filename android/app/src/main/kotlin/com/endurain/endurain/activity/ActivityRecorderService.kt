@@ -388,15 +388,18 @@ class ActivityRecorderService : Service() {
             return
         }
         var segmentIndex = session.currentSegmentIndex
+        var isNewSegment = false
         if (resumedFromPause) {
             if (previous != null) {
                 segmentIndex += 1
+                isNewSegment = true
                 store.saveSession(session.copy(currentSegmentIndex = segmentIndex))
             }
             resumedFromPause = false
         } else if (previous != null && nowMillis - previous > MAX_TIME_GAP_MILLIS) {
             // Large time gap: start a new segment to avoid bridging a false line.
             segmentIndex += 1
+            isNewSegment = true
             store.saveSession(session.copy(currentSegmentIndex = segmentIndex))
         }
         lastPointEpochMillis = nowMillis
@@ -431,7 +434,48 @@ class ActivityRecorderService : Service() {
             return
         }
         ActivityRecorderCoordinator.emitPointBatch(listOf(point))
+        announceIfDue(nowMillis, location, isNewSegment)
     }
+
+    /**
+     * Advances the durable announcement scheduler by this fix and speaks any
+     * threshold crossings it triggered. Runs after the point is durably
+     * persisted, so a crash here can never lose recorded track data; a
+     * missing/unreadable announcement state (announcements never enabled, or
+     * the file could not be read) is a silent no-op.
+     */
+    private fun announceIfDue(nowMillis: Long, location: Location, isNewSegment: Boolean) {
+        val announcementState = store.loadAnnouncementState() ?: return
+        if (!announcementState.enabled) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        val elapsedSeconds = SessionTiming.elapsedSeconds(session, nowMillis)
+        val result = AnnouncementScheduler.onFix(
+            state = announcementState,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            elapsedSeconds = elapsedSeconds,
+            isNewSegment = isNewSegment,
+        )
+        try {
+            store.saveAnnouncementState(result.state)
+        } catch (_: Exception) {
+            // Losing this write only risks a duplicate or skipped announcement
+            // on the next fix, never the recorded track; never fail collection
+            // over it.
+            return
+        }
+        for (text in result.announcements) {
+            AudioAnnouncer.speak(
+                applicationContext,
+                text,
+                announcementState.duckOtherAudio,
+                announcementState.languageTag,
+            )
+        }
+    }
+
 
     /**
      * Selects a single location provider, preferring GPS for its precision.

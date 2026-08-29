@@ -1097,6 +1097,54 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => '语音播报';
+
+  @override
+  String get audioAnnouncementsSubtitle => '播报距离、时间和配速的语音更新';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => '播报活动进度';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle => '在记录过程中语音播报您的距离、时间和配速';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => '播报时降低其他音频音量';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle => '在每次播报期间暂时降低其他音频的音量';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader => '按活动类型设置的播报间隔';
+
+  @override
+  String get audioAnnouncementsByDistance => '距离';
+
+  @override
+  String get audioAnnouncementsByTime => '时间';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return '每 $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return '每 $minutes 分钟';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => '减小间隔';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => '增大间隔';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return '距离$distance。时间$duration。配速$pace。';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2192,4 +2240,52 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => '語音播報';
+
+  @override
+  String get audioAnnouncementsSubtitle => '播報距離、時間和配速的語音更新';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => '播報活動進度';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle => '在記錄過程中語音播報您的距離、時間和配速';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => '播報時降低其他音訊音量';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle => '在每次播報期間暫時降低其他音訊的音量';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader => '按活動類型設定的播報間隔';
+
+  @override
+  String get audioAnnouncementsByDistance => '距離';
+
+  @override
+  String get audioAnnouncementsByTime => '時間';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return '每 $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return '每 $minutes 分鐘';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => '減小間隔';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => '增大間隔';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return '距離$distance。時間$duration。配速$pace。';
+  }
 }

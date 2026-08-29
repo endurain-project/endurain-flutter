@@ -1174,4 +1174,58 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Φωνητικές ανακοινώσεις';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Φωνητικές ενημερώσεις για απόσταση, χρόνο και ρυθμό';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Ανακοίνωση προόδου δραστηριότητας';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Εκφωνεί την απόσταση, τον χρόνο και τον ρυθμό σας κατά την εγγραφή';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Χαμήλωμα άλλου ήχου κατά την ομιλία';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Μειώνει προσωρινά την ένταση άλλου ήχου κατά τη διάρκεια κάθε ανακοίνωσης';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Διάστημα ανακοίνωσης ανά δραστηριότητα';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Απόσταση';
+
+  @override
+  String get audioAnnouncementsByTime => 'Χρόνος';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Κάθε $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Κάθε $minutes λεπτά';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Μείωση διαστήματος';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Αύξηση διαστήματος';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Απόσταση $distance. Χρόνος $duration. Ρυθμός $pace.';
+  }
 }

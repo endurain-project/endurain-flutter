@@ -1157,4 +1157,57 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Balss paziņojumi';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Balss atjauninājumi par attālumu, laiku un tempu';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Paziņot aktivitātes progresu';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Ieraksta laikā balsī paziņo attālumu, laiku un tempu';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Klusināt citu skaņu runāšanas laikā';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Īslaicīgi samazina citas skaņas skaļumu katra paziņojuma laikā';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Paziņojuma intervāls pēc aktivitātes';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Attālums';
+
+  @override
+  String get audioAnnouncementsByTime => 'Laiks';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Ik pēc $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Ik pēc $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Samazināt intervālu';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Palielināt intervālu';
+
+  @override
+  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+    return 'Attālums $distance. Laiks $duration. Temps $pace.';
+  }
 }

@@ -22,6 +22,7 @@ import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
@@ -38,6 +39,7 @@ import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 import 'package:endurain/features/sensors/services/sensor_profile.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
+import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
@@ -118,6 +120,12 @@ class AppServices {
   ActivityUploadQueue get activityUploadQueue => _activity.uploadQueue;
   ActivityRecordingController get activityRecordingController =>
       _activity.recordingController;
+
+  /// App-lifetime controller for the audio-announcement preferences (master
+  /// on/off, ducking, and the per-activity-type interval). Read from the
+  /// settings screen and from the map screen when starting a recording.
+  AudioAnnouncementSettingsController get audioAnnouncementSettingsController =>
+      _activity.audioAnnouncementSettingsController;
 
   /// Builds the active-recording recorder for the current platform.
   ActivityLocationRecorder createActivityLocationRecorder({

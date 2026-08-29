@@ -20,6 +20,18 @@
 		AA00000000000000000000B3 /* ActivityRecorderCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A3 /* ActivityRecorderCoordinator.swift */; };
 		AA00000000000000000000B4 /* CoreLocationActivityRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */; };
 		AA00000000000000000000B5 /* ActivityRecorderChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A5 /* ActivityRecorderChannel.swift */; };
+		AA00000000000000000000B6 /* GeoDistance.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A6 /* GeoDistance.swift */; };
+		AA00000000000000000000B7 /* AnnouncementThresholdCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A7 /* AnnouncementThresholdCalculator.swift */; };
+		AA00000000000000000000B8 /* AnnouncementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A8 /* AnnouncementModels.swift */; };
+		AA00000000000000000000B9 /* AnnouncementSpeechBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A9 /* AnnouncementSpeechBuilder.swift */; };
+		AA00000000000000000000BA /* AnnouncementScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AA /* AnnouncementScheduler.swift */; };
+		AA00000000000000000000BB /* AudioAnnouncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AB /* AudioAnnouncer.swift */; };
+		AA00000000000000000000BC /* SessionTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AC /* SessionTiming.swift */; };
+		AA00000000000000000000BD /* GeoDistanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AD /* GeoDistanceTests.swift */; };
+		AA00000000000000000000BE /* AnnouncementThresholdCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AE /* AnnouncementThresholdCalculatorTests.swift */; };
+		AA00000000000000000000BF /* AnnouncementSpeechBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AF /* AnnouncementSpeechBuilderTests.swift */; };
+		AA00000000000000000000C0 /* AnnouncementModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C1 /* AnnouncementModelsTests.swift */; };
+		AA00000000000000000000C2 /* AnnouncementSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +79,18 @@
 		AA00000000000000000000A3 /* ActivityRecorderCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/ActivityRecorderCoordinator.swift; sourceTree = "<group>"; };
 		AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/CoreLocationActivityRecorder.swift; sourceTree = "<group>"; };
 		AA00000000000000000000A5 /* ActivityRecorderChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/ActivityRecorderChannel.swift; sourceTree = "<group>"; };
+		AA00000000000000000000A6 /* GeoDistance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/GeoDistance.swift; sourceTree = "<group>"; };
+		AA00000000000000000000A7 /* AnnouncementThresholdCalculator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AnnouncementThresholdCalculator.swift; sourceTree = "<group>"; };
+		AA00000000000000000000A8 /* AnnouncementModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AnnouncementModels.swift; sourceTree = "<group>"; };
+		AA00000000000000000000A9 /* AnnouncementSpeechBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AnnouncementSpeechBuilder.swift; sourceTree = "<group>"; };
+		AA00000000000000000000AA /* AnnouncementScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AnnouncementScheduler.swift; sourceTree = "<group>"; };
+		AA00000000000000000000AB /* AudioAnnouncer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AudioAnnouncer.swift; sourceTree = "<group>"; };
+		AA00000000000000000000AC /* SessionTiming.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/SessionTiming.swift; sourceTree = "<group>"; };
+		AA00000000000000000000AD /* GeoDistanceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeoDistanceTests.swift; sourceTree = "<group>"; };
+		AA00000000000000000000AE /* AnnouncementThresholdCalculatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementThresholdCalculatorTests.swift; sourceTree = "<group>"; };
+		AA00000000000000000000AF /* AnnouncementSpeechBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementSpeechBuilderTests.swift; sourceTree = "<group>"; };
+		AA00000000000000000000C1 /* AnnouncementModelsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementModelsTests.swift; sourceTree = "<group>"; };
+		AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementSchedulerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +116,11 @@
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
+				AA00000000000000000000AD /* GeoDistanceTests.swift */,
+				AA00000000000000000000AE /* AnnouncementThresholdCalculatorTests.swift */,
+				AA00000000000000000000AF /* AnnouncementSpeechBuilderTests.swift */,
+				AA00000000000000000000C1 /* AnnouncementModelsTests.swift */,
+				AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -142,6 +171,13 @@
 				AA00000000000000000000A3 /* ActivityRecorderCoordinator.swift */,
 				AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */,
 				AA00000000000000000000A5 /* ActivityRecorderChannel.swift */,
+				AA00000000000000000000A6 /* GeoDistance.swift */,
+				AA00000000000000000000A7 /* AnnouncementThresholdCalculator.swift */,
+				AA00000000000000000000A8 /* AnnouncementModels.swift */,
+				AA00000000000000000000A9 /* AnnouncementSpeechBuilder.swift */,
+				AA00000000000000000000AA /* AnnouncementScheduler.swift */,
+				AA00000000000000000000AB /* AudioAnnouncer.swift */,
+				AA00000000000000000000AC /* SessionTiming.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -294,6 +330,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
+				AA00000000000000000000BD /* GeoDistanceTests.swift in Sources */,
+				AA00000000000000000000BE /* AnnouncementThresholdCalculatorTests.swift in Sources */,
+				AA00000000000000000000BF /* AnnouncementSpeechBuilderTests.swift in Sources */,
+				AA00000000000000000000C0 /* AnnouncementModelsTests.swift in Sources */,
+				AA00000000000000000000C2 /* AnnouncementSchedulerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,6 +348,13 @@
 				AA00000000000000000000B3 /* ActivityRecorderCoordinator.swift in Sources */,
 				AA00000000000000000000B4 /* CoreLocationActivityRecorder.swift in Sources */,
 				AA00000000000000000000B5 /* ActivityRecorderChannel.swift in Sources */,
+				AA00000000000000000000B6 /* GeoDistance.swift in Sources */,
+				AA00000000000000000000B7 /* AnnouncementThresholdCalculator.swift in Sources */,
+				AA00000000000000000000B8 /* AnnouncementModels.swift in Sources */,
+				AA00000000000000000000B9 /* AnnouncementSpeechBuilder.swift in Sources */,
+				AA00000000000000000000BA /* AnnouncementScheduler.swift in Sources */,
+				AA00000000000000000000BB /* AudioAnnouncer.swift in Sources */,
+				AA00000000000000000000BC /* SessionTiming.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
