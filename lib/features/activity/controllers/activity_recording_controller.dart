@@ -15,6 +15,7 @@ import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
@@ -30,6 +31,7 @@ class ActivityRecordingController extends SafeNotifier {
     LocalActivityRepository? localActivityRepository,
     LocalActivitySummaryBuilder? localActivitySummaryBuilder,
     this._retentionSettingsRepository,
+    this._autoPauseSettingsRepository,
     Future<bool> Function()? isUploadAuthorized,
     Future<ConnectionProfile?> Function()? activeConnectionProfile,
     DiagnosticsRecorder? diagnostics,
@@ -61,6 +63,7 @@ class ActivityRecordingController extends SafeNotifier {
   final LocalActivityRepository _localActivityRepository;
   final LocalActivitySummaryBuilder _localActivitySummaryBuilder;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
+  final AutoPauseSettingsRepository? _autoPauseSettingsRepository;
   final Future<bool> Function() _isUploadAuthorized;
   final Future<ConnectionProfile?> Function() _activeConnectionProfile;
   final DiagnosticsRecorder _diagnostics;
@@ -124,6 +127,12 @@ class ActivityRecordingController extends SafeNotifier {
     selectActivityType(type);
     final localActivityId = _localActivityIdProvider();
     final profile = await _activeConnectionProfile();
+    final autoPauseRepository = _autoPauseSettingsRepository;
+    if (autoPauseRepository != null) {
+      _recordingService.configureAutoPause(
+        await autoPauseRepository.getConfig(),
+      );
+    }
     await _recordingService.start(
       activityType: _selectedActivityType,
       backgroundConfig: _backgroundConfig,

@@ -36,6 +36,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
+    private var autoPauseDetector: MovementAutoPauseDetector?
 
     init(store: ActiveActivityStore) {
         self.store = store
@@ -85,6 +86,13 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         }
 
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
+        let session = store.loadSession()
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        autoPauseDetector = MovementAutoPauseDetector(config: MovementAutoPauseConfig(
+            enabled: session?.autoPauseEnabled ?? false,
+            pauseDelayMillis: Int64((session?.autoPauseDelaySeconds ?? 5)) * 1000
+        ))
+        autoPauseDetector?.reset(movementAtMillis: lastPointEpochMillis ?? nowMillis)
         manager.startUpdatingLocation()
         startTerminationRecovery()
         isCollecting = true
@@ -136,6 +144,11 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         manager.stopMonitoringSignificantLocationChanges()
         manager.allowsBackgroundLocationUpdates = false
         isCollecting = false
+        // A manual pause reaches here and must stop monitoring movement
+        // entirely, so a manually paused recording can never auto-resume;
+        // `startCollection` always rebuilds a fresh detector for the next
+        // active period.
+        autoPauseDetector = nil
     }
 
     /// Marks that collection is resuming from a pause so the next fix opens a
@@ -153,64 +166,95 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         guard isCollecting, !locations.isEmpty else {
             return
         }
-        guard
-            let session = store.loadSession(),
-            session.status == ActiveActivitySessionData.statusRecording
+        for location in locations {
+            guard isCollecting else {
+                // A failure earlier in this batch already stopped collection.
+                return
+            }
+            handleLocationFix(location)
+        }
+    }
+
+    private func handleLocationFix(_ location: CLLocation) {
+        guard let session = store.loadSession() else {
+            return
+        }
+        if session.status == ActiveActivitySessionData.statusRecording {
+            handleActiveLocationFix(session, location)
+        } else if session.status == ActiveActivitySessionData.statusPaused,
+            session.pausedAutomatically {
+            // A manual pause stops Core Location entirely (see
+            // `stopCollection`), so only an auto-paused session can still be
+            // receiving fixes here.
+            handleAutoPausedLocationFix(session, location)
+        }
+    }
+
+    private func handleActiveLocationFix(
+        _ session: ActiveActivitySessionData,
+        _ location: CLLocation
+    ) {
+        let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
+        let effectiveMillis = rawMillis > 0
+            ? rawMillis
+            : Int64(Date().timeIntervalSince1970 * 1000)
+
+        // Feed the auto-pause detector before the accuracy/speed gates below,
+        // so stillness timing advances from wall-clock progress on every fix
+        // (including noisy ones the detector itself discounts as movement
+        // evidence), matching the Android/Dart recorders.
+        let sample = movementSample(location, millis: effectiveMillis)
+        let transition: MovementAutoPauseTransition
+        if let detector = autoPauseDetector {
+            transition = detector.onActivePoint(sample)
+        } else {
+            transition = .none
+        }
+        if case .autoPause = transition {
+            transitionToAutoPaused(session, nowMillis: effectiveMillis)
+            return
+        }
+
+        guard location.horizontalAccuracy < 0 ||
+            location.horizontalAccuracy <= CoreLocationActivityRecorder.maxAccuracyMeters
         else {
+            return
+        }
+        if let previous = lastPointEpochMillis,
+            effectiveMillis > previous,
+            location.speed >= 0,
+            location.speed > CoreLocationActivityRecorder.maxSpeedMetersPerSecond {
             return
         }
 
         var segmentIndex = session.currentSegmentIndex
         var segmentChanged = false
-        var produced: [RecordedActivityPointData] = []
-
-        for location in locations {
-            guard location.horizontalAccuracy < 0 ||
-                location.horizontalAccuracy <= CoreLocationActivityRecorder.maxAccuracyMeters
-            else {
-                continue
-            }
-            let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
-            let effectiveMillis = rawMillis > 0
-                ? rawMillis
-                : Int64(Date().timeIntervalSince1970 * 1000)
-            if let previous = lastPointEpochMillis,
-                effectiveMillis > previous,
-                location.speed >= 0,
-                location.speed > CoreLocationActivityRecorder.maxSpeedMetersPerSecond {
-                continue
-            }
-
-            if resumedFromPause {
-                if lastPointEpochMillis != nil {
-                    segmentIndex += 1
-                    segmentChanged = true
-                }
-                resumedFromPause = false
-            } else if let previous = lastPointEpochMillis,
-                effectiveMillis - previous > CoreLocationActivityRecorder.maxTimeGapMillis {
+        if resumedFromPause {
+            if lastPointEpochMillis != nil {
                 segmentIndex += 1
                 segmentChanged = true
             }
-
-            lastPointEpochMillis = effectiveMillis
-            produced.append(makePoint(location, millis: effectiveMillis, segmentIndex: segmentIndex))
+            resumedFromPause = false
+        } else if let previous = lastPointEpochMillis,
+            effectiveMillis - previous > CoreLocationActivityRecorder.maxTimeGapMillis {
+            segmentIndex += 1
+            segmentChanged = true
         }
+        lastPointEpochMillis = effectiveMillis
 
-        if produced.isEmpty {
-            return
-        }
+        let point = makePoint(location, millis: effectiveMillis, segmentIndex: segmentIndex)
 
-        // Persist the advanced segment index before the point batch so session
+        // Persist the advanced segment index before the point so session
         // metadata is never behind the stored points across a crash/restart
-        // boundary. A crash between the two only leaves the session one segment
-        // ahead of an unwritten point, which recovery continues cleanly.
+        // boundary. A crash between the two only leaves the session one
+        // segment ahead of an unwritten point, which recovery continues
+        // cleanly.
         if segmentChanged {
             store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex))
         }
 
         do {
-            try store.appendPoints(produced)
+            try store.appendPoints([point])
         } catch {
             stopCollection()
             persistFailure()
@@ -220,7 +264,74 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             return
         }
 
-        ActivityRecorderCoordinator.shared.emitPointBatch(produced)
+        ActivityRecorderCoordinator.shared.emitPointBatch([point])
+    }
+
+    /// Feeds a fix received while auto-paused. Core Location keeps running
+    /// (never stopped for an automatic pause) so movement can resume the
+    /// recording without user interaction, but no point is persisted until
+    /// hysteresis confirms movement has resumed.
+    private func handleAutoPausedLocationFix(
+        _ session: ActiveActivitySessionData,
+        _ location: CLLocation
+    ) {
+        guard let detector = autoPauseDetector else {
+            return
+        }
+        let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
+        let effectiveMillis = rawMillis > 0
+            ? rawMillis
+            : Int64(Date().timeIntervalSince1970 * 1000)
+        let transition = detector.onAutoPausedPoint(movementSample(location, millis: effectiveMillis))
+        guard case .autoResume = transition else {
+            return
+        }
+        let resumed = session.copyWith(
+            status: ActiveActivitySessionData.statusRecording,
+            resumedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(effectiveMillis) / 1000))),
+            pausedAt: .some(nil),
+            pausedAutomatically: false
+        )
+        store.saveSession(resumed)
+        resumedFromPause = true
+        ActivityRecorderCoordinator.shared.emitSession(
+            type: ActivityRecorderCoordinator.eventAutoResumed,
+            session: resumed
+        )
+        // Persist this same triggering fix as the first point of the new
+        // segment, matching the manual resume flow (`resumedFromPause` forces
+        // a segment break above).
+        handleActiveLocationFix(resumed, location)
+    }
+
+    private func transitionToAutoPaused(_ session: ActiveActivitySessionData, nowMillis: Int64) {
+        let paused = session.copyWith(
+            status: ActiveActivitySessionData.statusPaused,
+            pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
+            elapsedDurationSeconds: session.elapsedSecondsAt(nowMillis),
+            pausedAutomatically: true
+        )
+        store.saveSession(paused)
+        ActivityRecorderCoordinator.shared.emitSession(
+            type: ActivityRecorderCoordinator.eventAutoPaused,
+            session: paused
+        )
+        // Deliberately does not call `stopCollection()`: an automatic pause
+        // must keep monitoring location so movement can resume the recording
+        // without user interaction, unlike a manual pause which stops
+        // collection entirely (see `stopCollection`).
+    }
+
+    private func movementSample(_ location: CLLocation, millis: Int64) -> MovementSample {
+        return MovementSample(
+            timestampMillis: millis,
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            speedMetersPerSecond: location.speed >= 0 ? location.speed : nil,
+            horizontalAccuracyMeters: location.horizontalAccuracy >= 0
+                ? location.horizontalAccuracy
+                : nil
+        )
     }
 
     func locationManager(

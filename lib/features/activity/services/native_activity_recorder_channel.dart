@@ -38,6 +38,8 @@ class NativeActivityRecorderChannelContract {
   static const String eventPointBatchAvailable = 'pointBatchAvailable';
   static const String eventPaused = 'paused';
   static const String eventResumed = 'resumed';
+  static const String eventAutoPaused = 'autoPaused';
+  static const String eventAutoResumed = 'autoResumed';
   static const String eventStopped = 'stopped';
   static const String eventFailed = 'failed';
   static const String eventRecoverableStateChanged = 'recoverableStateChanged';
@@ -121,6 +123,8 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
           'notificationTitle': request.backgroundConfig!.notificationTitle,
           'notificationText': request.backgroundConfig!.notificationText,
         },
+        'autoPauseEnabled': request.autoPauseConfig.enabled,
+        'autoPauseDelaySeconds': request.autoPauseConfig.pauseDelay.inSeconds,
       },
     );
   }
@@ -198,6 +202,14 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
         return session == null ? null : ActivityRecorderEvent.paused(session);
       case NativeActivityRecorderChannelContract.eventResumed:
         return session == null ? null : ActivityRecorderEvent.resumed(session);
+      case NativeActivityRecorderChannelContract.eventAutoPaused:
+        return session == null
+            ? null
+            : ActivityRecorderEvent.autoPaused(session);
+      case NativeActivityRecorderChannelContract.eventAutoResumed:
+        return session == null
+            ? null
+            : ActivityRecorderEvent.autoResumed(session);
       case NativeActivityRecorderChannelContract.eventStopped:
         return session == null ? null : ActivityRecorderEvent.stopped(session);
       case NativeActivityRecorderChannelContract.eventPointBatchAvailable:

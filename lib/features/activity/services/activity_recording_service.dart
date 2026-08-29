@@ -13,6 +13,7 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/features/activity/services/sensor_reading_buffer.dart';
 import 'package:flutter/foundation.dart';
@@ -70,6 +71,7 @@ class ActivityRecordingService {
   int _lastBreadcrumbPointCount = 0;
   bool _isDisposed = false;
   BackgroundLocationConfig? _backgroundConfig;
+  MovementAutoPauseConfig _autoPauseConfig = const MovementAutoPauseConfig();
   String? _localSessionId;
   String? _connectionOrigin;
   String? _connectionProfileId;
@@ -84,6 +86,13 @@ class ActivityRecordingService {
 
   void configureBackgroundTracking(BackgroundLocationConfig config) {
     _backgroundConfig = config;
+  }
+
+  /// Supplies the auto-pause configuration to snapshot into the next
+  /// recording's session. Called by the controller before [start] with the
+  /// current value of `AutoPauseSettingsRepository.getConfig()`.
+  void configureAutoPause(MovementAutoPauseConfig config) {
+    _autoPauseConfig = config;
   }
 
   Future<void> start({
@@ -192,6 +201,7 @@ class ActivityRecordingService {
           heartRateDeviceId: sensorDeviceIds[RecordedSensorKind.heartRate],
           powerDeviceId: sensorDeviceIds[RecordedSensorKind.power],
           cadenceDeviceId: sensorDeviceIds[RecordedSensorKind.cadence],
+          autoPauseConfig: _autoPauseConfig,
         ),
       );
     } catch (error, stackTrace) {
@@ -244,6 +254,7 @@ class ActivityRecordingService {
       _state.copyWith(
         status: ActivityRecordingStatus.paused,
         elapsedDurationSeconds: elapsedDurationSeconds,
+        isAutoPaused: false,
       ),
     );
     _recordBreadcrumb(
@@ -274,6 +285,7 @@ class ActivityRecordingService {
     _emit(
       _state.startNewSegment().copyWith(
         status: ActivityRecordingStatus.recording,
+        isAutoPaused: false,
       ),
     );
     _recordBreadcrumb(
@@ -480,7 +492,78 @@ class ActivityRecordingService {
         _recordRecordedPoints(event.points);
       case ActivityRecorderEventType.failed:
         _fail(_errorKeyForRecorderFailure(event.failureReason));
+      case ActivityRecorderEventType.autoPaused:
+        _handleAutoPaused(event);
+      case ActivityRecorderEventType.autoResumed:
+        _handleAutoResumed(event);
     }
+  }
+
+  /// Bridges an autonomous auto-pause (the recorder's movement detector, not
+  /// an explicit [pause] call) into the live UI state.
+  ///
+  /// Guarded to only act while actively recording so a duplicate or
+  /// out-of-order event can never clobber a state the controller already
+  /// knows about. Prefers the recorder's own elapsed-time computation (from
+  /// [event.session]) over recomputing locally: the recorder timestamps the
+  /// pause from the fix that triggered it, which stays correct even if the
+  /// Dart isolate's own timer was throttled while backgrounded.
+  void _handleAutoPaused(ActivityRecorderEvent event) {
+    if (_state.status != ActivityRecordingStatus.recording) {
+      return;
+    }
+    final elapsedDurationSeconds =
+        event.session?.elapsedDurationSeconds ??
+        _currentElapsedDurationSeconds();
+    _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
+    _recordingSegmentStartedAt = null;
+    _cancelElapsedTimer();
+    _emit(
+      _state.copyWith(
+        status: ActivityRecordingStatus.paused,
+        elapsedDurationSeconds: elapsedDurationSeconds,
+        isAutoPaused: true,
+      ),
+    );
+    _recordBreadcrumb(
+      DiagnosticsEvents.activityAutoPaused,
+      details: {
+        'elapsedSeconds': elapsedDurationSeconds,
+        'pointCount': _state.points.length,
+        'segmentCount': _state.segments.length,
+      },
+    );
+  }
+
+  /// Bridges an autonomous auto-resume (the recorder observed enough
+  /// consecutive movement, not an explicit [resume] call) into the live UI
+  /// state, starting a new track segment as required.
+  ///
+  /// Guarded to only act while auto-paused — in particular, a manually paused
+  /// recording (`isAutoPaused == false`) never transitions here, which is the
+  /// state-side half of "manual pause never auto-resumes" (the recorder-side
+  /// half is that a manual pause stops monitoring location entirely).
+  void _handleAutoResumed(ActivityRecorderEvent event) {
+    if (_state.status != ActivityRecordingStatus.paused ||
+        !_state.isAutoPaused) {
+      return;
+    }
+    _recordingSegmentStartedAt = event.session?.resumedAt ?? _now();
+    _emit(
+      _state.startNewSegment().copyWith(
+        status: ActivityRecordingStatus.recording,
+        isAutoPaused: false,
+      ),
+    );
+    _recordBreadcrumb(
+      DiagnosticsEvents.activityAutoResumed,
+      details: {
+        'elapsedSeconds': _state.elapsedDurationSeconds,
+        'pointCount': _state.points.length,
+        'segmentCount': _state.segments.length,
+      },
+    );
+    _startElapsedTimer();
   }
 
   Future<bool> _runRecorderCommand(
@@ -759,6 +842,8 @@ class ActivityRecordingService {
         startedAt: session.startedAt,
         endedAt: isCompleted ? (session.endedAt ?? _now()) : null,
         elapsedDurationSeconds: session.elapsedDurationSeconds,
+        isAutoPaused: status == ActivityRecordingStatus.paused &&
+            session.pausedAutomatically,
         segments: segments,
       ),
     );

@@ -9,6 +9,7 @@ import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_segment_policy.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:geolocator/geolocator.dart';
 
 /// Foreground/fallback [ActivityLocationRecorder] backed by the `geolocator`
@@ -46,6 +47,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   RecordedActivityPoint? _lastPoint;
   bool _resumedFromPause = false;
   bool _disposed = false;
+  MovementAutoPauseDetector? _autoPauseDetector;
 
   @override
   Stream<ActivityRecorderEvent> get events => _eventController.stream;
@@ -56,6 +58,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     if (await _store.loadSession() != null) {
       throw StateError('A recoverable activity session already exists.');
     }
+    final autoPauseConfig = request.autoPauseConfig;
     final session = ActiveActivitySession(
       localSessionId: request.localSessionId,
       activityType: request.activityType,
@@ -66,11 +69,15 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       heartRateDeviceId: request.heartRateDeviceId,
       powerDeviceId: request.powerDeviceId,
       cadenceDeviceId: request.cadenceDeviceId,
+      autoPauseEnabled: autoPauseConfig.enabled,
+      autoPauseDelaySeconds: autoPauseConfig.pauseDelay.inSeconds,
     );
     _session = session;
     _backgroundConfig = request.backgroundConfig;
     _lastPoint = null;
     _resumedFromPause = false;
+    _autoPauseDetector = MovementAutoPauseDetector(config: autoPauseConfig)
+      ..reset(movementAt: request.startedAt);
     await _store.saveSession(session);
     _emit(ActivityRecorderEvent.started(session));
     _diagnostics.recordBreadcrumbSync(
@@ -93,8 +100,14 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       status: ActiveActivityStatus.paused,
       elapsedDurationSeconds: _elapsedDurationSeconds(session, pausedAt),
       pausedAt: pausedAt,
+      pausedAutomatically: false,
     );
     _session = paused;
+    // A manual pause always stops the stream above, so no further positions
+    // can reach the detector until a manual resume; reset defensively so
+    // stale movement history from before this pause can never leak into a
+    // later segment.
+    _autoPauseDetector?.reset();
     await _store.saveSession(paused);
     _emit(ActivityRecorderEvent.paused(paused));
     _diagnostics.recordBreadcrumbSync(
@@ -116,8 +129,10 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       status: ActiveActivityStatus.recording,
       resumedAt: resumedAt,
       pausedAt: null,
+      pausedAutomatically: false,
     );
     _session = resumed;
+    _autoPauseDetector?.reset(movementAt: resumedAt);
     await _store.saveSession(resumed);
     _emit(ActivityRecorderEvent.resumed(resumed));
     _diagnostics.recordBreadcrumbSync(
@@ -158,6 +173,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     _lastPoint = null;
     _resumedFromPause = false;
     _backgroundConfig = null;
+    _autoPauseDetector = null;
     await _store.clear();
     _emit(const ActivityRecorderEvent.recoverableStateChanged(null));
   }
@@ -182,6 +198,17 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       _resumedFromPause = false;
       final points = await _store.readPoints();
       _lastPoint = points.isEmpty ? null : points.last;
+      // Rebuild the detector from the session's own snapshotted config (not
+      // whatever the current app preference is) so a recovered recording keeps
+      // behaving the way it did when it started.
+      _autoPauseDetector =
+          MovementAutoPauseDetector(
+              config: MovementAutoPauseConfig(
+                enabled: session.autoPauseEnabled,
+                pauseDelay: Duration(seconds: session.autoPauseDelaySeconds),
+              ),
+            )
+            ..reset(movementAt: _lastPoint?.timestamp ?? _now());
     }
     _emit(ActivityRecorderEvent.recoverableStateChanged(session));
     return session;
@@ -241,11 +268,48 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       return;
     }
     final session = _session;
-    if (session == null || session.status != ActiveActivityStatus.recording) {
+    if (session == null) {
+      return;
+    }
+    if (session.status == ActiveActivityStatus.paused) {
+      // A manual pause cancels the stream entirely (see `pause()`), so only
+      // an auto-paused session can still be receiving positions here. This
+      // guard also protects against a stray in-flight position delivered
+      // just as a manual pause took effect.
+      if (session.pausedAutomatically) {
+        await _handleAutoPausedPosition(session, position);
+      }
+      return;
+    }
+    if (session.status != ActiveActivityStatus.recording) {
+      return;
+    }
+    await _handleActivePosition(session, position);
+  }
+
+  Future<void> _handleActivePosition(
+    ActiveActivitySession session,
+    Position position,
+  ) async {
+    final trackPoint = ActivityTrackPoint.fromPosition(position);
+    var segmentIndex = session.currentSegmentIndex;
+    final candidate = RecordedActivityPoint.fromTrackPoint(
+      trackPoint,
+      segmentIndex: segmentIndex,
+    );
+
+    // Feed the auto-pause detector before the accuracy gate below, so
+    // stillness timing advances from wall-clock progress on every fix
+    // (including noisy ones the detector itself discounts as movement
+    // evidence), matching the native recorders.
+    final autoPauseTransition =
+        _autoPauseDetector?.onActivePoint(candidate) ??
+        MovementAutoPauseTransition.none;
+    if (autoPauseTransition == MovementAutoPauseTransition.autoPause) {
+      await _transitionToAutoPaused(session, at: candidate.timestamp);
       return;
     }
 
-    final trackPoint = ActivityTrackPoint.fromPosition(position);
     // Drop low-accuracy fixes before they enter the track, matching the native
     // recorder. This removes "ghost" points from coarse providers rather than
     // merely splitting them into a new segment.
@@ -253,11 +317,6 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     if (accuracy != null && accuracy > _segmentPolicy.maxAccuracyMeters) {
       return;
     }
-    var segmentIndex = session.currentSegmentIndex;
-    final candidate = RecordedActivityPoint.fromTrackPoint(
-      trackPoint,
-      segmentIndex: segmentIndex,
-    );
     final decision = _segmentPolicy.evaluate(
       previous: _lastPoint,
       next: candidate,
@@ -298,6 +357,68 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     }
     _lastPoint = point;
     _emit(ActivityRecorderEvent.pointBatchAvailable([point]));
+  }
+
+  /// Feeds a position received while auto-paused. The recorder keeps
+  /// monitoring (the stream is never cancelled for an automatic pause) so
+  /// movement can resume the recording without user interaction, but no point
+  /// is persisted until hysteresis confirms movement has resumed.
+  Future<void> _handleAutoPausedPosition(
+    ActiveActivitySession session,
+    Position position,
+  ) async {
+    final detector = _autoPauseDetector;
+    if (detector == null) {
+      return;
+    }
+    final trackPoint = ActivityTrackPoint.fromPosition(position);
+    final candidate = RecordedActivityPoint.fromTrackPoint(
+      trackPoint,
+      segmentIndex: session.currentSegmentIndex,
+    );
+    final transition = detector.onAutoPausedPoint(candidate);
+    if (transition != MovementAutoPauseTransition.autoResume) {
+      return;
+    }
+
+    final resumedAt = candidate.timestamp;
+    final resumed = session.copyWith(
+      status: ActiveActivityStatus.recording,
+      resumedAt: resumedAt,
+      pausedAt: null,
+      pausedAutomatically: false,
+    );
+    _session = resumed;
+    _resumedFromPause = true;
+    await _store.saveSession(resumed);
+    _emit(ActivityRecorderEvent.autoResumed(resumed));
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.activityRecorderAutoResumed,
+      details: {'segmentIndex': resumed.currentSegmentIndex},
+    );
+    // Persist this same triggering fix as the first point of the new segment,
+    // matching the manual resume flow (`_resumedFromPause` forces a segment
+    // break in the shared segment policy).
+    await _handleActivePosition(resumed, position);
+  }
+
+  Future<void> _transitionToAutoPaused(
+    ActiveActivitySession session, {
+    required DateTime at,
+  }) async {
+    final paused = session.copyWith(
+      status: ActiveActivityStatus.paused,
+      elapsedDurationSeconds: _elapsedDurationSeconds(session, at),
+      pausedAt: at,
+      pausedAutomatically: true,
+    );
+    _session = paused;
+    await _store.saveSession(paused);
+    _emit(ActivityRecorderEvent.autoPaused(paused));
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.activityRecorderAutoPaused,
+      details: {'segmentIndex': paused.currentSegmentIndex},
+    );
   }
 
   Future<void> _waitForPendingPositions() => _positionQueue;

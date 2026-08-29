@@ -6,6 +6,7 @@ import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -95,11 +96,14 @@ void main() {
 
     tearDown(() => recorder.dispose());
 
-    ActivityRecorderStartRequest request() {
+    ActivityRecorderStartRequest request({
+      MovementAutoPauseConfig autoPauseConfig = const MovementAutoPauseConfig(),
+    }) {
       return ActivityRecorderStartRequest(
         localSessionId: 'session_1',
         activityType: ActivityType.run,
         startedAt: DateTime.utc(2026, 6, 3, 9),
+        autoPauseConfig: autoPauseConfig,
       );
     }
 
@@ -168,6 +172,157 @@ void main() {
       expect(store.points, hasLength(2));
       expect(store.points.first.segmentIndex, 0);
       expect(store.points.last.segmentIndex, 1);
+    });
+
+    group('auto-pause', () {
+      const config = MovementAutoPauseConfig(
+        enabled: true,
+        pauseDelay: Duration(seconds: 5),
+      );
+      final startedAt = DateTime.utc(2026, 6, 3, 9);
+
+      ActivityRecorderStartRequest autoPauseRequest() {
+        return ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: startedAt,
+          autoPauseConfig: config,
+        );
+      }
+
+      test(
+        'auto-pauses after stillness persists, without cancelling the '
+        'position stream',
+        () async {
+          final events = <ActivityRecorderEvent>[];
+          final subscription = recorder.events.listen(events.add);
+          addTearDown(subscription.cancel);
+
+          await recorder.start(autoPauseRequest());
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.1,
+              longitude: -8.6,
+              timestamp: startedAt,
+              speed: 0,
+            ),
+          );
+          await pumpEventQueue();
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.1,
+              longitude: -8.6,
+              timestamp: startedAt.add(const Duration(seconds: 5)),
+              speed: 0,
+            ),
+          );
+          await pumpEventQueue();
+
+          expect(store.session?.status, ActiveActivityStatus.paused);
+          expect(store.session?.pausedAutomatically, isTrue);
+          expect(store.session?.elapsedDurationSeconds, 5);
+          // The stillness fix that crossed the delay is not itself recorded.
+          expect(store.points, hasLength(1));
+          expect(
+            events.map((event) => event.type),
+            contains(ActivityRecorderEventType.autoPaused),
+          );
+          // Auto-pause must keep monitoring location (unlike a manual pause),
+          // so the stream subscription is never cancelled.
+          expect(adapter.cancelCount, 0);
+        },
+      );
+
+      test(
+        'auto-resumes after enough consecutive movement and starts a new '
+        'segment',
+        () async {
+          await recorder.start(autoPauseRequest());
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.1,
+              longitude: -8.6,
+              timestamp: startedAt,
+              speed: 0,
+            ),
+          );
+          await pumpEventQueue();
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.1,
+              longitude: -8.6,
+              timestamp: startedAt.add(const Duration(seconds: 5)),
+              speed: 0,
+            ),
+          );
+          await pumpEventQueue();
+          expect(store.session?.status, ActiveActivityStatus.paused);
+
+          // Two consecutive moving samples are not enough (hysteresis needs
+          // three by default): the recording must stay auto-paused.
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.15,
+              longitude: -8.65,
+              timestamp: startedAt.add(const Duration(seconds: 6)),
+              speed: 2,
+            ),
+          );
+          await pumpEventQueue();
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.16,
+              longitude: -8.66,
+              timestamp: startedAt.add(const Duration(seconds: 7)),
+              speed: 2,
+            ),
+          );
+          await pumpEventQueue();
+          expect(store.session?.status, ActiveActivityStatus.paused);
+          expect(store.points, hasLength(1));
+
+          final events = <ActivityRecorderEvent>[];
+          final subscription = recorder.events.listen(events.add);
+          addTearDown(subscription.cancel);
+
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.17,
+              longitude: -8.67,
+              timestamp: startedAt.add(const Duration(seconds: 8)),
+              speed: 2,
+            ),
+          );
+          await pumpEventQueue();
+
+          expect(store.session?.status, ActiveActivityStatus.recording);
+          expect(store.session?.pausedAutomatically, isFalse);
+          expect(
+            events.map((event) => event.type),
+            contains(ActivityRecorderEventType.autoResumed),
+          );
+          // Only the fix that triggered the resume starts the new segment.
+          expect(store.points, hasLength(2));
+          expect(store.points.first.segmentIndex, 0);
+          expect(store.points.last.segmentIndex, 1);
+        },
+      );
+
+      test('a manual pause is never auto-resumed by movement', () async {
+        await recorder.start(autoPauseRequest());
+        adapter.addPosition(
+          recordingPosition(latitude: 41.1, longitude: -8.6, speed: 0),
+        );
+        await pumpEventQueue();
+
+        await recorder.pause();
+        expect(store.session?.status, ActiveActivityStatus.paused);
+        expect(store.session?.pausedAutomatically, isFalse);
+        // A manual pause stops the position stream entirely: further
+        // positions physically cannot reach the detector, so the recording
+        // can never auto-resume on its own.
+        expect(adapter.cancelCount, 1);
+      });
     });
 
     test('serializes rapid position events before segment decisions', () async {

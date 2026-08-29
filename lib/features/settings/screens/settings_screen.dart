@@ -8,6 +8,7 @@ import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
+import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
@@ -200,6 +201,20 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       subtitle: l10n.activityRetainUploadedGpxSubtitle,
                       value: _controller.retainUploadedGpx,
                       onChanged: _controller.setRetainUploadedGpx,
+                    ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
+                        materialIcon: Icons.pause_circle_outline,
+                        cupertinoIcon: CupertinoIcons.pause_circle,
+                      ),
+                      title: l10n.activityAutoPauseTitle,
+                      subtitle: l10n.activityAutoPauseSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const AutoPauseSettingsScreen(),
+                        );
+                      },
                     ),
                     AdaptiveListTile(
                       leading: const AdaptiveIcon(

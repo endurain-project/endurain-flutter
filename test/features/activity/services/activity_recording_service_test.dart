@@ -411,6 +411,156 @@ void main() {
       expect(service.state.segments.last.points.single.latitude, 41.2);
     });
 
+    group('auto-pause bridging', () {
+      ActiveActivitySession session({
+        required ActiveActivityStatus status,
+        required DateTime startedAt,
+        int elapsedDurationSeconds = 0,
+        bool pausedAutomatically = false,
+        DateTime? resumedAt,
+      }) {
+        return ActiveActivitySession(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          status: status,
+          startedAt: startedAt,
+          elapsedDurationSeconds: elapsedDurationSeconds,
+          pausedAutomatically: pausedAutomatically,
+          resumedAt: resumedAt,
+        );
+      }
+
+      test(
+        'an autonomous auto-pause event pauses and freezes elapsed time',
+        () async {
+          final startedAt = DateTime.utc(2026, 6, 3, 9);
+          final recorder = _ControllableRecorder();
+          final service = _buildService(
+            recorder: recorder,
+            now: () => startedAt,
+          );
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+          recorder.emitAutoPaused(
+            session(
+              status: ActiveActivityStatus.paused,
+              startedAt: startedAt,
+              elapsedDurationSeconds: 42,
+              pausedAutomatically: true,
+            ),
+          );
+          await pumpEventQueue();
+
+          expect(service.state.status, ActivityRecordingStatus.paused);
+          expect(service.state.isAutoPaused, isTrue);
+          expect(service.state.elapsedDurationSeconds, 42);
+          // No recorder command was invoked (this is not a manual pause).
+          expect(recorder.pauseCount, 0);
+        },
+      );
+
+      test(
+        'an auto-resume event resumes recording, clears the indicator, and '
+        'starts a new segment',
+        () async {
+          final startedAt = DateTime.utc(2026, 6, 3, 9);
+          final resumedAt = startedAt.add(const Duration(minutes: 1));
+          final recorder = _ControllableRecorder();
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+          recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
+          await pumpEventQueue();
+          recorder.emitAutoPaused(
+            session(
+              status: ActiveActivityStatus.paused,
+              startedAt: startedAt,
+              pausedAutomatically: true,
+            ),
+          );
+          await pumpEventQueue();
+          recorder.emitAutoResumed(
+            session(
+              status: ActiveActivityStatus.recording,
+              startedAt: startedAt,
+              resumedAt: resumedAt,
+            ),
+          );
+          recorder.emitPoints([
+            _point(latitude: 41.2, longitude: -8.7, segmentIndex: 1),
+          ]);
+          await pumpEventQueue();
+
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(service.state.isAutoPaused, isFalse);
+          expect(service.state.segments, hasLength(2));
+        },
+      );
+
+      test(
+        'an auto-resume event is ignored while manually paused (manual pause '
+        'never auto-resumes)',
+        () async {
+          final recorder = _ControllableRecorder();
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+          await service.pause();
+
+          expect(service.state.status, ActivityRecordingStatus.paused);
+          expect(service.state.isAutoPaused, isFalse);
+
+          // A stray/buggy auto-resume event must never override a manual
+          // pause.
+          recorder.emitAutoResumed(
+            session(
+              status: ActiveActivityStatus.recording,
+              startedAt: DateTime.utc(2026, 6, 3, 9),
+            ),
+          );
+          await pumpEventQueue();
+
+          expect(service.state.status, ActivityRecordingStatus.paused);
+          expect(service.state.isAutoPaused, isFalse);
+        },
+      );
+
+      test(
+        'a duplicate auto-pause event while already paused is a no-op',
+        () async {
+          final startedAt = DateTime.utc(2026, 6, 3, 9);
+          final recorder = _ControllableRecorder();
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+          recorder.emitAutoPaused(
+            session(
+              status: ActiveActivityStatus.paused,
+              startedAt: startedAt,
+              elapsedDurationSeconds: 10,
+              pausedAutomatically: true,
+            ),
+          );
+          await pumpEventQueue();
+          recorder.emitAutoPaused(
+            session(
+              status: ActiveActivityStatus.paused,
+              startedAt: startedAt,
+              elapsedDurationSeconds: 999,
+              pausedAutomatically: true,
+            ),
+          );
+          await pumpEventQueue();
+
+          expect(service.state.elapsedDurationSeconds, 10);
+        },
+      );
+    });
+
     test('stop finalizes durable points and completes', () async {
       final recorder = _ControllableRecorder();
       var now = DateTime.utc(2026, 5, 30, 10);
@@ -1075,6 +1225,14 @@ class _ControllableRecorder implements ActivityLocationRecorder {
 
   void emitFailure(ActivityRecorderFailureReason reason) {
     _controller.add(ActivityRecorderEvent.failed(reason));
+  }
+
+  void emitAutoPaused(ActiveActivitySession session) {
+    _controller.add(ActivityRecorderEvent.autoPaused(session));
+  }
+
+  void emitAutoResumed(ActiveActivitySession session) {
+    _controller.add(ActivityRecorderEvent.autoResumed(session));
   }
 }
 

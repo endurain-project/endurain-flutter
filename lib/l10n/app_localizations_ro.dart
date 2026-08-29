@@ -493,6 +493,32 @@ class AppLocalizationsRo extends AppLocalizations {
       'Salvează fișierele de traseu finalizate în stocarea privată a aplicației după încărcare.';
 
   @override
+  String get activityAutoPauseTitle => 'Pauză automată';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pune automat pauză când te oprești din mișcare';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pauză automată';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Înregistrarea este pusă automat pe pauză când te oprești din mișcare și reia imediat ce te miști din nou.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Alege cât timp fără mișcare se așteaptă înainte de pauză.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds secunde';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'În pauză automată';
+
+  @override
   String get activityHistoryEmpty =>
       'Nicio activitate finalizată salvată pe acest dispozitiv.';
 

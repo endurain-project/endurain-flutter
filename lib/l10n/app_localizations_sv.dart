@@ -492,6 +492,32 @@ class AppLocalizationsSv extends AppLocalizations {
       'Sparar slutförda ruttfiler i appens privata lagring efter uppladdning.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatisk paus';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pausar automatiskt när du slutar röra dig';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausa automatiskt';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pausar inspelningen när du slutar röra dig och återupptar den när du börjar röra dig igen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Välj hur länge utan rörelse den ska vänta innan pausning.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatiskt pausad';
+
+  @override
   String get activityHistoryEmpty =>
       'Inga slutförda aktiviteter sparade på den här enheten.';
 

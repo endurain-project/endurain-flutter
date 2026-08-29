@@ -10,6 +10,7 @@ import 'package:endurain/features/activity/controllers/local_activity_history_co
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
@@ -61,6 +62,9 @@ class ActivityModule {
   late final ActivityRetentionSettingsRepository retentionSettings =
       ActivityRetentionSettingsRepository(storage: _infra.secureStorage);
 
+  late final AutoPauseSettingsRepository autoPauseSettings =
+      AutoPauseSettingsRepository(preferences: _infra.preferences);
+
   /// App-lifetime durable upload queue. Drains locally-stored activities whose
   /// upload has not yet succeeded; triggered on app-resume (see `app.dart`) and
   /// whenever connectivity is restored.
@@ -86,6 +90,7 @@ class ActivityModule {
       uploadService: upload,
       localActivityRepository: localActivities,
       retentionSettingsRepository: retentionSettings,
+      autoPauseSettingsRepository: autoPauseSettings,
       isUploadAuthorized: _auth.service.isAuthenticated,
       activeConnectionProfile: _auth.session.getConnectionProfile,
       diagnostics: _infra.diagnostics,

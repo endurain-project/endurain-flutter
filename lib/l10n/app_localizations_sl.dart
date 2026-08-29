@@ -489,6 +489,32 @@ class AppLocalizationsSl extends AppLocalizations {
       'Po nalaganju shrani dokončane datoteke poti v zasebno shrambo aplikacije.';
 
   @override
+  String get activityAutoPauseTitle => 'Samodejni premor';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Samodejno prekine, ko se prenehate premikati';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Samodejno prekini';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Snemanje se samodejno prekine, ko se prenehate premikati, in nadaljuje, ko se znova začnete premikati.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Izberite, kako dolgo brez gibanja počakati pred premorom.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekund';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Samodejno prekinjeno';
+
+  @override
   String get activityHistoryEmpty =>
       'V tej napravi ni shranjenih dokončanih aktivnosti.';
 

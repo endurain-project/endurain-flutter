@@ -491,6 +491,32 @@ class AppLocalizationsBg extends AppLocalizations {
       'Записва завършените файлове с маршрути в частното хранилище на приложението след качване.';
 
   @override
+  String get activityAutoPauseTitle => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Пауза автоматично, когато спрете да се движите';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Записът се поставя на пауза автоматично, когато спрете да се движите, и се възобновява, щом отново започнете да се движите.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Изберете колко дълго да чака без движение, преди да постави записа на пауза.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds секунди';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Автоматична пауза';
+
+  @override
   String get activityHistoryEmpty =>
       'Няма завършени дейности, записани на това устройство.';
 

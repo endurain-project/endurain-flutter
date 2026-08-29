@@ -493,6 +493,32 @@ class AppLocalizationsHr extends AppLocalizations {
       'Sprema dovršene datoteke ruta u privatnu pohranu aplikacije nakon prijenosa.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatska pauza';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatski pauzira kada prestanete s kretanjem';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatski pauziraj';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Snimanje se automatski pauzira kada prestanete s kretanjem, a nastavlja se čim se ponovno počnete kretati.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Odaberite koliko dugo bez kretanja treba pričekati prije pauze.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekundi';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatski pauzirano';
+
+  @override
   String get activityHistoryEmpty =>
       'Nema dovršenih aktivnosti spremljenih na ovom uređaju.';
 

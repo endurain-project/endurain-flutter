@@ -484,6 +484,32 @@ class AppLocalizationsLt extends AppLocalizations {
       'Po įkėlimo užbaigtus maršrutų failus saugo privačioje programos saugykloje.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatinė pauzė';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatiškai pristabdo, kai nustojate judėti';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatiškai pristabdyti';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Įrašymas automatiškai pristabdomas, kai nustojate judėti, ir tęsiamas, kai vėl pradedate judėti.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Pasirinkite, kiek laiko be judėjimo laukti prieš pristabdant.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sek.';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatiškai pristabdyta';
+
+  @override
   String get activityHistoryEmpty =>
       'Šiame įrenginyje nėra įrašytų užbaigtų veiklų.';
 

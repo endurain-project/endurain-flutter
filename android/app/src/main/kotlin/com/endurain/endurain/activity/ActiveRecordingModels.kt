@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.math.max
 import org.json.JSONObject
 
 /**
@@ -29,6 +30,9 @@ data class ActiveActivitySessionData(
     val endedAt: String? = null,
     val elapsedDurationSeconds: Int = 0,
     val currentSegmentIndex: Int = 0,
+    val autoPauseEnabled: Boolean = false,
+    val autoPauseDelaySeconds: Int = 5,
+    val pausedAutomatically: Boolean = false,
     val schemaVersion: Int = SCHEMA_VERSION,
 ) {
     val isActive: Boolean
@@ -45,6 +49,22 @@ data class ActiveActivitySessionData(
         return !heartRateDeviceId.isNullOrEmpty() ||
             !powerDeviceId.isNullOrEmpty() ||
             !cadenceDeviceId.isNullOrEmpty()
+    }
+
+    /**
+     * Accumulated elapsed seconds as of [referenceMillis]: a paused session
+     * keeps its stored value; otherwise adds the current segment's running
+     * time from `resumedAt ?? startedAt`. Mirrors the Dart geolocator
+     * recorder's `_elapsedDurationSeconds`; shared by [ActivityRecorderChannel]
+     * (manual pause/stop/recover) and [ActivityRecorderService] (auto-pause).
+     */
+    fun elapsedSecondsAt(referenceMillis: Long): Int {
+        if (status == STATUS_PAUSED) {
+            return elapsedDurationSeconds
+        }
+        val anchor = IsoTime.toEpochMillis(resumedAt ?: startedAt) ?: return elapsedDurationSeconds
+        val segmentSeconds = ((referenceMillis - anchor) / 1000L).toInt()
+        return elapsedDurationSeconds + max(0, segmentSeconds)
     }
 
     fun toJson(): JSONObject {
@@ -64,6 +84,9 @@ data class ActiveActivitySessionData(
             endedAt?.let { put("endedAt", it) }
             put("elapsedDurationSeconds", elapsedDurationSeconds)
             put("currentSegmentIndex", currentSegmentIndex)
+            put("autoPauseEnabled", autoPauseEnabled)
+            put("autoPauseDelaySeconds", autoPauseDelaySeconds)
+            put("pausedAutomatically", pausedAutomatically)
         }
     }
 
@@ -85,11 +108,14 @@ data class ActiveActivitySessionData(
         endedAt?.let { map["endedAt"] = it }
         map["elapsedDurationSeconds"] = elapsedDurationSeconds
         map["currentSegmentIndex"] = currentSegmentIndex
+        map["autoPauseEnabled"] = autoPauseEnabled
+        map["autoPauseDelaySeconds"] = autoPauseDelaySeconds
+        map["pausedAutomatically"] = pausedAutomatically
         return map
     }
 
     companion object {
-        const val SCHEMA_VERSION = 2
+        const val SCHEMA_VERSION = 3
 
         const val STATUS_RECORDING = "recording"
         const val STATUS_PAUSED = "paused"
@@ -118,6 +144,13 @@ data class ActiveActivitySessionData(
                 endedAt = json.optStringOrNull("endedAt"),
                 elapsedDurationSeconds = json.optInt("elapsedDurationSeconds", 0),
                 currentSegmentIndex = json.optInt("currentSegmentIndex", 0),
+                // Absent on sessions persisted before schema version 3: default
+                // to disabled rather than the current app preference, so an
+                // in-flight recording recovered after an app update never
+                // silently starts auto-pausing.
+                autoPauseEnabled = json.optBoolean("autoPauseEnabled", false),
+                autoPauseDelaySeconds = json.optInt("autoPauseDelaySeconds", 5),
+                pausedAutomatically = json.optBoolean("pausedAutomatically", false),
                 schemaVersion = json.optInt("schemaVersion", SCHEMA_VERSION),
             )
         }

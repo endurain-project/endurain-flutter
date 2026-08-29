@@ -492,6 +492,32 @@ class AppLocalizationsFi extends AppLocalizations {
       'Tallentaa valmiit reittitiedostot sovelluksen yksityiseen tallennustilaan latauksen jälkeen.';
 
   @override
+  String get activityAutoPauseTitle => 'Automaattinen tauko';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Keskeyttää automaattisesti, kun lopetat liikkumisen';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Keskeytä automaattisesti';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Tallennus keskeytyy automaattisesti, kun lopetat liikkumisen, ja jatkuu, kun aloitat liikkumisen uudelleen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Valitse, kuinka kauan ilman liikettä odotetaan ennen keskeytystä.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekuntia';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaattisesti keskeytetty';
+
+  @override
   String get activityHistoryEmpty =>
       'Tälle laitteelle ei ole tallennettu valmiita aktiviteetteja.';
 

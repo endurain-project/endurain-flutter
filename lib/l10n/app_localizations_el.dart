@@ -498,6 +498,32 @@ class AppLocalizationsEl extends AppLocalizations {
       'Αποθηκεύει τα ολοκληρωμένα αρχεία διαδρομής στον ιδιωτικό χώρο αποθήκευσης της εφαρμογής μετά τη μεταφόρτωση.';
 
   @override
+  String get activityAutoPauseTitle => 'Αυτόματη παύση';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Παύση αυτόματα όταν σταματήσετε να κινείστε';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Αυτόματη παύση';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Η καταγραφή τίθεται σε παύση αυτόματα όταν σταματήσετε να κινείστε και συνεχίζεται μόλις ξανακινηθείτε.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Επιλέξτε πόσο χρόνο χωρίς κίνηση θα περιμένει πριν από την παύση.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds δευτερόλεπτα';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Αυτόματη παύση';
+
+  @override
   String get activityHistoryEmpty =>
       'Δεν υπάρχουν ολοκληρωμένες δραστηριότητες αποθηκευμένες σε αυτήν τη συσκευή.';
 

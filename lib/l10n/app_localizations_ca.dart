@@ -496,6 +496,32 @@ class AppLocalizationsCa extends AppLocalizations {
       'Desa els fitxers de ruta completats a l\'emmagatzematge privat de l\'aplicació després de penjar-los.';
 
   @override
+  String get activityAutoPauseTitle => 'Pausa automàtica';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Fa una pausa automàticament quan deixes de moure\'t';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausa automàticament';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Posa en pausa l\'enregistrament quan deixes de moure\'t i el reprèn quan tornes a moure\'t.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Tria quant de temps sense moviment cal esperar abans de pausar.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds segons';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'En pausa automàtica';
+
+  @override
   String get activityHistoryEmpty =>
       'No hi ha activitats completades desades en aquest dispositiu.';
 

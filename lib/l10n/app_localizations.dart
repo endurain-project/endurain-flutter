@@ -981,6 +981,48 @@ abstract class AppLocalizations {
   /// **'Stores completed route files in private app storage after upload.'**
   String get activityRetainUploadedGpxSubtitle;
 
+  /// Auto-pause settings screen title and settings navigation label - Used in: auto_pause_settings_screen.dart, settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-pause'**
+  String get activityAutoPauseTitle;
+
+  /// Settings subtitle for auto-pause navigation - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pause automatically when you stop moving'**
+  String get activityAutoPauseSubtitle;
+
+  /// Auto-pause switch label - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically pause'**
+  String get activityAutoPauseToggleLabel;
+
+  /// Auto-pause switch subtitle explaining the behavior - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pauses recording when you stop moving, and resumes once you start moving again.'**
+  String get activityAutoPauseToggleDescription;
+
+  /// Helper text above the auto-pause delay options - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how long to wait without movement before pausing.'**
+  String get activityAutoPauseDelayHelperText;
+
+  /// Auto-pause delay option label - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds'**
+  String activityAutoPauseDelayOptionLabel(int seconds);
+
+  /// Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-paused'**
+  String get activityAutoPausedIndicator;
+
   /// Empty state for local activity history - Used in: activity_history_screen.dart
   ///
   /// In en, this message translates to:

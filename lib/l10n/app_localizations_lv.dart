@@ -487,6 +487,32 @@ class AppLocalizationsLv extends AppLocalizations {
       'Pēc augšupielādes saglabā pabeigtos maršrutu failus lietotnes privātajā krātuvē.';
 
   @override
+  String get activityAutoPauseTitle => 'Automātiska pauze';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automātiski aptur, kad pārstājat kustēties';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automātiski pauzēt';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Ierakstīšana automātiski tiek apturēta, kad pārstājat kustēties, un atsākta, tiklīdz atkal sākat kustēties.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Izvēlieties, cik ilgi bez kustības gaidīt pirms pauzes.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekundes';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automātiski pauzēts';
+
+  @override
   String get activityHistoryEmpty =>
       'Šajā ierīcē nav saglabātu pabeigtu aktivitāšu.';
 

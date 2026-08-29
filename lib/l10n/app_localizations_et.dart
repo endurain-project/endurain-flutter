@@ -488,6 +488,32 @@ class AppLocalizationsEt extends AppLocalizations {
       'Salvestab lõpetatud marsruudifailid pärast üleslaadimist rakenduse privaatsesse mällu.';
 
   @override
+  String get activityAutoPauseTitle => 'Automaatne paus';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Peatab automaatselt, kui lõpetate liikumise';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automaatne peatamine';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Salvestus peatub automaatselt, kui lõpetate liikumise, ja jätkub, kui hakkate uuesti liikuma.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Valige, kui kaua ilma liikumiseta enne peatamist oodata.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekundit';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaatselt peatatud';
+
+  @override
   String get activityHistoryEmpty =>
       'Sellesse seadmesse pole salvestatud ühtegi lõpetatud tegevust.';
 

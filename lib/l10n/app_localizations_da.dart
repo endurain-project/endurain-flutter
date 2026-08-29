@@ -489,6 +489,32 @@ class AppLocalizationsDa extends AppLocalizations {
       'Gemmer gennemførte rutefiler i appens private lagring efter upload.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatisk pause';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Sætter automatisk pause, når du holder op med at bevæge dig';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Sæt automatisk pause';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Sætter optagelsen på pause, når du holder op med at bevæge dig, og genoptager den, når du bevæger dig igen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Vælg, hvor længe der skal gå uden bevægelse, før der sættes pause.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisk pause';
+
+  @override
   String get activityHistoryEmpty =>
       'Ingen gennemførte aktiviteter gemt på denne enhed.';
 

@@ -5,7 +5,6 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import kotlin.math.max
 
 /**
  * Hosts the method/event channels that bridge the Dart
@@ -87,6 +86,11 @@ class ActivityRecorderChannel(context: Context) :
         val cadenceDeviceId = call.argument<String>("cadenceDeviceId")
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
+        // `Boolean`/`Int` arguments arrive as their boxed Kotlin types from the
+        // method channel; default conservatively (disabled) if omitted by an
+        // older Dart build.
+        val autoPauseEnabled = call.argument<Boolean>("autoPauseEnabled") ?: false
+        val autoPauseDelaySeconds = call.argument<Int>("autoPauseDelaySeconds") ?: 5
 
         val session = ActiveActivitySessionData(
             localSessionId = localSessionId,
@@ -99,6 +103,8 @@ class ActivityRecorderChannel(context: Context) :
             powerDeviceId = powerDeviceId,
             cadenceDeviceId = cadenceDeviceId,
             currentSegmentIndex = 0,
+            autoPauseEnabled = autoPauseEnabled,
+            autoPauseDelaySeconds = autoPauseDelaySeconds,
         )
         store.saveSession(session)
         try {
@@ -133,7 +139,8 @@ class ActivityRecorderChannel(context: Context) :
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,
             pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
+            pausedAutomatically = false,
         )
         store.saveSession(updated)
         ActivityRecorderService.pause(appContext)
@@ -155,6 +162,7 @@ class ActivityRecorderChannel(context: Context) :
             status = ActiveActivitySessionData.STATUS_RECORDING,
             resumedAt = IsoTime.format(java.util.Date(nowMillis)),
             pausedAt = null,
+            pausedAutomatically = false,
         )
         store.saveSession(updated)
         ActivityRecorderService.resume(appContext)
@@ -176,7 +184,7 @@ class ActivityRecorderChannel(context: Context) :
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_COMPLETED,
             endedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
         )
         // Mark the session completed before tearing the service down. The
         // collection guard in onLocationFix drops any in-flight fix once the
@@ -216,31 +224,13 @@ class ActivityRecorderChannel(context: Context) :
         val paused = session.copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,
             pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, recoveryMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(recoveryMillis),
         )
         // Persist the pause before stopping collection so any in-flight fix is
         // rejected by the service's recording-state guard.
         store.saveSession(paused)
         ActivityRecorderService.pause(appContext)
         result.success(paused.toMap())
-    }
-
-    /**
-     * Accumulated elapsed seconds, mirroring the Dart geolocator recorder:
-     * paused sessions keep their stored value; otherwise add the current
-     * segment's running time from `resumedAt ?? startedAt`.
-     */
-    private fun elapsedSeconds(
-        session: ActiveActivitySessionData,
-        referenceMillis: Long,
-    ): Int {
-        if (session.status == ActiveActivitySessionData.STATUS_PAUSED) {
-            return session.elapsedDurationSeconds
-        }
-        val anchor = IsoTime.toEpochMillis(session.resumedAt ?: session.startedAt)
-            ?: return session.elapsedDurationSeconds
-        val segmentSeconds = ((referenceMillis - anchor) / 1000L).toInt()
-        return session.elapsedDurationSeconds + max(0, segmentSeconds)
     }
 
     private fun isSupportedVersion(call: MethodCall): Boolean {

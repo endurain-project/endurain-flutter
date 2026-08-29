@@ -20,6 +20,8 @@
 		AA00000000000000000000B3 /* ActivityRecorderCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A3 /* ActivityRecorderCoordinator.swift */; };
 		AA00000000000000000000B4 /* CoreLocationActivityRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */; };
 		AA00000000000000000000B5 /* ActivityRecorderChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A5 /* ActivityRecorderChannel.swift */; };
+		AA00000000000000000000B6 /* MovementAutoPauseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000A6 /* MovementAutoPauseDetector.swift */; };
+		BB00000000000000000000B1 /* MovementAutoPauseDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000A1 /* MovementAutoPauseDetectorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,7 @@
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
+		BB00000000000000000000A1 /* MovementAutoPauseDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementAutoPauseDetectorTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -67,6 +70,7 @@
 		AA00000000000000000000A3 /* ActivityRecorderCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/ActivityRecorderCoordinator.swift; sourceTree = "<group>"; };
 		AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/CoreLocationActivityRecorder.swift; sourceTree = "<group>"; };
 		AA00000000000000000000A5 /* ActivityRecorderChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/ActivityRecorderChannel.swift; sourceTree = "<group>"; };
+		AA00000000000000000000A6 /* MovementAutoPauseDetector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/MovementAutoPauseDetector.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
+				BB00000000000000000000A1 /* MovementAutoPauseDetectorTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -142,6 +147,7 @@
 				AA00000000000000000000A3 /* ActivityRecorderCoordinator.swift */,
 				AA00000000000000000000A4 /* CoreLocationActivityRecorder.swift */,
 				AA00000000000000000000A5 /* ActivityRecorderChannel.swift */,
+				AA00000000000000000000A6 /* MovementAutoPauseDetector.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -294,6 +300,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
+				BB00000000000000000000B1 /* MovementAutoPauseDetectorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,6 +314,7 @@
 				AA00000000000000000000B3 /* ActivityRecorderCoordinator.swift in Sources */,
 				AA00000000000000000000B4 /* CoreLocationActivityRecorder.swift in Sources */,
 				AA00000000000000000000B5 /* ActivityRecorderChannel.swift in Sources */,
+				AA00000000000000000000B6 /* MovementAutoPauseDetector.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -17,6 +17,9 @@ void main() {
         endedAt: startedAt.add(const Duration(minutes: 20)),
         elapsedDurationSeconds: 600,
         currentSegmentIndex: 2,
+        autoPauseEnabled: true,
+        autoPauseDelaySeconds: 15,
+        pausedAutomatically: true,
       );
 
       final restored = ActiveActivitySession.fromJson(session.toJson());
@@ -30,6 +33,9 @@ void main() {
       expect(restored.endedAt, session.endedAt);
       expect(restored.elapsedDurationSeconds, 600);
       expect(restored.currentSegmentIndex, 2);
+      expect(restored.autoPauseEnabled, isTrue);
+      expect(restored.autoPauseDelaySeconds, 15);
+      expect(restored.pausedAutomatically, isTrue);
       expect(
         restored.schemaVersion,
         ActiveActivitySession.currentSchemaVersion,
@@ -67,6 +73,26 @@ void main() {
       expect(restored.isActive, isTrue);
     });
 
+    test(
+      'defaults auto-pause fields to disabled for a pre-schema-v3 session '
+      '(backwards compatibility)',
+      () {
+        final restored = ActiveActivitySession.fromJson({
+          'schemaVersion': 2,
+          'localSessionId': 'session_1',
+          'activityType': 'run',
+          'status': 'paused',
+          'startedAt': startedAt.toIso8601String(),
+        });
+
+        // A session recorded before auto-pause existed must never silently
+        // start auto-pausing (or auto-resuming) after an app update.
+        expect(restored.autoPauseEnabled, isFalse);
+        expect(restored.autoPauseDelaySeconds, 5);
+        expect(restored.pausedAutomatically, isFalse);
+      },
+    );
+
     test('throws when required identifiers are missing', () {
       expect(
         () => ActiveActivitySession.fromJson({
@@ -98,6 +124,27 @@ void main() {
       final cleared = session.copyWith(pausedAt: null);
 
       expect(cleared.pausedAt, isNull);
+    });
+
+    test('copyWith overrides auto-pause fields independently', () {
+      final session = ActiveActivitySession(
+        localSessionId: 'session_1',
+        activityType: ActivityType.run,
+        status: ActiveActivityStatus.recording,
+        startedAt: startedAt,
+        autoPauseEnabled: true,
+        autoPauseDelaySeconds: 10,
+      );
+
+      final autoPaused = session.copyWith(
+        status: ActiveActivityStatus.paused,
+        pausedAutomatically: true,
+      );
+
+      expect(autoPaused.pausedAutomatically, isTrue);
+      // Untouched fields (including the auto-pause snapshot) are preserved.
+      expect(autoPaused.autoPauseEnabled, isTrue);
+      expect(autoPaused.autoPauseDelaySeconds, 10);
     });
   });
 }

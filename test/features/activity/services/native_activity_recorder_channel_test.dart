@@ -1,5 +1,6 @@
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -125,6 +126,38 @@ void main() {
       final args = calls.single.arguments as Map;
       expect(args.containsKey('powerDeviceId'), isFalse);
       expect(args.containsKey('cadenceDeviceId'), isFalse);
+    });
+
+    test('sends the auto-pause configuration', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+          autoPauseConfig: const MovementAutoPauseConfig(
+            enabled: true,
+            pauseDelay: Duration(seconds: 20),
+          ),
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args['autoPauseEnabled'], isTrue);
+      expect(args['autoPauseDelaySeconds'], 20);
+    });
+
+    test('defaults to a disabled auto-pause configuration', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args['autoPauseEnabled'], isFalse);
+      expect(args['autoPauseDelaySeconds'], 5);
     });
 
     test('invokes the expected command methods', () async {

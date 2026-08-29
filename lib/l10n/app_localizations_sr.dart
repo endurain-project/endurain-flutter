@@ -491,6 +491,32 @@ class AppLocalizationsSr extends AppLocalizations {
       'Чува завршене датотеке рута у приватном складишту апликације након отпремања.';
 
   @override
+  String get activityAutoPauseTitle => 'Аутоматска пауза';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Аутоматски паузира када престанете да се крећете';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Аутоматски паузирај';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Снимање се аутоматски паузира када престанете да се крећете и наставља чим поново почнете да се крећете.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Изаберите колико дуго без покрета треба сачекати пре паузирања.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds секунди';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Аутоматски паузирано';
+
+  @override
   String get activityHistoryEmpty =>
       'Нема завршених активности сачуваних на овом уређају.';
 
