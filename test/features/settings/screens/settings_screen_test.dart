@@ -201,7 +201,7 @@ void main() {
 
 class _FakeActivityRetentionSettings
     extends ActivityRetentionSettingsRepository {
-  _FakeActivityRetentionSettings() : super(storage: SecureStorageService());
+  _FakeActivityRetentionSettings() : super(preferences: FakePreferencesStore());
 
   var retainUploadedGpx = true;
 

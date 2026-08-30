@@ -154,6 +154,18 @@ class ActivityStatsFormatter {
     return labels.minutesPerKilometer(_minutesAndSeconds(secondsPerKilometer));
   }
 
+  /// Average pace for [distanceMeters] covered in [durationSeconds].
+  ///
+  /// Derived from total time over distance, which is how the server computes
+  /// pace. Inverting the average of instantaneous speeds gives a different
+  /// number whenever sample intervals are uneven.
+  String formatPaceOverDistance(double? distanceMeters, int durationSeconds) {
+    if (distanceMeters == null || distanceMeters <= 0 || durationSeconds <= 0) {
+      return _placeholder;
+    }
+    return formatPace(distanceMeters / durationSeconds);
+  }
+
   String formatHeartRate(int? bpm) {
     if (bpm == null) {
       return _placeholder;

@@ -93,15 +93,6 @@ class SecureStorageService {
     }
   }
 
-  // Delete all values
-  Future<void> deleteAll() async {
-    try {
-      await _storage.deleteAll();
-    } catch (e) {
-      throw AppException(AppErrorCode.secureStorageDeleteFailed, cause: e);
-    }
-  }
-
   // Server-specific methods
   Future<String?> getServerUrl() => read(key: _serverUrlKey);
   Future<void> setServerUrl(String url) =>

@@ -2,6 +2,7 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/services/activity_duration.dart';
 import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
 
 class LocalActivitySummaryBuilder {
@@ -31,9 +32,10 @@ class LocalActivitySummaryBuilder {
     }
 
     final stats = _statsCalculator.calculate(state.segments);
-    final elapsedDurationSeconds = state.elapsedDurationSeconds < 0
-        ? 0
-        : state.elapsedDurationSeconds;
+    final elapsedDurationSeconds = reportedActivityDurationSeconds(
+      statsDurationSeconds: stats.durationSeconds,
+      elapsedDurationSeconds: state.elapsedDurationSeconds,
+    );
 
     return LocalActivityRecord(
       id: id,

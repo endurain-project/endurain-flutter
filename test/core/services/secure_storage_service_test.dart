@@ -58,18 +58,6 @@ class _ThrowingWriteStorage extends Fake implements FlutterSecureStorage {
   }) async {
     throw Exception('keychain delete failed');
   }
-
-  @override
-  Future<void> deleteAll({
-    AppleOptions? iOptions,
-    AndroidOptions? aOptions,
-    LinuxOptions? lOptions,
-    WebOptions? webOptions,
-    AppleOptions? mOptions,
-    WindowsOptions? wOptions,
-  }) async {
-    throw Exception('keychain deleteAll failed');
-  }
 }
 
 /// Fake [FlutterSecureStorage] that fails the first [write] (simulating a stale
@@ -153,17 +141,6 @@ void main() {
 
       expect(await storage.getServerUrl(), 'https://example.test');
       expect(await storage.getUsername(), 'joao');
-    });
-
-    test('deleteAll removes every stored value', () async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-
-      await storage.deleteAll();
-
-      expect(await storage.getServerUrl(), isNull);
-      expect(await storage.getAccessToken(), isNull);
     });
 
     test('read returns null for a missing key', () async {
@@ -263,23 +240,5 @@ void main() {
         ),
       );
     });
-
-    test(
-      'deleteAll throws secureStorageDeleteFailed on platform exception',
-      () {
-        final storage = SecureStorageService(storage: _ThrowingWriteStorage());
-
-        expect(
-          () => storage.deleteAll(),
-          throwsA(
-            isA<AppException>().having(
-              (e) => e.code,
-              'code',
-              AppErrorCode.secureStorageDeleteFailed,
-            ),
-          ),
-        );
-      },
-    );
   });
 }

@@ -15,8 +15,8 @@ Future<void> main() async {
   // Holding the instance here also keeps the same diagnostics object available
   // to the root-zone error handler below, which runs outside the widget tree.
   final services = AppServices(
-    config: const AppConfig(
-      healthSyncEnabled: bool.fromEnvironment(
+    config: AppConfig(
+      healthSyncEnabled: const bool.fromEnvironment(
         'ENABLE_HEALTH_SYNC',
         defaultValue: true,
       ),
@@ -25,7 +25,18 @@ Future<void> main() async {
       // builds omit it, so no fork points its opt-in crash reports at the
       // Endurain-operated endpoint by default. An empty value means "no managed
       // default", which keeps remote reporting inactive.
-      crashReportingDsn: String.fromEnvironment('ENDURAIN_CRASH_REPORTING_DSN'),
+      crashReportingDsn: const String.fromEnvironment(
+        'ENDURAIN_CRASH_REPORTING_DSN',
+      ),
+      // Origin of the managed ("Endurain Cloud") service. No managed service
+      // exists yet, so every current build leaves this empty and treats every
+      // origin as a user-chosen self-hosted instance. Setting it must be paired
+      // with the OS-level pins in the Android network security config and the
+      // iOS Info.plist.
+      cloudBaseUrl: const String.fromEnvironment('ENDURAIN_CLOUD_BASE_URL'),
+      allowedTileServerHosts: AppConfig.parseTileServerHostAllowlist(
+        const String.fromEnvironment('ENDURAIN_ALLOWED_TILE_HOSTS'),
+      ),
     ),
   );
   final diagnostics = services.diagnostics;

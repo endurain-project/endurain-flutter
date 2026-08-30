@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.8.2+13] - 2026-08-29
+
+### Fixed
+
+- Unified the duration shown in completion, history, and activity details, and
+	calculated running pace from total time over distance.
+- Kept the HealthKit connection marker device-local so restored preferences
+	cannot be mistaken for authorization on another device.
+
+### Changed
+
+- Moved the "keep uploaded GPX files" and health auto-sync settings out of the
+	platform keychain into the regular preference store. These two preferences
+	reset to their defaults once on upgrade.
+- Updated `go_router` to 18.0.0, `material_ui` to 1.1.0, `cupertino_ui` to
+	1.0.1, and `androidx.core:core-ktx` to 1.19.0.
+
+### Security
+
+- Added build-time managed-cloud HTTPS policy and tile-server host allowlist
+	configuration, with Android and iOS transport-policy parity checks.
+
 ## [v0.8.1+12] - 2026-08-26
 
 ### Fixed
