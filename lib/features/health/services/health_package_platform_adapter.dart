@@ -1,4 +1,5 @@
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_data_access_details.dart';
@@ -432,7 +433,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     if (rawDist != null) {
       distanceMeters = switch (value.totalDistanceUnit) {
         HealthDataUnit.METER => rawDist.toDouble(),
-        HealthDataUnit.MILE => rawDist * 1609.344,
+        HealthDataUnit.MILE => rawDist * UnitConversions.metersPerMile,
         _ => rawDist.toDouble(), // default: assume metres
       };
     }

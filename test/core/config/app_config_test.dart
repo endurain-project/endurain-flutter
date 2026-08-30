@@ -59,6 +59,43 @@ void main() {
       });
     });
 
+    group('parseTileServerHostAllowlist', () {
+      test('returns null for an empty or blank value', () {
+        expect(AppConfig.parseTileServerHostAllowlist(''), isNull);
+        expect(AppConfig.parseTileServerHostAllowlist('  '), isNull);
+        expect(AppConfig.parseTileServerHostAllowlist(',,'), isNull);
+      });
+
+      test('splits, trims, and lowercases hosts', () {
+        expect(
+          AppConfig.parseTileServerHostAllowlist(
+            ' Tiles.Example.com , maps.example.com ',
+          ),
+          {'tiles.example.com', 'maps.example.com'},
+        );
+      });
+
+      test('drops empty entries and de-duplicates', () {
+        expect(
+          AppConfig.parseTileServerHostAllowlist(
+            'tiles.example.com,,TILES.EXAMPLE.COM,',
+          ),
+          {'tiles.example.com'},
+        );
+      });
+
+      test('parsed hosts match the normalized host from a URL', () {
+        final config = AppConfig(
+          allowedTileServerHosts: AppConfig.parseTileServerHostAllowlist(
+            'Tiles.Example.com',
+          ),
+        );
+        final host = Uri.parse('https://TILES.example.com/{z}/{x}/{y}.png')
+            .host;
+        expect(config.isTileServerHostAllowed(host), isTrue);
+      });
+    });
+
     group('allowInsecureTransportFor', () {
       test('allows http to any host when no cloud origin is set', () {
         const config = AppConfig.defaults;

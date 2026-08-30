@@ -61,7 +61,7 @@ class ActivityModule {
   );
 
   late final ActivityRetentionSettingsRepository retentionSettings =
-      ActivityRetentionSettingsRepository(storage: _infra.secureStorage);
+      ActivityRetentionSettingsRepository(preferences: _infra.preferences);
 
   late final AudioAnnouncementSettingsRepository audioAnnouncementSettings =
       AudioAnnouncementSettingsRepository(preferences: _infra.preferences);

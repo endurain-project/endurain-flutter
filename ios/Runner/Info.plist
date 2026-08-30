@@ -39,22 +39,15 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Arbitrary loads stay on because self-hosted instances are user-provided
+	     hosts that may use plain HTTP. A managed ("Endurain Cloud") host, once
+	     one exists, gets an NSExceptionDomains entry here with
+	     NSExceptionAllowsInsecureHTTPLoads=false and a TLSv1.2 minimum — see
+	     android/app/src/main/res/xml/network_security_config.xml. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>app.endurain.example</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<false/>
-				<key>NSExceptionMinimumTLSVersion</key>
-				<string>TLSv1.2</string>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-			</dict>
-		</dict>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Endurain connects to Bluetooth heart rate monitors and other sensors to record your live data during activities.</string>

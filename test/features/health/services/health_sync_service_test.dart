@@ -27,6 +27,7 @@ import 'package:endurain/features/health/services/health_workout_gpx_builder.dar
 
 import '../fakes/fake_health_import_store.dart';
 import '../fakes/fake_health_platform_adapter.dart';
+import '../../../helpers/fake_preferences_store.dart';
 
 // Fake ActivityUploadQueue that records drain() calls.
 class _FakeUploadQueue extends ActivityUploadQueue {
@@ -68,11 +69,20 @@ void main() {
   late FakeHealthPlatformAdapter adapter;
   late _FakeUploadQueue uploadQueue;
   late HealthSyncService service;
-  late SecureStorageService secureStorage;
+  late FakePreferencesStore healthPrefs;
+  late SecureStorageService healthStorage;
+
+  HealthSyncSettingsRepository makeSyncSettings() {
+    return HealthSyncSettingsRepository(
+      preferences: healthPrefs,
+      storage: healthStorage,
+    );
+  }
 
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues({});
-    secureStorage = SecureStorageService();
+    healthPrefs = FakePreferencesStore();
+    healthStorage = SecureStorageService();
     tempDir = await Directory.systemTemp.createTemp('health_sync_test_');
     final activityStore = SqfliteActivityStore(
       databaseFactory: databaseFactoryFfiNoIsolate,
@@ -95,7 +105,7 @@ void main() {
       localActivities: localActivities,
       uploadQueue: uploadQueue,
       gpxBuilder: const HealthWorkoutGpxBuilder(),
-      syncSettings: HealthSyncSettingsRepository(storage: secureStorage),
+      syncSettings: makeSyncSettings(),
       diagnostics: const NoopDiagnosticsRecorder(),
       healthSyncEnabled: true,
       activeConnectionProfile: () async => profile,
@@ -119,7 +129,7 @@ void main() {
         localActivities: localActivities,
         uploadQueue: uploadQueue,
         gpxBuilder: const HealthWorkoutGpxBuilder(),
-        syncSettings: HealthSyncSettingsRepository(storage: secureStorage),
+        syncSettings: makeSyncSettings(),
         diagnostics: const NoopDiagnosticsRecorder(),
         healthSyncEnabled: false,
         activeConnectionProfile: () async => profile,
@@ -168,7 +178,7 @@ void main() {
       adapter.authStatus = HealthAuthorizationStatus.granted;
       await service.requestAccess();
 
-      final settings = HealthSyncSettingsRepository(storage: secureStorage);
+      final settings = makeSyncSettings();
       expect(await settings.isConnected(profile.id), isTrue);
     });
 
@@ -176,7 +186,7 @@ void main() {
       adapter.authStatus = HealthAuthorizationStatus.denied;
       await service.requestAccess();
 
-      final settings = HealthSyncSettingsRepository(storage: secureStorage);
+      final settings = makeSyncSettings();
       expect(await settings.isConnected(profile.id), isFalse);
     });
   });
@@ -196,8 +206,7 @@ void main() {
       'treats notDetermined as granted once the user has connected',
       () async {
         adapter.authStatus = HealthAuthorizationStatus.notDetermined;
-        await HealthSyncSettingsRepository(storage: secureStorage)
-            .setConnected(profile.id, true);
+        await makeSyncSettings().setConnected(profile.id, true);
 
         expect(
           await service.currentAuthorizationStatus(),
@@ -216,8 +225,7 @@ void main() {
 
     test('respects a platform denial even when previously connected', () async {
       adapter.authStatus = HealthAuthorizationStatus.denied;
-      await HealthSyncSettingsRepository(storage: secureStorage)
-          .setConnected(profile.id, true);
+      await makeSyncSettings().setConnected(profile.id, true);
 
       expect(
         await service.currentAuthorizationStatus(),
@@ -331,7 +339,7 @@ void main() {
     });
 
     test('clears a stale connection when reading health data fails', () async {
-      final settings = HealthSyncSettingsRepository(storage: secureStorage);
+      final settings = makeSyncSettings();
       await settings.setConnected(profile.id, true);
       adapter.readWorkoutsError = const AppException(
         AppErrorCode.healthReadFailed,
@@ -557,7 +565,7 @@ void main() {
         localActivities: localActivities,
         uploadQueue: uploadQueue,
         gpxBuilder: const HealthWorkoutGpxBuilder(),
-        syncSettings: HealthSyncSettingsRepository(storage: secureStorage),
+        syncSettings: makeSyncSettings(),
         diagnostics: const NoopDiagnosticsRecorder(),
         healthSyncEnabled: true,
         activeConnectionProfile: () async => activeProfile,
@@ -600,7 +608,7 @@ void main() {
         localActivities: localActivities,
         uploadQueue: uploadQueue,
         gpxBuilder: const HealthWorkoutGpxBuilder(),
-        syncSettings: HealthSyncSettingsRepository(storage: secureStorage),
+        syncSettings: makeSyncSettings(),
         diagnostics: const NoopDiagnosticsRecorder(),
         healthSyncEnabled: true,
         activeConnectionProfile: () async => null,
@@ -634,7 +642,7 @@ void main() {
           localActivities: localActivities,
           uploadQueue: uploadQueue,
           gpxBuilder: const HealthWorkoutGpxBuilder(),
-          syncSettings: HealthSyncSettingsRepository(storage: secureStorage),
+          syncSettings: makeSyncSettings(),
           diagnostics: const NoopDiagnosticsRecorder(),
           healthSyncEnabled: true,
           activeConnectionProfile: () async => activeProfile,
@@ -691,11 +699,7 @@ void main() {
       await service.disconnect();
 
       expect(adapter.revokePermissionsCallCount, 1);
-      expect(
-        await HealthSyncSettingsRepository(storage: secureStorage)
-            .isConnected(profile.id),
-        isFalse,
-      );
+      expect(await makeSyncSettings().isConnected(profile.id), isFalse);
       expect(await service.isAutoSyncOnResumeEnabled(), isFalse);
       expect(
         await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
@@ -756,7 +760,7 @@ void main() {
         localActivities: localActivities,
         uploadQueue: uploadQueue,
         gpxBuilder: const HealthWorkoutGpxBuilder(),
-        syncSettings: HealthSyncSettingsRepository(storage: secureStorage),
+        syncSettings: makeSyncSettings(),
         diagnostics: const NoopDiagnosticsRecorder(),
         healthSyncEnabled: true,
         activeConnectionProfile: () async => activeProfile,

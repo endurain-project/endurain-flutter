@@ -178,7 +178,7 @@ void main() {
 }
 
 class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
-  _FakeRetentionSettings() : super(storage: SecureStorageService());
+  _FakeRetentionSettings() : super(preferences: FakePreferencesStore());
 
   bool retainUploadedGpx = true;
 
@@ -192,7 +192,7 @@ class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
 }
 
 class _ThrowingRetentionSettings extends ActivityRetentionSettingsRepository {
-  _ThrowingRetentionSettings() : super(storage: SecureStorageService());
+  _ThrowingRetentionSettings() : super(preferences: FakePreferencesStore());
 
   @override
   Future<bool> isRetainUploadedGpxEnabled() async {
