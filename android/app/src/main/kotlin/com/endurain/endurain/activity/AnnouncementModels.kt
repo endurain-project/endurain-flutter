@@ -35,7 +35,7 @@ data class AnnouncementStateData(
     val metricUnitTemplate: String,
     val metricLabel: String,
     val messageTemplate: String,
-    // Durable progress, advanced by GPS fixes and the elapsed-time timer.
+    // Scheduler progress, checkpointed from GPS fixes and the elapsed-time timer.
     val cumulativeDistanceMeters: Double = 0.0,
     val lastAnnouncedDistanceIndex: Int = 0,
     val lastAnnouncedTimeIndex: Int = 0,

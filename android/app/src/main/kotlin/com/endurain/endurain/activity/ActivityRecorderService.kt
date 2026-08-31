@@ -19,6 +19,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import com.endurain.endurain.R
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
@@ -46,6 +47,7 @@ class ActivityRecorderService : Service() {
     private var powerClient: CyclingPowerGattClient? = null
     private var cadenceClient: CadenceGattClient? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private val announcementStateCache = AnnouncementStateCache()
     private val announcementHandler = Handler(Looper.getMainLooper())
     private val timeAnnouncementRunnable = Runnable {
         announceTimeIfDue(System.currentTimeMillis())
@@ -72,6 +74,7 @@ class ActivityRecorderService : Service() {
     }
 
     private fun handleStart(intent: Intent) {
+        announcementStateCache.reset()
         val title = intent.getStringExtra(EXTRA_TITLE) ?: defaultTitle()
         val text = intent.getStringExtra(EXTRA_TEXT) ?: defaultText()
         activeNotificationTitle = title
@@ -117,6 +120,7 @@ class ActivityRecorderService : Service() {
 
     private fun handlePause() {
         AudioAnnouncer.stop()
+        flushAnnouncementState()
         stopCollection()
         // Keep the foreground notification so recording can resume cheaply.
     }
@@ -447,15 +451,9 @@ class ActivityRecorderService : Service() {
         announceIfDue(nowMillis, location, isNewSegment)
     }
 
-    /**
-     * Advances the durable announcement scheduler by this fix and speaks any
-     * threshold crossings it triggered. Runs after the point is durably
-     * persisted, so a crash here can never lose recorded track data; a
-     * missing/unreadable announcement state (announcements never enabled, or
-     * the file could not be read) is a silent no-op.
-     */
+    /** Advances announcement progress and speaks threshold crossings. */
     private fun announceIfDue(nowMillis: Long, location: Location, isNewSegment: Boolean) {
-        val announcementState = store.loadAnnouncementState() ?: return
+        val announcementState = currentAnnouncementState() ?: return
         if (!announcementState.enabled) {
             return
         }
@@ -468,12 +466,11 @@ class ActivityRecorderService : Service() {
             elapsedSeconds = elapsedSeconds,
             isNewSegment = isNewSegment,
         )
-        try {
-            store.saveAnnouncementState(result.state)
-        } catch (_: Exception) {
-            // Losing this write only risks a duplicate or skipped announcement
-            // on the next fix, never the recorded track; never fail collection
-            // over it.
+        if (!cacheAnnouncementState(
+                result.state,
+                persistBeforeSpeech = result.announcements.isNotEmpty(),
+            )
+        ) {
             return
         }
         for (text in result.announcements) {
@@ -492,7 +489,7 @@ class ActivityRecorderService : Service() {
      */
     private fun scheduleNextTimeAnnouncement() {
         announcementHandler.removeCallbacks(timeAnnouncementRunnable)
-        val announcementState = store.loadAnnouncementState() ?: return
+        val announcementState = currentAnnouncementState() ?: return
         if (!announcementState.enabled || !announcementState.isTimeBased ||
             announcementState.timeIntervalSeconds !in
             MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS..MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS
@@ -520,7 +517,7 @@ class ActivityRecorderService : Service() {
 
     /** Advances a time-based schedule without waiting for another GPS fix. */
     private fun announceTimeIfDue(referenceMillis: Long) {
-        val announcementState = store.loadAnnouncementState() ?: return
+        val announcementState = currentAnnouncementState() ?: return
         if (!announcementState.enabled || !announcementState.isTimeBased) {
             return
         }
@@ -535,9 +532,11 @@ class ActivityRecorderService : Service() {
         if (result.state == announcementState) {
             return
         }
-        try {
-            store.saveAnnouncementState(result.state)
-        } catch (_: Exception) {
+        if (!cacheAnnouncementState(
+                result.state,
+                persistBeforeSpeech = result.announcements.isNotEmpty(),
+            )
+        ) {
             return
         }
         for (text in result.announcements) {
@@ -547,6 +546,54 @@ class ActivityRecorderService : Service() {
                 announcementState.duckOtherAudio,
                 announcementState.languageTag,
             )
+        }
+    }
+
+    private fun currentAnnouncementState(): AnnouncementStateData? {
+        announcementStateCache.state?.let { return it }
+        val state = store.loadAnnouncementState() ?: return null
+        announcementStateCache.restore(state, SystemClock.elapsedRealtime())
+        return state
+    }
+
+    /**
+     * Keeps normal GPS progress in memory, checkpoints it periodically, and
+     * makes threshold progress durable before the corresponding speech.
+     */
+    private fun cacheAnnouncementState(
+        state: AnnouncementStateData,
+        persistBeforeSpeech: Boolean,
+    ): Boolean {
+        val previousState = announcementStateCache.state
+        announcementStateCache.update(state)
+        val uptimeMillis = SystemClock.elapsedRealtime()
+        val stateToPersist = announcementStateCache.stateToPersist(
+            uptimeMillis,
+            force = persistBeforeSpeech,
+        ) ?: return true
+        return try {
+            store.saveAnnouncementState(stateToPersist)
+            announcementStateCache.markPersisted(uptimeMillis)
+            true
+        } catch (_: Exception) {
+            if (persistBeforeSpeech && previousState != null) {
+                announcementStateCache.update(previousState)
+            }
+            !persistBeforeSpeech
+        }
+    }
+
+    private fun flushAnnouncementState() {
+        val uptimeMillis = SystemClock.elapsedRealtime()
+        val state = announcementStateCache.stateToPersist(
+            uptimeMillis,
+            force = true,
+        ) ?: return
+        try {
+            store.saveAnnouncementState(state)
+            announcementStateCache.markPersisted(uptimeMillis)
+        } catch (_: Exception) {
+            // Announcement progress must never make recording teardown fail.
         }
     }
 
@@ -744,6 +791,9 @@ class ActivityRecorderService : Service() {
 
     override fun onDestroy() {
         AudioAnnouncer.stop()
+        if (store.loadSession()?.isActive == true) {
+            flushAnnouncementState()
+        }
         stopCollection()
         stopSensorCapture()
         releaseWakeLock()

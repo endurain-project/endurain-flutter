@@ -32,6 +32,8 @@
 		AA00000000000000000000BF /* AnnouncementSpeechBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AF /* AnnouncementSpeechBuilderTests.swift */; };
 		AA00000000000000000000C0 /* AnnouncementModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C1 /* AnnouncementModelsTests.swift */; };
 		AA00000000000000000000C2 /* AnnouncementSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */; };
+		AA00000000000000000000C4 /* AnnouncementStateCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C5 /* AnnouncementStateCache.swift */; };
+		AA00000000000000000000C6 /* AnnouncementStateCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +93,8 @@
 		AA00000000000000000000AF /* AnnouncementSpeechBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementSpeechBuilderTests.swift; sourceTree = "<group>"; };
 		AA00000000000000000000C1 /* AnnouncementModelsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementModelsTests.swift; sourceTree = "<group>"; };
 		AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementSchedulerTests.swift; sourceTree = "<group>"; };
+		AA00000000000000000000C5 /* AnnouncementStateCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AnnouncementStateCache.swift; sourceTree = "<group>"; };
+		AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementStateCacheTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +125,7 @@
 				AA00000000000000000000AF /* AnnouncementSpeechBuilderTests.swift */,
 				AA00000000000000000000C1 /* AnnouncementModelsTests.swift */,
 				AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */,
+				AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -178,6 +183,7 @@
 				AA00000000000000000000AA /* AnnouncementScheduler.swift */,
 				AA00000000000000000000AB /* AudioAnnouncer.swift */,
 				AA00000000000000000000AC /* SessionTiming.swift */,
+				AA00000000000000000000C5 /* AnnouncementStateCache.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -335,6 +341,7 @@
 				AA00000000000000000000BF /* AnnouncementSpeechBuilderTests.swift in Sources */,
 				AA00000000000000000000C0 /* AnnouncementModelsTests.swift in Sources */,
 				AA00000000000000000000C2 /* AnnouncementSchedulerTests.swift in Sources */,
+				AA00000000000000000000C6 /* AnnouncementStateCacheTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,6 +362,7 @@
 				AA00000000000000000000BA /* AnnouncementScheduler.swift in Sources */,
 				AA00000000000000000000BB /* AudioAnnouncer.swift in Sources */,
 				AA00000000000000000000BC /* SessionTiming.swift in Sources */,
+				AA00000000000000000000C4 /* AnnouncementStateCache.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

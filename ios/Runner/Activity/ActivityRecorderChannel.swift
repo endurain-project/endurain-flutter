@@ -10,7 +10,10 @@ import Flutter
 /// discard) are owned here; point batches and collection failures are emitted
 /// by the recorder via `ActivityRecorderCoordinator`. Drain/recover read
 /// directly from the durable `ActiveActivityStore`.
-final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
+@MainActor
+final class ActivityRecorderChannel:
+    NSObject,
+    @preconcurrency FlutterStreamHandler {
     private let store = ActiveActivityStore.shared
     private lazy var recorder = CoreLocationActivityRecorder(store: store)
 

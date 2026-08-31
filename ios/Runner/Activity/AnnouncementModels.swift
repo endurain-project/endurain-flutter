@@ -30,7 +30,7 @@ struct AnnouncementStateData: Equatable {
     let metricUnitTemplate: String
     let metricLabel: String
     let messageTemplate: String
-    // Durable progress, advanced by GPS fixes and the elapsed-time timer.
+    // Scheduler progress, checkpointed from GPS fixes and the elapsed-time timer.
     var cumulativeDistanceMeters: Double
     var lastAnnouncedDistanceIndex: Int
     var lastAnnouncedTimeIndex: Int

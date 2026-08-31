@@ -10,6 +10,7 @@ import Foundation
 /// the shared `AVAudioSession` stays active while speech is queued so
 /// announcements remain audible in the background. Other audio is optionally
 /// ducked, and the session is deactivated after the final utterance finishes.
+@MainActor
 final class AudioAnnouncer: NSObject {
     static let shared = AudioAnnouncer()
 
@@ -82,7 +83,7 @@ final class AudioAnnouncer: NSObject {
     }
 }
 
-extension AudioAnnouncer: AVSpeechSynthesizerDelegate {
+extension AudioAnnouncer: @preconcurrency AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         finish(utterance)
     }
