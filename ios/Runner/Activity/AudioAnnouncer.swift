@@ -28,6 +28,7 @@ final class AudioAnnouncer: NSObject {
         case audioSessionActivation = "audio_session_activation"
         case audioSessionDeactivation = "audio_session_deactivation"
         case utteranceCancelled = "utterance_cancelled"
+        case utteranceResume = "utterance_resume"
     }
 
     private let synthesizer = AVSpeechSynthesizer()
@@ -38,6 +39,12 @@ final class AudioAnnouncer: NSObject {
     private override init() {
         super.init()
         synthesizer.delegate = self
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioSessionInterruption(_:)),
+            name: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance()
+        )
     }
 
     /// Speaks `text`, ducking other audio first when `duck` is true.
@@ -71,6 +78,37 @@ final class AudioAnnouncer: NSObject {
         deactivateSession()
     }
 
+    @objc private func handleAudioSessionInterruption(_ notification: Notification) {
+        guard
+            let userInfo = notification.userInfo,
+            let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let type = AVAudioSession.InterruptionType(rawValue: typeValue)
+        else {
+            return
+        }
+        switch type {
+        case .began:
+            sessionActive = false
+        case .ended:
+            guard !activeUtteranceIds.isEmpty else {
+                sessionDucks = false
+                return
+            }
+            let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+            guard options.contains(.shouldResume) else {
+                stop()
+                return
+            }
+            activateSession(duck: sessionDucks)
+            if synthesizer.isPaused && !synthesizer.continueSpeaking() {
+                reportFailure(stage: .utteranceResume)
+            }
+        @unknown default:
+            break
+        }
+    }
+
     private func finish(_ utterance: AVSpeechUtterance) {
         guard activeUtteranceIds.remove(ObjectIdentifier(utterance)) != nil,
               activeUtteranceIds.isEmpty else {
@@ -100,11 +138,12 @@ final class AudioAnnouncer: NSObject {
     }
 
     private func deactivateSession() {
-        guard sessionActive else {
-            return
-        }
+        let wasActive = sessionActive
         sessionActive = false
         sessionDucks = false
+        guard wasActive else {
+            return
+        }
         do {
             try AVAudioSession.sharedInstance().setActive(
                 false,

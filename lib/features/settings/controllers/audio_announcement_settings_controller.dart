@@ -67,7 +67,7 @@ class AudioAnnouncementSettingsController extends SafeNotifier {
     // Compared against the stored value, not `intervalFor`: that would
     // substitute the metric default and skip persisting an imperial user's
     // first change when it happened to equal it.
-    if (_settings.intervalFor(type) == interval) {
+    if (_settings.storedIntervalFor(type) == interval) {
       return;
     }
     _settings = _settings.withInterval(type, interval);
