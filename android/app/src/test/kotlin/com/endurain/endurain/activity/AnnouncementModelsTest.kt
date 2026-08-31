@@ -8,8 +8,8 @@ import org.junit.Test
 
 /**
  * JVM unit tests for [AnnouncementStateData] serialization: the durability
- * contract between one location fix and the next (and across a foreground
- * service restart), so a regression here would silently reset the
+ * contract between scheduler callbacks (and across a foreground service
+ * restart), so a regression here would silently reset the
  * "already announced" bookkeeping and cause duplicate announcements.
  */
 class AnnouncementModelsTest {

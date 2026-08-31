@@ -5,7 +5,7 @@ import kotlin.math.max
 /**
  * Accumulated elapsed-recording-seconds for a session, shared by
  * [ActivityRecorderChannel] (pause/resume/stop/recover) and
- * [ActivityRecorderService] (per-fix announcement scheduling) so the two
+ * [ActivityRecorderService] (GPS and timer announcement scheduling) so the two
  * never drift apart.
  *
  * Mirrors the Dart geolocator recorder: a paused session keeps its stored

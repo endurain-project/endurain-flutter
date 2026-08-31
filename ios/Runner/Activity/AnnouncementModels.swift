@@ -3,14 +3,14 @@ import Foundation
 /// Durable state for the spoken progress announcements of one recording:
 /// the immutable, localized configuration handed over at `start` (see the
 /// Dart `AudioAnnouncementConfig`) plus the mutable progress the on-device
-/// scheduler advances at every location fix.
+/// scheduler advances from location fixes and elapsed-time callbacks.
 ///
 /// Mirrors the Android `AnnouncementStateData` data class. Persisted as its
 /// own file inside the same active-recording directory as
 /// `ActiveActivityStore`'s session/points files (see
 /// `ActiveActivityStore.saveAnnouncementState`), so `clear()` (called on
 /// discard) removes it too, and the "already announced" bookkeeping survives
-/// whatever iOS process lifecycle event happens between two location fixes.
+/// whatever iOS process lifecycle event happens between scheduler callbacks.
 ///
 /// Deliberately kept separate from `ActiveActivitySessionData`: that model's
 /// JSON schema is a durability contract shared with Dart and Android, and
@@ -28,7 +28,7 @@ struct AnnouncementStateData: Equatable {
     let distanceUnitTemplate: String
     let paceUnitTemplate: String
     let messageTemplate: String
-    // Durable progress, advanced by the scheduler at every fix.
+    // Durable progress, advanced by GPS fixes and the elapsed-time timer.
     var cumulativeDistanceMeters: Double
     var lastAnnouncedDistanceIndex: Int
     var lastAnnouncedTimeIndex: Int

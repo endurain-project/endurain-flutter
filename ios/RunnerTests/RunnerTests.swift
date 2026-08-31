@@ -154,6 +154,42 @@ final class ActiveRecordingModelsTests: XCTestCase {
     XCTAssertEqual(updated.startedAt, "2026-07-15T10:00:00.000Z")
   }
 
+  func testSessionTimingKeepsPausedElapsedTimeFrozen() {
+    let session = ActiveActivitySessionData(
+      localSessionId: "activity_1",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusPaused,
+      startedAt: "2026-07-15T10:00:00.000Z",
+      resumedAt: "2026-07-15T10:05:00.000Z",
+      elapsedDurationSeconds: 300
+    )
+
+    let elapsedSeconds = SessionTiming.elapsedSeconds(
+      session,
+      referenceMillis: IsoTime.toEpochMillis("2026-07-15T11:00:00.000Z")!
+    )
+
+    XCTAssertEqual(elapsedSeconds, 300)
+  }
+
+  func testSessionTimingAddsOnlyTheCurrentResumedSegment() {
+    let session = ActiveActivitySessionData(
+      localSessionId: "activity_1",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: "2026-07-15T10:00:00.000Z",
+      resumedAt: "2026-07-15T10:10:00.000Z",
+      elapsedDurationSeconds: 300
+    )
+
+    let elapsedSeconds = SessionTiming.elapsedSeconds(
+      session,
+      referenceMillis: IsoTime.toEpochMillis("2026-07-15T10:12:00.000Z")!
+    )
+
+    XCTAssertEqual(elapsedSeconds, 420)
+  }
+
   // MARK: - RecordedActivityPointData
 
   func testPointRoundTripsThroughMapPreservingEveryField() {

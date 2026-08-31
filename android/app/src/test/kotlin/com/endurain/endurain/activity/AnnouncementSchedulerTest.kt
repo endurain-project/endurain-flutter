@@ -7,9 +7,9 @@ import org.junit.Test
 /**
  * JVM unit tests for [AnnouncementScheduler]: the sequencing that ties the
  * durable [AnnouncementStateData] to [AnnouncementThresholdCalculator] and
- * [AnnouncementSpeechBuilder] on each location fix. These tests exercise the
- * exact "durable, no duplicates, interpolated" contract the announcement
- * feature depends on:
+ * [AnnouncementSpeechBuilder] for GPS and elapsed-time callbacks. These tests
+ * exercise the exact "durable, no duplicates, interpolated" contract the
+ * announcement feature depends on:
  * - a threshold is announced exactly once, even across two separate
  *   `onFix` calls (the durable progress carries forward);
  * - a segment break (pause/resume or a GPS gap) never counts as distance
@@ -157,5 +157,72 @@ class AnnouncementSchedulerTest {
         assertEquals(1, result.state.lastAnnouncedTimeIndex)
         // Distance-based bookkeeping is untouched by a time-based interval.
         assertEquals(0, result.state.lastAnnouncedDistanceIndex)
+    }
+
+    @Test
+    fun timeBasedIntervalAdvancesWithoutALocationFix() {
+        val state = baseState(
+            intervalUnit = AnnouncementStateData.UNIT_TIME,
+            timeIntervalSeconds = 300,
+        ).copy(
+            cumulativeDistanceMeters = 750.0,
+            lastElapsedSeconds = 250,
+        )
+
+        val result = AnnouncementScheduler.onElapsedTime(
+            state = state,
+            elapsedSeconds = 300,
+        )
+
+        assertEquals(1, result.announcements.size)
+        assertEquals(1, result.state.lastAnnouncedTimeIndex)
+        assertEquals(300, result.state.lastElapsedSeconds)
+        assertEquals(750.0, result.state.cumulativeDistanceMeters, 0.0)
+        assertTrue(result.announcements.single().contains("5:00"))
+    }
+
+    @Test
+    fun locationFixDoesNotRepeatATimerAnnouncement() {
+        val state = baseState(
+            intervalUnit = AnnouncementStateData.UNIT_TIME,
+            timeIntervalSeconds = 300,
+        ).copy(
+            cumulativeDistanceMeters = 750.0,
+            lastLatitude = 0.0,
+            lastLongitude = 0.0,
+            lastElapsedSeconds = 250,
+        )
+        val timerResult = AnnouncementScheduler.onElapsedTime(state, 300)
+
+        val locationResult = AnnouncementScheduler.onFix(
+            state = timerResult.state,
+            latitude = 0.0,
+            longitude = 0.0001,
+            elapsedSeconds = 320,
+            isNewSegment = false,
+        )
+
+        assertEquals(1, timerResult.announcements.size)
+        assertTrue(locationResult.announcements.isEmpty())
+        assertEquals(1, locationResult.state.lastAnnouncedTimeIndex)
+    }
+
+    @Test
+    fun delayedTimerCatchesThresholdAfterElapsedStateAdvanced() {
+        val state = baseState(
+            intervalUnit = AnnouncementStateData.UNIT_TIME,
+            timeIntervalSeconds = 300,
+        ).copy(
+            lastElapsedSeconds = 320,
+            lastAnnouncedTimeIndex = 0,
+        )
+
+        val result = AnnouncementScheduler.onElapsedTime(
+            state = state,
+            elapsedSeconds = 320,
+        )
+
+        assertEquals(1, result.announcements.size)
+        assertEquals(1, result.state.lastAnnouncedTimeIndex)
     }
 }

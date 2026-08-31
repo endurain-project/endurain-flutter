@@ -1,16 +1,55 @@
 import Foundation
 
-/// Advances the durable announcement state by one location fix and returns
-/// any spoken announcements that fix triggered.
+/// Advances durable distance and elapsed-time announcement state.
 ///
 /// Mirrors the Android `AnnouncementScheduler` object exactly — see its doc
 /// comment for the full rationale. Delegates crossing detection to
 /// `AnnouncementThresholdCalculator` and rendering to
-/// `AnnouncementSpeechBuilder`; this type only owns the sequencing.
+/// `AnnouncementSpeechBuilder`. `onFix` accumulates accepted GPS distance;
+/// `onElapsedTime` advances time milestones independently while stationary.
 enum AnnouncementScheduler {
     struct Result {
         let state: AnnouncementStateData
         let announcements: [String]
+    }
+
+    /// Advances a time-based schedule without requiring a location fix.
+    /// Paused time is excluded by the caller through `SessionTiming`; distance
+    /// remains at the latest value accumulated by `onFix`.
+    static func onElapsedTime(
+        state: AnnouncementStateData,
+        elapsedSeconds: Int
+    ) -> Result {
+        guard state.enabled, state.isTimeBased else {
+            return Result(state: state, announcements: [])
+        }
+        let monotonicElapsedSeconds = max(state.lastElapsedSeconds, elapsedSeconds)
+        let crossings = AnnouncementThresholdCalculator.crossedThresholds(
+            intervalValue: Double(state.timeIntervalSeconds),
+            // The durable index is authoritative. Elapsed state may already
+            // have advanced past an unannounced threshold on a resumed GPS fix.
+            previousCumulative: 0,
+            newCumulative: Double(monotonicElapsedSeconds),
+            lastAnnouncedIndex: state.lastAnnouncedTimeIndex
+        )
+        var updated = state.copyWith(lastElapsedSeconds: monotonicElapsedSeconds)
+        guard !crossings.isEmpty else {
+            return Result(state: updated, announcements: [])
+        }
+
+        var announcements: [String] = []
+        for crossing in crossings {
+            let crossingElapsedSeconds = Int(crossing.thresholdValue.rounded())
+            updated = updated.copyWith(lastAnnouncedTimeIndex: crossing.thresholdIndex)
+            announcements.append(
+                AnnouncementSpeechBuilder.build(
+                    state: state,
+                    distanceMeters: state.cumulativeDistanceMeters,
+                    elapsedSeconds: crossingElapsedSeconds
+                )
+            )
+        }
+        return Result(state: updated, announcements: announcements)
     }
 
     /// - Parameter isNewSegment: true when this fix starts a new track
@@ -48,13 +87,14 @@ enum AnnouncementScheduler {
         )
         let newCumulativeDistance = state.cumulativeDistanceMeters + deltaMeters
         let previousElapsed = state.lastElapsedSeconds
+        let monotonicElapsedSeconds = max(previousElapsed, elapsedSeconds)
 
         let crossings: [AnnouncementThresholdCalculator.Crossing]
         if state.isTimeBased {
             crossings = AnnouncementThresholdCalculator.crossedThresholds(
                 intervalValue: Double(state.timeIntervalSeconds),
                 previousCumulative: Double(previousElapsed),
-                newCumulative: Double(elapsedSeconds),
+                newCumulative: Double(monotonicElapsedSeconds),
                 lastAnnouncedIndex: state.lastAnnouncedTimeIndex
             )
         } else {
@@ -70,14 +110,14 @@ enum AnnouncementScheduler {
             cumulativeDistanceMeters: newCumulativeDistance,
             lastLatitude: .some(latitude),
             lastLongitude: .some(longitude),
-            lastElapsedSeconds: elapsedSeconds
+            lastElapsedSeconds: monotonicElapsedSeconds
         )
         guard !crossings.isEmpty else {
             return Result(state: updated, announcements: [])
         }
 
         var announcements: [String] = []
-        let elapsedSpan = elapsedSeconds - previousElapsed
+        let elapsedSpan = monotonicElapsedSeconds - previousElapsed
         for crossing in crossings {
             let interpolatedDistanceMeters: Double
             let interpolatedElapsedSeconds: Int

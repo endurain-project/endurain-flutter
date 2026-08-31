@@ -2,7 +2,7 @@ import Foundation
 
 /// Accumulated elapsed-recording-seconds for a session, shared by
 /// `ActivityRecorderChannel` (pause/resume/stop/recover) and
-/// `CoreLocationActivityRecorder` (per-fix announcement scheduling) so the
+/// `CoreLocationActivityRecorder` (GPS and timer scheduling) so the
 /// two never drift apart.
 ///
 /// Mirrors the Android `SessionTiming` object and the Dart geolocator

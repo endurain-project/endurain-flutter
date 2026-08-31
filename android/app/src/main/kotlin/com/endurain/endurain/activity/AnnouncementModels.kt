@@ -6,7 +6,7 @@ import org.json.JSONObject
  * Durable state for the spoken progress announcements of one recording:
  * the immutable, localized configuration handed over at `start` (see the
  * Dart `AudioAnnouncementConfig`) plus the mutable progress the on-device
- * scheduler advances at every location fix.
+ * scheduler advances from location fixes and elapsed-time callbacks.
  *
  * Persisted as its own file inside the same active-recording directory as
  * `ActiveActivityStore`'s session/points files (see
@@ -33,7 +33,7 @@ data class AnnouncementStateData(
     val distanceUnitTemplate: String,
     val paceUnitTemplate: String,
     val messageTemplate: String,
-    // Durable progress, advanced by the scheduler at every fix.
+    // Durable progress, advanced by GPS fixes and the elapsed-time timer.
     val cumulativeDistanceMeters: Double = 0.0,
     val lastAnnouncedDistanceIndex: Int = 0,
     val lastAnnouncedTimeIndex: Int = 0,

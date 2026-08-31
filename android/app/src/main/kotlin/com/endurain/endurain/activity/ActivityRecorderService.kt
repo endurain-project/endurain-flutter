@@ -15,6 +15,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
@@ -45,6 +46,11 @@ class ActivityRecorderService : Service() {
     private var powerClient: CyclingPowerGattClient? = null
     private var cadenceClient: CadenceGattClient? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private val announcementHandler = Handler(Looper.getMainLooper())
+    private val timeAnnouncementRunnable = Runnable {
+        announceTimeIfDue(System.currentTimeMillis())
+        scheduleNextTimeAnnouncement()
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -233,6 +239,7 @@ class ActivityRecorderService : Service() {
             return
         }
         acquireWakeLock()
+        scheduleNextTimeAnnouncement()
     }
 
     /**
@@ -297,6 +304,7 @@ class ActivityRecorderService : Service() {
         // Released first and unconditionally: the listener may already be null
         // (e.g. a start that never registered a provider), and the wake lock
         // must never outlive collection.
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
         releaseWakeLock()
         val listener = locationListener ?: return
         try {
@@ -478,6 +486,69 @@ class ActivityRecorderService : Service() {
         }
     }
 
+    /**
+     * Schedules one main-looper callback at the next elapsed-time threshold.
+     * One-shot scheduling avoids polling and serializes state with GPS fixes.
+     */
+    private fun scheduleNextTimeAnnouncement() {
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
+        val announcementState = store.loadAnnouncementState() ?: return
+        if (!announcementState.enabled || !announcementState.isTimeBased ||
+            announcementState.timeIntervalSeconds !in
+            MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS..MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS
+        ) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return
+        }
+        val elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            System.currentTimeMillis(),
+        )
+        val nextIndex = maxOf(1L, announcementState.lastAnnouncedTimeIndex.toLong() + 1L)
+        val nextThresholdSeconds =
+            nextIndex * announcementState.timeIntervalSeconds.toLong()
+        val remainingSeconds = nextThresholdSeconds - elapsedSeconds.toLong()
+        val delayMillis = maxOf(
+            TIME_ANNOUNCEMENT_RETRY_MILLIS,
+            remainingSeconds * 1000L,
+        )
+        announcementHandler.postDelayed(timeAnnouncementRunnable, delayMillis)
+    }
+
+    /** Advances a time-based schedule without waiting for another GPS fix. */
+    private fun announceTimeIfDue(referenceMillis: Long) {
+        val announcementState = store.loadAnnouncementState() ?: return
+        if (!announcementState.enabled || !announcementState.isTimeBased) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return
+        }
+        val result = AnnouncementScheduler.onElapsedTime(
+            state = announcementState,
+            elapsedSeconds = SessionTiming.elapsedSeconds(session, referenceMillis),
+        )
+        if (result.state == announcementState) {
+            return
+        }
+        try {
+            store.saveAnnouncementState(result.state)
+        } catch (_: Exception) {
+            return
+        }
+        for (text in result.announcements) {
+            AudioAnnouncer.speak(
+                applicationContext,
+                text,
+                announcementState.duckOtherAudio,
+                announcementState.languageTag,
+            )
+        }
+    }
 
     /**
      * Selects a single location provider, preferring GPS for its precision.
@@ -702,6 +773,9 @@ class ActivityRecorderService : Service() {
         private const val MAX_TIME_GAP_MILLIS = 30_000L
         private const val MAX_ACCURACY_METERS = 100f
         private const val MAX_SPEED_METERS_PER_SECOND = 90f
+        private const val MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 60
+        private const val MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 3600
+        private const val TIME_ANNOUNCEMENT_RETRY_MILLIS = 1000L
 
         private fun baseIntent(context: Context, action: String): Intent {
             return Intent(context, ActivityRecorderService::class.java).setAction(action)

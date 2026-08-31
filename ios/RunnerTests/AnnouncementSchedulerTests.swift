@@ -4,9 +4,9 @@ import XCTest
 
 /// Unit tests for `AnnouncementScheduler`: the sequencing that ties the
 /// durable `AnnouncementStateData` to `AnnouncementThresholdCalculator` and
-/// `AnnouncementSpeechBuilder` on each location fix. Mirrors the Android
-/// `AnnouncementSchedulerTest` exactly, exercising the same "durable, no
-/// duplicates, interpolated" contract on both platforms.
+/// `AnnouncementSpeechBuilder` for GPS and elapsed-time callbacks. Mirrors
+/// the Android `AnnouncementSchedulerTest` exactly, exercising the same
+/// "durable, no duplicates, interpolated" contract on both platforms.
 final class AnnouncementSchedulerTests: XCTestCase {
 
   private func baseState(
@@ -155,5 +155,69 @@ final class AnnouncementSchedulerTests: XCTestCase {
     XCTAssertEqual(result.announcements.count, 1)
     XCTAssertEqual(result.state.lastAnnouncedTimeIndex, 1)
     XCTAssertEqual(result.state.lastAnnouncedDistanceIndex, 0)
+  }
+
+  func testTimeBasedIntervalAdvancesWithoutALocationFix() {
+    var state = baseState(
+      intervalUnit: AnnouncementStateData.unitTime,
+      timeIntervalSeconds: 300
+    )
+    state.cumulativeDistanceMeters = 750
+    state.lastElapsedSeconds = 250
+
+    let result = AnnouncementScheduler.onElapsedTime(
+      state: state,
+      elapsedSeconds: 300
+    )
+
+    XCTAssertEqual(result.announcements.count, 1)
+    XCTAssertEqual(result.state.lastAnnouncedTimeIndex, 1)
+    XCTAssertEqual(result.state.lastElapsedSeconds, 300)
+    XCTAssertEqual(result.state.cumulativeDistanceMeters, 750)
+    XCTAssertTrue(result.announcements[0].contains("5:00"))
+  }
+
+  func testLocationFixDoesNotRepeatATimerAnnouncement() {
+    var state = baseState(
+      intervalUnit: AnnouncementStateData.unitTime,
+      timeIntervalSeconds: 300
+    )
+    state.cumulativeDistanceMeters = 750
+    state.lastLatitude = 0
+    state.lastLongitude = 0
+    state.lastElapsedSeconds = 250
+    let timerResult = AnnouncementScheduler.onElapsedTime(
+      state: state,
+      elapsedSeconds: 300
+    )
+
+    let locationResult = AnnouncementScheduler.onFix(
+      state: timerResult.state,
+      latitude: 0,
+      longitude: 0.0001,
+      elapsedSeconds: 320,
+      isNewSegment: false
+    )
+
+    XCTAssertEqual(timerResult.announcements.count, 1)
+    XCTAssertTrue(locationResult.announcements.isEmpty)
+    XCTAssertEqual(locationResult.state.lastAnnouncedTimeIndex, 1)
+  }
+
+  func testDelayedTimerCatchesThresholdAfterElapsedStateAdvanced() {
+    var state = baseState(
+      intervalUnit: AnnouncementStateData.unitTime,
+      timeIntervalSeconds: 300
+    )
+    state.lastElapsedSeconds = 320
+    state.lastAnnouncedTimeIndex = 0
+
+    let result = AnnouncementScheduler.onElapsedTime(
+      state: state,
+      elapsedSeconds: 320
+    )
+
+    XCTAssertEqual(result.announcements.count, 1)
+    XCTAssertEqual(result.state.lastAnnouncedTimeIndex, 1)
   }
 }

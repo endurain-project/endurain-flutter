@@ -3,7 +3,7 @@ import XCTest
 @testable import Runner
 
 /// Unit tests for `AnnouncementStateData` serialization: the durability
-/// contract between one location fix and the next (and across the process
+/// contract between scheduler callbacks (and across the process
 /// being suspended/relaunched), so a regression here would silently reset the
 /// "already announced" bookkeeping and cause duplicate announcements. Mirrors
 /// the Android `AnnouncementModelsTest`.

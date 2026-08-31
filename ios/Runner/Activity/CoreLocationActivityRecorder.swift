@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import Dispatch
 
 /// CoreLocation-backed recorder that persists points to the native active store
 /// before notifying Flutter.
@@ -29,6 +30,8 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private static let maxTimeGapMillis: Int64 = 30_000
     private static let maxAccuracyMeters: CLLocationAccuracy = 100
     private static let maxSpeedMetersPerSecond: CLLocationSpeed = 90
+    private static let minTimeAnnouncementIntervalSeconds = 60
+    private static let maxTimeAnnouncementIntervalSeconds = 3600
 
     private let store: ActiveActivityStore
     private let manager = CLLocationManager()
@@ -36,6 +39,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
+    private var timeAnnouncementTimer: DispatchSourceTimer?
 
     init(store: ActiveActivityStore) {
         self.store = store
@@ -88,6 +92,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         manager.startUpdatingLocation()
         startTerminationRecovery()
         isCollecting = true
+        scheduleNextTimeAnnouncement()
         return true
     }
 
@@ -132,11 +137,100 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     }
 
     func stopCollection() {
+        stopTimeAnnouncementTimer()
         manager.stopUpdatingLocation()
         manager.stopMonitoringSignificantLocationChanges()
         manager.allowsBackgroundLocationUpdates = false
         AudioAnnouncer.shared.stop()
         isCollecting = false
+    }
+
+    /// Schedules one main-queue callback at the next elapsed-time threshold.
+    /// One-shot scheduling avoids polling and serializes state with GPS fixes.
+    private func scheduleNextTimeAnnouncement() {
+        stopTimeAnnouncementTimer()
+        guard isCollecting,
+              let announcementState = store.loadAnnouncementState(),
+              announcementState.enabled,
+              announcementState.isTimeBased,
+              announcementState.timeIntervalSeconds >= Self.minTimeAnnouncementIntervalSeconds,
+              announcementState.timeIntervalSeconds <= Self.maxTimeAnnouncementIntervalSeconds,
+              announcementState.lastAnnouncedTimeIndex >= 0,
+              announcementState.lastAnnouncedTimeIndex < Int.max,
+              let session = store.loadSession(),
+              session.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            referenceMillis: nowMillis
+        )
+        let nextIndex = max(1, Int64(announcementState.lastAnnouncedTimeIndex) + 1)
+        let thresholdResult = nextIndex.multipliedReportingOverflow(
+            by: Int64(announcementState.timeIntervalSeconds)
+        )
+        guard !thresholdResult.overflow else {
+            return
+        }
+        let remainingResult = thresholdResult.partialValue.subtractingReportingOverflow(
+            Int64(elapsedSeconds)
+        )
+        guard !remainingResult.overflow else {
+            return
+        }
+        let remainingSeconds = remainingResult.partialValue
+        let delaySeconds = max(1, remainingSeconds)
+
+        let timer = DispatchSource.makeTimerSource(queue: .main)
+        timer.schedule(deadline: .now() + .seconds(Int(delaySeconds)))
+        timer.setEventHandler { [weak self] in
+            guard let self else {
+                return
+            }
+            self.stopTimeAnnouncementTimer()
+            self.announceTimeIfDue()
+            self.scheduleNextTimeAnnouncement()
+        }
+        timeAnnouncementTimer = timer
+        timer.resume()
+    }
+
+    private func stopTimeAnnouncementTimer() {
+        timeAnnouncementTimer?.setEventHandler {}
+        timeAnnouncementTimer?.cancel()
+        timeAnnouncementTimer = nil
+    }
+
+    /// Advances a time-based schedule without waiting for another GPS fix.
+    private func announceTimeIfDue() {
+        guard isCollecting,
+              let announcementState = store.loadAnnouncementState(),
+              announcementState.enabled,
+              announcementState.isTimeBased,
+              let session = store.loadSession(),
+              session.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let result = AnnouncementScheduler.onElapsedTime(
+            state: announcementState,
+            elapsedSeconds: SessionTiming.elapsedSeconds(
+                session,
+                referenceMillis: nowMillis
+            )
+        )
+        guard result.state != announcementState else {
+            return
+        }
+        store.saveAnnouncementState(result.state)
+        for text in result.announcements {
+            AudioAnnouncer.shared.speak(
+                text,
+                duck: announcementState.duckOtherAudio,
+                languageTag: announcementState.languageTag
+            )
+        }
     }
 
     /// Marks that collection is resuming from a pause so the next fix opens a
