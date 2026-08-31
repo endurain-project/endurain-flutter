@@ -1212,6 +1212,17 @@ class AppLocalizationsHr extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Povećaj interval';
 
   @override
+  String get audioAnnouncementsPreview => 'Poslušaj primjer';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Primjer najave nije dostupan na ovom uređaju';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Promjene se primjenjuju na sljedeće snimanje.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

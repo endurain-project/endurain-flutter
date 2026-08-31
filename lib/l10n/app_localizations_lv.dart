@@ -1207,6 +1207,17 @@ class AppLocalizationsLv extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Palielināt intervālu';
 
   @override
+  String get audioAnnouncementsPreview => 'Klausīties paraugu';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Paziņojuma paraugs šajā ierīcē nav pieejams';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Izmaiņas tiks piemērotas nākamajā ierakstā.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

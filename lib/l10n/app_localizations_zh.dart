@@ -1143,6 +1143,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => '增大间隔';
 
   @override
+  String get audioAnnouncementsPreview => '播放示例';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable => '此设备不支持播报试听';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording => '更改将在下次记录时生效。';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
@@ -2290,6 +2299,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get audioAnnouncementsIncreaseInterval => '增大間隔';
+
+  @override
+  String get audioAnnouncementsPreview => '播放範例';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable => '此裝置不支援播報試聽';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording => '變更將於下次記錄時生效。';
 
   @override
   String audioAnnouncementsSpokenMessage(

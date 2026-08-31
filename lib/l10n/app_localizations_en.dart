@@ -1197,6 +1197,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Increase interval';
 
   @override
+  String get audioAnnouncementsPreview => 'Play sample';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Announcement preview is not available on this device';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Changes apply to your next recording.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

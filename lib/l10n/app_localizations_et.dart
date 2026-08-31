@@ -1207,6 +1207,17 @@ class AppLocalizationsEt extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Suurenda intervalli';
 
   @override
+  String get audioAnnouncementsPreview => 'Kuula näidet';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Teate näidis ei ole selles seadmes saadaval';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Muudatused rakenduvad järgmisel salvestusel.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

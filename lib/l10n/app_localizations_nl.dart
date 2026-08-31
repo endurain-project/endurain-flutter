@@ -1213,6 +1213,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Interval vergroten';
 
   @override
+  String get audioAnnouncementsPreview => 'Voorbeeld afspelen';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Een voorbeeld van de melding is niet beschikbaar op dit apparaat';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Wijzigingen gelden vanaf je volgende opname.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

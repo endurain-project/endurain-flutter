@@ -1218,6 +1218,17 @@ class AppLocalizationsSk extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Zväčšiť interval';
 
   @override
+  String get audioAnnouncementsPreview => 'Prehrať ukážku';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Ukážka hlásenia nie je na tomto zariadení dostupná';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Zmeny sa prejavia pri ďalšom zázname.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

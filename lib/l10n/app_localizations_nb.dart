@@ -1206,6 +1206,17 @@ class AppLocalizationsNb extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Øk intervall';
 
   @override
+  String get audioAnnouncementsPreview => 'Spill av eksempel';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Forhåndsvisning av kunngjøring er ikke tilgjengelig på denne enheten';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Endringene gjelder fra neste opptak.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

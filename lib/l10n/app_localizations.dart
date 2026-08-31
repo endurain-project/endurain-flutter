@@ -2223,6 +2223,24 @@ abstract class AppLocalizations {
   /// **'Increase interval'**
   String get audioAnnouncementsIncreaseInterval;
 
+  /// Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Play sample'**
+  String get audioAnnouncementsPreview;
+
+  /// Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement preview is not available on this device'**
+  String get audioAnnouncementsPreviewUnavailable;
+
+  /// Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Changes apply to your next recording.'**
+  String get audioAnnouncementsAppliesNextRecording;
+
   /// Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart
   ///
   /// In en, this message translates to:

@@ -81,6 +81,8 @@ final class ActivityRecorderChannel:
             handleDrain(call, result: result)
         case ActivityRecorderChannel.methodRecover:
             handleRecover(result: result)
+        case ActivityRecorderChannel.methodSpeakPreview:
+            handleSpeakPreview(call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -304,6 +306,39 @@ final class ActivityRecorderChannel:
         return version == ActivityRecorderChannel.payloadVersion
     }
 
+    /// Speaks one sample announcement so the user can verify the device has a
+    /// working speech engine, at an audible volume, in the expected language.
+    /// Deliberately independent of the recorder lifecycle: it never touches the
+    /// durable store, so a preview cannot disturb an in-progress recording.
+    private func handleSpeakPreview(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? [String: Any]
+        if !isSupportedVersion(arguments) {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorVersion,
+                message: "Unsupported payload version",
+                details: nil
+            ))
+            return
+        }
+        guard
+            let announcements = arguments?["audioAnnouncements"] as? [String: Any],
+            let state = AnnouncementStateData.fromStartArguments(announcements)
+        else {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorArgs,
+                message: "Missing audioAnnouncements",
+                details: nil
+            ))
+            return
+        }
+        AudioAnnouncer.shared.speak(
+            AnnouncementSpeechBuilder.buildPreview(state: state),
+            duck: state.duckOtherAudio,
+            languageTag: state.languageTag
+        )
+        result(nil)
+    }
+
     static let payloadVersion = 1
 
     static let methodChannelName = "endurain/activity_recorder/methods"
@@ -316,6 +351,7 @@ final class ActivityRecorderChannel:
     static let methodDiscard = "discard"
     static let methodDrain = "drain"
     static let methodRecover = "recover"
+    static let methodSpeakPreview = "speakAnnouncementPreview"
 
     static let errorArgs = "invalid_arguments"
     static let errorState = "invalid_state"

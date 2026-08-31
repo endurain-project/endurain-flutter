@@ -1,6 +1,8 @@
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
+import 'package:endurain/features/activity/services/audio_announcement_preview_adapter.dart';
 import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -106,7 +108,71 @@ void main() {
       expect(controller.isLoaded, isTrue);
       expect(controller.settings.masterEnabled, isFalse);
     });
+
+    test('speakPreview forwards the config to the adapter', () async {
+      final adapter = _RecordingPreviewAdapter();
+      final controller = AudioAnnouncementSettingsController(
+        repository: repository,
+        previewAdapter: adapter,
+      );
+      addTearDown(controller.dispose);
+
+      expect(await controller.speakPreview(_config()), isTrue);
+
+      expect(adapter.configs, hasLength(1));
+      expect(adapter.configs.single.metricLabel, 'Pace');
+    });
+
+    test('speakPreview reports failure instead of throwing', () async {
+      final controller = AudioAnnouncementSettingsController(
+        repository: repository,
+        previewAdapter: const _ThrowingPreviewAdapter(),
+      );
+      addTearDown(controller.dispose);
+
+      expect(await controller.speakPreview(_config()), isFalse);
+    });
+
+    test('speakPreview is a no-op on platforms without speech', () async {
+      final controller = buildController();
+      addTearDown(controller.dispose);
+
+      expect(await controller.speakPreview(_config()), isTrue);
+    });
   });
+}
+
+AudioAnnouncementConfig _config() => const AudioAnnouncementConfig(
+  enabled: true,
+  duckOtherAudio: true,
+  intervalUnit: AudioAnnouncementIntervalUnit.distance,
+  distanceIntervalMeters: 1000,
+  timeIntervalSeconds: 300,
+  useImperialUnits: false,
+  metric: AudioAnnouncementMetric.pace,
+  languageTag: 'en-US',
+  distanceUnitTemplate: '{value} km',
+  metricUnitTemplate: '{value} min/km',
+  metricLabel: 'Pace',
+  messageTemplate: '{distance} {duration} {lapMetric} {overallMetric}',
+);
+
+class _RecordingPreviewAdapter implements AudioAnnouncementPreviewAdapter {
+  final List<AudioAnnouncementConfig> configs = [];
+
+  @override
+  Future<void> speakPreview(AudioAnnouncementConfig config) async {
+    configs.add(config);
+  }
+}
+
+class _ThrowingPreviewAdapter implements AudioAnnouncementPreviewAdapter {
+  const _ThrowingPreviewAdapter();
+
+  @override
+  Future<void> speakPreview(AudioAnnouncementConfig config) async {
+    throw StateError('no speech engine');
+  }
 }
 
 class _ThrowingRepository extends AudioAnnouncementSettingsRepository {

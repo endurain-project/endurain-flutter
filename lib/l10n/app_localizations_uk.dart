@@ -1210,6 +1210,17 @@ class AppLocalizationsUk extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Збільшити інтервал';
 
   @override
+  String get audioAnnouncementsPreview => 'Прослухати приклад';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Попереднє відтворення оголошення недоступне на цьому пристрої';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Зміни застосуються до наступного запису.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

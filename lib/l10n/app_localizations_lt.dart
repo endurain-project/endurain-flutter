@@ -1203,6 +1203,17 @@ class AppLocalizationsLt extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Padidinti intervalą';
 
   @override
+  String get audioAnnouncementsPreview => 'Klausytis pavyzdžio';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Pranešimo pavyzdys šiame įrenginyje negalimas';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Pakeitimai bus taikomi kitam įrašui.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

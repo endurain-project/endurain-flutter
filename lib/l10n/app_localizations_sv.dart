@@ -1207,6 +1207,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Öka intervall';
 
   @override
+  String get audioAnnouncementsPreview => 'Spela upp exempel';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Förhandsvisning av meddelande är inte tillgänglig på den här enheten';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Ändringarna gäller från nästa inspelning.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

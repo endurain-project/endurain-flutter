@@ -1218,6 +1218,17 @@ class AppLocalizationsPt extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Aumentar intervalo';
 
   @override
+  String get audioAnnouncementsPreview => 'Ouvir exemplo';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'A pré-visualização do anúncio não está disponível neste dispositivo';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'As alterações aplicam-se à sua próxima gravação.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

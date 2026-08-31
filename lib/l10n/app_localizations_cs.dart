@@ -1215,6 +1215,17 @@ class AppLocalizationsCs extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Zvětšit interval';
 
   @override
+  String get audioAnnouncementsPreview => 'Přehrát ukázku';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Ukázka hlášení není na tomto zařízení dostupná';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Změny se projeví při příštím záznamu.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

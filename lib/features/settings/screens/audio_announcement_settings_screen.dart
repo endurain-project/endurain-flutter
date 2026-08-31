@@ -2,6 +2,7 @@ import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
@@ -73,6 +74,17 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: UIConstants.paddingCompact,
+                  left: UIConstants.paddingStandard,
+                  right: UIConstants.paddingStandard,
+                ),
+                child: Text(
+                  l10n.audioAnnouncementsAppliesNextRecording,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
               const SizedBox(height: UIConstants.paddingLarge),
               Padding(
                 padding: const EdgeInsets.only(
@@ -95,6 +107,13 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
                   masterEnabled: settings.masterEnabled,
                   onChanged: (interval) =>
                       settingsController.setInterval(type, interval),
+                  onPreview: () => _preview(
+                    context,
+                    controller: settingsController,
+                    activityType: type,
+                    settings: settings,
+                    measurementSystem: measurementSystem,
+                  ),
                 ),
                 const SizedBox(height: UIConstants.paddingMedium),
               ],
@@ -102,6 +121,32 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Future<void> _preview(
+    BuildContext context, {
+    required AudioAnnouncementSettingsController controller,
+    required ActivityType activityType,
+    required AudioAnnouncementSettings settings,
+    required MeasurementSystem measurementSystem,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final spoke = await controller.speakPreview(
+      AudioAnnouncementConfig.build(
+        l10n: l10n,
+        settings: settings,
+        activityType: activityType,
+        measurementSystem: measurementSystem,
+        languageTag: Localizations.localeOf(context).toLanguageTag(),
+      ),
+    );
+    if (spoke) {
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.audioAnnouncementsPreviewUnavailable)),
     );
   }
 }
@@ -113,6 +158,7 @@ class _IntervalCard extends StatelessWidget {
     required this.measurementSystem,
     required this.masterEnabled,
     required this.onChanged,
+    required this.onPreview,
   });
 
   final ActivityType activityType;
@@ -120,6 +166,7 @@ class _IntervalCard extends StatelessWidget {
   final MeasurementSystem measurementSystem;
   final bool masterEnabled;
   final ValueChanged<AudioAnnouncementInterval> onChanged;
+  final VoidCallback onPreview;
 
   /// Distance step: 0.5 km, or 0.5 mi when imperial (converted to metres).
   double get _distanceStepMeters =>
@@ -174,7 +221,7 @@ class _IntervalCard extends StatelessWidget {
                         IconButton(
                           tooltip: l10n.audioAnnouncementsDecreaseInterval,
                           icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () => _step(context, -1),
+                          onPressed: () => _step(-1),
                         ),
                         Expanded(
                           child: Text(
@@ -186,9 +233,17 @@ class _IntervalCard extends StatelessWidget {
                         IconButton(
                           tooltip: l10n.audioAnnouncementsIncreaseInterval,
                           icon: const Icon(Icons.add_circle_outline),
-                          onPressed: () => _step(context, 1),
+                          onPressed: () => _step(1),
                         ),
                       ],
+                    ),
+                    Align(
+                      alignment: Alignment.center,
+                      child: TextButton.icon(
+                        onPressed: onPreview,
+                        icon: const Icon(Icons.volume_up),
+                        label: Text(l10n.audioAnnouncementsPreview),
+                      ),
                     ),
                   ],
                 ),
@@ -200,7 +255,7 @@ class _IntervalCard extends StatelessWidget {
     );
   }
 
-  void _step(BuildContext context, int direction) {
+  void _step(int direction) {
     if (interval.unit == AudioAnnouncementIntervalUnit.distance) {
       onChanged(
         interval.copyWith(

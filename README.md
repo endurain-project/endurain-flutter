@@ -80,6 +80,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Persisted language selection with a system-default option
 - Local activity history entry point and uploaded-GPX retention preference
 - Audio announcement preferences: master switch, audio ducking, and a per-activity-type distance or time interval
+- Per-activity audio announcement preview that speaks one sample milestone, so a missing or muted device speech engine is detectable before starting an activity
 - Device access overview for location and health-data permissions
 - Bluetooth heart-rate sensor pairing and connection status (Sensors screen)
 - Health sync settings and optional automatic import on app resume

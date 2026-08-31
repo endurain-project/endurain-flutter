@@ -1225,6 +1225,17 @@ class AppLocalizationsEl extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Αύξηση διαστήματος';
 
   @override
+  String get audioAnnouncementsPreview => 'Ακρόαση δείγματος';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Το δείγμα ανακοίνωσης δεν είναι διαθέσιμο σε αυτή τη συσκευή';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Οι αλλαγές ισχύουν από την επόμενη καταγραφή σας.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

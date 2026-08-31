@@ -1212,6 +1212,17 @@ class AppLocalizationsFi extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Kasvata väliä';
 
   @override
+  String get audioAnnouncementsPreview => 'Kuuntele esimerkki';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Ilmoituksen esikuuntelu ei ole käytettävissä tässä laitteessa';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Muutokset tulevat voimaan seuraavassa tallennuksessa.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

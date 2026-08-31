@@ -26,6 +26,9 @@ object AnnouncementSpeechBuilder {
     private const val METERS_PER_KILOMETER = 1000.0
     private const val METERS_PER_MILE = 1609.344
 
+    /** Roughly 10.8 km/h; only ever used to render a settings preview. */
+    private const val SAMPLE_SPEED_METERS_PER_SECOND = 3.0
+
     /**
      * @param distanceMeters cumulative distance (in meters) at the
      *   announcement instant, already interpolated to the exact threshold.
@@ -64,6 +67,27 @@ object AnnouncementSpeechBuilder {
             .replace(PLACEHOLDER_DURATION, durationText)
             .replace(PLACEHOLDER_LAP_METRIC, lapMetricText)
             .replace(PLACEHOLDER_OVERALL_METRIC, overallMetricText)
+    }
+
+    /**
+     * Builds the sample sentence spoken by the settings preview action.
+     *
+     * The milestone is the user's own configured interval, so the preview
+     * states what a real announcement will state. The other axis is derived
+     * from [SAMPLE_SPEED_METERS_PER_SECOND] purely so the pace/speed fragments
+     * are self-consistent — a preview has no recorded data to report.
+     */
+    fun buildPreview(state: AnnouncementStateData): String {
+        val distanceMeters: Double
+        val elapsedSeconds: Int
+        if (state.isTimeBased) {
+            elapsedSeconds = state.timeIntervalSeconds
+            distanceMeters = SAMPLE_SPEED_METERS_PER_SECOND * elapsedSeconds
+        } else {
+            distanceMeters = state.distanceIntervalMeters
+            elapsedSeconds = (distanceMeters / SAMPLE_SPEED_METERS_PER_SECOND).roundToInt()
+        }
+        return build(state, distanceMeters, elapsedSeconds)
     }
 
     private fun buildMetricText(

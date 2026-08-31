@@ -1200,6 +1200,17 @@ class AppLocalizationsTr extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Aralığı artır';
 
   @override
+  String get audioAnnouncementsPreview => 'Örneği dinle';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Anons önizlemesi bu cihazda kullanılamıyor';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Değişiklikler bir sonraki kaydınızda geçerli olur.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

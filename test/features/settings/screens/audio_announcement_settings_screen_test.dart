@@ -1,8 +1,10 @@
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
+import 'package:endurain/features/activity/services/audio_announcement_preview_adapter.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
@@ -21,13 +23,16 @@ void main() {
   final l10n = AppLocalizationsEn();
   late AudioAnnouncementSettingsController controller;
   late MeasurementSystemController measurementController;
+  late _RecordingPreviewAdapter previewAdapter;
 
   setUp(() {
     PlatformUtils.debugIsApplePlatformOverride = false;
+    previewAdapter = _RecordingPreviewAdapter();
     controller = AudioAnnouncementSettingsController(
       repository: AudioAnnouncementSettingsRepository(
         preferences: FakePreferencesStore(),
       ),
+      previewAdapter: previewAdapter,
     );
     measurementController = MeasurementSystemController(
       repository: MeasurementSettingsRepository(
@@ -156,6 +161,8 @@ void main() {
       otherLabel,
     );
     await tester.scrollUntilVisible(otherSwitchFinder, 200);
+    await tester.ensureVisible(otherSwitchFinder);
+    await tester.pumpAndSettle();
     expect(
       tester.widget<AdaptiveSwitchListTile>(otherSwitchFinder).value,
       isFalse,
@@ -195,4 +202,59 @@ void main() {
     );
     expect(find.text(l10n.audioAnnouncementsIntervalTime('5')), findsOneWidget);
   });
+
+  testWidgets('states that changes apply to the next recording', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+
+    expect(
+      find.text(l10n.audioAnnouncementsAppliesNextRecording),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the preview speaks the interval configured for that activity', (
+    tester,
+  ) async {
+    await controller.setMasterEnabled(true);
+    await pumpScreen(tester);
+
+    await tester.tap(find.text(l10n.audioAnnouncementsPreview).first);
+    await tester.pumpAndSettle();
+
+    expect(previewAdapter.configs, hasLength(1));
+    final config = previewAdapter.configs.single;
+    expect(config.distanceIntervalMeters, 1000);
+    expect(config.metricLabel, l10n.activityStatPace);
+  });
+
+  testWidgets('a rejected preview surfaces a message instead of failing', (
+    tester,
+  ) async {
+    previewAdapter.shouldThrow = true;
+    await controller.setMasterEnabled(true);
+    await pumpScreen(tester);
+
+    await tester.tap(find.text(l10n.audioAnnouncementsPreview).first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(l10n.audioAnnouncementsPreviewUnavailable),
+      findsOneWidget,
+    );
+  });
+}
+
+class _RecordingPreviewAdapter implements AudioAnnouncementPreviewAdapter {
+  final List<AudioAnnouncementConfig> configs = [];
+  bool shouldThrow = false;
+
+  @override
+  Future<void> speakPreview(AudioAnnouncementConfig config) async {
+    if (shouldThrow) {
+      throw StateError('no speech engine');
+    }
+    configs.add(config);
+  }
 }

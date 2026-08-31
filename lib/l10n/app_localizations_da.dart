@@ -1208,6 +1208,17 @@ class AppLocalizationsDa extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Øg interval';
 
   @override
+  String get audioAnnouncementsPreview => 'Afspil eksempel';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Eksempel på annoncering er ikke tilgængeligt på denne enhed';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Ændringer træder i kraft ved din næste optagelse.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

@@ -1218,6 +1218,17 @@ class AppLocalizationsBg extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Увеличи интервала';
 
   @override
+  String get audioAnnouncementsPreview => 'Прослушване';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Прослушването на съобщения не е налично на това устройство';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Промените важат за следващия ви запис.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

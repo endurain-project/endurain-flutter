@@ -1212,6 +1212,17 @@ class AppLocalizationsSr extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Повећај интервал';
 
   @override
+  String get audioAnnouncementsPreview => 'Пусти пример';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Преглед најаве није доступан на овом уређају';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Промене важе за следеће снимање.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

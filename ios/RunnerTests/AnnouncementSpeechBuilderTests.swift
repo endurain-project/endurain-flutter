@@ -211,4 +211,54 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
 
     XCTAssertTrue(text.contains("1.5 km"))
   }
+
+  func testPreviewStatesTheConfiguredDistanceMilestone() {
+    let state = AnnouncementStateData(
+      enabled: true,
+      duckOtherAudio: true,
+      intervalUnit: AnnouncementStateData.unitDistance,
+      distanceIntervalMeters: 2000,
+      timeIntervalSeconds: 300,
+      useImperialUnits: false,
+      metric: AnnouncementStateData.metricPace,
+      languageTag: "en-US",
+      distanceUnitTemplate: "{value} km",
+      metricUnitTemplate: "{value} min/km",
+      metricLabel: "Pace",
+      messageTemplate:
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}."
+    )
+
+    let text = AnnouncementSpeechBuilder.buildPreview(state: state)
+
+    // 2 km at the 3 m/s sample speed is 11:07, so 5:34 per km.
+    XCTAssertEqual(
+      text,
+      "Distance 2.0 km. Time 11:07. Lap Pace 5:34 min/km. "
+        + "Overall Pace 5:34 min/km."
+    )
+  }
+
+  func testPreviewStatesTheConfiguredTimeMilestone() {
+    let state = AnnouncementStateData(
+      enabled: true,
+      duckOtherAudio: true,
+      intervalUnit: AnnouncementStateData.unitTime,
+      distanceIntervalMeters: 1000,
+      timeIntervalSeconds: 600,
+      useImperialUnits: false,
+      metric: AnnouncementStateData.metricPace,
+      languageTag: "en-US",
+      distanceUnitTemplate: "{value} km",
+      metricUnitTemplate: "{value} min/km",
+      metricLabel: "Pace",
+      messageTemplate:
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}."
+    )
+
+    let text = AnnouncementSpeechBuilder.buildPreview(state: state)
+
+    XCTAssertTrue(text.contains("Time 10:00"))
+    XCTAssertTrue(text.contains("Distance 1.8 km"))
+  }
 }

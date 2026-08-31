@@ -1216,6 +1216,17 @@ class AppLocalizationsRo extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Mărește intervalul';
 
   @override
+  String get audioAnnouncementsPreview => 'Ascultă un exemplu';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Previzualizarea anunțului nu este disponibilă pe acest dispozitiv';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Modificările se aplică la următoarea înregistrare.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

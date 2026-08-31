@@ -187,4 +187,31 @@ class AnnouncementSpeechBuilderTest {
 
         assertEquals(true, text.contains("1.5 km"))
     }
+
+    @Test
+    fun previewStatesTheConfiguredDistanceMilestone() {
+        val text = AnnouncementSpeechBuilder.buildPreview(
+            metricState().copy(distanceIntervalMeters = 2000.0),
+        )
+
+        // 2 km at the 3 m/s sample speed is 11:07, so 5:34 per km.
+        assertEquals(
+            "Distance 2.0 km. Time 11:07. Lap Pace 5:34 min/km. " +
+                "Overall Pace 5:34 min/km.",
+            text,
+        )
+    }
+
+    @Test
+    fun previewStatesTheConfiguredTimeMilestone() {
+        val text = AnnouncementSpeechBuilder.buildPreview(
+            metricState().copy(
+                intervalUnit = AnnouncementStateData.UNIT_TIME,
+                timeIntervalSeconds = 600,
+            ),
+        )
+
+        assertEquals(true, text.contains("Time 10:00"))
+        assertEquals(true, text.contains("Distance 1.8 km"))
+    }
 }

@@ -51,6 +51,7 @@ class ActivityRecorderChannel(context: Context) :
             METHOD_DISCARD -> handleDiscard(result)
             METHOD_DRAIN -> handleDrain(call, result)
             METHOD_RECOVER -> handleRecover(result)
+            METHOD_SPEAK_PREVIEW -> handleSpeakPreview(call, result)
             else -> result.notImplemented()
         }
     }
@@ -244,6 +245,32 @@ class ActivityRecorderChannel(context: Context) :
         return version == PAYLOAD_VERSION
     }
 
+    /**
+     * Speaks one sample announcement so the user can verify the device has a
+     * working speech engine, at an audible volume, in the expected language.
+     * Deliberately independent of the recorder lifecycle: it never touches the
+     * durable store, so a preview cannot disturb an in-progress recording.
+     */
+    private fun handleSpeakPreview(call: MethodCall, result: MethodChannel.Result) {
+        if (!isSupportedVersion(call)) {
+            result.error(ERROR_VERSION, "Unsupported payload version", null)
+            return
+        }
+        @Suppress("UNCHECKED_CAST")
+        val arguments = call.argument<Map<String, Any?>>("audioAnnouncements")
+        val state = AnnouncementStateData.fromStartArguments(arguments)
+        if (state == null) {
+            result.error(ERROR_ARGS, "Missing audioAnnouncements", null)
+            return
+        }
+        AudioAnnouncer.speak(
+            appContext,
+            AnnouncementSpeechBuilder.buildPreview(state),
+            state.duckOtherAudio,
+            state.languageTag,
+        )
+        result.success(null)
+    }
     companion object {
         const val PAYLOAD_VERSION = 1
 
@@ -257,6 +284,7 @@ class ActivityRecorderChannel(context: Context) :
         const val METHOD_DISCARD = "discard"
         const val METHOD_DRAIN = "drain"
         const val METHOD_RECOVER = "recover"
+        const val METHOD_SPEAK_PREVIEW = "speakAnnouncementPreview"
 
         private const val ERROR_ARGS = "invalid_arguments"
         private const val ERROR_STATE = "invalid_state"

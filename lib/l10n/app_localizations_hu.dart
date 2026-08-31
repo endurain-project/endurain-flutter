@@ -1216,6 +1216,17 @@ class AppLocalizationsHu extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Időköz növelése';
 
   @override
+  String get audioAnnouncementsPreview => 'Minta lejátszása';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'A bemondás mintája nem érhető el ezen az eszközön';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'A módosítások a következő rögzítéstől lépnek életbe.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

@@ -510,6 +510,18 @@
   "@audioAnnouncementsIncreaseInterval": {
     "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
   },
+  "audioAnnouncementsPreview": "Ascultă un exemplu",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Previzualizarea anunțului nu este disponibilă pe acest dispozitiv",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Modificările se aplică la următoarea înregistrare.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
   "audioAnnouncementsSpokenMessage": "Distanță {distance}. Timp {duration}. Tură: {lapMetric}. Total: {overallMetric}.",
   "@audioAnnouncementsSpokenMessage": {
     "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",

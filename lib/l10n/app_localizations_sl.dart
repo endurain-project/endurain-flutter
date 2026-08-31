@@ -1212,6 +1212,17 @@ class AppLocalizationsSl extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Povečaj interval';
 
   @override
+  String get audioAnnouncementsPreview => 'Predvajaj vzorec';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Predogled napovedi v tej napravi ni na voljo';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Spremembe bodo veljale pri naslednjem snemanju.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,

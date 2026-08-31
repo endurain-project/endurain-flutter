@@ -12,6 +12,9 @@ enum AnnouncementSpeechBuilder {
     private static let metersPerKilometer = 1000.0
     private static let metersPerMile = 1609.344
 
+    /// Roughly 10.8 km/h; only ever used to render a settings preview.
+    private static let sampleSpeedMetersPerSecond = 3.0
+
     private static let placeholderValue = "{value}"
     private static let placeholderDistance = "{distance}"
     private static let placeholderDuration = "{duration}"
@@ -53,6 +56,25 @@ enum AnnouncementSpeechBuilder {
             .replacingOccurrences(of: placeholderDuration, with: durationText)
             .replacingOccurrences(of: placeholderLapMetric, with: lapMetricText)
             .replacingOccurrences(of: placeholderOverallMetric, with: overallMetricText)
+    }
+
+    /// Builds the sample sentence spoken by the settings preview action.
+    ///
+    /// The milestone is the user's own configured interval, so the preview
+    /// states what a real announcement will state. The other axis is derived
+    /// from `sampleSpeedMetersPerSecond` purely so the pace/speed fragments are
+    /// self-consistent — a preview has no recorded data to report.
+    static func buildPreview(state: AnnouncementStateData) -> String {
+        let distanceMeters: Double
+        let elapsedSeconds: Int
+        if state.isTimeBased {
+            elapsedSeconds = state.timeIntervalSeconds
+            distanceMeters = sampleSpeedMetersPerSecond * Double(elapsedSeconds)
+        } else {
+            distanceMeters = state.distanceIntervalMeters
+            elapsedSeconds = Int((distanceMeters / sampleSpeedMetersPerSecond).rounded())
+        }
+        return build(state: state, distanceMeters: distanceMeters, elapsedSeconds: elapsedSeconds)
     }
 
     private static func buildMetricText(

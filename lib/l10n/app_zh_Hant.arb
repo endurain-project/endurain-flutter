@@ -510,6 +510,18 @@
   "@audioAnnouncementsIncreaseInterval": {
     "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
   },
+  "audioAnnouncementsPreview": "播放範例",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "此裝置不支援播報試聽",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "變更將於下次記錄時生效。",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
   "audioAnnouncementsSpokenMessage": "距離{distance}。時間{duration}。本圈：{lapMetric}。全程：{overallMetric}。",
   "@audioAnnouncementsSpokenMessage": {
     "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",

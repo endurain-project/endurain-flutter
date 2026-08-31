@@ -18,6 +18,7 @@ import 'package:endurain/features/activity/services/activity_location_recorder.d
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:endurain/features/activity/services/audio_announcement_preview_adapter.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
@@ -73,7 +74,18 @@ class ActivityModule {
   late final AudioAnnouncementSettingsController
   audioAnnouncementSettingsController = AudioAnnouncementSettingsController(
     repository: audioAnnouncementSettings,
+    previewAdapter: createAudioAnnouncementPreviewAdapter(),
   );
+
+  /// Builds the announcement preview adapter for the current platform. Only
+  /// Android and iOS host the native speech engine.
+  AudioAnnouncementPreviewAdapter createAudioAnnouncementPreviewAdapter() {
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return MethodChannelAudioAnnouncementPreviewAdapter();
+    }
+    return const UnsupportedAudioAnnouncementPreviewAdapter();
+  }
 
   /// App-lifetime durable upload queue. Drains locally-stored activities whose
   /// upload has not yet succeeded; triggered on app-resume (see `app.dart`) and

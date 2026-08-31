@@ -1223,6 +1223,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Augmenter l\'intervalle';
 
   @override
+  String get audioAnnouncementsPreview => 'Écouter un exemple';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'L\'aperçu des annonces n\'est pas disponible sur cet appareil';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Les modifications s\'appliquent à votre prochain enregistrement.';
+
+  @override
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
