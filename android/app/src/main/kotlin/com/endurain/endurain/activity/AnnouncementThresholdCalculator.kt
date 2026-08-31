@@ -3,8 +3,8 @@ package com.endurain.endurain.activity
 import kotlin.math.floor
 
 /**
- * Pure, stateless calculation of which announcement thresholds a cumulative
- * value (distance in meters, or elapsed time in seconds) has newly crossed.
+ * Pure, stateless calculation of the latest announcement threshold a
+ * cumulative value (distance in meters, or elapsed time in seconds) crossed.
  *
  * Thresholds are multiples of [intervalValue]: 1x, 2x, 3x, ... A threshold is
  * "crossed" the first time the cumulative value reaches or passes it. Callers
@@ -20,10 +20,8 @@ import kotlin.math.floor
  * rather than at the next arbitrary GPS fix — otherwise a slow GPS update rate
  * would make "every 1 km" announcements drift later and later.
  *
- * A single call can return more than one [Crossing] when a GPS gap or a large
- * jump skips past several thresholds at once (e.g. the app was suspended for
- * two minutes); [maxCrossingsPerUpdate] bounds that list so a corrupt or
- * absurd interval can never spin this into an unbounded loop.
+ * When a gap skips several thresholds, only the latest is returned. Older
+ * milestones are stale and must not form a speech backlog.
  */
 object AnnouncementThresholdCalculator {
 
@@ -33,43 +31,36 @@ object AnnouncementThresholdCalculator {
         val interpolationFraction: Double,
     )
 
-    fun crossedThresholds(
+    fun latestCrossing(
         intervalValue: Double,
         previousCumulative: Double,
         newCumulative: Double,
         lastAnnouncedIndex: Int,
-        maxCrossingsPerUpdate: Int = 20,
-    ): List<Crossing> {
+    ): Crossing? {
         if (intervalValue <= 0.0 || !intervalValue.isFinite()) {
-            return emptyList()
+            return null
         }
         if (newCumulative <= previousCumulative) {
-            return emptyList()
+            return null
         }
         if (!previousCumulative.isFinite() || !newCumulative.isFinite()) {
-            return emptyList()
+            return null
         }
 
         // The highest threshold multiple already covered by newCumulative.
         val newIndex = floor(newCumulative / intervalValue).toInt()
         val startIndex = maxOf(lastAnnouncedIndex + 1, 1)
         if (newIndex < startIndex) {
-            return emptyList()
+            return null
         }
 
-        val result = ArrayList<Crossing>()
         val span = newCumulative - previousCumulative
-        var index = startIndex
-        while (index <= newIndex && result.size < maxCrossingsPerUpdate) {
-            val thresholdValue = intervalValue * index
-            val fraction = if (span > 0.0) {
-                ((thresholdValue - previousCumulative) / span).coerceIn(0.0, 1.0)
-            } else {
-                0.0
-            }
-            result.add(Crossing(index, thresholdValue, fraction))
-            index++
+        val thresholdValue = intervalValue * newIndex
+        val fraction = if (span > 0.0) {
+            ((thresholdValue - previousCumulative) / span).coerceIn(0.0, 1.0)
+        } else {
+            0.0
         }
-        return result
+        return Crossing(newIndex, thresholdValue, fraction)
     }
 }

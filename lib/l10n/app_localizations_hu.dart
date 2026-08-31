@@ -1172,7 +1172,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Hangos frissítések a távolságról, időről és tempóról';
+      'Hangos frissítések a távolságról, időről, tempóról vagy sebességről';
 
   @override
   String get audioAnnouncementsMasterSwitch =>
@@ -1180,7 +1180,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Felolvassa a távolságot, időt és tempót felvétel közben';
+      'Felolvassa a távolságot, időt, tempót vagy sebességet felvétel közben';
 
   @override
   String get audioAnnouncementsDuckSwitch => 'Más hang halkítása beszéd közben';
@@ -1219,8 +1219,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Távolság $distance. Idő $duration. Tempó $pace.';
+    return 'Távolság $distance. Idő $duration. Kör: $lapMetric. Összesen: $overallMetric.';
   }
 }

@@ -17,16 +17,21 @@ final class AnnouncementModelsTests: XCTestCase {
       distanceIntervalMeters: 2500,
       timeIntervalSeconds: 600,
       useImperialUnits: true,
+      metric: AnnouncementStateData.metricSpeed,
       languageTag: "fr-FR",
       distanceUnitTemplate: "{value} mi",
-      paceUnitTemplate: "{value} min/mi",
-      messageTemplate: "Distance {distance}. Time {duration}. Pace {pace}.",
+      metricUnitTemplate: "{value} mph",
+      metricLabel: "Vitesse",
+      messageTemplate:
+        "Distance {distance}. Temps {duration}. Tour {lapMetric}. Total {overallMetric}.",
       cumulativeDistanceMeters: 4321.5,
       lastAnnouncedDistanceIndex: 4,
       lastAnnouncedTimeIndex: 2,
       lastLatitude: 38.7169,
       lastLongitude: -9.1399,
-      lastElapsedSeconds: 1234
+      lastElapsedSeconds: 1234,
+      lastAnnouncementDistanceMeters: 2500,
+      lastAnnouncementElapsedSeconds: 600
     )
   }
 
@@ -48,9 +53,11 @@ final class AnnouncementModelsTests: XCTestCase {
       distanceIntervalMeters: distanceState.distanceIntervalMeters,
       timeIntervalSeconds: distanceState.timeIntervalSeconds,
       useImperialUnits: distanceState.useImperialUnits,
+      metric: distanceState.metric,
       languageTag: distanceState.languageTag,
       distanceUnitTemplate: distanceState.distanceUnitTemplate,
-      paceUnitTemplate: distanceState.paceUnitTemplate,
+      metricUnitTemplate: distanceState.metricUnitTemplate,
+      metricLabel: distanceState.metricLabel,
       messageTemplate: distanceState.messageTemplate
     )
     XCTAssertFalse(distanceState.isTimeBased)
@@ -82,10 +89,13 @@ final class AnnouncementModelsTests: XCTestCase {
       "distanceIntervalMeters": 1000.0,
       "timeIntervalSeconds": 300,
       "useImperialUnits": false,
+      "metric": "pace",
       "languageTag": "en-US",
       "distanceUnitTemplate": "{value} km",
-      "paceUnitTemplate": "{value} min/km",
-      "messageTemplate": "Distance {distance}. Time {duration}. Pace {pace}.",
+      "metricUnitTemplate": "{value} min/km",
+      "metricLabel": "Pace",
+      "messageTemplate":
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}.",
     ]
 
     let state = AnnouncementStateData.fromStartArguments(args)
@@ -93,6 +103,7 @@ final class AnnouncementModelsTests: XCTestCase {
     XCTAssertEqual(state?.enabled, true)
     XCTAssertEqual(state?.duckOtherAudio, false)
     XCTAssertEqual(state?.languageTag, "en-US")
+    XCTAssertEqual(state?.metric, AnnouncementStateData.metricPace)
     XCTAssertEqual(state?.cumulativeDistanceMeters, 0)
     XCTAssertEqual(state?.lastAnnouncedDistanceIndex, 0)
   }

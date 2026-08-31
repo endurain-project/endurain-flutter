@@ -1173,7 +1173,7 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Гласови известия за разстояние, време и темпо';
+      'Гласови известия за разстояние, време, темпо или скорост';
 
   @override
   String get audioAnnouncementsMasterSwitch =>
@@ -1181,7 +1181,7 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Изговаря разстоянието, времето и темпото по време на запис';
+      'Изговаря разстоянието, времето, темпото или скоростта по време на запис';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1221,8 +1221,9 @@ class AppLocalizationsBg extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Разстояние $distance. Време $duration. Темпо $pace.';
+    return 'Разстояние $distance. Време $duration. Обиколка: $lapMetric. Общо: $overallMetric.';
   }
 }

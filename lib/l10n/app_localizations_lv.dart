@@ -1163,14 +1163,14 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Balss atjauninājumi par attālumu, laiku un tempu';
+      'Balss atjauninājumi par attālumu, laiku, tempu vai ātrumu';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Paziņot aktivitātes progresu';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Ieraksta laikā balsī paziņo attālumu, laiku un tempu';
+      'Ieraksta laikā balsī paziņo attālumu, laiku, tempu vai ātrumu';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1210,8 +1210,9 @@ class AppLocalizationsLv extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Attālums $distance. Laiks $duration. Temps $pace.';
+    return 'Attālums $distance. Laiks $duration. Aplis: $lapMetric. Kopā: $overallMetric.';
   }
 }

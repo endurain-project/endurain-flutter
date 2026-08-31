@@ -1163,14 +1163,14 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Talemeldinger om distanse, tid og tempo';
+      'Talemeldinger om distanse, tid, tempo eller fart';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Annonser aktivitetsfremgang';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Sier distansen, tiden og tempoet ditt høyt under en opptak';
+      'Sier distansen, tiden, tempoet eller farten din høyt under et opptak';
 
   @override
   String get audioAnnouncementsDuckSwitch => 'Demp annen lyd mens det snakkes';
@@ -1209,8 +1209,9 @@ class AppLocalizationsNb extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Distanse $distance. Tid $duration. Tempo $pace.';
+    return 'Distanse $distance. Tid $duration. Runde: $lapMetric. Totalt: $overallMetric.';
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 
 /// Whether an [AudioAnnouncementInterval] fires on distance or elapsed time.
@@ -30,10 +31,25 @@ enum AudioAnnouncementIntervalUnit {
 /// interval, which would otherwise announce on every single location fix.
 class AudioAnnouncementInterval {
   const AudioAnnouncementInterval({
+    this.enabled = true,
     this.unit = AudioAnnouncementIntervalUnit.distance,
     this.distanceMeters = defaultDistanceMeters,
     this.timeSeconds = defaultTimeSeconds,
   });
+
+  factory AudioAnnouncementInterval.defaultsFor(
+    ActivityType type, {
+    MeasurementSystem measurementSystem = MeasurementSystem.metric,
+  }) {
+    final distanceUnits = type == ActivityType.ride ? 5 : 1;
+    final metersPerUnit = measurementSystem == MeasurementSystem.imperial
+        ? UnitConversions.metersPerMile
+        : UnitConversions.metersPerKilometer;
+    return AudioAnnouncementInterval(
+      enabled: type != ActivityType.other,
+      distanceMeters: distanceUnits * metersPerUnit,
+    );
+  }
 
   /// One kilometre — a sensible default for distance-based announcements.
   static const double defaultDistanceMeters = 1000;
@@ -46,6 +62,7 @@ class AudioAnnouncementInterval {
   static const int minTimeSeconds = 60;
   static const int maxTimeSeconds = 3600;
 
+  final bool enabled;
   final AudioAnnouncementIntervalUnit unit;
   final double distanceMeters;
   final int timeSeconds;
@@ -58,11 +75,13 @@ class AudioAnnouncementInterval {
       : timeSeconds.toDouble();
 
   AudioAnnouncementInterval copyWith({
+    bool? enabled,
     AudioAnnouncementIntervalUnit? unit,
     double? distanceMeters,
     int? timeSeconds,
   }) {
     return AudioAnnouncementInterval(
+      enabled: enabled ?? this.enabled,
       unit: unit ?? this.unit,
       distanceMeters: (distanceMeters ?? this.distanceMeters).clamp(
         minDistanceMeters,
@@ -76,6 +95,7 @@ class AudioAnnouncementInterval {
   }
 
   Map<String, Object?> toJson() => {
+    'enabled': enabled,
     'unit': unit.toJson(),
     'distanceMeters': distanceMeters,
     'timeSeconds': timeSeconds,
@@ -88,6 +108,7 @@ class AudioAnnouncementInterval {
     final distance = json['distanceMeters'];
     final time = json['timeSeconds'];
     return AudioAnnouncementInterval(
+      enabled: json['enabled'] != false,
       unit: AudioAnnouncementIntervalUnit.fromJson(json['unit']),
       distanceMeters:
           (distance is num ? distance.toDouble() : defaultDistanceMeters).clamp(
@@ -104,13 +125,14 @@ class AudioAnnouncementInterval {
   @override
   bool operator ==(Object other) {
     return other is AudioAnnouncementInterval &&
+        other.enabled == enabled &&
         other.unit == unit &&
         other.distanceMeters == distanceMeters &&
         other.timeSeconds == timeSeconds;
   }
 
   @override
-  int get hashCode => Object.hash(unit, distanceMeters, timeSeconds);
+  int get hashCode => Object.hash(enabled, unit, distanceMeters, timeSeconds);
 }
 
 /// Persisted audio-announcement preferences: a master on/off switch, whether
@@ -130,15 +152,22 @@ class AudioAnnouncementSettings {
   final bool duckOtherAudio;
   final Map<ActivityType, AudioAnnouncementInterval> _intervalsByActivityType;
 
-  /// Defaults: disabled, ducking enabled, and a 1&nbsp;km distance interval for
-  /// every activity type.
+  /// Defaults: globally disabled, ducking enabled, and activity-specific
+  /// intervals supplied lazily by [intervalFor].
   factory AudioAnnouncementSettings.defaults() =>
       const AudioAnnouncementSettings();
 
   /// The configured interval for [type], or the default interval when the
   /// user has never customized it.
-  AudioAnnouncementInterval intervalFor(ActivityType type) {
-    return _intervalsByActivityType[type] ?? const AudioAnnouncementInterval();
+  AudioAnnouncementInterval intervalFor(
+    ActivityType type, {
+    MeasurementSystem measurementSystem = MeasurementSystem.metric,
+  }) {
+    return _intervalsByActivityType[type] ??
+        AudioAnnouncementInterval.defaultsFor(
+          type,
+          measurementSystem: measurementSystem,
+        );
   }
 
   AudioAnnouncementSettings copyWith({

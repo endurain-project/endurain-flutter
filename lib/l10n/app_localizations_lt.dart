@@ -1159,14 +1159,14 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Balso pranešimai apie atstumą, laiką ir tempą';
+      'Balso pranešimai apie atstumą, laiką, tempą arba greitį';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Skelbti veiklos eigą';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Įrašymo metu balsu praneša atstumą, laiką ir tempą';
+      'Įrašymo metu balsu praneša atstumą, laiką, tempą arba greitį';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1206,8 +1206,9 @@ class AppLocalizationsLt extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Atstumas $distance. Laikas $duration. Tempas $pace.';
+    return 'Atstumas $distance. Laikas $duration. Ratas: $lapMetric. Iš viso: $overallMetric.';
   }
 }

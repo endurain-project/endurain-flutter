@@ -1180,14 +1180,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Sprachansagen zu Distanz, Zeit und Tempo';
+      'Sprachansagen zu Distanz, Zeit, Tempo oder Geschwindigkeit';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Trainingsfortschritt ansagen';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Sagt während einer Aufzeichnung Distanz, Zeit und Tempo an';
+      'Sagt während einer Aufzeichnung Distanz, Zeit, Tempo oder Geschwindigkeit an';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1227,8 +1227,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Distanz $distance. Zeit $duration. Tempo $pace.';
+    return 'Distanz $distance. Zeit $duration. Runde: $lapMetric. Gesamt: $overallMetric.';
   }
 }

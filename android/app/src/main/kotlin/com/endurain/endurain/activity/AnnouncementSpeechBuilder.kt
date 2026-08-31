@@ -10,8 +10,8 @@ import kotlin.math.roundToInt
  *
  * Every template was rendered by the Dart side from `AppLocalizations` (see
  * `AudioAnnouncementConfig.build`) with a sentinel placeholder still present
- * (`{value}` in the unit templates, `{distance}`/`{duration}`/`{pace}` in the
- * message template) — see that class's doc comment for why a literal
+ * (`{value}` in unit templates and named fragments in the message template) —
+ * see that class's doc comment for why a literal
  * substring replace here is sufficient for correct per-locale phrasing.
  * Numbers themselves are formatted with a fixed `Locale.US` decimal point:
  * text-to-speech engines read digits correctly regardless of the separator
@@ -44,31 +44,71 @@ object AnnouncementSpeechBuilder {
             formatDecimal(displayDistance),
         )
         val durationText = formatClock(elapsedSeconds)
-        val paceText = buildPaceText(state, distanceMeters, elapsedSeconds)
+        val lapMetricText = buildMetricText(
+            state,
+            maxOf(0.0, distanceMeters - state.lastAnnouncementDistanceMeters),
+            maxOf(0, elapsedSeconds - state.lastAnnouncementElapsedSeconds),
+        )
+        val overallMetricText = buildMetricText(
+            state,
+            distanceMeters,
+            elapsedSeconds,
+        )
 
         return state.messageTemplate
             .replace(PLACEHOLDER_DISTANCE, distanceText)
             .replace(PLACEHOLDER_DURATION, durationText)
-            .replace(PLACEHOLDER_PACE, paceText)
+            .replace(PLACEHOLDER_LAP_METRIC, lapMetricText)
+            .replace(PLACEHOLDER_OVERALL_METRIC, overallMetricText)
     }
 
-    private fun buildPaceText(
+    private fun buildMetricText(
         state: AnnouncementStateData,
         distanceMeters: Double,
         elapsedSeconds: Int,
     ): String {
+        val value = if (state.metric == AnnouncementStateData.METRIC_SPEED) {
+            formatSpeed(state, distanceMeters, elapsedSeconds)
+        } else {
+            formatPace(state, distanceMeters, elapsedSeconds)
+        }
+        if (value == null) {
+            return state.metricLabel
+        }
+        val valueWithUnit = state.metricUnitTemplate.replace(PLACEHOLDER_VALUE, value)
+        return "${state.metricLabel} $valueWithUnit".trim()
+    }
+
+    private fun formatPace(
+        state: AnnouncementStateData,
+        distanceMeters: Double,
+        elapsedSeconds: Int,
+    ): String? {
         if (distanceMeters <= 0.0) {
-            return ""
+            return null
         }
         val unitMeters = if (state.useImperialUnits) METERS_PER_MILE else METERS_PER_KILOMETER
         val secondsPerUnit = elapsedSeconds / (distanceMeters / unitMeters)
         if (!secondsPerUnit.isFinite() || secondsPerUnit < 0) {
-            return ""
+            return null
         }
-        return state.paceUnitTemplate.replace(
-            PLACEHOLDER_VALUE,
-            formatClock(secondsPerUnit.roundToInt()),
-        )
+        return formatClock(secondsPerUnit.roundToInt())
+    }
+
+    private fun formatSpeed(
+        state: AnnouncementStateData,
+        distanceMeters: Double,
+        elapsedSeconds: Int,
+    ): String? {
+        if (distanceMeters < 0.0 || elapsedSeconds <= 0) {
+            return null
+        }
+        val unitMeters = if (state.useImperialUnits) METERS_PER_MILE else METERS_PER_KILOMETER
+        val unitsPerHour = distanceMeters / unitMeters * 3600.0 / elapsedSeconds
+        if (!unitsPerHour.isFinite() || unitsPerHour < 0.0) {
+            return null
+        }
+        return formatDecimal(unitsPerHour)
     }
 
     /** One decimal place, fixed `Locale.US` (always a `.` separator). */
@@ -92,5 +132,6 @@ object AnnouncementSpeechBuilder {
     private const val PLACEHOLDER_VALUE = "{value}"
     private const val PLACEHOLDER_DISTANCE = "{distance}"
     private const val PLACEHOLDER_DURATION = "{duration}"
-    private const val PLACEHOLDER_PACE = "{pace}"
+    private const val PLACEHOLDER_LAP_METRIC = "{lapMetric}"
+    private const val PLACEHOLDER_OVERALL_METRIC = "{overallMetric}"
 }

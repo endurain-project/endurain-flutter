@@ -1171,14 +1171,14 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Hlasové aktualizace vzdálenosti, času a tempa';
+      'Hlasové aktualizace vzdálenosti, času, tempa nebo rychlosti';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Oznamovat průběh aktivity';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Během nahrávání nahlas oznamuje vzdálenost, čas a tempo';
+      'Během nahrávání nahlas oznamuje vzdálenost, čas, tempo nebo rychlost';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1218,8 +1218,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Vzdálenost $distance. Čas $duration. Tempo $pace.';
+    return 'Vzdálenost $distance. Čas $duration. Okruh: $lapMetric. Celkem: $overallMetric.';
   }
 }

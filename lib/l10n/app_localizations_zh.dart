@@ -1102,13 +1102,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get audioAnnouncementsTitle => '语音播报';
 
   @override
-  String get audioAnnouncementsSubtitle => '播报距离、时间和配速的语音更新';
+  String get audioAnnouncementsSubtitle => '播报距离、时间以及配速或速度的语音更新';
 
   @override
   String get audioAnnouncementsMasterSwitch => '播报活动进度';
 
   @override
-  String get audioAnnouncementsMasterSwitchSubtitle => '在记录过程中语音播报您的距离、时间和配速';
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      '在记录过程中语音播报您的距离、时间以及配速或速度';
 
   @override
   String get audioAnnouncementsDuckSwitch => '播报时降低其他音频音量';
@@ -1145,9 +1146,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return '距离$distance。时间$duration。配速$pace。';
+    return '距离$distance。时间$duration。本圈：$lapMetric。全程：$overallMetric。';
   }
 }
 
@@ -2249,13 +2251,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get audioAnnouncementsTitle => '語音播報';
 
   @override
-  String get audioAnnouncementsSubtitle => '播報距離、時間和配速的語音更新';
+  String get audioAnnouncementsSubtitle => '播報距離、時間以及配速或速度的語音更新';
 
   @override
   String get audioAnnouncementsMasterSwitch => '播報活動進度';
 
   @override
-  String get audioAnnouncementsMasterSwitchSubtitle => '在記錄過程中語音播報您的距離、時間和配速';
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      '在記錄過程中語音播報您的距離、時間以及配速或速度';
 
   @override
   String get audioAnnouncementsDuckSwitch => '播報時降低其他音訊音量';
@@ -2292,8 +2295,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return '距離$distance。時間$duration。配速$pace。';
+    return '距離$distance。時間$duration。本圈：$lapMetric。全程：$overallMetric。';
   }
 }

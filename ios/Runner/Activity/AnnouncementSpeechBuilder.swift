@@ -15,7 +15,8 @@ enum AnnouncementSpeechBuilder {
     private static let placeholderValue = "{value}"
     private static let placeholderDistance = "{distance}"
     private static let placeholderDuration = "{duration}"
-    private static let placeholderPace = "{pace}"
+    private static let placeholderLapMetric = "{lapMetric}"
+    private static let placeholderOverallMetric = "{overallMetric}"
 
     /// - Parameters:
     ///   - distanceMeters: cumulative distance (in meters) at the
@@ -36,31 +37,72 @@ enum AnnouncementSpeechBuilder {
             with: formatDecimal(displayDistance)
         )
         let durationText = formatClock(elapsedSeconds)
-        let paceText = buildPaceText(state, distanceMeters: distanceMeters, elapsedSeconds: elapsedSeconds)
+        let lapMetricText = buildMetricText(
+            state,
+            distanceMeters: max(0, distanceMeters - state.lastAnnouncementDistanceMeters),
+            elapsedSeconds: max(0, elapsedSeconds - state.lastAnnouncementElapsedSeconds)
+        )
+        let overallMetricText = buildMetricText(
+            state,
+            distanceMeters: distanceMeters,
+            elapsedSeconds: elapsedSeconds
+        )
 
         return state.messageTemplate
             .replacingOccurrences(of: placeholderDistance, with: distanceText)
             .replacingOccurrences(of: placeholderDuration, with: durationText)
-            .replacingOccurrences(of: placeholderPace, with: paceText)
+            .replacingOccurrences(of: placeholderLapMetric, with: lapMetricText)
+            .replacingOccurrences(of: placeholderOverallMetric, with: overallMetricText)
     }
 
-    private static func buildPaceText(
+    private static func buildMetricText(
         _ state: AnnouncementStateData,
         distanceMeters: Double,
         elapsedSeconds: Int
     ) -> String {
+        let value = state.metric == AnnouncementStateData.metricSpeed
+            ? formatSpeed(state, distanceMeters: distanceMeters, elapsedSeconds: elapsedSeconds)
+            : formatPace(state, distanceMeters: distanceMeters, elapsedSeconds: elapsedSeconds)
+        guard let value else {
+            return state.metricLabel
+        }
+        let valueWithUnit = state.metricUnitTemplate.replacingOccurrences(
+            of: placeholderValue,
+            with: value
+        )
+        return "\(state.metricLabel) \(valueWithUnit)".trimmingCharacters(in: .whitespaces)
+    }
+
+    private static func formatPace(
+        _ state: AnnouncementStateData,
+        distanceMeters: Double,
+        elapsedSeconds: Int
+    ) -> String? {
         guard distanceMeters > 0 else {
-            return ""
+            return nil
         }
         let unitMeters = state.useImperialUnits ? metersPerMile : metersPerKilometer
         let secondsPerUnit = Double(elapsedSeconds) / (distanceMeters / unitMeters)
         guard secondsPerUnit.isFinite, secondsPerUnit >= 0 else {
-            return ""
+            return nil
         }
-        return state.paceUnitTemplate.replacingOccurrences(
-            of: placeholderValue,
-            with: formatClock(Int(secondsPerUnit.rounded()))
-        )
+        return formatClock(Int(secondsPerUnit.rounded()))
+    }
+
+    private static func formatSpeed(
+        _ state: AnnouncementStateData,
+        distanceMeters: Double,
+        elapsedSeconds: Int
+    ) -> String? {
+        guard distanceMeters >= 0, elapsedSeconds > 0 else {
+            return nil
+        }
+        let unitMeters = state.useImperialUnits ? metersPerMile : metersPerKilometer
+        let unitsPerHour = distanceMeters / unitMeters * 3600 / Double(elapsedSeconds)
+        guard unitsPerHour.isFinite, unitsPerHour >= 0 else {
+            return nil
+        }
+        return formatDecimal(unitsPerHour)
     }
 
     /// One decimal place, fixed POSIX locale (always a `.` separator).

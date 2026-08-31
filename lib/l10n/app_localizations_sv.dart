@@ -1164,14 +1164,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Röstuppdateringar om distans, tid och tempo';
+      'Röstuppdateringar om distans, tid, tempo eller hastighet';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Meddela aktivitetens framsteg';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Läser upp din distans, tid och tempo under en inspelning';
+      'Läser upp din distans, tid, tempo eller hastighet under en inspelning';
 
   @override
   String get audioAnnouncementsDuckSwitch => 'Sänk annat ljud medan det talas';
@@ -1210,8 +1210,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Distans $distance. Tid $duration. Tempo $pace.';
+    return 'Distans $distance. Tid $duration. Varv: $lapMetric. Totalt: $overallMetric.';
   }
 }

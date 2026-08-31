@@ -223,7 +223,9 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         guard result.state != announcementState else {
             return
         }
-        store.saveAnnouncementState(result.state)
+        guard store.saveAnnouncementState(result.state) else {
+            return
+        }
         for text in result.announcements {
             AudioAnnouncer.shared.speak(
                 text,
@@ -353,7 +355,9 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             announcementState = result.state
             announcements.append(contentsOf: result.announcements)
         }
-        store.saveAnnouncementState(announcementState)
+        guard store.saveAnnouncementState(announcementState) else {
+            return
+        }
         for text in announcements {
             AudioAnnouncer.shared.speak(
                 text,

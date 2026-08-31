@@ -29,10 +29,14 @@ class AnnouncementSchedulerTest {
         distanceIntervalMeters = distanceIntervalMeters,
         timeIntervalSeconds = timeIntervalSeconds,
         useImperialUnits = false,
+        metric = AnnouncementStateData.METRIC_PACE,
         languageTag = "en-US",
         distanceUnitTemplate = "{value} km",
-        paceUnitTemplate = "{value} min/km",
-        messageTemplate = "Distance {distance}. Time {duration}. Pace {pace}.",
+        metricUnitTemplate = "{value} min/km",
+        metricLabel = "Pace",
+        messageTemplate =
+            "Distance {distance}. Time {duration}. " +
+                "Lap {lapMetric}. Overall {overallMetric}.",
     )
 
     @Test
@@ -102,6 +106,8 @@ class AnnouncementSchedulerTest {
 
         assertEquals(1, result.announcements.size)
         assertEquals(1, result.state.lastAnnouncedDistanceIndex)
+        assertEquals(1000.0, result.state.lastAnnouncementDistanceMeters, 0.001)
+        assertEquals(300, result.state.lastAnnouncementElapsedSeconds)
         assertTrue(result.announcements.single().contains("1.0 km"))
     }
 
@@ -178,6 +184,8 @@ class AnnouncementSchedulerTest {
         assertEquals(1, result.state.lastAnnouncedTimeIndex)
         assertEquals(300, result.state.lastElapsedSeconds)
         assertEquals(750.0, result.state.cumulativeDistanceMeters, 0.0)
+        assertEquals(750.0, result.state.lastAnnouncementDistanceMeters, 0.0)
+        assertEquals(300, result.state.lastAnnouncementElapsedSeconds)
         assertTrue(result.announcements.single().contains("5:00"))
     }
 
@@ -224,5 +232,44 @@ class AnnouncementSchedulerTest {
 
         assertEquals(1, result.announcements.size)
         assertEquals(1, result.state.lastAnnouncedTimeIndex)
+    }
+
+    @Test
+    fun distanceJumpAnnouncesOnlyTheLatestMilestone() {
+        val result = AnnouncementScheduler.onFix(
+            state = baseState().copy(
+                lastLatitude = 0.0,
+                lastLongitude = 0.0,
+            ),
+            latitude = 0.0,
+            longitude = 0.03,
+            elapsedSeconds = 900,
+            isNewSegment = false,
+        )
+
+        assertEquals(1, result.announcements.size)
+        assertEquals(3, result.state.lastAnnouncedDistanceIndex)
+        assertEquals(3000.0, result.state.lastAnnouncementDistanceMeters, 0.001)
+        assertEquals(809, result.state.lastAnnouncementElapsedSeconds)
+        assertTrue(result.announcements.single().contains("3.0 km"))
+    }
+
+    @Test
+    fun elapsedJumpAnnouncesOnlyTheLatestMilestone() {
+        val result = AnnouncementScheduler.onElapsedTime(
+            state = baseState(
+                intervalUnit = AnnouncementStateData.UNIT_TIME,
+                timeIntervalSeconds = 300,
+            ),
+            elapsedSeconds = 1250,
+        )
+
+        assertEquals(1, result.announcements.size)
+        assertEquals(4, result.state.lastAnnouncedTimeIndex)
+        assertEquals(1200, result.state.lastAnnouncementElapsedSeconds)
+        assertTrue(result.announcements.single().contains("20:00"))
+        assertTrue(
+            AnnouncementScheduler.onElapsedTime(result.state, 1260).announcements.isEmpty(),
+        )
     }
 }

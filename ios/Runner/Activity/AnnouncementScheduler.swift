@@ -24,7 +24,7 @@ enum AnnouncementScheduler {
             return Result(state: state, announcements: [])
         }
         let monotonicElapsedSeconds = max(state.lastElapsedSeconds, elapsedSeconds)
-        let crossings = AnnouncementThresholdCalculator.crossedThresholds(
+        let crossing = AnnouncementThresholdCalculator.latestCrossing(
             intervalValue: Double(state.timeIntervalSeconds),
             // The durable index is authoritative. Elapsed state may already
             // have advanced past an unannounced threshold on a resumed GPS fix.
@@ -33,23 +33,22 @@ enum AnnouncementScheduler {
             lastAnnouncedIndex: state.lastAnnouncedTimeIndex
         )
         var updated = state.copyWith(lastElapsedSeconds: monotonicElapsedSeconds)
-        guard !crossings.isEmpty else {
+        guard let crossing else {
             return Result(state: updated, announcements: [])
         }
 
-        var announcements: [String] = []
-        for crossing in crossings {
-            let crossingElapsedSeconds = Int(crossing.thresholdValue.rounded())
-            updated = updated.copyWith(lastAnnouncedTimeIndex: crossing.thresholdIndex)
-            announcements.append(
-                AnnouncementSpeechBuilder.build(
-                    state: state,
-                    distanceMeters: state.cumulativeDistanceMeters,
-                    elapsedSeconds: crossingElapsedSeconds
-                )
-            )
-        }
-        return Result(state: updated, announcements: announcements)
+        let crossingElapsedSeconds = Int(crossing.thresholdValue.rounded())
+        updated = updated.copyWith(
+            lastAnnouncedTimeIndex: crossing.thresholdIndex,
+            lastAnnouncementDistanceMeters: state.cumulativeDistanceMeters,
+            lastAnnouncementElapsedSeconds: crossingElapsedSeconds
+        )
+        let announcement = AnnouncementSpeechBuilder.build(
+            state: state,
+            distanceMeters: state.cumulativeDistanceMeters,
+            elapsedSeconds: crossingElapsedSeconds
+        )
+        return Result(state: updated, announcements: [announcement])
     }
 
     /// - Parameter isNewSegment: true when this fix starts a new track
@@ -89,16 +88,16 @@ enum AnnouncementScheduler {
         let previousElapsed = state.lastElapsedSeconds
         let monotonicElapsedSeconds = max(previousElapsed, elapsedSeconds)
 
-        let crossings: [AnnouncementThresholdCalculator.Crossing]
+        let crossing: AnnouncementThresholdCalculator.Crossing?
         if state.isTimeBased {
-            crossings = AnnouncementThresholdCalculator.crossedThresholds(
+            crossing = AnnouncementThresholdCalculator.latestCrossing(
                 intervalValue: Double(state.timeIntervalSeconds),
                 previousCumulative: Double(previousElapsed),
                 newCumulative: Double(monotonicElapsedSeconds),
                 lastAnnouncedIndex: state.lastAnnouncedTimeIndex
             )
         } else {
-            crossings = AnnouncementThresholdCalculator.crossedThresholds(
+            crossing = AnnouncementThresholdCalculator.latestCrossing(
                 intervalValue: state.distanceIntervalMeters,
                 previousCumulative: state.cumulativeDistanceMeters,
                 newCumulative: newCumulativeDistance,
@@ -112,36 +111,39 @@ enum AnnouncementScheduler {
             lastLongitude: .some(longitude),
             lastElapsedSeconds: monotonicElapsedSeconds
         )
-        guard !crossings.isEmpty else {
+        guard let crossing else {
             return Result(state: updated, announcements: [])
         }
 
-        var announcements: [String] = []
         let elapsedSpan = monotonicElapsedSeconds - previousElapsed
-        for crossing in crossings {
-            let interpolatedDistanceMeters: Double
-            let interpolatedElapsedSeconds: Int
-            if state.isTimeBased {
-                interpolatedElapsedSeconds = Int(crossing.thresholdValue.rounded())
-                interpolatedDistanceMeters = state.cumulativeDistanceMeters
-                    + crossing.interpolationFraction * deltaMeters
-                updated = updated.copyWith(lastAnnouncedTimeIndex: crossing.thresholdIndex)
-            } else {
-                interpolatedDistanceMeters = crossing.thresholdValue
-                interpolatedElapsedSeconds = Int(
-                    (Double(previousElapsed) + crossing.interpolationFraction * Double(elapsedSpan))
-                        .rounded()
-                )
-                updated = updated.copyWith(lastAnnouncedDistanceIndex: crossing.thresholdIndex)
-            }
-            announcements.append(
-                AnnouncementSpeechBuilder.build(
-                    state: state,
-                    distanceMeters: interpolatedDistanceMeters,
-                    elapsedSeconds: interpolatedElapsedSeconds
-                )
+        let interpolatedDistanceMeters: Double
+        let interpolatedElapsedSeconds: Int
+        if state.isTimeBased {
+            interpolatedElapsedSeconds = Int(crossing.thresholdValue.rounded())
+            interpolatedDistanceMeters = state.cumulativeDistanceMeters
+                + crossing.interpolationFraction * deltaMeters
+            updated = updated.copyWith(
+                lastAnnouncedTimeIndex: crossing.thresholdIndex,
+                lastAnnouncementDistanceMeters: interpolatedDistanceMeters,
+                lastAnnouncementElapsedSeconds: interpolatedElapsedSeconds
+            )
+        } else {
+            interpolatedDistanceMeters = crossing.thresholdValue
+            interpolatedElapsedSeconds = Int(
+                (Double(previousElapsed) + crossing.interpolationFraction * Double(elapsedSpan))
+                    .rounded()
+            )
+            updated = updated.copyWith(
+                lastAnnouncedDistanceIndex: crossing.thresholdIndex,
+                lastAnnouncementDistanceMeters: interpolatedDistanceMeters,
+                lastAnnouncementElapsedSeconds: interpolatedElapsedSeconds
             )
         }
-        return Result(state: updated, announcements: announcements)
+        let announcement = AnnouncementSpeechBuilder.build(
+            state: state,
+            distanceMeters: interpolatedDistanceMeters,
+            elapsedSeconds: interpolatedElapsedSeconds
+        )
+        return Result(state: updated, announcements: [announcement])
     }
 }

@@ -42,8 +42,11 @@ void main() {
     measurementController.dispose();
   });
 
-  Future<void> pumpScreen(WidgetTester tester) async {
-    await measurementController.setPreference(MeasurementSystem.metric);
+  Future<void> pumpScreen(
+    WidgetTester tester, {
+    MeasurementSystem measurementSystem = MeasurementSystem.metric,
+  }) async {
+    await measurementController.setPreference(measurementSystem);
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
@@ -112,6 +115,56 @@ void main() {
       find.text(l10n.audioAnnouncementsIntervalDistance('1.0', 'km')),
       findsWidgets,
     );
+  });
+
+  testWidgets('shows the default 5.0 km interval for cycling', (tester) async {
+    await pumpScreen(tester);
+
+    final rideLabel = find.text(ActivityType.ride.localizedLabel(l10n));
+    await tester.scrollUntilVisible(rideLabel, 200);
+
+    expect(
+      find.text(l10n.audioAnnouncementsIntervalDistance('5.0', 'km')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('uses one and five mile imperial defaults', (tester) async {
+    await pumpScreen(tester, measurementSystem: MeasurementSystem.imperial);
+
+    expect(
+      find.text(l10n.audioAnnouncementsIntervalDistance('1.0', 'mi')),
+      findsWidgets,
+    );
+    final rideLabel = find.text(ActivityType.ride.localizedLabel(l10n));
+    await tester.scrollUntilVisible(rideLabel, 200);
+    expect(
+      find.text(l10n.audioAnnouncementsIntervalDistance('5.0', 'mi')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('other is disabled by default and can be enabled', (
+    tester,
+  ) async {
+    await controller.setMasterEnabled(true);
+    await pumpScreen(tester);
+
+    final otherLabel = ActivityType.other.localizedLabel(l10n);
+    final otherSwitchFinder = find.widgetWithText(
+      AdaptiveSwitchListTile,
+      otherLabel,
+    );
+    await tester.scrollUntilVisible(otherSwitchFinder, 200);
+    expect(
+      tester.widget<AdaptiveSwitchListTile>(otherSwitchFinder).value,
+      isFalse,
+    );
+
+    await tester.tap(otherSwitchFinder);
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.intervalFor(ActivityType.other).enabled, isTrue);
   });
 
   testWidgets('increasing the interval steps by half a kilometre', (

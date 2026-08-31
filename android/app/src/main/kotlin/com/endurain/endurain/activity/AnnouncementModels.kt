@@ -29,9 +29,11 @@ data class AnnouncementStateData(
     val distanceIntervalMeters: Double,
     val timeIntervalSeconds: Int,
     val useImperialUnits: Boolean,
+    val metric: String,
     val languageTag: String,
     val distanceUnitTemplate: String,
-    val paceUnitTemplate: String,
+    val metricUnitTemplate: String,
+    val metricLabel: String,
     val messageTemplate: String,
     // Durable progress, advanced by GPS fixes and the elapsed-time timer.
     val cumulativeDistanceMeters: Double = 0.0,
@@ -40,6 +42,8 @@ data class AnnouncementStateData(
     val lastLatitude: Double? = null,
     val lastLongitude: Double? = null,
     val lastElapsedSeconds: Int = 0,
+    val lastAnnouncementDistanceMeters: Double = 0.0,
+    val lastAnnouncementElapsedSeconds: Int = 0,
 ) {
     val isTimeBased: Boolean
         get() = intervalUnit == UNIT_TIME
@@ -52,9 +56,11 @@ data class AnnouncementStateData(
             put("distanceIntervalMeters", distanceIntervalMeters)
             put("timeIntervalSeconds", timeIntervalSeconds)
             put("useImperialUnits", useImperialUnits)
+            put("metric", metric)
             put("languageTag", languageTag)
             put("distanceUnitTemplate", distanceUnitTemplate)
-            put("paceUnitTemplate", paceUnitTemplate)
+            put("metricUnitTemplate", metricUnitTemplate)
+            put("metricLabel", metricLabel)
             put("messageTemplate", messageTemplate)
             put("cumulativeDistanceMeters", cumulativeDistanceMeters)
             put("lastAnnouncedDistanceIndex", lastAnnouncedDistanceIndex)
@@ -62,12 +68,16 @@ data class AnnouncementStateData(
             lastLatitude?.let { put("lastLatitude", it) }
             lastLongitude?.let { put("lastLongitude", it) }
             put("lastElapsedSeconds", lastElapsedSeconds)
+            put("lastAnnouncementDistanceMeters", lastAnnouncementDistanceMeters)
+            put("lastAnnouncementElapsedSeconds", lastAnnouncementElapsedSeconds)
         }
     }
 
     companion object {
         const val UNIT_DISTANCE = "distance"
         const val UNIT_TIME = "time"
+        const val METRIC_PACE = "pace"
+        const val METRIC_SPEED = "speed"
 
         fun fromJson(json: JSONObject): AnnouncementStateData? {
             val languageTag = json.optStringOrNull("languageTag") ?: return null
@@ -78,12 +88,14 @@ data class AnnouncementStateData(
                 distanceIntervalMeters = json.optDouble("distanceIntervalMeters", 1000.0),
                 timeIntervalSeconds = json.optInt("timeIntervalSeconds", 300),
                 useImperialUnits = json.optBoolean("useImperialUnits", false),
+                metric = json.optString("metric", METRIC_PACE),
                 languageTag = languageTag,
                 distanceUnitTemplate = json.optString("distanceUnitTemplate", "{value}"),
-                paceUnitTemplate = json.optString("paceUnitTemplate", "{value}"),
+                metricUnitTemplate = json.optString("metricUnitTemplate", "{value}"),
+                metricLabel = json.optString("metricLabel", ""),
                 messageTemplate = json.optString(
                     "messageTemplate",
-                    "{distance} {duration} {pace}",
+                    "{distance} {duration} {lapMetric} {overallMetric}",
                 ),
                 cumulativeDistanceMeters = json.optDouble("cumulativeDistanceMeters", 0.0),
                 lastAnnouncedDistanceIndex = json.optInt("lastAnnouncedDistanceIndex", 0),
@@ -91,6 +103,10 @@ data class AnnouncementStateData(
                 lastLatitude = json.optDoubleOrNull("lastLatitude"),
                 lastLongitude = json.optDoubleOrNull("lastLongitude"),
                 lastElapsedSeconds = json.optInt("lastElapsedSeconds", 0),
+                lastAnnouncementDistanceMeters =
+                    json.optDouble("lastAnnouncementDistanceMeters", 0.0),
+                lastAnnouncementElapsedSeconds =
+                    json.optInt("lastAnnouncementElapsedSeconds", 0),
             )
         }
 
@@ -113,12 +129,14 @@ data class AnnouncementStateData(
                 timeIntervalSeconds = (map["timeIntervalSeconds"] as? Number)?.toInt()
                     ?: 300,
                 useImperialUnits = map["useImperialUnits"] as? Boolean ?: false,
+                metric = map["metric"] as? String ?: METRIC_PACE,
                 languageTag = languageTag,
                 distanceUnitTemplate = map["distanceUnitTemplate"] as? String
                     ?: "{value}",
-                paceUnitTemplate = map["paceUnitTemplate"] as? String ?: "{value}",
+                metricUnitTemplate = map["metricUnitTemplate"] as? String ?: "{value}",
+                metricLabel = map["metricLabel"] as? String ?: "",
                 messageTemplate = map["messageTemplate"] as? String
-                    ?: "{distance} {duration} {pace}",
+                    ?: "{distance} {duration} {lapMetric} {overallMetric}",
             )
         }
     }

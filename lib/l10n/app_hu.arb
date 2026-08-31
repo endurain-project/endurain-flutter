@@ -446,7 +446,7 @@
   "@audioAnnouncementsTitle": {
     "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
   },
-  "audioAnnouncementsSubtitle": "Hangos frissítések a távolságról, időről és tempóról",
+  "audioAnnouncementsSubtitle": "Hangos frissítések a távolságról, időről, tempóról vagy sebességről",
   "@audioAnnouncementsSubtitle": {
     "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
   },
@@ -454,7 +454,7 @@
   "@audioAnnouncementsMasterSwitch": {
     "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
   },
-  "audioAnnouncementsMasterSwitchSubtitle": "Felolvassa a távolságot, időt és tempót felvétel közben",
+  "audioAnnouncementsMasterSwitchSubtitle": "Felolvassa a távolságot, időt, tempót vagy sebességet felvétel közben",
   "@audioAnnouncementsMasterSwitchSubtitle": {
     "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
   },
@@ -510,9 +510,9 @@
   "@audioAnnouncementsIncreaseInterval": {
     "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
   },
-  "audioAnnouncementsSpokenMessage": "Távolság {distance}. Idő {duration}. Tempó {pace}.",
+  "audioAnnouncementsSpokenMessage": "Távolság {distance}. Idő {duration}. Kör: {lapMetric}. Összesen: {overallMetric}.",
   "@audioAnnouncementsSpokenMessage": {
-    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{pace} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
     "placeholders": {
       "distance": {
         "type": "String",
@@ -522,9 +522,13 @@
         "type": "String",
         "example": "23:45"
       },
-      "pace": {
+      "lapMetric": {
         "type": "String",
-        "example": "5:30 min/km"
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
       }
     }
   }

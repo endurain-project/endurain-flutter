@@ -32,7 +32,7 @@ object AnnouncementScheduler {
             return Result(state, emptyList())
         }
         val monotonicElapsedSeconds = maxOf(state.lastElapsedSeconds, elapsedSeconds)
-        val crossings = AnnouncementThresholdCalculator.crossedThresholds(
+        val crossing = AnnouncementThresholdCalculator.latestCrossing(
             intervalValue = state.timeIntervalSeconds.toDouble(),
             // The durable index is authoritative. Elapsed state may already
             // have advanced past an unannounced threshold on a resumed GPS fix.
@@ -41,23 +41,22 @@ object AnnouncementScheduler {
             lastAnnouncedIndex = state.lastAnnouncedTimeIndex,
         )
         var updated = state.copy(lastElapsedSeconds = monotonicElapsedSeconds)
-        if (crossings.isEmpty()) {
+        if (crossing == null) {
             return Result(updated, emptyList())
         }
 
-        val announcements = ArrayList<String>(crossings.size)
-        for (crossing in crossings) {
-            val crossingElapsedSeconds = crossing.thresholdValue.roundToInt()
-            updated = updated.copy(lastAnnouncedTimeIndex = crossing.thresholdIndex)
-            announcements.add(
-                AnnouncementSpeechBuilder.build(
-                    state,
-                    state.cumulativeDistanceMeters,
-                    crossingElapsedSeconds,
-                ),
-            )
-        }
-        return Result(updated, announcements)
+        val crossingElapsedSeconds = crossing.thresholdValue.roundToInt()
+        updated = updated.copy(
+            lastAnnouncedTimeIndex = crossing.thresholdIndex,
+            lastAnnouncementDistanceMeters = state.cumulativeDistanceMeters,
+            lastAnnouncementElapsedSeconds = crossingElapsedSeconds,
+        )
+        val announcement = AnnouncementSpeechBuilder.build(
+            state,
+            state.cumulativeDistanceMeters,
+            crossingElapsedSeconds,
+        )
+        return Result(updated, listOf(announcement))
     }
 
     /**
@@ -97,15 +96,15 @@ object AnnouncementScheduler {
         val previousElapsed = state.lastElapsedSeconds
         val monotonicElapsedSeconds = maxOf(previousElapsed, elapsedSeconds)
 
-        val crossings = if (state.isTimeBased) {
-            AnnouncementThresholdCalculator.crossedThresholds(
+        val crossing = if (state.isTimeBased) {
+            AnnouncementThresholdCalculator.latestCrossing(
                 intervalValue = state.timeIntervalSeconds.toDouble(),
                 previousCumulative = previousElapsed.toDouble(),
                 newCumulative = monotonicElapsedSeconds.toDouble(),
                 lastAnnouncedIndex = state.lastAnnouncedTimeIndex,
             )
         } else {
-            AnnouncementThresholdCalculator.crossedThresholds(
+            AnnouncementThresholdCalculator.latestCrossing(
                 intervalValue = state.distanceIntervalMeters,
                 previousCumulative = state.cumulativeDistanceMeters,
                 newCumulative = newCumulativeDistance,
@@ -119,35 +118,38 @@ object AnnouncementScheduler {
             lastLongitude = longitude,
             lastElapsedSeconds = monotonicElapsedSeconds,
         )
-        if (crossings.isEmpty()) {
+        if (crossing == null) {
             return Result(updated, emptyList())
         }
 
-        val announcements = ArrayList<String>(crossings.size)
         val elapsedSpan = monotonicElapsedSeconds - previousElapsed
-        for (crossing in crossings) {
-            val interpolatedDistanceMeters: Double
-            val interpolatedElapsedSeconds: Int
-            if (state.isTimeBased) {
-                interpolatedElapsedSeconds = crossing.thresholdValue.roundToInt()
-                interpolatedDistanceMeters = state.cumulativeDistanceMeters +
-                    crossing.interpolationFraction * deltaMeters
-                updated = updated.copy(lastAnnouncedTimeIndex = crossing.thresholdIndex)
-            } else {
-                interpolatedDistanceMeters = crossing.thresholdValue
-                interpolatedElapsedSeconds = (
-                    previousElapsed + crossing.interpolationFraction * elapsedSpan
-                    ).roundToInt()
-                updated = updated.copy(lastAnnouncedDistanceIndex = crossing.thresholdIndex)
-            }
-            announcements.add(
-                AnnouncementSpeechBuilder.build(
-                    state,
-                    interpolatedDistanceMeters,
-                    interpolatedElapsedSeconds,
-                ),
+        val interpolatedDistanceMeters: Double
+        val interpolatedElapsedSeconds: Int
+        if (state.isTimeBased) {
+            interpolatedElapsedSeconds = crossing.thresholdValue.roundToInt()
+            interpolatedDistanceMeters = state.cumulativeDistanceMeters +
+                crossing.interpolationFraction * deltaMeters
+            updated = updated.copy(
+                lastAnnouncedTimeIndex = crossing.thresholdIndex,
+                lastAnnouncementDistanceMeters = interpolatedDistanceMeters,
+                lastAnnouncementElapsedSeconds = interpolatedElapsedSeconds,
+            )
+        } else {
+            interpolatedDistanceMeters = crossing.thresholdValue
+            interpolatedElapsedSeconds = (
+                previousElapsed + crossing.interpolationFraction * elapsedSpan
+                ).roundToInt()
+            updated = updated.copy(
+                lastAnnouncedDistanceIndex = crossing.thresholdIndex,
+                lastAnnouncementDistanceMeters = interpolatedDistanceMeters,
+                lastAnnouncementElapsedSeconds = interpolatedElapsedSeconds,
             )
         }
-        return Result(updated, announcements)
+        val announcement = AnnouncementSpeechBuilder.build(
+            state,
+            interpolatedDistanceMeters,
+            interpolatedElapsedSeconds,
+        )
+        return Result(updated, listOf(announcement))
     }
 }

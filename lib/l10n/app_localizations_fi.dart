@@ -1168,7 +1168,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Ääni-ilmoitukset matkasta, ajasta ja vauhdista';
+      'Ääni-ilmoitukset matkasta, ajasta, vauhdista tai nopeudesta';
 
   @override
   String get audioAnnouncementsMasterSwitch =>
@@ -1176,7 +1176,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Kertoo ääneen matkasi, aikasi ja vauhtisi tallennuksen aikana';
+      'Kertoo ääneen matkasi, aikasi, vauhtisi tai nopeutesi tallennuksen aikana';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1215,8 +1215,9 @@ class AppLocalizationsFi extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Matka $distance. Aika $duration. Vauhti $pace.';
+    return 'Matka $distance. Aika $duration. Kierros: $lapMetric. Yhteensä: $overallMetric.';
   }
 }

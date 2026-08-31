@@ -1166,14 +1166,14 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Голосові оновлення про відстань, час і темп';
+      'Голосові оновлення про відстань, час, темп або швидкість';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Оголошувати прогрес активності';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Вимовляє вашу відстань, час і темп під час запису';
+      'Вимовляє вашу відстань, час, темп або швидкість під час запису';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1213,8 +1213,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Відстань $distance. Час $duration. Темп $pace.';
+    return 'Відстань $distance. Час $duration. Коло: $lapMetric. Загалом: $overallMetric.';
   }
 }

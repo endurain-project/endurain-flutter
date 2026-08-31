@@ -8,7 +8,9 @@ import XCTest
 final class AnnouncementSpeechBuilderTests: XCTestCase {
 
   private func metricState(
-    messageTemplate: String = "Distance {distance}. Time {duration}. Pace {pace}."
+    messageTemplate: String =
+      "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}.",
+    metricLabel: String = "Pace"
   ) -> AnnouncementStateData {
     return AnnouncementStateData(
       enabled: true,
@@ -17,9 +19,11 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
       distanceIntervalMeters: 1000,
       timeIntervalSeconds: 300,
       useImperialUnits: false,
+      metric: AnnouncementStateData.metricPace,
       languageTag: "en-US",
       distanceUnitTemplate: "{value} km",
-      paceUnitTemplate: "{value} min/km",
+      metricUnitTemplate: "{value} min/km",
+      metricLabel: metricLabel,
       messageTemplate: messageTemplate
     )
   }
@@ -31,7 +35,11 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
       elapsedSeconds: 330
     )
 
-    XCTAssertEqual(text, "Distance 1.0 km. Time 5:30. Pace 5:30 min/km.")
+    XCTAssertEqual(
+      text,
+      "Distance 1.0 km. Time 5:30. Lap Pace 5:30 min/km. "
+        + "Overall Pace 5:30 min/km."
+    )
   }
 
   func testFormatsElapsedTimeWithHoursOnceAnHourHasPassed() {
@@ -52,10 +60,13 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
       distanceIntervalMeters: 1000,
       timeIntervalSeconds: 300,
       useImperialUnits: true,
+      metric: AnnouncementStateData.metricPace,
       languageTag: "en-US",
       distanceUnitTemplate: "{value} mi",
-      paceUnitTemplate: "{value} min/mi",
-      messageTemplate: "Distance {distance}. Time {duration}. Pace {pace}."
+      metricUnitTemplate: "{value} min/mi",
+      metricLabel: "Pace",
+      messageTemplate:
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}."
     )
 
     let text = AnnouncementSpeechBuilder.build(
@@ -64,7 +75,11 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
       elapsedSeconds: 480
     )
 
-    XCTAssertEqual(text, "Distance 1.0 mi. Time 8:00. Pace 8:00 min/mi.")
+    XCTAssertEqual(
+      text,
+      "Distance 1.0 mi. Time 8:00. Lap Pace 8:00 min/mi. "
+        + "Overall Pace 8:00 min/mi."
+    )
   }
 
   func testOmitsPaceAtZeroDistanceInsteadOfDividingByZero() {
@@ -74,11 +89,15 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
       elapsedSeconds: 60
     )
 
-    XCTAssertEqual(text, "Distance 0.0 km. Time 1:00. Pace .")
+    XCTAssertEqual(text, "Distance 0.0 km. Time 1:00. Lap Pace. Overall Pace.")
   }
 
   func testLeavesUnrelatedLocaleTextUntouched() {
-    let state = metricState(messageTemplate: "Distância {distance}. Tempo {duration}. Ritmo {pace}.")
+    let state = metricState(
+      messageTemplate:
+        "Distância {distance}. Tempo {duration}. Volta {lapMetric}. Total {overallMetric}.",
+      metricLabel: "Ritmo"
+    )
 
     let text = AnnouncementSpeechBuilder.build(
       state: state,
@@ -86,6 +105,54 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
       elapsedSeconds: 600
     )
 
-    XCTAssertEqual(text, "Distância 2.0 km. Tempo 10:00. Ritmo 5:00 min/km.")
+    XCTAssertEqual(
+      text,
+      "Distância 2.0 km. Tempo 10:00. Volta Ritmo 5:00 min/km. "
+        + "Total Ritmo 5:00 min/km."
+    )
+  }
+
+  func testDistinguishesLapPaceFromOverallPace() {
+    var state = metricState()
+    state.lastAnnouncementDistanceMeters = 1000
+    state.lastAnnouncementElapsedSeconds = 330
+
+    let text = AnnouncementSpeechBuilder.build(
+      state: state,
+      distanceMeters: 2000,
+      elapsedSeconds: 630
+    )
+
+    XCTAssertTrue(text.contains("Lap Pace 5:00 min/km"))
+    XCTAssertTrue(text.contains("Overall Pace 5:15 min/km"))
+  }
+
+  func testRidesUseLapAndOverallSpeed() {
+    let state = AnnouncementStateData(
+      enabled: true,
+      duckOtherAudio: true,
+      intervalUnit: AnnouncementStateData.unitDistance,
+      distanceIntervalMeters: 5000,
+      timeIntervalSeconds: 300,
+      useImperialUnits: false,
+      metric: AnnouncementStateData.metricSpeed,
+      languageTag: "en-US",
+      distanceUnitTemplate: "{value} km",
+      metricUnitTemplate: "{value} km/h",
+      metricLabel: "Speed",
+      messageTemplate:
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}.",
+      lastAnnouncementDistanceMeters: 5000,
+      lastAnnouncementElapsedSeconds: 1000
+    )
+
+    let text = AnnouncementSpeechBuilder.build(
+      state: state,
+      distanceMeters: 10_000,
+      elapsedSeconds: 1800
+    )
+
+    XCTAssertTrue(text.contains("Lap Speed 22.5 km/h"))
+    XCTAssertTrue(text.contains("Overall Speed 20.0 km/h"))
   }
 }

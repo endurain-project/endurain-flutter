@@ -1180,7 +1180,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Actualitzacions de veu sobre distància, temps i ritme';
+      'Actualitzacions de veu sobre distància, temps, ritme o velocitat';
 
   @override
   String get audioAnnouncementsMasterSwitch =>
@@ -1188,7 +1188,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Diu en veu alta la distància, el temps i el ritme durant un enregistrament';
+      'Diu en veu alta la distància, el temps, el ritme o la velocitat durant un enregistrament';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1228,8 +1228,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Distància $distance. Temps $duration. Ritme $pace.';
+    return 'Distància $distance. Temps $duration. Volta: $lapMetric. Global: $overallMetric.';
   }
 }

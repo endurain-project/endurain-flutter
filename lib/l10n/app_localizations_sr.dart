@@ -1169,14 +1169,14 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Гласовна ажурирања о раздаљини, времену и темпу';
+      'Гласовна ажурирања о раздаљини, времену, темпу или брзини';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Најави напредак активности';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Изговара вашу раздаљину, време и темпо током снимања';
+      'Изговара вашу раздаљину, време, темпо или брзину током снимања';
 
   @override
   String get audioAnnouncementsDuckSwitch => 'Стишај други звук током говора';
@@ -1215,8 +1215,9 @@ class AppLocalizationsSr extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Раздаљина $distance. Време $duration. Темпо $pace.';
+    return 'Раздаљина $distance. Време $duration. Круг: $lapMetric. Укупно: $overallMetric.';
   }
 }

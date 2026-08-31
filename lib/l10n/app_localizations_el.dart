@@ -1180,7 +1180,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Φωνητικές ενημερώσεις για απόσταση, χρόνο και ρυθμό';
+      'Φωνητικές ενημερώσεις για απόσταση, χρόνο, ρυθμό ή ταχύτητα';
 
   @override
   String get audioAnnouncementsMasterSwitch =>
@@ -1188,7 +1188,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Εκφωνεί την απόσταση, τον χρόνο και τον ρυθμό σας κατά την εγγραφή';
+      'Εκφωνεί την απόσταση, τον χρόνο, τον ρυθμό ή την ταχύτητά σας κατά την εγγραφή';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1228,8 +1228,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Απόσταση $distance. Χρόνος $duration. Ρυθμός $pace.';
+    return 'Απόσταση $distance. Χρόνος $duration. Γύρος: $lapMetric. Συνολικά: $overallMetric.';
   }
 }

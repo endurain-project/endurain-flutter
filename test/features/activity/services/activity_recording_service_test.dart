@@ -87,10 +87,14 @@ void main() {
         distanceIntervalMeters: 1000,
         timeIntervalSeconds: 300,
         useImperialUnits: false,
+        metric: AudioAnnouncementMetric.pace,
         languageTag: 'en-US',
         distanceUnitTemplate: '{value} km',
-        paceUnitTemplate: '{value} min/km',
-        messageTemplate: 'Distance {distance}. Time {duration}. Pace {pace}.',
+        metricUnitTemplate: '{value} min/km',
+        metricLabel: 'Pace',
+        messageTemplate:
+            'Distance {distance}. Time {duration}. '
+            'Lap {lapMetric}. Overall {overallMetric}.',
       );
       await service.start(
         activityType: ActivityType.run,
@@ -112,10 +116,14 @@ void main() {
         distanceIntervalMeters: 1000,
         timeIntervalSeconds: 300,
         useImperialUnits: true,
+        metric: AudioAnnouncementMetric.pace,
         languageTag: 'fr-FR',
         distanceUnitTemplate: '{value} mi',
-        paceUnitTemplate: '{value} min/mi',
-        messageTemplate: 'Distance {distance}. Time {duration}. Pace {pace}.',
+        metricUnitTemplate: '{value} min/mi',
+        metricLabel: 'Allure',
+        messageTemplate:
+            'Distance {distance}. Temps {duration}. '
+            'Tour {lapMetric}. Total {overallMetric}.',
       );
       service.configureAudioAnnouncements(config);
 

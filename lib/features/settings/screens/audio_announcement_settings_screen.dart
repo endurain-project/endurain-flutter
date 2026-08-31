@@ -14,7 +14,7 @@ import 'package:material_ui/material_ui.dart';
 
 /// Lets the user turn spoken progress announcements on/off, choose whether
 /// other audio should duck while an announcement plays, and configure how
-/// often a recording announces distance/time/pace for each activity type.
+/// often a recording announces distance, time, pace, or speed for each type.
 ///
 /// Mirrors `UnitsSettingsScreen`: the app-lifetime
 /// [AudioAnnouncementSettingsController] is written to immediately (so a
@@ -87,9 +87,12 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
               for (final type in ActivityType.values) ...[
                 _IntervalCard(
                   activityType: type,
-                  interval: settings.intervalFor(type),
+                  interval: settings.intervalFor(
+                    type,
+                    measurementSystem: measurementSystem,
+                  ),
                   measurementSystem: measurementSystem,
-                  enabled: settings.masterEnabled,
+                  masterEnabled: settings.masterEnabled,
                   onChanged: (interval) =>
                       settingsController.setInterval(type, interval),
                 ),
@@ -108,14 +111,14 @@ class _IntervalCard extends StatelessWidget {
     required this.activityType,
     required this.interval,
     required this.measurementSystem,
-    required this.enabled,
+    required this.masterEnabled,
     required this.onChanged,
   });
 
   final ActivityType activityType;
   final AudioAnnouncementInterval interval;
   final MeasurementSystem measurementSystem;
-  final bool enabled;
+  final bool masterEnabled;
   final ValueChanged<AudioAnnouncementInterval> onChanged;
 
   /// Distance step: 0.5 km, or 0.5 mi when imperial (converted to metres).
@@ -131,59 +134,68 @@ class _IntervalCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Opacity(
-      opacity: enabled ? 1 : 0.5,
-      child: IgnorePointer(
-        ignoring: !enabled,
-        child: AdaptiveListSection(
-          header: activityType.localizedLabel(l10n),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: UIConstants.paddingStandard,
-                vertical: UIConstants.paddingCompact,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AdaptiveSegmentedControl<AudioAnnouncementIntervalUnit>(
-                    labels: {
-                      AudioAnnouncementIntervalUnit.distance:
-                          l10n.audioAnnouncementsByDistance,
-                      AudioAnnouncementIntervalUnit.time:
-                          l10n.audioAnnouncementsByTime,
-                    },
-                    selected: interval.unit,
-                    onChanged: (unit) =>
-                        onChanged(interval.copyWith(unit: unit)),
-                  ),
-                  const SizedBox(height: UIConstants.paddingMedium),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        tooltip: l10n.audioAnnouncementsDecreaseInterval,
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () => _step(context, -1),
-                      ),
-                      Expanded(
-                        child: Text(
-                          _describe(context, l10n),
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium,
+      opacity: masterEnabled ? 1 : 0.5,
+      child: AdaptiveListSection(
+        children: [
+          AdaptiveSwitchListTile(
+            title: activityType.localizedLabel(l10n),
+            value: interval.enabled,
+            onChanged: masterEnabled
+                ? (enabled) => onChanged(interval.copyWith(enabled: enabled))
+                : null,
+          ),
+          Opacity(
+            opacity: interval.enabled ? 1 : 0.5,
+            child: IgnorePointer(
+              ignoring: !masterEnabled || !interval.enabled,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: UIConstants.paddingStandard,
+                  vertical: UIConstants.paddingCompact,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AdaptiveSegmentedControl<AudioAnnouncementIntervalUnit>(
+                      labels: {
+                        AudioAnnouncementIntervalUnit.distance:
+                            l10n.audioAnnouncementsByDistance,
+                        AudioAnnouncementIntervalUnit.time:
+                            l10n.audioAnnouncementsByTime,
+                      },
+                      selected: interval.unit,
+                      onChanged: (unit) =>
+                          onChanged(interval.copyWith(unit: unit)),
+                    ),
+                    const SizedBox(height: UIConstants.paddingMedium),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          tooltip: l10n.audioAnnouncementsDecreaseInterval,
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: () => _step(context, -1),
                         ),
-                      ),
-                      IconButton(
-                        tooltip: l10n.audioAnnouncementsIncreaseInterval,
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => _step(context, 1),
-                      ),
-                    ],
-                  ),
-                ],
+                        Expanded(
+                          child: Text(
+                            _describe(context, l10n),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: l10n.audioAnnouncementsIncreaseInterval,
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: () => _step(context, 1),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

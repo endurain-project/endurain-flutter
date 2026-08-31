@@ -1172,14 +1172,14 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Actualizări vocale despre distanță, timp și ritm';
+      'Actualizări vocale despre distanță, timp, ritm sau viteză';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Anunță progresul activității';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Rostește distanța, timpul și ritmul în timpul unei înregistrări';
+      'Rostește distanța, timpul, ritmul sau viteza în timpul unei înregistrări';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1219,8 +1219,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Distanță $distance. Timp $duration. Ritm $pace.';
+    return 'Distanță $distance. Timp $duration. Tură: $lapMetric. Total: $overallMetric.';
   }
 }

@@ -182,15 +182,18 @@ final class ActiveActivityStore {
     /// recording. Lives inside the same active-recording directory as the
     /// session/points files, so `clear()` removes it too and
     /// `hasRecoverableData()` keeps working unchanged.
-    func saveAnnouncementState(_ state: AnnouncementStateData) {
-        queue.sync {
-            guard let json = state.toJsonString() else { return }
+    @discardableResult
+    func saveAnnouncementState(_ state: AnnouncementStateData) -> Bool {
+        return queue.sync {
+            guard let json = state.toJsonString() else { return false }
             do {
                 try ensureDirectory()
                 try json.data(using: .utf8)?.write(to: announcementFile, options: .atomic)
+                return true
             } catch {
                 // Losing this write only risks a duplicate or skipped
                 // announcement on the next fix, never the recorded track.
+                return false
             }
         }
     }

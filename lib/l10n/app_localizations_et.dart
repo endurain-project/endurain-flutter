@@ -1164,14 +1164,14 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Häälteated vahemaa, aja ja tempo kohta';
+      'Häälteated vahemaa, aja, tempo või kiiruse kohta';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Teata tegevuse edenemisest';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Ütleb salvestamise ajal valjusti sinu vahemaa, aja ja tempo';
+      'Ütleb salvestamise ajal valjusti sinu vahemaa, aja, tempo või kiiruse';
 
   @override
   String get audioAnnouncementsDuckSwitch => 'Vaigista muu heli teatamise ajal';
@@ -1210,8 +1210,9 @@ class AppLocalizationsEt extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Vahemaa $distance. Aeg $duration. Tempo $pace.';
+    return 'Vahemaa $distance. Aeg $duration. Ring: $lapMetric. Kokku: $overallMetric.';
   }
 }

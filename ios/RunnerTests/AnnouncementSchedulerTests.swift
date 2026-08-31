@@ -21,10 +21,13 @@ final class AnnouncementSchedulerTests: XCTestCase {
       distanceIntervalMeters: distanceIntervalMeters,
       timeIntervalSeconds: timeIntervalSeconds,
       useImperialUnits: false,
+      metric: AnnouncementStateData.metricPace,
       languageTag: "en-US",
       distanceUnitTemplate: "{value} km",
-      paceUnitTemplate: "{value} min/km",
-      messageTemplate: "Distance {distance}. Time {duration}. Pace {pace}."
+      metricUnitTemplate: "{value} min/km",
+      metricLabel: "Pace",
+      messageTemplate:
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}."
     )
   }
 
@@ -36,10 +39,13 @@ final class AnnouncementSchedulerTests: XCTestCase {
       distanceIntervalMeters: 1000,
       timeIntervalSeconds: 300,
       useImperialUnits: false,
+      metric: AnnouncementStateData.metricPace,
       languageTag: "en-US",
       distanceUnitTemplate: "{value} km",
-      paceUnitTemplate: "{value} min/km",
-      messageTemplate: "Distance {distance}. Time {duration}. Pace {pace}.",
+      metricUnitTemplate: "{value} min/km",
+      metricLabel: "Pace",
+      messageTemplate:
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}.",
       lastLatitude: 0,
       lastLongitude: 0
     )
@@ -106,6 +112,8 @@ final class AnnouncementSchedulerTests: XCTestCase {
 
     XCTAssertEqual(result.announcements.count, 1)
     XCTAssertEqual(result.state.lastAnnouncedDistanceIndex, 1)
+    XCTAssertEqual(result.state.lastAnnouncementDistanceMeters, 1000, accuracy: 0.001)
+    XCTAssertEqual(result.state.lastAnnouncementElapsedSeconds, 300)
     XCTAssertTrue(result.announcements[0].contains("1.0 km"))
   }
 
@@ -174,6 +182,8 @@ final class AnnouncementSchedulerTests: XCTestCase {
     XCTAssertEqual(result.state.lastAnnouncedTimeIndex, 1)
     XCTAssertEqual(result.state.lastElapsedSeconds, 300)
     XCTAssertEqual(result.state.cumulativeDistanceMeters, 750)
+    XCTAssertEqual(result.state.lastAnnouncementDistanceMeters, 750)
+    XCTAssertEqual(result.state.lastAnnouncementElapsedSeconds, 300)
     XCTAssertTrue(result.announcements[0].contains("5:00"))
   }
 
@@ -219,5 +229,46 @@ final class AnnouncementSchedulerTests: XCTestCase {
 
     XCTAssertEqual(result.announcements.count, 1)
     XCTAssertEqual(result.state.lastAnnouncedTimeIndex, 1)
+  }
+
+  func testDistanceJumpAnnouncesOnlyTheLatestMilestone() {
+    var state = baseState()
+    state.lastLatitude = 0
+    state.lastLongitude = 0
+
+    let result = AnnouncementScheduler.onFix(
+      state: state,
+      latitude: 0,
+      longitude: 0.03,
+      elapsedSeconds: 900,
+      isNewSegment: false
+    )
+
+    XCTAssertEqual(result.announcements.count, 1)
+    XCTAssertEqual(result.state.lastAnnouncedDistanceIndex, 3)
+    XCTAssertEqual(result.state.lastAnnouncementDistanceMeters, 3000, accuracy: 0.001)
+    XCTAssertEqual(result.state.lastAnnouncementElapsedSeconds, 809)
+    XCTAssertTrue(result.announcements[0].contains("3.0 km"))
+  }
+
+  func testElapsedJumpAnnouncesOnlyTheLatestMilestone() {
+    let result = AnnouncementScheduler.onElapsedTime(
+      state: baseState(
+        intervalUnit: AnnouncementStateData.unitTime,
+        timeIntervalSeconds: 300
+      ),
+      elapsedSeconds: 1250
+    )
+
+    XCTAssertEqual(result.announcements.count, 1)
+    XCTAssertEqual(result.state.lastAnnouncedTimeIndex, 4)
+    XCTAssertEqual(result.state.lastAnnouncementElapsedSeconds, 1200)
+    XCTAssertTrue(result.announcements[0].contains("20:00"))
+    XCTAssertTrue(
+      AnnouncementScheduler.onElapsedTime(
+        state: result.state,
+        elapsedSeconds: 1260
+      ).announcements.isEmpty
+    )
   }
 }

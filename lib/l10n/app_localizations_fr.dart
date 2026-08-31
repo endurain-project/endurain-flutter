@@ -1178,7 +1178,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Mises à jour vocales sur la distance, le temps et l\'allure';
+      'Mises à jour vocales sur la distance, le temps, l\'allure ou la vitesse';
 
   @override
   String get audioAnnouncementsMasterSwitch =>
@@ -1186,7 +1186,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Annonce à voix haute votre distance, votre temps et votre allure pendant un enregistrement';
+      'Annonce à voix haute votre distance, votre temps, votre allure ou votre vitesse pendant un enregistrement';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1226,8 +1226,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Distance $distance. Temps $duration. Allure $pace.';
+    return 'Distance $distance. Temps $duration. Tour : $lapMetric. Global : $overallMetric.';
   }
 }

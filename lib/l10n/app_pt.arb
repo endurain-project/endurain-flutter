@@ -1397,7 +1397,7 @@
   "@audioAnnouncementsTitle": {
     "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
   },
-  "audioAnnouncementsSubtitle": "Atualizações de voz sobre distância, tempo e ritmo",
+  "audioAnnouncementsSubtitle": "Atualizações de voz sobre distância, tempo, ritmo ou velocidade",
   "@audioAnnouncementsSubtitle": {
     "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
   },
@@ -1405,7 +1405,7 @@
   "@audioAnnouncementsMasterSwitch": {
     "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
   },
-  "audioAnnouncementsMasterSwitchSubtitle": "Diz em voz alta a sua distância, tempo e ritmo durante uma gravação",
+  "audioAnnouncementsMasterSwitchSubtitle": "Diz em voz alta a sua distância, tempo, ritmo ou velocidade durante uma gravação",
   "@audioAnnouncementsMasterSwitchSubtitle": {
     "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
   },
@@ -1461,9 +1461,9 @@
   "@audioAnnouncementsIncreaseInterval": {
     "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
   },
-  "audioAnnouncementsSpokenMessage": "Distância {distance}. Tempo {duration}. Ritmo {pace}.",
+  "audioAnnouncementsSpokenMessage": "Distância {distance}. Tempo {duration}. Volta: {lapMetric}. Total: {overallMetric}.",
   "@audioAnnouncementsSpokenMessage": {
-    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{pace} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
     "placeholders": {
       "distance": {
         "type": "String",
@@ -1473,9 +1473,13 @@
         "type": "String",
         "example": "23:45"
       },
-      "pace": {
+      "lapMetric": {
         "type": "String",
-        "example": "5:30 min/km"
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
       }
     }
   }

@@ -2154,7 +2154,7 @@ abstract class AppLocalizations {
   /// Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Voice updates on distance, time, and pace'**
+  /// **'Voice updates on distance, time, and pace or speed'**
   String get audioAnnouncementsSubtitle;
 
   /// Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart
@@ -2166,7 +2166,7 @@ abstract class AppLocalizations {
   /// Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Speaks your distance, time, and pace during a recording'**
+  /// **'Speaks your distance, time, and pace or speed during a recording'**
   String get audioAnnouncementsMasterSwitchSubtitle;
 
   /// Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart
@@ -2223,14 +2223,15 @@ abstract class AppLocalizations {
   /// **'Increase interval'**
   String get audioAnnouncementsIncreaseInterval;
 
-  /// Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{pace} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart
+  /// Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart
   ///
   /// In en, this message translates to:
-  /// **'Distance {distance}. Time {duration}. Pace {pace}.'**
+  /// **'Distance {distance}. Time {duration}. Lap: {lapMetric}. Overall: {overallMetric}.'**
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   );
 }
 

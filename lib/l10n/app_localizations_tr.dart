@@ -1157,14 +1157,14 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Mesafe, süre ve tempo hakkında sesli güncellemeler';
+      'Mesafe, süre, tempo veya hız hakkında sesli güncellemeler';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Aktivite ilerlemesini duyur';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Kayıt sırasında mesafenizi, sürenizi ve temponuzu sesli olarak söyler';
+      'Kayıt sırasında mesafenizi, sürenizi, temponuzu veya hızınızı sesli olarak söyler';
 
   @override
   String get audioAnnouncementsDuckSwitch => 'Konuşurken diğer sesi kıs';
@@ -1203,8 +1203,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Mesafe $distance. Süre $duration. Tempo $pace.';
+    return 'Mesafe $distance. Süre $duration. Tur: $lapMetric. Genel: $overallMetric.';
   }
 }

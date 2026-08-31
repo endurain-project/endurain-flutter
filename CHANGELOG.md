@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added configurable on-device audio announcements for activity distance and time milestones, including background playback and optional audio ducking.
+- Added configurable on-device audio announcements for distance and time milestones, with activity-specific metric/imperial defaults, lap and overall pace or cycling speed, background playback, optional audio ducking, and stale-milestone suppression.
 
 ## [v0.8.2+13] - 2026-08-30
 

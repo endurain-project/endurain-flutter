@@ -1168,7 +1168,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Gesproken updates over afstand, tijd en tempo';
+      'Gesproken updates over afstand, tijd, tempo of snelheid';
 
   @override
   String get audioAnnouncementsMasterSwitch =>
@@ -1176,7 +1176,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Spreekt tijdens een opname je afstand, tijd en tempo uit';
+      'Spreekt tijdens een opname je afstand, tijd, tempo of snelheid uit';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1216,8 +1216,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Afstand $distance. Tijd $duration. Tempo $pace.';
+    return 'Afstand $distance. Tijd $duration. Ronde: $lapMetric. Totaal: $overallMetric.';
   }
 }

@@ -21,16 +21,22 @@ class AnnouncementModelsTest {
         distanceIntervalMeters = 2500.0,
         timeIntervalSeconds = 600,
         useImperialUnits = true,
+        metric = AnnouncementStateData.METRIC_SPEED,
         languageTag = "fr-FR",
         distanceUnitTemplate = "{value} mi",
-        paceUnitTemplate = "{value} min/mi",
-        messageTemplate = "Distance {distance}. Time {duration}. Pace {pace}.",
+        metricUnitTemplate = "{value} mph",
+        metricLabel = "Vitesse",
+        messageTemplate =
+            "Distance {distance}. Temps {duration}. " +
+                "Tour {lapMetric}. Total {overallMetric}.",
         cumulativeDistanceMeters = 4321.5,
         lastAnnouncedDistanceIndex = 4,
         lastAnnouncedTimeIndex = 2,
         lastLatitude = 38.7169,
         lastLongitude = -9.1399,
         lastElapsedSeconds = 1234,
+        lastAnnouncementDistanceMeters = 2500.0,
+        lastAnnouncementElapsedSeconds = 600,
     )
 
     @Test
@@ -77,10 +83,14 @@ class AnnouncementModelsTest {
             "distanceIntervalMeters" to 1000.0,
             "timeIntervalSeconds" to 300,
             "useImperialUnits" to false,
+            "metric" to "pace",
             "languageTag" to "en-US",
             "distanceUnitTemplate" to "{value} km",
-            "paceUnitTemplate" to "{value} min/km",
-            "messageTemplate" to "Distance {distance}. Time {duration}. Pace {pace}.",
+            "metricUnitTemplate" to "{value} min/km",
+            "metricLabel" to "Pace",
+            "messageTemplate" to
+                "Distance {distance}. Time {duration}. " +
+                "Lap {lapMetric}. Overall {overallMetric}.",
         )
 
         val state = AnnouncementStateData.fromStartArguments(args)
@@ -88,6 +98,7 @@ class AnnouncementModelsTest {
         assertEquals(true, state?.enabled)
         assertEquals(false, state?.duckOtherAudio)
         assertEquals("en-US", state?.languageTag)
+        assertEquals(AnnouncementStateData.METRIC_PACE, state?.metric)
         // Progress fields always start clean for a brand-new recording.
         assertEquals(0.0, state?.cumulativeDistanceMeters ?: -1.0, 0.0)
         assertEquals(0, state?.lastAnnouncedDistanceIndex)
@@ -122,10 +133,12 @@ class AnnouncementModelsTest {
             .put("distanceIntervalMeters", 1000)
             .put("timeIntervalSeconds", 300)
             .put("useImperialUnits", false)
+            .put("metric", "pace")
             .put("languageTag", "en-US")
             .put("distanceUnitTemplate", "{value} km")
-            .put("paceUnitTemplate", "{value} min/km")
-            .put("messageTemplate", "{distance} {duration} {pace}")
+            .put("metricUnitTemplate", "{value} min/km")
+            .put("metricLabel", "Pace")
+            .put("messageTemplate", "{distance} {duration} {lapMetric} {overallMetric}")
             .put("cumulativeDistanceMeters", 500)
 
         val decoded = AnnouncementStateData.fromJson(json)

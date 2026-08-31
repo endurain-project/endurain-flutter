@@ -1176,14 +1176,14 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get audioAnnouncementsSubtitle =>
-      'Głosowe aktualizacje dystansu, czasu i tempa';
+      'Głosowe aktualizacje dystansu, czasu, tempa lub prędkości';
 
   @override
   String get audioAnnouncementsMasterSwitch => 'Ogłaszaj postęp aktywności';
 
   @override
   String get audioAnnouncementsMasterSwitchSubtitle =>
-      'Odczytuje na głos dystans, czas i tempo podczas nagrywania';
+      'Odczytuje na głos dystans, czas, tempo lub prędkość podczas nagrywania';
 
   @override
   String get audioAnnouncementsDuckSwitch =>
@@ -1223,8 +1223,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String audioAnnouncementsSpokenMessage(
     String distance,
     String duration,
-    String pace,
+    String lapMetric,
+    String overallMetric,
   ) {
-    return 'Dystans $distance. Czas $duration. Tempo $pace.';
+    return 'Dystans $distance. Czas $duration. Okrążenie: $lapMetric. Łącznie: $overallMetric.';
   }
 }

@@ -137,10 +137,14 @@ void main() {
         distanceIntervalMeters: 1000,
         timeIntervalSeconds: 300,
         useImperialUnits: false,
+        metric: AudioAnnouncementMetric.pace,
         languageTag: 'en-US',
         distanceUnitTemplate: '{value} km',
-        paceUnitTemplate: '{value} min/km',
-        messageTemplate: 'Distance {distance}. Time {duration}. Pace {pace}.',
+        metricUnitTemplate: '{value} min/km',
+        metricLabel: 'Pace',
+        messageTemplate:
+            'Distance {distance}. Time {duration}. '
+            'Lap {lapMetric}. Overall {overallMetric}.',
       );
       await channel.start(
         ActivityRecorderStartRequest(
@@ -156,6 +160,8 @@ void main() {
       expect(sent['enabled'], isTrue);
       expect(sent['intervalUnit'], 'distance');
       expect(sent['distanceIntervalMeters'], 1000);
+      expect(sent['metric'], 'pace');
+      expect(sent['metricLabel'], 'Pace');
       expect(sent['languageTag'], 'en-US');
     });
 
