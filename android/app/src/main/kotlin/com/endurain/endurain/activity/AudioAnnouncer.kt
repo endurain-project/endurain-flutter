@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.util.Log
 import java.util.Locale
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -18,7 +19,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * ([TextToSpeech.QUEUE_ADD]) rather than interrupting each other. While one or
  * more ducked utterances are queued, transient audio focus asks the platform
  * to lower (not pause) other playback; focus is released after the final
- * ducked utterance finishes.
+ * ducked utterance finishes. Failures are logged without spoken text and are
+ * contained here so speech can never fail the activity recording.
  */
 object AudioAnnouncer {
     private var tts: TextToSpeech? = null
@@ -41,45 +43,79 @@ object AudioAnnouncer {
         if (text.isBlank()) {
             return
         }
-        val appContext = context.applicationContext
-        ensureInitialized(appContext)
-        val engine = tts
-        if (engine == null || !ready) {
-            pending.add(PendingUtterance(text, duck, languageTag))
-            return
+        try {
+            val appContext = context.applicationContext
+            ensureInitialized(appContext)
+            val engine = tts
+            if (engine == null || !ready) {
+                pending.add(PendingUtterance(text, duck, languageTag))
+                return
+            }
+            speakNow(appContext, engine, text, duck, languageTag)
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_SPEAK, error = error)
         }
-        speakNow(appContext, engine, text, duck, languageTag)
     }
 
     /** Stops any in-progress or queued utterance and releases audio focus. */
     fun stop() {
         pending.clear()
-        tts?.stop()
+        try {
+            if (tts?.stop() == TextToSpeech.ERROR) {
+                reportFailure(STAGE_STOP)
+            }
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_STOP, error = error)
+        }
         releaseAllAudioFocus()
     }
 
     /** Releases the engine entirely. Used by tests; production never calls this. */
     fun shutdown() {
         stop()
-        tts?.shutdown()
-        tts = null
-        ready = false
-        appliedLanguageTag = null
+        try {
+            tts?.shutdown()
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_SHUTDOWN, error = error)
+        } finally {
+            tts = null
+            ready = false
+            appliedLanguageTag = null
+        }
     }
 
     private fun ensureInitialized(context: Context) {
         if (tts != null) {
             return
         }
-        audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-        tts = TextToSpeech(context) { status ->
-            ready = status == TextToSpeech.SUCCESS
-            if (ready) {
-                tts?.setOnUtteranceProgressListener(FocusReleasingListener())
-                flushPending(context)
-            } else {
-                pending.clear()
+        try {
+            audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            tts = TextToSpeech(context) { status ->
+                try {
+                    ready = status == TextToSpeech.SUCCESS
+                    if (ready) {
+                        val result = tts?.setOnUtteranceProgressListener(
+                            FocusReleasingListener(),
+                        )
+                        if (result == TextToSpeech.ERROR) {
+                            reportFailure(STAGE_LISTENER_REGISTRATION, code = result)
+                        }
+                        flushPending(context)
+                    } else {
+                        reportFailure(STAGE_INITIALIZATION, code = status)
+                        pending.clear()
+                    }
+                } catch (error: RuntimeException) {
+                    ready = false
+                    pending.clear()
+                    reportFailure(STAGE_INITIALIZATION, error = error)
+                }
             }
+        } catch (error: RuntimeException) {
+            tts = null
+            ready = false
+            pending.clear()
+            reportFailure(STAGE_INITIALIZATION, error = error)
         }
     }
 
@@ -98,13 +134,19 @@ object AudioAnnouncer {
         duck: Boolean,
         languageTag: String,
     ) {
-        applyLanguage(engine, languageTag)
         val utteranceId = "announcement_${System.nanoTime()}"
-        if (duck) {
-            registerDuckedUtterance(utteranceId)
-        }
-        val result = engine.speak(text, TextToSpeech.QUEUE_ADD, Bundle(), utteranceId)
-        if (result == TextToSpeech.ERROR) {
+        try {
+            applyLanguage(engine, languageTag)
+            if (duck) {
+                registerDuckedUtterance(utteranceId)
+            }
+            val result = engine.speak(text, TextToSpeech.QUEUE_ADD, Bundle(), utteranceId)
+            if (result == TextToSpeech.ERROR) {
+                reportFailure(STAGE_ENQUEUE, code = result)
+                releaseAudioFocus(utteranceId)
+            }
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_ENQUEUE, error = error)
             releaseAudioFocus(utteranceId)
         }
     }
@@ -114,14 +156,22 @@ object AudioAnnouncer {
             return
         }
         val locale = Locale.forLanguageTag(languageTag)
-        val result = engine.setLanguage(locale)
-        if (result == TextToSpeech.LANG_MISSING_DATA ||
-            result == TextToSpeech.LANG_NOT_SUPPORTED
-        ) {
-            // Fall back to the device default rather than silently failing to
-            // speak at all; better to announce in the wrong accent than not
-            // to announce.
-            engine.setLanguage(Locale.getDefault())
+        try {
+            val result = engine.setLanguage(locale)
+            if (result == TextToSpeech.LANG_MISSING_DATA ||
+                result == TextToSpeech.LANG_NOT_SUPPORTED
+            ) {
+                reportFailure(STAGE_LANGUAGE, code = result)
+                // Fall back to the device default rather than losing speech.
+                val fallbackResult = engine.setLanguage(Locale.getDefault())
+                if (fallbackResult == TextToSpeech.LANG_MISSING_DATA ||
+                    fallbackResult == TextToSpeech.LANG_NOT_SUPPORTED
+                ) {
+                    reportFailure(STAGE_FALLBACK_LANGUAGE, code = fallbackResult)
+                }
+            }
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_LANGUAGE, error = error)
         }
         appliedLanguageTag = languageTag
     }
@@ -136,16 +186,28 @@ object AudioAnnouncer {
     }
 
     private fun requestAudioFocus() {
-        val manager = audioManager ?: return
-        val attributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-            .build()
-        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
-            .setAudioAttributes(attributes)
-            .build()
-        manager.requestAudioFocus(request)
-        focusRequest = request
+        val manager = audioManager
+        if (manager == null) {
+            reportFailure(STAGE_AUDIO_FOCUS_REQUEST)
+            return
+        }
+        try {
+            val attributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            val request = AudioFocusRequest.Builder(
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
+            ).setAudioAttributes(attributes).build()
+            val result = manager.requestAudioFocus(request)
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                focusRequest = request
+            } else {
+                reportFailure(STAGE_AUDIO_FOCUS_REQUEST, code = result)
+            }
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_AUDIO_FOCUS_REQUEST, error = error)
+        }
     }
 
     private fun releaseAudioFocus(utteranceId: String?) {
@@ -169,8 +231,32 @@ object AudioAnnouncer {
     private fun abandonAudioFocus() {
         val manager = audioManager ?: return
         val request = focusRequest ?: return
-        manager.abandonAudioFocusRequest(request)
         focusRequest = null
+        try {
+            val result = manager.abandonAudioFocusRequest(request)
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                reportFailure(STAGE_AUDIO_FOCUS_RELEASE, code = result)
+            }
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_AUDIO_FOCUS_RELEASE, error = error)
+        }
+    }
+
+    private fun reportFailure(
+        stage: String,
+        code: Int? = null,
+        error: RuntimeException? = null,
+    ) {
+        val message = if (code == null) {
+            "TTS failure at stage=$stage"
+        } else {
+            "TTS failure at stage=$stage code=$code"
+        }
+        if (error == null) {
+            Log.w(LOG_TAG, message)
+        } else {
+            Log.w(LOG_TAG, message, error)
+        }
     }
 
     private class FocusReleasingListener : UtteranceProgressListener() {
@@ -182,10 +268,12 @@ object AudioAnnouncer {
 
         @Deprecated("Deprecated in the platform API; onError(String, int) is preferred")
         override fun onError(utteranceId: String?) {
+            reportFailure(STAGE_UTTERANCE)
             releaseAudioFocus(utteranceId)
         }
 
         override fun onError(utteranceId: String?, errorCode: Int) {
+            reportFailure(STAGE_UTTERANCE, code = errorCode)
             releaseAudioFocus(utteranceId)
         }
 
@@ -193,4 +281,17 @@ object AudioAnnouncer {
             releaseAudioFocus(utteranceId)
         }
     }
+
+    private const val LOG_TAG = "EndurainTTS"
+    private const val STAGE_INITIALIZATION = "initialization"
+    private const val STAGE_LISTENER_REGISTRATION = "listener_registration"
+    private const val STAGE_SPEAK = "speak"
+    private const val STAGE_ENQUEUE = "enqueue"
+    private const val STAGE_LANGUAGE = "language"
+    private const val STAGE_FALLBACK_LANGUAGE = "fallback_language"
+    private const val STAGE_AUDIO_FOCUS_REQUEST = "audio_focus_request"
+    private const val STAGE_AUDIO_FOCUS_RELEASE = "audio_focus_release"
+    private const val STAGE_UTTERANCE = "utterance"
+    private const val STAGE_STOP = "stop"
+    private const val STAGE_SHUTDOWN = "shutdown"
 }

@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import OSLog
 
 /// Process-wide `AVSpeechSynthesizer` wrapper for spoken progress
 /// announcements.
@@ -10,9 +11,24 @@ import Foundation
 /// the shared `AVAudioSession` stays active while speech is queued so
 /// announcements remain audible in the background. Other audio is optionally
 /// ducked, and the session is deactivated after the final utterance finishes.
+/// Diagnostics contain only fixed stages and system error codes, never spoken
+/// text or other recording data.
 @MainActor
 final class AudioAnnouncer: NSObject {
     static let shared = AudioAnnouncer()
+
+    private static let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "com.endurain.endurain",
+        category: "AudioAnnouncer"
+    )
+
+    private enum FailureStage: String {
+        case voice
+        case stop
+        case audioSessionActivation = "audio_session_activation"
+        case audioSessionDeactivation = "audio_session_deactivation"
+        case utteranceCancelled = "utterance_cancelled"
+    }
 
     private let synthesizer = AVSpeechSynthesizer()
     private var sessionActive = false
@@ -30,8 +46,14 @@ final class AudioAnnouncer: NSObject {
             return
         }
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: languageTag)
-            ?? AVSpeechSynthesisVoice(language: AVSpeechSynthesisVoice.currentLanguageCode())
+        let requestedVoice = AVSpeechSynthesisVoice(language: languageTag)
+        let fallbackVoice = AVSpeechSynthesisVoice(
+            language: AVSpeechSynthesisVoice.currentLanguageCode()
+        )
+        utterance.voice = requestedVoice ?? fallbackVoice
+        if utterance.voice == nil {
+            reportFailure(stage: .voice)
+        }
         activeUtteranceIds.insert(ObjectIdentifier(utterance))
         if !sessionActive || sessionDucks != duck {
             activateSession(duck: duck)
@@ -41,8 +63,11 @@ final class AudioAnnouncer: NSObject {
 
     /// Stops any in-progress or queued utterance and releases audio focus.
     func stop() {
-        synthesizer.stopSpeaking(at: .immediate)
+        let hadActiveUtterances = !activeUtteranceIds.isEmpty
         activeUtteranceIds.removeAll()
+        if hadActiveUtterances && !synthesizer.stopSpeaking(at: .immediate) {
+            reportFailure(stage: .stop)
+        }
         deactivateSession()
     }
 
@@ -66,6 +91,7 @@ final class AudioAnnouncer: NSObject {
             sessionActive = true
             sessionDucks = duck
         } catch {
+            reportFailure(stage: .audioSessionActivation, error: error)
             // Best-effort: speech still proceeds even when the audio session
             // could not be reconfigured (e.g. another app holds an
             // incompatible category); losing the duck effect is preferable to
@@ -79,7 +105,39 @@ final class AudioAnnouncer: NSObject {
         }
         sessionActive = false
         sessionDucks = false
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        do {
+            try AVAudioSession.sharedInstance().setActive(
+                false,
+                options: [.notifyOthersOnDeactivation]
+            )
+        } catch {
+            reportFailure(stage: .audioSessionDeactivation, error: error)
+        }
+    }
+
+    private func cancel(_ utterance: AVSpeechUtterance) {
+        guard activeUtteranceIds.contains(ObjectIdentifier(utterance)) else {
+            return
+        }
+        reportFailure(stage: .utteranceCancelled)
+        finish(utterance)
+    }
+
+    private func reportFailure(stage: FailureStage, error: Error? = nil) {
+        guard let error else {
+            Self.logger.error(
+                "TTS failure at stage=\(stage.rawValue, privacy: .public)"
+            )
+            return
+        }
+        let nativeError = error as NSError
+        Self.logger.error(
+            """
+            TTS failure at stage=\(stage.rawValue, privacy: .public) \
+            domain=\(nativeError.domain, privacy: .public) \
+            code=\(nativeError.code)
+            """
+        )
     }
 }
 
@@ -89,6 +147,6 @@ extension AudioAnnouncer: @preconcurrency AVSpeechSynthesizerDelegate {
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        finish(utterance)
+        cancel(utterance)
     }
 }

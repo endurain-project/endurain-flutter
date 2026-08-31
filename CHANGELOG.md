@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Reduced background recording I/O by checkpointing audio-announcement progress instead of rewriting it for every location update.
+- Added privacy-safe native diagnostics for text-to-speech failures while keeping announcements isolated from activity recording.
 
 ## [v0.8.2+13] - 2026-08-30
 
