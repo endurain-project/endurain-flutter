@@ -9,7 +9,6 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import java.util.Locale
-import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Process-wide [TextToSpeech] wrapper for spoken progress announcements.
@@ -21,16 +20,26 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * to lower (not pause) other playback; focus is released after the final
  * ducked utterance finishes. Failures are logged without spoken text and are
  * contained here so speech can never fail the activity recording.
+ *
+ * Two locks, acquired only in the order [engineLock] then [focusLock]:
+ * [engineLock] covers the engine and its pending queue, [focusLock] covers
+ * audio focus. Both are required because the platform delivers engine init and
+ * utterance callbacks on its own threads, not the caller's.
  */
 object AudioAnnouncer {
+    private val engineLock = Any()
     private var tts: TextToSpeech? = null
     private var ready = false
     private var appliedLanguageTag: String? = null
+
+    // Read from the focus path, which must not take engineLock.
+    @Volatile
     private var audioManager: AudioManager? = null
-    private var focusRequest: AudioFocusRequest? = null
+    private val pending = ArrayDeque<PendingUtterance>()
+
     private val focusLock = Any()
+    private var focusRequest: AudioFocusRequest? = null
     private val duckingUtteranceIds = mutableSetOf<String>()
-    private val pending = ConcurrentLinkedQueue<PendingUtterance>()
 
     private data class PendingUtterance(
         val text: String,
@@ -45,13 +54,15 @@ object AudioAnnouncer {
         }
         try {
             val appContext = context.applicationContext
-            ensureInitialized(appContext)
-            val engine = tts
-            if (engine == null || !ready) {
-                pending.add(PendingUtterance(text, duck, languageTag))
-                return
+            synchronized(engineLock) {
+                ensureInitialized(appContext)
+                val engine = tts
+                if (engine == null || !ready) {
+                    pending.addLast(PendingUtterance(text, duck, languageTag))
+                    return
+                }
+                speakNow(appContext, engine, text, duck, languageTag)
             }
-            speakNow(appContext, engine, text, duck, languageTag)
         } catch (error: RuntimeException) {
             reportFailure(STAGE_SPEAK, error = error)
         }
@@ -59,13 +70,15 @@ object AudioAnnouncer {
 
     /** Stops any in-progress or queued utterance and releases audio focus. */
     fun stop() {
-        pending.clear()
-        try {
-            if (tts?.stop() == TextToSpeech.ERROR) {
-                reportFailure(STAGE_STOP)
+        synchronized(engineLock) {
+            pending.clear()
+            try {
+                if (tts?.stop() == TextToSpeech.ERROR) {
+                    reportFailure(STAGE_STOP)
+                }
+            } catch (error: RuntimeException) {
+                reportFailure(STAGE_STOP, error = error)
             }
-        } catch (error: RuntimeException) {
-            reportFailure(STAGE_STOP, error = error)
         }
         releaseAllAudioFocus()
     }
@@ -73,14 +86,16 @@ object AudioAnnouncer {
     /** Releases the engine entirely. Used by tests; production never calls this. */
     fun shutdown() {
         stop()
-        try {
-            tts?.shutdown()
-        } catch (error: RuntimeException) {
-            reportFailure(STAGE_SHUTDOWN, error = error)
-        } finally {
-            tts = null
-            ready = false
-            appliedLanguageTag = null
+        synchronized(engineLock) {
+            try {
+                tts?.shutdown()
+            } catch (error: RuntimeException) {
+                reportFailure(STAGE_SHUTDOWN, error = error)
+            } finally {
+                tts = null
+                ready = false
+                appliedLanguageTag = null
+            }
         }
     }
 
@@ -91,24 +106,26 @@ object AudioAnnouncer {
         try {
             audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
             tts = TextToSpeech(context) { status ->
-                try {
-                    ready = status == TextToSpeech.SUCCESS
-                    if (ready) {
-                        val result = tts?.setOnUtteranceProgressListener(
-                            FocusReleasingListener(),
-                        )
-                        if (result == TextToSpeech.ERROR) {
-                            reportFailure(STAGE_LISTENER_REGISTRATION, code = result)
+                synchronized(engineLock) {
+                    try {
+                        ready = status == TextToSpeech.SUCCESS
+                        if (ready) {
+                            val result = tts?.setOnUtteranceProgressListener(
+                                FocusReleasingListener(),
+                            )
+                            if (result == TextToSpeech.ERROR) {
+                                reportFailure(STAGE_LISTENER_REGISTRATION, code = result)
+                            }
+                            flushPending(context)
+                        } else {
+                            reportFailure(STAGE_INITIALIZATION, code = status)
+                            pending.clear()
                         }
-                        flushPending(context)
-                    } else {
-                        reportFailure(STAGE_INITIALIZATION, code = status)
+                    } catch (error: RuntimeException) {
+                        ready = false
                         pending.clear()
+                        reportFailure(STAGE_INITIALIZATION, error = error)
                     }
-                } catch (error: RuntimeException) {
-                    ready = false
-                    pending.clear()
-                    reportFailure(STAGE_INITIALIZATION, error = error)
                 }
             }
         } catch (error: RuntimeException) {
@@ -122,7 +139,7 @@ object AudioAnnouncer {
     private fun flushPending(context: Context) {
         val engine = tts ?: return
         while (true) {
-            val next = pending.poll() ?: break
+            val next = pending.removeFirstOrNull() ?: break
             speakNow(context, engine, next.text, next.duck, next.languageTag)
         }
     }

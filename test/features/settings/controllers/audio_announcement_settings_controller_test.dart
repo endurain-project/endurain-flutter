@@ -1,3 +1,4 @@
+import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
@@ -138,6 +139,30 @@ void main() {
       addTearDown(controller.dispose);
 
       expect(await controller.speakPreview(_config()), isTrue);
+    });
+
+    test('setInterval persists a value equal to the metric default', () async {
+      final controller = buildController();
+      addTearDown(controller.dispose);
+
+      // 1 km is exactly the metric default for a run, so comparing against
+      // the resolved default would skip the write and leave an imperial user
+      // on the 1 mile default they just changed away from.
+      await controller.setInterval(
+        ActivityType.run,
+        const AudioAnnouncementInterval(distanceMeters: 1000),
+      );
+
+      final persisted = await repository.getSettings();
+      expect(
+        persisted
+            .intervalFor(
+              ActivityType.run,
+              measurementSystem: MeasurementSystem.imperial,
+            )
+            .distanceMeters,
+        1000,
+      );
     });
   });
 }

@@ -245,7 +245,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
 
     _activityController.configureAudioAnnouncements(
       AudioAnnouncementConfig.build(
-        l10n: AppLocalizations.of(context)!,
+        l10n: l10n,
         settings: AppScope.servicesOf(
           context,
           listen: false,

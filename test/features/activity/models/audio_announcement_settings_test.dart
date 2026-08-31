@@ -133,6 +133,19 @@ void main() {
       expect(settings.intervalFor(ActivityType.ride).distanceMeters, 5000);
     });
 
+    test('storedIntervalFor never substitutes a default', () {
+      final settings = AudioAnnouncementSettings.defaults().withInterval(
+        ActivityType.run,
+        const AudioAnnouncementInterval(distanceMeters: 5000),
+      );
+
+      expect(
+        settings.storedIntervalFor(ActivityType.run)?.distanceMeters,
+        5000,
+      );
+      expect(settings.storedIntervalFor(ActivityType.ride), isNull);
+    });
+
     test('copyWith only changes the requested fields', () {
       final settings = AudioAnnouncementSettings.defaults()
           .copyWith(masterEnabled: true)

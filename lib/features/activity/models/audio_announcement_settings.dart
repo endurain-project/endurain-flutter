@@ -170,6 +170,15 @@ class AudioAnnouncementSettings {
         );
   }
 
+  /// The interval the user explicitly configured for [type], or `null` when
+  /// they never have.
+  ///
+  /// Unlike [intervalFor] this never substitutes a default, so callers can
+  /// distinguish "stored, and equal to the metric default" from "never stored,
+  /// so the measurement-system-dependent default still applies".
+  AudioAnnouncementInterval? storedIntervalFor(ActivityType type) =>
+      _intervalsByActivityType[type];
+
   AudioAnnouncementSettings copyWith({
     bool? masterEnabled,
     bool? duckOtherAudio,
