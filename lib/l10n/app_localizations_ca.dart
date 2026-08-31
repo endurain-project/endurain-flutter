@@ -1174,4 +1174,74 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Anuncis de veu';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Actualitzacions de veu sobre distància, temps, ritme o velocitat';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Anuncia el progrés de l\'activitat';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Diu en veu alta la distància, el temps, el ritme o la velocitat durant un enregistrament';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Redueix altres àudios mentre parla';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Redueix temporalment el volum d\'altres àudios durant cada anunci';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interval d\'anunci per activitat';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distància';
+
+  @override
+  String get audioAnnouncementsByTime => 'Temps';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Cada $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Cada $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Redueix l\'interval';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Augmenta l\'interval';
+
+  @override
+  String get audioAnnouncementsPreview => 'Escoltar exemple';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'L\'escolta prèvia dels anuncis no està disponible en aquest dispositiu';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Els canvis s\'apliquen al vostre proper enregistrament.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distància $distance. Temps $duration. Volta: $lapMetric. Global: $overallMetric.';
+  }
 }

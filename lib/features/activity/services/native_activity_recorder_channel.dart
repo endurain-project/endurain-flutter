@@ -27,6 +27,10 @@ class NativeActivityRecorderChannelContract {
   static const String drain = 'drain';
   static const String recover = 'recover';
 
+  /// Speaks one sample announcement. Independent of the recorder lifecycle:
+  /// the native handler never touches the durable session store.
+  static const String speakAnnouncementPreview = 'speakAnnouncementPreview';
+
   // Event payload keys.
   static const String eventType = 'type';
   static const String eventSession = 'session';
@@ -121,6 +125,8 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
           'notificationTitle': request.backgroundConfig!.notificationTitle,
           'notificationText': request.backgroundConfig!.notificationText,
         },
+        if (request.audioAnnouncementConfig != null)
+          'audioAnnouncements': request.audioAnnouncementConfig!.toChannelMap(),
       },
     );
   }

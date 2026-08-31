@@ -1,4 +1,6 @@
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
+import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:flutter/services.dart';
@@ -125,6 +127,55 @@ void main() {
       final args = calls.single.arguments as Map;
       expect(args.containsKey('powerDeviceId'), isFalse);
       expect(args.containsKey('cadenceDeviceId'), isFalse);
+    });
+
+    test('includes the audio announcement config when provided', () async {
+      const config = AudioAnnouncementConfig(
+        enabled: true,
+        duckOtherAudio: true,
+        intervalUnit: AudioAnnouncementIntervalUnit.distance,
+        distanceIntervalMeters: 1000,
+        timeIntervalSeconds: 300,
+        useImperialUnits: false,
+        metric: AudioAnnouncementMetric.pace,
+        languageTag: 'en-US',
+        distanceUnitTemplate: '{value} km',
+        metricUnitTemplate: '{value} min/km',
+        metricLabel: 'Pace',
+        messageTemplate:
+            'Distance {distance}. Time {duration}. '
+            'Lap {lapMetric}. Overall {overallMetric}.',
+      );
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+          audioAnnouncementConfig: config,
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      final sent = args['audioAnnouncements'] as Map;
+      expect(sent['enabled'], isTrue);
+      expect(sent['intervalUnit'], 'distance');
+      expect(sent['distanceIntervalMeters'], 1000);
+      expect(sent['metric'], 'pace');
+      expect(sent['metricLabel'], 'Pace');
+      expect(sent['languageTag'], 'en-US');
+    });
+
+    test('omits the audio announcement config when absent', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args.containsKey('audioAnnouncements'), isFalse);
     });
 
     test('invokes the expected command methods', () async {

@@ -10,6 +10,7 @@ import 'package:endurain/features/activity/models/activity_recording_state.dart'
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
@@ -70,6 +71,7 @@ class ActivityRecordingService {
   int _lastBreadcrumbPointCount = 0;
   bool _isDisposed = false;
   BackgroundLocationConfig? _backgroundConfig;
+  AudioAnnouncementConfig? _audioAnnouncementConfig;
   String? _localSessionId;
   String? _connectionOrigin;
   String? _connectionProfileId;
@@ -86,9 +88,18 @@ class ActivityRecordingService {
     _backgroundConfig = config;
   }
 
+  /// Supplies the localized spoken-announcement configuration used by the
+  /// native recorder for the next `start` call. Rebuilt on every UI frame by
+  /// the caller (locale/unit/settings may change), so this is a cheap setter,
+  /// not a start of anything by itself.
+  void configureAudioAnnouncements(AudioAnnouncementConfig config) {
+    _audioAnnouncementConfig = config;
+  }
+
   Future<void> start({
     required ActivityType activityType,
     BackgroundLocationConfig? backgroundConfig,
+    AudioAnnouncementConfig? audioAnnouncementConfig,
     String? localSessionId,
     String? connectionOrigin,
     String? connectionProfileId,
@@ -122,6 +133,9 @@ class ActivityRecordingService {
     }
     if (backgroundConfig != null) {
       _backgroundConfig = backgroundConfig;
+    }
+    if (audioAnnouncementConfig != null) {
+      _audioAnnouncementConfig = audioAnnouncementConfig;
     }
     final backgroundErrorKey = await _backgroundTrackingErrorKey();
     if (backgroundErrorKey != null) {
@@ -189,6 +203,7 @@ class ActivityRecordingService {
           connectionOrigin: connectionOrigin,
           connectionProfileId: connectionProfileId,
           backgroundConfig: _backgroundConfig,
+          audioAnnouncementConfig: _audioAnnouncementConfig,
           heartRateDeviceId: sensorDeviceIds[RecordedSensorKind.heartRate],
           powerDeviceId: sensorDeviceIds[RecordedSensorKind.power],
           cadenceDeviceId: sensorDeviceIds[RecordedSensorKind.cadence],
@@ -370,6 +385,7 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = 0;
     _lastBreadcrumbPointCount = 0;
     _backgroundConfig = null;
+    _audioAnnouncementConfig = null;
     final discarded = await _runRecorderCommand(
       _recorder.discard,
       ActivityRecordingError.localSaveFailed,

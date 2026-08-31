@@ -13,6 +13,7 @@ import 'package:endurain/features/activity/models/activity_recording_error.dart'
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -97,6 +98,12 @@ class ActivityRecordingController extends SafeNotifier {
   void configureBackgroundTracking(BackgroundLocationConfig config) {
     _backgroundConfig = config;
     _recordingService.configureBackgroundTracking(config);
+  }
+
+  /// Supplies the localized spoken-announcement configuration used for the
+  /// next recording start. See `ActivityRecordingService.configureAudioAnnouncements`.
+  void configureAudioAnnouncements(AudioAnnouncementConfig config) {
+    _recordingService.configureAudioAnnouncements(config);
   }
 
   void selectActivityType(ActivityType type) {

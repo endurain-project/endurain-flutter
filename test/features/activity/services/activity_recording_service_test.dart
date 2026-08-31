@@ -9,6 +9,8 @@ import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
+import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
@@ -71,6 +73,63 @@ void main() {
       );
 
       expect(recorder.lastStartRequest?.backgroundConfig, same(config));
+    });
+
+    test('forwards the audio announcement config to the recorder', () async {
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
+      addTearDown(service.dispose);
+
+      const config = AudioAnnouncementConfig(
+        enabled: true,
+        duckOtherAudio: true,
+        intervalUnit: AudioAnnouncementIntervalUnit.distance,
+        distanceIntervalMeters: 1000,
+        timeIntervalSeconds: 300,
+        useImperialUnits: false,
+        metric: AudioAnnouncementMetric.pace,
+        languageTag: 'en-US',
+        distanceUnitTemplate: '{value} km',
+        metricUnitTemplate: '{value} min/km',
+        metricLabel: 'Pace',
+        messageTemplate:
+            'Distance {distance}. Time {duration}. '
+            'Lap {lapMetric}. Overall {overallMetric}.',
+      );
+      await service.start(
+        activityType: ActivityType.run,
+        audioAnnouncementConfig: config,
+      );
+
+      expect(recorder.lastStartRequest?.audioAnnouncementConfig, same(config));
+    });
+
+    test('configureAudioAnnouncements applies to the next start', () async {
+      final recorder = _ControllableRecorder();
+      final service = _buildService(recorder: recorder);
+      addTearDown(service.dispose);
+
+      const config = AudioAnnouncementConfig(
+        enabled: true,
+        duckOtherAudio: false,
+        intervalUnit: AudioAnnouncementIntervalUnit.time,
+        distanceIntervalMeters: 1000,
+        timeIntervalSeconds: 300,
+        useImperialUnits: true,
+        metric: AudioAnnouncementMetric.pace,
+        languageTag: 'fr-FR',
+        distanceUnitTemplate: '{value} mi',
+        metricUnitTemplate: '{value} min/mi',
+        metricLabel: 'Allure',
+        messageTemplate:
+            'Distance {distance}. Temps {duration}. '
+            'Tour {lapMetric}. Total {overallMetric}.',
+      );
+      service.configureAudioAnnouncements(config);
+
+      await service.start(activityType: ActivityType.run);
+
+      expect(recorder.lastStartRequest?.audioAnnouncementConfig, same(config));
     });
 
     test('uses configured background tracking for recording starts', () async {

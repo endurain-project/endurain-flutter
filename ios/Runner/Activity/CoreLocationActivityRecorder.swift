@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import Dispatch
 
 /// CoreLocation-backed recorder that persists points to the native active store
 /// before notifying Flutter.
@@ -21,7 +22,10 @@ import CoreLocation
 /// nil by design; do not add a second CoreBluetooth connection here without
 /// first removing the Dart-side one, or the two will fight over the same
 /// peripheral's notifications.
-final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
+@MainActor
+final class CoreLocationActivityRecorder:
+    NSObject,
+    @preconcurrency CLLocationManagerDelegate {
     /// Minimum movement (meters) between delivered fixes.
     private static let distanceFilterMeters: CLLocationDistance = 3
 
@@ -29,13 +33,17 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private static let maxTimeGapMillis: Int64 = 30_000
     private static let maxAccuracyMeters: CLLocationAccuracy = 100
     private static let maxSpeedMetersPerSecond: CLLocationSpeed = 90
+    private static let minTimeAnnouncementIntervalSeconds = 60
+    private static let maxTimeAnnouncementIntervalSeconds = 3600
 
     private let store: ActiveActivityStore
     private let manager = CLLocationManager()
+    private let announcementStateCache = AnnouncementStateCache()
 
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
+    private var timeAnnouncementTimer: DispatchSourceTimer?
 
     init(store: ActiveActivityStore) {
         self.store = store
@@ -84,10 +92,12 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             manager.showsBackgroundLocationIndicator = true
         }
 
+        restoreAnnouncementState()
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
         manager.startUpdatingLocation()
         startTerminationRecovery()
         isCollecting = true
+        scheduleNextTimeAnnouncement()
         return true
     }
 
@@ -132,10 +142,106 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     }
 
     func stopCollection() {
+        flushAnnouncementState()
+        stopTimeAnnouncementTimer()
         manager.stopUpdatingLocation()
         manager.stopMonitoringSignificantLocationChanges()
         manager.allowsBackgroundLocationUpdates = false
+        AudioAnnouncer.shared.stop()
         isCollecting = false
+    }
+
+    /// Schedules one main-queue callback at the next elapsed-time threshold.
+    /// One-shot scheduling avoids polling and serializes state with GPS fixes.
+    private func scheduleNextTimeAnnouncement() {
+        stopTimeAnnouncementTimer()
+        guard isCollecting,
+              let announcementState = currentAnnouncementState(),
+              announcementState.enabled,
+              announcementState.isTimeBased,
+              announcementState.timeIntervalSeconds >= Self.minTimeAnnouncementIntervalSeconds,
+              announcementState.timeIntervalSeconds <= Self.maxTimeAnnouncementIntervalSeconds,
+              announcementState.lastAnnouncedTimeIndex >= 0,
+              announcementState.lastAnnouncedTimeIndex < Int.max,
+              let session = store.loadSession(),
+              session.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            referenceMillis: nowMillis
+        )
+        let nextIndex = max(1, Int64(announcementState.lastAnnouncedTimeIndex) + 1)
+        let thresholdResult = nextIndex.multipliedReportingOverflow(
+            by: Int64(announcementState.timeIntervalSeconds)
+        )
+        guard !thresholdResult.overflow else {
+            return
+        }
+        let remainingResult = thresholdResult.partialValue.subtractingReportingOverflow(
+            Int64(elapsedSeconds)
+        )
+        guard !remainingResult.overflow else {
+            return
+        }
+        let remainingSeconds = remainingResult.partialValue
+        let delaySeconds = max(1, remainingSeconds)
+
+        let timer = DispatchSource.makeTimerSource(queue: .main)
+        timer.schedule(deadline: .now() + .seconds(Int(delaySeconds)))
+        timer.setEventHandler { [weak self] in
+            guard let self else {
+                return
+            }
+            self.stopTimeAnnouncementTimer()
+            self.announceTimeIfDue()
+            self.scheduleNextTimeAnnouncement()
+        }
+        timeAnnouncementTimer = timer
+        timer.resume()
+    }
+
+    private func stopTimeAnnouncementTimer() {
+        timeAnnouncementTimer?.setEventHandler {}
+        timeAnnouncementTimer?.cancel()
+        timeAnnouncementTimer = nil
+    }
+
+    /// Advances a time-based schedule without waiting for another GPS fix.
+    private func announceTimeIfDue() {
+        guard isCollecting,
+              let announcementState = currentAnnouncementState(),
+              announcementState.enabled,
+              announcementState.isTimeBased,
+              let session = store.loadSession(),
+              session.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let result = AnnouncementScheduler.onElapsedTime(
+            state: announcementState,
+            elapsedSeconds: SessionTiming.elapsedSeconds(
+                session,
+                referenceMillis: nowMillis
+            )
+        )
+        guard result.state != announcementState else {
+            return
+        }
+        guard cacheAnnouncementState(
+            result.state,
+            persistBeforeSpeech: !result.announcements.isEmpty
+        ) else {
+            return
+        }
+        for text in result.announcements {
+            AudioAnnouncer.shared.speak(
+                text,
+                duck: announcementState.duckOtherAudio,
+                languageTag: announcementState.languageTag
+            )
+        }
     }
 
     /// Marks that collection is resuming from a pause so the next fix opens a
@@ -163,6 +269,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         var segmentIndex = session.currentSegmentIndex
         var segmentChanged = false
         var produced: [RecordedActivityPointData] = []
+        var producedIsNewSegment: [Bool] = []
 
         for location in locations {
             guard location.horizontalAccuracy < 0 ||
@@ -181,20 +288,24 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
                 continue
             }
 
+            var isNewSegment = false
             if resumedFromPause {
                 if lastPointEpochMillis != nil {
                     segmentIndex += 1
                     segmentChanged = true
+                    isNewSegment = true
                 }
                 resumedFromPause = false
             } else if let previous = lastPointEpochMillis,
                 effectiveMillis - previous > CoreLocationActivityRecorder.maxTimeGapMillis {
                 segmentIndex += 1
                 segmentChanged = true
+                isNewSegment = true
             }
 
             lastPointEpochMillis = effectiveMillis
             produced.append(makePoint(location, millis: effectiveMillis, segmentIndex: segmentIndex))
+            producedIsNewSegment.append(isNewSegment)
         }
 
         if produced.isEmpty {
@@ -221,6 +332,111 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         }
 
         ActivityRecorderCoordinator.shared.emitPointBatch(produced)
+        announceForBatch(produced, isNewSegmentFlags: producedIsNewSegment, session: session)
+    }
+
+    /// Advances announcement progress for the batch and speaks crossings.
+    private func announceForBatch(
+        _ points: [RecordedActivityPointData],
+        isNewSegmentFlags: [Bool],
+        session: ActiveActivitySessionData
+    ) {
+        guard
+            var announcementState = currentAnnouncementState(),
+            announcementState.enabled
+        else {
+            return
+        }
+        var announcements: [String] = []
+        for (index, point) in points.enumerated() {
+            guard let millis = IsoTime.toEpochMillis(point.timestamp) else {
+                continue
+            }
+            let elapsedSeconds = SessionTiming.elapsedSeconds(session, referenceMillis: millis)
+            let result = AnnouncementScheduler.onFix(
+                state: announcementState,
+                latitude: point.latitude,
+                longitude: point.longitude,
+                elapsedSeconds: elapsedSeconds,
+                isNewSegment: isNewSegmentFlags[index]
+            )
+            announcementState = result.state
+            announcements.append(contentsOf: result.announcements)
+        }
+        guard cacheAnnouncementState(
+            announcementState,
+            persistBeforeSpeech: !announcements.isEmpty
+        ) else {
+            return
+        }
+        for text in announcements {
+            AudioAnnouncer.shared.speak(
+                text,
+                duck: announcementState.duckOtherAudio,
+                languageTag: announcementState.languageTag
+            )
+        }
+    }
+
+    private func restoreAnnouncementState() {
+        announcementStateCache.reset()
+        guard let state = store.loadAnnouncementState() else {
+            return
+        }
+        announcementStateCache.restore(
+            state,
+            uptime: ProcessInfo.processInfo.systemUptime
+        )
+    }
+
+    private func currentAnnouncementState() -> AnnouncementStateData? {
+        if let state = announcementStateCache.state {
+            return state
+        }
+        guard let state = store.loadAnnouncementState() else {
+            return nil
+        }
+        announcementStateCache.restore(
+            state,
+            uptime: ProcessInfo.processInfo.systemUptime
+        )
+        return state
+    }
+
+    /// Keeps normal GPS progress in memory, checkpoints it periodically, and
+    /// makes threshold progress durable before the corresponding speech.
+    private func cacheAnnouncementState(
+        _ state: AnnouncementStateData,
+        persistBeforeSpeech: Bool
+    ) -> Bool {
+        let previousState = announcementStateCache.state
+        announcementStateCache.update(state)
+        let uptime = ProcessInfo.processInfo.systemUptime
+        guard let stateToPersist = announcementStateCache.stateToPersist(
+            uptime: uptime,
+            force: persistBeforeSpeech
+        ) else {
+            return true
+        }
+        guard store.saveAnnouncementState(stateToPersist) else {
+            if persistBeforeSpeech, let previousState {
+                announcementStateCache.update(previousState)
+            }
+            return !persistBeforeSpeech
+        }
+        announcementStateCache.markPersisted(uptime: uptime)
+        return true
+    }
+
+    private func flushAnnouncementState() {
+        let uptime = ProcessInfo.processInfo.systemUptime
+        guard let state = announcementStateCache.stateToPersist(
+            uptime: uptime,
+            force: true
+        ), store.saveAnnouncementState(state) else {
+            return
+        }
+        announcementStateCache.markPersisted(uptime: uptime)
     }
 
     func locationManager(

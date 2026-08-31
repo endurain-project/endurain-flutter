@@ -1166,4 +1166,73 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Hangos bejelentések';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Hangos frissítések a távolságról, időről, tempóról vagy sebességről';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Tevékenység haladásának bejelentése';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Felolvassa a távolságot, időt, tempót vagy sebességet felvétel közben';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Más hang halkítása beszéd közben';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Ideiglenesen halkítja a többi hangot minden bejelentés alatt';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Bejelentési időköz tevékenységenként';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Távolság';
+
+  @override
+  String get audioAnnouncementsByTime => 'Idő';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Minden $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Minden $minutes perc';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Időköz csökkentése';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Időköz növelése';
+
+  @override
+  String get audioAnnouncementsPreview => 'Minta lejátszása';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'A bemondás mintája nem érhető el ezen az eszközön';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'A módosítások a következő rögzítéstől lépnek életbe.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Távolság $distance. Idő $duration. Kör: $lapMetric. Összesen: $overallMetric.';
+  }
 }

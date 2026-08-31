@@ -10,7 +10,10 @@ import Flutter
 /// discard) are owned here; point batches and collection failures are emitted
 /// by the recorder via `ActivityRecorderCoordinator`. Drain/recover read
 /// directly from the durable `ActiveActivityStore`.
-final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
+@MainActor
+final class ActivityRecorderChannel:
+    NSObject,
+    @preconcurrency FlutterStreamHandler {
     private let store = ActiveActivityStore.shared
     private lazy var recorder = CoreLocationActivityRecorder(store: store)
 
@@ -78,6 +81,8 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             handleDrain(call, result: result)
         case ActivityRecorderChannel.methodRecover:
             handleRecover(result: result)
+        case ActivityRecorderChannel.methodSpeakPreview:
+            handleSpeakPreview(call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -119,6 +124,7 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
         let heartRateDeviceId = arguments?["hrDeviceId"] as? String
         let powerDeviceId = arguments?["powerDeviceId"] as? String
         let cadenceDeviceId = arguments?["cadenceDeviceId"] as? String
+        let audioAnnouncements = arguments?["audioAnnouncements"] as? [String: Any]
 
         let session = ActiveActivitySessionData(
             localSessionId: localSessionId,
@@ -133,6 +139,9 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             currentSegmentIndex: 0
         )
         store.saveSession(session)
+        if let announcementState = AnnouncementStateData.fromStartArguments(audioAnnouncements) {
+            store.saveAnnouncementState(announcementState)
+        }
 
         if !recorder.startCollection() {
             // Collection never started, so no point was ever captured. Clear the
@@ -287,14 +296,7 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
         _ session: ActiveActivitySessionData,
         referenceMillis: Int64
     ) -> Int {
-        if session.status == ActiveActivitySessionData.statusPaused {
-            return session.elapsedDurationSeconds
-        }
-        guard let anchor = IsoTime.toEpochMillis(session.resumedAt ?? session.startedAt) else {
-            return session.elapsedDurationSeconds
-        }
-        let segmentSeconds = Int((referenceMillis - anchor) / 1000)
-        return session.elapsedDurationSeconds + max(0, segmentSeconds)
+        return SessionTiming.elapsedSeconds(session, referenceMillis: referenceMillis)
     }
 
     private func isSupportedVersion(_ arguments: [String: Any]?) -> Bool {
@@ -302,6 +304,39 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
             return true
         }
         return version == ActivityRecorderChannel.payloadVersion
+    }
+
+    /// Speaks one sample announcement so the user can verify the device has a
+    /// working speech engine, at an audible volume, in the expected language.
+    /// Deliberately independent of the recorder lifecycle: it never touches the
+    /// durable store, so a preview cannot disturb an in-progress recording.
+    private func handleSpeakPreview(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? [String: Any]
+        if !isSupportedVersion(arguments) {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorVersion,
+                message: "Unsupported payload version",
+                details: nil
+            ))
+            return
+        }
+        guard
+            let announcements = arguments?["audioAnnouncements"] as? [String: Any],
+            let state = AnnouncementStateData.fromStartArguments(announcements)
+        else {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorArgs,
+                message: "Missing audioAnnouncements",
+                details: nil
+            ))
+            return
+        }
+        AudioAnnouncer.shared.speak(
+            AnnouncementSpeechBuilder.buildPreview(state: state),
+            duck: state.duckOtherAudio,
+            languageTag: state.languageTag
+        )
+        result(nil)
     }
 
     static let payloadVersion = 1
@@ -316,6 +351,7 @@ final class ActivityRecorderChannel: NSObject, FlutterStreamHandler {
     static let methodDiscard = "discard"
     static let methodDrain = "drain"
     static let methodRecover = "recover"
+    static let methodSpeakPreview = "speakAnnouncementPreview"
 
     static let errorArgs = "invalid_arguments"
     static let errorState = "invalid_state"

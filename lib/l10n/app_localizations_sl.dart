@@ -1163,4 +1163,72 @@ class AppLocalizationsSl extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Zvočna obvestila';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Govorne posodobitve o razdalji, času, tempu ali hitrosti';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Naznani napredek dejavnosti';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Med snemanjem naglas pove razdaljo, čas, tempo ali hitrost';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Utišaj drug zvok med govorjenjem';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Začasno zniža glasnost drugega zvoka med vsakim obvestilom';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interval obvestil glede na dejavnost';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Razdalja';
+
+  @override
+  String get audioAnnouncementsByTime => 'Čas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Vsakih $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Vsakih $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Zmanjšaj interval';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Povečaj interval';
+
+  @override
+  String get audioAnnouncementsPreview => 'Predvajaj vzorec';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Predogled napovedi v tej napravi ni na voljo';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Spremembe bodo veljale pri naslednjem snemanju.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Razdalja $distance. Čas $duration. Krog: $lapMetric. Skupaj: $overallMetric.';
+  }
 }

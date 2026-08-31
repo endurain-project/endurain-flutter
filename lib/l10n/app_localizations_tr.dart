@@ -1151,4 +1151,72 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Sesli Duyurular';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Mesafe, süre, tempo veya hız hakkında sesli güncellemeler';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Aktivite ilerlemesini duyur';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Kayıt sırasında mesafenizi, sürenizi, temponuzu veya hızınızı sesli olarak söyler';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Konuşurken diğer sesi kıs';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Her duyuru sırasında diğer ses seviyesini geçici olarak azaltır';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Aktiviteye göre duyuru aralığı';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Mesafe';
+
+  @override
+  String get audioAnnouncementsByTime => 'Süre';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Her $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Her $minutes dk';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Aralığı azalt';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Aralığı artır';
+
+  @override
+  String get audioAnnouncementsPreview => 'Örneği dinle';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Anons önizlemesi bu cihazda kullanılamıyor';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Değişiklikler bir sonraki kaydınızda geçerli olur.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Mesafe $distance. Süre $duration. Tur: $lapMetric. Genel: $overallMetric.';
+  }
 }

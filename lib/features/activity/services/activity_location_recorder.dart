@@ -1,6 +1,7 @@
 import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 
 /// Typed, language-free recorder failure reasons.
@@ -80,6 +81,7 @@ class ActivityRecorderStartRequest {
     this.connectionOrigin,
     this.connectionProfileId,
     this.backgroundConfig,
+    this.audioAnnouncementConfig,
     this.heartRateDeviceId,
     this.powerDeviceId,
     this.cadenceDeviceId,
@@ -91,6 +93,11 @@ class ActivityRecorderStartRequest {
   final String? connectionOrigin;
   final String? connectionProfileId;
   final BackgroundLocationConfig? backgroundConfig;
+
+  /// Localized, immutable spoken-announcement configuration. `null` disables
+  /// announcements for this recording (recorders that do not support them
+  /// simply ignore it).
+  final AudioAnnouncementConfig? audioAnnouncementConfig;
 
   /// BLE device id of the paired heart-rate sensor to capture from during the
   /// recording, or `null` when none is paired. Recorders that support native

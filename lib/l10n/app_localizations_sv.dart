@@ -1158,4 +1158,72 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Röstmeddelanden';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Röstuppdateringar om distans, tid, tempo eller hastighet';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Meddela aktivitetens framsteg';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Läser upp din distans, tid, tempo eller hastighet under en inspelning';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Sänk annat ljud medan det talas';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Sänker tillfälligt volymen på annat ljud under varje meddelande';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Meddelandeintervall per aktivitet';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distans';
+
+  @override
+  String get audioAnnouncementsByTime => 'Tid';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Var $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Var $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Minska intervall';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Öka intervall';
+
+  @override
+  String get audioAnnouncementsPreview => 'Spela upp exempel';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Förhandsvisning av meddelande är inte tillgänglig på den här enheten';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Ändringarna gäller från nästa inspelning.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distans $distance. Tid $duration. Varv: $lapMetric. Totalt: $overallMetric.';
+  }
 }
