@@ -2227,7 +2227,11 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Distance {distance}. Time {duration}. Pace {pace}.'**
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace);
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  );
 }
 
 class _AppLocalizationsDelegate

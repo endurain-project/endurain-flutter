@@ -135,6 +135,7 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         manager.stopUpdatingLocation()
         manager.stopMonitoringSignificantLocationChanges()
         manager.allowsBackgroundLocationUpdates = false
+        AudioAnnouncer.shared.stop()
         isCollecting = false
     }
 

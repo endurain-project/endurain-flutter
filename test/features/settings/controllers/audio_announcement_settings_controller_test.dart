@@ -15,9 +15,7 @@ void main() {
 
   setUp(() {
     preferences = FakePreferencesStore();
-    repository = AudioAnnouncementSettingsRepository(
-      preferences: preferences,
-    );
+    repository = AudioAnnouncementSettingsRepository(preferences: preferences);
   });
 
   group('AudioAnnouncementSettingsController', () {
@@ -85,8 +83,14 @@ void main() {
         const AudioAnnouncementInterval(distanceMeters: 8000),
       );
 
-      expect(controller.settings.intervalFor(ActivityType.ride).distanceMeters, 8000);
-      expect(controller.settings.intervalFor(ActivityType.run).distanceMeters, 1000);
+      expect(
+        controller.settings.intervalFor(ActivityType.ride).distanceMeters,
+        8000,
+      );
+      expect(
+        controller.settings.intervalFor(ActivityType.run).distanceMeters,
+        1000,
+      );
       final persisted = await repository.getSettings();
       expect(persisted.intervalFor(ActivityType.ride).distanceMeters, 8000);
     });

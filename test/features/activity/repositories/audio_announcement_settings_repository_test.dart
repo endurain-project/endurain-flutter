@@ -11,9 +11,7 @@ void main() {
 
   setUp(() {
     preferences = FakePreferencesStore();
-    repository = AudioAnnouncementSettingsRepository(
-      preferences: preferences,
-    );
+    repository = AudioAnnouncementSettingsRepository(preferences: preferences);
   });
 
   group('AudioAnnouncementSettingsRepository', () {

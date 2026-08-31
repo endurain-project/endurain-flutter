@@ -1210,7 +1210,11 @@ class AppLocalizationsUk extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Збільшити інтервал';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Відстань $distance. Час $duration. Темп $pace.';
   }
 }

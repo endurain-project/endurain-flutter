@@ -1216,7 +1216,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Időköz növelése';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Távolság $distance. Idő $duration. Tempó $pace.';
   }
 }

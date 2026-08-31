@@ -77,7 +77,10 @@ void main() {
         'timeSeconds': 999999,
       });
 
-      expect(decoded.distanceMeters, AudioAnnouncementInterval.minDistanceMeters);
+      expect(
+        decoded.distanceMeters,
+        AudioAnnouncementInterval.minDistanceMeters,
+      );
       expect(decoded.timeSeconds, AudioAnnouncementInterval.maxTimeSeconds);
     });
   });

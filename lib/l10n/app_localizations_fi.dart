@@ -1212,7 +1212,11 @@ class AppLocalizationsFi extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Kasvata väliä';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Matka $distance. Aika $duration. Vauhti $pace.';
   }
 }

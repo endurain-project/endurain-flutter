@@ -1213,7 +1213,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Interval vergroten';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Afstand $distance. Tijd $duration. Tempo $pace.';
   }
 }

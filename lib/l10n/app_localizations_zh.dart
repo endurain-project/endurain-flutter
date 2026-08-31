@@ -1142,7 +1142,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => '增大间隔';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return '距离$distance。时间$duration。配速$pace。';
   }
 }
@@ -2285,7 +2289,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get audioAnnouncementsIncreaseInterval => '增大間隔';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return '距離$distance。時間$duration。配速$pace。';
   }
 }

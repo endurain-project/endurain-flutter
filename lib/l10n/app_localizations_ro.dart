@@ -1216,7 +1216,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Mărește intervalul';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Distanță $distance. Timp $duration. Ritm $pace.';
   }
 }

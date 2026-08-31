@@ -53,10 +53,9 @@ class AudioAnnouncementInterval {
   /// The interval value in the unit that actually applies right now (metres
   /// for [AudioAnnouncementIntervalUnit.distance], seconds for
   /// [AudioAnnouncementIntervalUnit.time]).
-  double get activeValue =>
-      unit == AudioAnnouncementIntervalUnit.distance
-          ? distanceMeters
-          : timeSeconds.toDouble();
+  double get activeValue => unit == AudioAnnouncementIntervalUnit.distance
+      ? distanceMeters
+      : timeSeconds.toDouble();
 
   AudioAnnouncementInterval copyWith({
     AudioAnnouncementIntervalUnit? unit,
@@ -90,10 +89,11 @@ class AudioAnnouncementInterval {
     final time = json['timeSeconds'];
     return AudioAnnouncementInterval(
       unit: AudioAnnouncementIntervalUnit.fromJson(json['unit']),
-      distanceMeters: (distance is num
-              ? distance.toDouble()
-              : defaultDistanceMeters)
-          .clamp(minDistanceMeters, maxDistanceMeters),
+      distanceMeters:
+          (distance is num ? distance.toDouble() : defaultDistanceMeters).clamp(
+            minDistanceMeters,
+            maxDistanceMeters,
+          ),
       timeSeconds: (time is num ? time.toInt() : defaultTimeSeconds).clamp(
         minTimeSeconds,
         maxTimeSeconds,
@@ -132,7 +132,8 @@ class AudioAnnouncementSettings {
 
   /// Defaults: disabled, ducking enabled, and a 1&nbsp;km distance interval for
   /// every activity type.
-  factory AudioAnnouncementSettings.defaults() => const AudioAnnouncementSettings();
+  factory AudioAnnouncementSettings.defaults() =>
+      const AudioAnnouncementSettings();
 
   /// The configured interval for [type], or the default interval when the
   /// user has never customized it.
@@ -159,10 +160,7 @@ class AudioAnnouncementSettings {
     return AudioAnnouncementSettings(
       masterEnabled: masterEnabled,
       duckOtherAudio: duckOtherAudio,
-      intervalsByActivityType: {
-        ..._intervalsByActivityType,
-        type: interval,
-      },
+      intervalsByActivityType: {..._intervalsByActivityType, type: interval},
     );
   }
 

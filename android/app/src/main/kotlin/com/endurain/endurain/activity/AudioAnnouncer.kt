@@ -15,12 +15,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
  *
  * A single engine instance is shared by every recording so announcements
  * never contend for two simultaneous TTS sessions. Utterances are queued
- * ([TextToSpeech.QUEUE_ADD]) rather than interrupting each other, and audio
- * focus is requested only while ducking is enabled for that utterance —
- * requesting [AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK] asks the
- * platform to lower (duck), not pause, any other app's playback, and it is
- * abandoned as soon as speech finishes so music/podcasts return to full
- * volume immediately.
+ * ([TextToSpeech.QUEUE_ADD]) rather than interrupting each other. While one or
+ * more ducked utterances are queued, transient audio focus asks the platform
+ * to lower (not pause) other playback; focus is released after the final
+ * ducked utterance finishes.
  */
 object AudioAnnouncer {
     private var tts: TextToSpeech? = null
@@ -28,6 +26,8 @@ object AudioAnnouncer {
     private var appliedLanguageTag: String? = null
     private var audioManager: AudioManager? = null
     private var focusRequest: AudioFocusRequest? = null
+    private val focusLock = Any()
+    private val duckingUtteranceIds = mutableSetOf<String>()
     private val pending = ConcurrentLinkedQueue<PendingUtterance>()
 
     private data class PendingUtterance(
@@ -55,7 +55,7 @@ object AudioAnnouncer {
     fun stop() {
         pending.clear()
         tts?.stop()
-        abandonAudioFocus()
+        releaseAllAudioFocus()
     }
 
     /** Releases the engine entirely. Used by tests; production never calls this. */
@@ -99,11 +99,14 @@ object AudioAnnouncer {
         languageTag: String,
     ) {
         applyLanguage(engine, languageTag)
-        if (duck) {
-            requestAudioFocus(context)
-        }
         val utteranceId = "announcement_${System.nanoTime()}"
-        engine.speak(text, TextToSpeech.QUEUE_ADD, Bundle(), utteranceId)
+        if (duck) {
+            registerDuckedUtterance(utteranceId)
+        }
+        val result = engine.speak(text, TextToSpeech.QUEUE_ADD, Bundle(), utteranceId)
+        if (result == TextToSpeech.ERROR) {
+            releaseAudioFocus(utteranceId)
+        }
     }
 
     private fun applyLanguage(engine: TextToSpeech, languageTag: String) {
@@ -123,7 +126,16 @@ object AudioAnnouncer {
         appliedLanguageTag = languageTag
     }
 
-    private fun requestAudioFocus(context: Context) {
+    private fun registerDuckedUtterance(utteranceId: String) {
+        synchronized(focusLock) {
+            duckingUtteranceIds.add(utteranceId)
+            if (duckingUtteranceIds.size == 1) {
+                requestAudioFocus()
+            }
+        }
+    }
+
+    private fun requestAudioFocus() {
         val manager = audioManager ?: return
         val attributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
@@ -134,6 +146,24 @@ object AudioAnnouncer {
             .build()
         manager.requestAudioFocus(request)
         focusRequest = request
+    }
+
+    private fun releaseAudioFocus(utteranceId: String?) {
+        if (utteranceId == null) {
+            return
+        }
+        synchronized(focusLock) {
+            if (duckingUtteranceIds.remove(utteranceId) && duckingUtteranceIds.isEmpty()) {
+                abandonAudioFocus()
+            }
+        }
+    }
+
+    private fun releaseAllAudioFocus() {
+        synchronized(focusLock) {
+            duckingUtteranceIds.clear()
+            abandonAudioFocus()
+        }
     }
 
     private fun abandonAudioFocus() {
@@ -147,16 +177,20 @@ object AudioAnnouncer {
         override fun onStart(utteranceId: String?) {}
 
         override fun onDone(utteranceId: String?) {
-            abandonAudioFocus()
+            releaseAudioFocus(utteranceId)
         }
 
         @Deprecated("Deprecated in the platform API; onError(String, int) is preferred")
         override fun onError(utteranceId: String?) {
-            abandonAudioFocus()
+            releaseAudioFocus(utteranceId)
         }
 
         override fun onError(utteranceId: String?, errorCode: Int) {
-            abandonAudioFocus()
+            releaseAudioFocus(utteranceId)
+        }
+
+        override fun onStop(utteranceId: String?, interrupted: Boolean) {
+            releaseAudioFocus(utteranceId)
         }
     }
 }

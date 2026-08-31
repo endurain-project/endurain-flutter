@@ -243,6 +243,18 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       }
     }
 
+    _activityController.configureAudioAnnouncements(
+      AudioAnnouncementConfig.build(
+        l10n: AppLocalizations.of(context)!,
+        settings: AppScope.servicesOf(
+          context,
+          listen: false,
+        ).audioAnnouncementSettingsController.settings,
+        activityType: type,
+        measurementSystem: context.measurementSystem,
+        languageTag: context.numberFormatLocale,
+      ),
+    );
     await _activityController.start(type);
   }
 
@@ -347,18 +359,6 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       BackgroundLocationConfig(
         notificationTitle: l10n.activityTrackingNotificationTitle,
         notificationText: l10n.activityTrackingNotificationText,
-      ),
-    );
-    _activityController.configureAudioAnnouncements(
-      AudioAnnouncementConfig.build(
-        l10n: l10n,
-        settings: AppScope.servicesOf(
-          context,
-          listen: false,
-        ).audioAnnouncementSettingsController.settings,
-        activityType: _activityController.selectedActivityType,
-        measurementSystem: context.measurementSystem,
-        languageTag: context.numberFormatLocale,
       ),
     );
 

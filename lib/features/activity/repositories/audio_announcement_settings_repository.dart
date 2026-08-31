@@ -7,8 +7,9 @@ import 'package:endurain/features/activity/models/audio_announcement_settings.da
 /// system and locale choices), so it lives in shared preferences rather than
 /// secure storage.
 class AudioAnnouncementSettingsRepository {
-  const AudioAnnouncementSettingsRepository({required AppPreferencesStore preferences})
-    : _preferences = preferences;
+  const AudioAnnouncementSettingsRepository({
+    required AppPreferencesStore preferences,
+  }) : _preferences = preferences;
 
   static const String _settingsKey = 'audio_announcement_settings_v1';
 

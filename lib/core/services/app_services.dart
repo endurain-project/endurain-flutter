@@ -22,7 +22,6 @@ import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
-import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';

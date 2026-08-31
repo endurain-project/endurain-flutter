@@ -1225,7 +1225,11 @@ class AppLocalizationsCa extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Augmenta l\'interval';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Distància $distance. Temps $duration. Ritme $pace.';
   }
 }

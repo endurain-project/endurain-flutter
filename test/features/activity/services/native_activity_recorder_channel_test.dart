@@ -1,5 +1,6 @@
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
+import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:flutter/services.dart';

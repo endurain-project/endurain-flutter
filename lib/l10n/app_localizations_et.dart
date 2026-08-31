@@ -1207,7 +1207,11 @@ class AppLocalizationsEt extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Suurenda intervalli';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Vahemaa $distance. Aeg $duration. Tempo $pace.';
   }
 }

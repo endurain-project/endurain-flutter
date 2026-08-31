@@ -1207,7 +1207,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Öka intervall';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Distans $distance. Tid $duration. Tempo $pace.';
   }
 }

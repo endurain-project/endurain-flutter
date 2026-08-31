@@ -121,10 +121,7 @@ void main() {
 
       await service.start(activityType: ActivityType.run);
 
-      expect(
-        recorder.lastStartRequest?.audioAnnouncementConfig,
-        same(config),
-      );
+      expect(recorder.lastStartRequest?.audioAnnouncementConfig, same(config));
     });
 
     test('uses configured background tracking for recording starts', () async {

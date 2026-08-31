@@ -1218,7 +1218,11 @@ class AppLocalizationsBg extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Увеличи интервала';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Разстояние $distance. Време $duration. Темпо $pace.';
   }
 }

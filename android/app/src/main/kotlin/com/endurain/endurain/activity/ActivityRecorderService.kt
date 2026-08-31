@@ -110,11 +110,13 @@ class ActivityRecorderService : Service() {
     }
 
     private fun handlePause() {
+        AudioAnnouncer.stop()
         stopCollection()
         // Keep the foreground notification so recording can resume cheaply.
     }
 
     private fun handleStop() {
+        AudioAnnouncer.stop()
         stopCollection()
         stopSensorCapture()
         resumedFromPause = false
@@ -670,6 +672,7 @@ class ActivityRecorderService : Service() {
     }
 
     override fun onDestroy() {
+        AudioAnnouncer.stop()
         stopCollection()
         stopSensorCapture()
         releaseWakeLock()

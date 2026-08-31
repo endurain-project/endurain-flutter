@@ -1200,7 +1200,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Aralığı artır';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Mesafe $distance. Süre $duration. Tempo $pace.';
   }
 }

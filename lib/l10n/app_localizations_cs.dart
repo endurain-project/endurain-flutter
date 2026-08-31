@@ -1215,7 +1215,11 @@ class AppLocalizationsCs extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Zvětšit interval';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Vzdálenost $distance. Čas $duration. Tempo $pace.';
   }
 }

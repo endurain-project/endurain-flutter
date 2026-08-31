@@ -1203,7 +1203,11 @@ class AppLocalizationsLt extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Padidinti intervalą';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Atstumas $distance. Laikas $duration. Tempas $pace.';
   }
 }

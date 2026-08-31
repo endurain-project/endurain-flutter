@@ -1206,7 +1206,11 @@ class AppLocalizationsNb extends AppLocalizations {
   String get audioAnnouncementsIncreaseInterval => 'Øk intervall';
 
   @override
-  String audioAnnouncementsSpokenMessage(String distance, String duration, String pace) {
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String pace,
+  ) {
     return 'Distanse $distance. Tid $duration. Tempo $pace.';
   }
 }

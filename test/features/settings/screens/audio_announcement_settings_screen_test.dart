@@ -1,3 +1,4 @@
+import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
@@ -42,6 +43,7 @@ void main() {
   });
 
   Future<void> pumpScreen(WidgetTester tester) async {
+    await measurementController.setPreference(MeasurementSystem.metric);
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
@@ -61,10 +63,16 @@ void main() {
     await pumpScreen(tester);
 
     final masterSwitch = tester.widget<AdaptiveSwitchListTile>(
-      find.widgetWithText(AdaptiveSwitchListTile, l10n.audioAnnouncementsMasterSwitch),
+      find.widgetWithText(
+        AdaptiveSwitchListTile,
+        l10n.audioAnnouncementsMasterSwitch,
+      ),
     );
     final duckSwitch = tester.widget<AdaptiveSwitchListTile>(
-      find.widgetWithText(AdaptiveSwitchListTile, l10n.audioAnnouncementsDuckSwitch),
+      find.widgetWithText(
+        AdaptiveSwitchListTile,
+        l10n.audioAnnouncementsDuckSwitch,
+      ),
     );
 
     expect(masterSwitch.value, isFalse);
@@ -75,7 +83,9 @@ void main() {
     await pumpScreen(tester);
 
     for (final type in ActivityType.values) {
-      expect(find.text(type.localizedLabel(l10n)), findsOneWidget);
+      final label = find.text(type.localizedLabel(l10n));
+      await tester.scrollUntilVisible(label, 200);
+      expect(label, findsOneWidget);
     }
   });
 
@@ -85,16 +95,17 @@ void main() {
     await pumpScreen(tester);
 
     await tester.tap(
-      find.widgetWithText(AdaptiveSwitchListTile, l10n.audioAnnouncementsMasterSwitch),
+      find.widgetWithText(
+        AdaptiveSwitchListTile,
+        l10n.audioAnnouncementsMasterSwitch,
+      ),
     );
     await tester.pumpAndSettle();
 
     expect(controller.settings.masterEnabled, isTrue);
   });
 
-  testWidgets('shows the default 1.0 km interval for running', (
-    tester,
-  ) async {
+  testWidgets('shows the default 1.0 km interval for running', (tester) async {
     await pumpScreen(tester);
 
     expect(
@@ -106,6 +117,7 @@ void main() {
   testWidgets('increasing the interval steps by half a kilometre', (
     tester,
   ) async {
+    await controller.setMasterEnabled(true);
     await pumpScreen(tester);
 
     await tester.tap(find.byIcon(Icons.add_circle_outline).first);
@@ -118,6 +130,7 @@ void main() {
   });
 
   testWidgets('switching to time updates the subtitle', (tester) async {
+    await controller.setMasterEnabled(true);
     await pumpScreen(tester);
 
     await tester.tap(find.text(l10n.audioAnnouncementsByTime).first);
@@ -127,9 +140,6 @@ void main() {
       controller.settings.intervalFor(ActivityType.run).unit,
       AudioAnnouncementIntervalUnit.time,
     );
-    expect(
-      find.text(l10n.audioAnnouncementsIntervalTime('5')),
-      findsOneWidget,
-    );
+    expect(find.text(l10n.audioAnnouncementsIntervalTime('5')), findsOneWidget);
   });
 }

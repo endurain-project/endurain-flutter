@@ -80,9 +80,8 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
                 ),
                 child: Text(
                   l10n.audioAnnouncementsIntervalsHeader,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               for (final type in ActivityType.values) ...[
@@ -120,7 +119,8 @@ class _IntervalCard extends StatelessWidget {
   final ValueChanged<AudioAnnouncementInterval> onChanged;
 
   /// Distance step: 0.5 km, or 0.5 mi when imperial (converted to metres).
-  double get _distanceStepMeters => measurementSystem == MeasurementSystem.imperial
+  double get _distanceStepMeters =>
+      measurementSystem == MeasurementSystem.imperial
       ? 0.5 * UnitConversions.metersPerMile
       : 500;
 
