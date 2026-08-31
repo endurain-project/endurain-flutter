@@ -1,5 +1,6 @@
 package com.endurain.endurain.activity
 
+import java.text.DecimalFormatSymbols
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -13,10 +14,13 @@ import kotlin.math.roundToInt
  * (`{value}` in unit templates and named fragments in the message template) —
  * see that class's doc comment for why a literal
  * substring replace here is sufficient for correct per-locale phrasing.
- * Numbers themselves are formatted with a fixed `Locale.US` decimal point:
- * text-to-speech engines read digits correctly regardless of the separator
- * glyph, so this avoids re-implementing 30+ locales' number formatting
- * natively.
+ *
+ * Decimal numbers carry the announcement locale's decimal separator: a
+ * text-to-speech engine reading German text pronounces `1.5` using `.` as a
+ * *thousands* separator, so a fixed `Locale.US` point would speak "1.5 km" as
+ * fifteen kilometres. Only the separator glyph is localized — digits stay
+ * ASCII and no grouping separator is ever inserted, since grouped digits are
+ * another common source of engine misreadings.
  */
 object AnnouncementSpeechBuilder {
     private const val METERS_PER_KILOMETER = 1000.0
@@ -41,7 +45,7 @@ object AnnouncementSpeechBuilder {
         }
         val distanceText = state.distanceUnitTemplate.replace(
             PLACEHOLDER_VALUE,
-            formatDecimal(displayDistance),
+            formatDecimal(displayDistance, state.languageTag),
         )
         val durationText = formatClock(elapsedSeconds)
         val lapMetricText = buildMetricText(
@@ -108,12 +112,18 @@ object AnnouncementSpeechBuilder {
         if (!unitsPerHour.isFinite() || unitsPerHour < 0.0) {
             return null
         }
-        return formatDecimal(unitsPerHour)
+        return formatDecimal(unitsPerHour, state.languageTag)
     }
 
-    /** One decimal place, fixed `Locale.US` (always a `.` separator). */
-    private fun formatDecimal(value: Double): String {
-        return String.format(Locale.US, "%.1f", value)
+    /** One decimal place, using [languageTag]'s decimal separator. */
+    private fun formatDecimal(value: Double, languageTag: String): String {
+        val locale = if (languageTag.isBlank()) {
+            Locale.US
+        } else {
+            Locale.forLanguageTag(languageTag)
+        }
+        val separator = DecimalFormatSymbols.getInstance(locale).decimalSeparator
+        return String.format(Locale.US, "%.1f", value).replace('.', separator)
     }
 
     /** `H:MM:SS` once an hour has elapsed, otherwise `M:SS`. */

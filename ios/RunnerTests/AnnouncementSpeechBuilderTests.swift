@@ -155,4 +155,60 @@ final class AnnouncementSpeechBuilderTests: XCTestCase {
     XCTAssertTrue(text.contains("Lap Speed 22.5 km/h"))
     XCTAssertTrue(text.contains("Overall Speed 20.0 km/h"))
   }
+
+  func testUsesTheLocaleDecimalSeparatorSoEnginesDoNotReadItAsGrouping() {
+    let state = AnnouncementStateData(
+      enabled: true,
+      duckOtherAudio: true,
+      intervalUnit: AnnouncementStateData.unitDistance,
+      distanceIntervalMeters: 1000,
+      timeIntervalSeconds: 300,
+      useImperialUnits: false,
+      metric: AnnouncementStateData.metricSpeed,
+      languageTag: "de-DE",
+      distanceUnitTemplate: "{value} km",
+      metricUnitTemplate: "{value} km/h",
+      metricLabel: "Geschwindigkeit",
+      messageTemplate:
+        "Distanz {distance}. Zeit {duration}. Runde {lapMetric}. Gesamt {overallMetric}."
+    )
+
+    let text = AnnouncementSpeechBuilder.build(
+      state: state,
+      distanceMeters: 1500,
+      elapsedSeconds: 300
+    )
+
+    XCTAssertEqual(
+      text,
+      "Distanz 1,5 km. Zeit 5:00. Runde Geschwindigkeit 18,0 km/h. "
+        + "Gesamt Geschwindigkeit 18,0 km/h."
+    )
+  }
+
+  func testFallsBackToAPointWhenTheLanguageTagIsUnusable() {
+    let state = AnnouncementStateData(
+      enabled: true,
+      duckOtherAudio: true,
+      intervalUnit: AnnouncementStateData.unitDistance,
+      distanceIntervalMeters: 1000,
+      timeIntervalSeconds: 300,
+      useImperialUnits: false,
+      metric: AnnouncementStateData.metricPace,
+      languageTag: "",
+      distanceUnitTemplate: "{value} km",
+      metricUnitTemplate: "{value} min/km",
+      metricLabel: "Pace",
+      messageTemplate:
+        "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}."
+    )
+
+    let text = AnnouncementSpeechBuilder.build(
+      state: state,
+      distanceMeters: 1500,
+      elapsedSeconds: 300
+    )
+
+    XCTAssertTrue(text.contains("1.5 km"))
+  }
 }

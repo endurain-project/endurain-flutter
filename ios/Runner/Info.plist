@@ -84,6 +84,17 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- App Review justification for each mode:
+	     - location: GPS track capture continues while an activity is recorded
+	       with the screen off (see CoreLocationActivityRecorder.swift).
+	     - bluetooth-central: keeps a paired heart-rate/power/cadence sensor
+	       connected for the duration of that same recording.
+	     - audio: plays spoken distance/time/pace milestone announcements
+	       through AVSpeechSynthesizer while the recording is backgrounded
+	       (see AudioAnnouncer.swift). The audio session is activated only
+	       around an utterance and deactivated with
+	       notifyOthersOnDeactivation once the queue drains, so the app never
+	       holds the session while silent. -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

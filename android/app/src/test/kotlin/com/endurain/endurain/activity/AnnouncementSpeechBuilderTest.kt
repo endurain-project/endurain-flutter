@@ -151,4 +151,40 @@ class AnnouncementSpeechBuilderTest {
         assertEquals(true, text.contains("Lap Speed 22.5 km/h"))
         assertEquals(true, text.contains("Overall Speed 20.0 km/h"))
     }
+
+    @Test
+    fun usesTheLocaleDecimalSeparatorSoEnginesDoNotReadItAsGrouping() {
+        val state = metricState(
+            messageTemplate = "Distanz {distance}. Zeit {duration}. " +
+                "Runde {lapMetric}. Gesamt {overallMetric}.",
+        ).copy(
+            languageTag = "de-DE",
+            metric = AnnouncementStateData.METRIC_SPEED,
+            metricUnitTemplate = "{value} km/h",
+            metricLabel = "Geschwindigkeit",
+        )
+
+        val text = AnnouncementSpeechBuilder.build(
+            state,
+            distanceMeters = 1500.0,
+            elapsedSeconds = 300,
+        )
+
+        assertEquals(
+            "Distanz 1,5 km. Zeit 5:00. Runde Geschwindigkeit 18,0 km/h. " +
+                "Gesamt Geschwindigkeit 18,0 km/h.",
+            text,
+        )
+    }
+
+    @Test
+    fun fallsBackToAPointWhenTheLanguageTagIsUnusable() {
+        val text = AnnouncementSpeechBuilder.build(
+            metricState().copy(languageTag = ""),
+            distanceMeters = 1500.0,
+            elapsedSeconds = 300,
+        )
+
+        assertEquals(true, text.contains("1.5 km"))
+    }
 }

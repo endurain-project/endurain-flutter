@@ -6,8 +6,8 @@ import Foundation
 ///
 /// Mirrors the Android `AnnouncementSpeechBuilder` object exactly — see its
 /// doc comment for why a literal substring replace on Dart-rendered templates
-/// is correct for every locale, and why numbers are formatted with a fixed
-/// `en_US_POSIX` decimal point.
+/// is correct for every locale, and why only the decimal separator glyph of a
+/// number is localized.
 enum AnnouncementSpeechBuilder {
     private static let metersPerKilometer = 1000.0
     private static let metersPerMile = 1609.344
@@ -34,7 +34,7 @@ enum AnnouncementSpeechBuilder {
             : distanceMeters / metersPerKilometer
         let distanceText = state.distanceUnitTemplate.replacingOccurrences(
             of: placeholderValue,
-            with: formatDecimal(displayDistance)
+            with: formatDecimal(displayDistance, languageTag: state.languageTag)
         )
         let durationText = formatClock(elapsedSeconds)
         let lapMetricText = buildMetricText(
@@ -102,12 +102,17 @@ enum AnnouncementSpeechBuilder {
         guard unitsPerHour.isFinite, unitsPerHour >= 0 else {
             return nil
         }
-        return formatDecimal(unitsPerHour)
+        return formatDecimal(unitsPerHour, languageTag: state.languageTag)
     }
 
-    /// One decimal place, fixed POSIX locale (always a `.` separator).
-    private static func formatDecimal(_ value: Double) -> String {
-        return String(format: "%.1f", locale: Locale(identifier: "en_US_POSIX"), value)
+    /// One decimal place, using `languageTag`'s decimal separator.
+    private static func formatDecimal(_ value: Double, languageTag: String) -> String {
+        let text = String(format: "%.1f", locale: Locale(identifier: "en_US_POSIX"), value)
+        guard !languageTag.isEmpty,
+              let separator = Locale(identifier: languageTag).decimalSeparator else {
+            return text
+        }
+        return text.replacingOccurrences(of: ".", with: separator)
     }
 
     /// `H:MM:SS` once an hour has elapsed, otherwise `M:SS`.
