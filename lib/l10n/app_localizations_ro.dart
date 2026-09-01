@@ -1192,4 +1192,73 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Anunțuri vocale';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Actualizări vocale despre distanță, timp, ritm sau viteză';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Anunță progresul activității';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Rostește distanța, timpul, ritmul sau viteza în timpul unei înregistrări';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Reduce alte sunete în timpul vorbirii';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Reduce temporar volumul altor sunete în timpul fiecărui anunț';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interval de anunț în funcție de activitate';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distanță';
+
+  @override
+  String get audioAnnouncementsByTime => 'Timp';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'La fiecare $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'La fiecare $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Micșorează intervalul';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Mărește intervalul';
+
+  @override
+  String get audioAnnouncementsPreview => 'Ascultă un exemplu';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Previzualizarea anunțului nu este disponibilă pe acest dispozitiv';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Modificările se aplică la următoarea înregistrare.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distanță $distance. Timp $duration. Tură: $lapMetric. Total: $overallMetric.';
+  }
 }

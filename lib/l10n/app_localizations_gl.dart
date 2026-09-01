@@ -1196,4 +1196,73 @@ class AppLocalizationsGl extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Anuncios de voz';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Actualizacións de voz sobre distancia, tempo, ritmo ou velocidade';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Anunciar o progreso da actividade';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Di en voz alta a túa distancia, tempo, ritmo ou velocidade durante unha gravación';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Baixar outro audio mentres fala';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Reduce temporalmente o volume doutro audio durante cada anuncio';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Intervalo de anuncio por actividade';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distancia';
+
+  @override
+  String get audioAnnouncementsByTime => 'Tempo';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Cada $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Cada $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Diminuír intervalo';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Aumentar intervalo';
+
+  @override
+  String get audioAnnouncementsPreview => 'Escoitar exemplo';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'A mostra do anuncio non está dispoñible neste dispositivo';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Os cambios aplícanse á túa vindeira gravación.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distancia $distance. Tempo $duration. Volta: $lapMetric. Total: $overallMetric.';
+  }
 }

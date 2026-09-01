@@ -201,14 +201,12 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       // Rebuild the detector from the session's own snapshotted config (not
       // whatever the current app preference is) so a recovered recording keeps
       // behaving the way it did when it started.
-      _autoPauseDetector =
-          MovementAutoPauseDetector(
-              config: MovementAutoPauseConfig(
-                enabled: session.autoPauseEnabled,
-                pauseDelay: Duration(seconds: session.autoPauseDelaySeconds),
-              ),
-            )
-            ..reset(movementAt: _lastPoint?.timestamp ?? _now());
+      _autoPauseDetector = MovementAutoPauseDetector(
+        config: MovementAutoPauseConfig(
+          enabled: session.autoPauseEnabled,
+          pauseDelay: Duration(seconds: session.autoPauseDelaySeconds),
+        ),
+      )..reset(movementAt: _lastPoint?.timestamp ?? _now());
     }
     _emit(ActivityRecorderEvent.recoverableStateChanged(session));
     return session;

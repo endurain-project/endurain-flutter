@@ -1,3 +1,5 @@
+import 'package:endurain/features/sensors/services/ble_payload.dart';
+
 /// The crank-revolution fields decoded from a CSC Measurement notification.
 ///
 /// Cadence is not carried directly by the CSC (Cycling Speed and Cadence)
@@ -42,10 +44,8 @@ class CyclingSpeedCadenceMeasurementParser {
     if (data.isEmpty) {
       return null;
     }
-    for (final byte in data) {
-      if (byte < 0 || byte > 0xFF) {
-        return null;
-      }
+    if (!isByteValuedPayload(data)) {
+      return null;
     }
 
     final flags = data[0];

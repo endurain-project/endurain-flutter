@@ -176,6 +176,37 @@ class ActiveRecordingModelsTest {
         )
     }
 
+    @Test
+    fun sessionTimingKeepsPausedElapsedTimeFrozen() {
+        val session = baseSession().copy(
+            status = ActiveActivitySessionData.STATUS_PAUSED,
+            resumedAt = "2026-07-15T10:05:00.000Z",
+            elapsedDurationSeconds = 300,
+        )
+
+        val elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            IsoTime.toEpochMillis("2026-07-15T11:00:00.000Z")!!,
+        )
+
+        assertEquals(300, elapsedSeconds)
+    }
+
+    @Test
+    fun sessionTimingAddsOnlyTheCurrentResumedSegment() {
+        val session = baseSession().copy(
+            resumedAt = "2026-07-15T10:10:00.000Z",
+            elapsedDurationSeconds = 300,
+        )
+
+        val elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            IsoTime.toEpochMillis("2026-07-15T10:12:00.000Z")!!,
+        )
+
+        assertEquals(420, elapsedSeconds)
+    }
+
     // ── RecordedActivityPointData ──────────────────────────────────────────
 
     @Test

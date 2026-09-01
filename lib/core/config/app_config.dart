@@ -8,8 +8,8 @@
 /// (the login flow warns the user first).
 ///
 /// [AppConfig.defaults] provides production-safe values. The official cloud
-/// origin is supplied at runtime through [cloudBaseUrl] (by the future server
-/// picker); it is never baked in at build time, so every build is identical.
+/// origin is supplied through [cloudBaseUrl]; no managed service exists yet, so
+/// every current build leaves it unset and treats every origin as self-hosted.
 class AppConfig {
   const AppConfig({
     this.apiBasePath = defaultApiBasePath,
@@ -28,13 +28,14 @@ class AppConfig {
   /// every service that builds endpoint strings.
   final String apiBasePath;
 
-  /// Optional set of allowed tile-server hostnames for this build.
+  /// Optional set of allowed tile-server hostnames for this build, injected at
+  /// build time from `ENDURAIN_ALLOWED_TILE_HOSTS` (`--dart-define`) as a
+  /// comma-separated list.
   ///
-  /// When `null` (the default for self-hosted), any tile server host is
-  /// permitted. When set, only hostnames in this set are accepted; attempts
-  /// to save an out-of-policy host are rejected by the settings UI.
-  ///
-  /// A build can set this to restrict users to approved tile servers.
+  /// When `null` (the self-hosted default), any tile server host is permitted.
+  /// When set, only hostnames in this set are accepted; attempts to save an
+  /// out-of-policy host are rejected by the settings UI. Hosts must be
+  /// lowercase, since `Uri` normalizes the host it is compared against.
   final Set<String>? allowedTileServerHosts;
 
   /// Safety / rollout flag for the Health platform sync feature.
@@ -52,14 +53,19 @@ class AppConfig {
   /// flag only gates whether the feature is wired up at all.
   final bool healthSyncEnabled;
 
-  /// Optional origin of the official managed ("Endurain Cloud") service.
+  /// Origin of the official managed ("Endurain Cloud") service, injected at
+  /// build time from `ENDURAIN_CLOUD_BASE_URL` (`--dart-define`).
   ///
-  /// When set (e.g. `https://app.endurain.example`), connections whose host
-  /// matches this origin are always required to use HTTPS: plain `http://` is
-  /// rejected so the cloud service can never be reached over insecure
-  /// transport. When `null` (the self-hosted default), every URL is treated as
-  /// a user-chosen self-hosted instance. This is the seam a future server
-  /// picker uses to pre-fill the official cloud origin.
+  /// When set, connections whose host matches this origin are always required
+  /// to use HTTPS: plain `http://` is rejected so the cloud service can never
+  /// be reached over insecure transport. `null` or empty — the current default,
+  /// since no managed service exists — treats every URL as a user-chosen
+  /// self-hosted instance.
+  ///
+  /// Setting this must be paired with the OS-level pins in
+  /// `android/app/src/main/res/xml/network_security_config.xml` and
+  /// `ios/Runner/Info.plist`; `test/architecture/android_manifest_test.dart`
+  /// enforces that the three agree.
   final String? cloudBaseUrl;
 
   /// Default DSN for the managed ("Endurain Cloud") diagnostics endpoint,
@@ -91,6 +97,21 @@ class AppConfig {
     return allowed == null || allowed.contains(host);
   }
 
+  /// Parses the comma-separated `ENDURAIN_ALLOWED_TILE_HOSTS` build value into
+  /// [allowedTileServerHosts].
+  ///
+  /// An empty value yields `null`, meaning "unrestricted" — the self-hosted
+  /// default, where the user picks their own tile server. Hosts are trimmed and
+  /// lowercased to match the normalized host `Uri` reports.
+  static Set<String>? parseTileServerHostAllowlist(String value) {
+    final hosts = value
+        .split(',')
+        .map((host) => host.trim().toLowerCase())
+        .where((host) => host.isNotEmpty)
+        .toSet();
+    return hosts.isEmpty ? null : hosts;
+  }
+
   /// Whether plain `http://` is permitted when connecting to [url].
   ///
   /// The configured [cloudBaseUrl] origin is always strict (returns `false`):
@@ -105,7 +126,8 @@ class AppConfig {
   /// Whether [url] targets the official [cloudBaseUrl] origin (host match).
   bool _isCloudOrigin(String url) {
     final cloud = cloudBaseUrl;
-    if (cloud == null) {
+    // An empty value is what an unset `--dart-define` yields; treat it as unset.
+    if (cloud == null || cloud.isEmpty) {
       return false;
     }
     final target = Uri.tryParse(url);

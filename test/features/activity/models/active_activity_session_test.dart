@@ -73,25 +73,22 @@ void main() {
       expect(restored.isActive, isTrue);
     });
 
-    test(
-      'defaults auto-pause fields to disabled for a pre-schema-v3 session '
-      '(backwards compatibility)',
-      () {
-        final restored = ActiveActivitySession.fromJson({
-          'schemaVersion': 2,
-          'localSessionId': 'session_1',
-          'activityType': 'run',
-          'status': 'paused',
-          'startedAt': startedAt.toIso8601String(),
-        });
+    test('defaults auto-pause fields to disabled for a pre-schema-v3 session '
+        '(backwards compatibility)', () {
+      final restored = ActiveActivitySession.fromJson({
+        'schemaVersion': 2,
+        'localSessionId': 'session_1',
+        'activityType': 'run',
+        'status': 'paused',
+        'startedAt': startedAt.toIso8601String(),
+      });
 
-        // A session recorded before auto-pause existed must never silently
-        // start auto-pausing (or auto-resuming) after an app update.
-        expect(restored.autoPauseEnabled, isFalse);
-        expect(restored.autoPauseDelaySeconds, 5);
-        expect(restored.pausedAutomatically, isFalse);
-      },
-    );
+      // A session recorded before auto-pause existed must never silently
+      // start auto-pausing (or auto-resuming) after an app update.
+      expect(restored.autoPauseEnabled, isFalse);
+      expect(restored.autoPauseDelaySeconds, 5);
+      expect(restored.pausedAutomatically, isFalse);
+    });
 
     test('throws when required identifiers are missing', () {
       expect(

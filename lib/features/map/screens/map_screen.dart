@@ -14,7 +14,9 @@ import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
+import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -241,6 +243,18 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       }
     }
 
+    _activityController.configureAudioAnnouncements(
+      AudioAnnouncementConfig.build(
+        l10n: l10n,
+        settings: AppScope.servicesOf(
+          context,
+          listen: false,
+        ).audioAnnouncementSettingsController.settings,
+        activityType: type,
+        measurementSystem: context.measurementSystem,
+        languageTag: context.numberFormatLocale,
+      ),
+    );
     await _activityController.start(type);
   }
 

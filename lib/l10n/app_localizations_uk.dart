@@ -1186,4 +1186,73 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Голосові оголошення';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Голосові оновлення про відстань, час, темп або швидкість';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Оголошувати прогрес активності';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Вимовляє вашу відстань, час, темп або швидкість під час запису';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Приглушувати інший звук під час озвучення';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Тимчасово знижує гучність іншого звуку під час кожного оголошення';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Інтервал оголошень за видом активності';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Відстань';
+
+  @override
+  String get audioAnnouncementsByTime => 'Час';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Кожні $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Кожні $minutes хв';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Зменшити інтервал';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Збільшити інтервал';
+
+  @override
+  String get audioAnnouncementsPreview => 'Прослухати приклад';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Попереднє відтворення оголошення недоступне на цьому пристрої';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Зміни застосуються до наступного запису.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Відстань $distance. Час $duration. Коло: $lapMetric. Загалом: $overallMetric.';
+  }
 }

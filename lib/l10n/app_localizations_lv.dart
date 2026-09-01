@@ -1183,4 +1183,73 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Balss paziņojumi';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Balss atjauninājumi par attālumu, laiku, tempu vai ātrumu';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Paziņot aktivitātes progresu';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Ieraksta laikā balsī paziņo attālumu, laiku, tempu vai ātrumu';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Klusināt citu skaņu runāšanas laikā';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Īslaicīgi samazina citas skaņas skaļumu katra paziņojuma laikā';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Paziņojuma intervāls pēc aktivitātes';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Attālums';
+
+  @override
+  String get audioAnnouncementsByTime => 'Laiks';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Ik pēc $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Ik pēc $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Samazināt intervālu';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Palielināt intervālu';
+
+  @override
+  String get audioAnnouncementsPreview => 'Klausīties paraugu';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Paziņojuma paraugs šajā ierīcē nav pieejams';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Izmaiņas tiks piemērotas nākamajā ierakstā.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Attālums $distance. Laiks $duration. Aplis: $lapMetric. Kopā: $overallMetric.';
+  }
 }

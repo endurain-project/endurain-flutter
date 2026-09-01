@@ -5,7 +5,7 @@ import 'package:endurain/shared/state/safe_notifier.dart';
 ///
 /// Auto-pause only affects the *next* recording (the active config is
 /// snapshotted onto the session at start), so unlike the app-lifetime
-/// [MeasurementSystemController]-style controllers, this one only needs to
+/// `MeasurementSystemController`-style controllers, this one only needs to
 /// exist for the lifetime of the settings screen.
 class AutoPauseSettingsController extends SafeNotifier {
   AutoPauseSettingsController({required AutoPauseSettingsRepository repository})

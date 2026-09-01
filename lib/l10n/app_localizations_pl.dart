@@ -1196,4 +1196,73 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Komunikaty głosowe';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Głosowe aktualizacje dystansu, czasu, tempa lub prędkości';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Ogłaszaj postęp aktywności';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Odczytuje na głos dystans, czas, tempo lub prędkość podczas nagrywania';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Przycisz inne dźwięki podczas mówienia';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Tymczasowo zmniejsza głośność innych dźwięków podczas każdego komunikatu';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interwał komunikatów według aktywności';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Dystans';
+
+  @override
+  String get audioAnnouncementsByTime => 'Czas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Co $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Co $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Zmniejsz interwał';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Zwiększ interwał';
+
+  @override
+  String get audioAnnouncementsPreview => 'Odtwórz przykład';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Podgląd komunikatu jest niedostępny na tym urządzeniu';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Zmiany zostaną zastosowane przy następnym nagraniu.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Dystans $distance. Czas $duration. Okrążenie: $lapMetric. Łącznie: $overallMetric.';
+  }
 }

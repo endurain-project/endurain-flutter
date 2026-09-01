@@ -10,6 +10,7 @@ import 'package:endurain/features/activity/models/activity_recording_state.dart'
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
@@ -72,6 +73,7 @@ class ActivityRecordingService {
   bool _isDisposed = false;
   BackgroundLocationConfig? _backgroundConfig;
   MovementAutoPauseConfig _autoPauseConfig = const MovementAutoPauseConfig();
+  AudioAnnouncementConfig? _audioAnnouncementConfig;
   String? _localSessionId;
   String? _connectionOrigin;
   String? _connectionProfileId;
@@ -95,9 +97,18 @@ class ActivityRecordingService {
     _autoPauseConfig = config;
   }
 
+  /// Supplies the localized spoken-announcement configuration used by the
+  /// native recorder for the next `start` call. Rebuilt on every UI frame by
+  /// the caller (locale/unit/settings may change), so this is a cheap setter,
+  /// not a start of anything by itself.
+  void configureAudioAnnouncements(AudioAnnouncementConfig config) {
+    _audioAnnouncementConfig = config;
+  }
+
   Future<void> start({
     required ActivityType activityType,
     BackgroundLocationConfig? backgroundConfig,
+    AudioAnnouncementConfig? audioAnnouncementConfig,
     String? localSessionId,
     String? connectionOrigin,
     String? connectionProfileId,
@@ -131,6 +142,9 @@ class ActivityRecordingService {
     }
     if (backgroundConfig != null) {
       _backgroundConfig = backgroundConfig;
+    }
+    if (audioAnnouncementConfig != null) {
+      _audioAnnouncementConfig = audioAnnouncementConfig;
     }
     final backgroundErrorKey = await _backgroundTrackingErrorKey();
     if (backgroundErrorKey != null) {
@@ -198,6 +212,7 @@ class ActivityRecordingService {
           connectionOrigin: connectionOrigin,
           connectionProfileId: connectionProfileId,
           backgroundConfig: _backgroundConfig,
+          audioAnnouncementConfig: _audioAnnouncementConfig,
           heartRateDeviceId: sensorDeviceIds[RecordedSensorKind.heartRate],
           powerDeviceId: sensorDeviceIds[RecordedSensorKind.power],
           cadenceDeviceId: sensorDeviceIds[RecordedSensorKind.cadence],
@@ -382,6 +397,7 @@ class ActivityRecordingService {
     _elapsedBeforeCurrentSegmentSeconds = 0;
     _lastBreadcrumbPointCount = 0;
     _backgroundConfig = null;
+    _audioAnnouncementConfig = null;
     final discarded = await _runRecorderCommand(
       _recorder.discard,
       ActivityRecordingError.localSaveFailed,
@@ -505,7 +521,7 @@ class ActivityRecordingService {
   /// Guarded to only act while actively recording so a duplicate or
   /// out-of-order event can never clobber a state the controller already
   /// knows about. Prefers the recorder's own elapsed-time computation (from
-  /// [event.session]) over recomputing locally: the recorder timestamps the
+  /// `event.session` over recomputing locally: the recorder timestamps the
   /// pause from the fix that triggered it, which stays correct even if the
   /// Dart isolate's own timer was throttled while backgrounded.
   void _handleAutoPaused(ActivityRecorderEvent event) {
@@ -842,7 +858,8 @@ class ActivityRecordingService {
         startedAt: session.startedAt,
         endedAt: isCompleted ? (session.endedAt ?? _now()) : null,
         elapsedDurationSeconds: session.elapsedDurationSeconds,
-        isAutoPaused: status == ActivityRecordingStatus.paused &&
+        isAutoPaused:
+            status == ActivityRecordingStatus.paused &&
             session.pausedAutomatically,
         segments: segments,
       ),

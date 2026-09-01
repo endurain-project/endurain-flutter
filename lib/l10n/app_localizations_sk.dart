@@ -1194,4 +1194,73 @@ class AppLocalizationsSk extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Hlasové oznámenia';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Hlasové aktualizácie vzdialenosti, času, tempa alebo rýchlosti';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Oznamovať priebeh aktivity';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Počas nahrávania nahlas oznamuje vzdialenosť, čas, tempo alebo rýchlosť';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Stlmiť iný zvuk počas rozprávania';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Dočasne zníži hlasitosť iného zvuku počas každého oznámenia';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interval oznámení podľa aktivity';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Vzdialenosť';
+
+  @override
+  String get audioAnnouncementsByTime => 'Čas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Každých $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Každých $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Zmenšiť interval';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Zväčšiť interval';
+
+  @override
+  String get audioAnnouncementsPreview => 'Prehrať ukážku';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Ukážka hlásenia nie je na tomto zariadení dostupná';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Zmeny sa prejavia pri ďalšom zázname.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Vzdialenosť $distance. Čas $duration. Okruh: $lapMetric. Celkovo: $overallMetric.';
+  }
 }

@@ -1,3 +1,5 @@
+import 'package:endurain/features/sensors/services/ble_payload.dart';
+
 /// Decodes the BLE Cycling Power Measurement characteristic (GATT `0x2A63`).
 ///
 /// The wire format is defined by the Bluetooth SIG:
@@ -24,10 +26,8 @@ class CyclingPowerMeasurementParser {
     if (data.length < 4) {
       return null;
     }
-    for (final byte in data) {
-      if (byte < 0 || byte > 0xFF) {
-        return null;
-      }
+    if (!isByteValuedPayload(data)) {
+      return null;
     }
     final raw = data[2] | (data[3] << 8);
     return _toSigned16(raw);

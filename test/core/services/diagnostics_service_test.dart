@@ -7,24 +7,39 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('DiagnosticsService', () {
     late Directory tempDirectory;
+    late List<DiagnosticsService> services;
+
+    DiagnosticsService createService({
+      DateTime Function()? now,
+      int maxBreadcrumbs = 40,
+    }) {
+      final service = DiagnosticsService(
+        supportDirectoryProvider: () async => tempDirectory,
+        now: now,
+        maxBreadcrumbs: maxBreadcrumbs,
+      );
+      services.add(service);
+      return service;
+    }
 
     setUp(() {
+      services = [];
       tempDirectory = Directory.systemTemp.createTempSync(
         'endurain_diagnostics_test_',
       );
     });
 
-    tearDown(() {
+    tearDown(() async {
+      for (final service in services) {
+        await service.flush();
+      }
       if (tempDirectory.existsSync()) {
-        tempDirectory.deleteSync(recursive: true);
+        await tempDirectory.delete(recursive: true);
       }
     });
 
     test('records sanitized breadcrumbs and errors locally', () async {
-      final service = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-        now: () => DateTime.utc(2026, 6),
-      );
+      final service = createService(now: () => DateTime.utc(2026, 6));
 
       await service.initialize();
       await service.setEnabled(true);
@@ -65,10 +80,7 @@ void main() {
     });
 
     test('keeps breadcrumbs bounded', () async {
-      final service = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-        maxBreadcrumbs: 2,
-      );
+      final service = createService(maxBreadcrumbs: 2);
 
       await service.initialize();
       await service.setEnabled(true);
@@ -151,9 +163,7 @@ void main() {
 
       redactionCases.forEach((name, redactionCase) {
         test('redacts $name', () async {
-          final service = DiagnosticsService(
-            supportDirectoryProvider: () async => tempDirectory,
-          );
+          final service = createService();
           await service.initialize();
           await service.setEnabled(true);
 
@@ -177,9 +187,7 @@ void main() {
     });
 
     test('clear removes the report', () async {
-      final service = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final service = createService();
 
       await service.initialize();
       await service.setEnabled(true);
@@ -190,9 +198,7 @@ void main() {
     });
 
     test('does not record while disabled by default', () async {
-      final service = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final service = createService();
 
       await service.initialize();
       expect(service.isEnabled, isFalse);
@@ -203,9 +209,7 @@ void main() {
     });
 
     test('disabling discards the stored report', () async {
-      final service = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final service = createService();
 
       await service.initialize();
       await service.setEnabled(true);
@@ -219,15 +223,11 @@ void main() {
     });
 
     test('persists the enabled flag across instances', () async {
-      final first = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final first = createService();
       await first.initialize();
       await first.setEnabled(true);
 
-      final second = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final second = createService();
       await second.initialize();
 
       expect(second.isEnabled, isTrue);
@@ -236,9 +236,7 @@ void main() {
     });
 
     test('buffers breadcrumbs and persists them to disk on flush', () async {
-      final first = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final first = createService();
       await first.initialize();
       await first.setEnabled(true);
       first.recordBreadcrumbSync('buffered.event');
@@ -247,9 +245,7 @@ void main() {
       // the assertion only passes if the breadcrumb actually reached disk.
       await first.flush();
 
-      final second = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final second = createService();
       await second.initialize();
       final report = await second.readReport();
 
@@ -261,18 +257,14 @@ void main() {
     });
 
     test('persists errors synchronously without an explicit flush', () async {
-      final first = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final first = createService();
       await first.initialize();
       await first.setEnabled(true);
       first.recordErrorSync(StateError('boom'), StackTrace.empty);
 
       // No flush(): a fresh instance must still see the error, proving errors
       // are written synchronously so crash context survives a hard termination.
-      final second = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final second = createService();
       await second.initialize();
       final report = await second.readReport();
 
@@ -281,9 +273,7 @@ void main() {
     });
 
     test('flush is a safe no-op while disabled', () async {
-      final service = DiagnosticsService(
-        supportDirectoryProvider: () async => tempDirectory,
-      );
+      final service = createService();
       await service.initialize();
 
       await service.flush();

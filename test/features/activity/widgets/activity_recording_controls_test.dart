@@ -259,31 +259,30 @@ void main() {
       );
     });
 
-    testWidgets(
-      'hides the auto-paused indicator for a manual pause',
-      (tester) async {
-        await tester.pumpWidget(
-          _TestApp(
-            child: ActivityRecordingControls(
-              state: ActivityRecordingState(
-                status: ActivityRecordingStatus.paused,
-              ),
-              selectedActivityType: ActivityType.run,
-              onActivityTypeChanged: null,
-              onStart: null,
-              onPause: null,
-              onResume: () {},
-              onStop: () {},
+    testWidgets('hides the auto-paused indicator for a manual pause', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityRecordingControls(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.paused,
             ),
+            selectedActivityType: ActivityType.run,
+            onActivityTypeChanged: null,
+            onStart: null,
+            onPause: null,
+            onResume: () {},
+            onStop: () {},
           ),
-        );
+        ),
+      );
 
-        expect(
-          find.text(AppLocalizationsEn().activityAutoPausedIndicator),
-          findsNothing,
-        );
-      },
-    );
+      expect(
+        find.text(AppLocalizationsEn().activityAutoPausedIndicator),
+        findsNothing,
+      );
+    });
 
     testWidgets('disables unsafe actions while stopping', (tester) async {
       var stopped = false;

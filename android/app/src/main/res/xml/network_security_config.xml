@@ -4,20 +4,14 @@
 
   Self-hosted instances are user-provided hosts that may be reached over plain
   HTTP (the login flow warns before connecting), so cleartext is permitted by
-  the base config. The Dart transport layer (AppConfig.cloudBaseUrl /
-  ServerUrlResolver) already enforces HTTPS for the managed "Endurain Cloud"
-  origin; the domain-config below adds defense-in-depth at the OS layer so the
-  cloud origin can never be reached over cleartext even if a stored http:// URL
-  is present. This mirrors the iOS ATS exception domain in
-  ios/Runner/Info.plist.
+  the base config.
 
-  When the managed domain is finalized, replace the placeholder host below with
-  it and keep it in sync with AppConfig.cloudBaseUrl and the iOS Info.plist
-  NSExceptionDomains entry.
+  There is no managed ("Endurain Cloud") service yet. When one exists, add a
+  domain-config with cleartextTrafficPermitted="false" for its host here, add
+  the matching NSExceptionDomains entry to ios/Runner/Info.plist, and build with
+  the ENDURAIN_CLOUD_BASE_URL dart-define set to that origin. Until all three
+  agree, test/architecture/android_manifest_test.dart fails.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="true" />
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">app.endurain.example</domain>
-    </domain-config>
 </network-security-config>

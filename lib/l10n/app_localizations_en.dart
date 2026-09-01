@@ -1174,4 +1174,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Audio Announcements';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Voice updates on distance, time, and pace or speed';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Announce activity progress';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Speaks your distance, time, and pace or speed during a recording';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Lower other audio while speaking';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Temporarily reduces other audio volume during each announcement';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Announcement interval by activity';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distance';
+
+  @override
+  String get audioAnnouncementsByTime => 'Time';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Every $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Every $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Decrease interval';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Increase interval';
+
+  @override
+  String get audioAnnouncementsPreview => 'Play sample';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Announcement preview is not available on this device';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Changes apply to your next recording.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distance $distance. Time $duration. Lap: $lapMetric. Overall: $overallMetric.';
+  }
 }

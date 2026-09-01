@@ -2186,6 +2186,113 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The server redirected too many times. Check the server address.'**
   String get errorTooManyRedirects;
+
+  /// Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Announcements'**
+  String get audioAnnouncementsTitle;
+
+  /// Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Voice updates on distance, time, and pace or speed'**
+  String get audioAnnouncementsSubtitle;
+
+  /// Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Announce activity progress'**
+  String get audioAnnouncementsMasterSwitch;
+
+  /// Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Speaks your distance, time, and pace or speed during a recording'**
+  String get audioAnnouncementsMasterSwitchSubtitle;
+
+  /// Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Lower other audio while speaking'**
+  String get audioAnnouncementsDuckSwitch;
+
+  /// Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Temporarily reduces other audio volume during each announcement'**
+  String get audioAnnouncementsDuckSwitchSubtitle;
+
+  /// Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement interval by activity'**
+  String get audioAnnouncementsIntervalsHeader;
+
+  /// Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get audioAnnouncementsByDistance;
+
+  /// Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get audioAnnouncementsByTime;
+
+  /// Subtitle showing the configured distance interval, e.g. "Every 1.0 km" - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Every {value} {unit}'**
+  String audioAnnouncementsIntervalDistance(String value, String unit);
+
+  /// Subtitle showing the configured time interval in minutes, e.g. "Every 5 min" - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Every {minutes} min'**
+  String audioAnnouncementsIntervalTime(String minutes);
+
+  /// Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease interval'**
+  String get audioAnnouncementsDecreaseInterval;
+
+  /// Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Increase interval'**
+  String get audioAnnouncementsIncreaseInterval;
+
+  /// Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Play sample'**
+  String get audioAnnouncementsPreview;
+
+  /// Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement preview is not available on this device'**
+  String get audioAnnouncementsPreviewUnavailable;
+
+  /// Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Changes apply to your next recording.'**
+  String get audioAnnouncementsAppliesNextRecording;
+
+  /// Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Distance {distance}. Time {duration}. Lap: {lapMetric}. Overall: {overallMetric}.'**
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  );
 }
 
 class _AppLocalizationsDelegate

@@ -1184,4 +1184,72 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'The server redirected too many times. Check the server address.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Häälteated';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Häälteated vahemaa, aja, tempo või kiiruse kohta';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Teata tegevuse edenemisest';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Ütleb salvestamise ajal valjusti sinu vahemaa, aja, tempo või kiiruse';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Vaigista muu heli teatamise ajal';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Vähendab ajutiselt muu heli valjust iga teate ajal';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Teate intervall tegevuse kaupa';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Vahemaa';
+
+  @override
+  String get audioAnnouncementsByTime => 'Aeg';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Iga $value $unit järel';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Iga $minutes min järel';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Vähenda intervalli';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Suurenda intervalli';
+
+  @override
+  String get audioAnnouncementsPreview => 'Kuula näidet';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Teate näidis ei ole selles seadmes saadaval';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Muudatused rakenduvad järgmisel salvestusel.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Vahemaa $distance. Aeg $duration. Ring: $lapMetric. Kokku: $overallMetric.';
+  }
 }

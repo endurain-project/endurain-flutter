@@ -15,9 +15,11 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import com.endurain.endurain.R
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
@@ -46,6 +48,12 @@ class ActivityRecorderService : Service() {
     private var cadenceClient: CadenceGattClient? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var autoPauseDetector: MovementAutoPauseDetector? = null
+    private val announcementStateCache = AnnouncementStateCache()
+    private val announcementHandler = Handler(Looper.getMainLooper())
+    private val timeAnnouncementRunnable = Runnable {
+        announceTimeIfDue(System.currentTimeMillis())
+        scheduleNextTimeAnnouncement()
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -67,6 +75,7 @@ class ActivityRecorderService : Service() {
     }
 
     private fun handleStart(intent: Intent) {
+        announcementStateCache.reset()
         val title = intent.getStringExtra(EXTRA_TITLE) ?: defaultTitle()
         val text = intent.getStringExtra(EXTRA_TEXT) ?: defaultText()
         activeNotificationTitle = title
@@ -111,11 +120,14 @@ class ActivityRecorderService : Service() {
     }
 
     private fun handlePause() {
+        AudioAnnouncer.stop()
+        flushAnnouncementState()
         stopCollection()
         // Keep the foreground notification so recording can resume cheaply.
     }
 
     private fun handleStop() {
+        AudioAnnouncer.stop()
         stopCollection()
         stopSensorCapture()
         resumedFromPause = false
@@ -239,6 +251,7 @@ class ActivityRecorderService : Service() {
             return
         }
         acquireWakeLock()
+        scheduleNextTimeAnnouncement()
     }
 
     /**
@@ -303,6 +316,7 @@ class ActivityRecorderService : Service() {
         // Released first and unconditionally: the listener may already be null
         // (e.g. a start that never registered a provider), and the wake lock
         // must never outlive collection.
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
         releaseWakeLock()
         // A manual pause reaches here and must stop monitoring movement
         // entirely, so a manually paused recording can never auto-resume;
@@ -426,15 +440,18 @@ class ActivityRecorderService : Service() {
             return
         }
         var segmentIndex = session.currentSegmentIndex
+        var isNewSegment = false
         if (resumedFromPause) {
             if (previous != null) {
                 segmentIndex += 1
+                isNewSegment = true
                 store.saveSession(session.copy(currentSegmentIndex = segmentIndex))
             }
             resumedFromPause = false
         } else if (previous != null && nowMillis - previous > MAX_TIME_GAP_MILLIS) {
             // Large time gap: start a new segment to avoid bridging a false line.
             segmentIndex += 1
+            isNewSegment = true
             store.saveSession(session.copy(currentSegmentIndex = segmentIndex))
         }
         lastPointEpochMillis = nowMillis
@@ -469,6 +486,153 @@ class ActivityRecorderService : Service() {
             return
         }
         ActivityRecorderCoordinator.emitPointBatch(listOf(point))
+        announceIfDue(nowMillis, location, isNewSegment)
+    }
+
+    /** Advances announcement progress and speaks threshold crossings. */
+    private fun announceIfDue(nowMillis: Long, location: Location, isNewSegment: Boolean) {
+        val announcementState = currentAnnouncementState() ?: return
+        if (!announcementState.enabled) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        val elapsedSeconds = SessionTiming.elapsedSeconds(session, nowMillis)
+        val result = AnnouncementScheduler.onFix(
+            state = announcementState,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            elapsedSeconds = elapsedSeconds,
+            isNewSegment = isNewSegment,
+        )
+        if (!cacheAnnouncementState(
+                result.state,
+                persistBeforeSpeech = result.announcements.isNotEmpty(),
+            )
+        ) {
+            return
+        }
+        for (text in result.announcements) {
+            AudioAnnouncer.speak(
+                applicationContext,
+                text,
+                announcementState.duckOtherAudio,
+                announcementState.languageTag,
+            )
+        }
+    }
+
+    /**
+     * Schedules one main-looper callback at the next elapsed-time threshold.
+     * One-shot scheduling avoids polling and serializes state with GPS fixes.
+     */
+    private fun scheduleNextTimeAnnouncement() {
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
+        val announcementState = currentAnnouncementState() ?: return
+        if (!announcementState.enabled || !announcementState.isTimeBased ||
+            announcementState.timeIntervalSeconds !in
+            MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS..MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS
+        ) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return
+        }
+        val elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            System.currentTimeMillis(),
+        )
+        val nextIndex = maxOf(1L, announcementState.lastAnnouncedTimeIndex.toLong() + 1L)
+        val nextThresholdSeconds =
+            nextIndex * announcementState.timeIntervalSeconds.toLong()
+        val remainingSeconds = nextThresholdSeconds - elapsedSeconds.toLong()
+        val delayMillis = maxOf(
+            TIME_ANNOUNCEMENT_RETRY_MILLIS,
+            remainingSeconds * 1000L,
+        )
+        announcementHandler.postDelayed(timeAnnouncementRunnable, delayMillis)
+    }
+
+    /** Advances a time-based schedule without waiting for another GPS fix. */
+    private fun announceTimeIfDue(referenceMillis: Long) {
+        val announcementState = currentAnnouncementState() ?: return
+        if (!announcementState.enabled || !announcementState.isTimeBased) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return
+        }
+        val result = AnnouncementScheduler.onElapsedTime(
+            state = announcementState,
+            elapsedSeconds = SessionTiming.elapsedSeconds(session, referenceMillis),
+        )
+        if (result.state == announcementState) {
+            return
+        }
+        if (!cacheAnnouncementState(
+                result.state,
+                persistBeforeSpeech = result.announcements.isNotEmpty(),
+            )
+        ) {
+            return
+        }
+        for (text in result.announcements) {
+            AudioAnnouncer.speak(
+                applicationContext,
+                text,
+                announcementState.duckOtherAudio,
+                announcementState.languageTag,
+            )
+        }
+    }
+
+    private fun currentAnnouncementState(): AnnouncementStateData? {
+        announcementStateCache.state?.let { return it }
+        val state = store.loadAnnouncementState() ?: return null
+        announcementStateCache.restore(state, SystemClock.elapsedRealtime())
+        return state
+    }
+
+    /**
+     * Keeps normal GPS progress in memory, checkpoints it periodically, and
+     * makes threshold progress durable before the corresponding speech.
+     */
+    private fun cacheAnnouncementState(
+        state: AnnouncementStateData,
+        persistBeforeSpeech: Boolean,
+    ): Boolean {
+        val previousState = announcementStateCache.state
+        announcementStateCache.update(state)
+        val uptimeMillis = SystemClock.elapsedRealtime()
+        val stateToPersist = announcementStateCache.stateToPersist(
+            uptimeMillis,
+            force = persistBeforeSpeech,
+        ) ?: return true
+        return try {
+            store.saveAnnouncementState(stateToPersist)
+            announcementStateCache.markPersisted(uptimeMillis)
+            true
+        } catch (_: Exception) {
+            if (persistBeforeSpeech && previousState != null) {
+                announcementStateCache.update(previousState)
+            }
+            !persistBeforeSpeech
+        }
+    }
+
+    private fun flushAnnouncementState() {
+        val uptimeMillis = SystemClock.elapsedRealtime()
+        val state = announcementStateCache.stateToPersist(
+            uptimeMillis,
+            force = true,
+        ) ?: return
+        try {
+            store.saveAnnouncementState(state)
+            announcementStateCache.markPersisted(uptimeMillis)
+        } catch (_: Exception) {
+            // Announcement progress must never make recording teardown fail.
+        }
     }
 
     /**
@@ -500,6 +664,7 @@ class ActivityRecorderService : Service() {
         // segment, matching the manual resume flow (`resumedFromPause` forces
         // a segment break above).
         onActiveLocationFix(resumed, location)
+        scheduleNextTimeAnnouncement()
     }
 
     private fun transitionToAutoPaused(session: ActiveActivitySessionData, nowMillis: Long) {
@@ -514,6 +679,9 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.TYPE_AUTO_PAUSED,
             paused,
         )
+        AudioAnnouncer.stop()
+        flushAnnouncementState()
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
         // Deliberately does not call `stopCollection()`: an automatic pause
         // must keep monitoring location so movement can resume the recording
         // without user interaction, unlike a manual pause which stops
@@ -724,6 +892,10 @@ class ActivityRecorderService : Service() {
     }
 
     override fun onDestroy() {
+        AudioAnnouncer.stop()
+        if (store.loadSession()?.isActive == true) {
+            flushAnnouncementState()
+        }
         stopCollection()
         stopSensorCapture()
         releaseWakeLock()
@@ -753,6 +925,9 @@ class ActivityRecorderService : Service() {
         private const val MAX_TIME_GAP_MILLIS = 30_000L
         private const val MAX_ACCURACY_METERS = 100f
         private const val MAX_SPEED_METERS_PER_SECOND = 90f
+        private const val MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 60
+        private const val MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 3600
+        private const val TIME_ANNOUNCEMENT_RETRY_MILLIS = 1000L
 
         private fun baseIntent(context: Context, action: String): Intent {
             return Intent(context, ActivityRecorderService::class.java).setAction(action)
