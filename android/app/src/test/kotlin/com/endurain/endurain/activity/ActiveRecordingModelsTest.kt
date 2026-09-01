@@ -177,6 +177,39 @@ class ActiveRecordingModelsTest {
     }
 
     @Test
+    fun sessionRequiresLocationMonitoringWhileRecordingOrAutomaticallyPaused() {
+        fun sessionWith(status: String, pausedAutomatically: Boolean = false) =
+            ActiveActivitySessionData(
+                localSessionId = "activity_1",
+                activityType = "run",
+                status = status,
+                startedAt = "2026-07-15T10:00:00.000Z",
+                pausedAutomatically = pausedAutomatically,
+            )
+
+        assertTrue(
+            sessionWith(ActiveActivitySessionData.STATUS_RECORDING)
+                .requiresLocationMonitoring,
+        )
+        assertTrue(
+            sessionWith(
+                ActiveActivitySessionData.STATUS_PAUSED,
+                pausedAutomatically = true,
+            ).requiresLocationMonitoring,
+        )
+        assertFalse(
+            sessionWith(ActiveActivitySessionData.STATUS_PAUSED)
+                .requiresLocationMonitoring,
+        )
+        assertFalse(
+            sessionWith(
+                ActiveActivitySessionData.STATUS_COMPLETED,
+                pausedAutomatically = true,
+            ).requiresLocationMonitoring,
+        )
+    }
+
+    @Test
     fun sessionTimingKeepsPausedElapsedTimeFrozen() {
         val session = baseSession().copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,

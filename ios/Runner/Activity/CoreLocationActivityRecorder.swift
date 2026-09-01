@@ -142,7 +142,7 @@ final class CoreLocationActivityRecorder:
         }
         guard
             let session = store.loadSession(),
-            session.status == ActiveActivitySessionData.statusRecording
+            session.requiresLocationMonitoring
         else {
             return false
         }

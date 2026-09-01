@@ -71,6 +71,11 @@ struct ActiveActivitySessionData {
             || status == ActiveActivitySessionData.statusPaused
     }
 
+    var requiresLocationMonitoring: Bool {
+        return status == ActiveActivitySessionData.statusRecording
+            || (status == ActiveActivitySessionData.statusPaused && pausedAutomatically)
+    }
+
     /// Accumulated elapsed seconds as of `referenceMillis`: a paused session
     /// keeps its stored value; otherwise adds the current segment's running
     /// time from `resumedAt ?? startedAt`. Mirrors the Dart geolocator

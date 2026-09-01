@@ -135,7 +135,7 @@ class ActivityRecorderService : Service() {
         stopSelf()
     }
 
-    /** Sticky restart after process death: resume only if still recording. */
+    /** Restores collection after process death when movement is still needed. */
     private fun handleRestart() {
         val session = store.loadSession()
         if (session == null || !session.isActive) {
@@ -156,7 +156,7 @@ class ActivityRecorderService : Service() {
         )) {
             return
         }
-        if (session.status == ActiveActivitySessionData.STATUS_RECORDING) {
+        if (session.requiresLocationMonitoring) {
             beginCollection()
             startSensorCapture()
         }

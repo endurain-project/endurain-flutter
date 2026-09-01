@@ -38,6 +38,10 @@ data class ActiveActivitySessionData(
     val isActive: Boolean
         get() = status == STATUS_RECORDING || status == STATUS_PAUSED
 
+    val requiresLocationMonitoring: Boolean
+        get() = status == STATUS_RECORDING ||
+            (status == STATUS_PAUSED && pausedAutomatically)
+
     /**
      * Whether this session binds at least one external BLE sensor.
      *
