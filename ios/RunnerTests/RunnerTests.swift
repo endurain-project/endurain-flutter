@@ -26,7 +26,10 @@ final class ActiveRecordingModelsTests: XCTestCase {
       pausedAt: "2026-07-15T10:10:00.000Z",
       endedAt: "2026-07-15T10:20:00.000Z",
       elapsedDurationSeconds: 600,
-      currentSegmentIndex: 3
+      currentSegmentIndex: 3,
+      autoPauseEnabled: true,
+      autoPauseDelaySeconds: 15,
+      pausedAutomatically: true
     )
 
     let decoded = ActiveActivitySessionData.fromJson(session.toMap())
@@ -42,6 +45,9 @@ final class ActiveRecordingModelsTests: XCTestCase {
     XCTAssertEqual(decoded?.endedAt, "2026-07-15T10:20:00.000Z")
     XCTAssertEqual(decoded?.elapsedDurationSeconds, 600)
     XCTAssertEqual(decoded?.currentSegmentIndex, 3)
+    XCTAssertEqual(decoded?.autoPauseEnabled, true)
+    XCTAssertEqual(decoded?.autoPauseDelaySeconds, 15)
+    XCTAssertEqual(decoded?.pausedAutomatically, true)
     XCTAssertEqual(
       decoded?.schemaVersion, ActiveActivitySessionData.schemaVersionValue)
   }

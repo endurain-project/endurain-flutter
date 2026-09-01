@@ -9,6 +9,7 @@ import 'package:endurain/features/activity/services/geolocator_activity_location
 import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/recording_location_platform_adapter.dart';
@@ -142,6 +143,18 @@ void main() {
     });
 
     test(
+      'keeps distance-filtered updates when auto-pause is disabled',
+      () async {
+        await recorder.start(request());
+
+        expect(
+          adapter.lastPositionStreamSettings?.distanceFilter,
+          LocationDistanceFilters.recordingMeters,
+        );
+      },
+    );
+
+    test(
       'drops low-accuracy fixes instead of recording ghost points',
       () async {
         await recorder.start(request());
@@ -189,6 +202,15 @@ void main() {
           autoPauseConfig: config,
         );
       }
+
+      test('requests unfiltered updates so stillness can trigger', () async {
+        await recorder.start(autoPauseRequest());
+
+        expect(
+          adapter.lastPositionStreamSettings?.distanceFilter,
+          LocationDistanceFilters.autoPauseMeters,
+        );
+      });
 
       test('auto-pauses after stillness persists, without cancelling the '
           'position stream', () async {
@@ -383,6 +405,46 @@ void main() {
       final recovered = await recorder.recoverActiveSession();
       expect(recovered, isNotNull);
       expect(recovered!.status, ActiveActivityStatus.paused);
+      expect(adapter.listenCount, 0);
+    });
+
+    test('recoverActiveSession restarts monitoring when auto-paused', () async {
+      final startedAt = DateTime.utc(2026, 6, 3, 9);
+      store.session = ActiveActivitySession(
+        localSessionId: 'session_1',
+        activityType: ActivityType.run,
+        status: ActiveActivityStatus.paused,
+        startedAt: startedAt,
+        autoPauseEnabled: true,
+        pausedAutomatically: true,
+      );
+      await store.appendPoints([
+        RecordedActivityPoint(
+          timestamp: startedAt,
+          latitude: 41.1,
+          longitude: -8.6,
+          segmentIndex: 0,
+          speedMetersPerSecond: 0,
+          horizontalAccuracyMeters: 5,
+        ),
+      ]);
+
+      await recorder.recoverActiveSession();
+
+      expect(adapter.listenCount, 1);
+      for (var second = 1; second <= 3; second += 1) {
+        adapter.addPosition(
+          recordingPosition(
+            latitude: 41.1 + second / 100,
+            longitude: -8.6,
+            timestamp: startedAt.add(Duration(seconds: second)),
+            speed: 2,
+          ),
+        );
+        await pumpEventQueue();
+      }
+      expect(store.session?.status, ActiveActivityStatus.recording);
+      expect(store.points.last.segmentIndex, 1);
     });
 
     test('drain records sanitized point batch metadata', () async {

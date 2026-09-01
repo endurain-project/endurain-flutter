@@ -66,11 +66,11 @@ class _AutoPauseSettingsScreenState extends State<AutoPauseSettingsScreen>
                 title: l10n.activityAutoPauseToggleLabel,
                 subtitle: l10n.activityAutoPauseToggleDescription,
                 value: _controller.enabled,
-                onChanged: _controller.setEnabled,
+                onChanged: _controller.isLoaded ? _controller.setEnabled : null,
               ),
             ],
           ),
-          if (_controller.enabled) ...[
+          if (_controller.isLoaded && _controller.enabled) ...[
             const SizedBox(height: UIConstants.paddingStandard),
             AdaptiveListSection(
               header: l10n.activityAutoPauseDelayHelperText,

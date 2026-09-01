@@ -96,6 +96,9 @@ final class CoreLocationActivityRecorder:
         restoreAnnouncementState()
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
         let session = store.loadSession()
+        manager.distanceFilter = session?.autoPauseEnabled == true
+            ? kCLDistanceFilterNone
+            : CoreLocationActivityRecorder.distanceFilterMeters
         let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
         autoPauseDetector = MovementAutoPauseDetector(config: MovementAutoPauseConfig(
             enabled: session?.autoPauseEnabled ?? false,

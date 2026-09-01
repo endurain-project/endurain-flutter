@@ -28,8 +28,9 @@ class MovementAutoPauseConfig {
   final double movingSpeedThresholdMetersPerSecond;
 
   /// Horizontal accuracy worse than this (in meters) is treated as
-  /// unreliable and never counted as movement, matching
-  /// `ActivitySegmentPolicy.maxAccuracyMeters`'s conservative default.
+  /// unreliable and never counted as movement. This is intentionally stricter
+  /// than the track-retention threshold so coarse fixes cannot drive automatic
+  /// pause or resume transitions.
   final double maxAccuracyMeters;
 
   /// Number of consecutive reliable "moving" samples required to auto-resume,

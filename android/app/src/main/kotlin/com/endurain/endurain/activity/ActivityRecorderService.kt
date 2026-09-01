@@ -220,6 +220,11 @@ class ActivityRecorderService : Service() {
                 pauseDelayMillis = (session?.autoPauseDelaySeconds ?: 5) * 1000L,
             ),
         ).also { it.reset(lastPointEpochMillis ?: System.currentTimeMillis()) }
+        val minUpdateDistanceMeters = if (session?.autoPauseEnabled == true) {
+            0f
+        } else {
+            MIN_UPDATE_DISTANCE_METERS
+        }
         var registeredProvider = false
         var permissionFailure = false
         for (provider in providers) {
@@ -227,7 +232,7 @@ class ActivityRecorderService : Service() {
                 manager.requestLocationUpdates(
                     provider,
                     MIN_UPDATE_INTERVAL_MS,
-                    MIN_UPDATE_DISTANCE_METERS,
+                    minUpdateDistanceMeters,
                     listener,
                     Looper.getMainLooper(),
                 )

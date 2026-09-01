@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added configurable activity auto-pause and auto-resume with movement detection, resume hysteresis, and process-recovery support.
 - Added localized, on-device audio announcements for distance or elapsed-time milestones during foreground and background activity recording, including distance, duration, and lap plus overall pace or speed.
 - Added audio announcement settings with a master switch, per-activity enablement and distance/time intervals, metric/imperial defaults, optional audio ducking, and an audible per-activity preview.
 - Added durable milestone tracking and privacy-safe native failure logging so delayed updates and recorder restarts do not replay stale milestones, while speech failures cannot interrupt activity recording.

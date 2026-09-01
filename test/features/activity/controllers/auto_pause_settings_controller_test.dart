@@ -1,8 +1,21 @@
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
+
+class _ThrowingPreferencesBackend implements AppPreferencesBackend {
+  @override
+  Future<void> delete(String key) => Future.error(StateError('unavailable'));
+
+  @override
+  Future<String?> read(String key) => Future.error(StateError('unavailable'));
+
+  @override
+  Future<void> write(String key, String value) =>
+      Future.error(StateError('unavailable'));
+}
 
 void main() {
   late FakePreferencesStore preferences;
@@ -55,6 +68,21 @@ void main() {
       expect(await repository.isEnabled(), isFalse);
     });
 
+    test('setEnabled rolls back when persistence fails', () async {
+      final controller = AutoPauseSettingsController(
+        repository: AutoPauseSettingsRepository(
+          preferences: AppPreferencesStore(
+            backend: _ThrowingPreferencesBackend(),
+          ),
+        ),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.setEnabled(false);
+
+      expect(controller.enabled, isTrue);
+    });
+
     test(
       'setDelaySeconds clamps out-of-range values before persisting',
       () async {
@@ -67,6 +95,24 @@ void main() {
         expect(await repository.getDelaySeconds(), controller.maxDelaySeconds);
       },
     );
+
+    test('setDelaySeconds rolls back when persistence fails', () async {
+      final controller = AutoPauseSettingsController(
+        repository: AutoPauseSettingsRepository(
+          preferences: AppPreferencesStore(
+            backend: _ThrowingPreferencesBackend(),
+          ),
+        ),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.setDelaySeconds(30);
+
+      expect(
+        controller.delaySeconds,
+        AutoPauseSettingsRepository.defaultDelaySeconds,
+      );
+    });
 
     test('exposes the supported delay range from the repository', () {
       final controller = buildController();

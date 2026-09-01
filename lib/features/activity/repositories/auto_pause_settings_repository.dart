@@ -15,6 +15,7 @@ class AutoPauseSettingsRepository {
   static const String delaySecondsKey = 'activity_auto_pause_delay_seconds';
 
   /// Inclusive bounds for the configurable stillness delay.
+  static const bool defaultEnabled = true;
   static const int minDelaySeconds = 5;
   static const int maxDelaySeconds = 60;
   static const int defaultDelaySeconds = 5;
@@ -25,7 +26,7 @@ class AutoPauseSettingsRepository {
   Future<bool> isEnabled() async {
     final stored = await preferences.read(key: enabledKey);
     if (stored == null) {
-      return true;
+      return defaultEnabled;
     }
     return stored == 'true';
   }

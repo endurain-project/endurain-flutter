@@ -38,6 +38,9 @@ class ActiveRecordingModelsTest {
             endedAt = "2026-07-15T10:20:00.000Z",
             elapsedDurationSeconds = 600,
             currentSegmentIndex = 3,
+            autoPauseEnabled = true,
+            autoPauseDelaySeconds = 15,
+            pausedAutomatically = true,
         )
 
         val decoded = ActiveActivitySessionData.fromJson(session.toJson())

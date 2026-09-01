@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
@@ -7,6 +9,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
+
+class _BlockingAutoPauseSettingsRepository extends AutoPauseSettingsRepository {
+  _BlockingAutoPauseSettingsRepository()
+    : super(preferences: FakePreferencesStore());
+
+  final Completer<void> _loadGate = Completer<void>();
+
+  void completeLoad() => _loadGate.complete();
+
+  @override
+  Future<bool> isEnabled() async {
+    await _loadGate.future;
+    return super.isEnabled();
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +64,40 @@ void main() {
     );
     expect(
       find.text(l10n.activityAutoPauseDelayOptionLabel(60)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('disables controls until persisted settings load', (
+    tester,
+  ) async {
+    controller.dispose();
+    final blockingRepository = _BlockingAutoPauseSettingsRepository();
+    repository = blockingRepository;
+    controller = AutoPauseSettingsController(repository: repository);
+
+    await pumpScreen(tester);
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<AdaptiveSwitchListTile>(find.byType(AdaptiveSwitchListTile))
+          .onChanged,
+      isNull,
+    );
+    expect(find.text(l10n.activityAutoPauseDelayOptionLabel(5)), findsNothing);
+
+    blockingRepository.completeLoad();
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<AdaptiveSwitchListTile>(find.byType(AdaptiveSwitchListTile))
+          .onChanged,
+      isNotNull,
+    );
+    expect(
+      find.text(l10n.activityAutoPauseDelayOptionLabel(5)),
       findsOneWidget,
     );
   });

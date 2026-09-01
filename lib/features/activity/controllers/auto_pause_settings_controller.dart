@@ -13,7 +13,7 @@ class AutoPauseSettingsController extends SafeNotifier {
 
   final AutoPauseSettingsRepository _repository;
 
-  bool _enabled = true;
+  bool _enabled = AutoPauseSettingsRepository.defaultEnabled;
   int _delaySeconds = AutoPauseSettingsRepository.defaultDelaySeconds;
   bool _isLoaded = false;
 
@@ -41,9 +41,17 @@ class AutoPauseSettingsController extends SafeNotifier {
     if (_enabled == enabled) {
       return;
     }
+    final previous = _enabled;
     _enabled = enabled;
     notify();
-    await _repository.setEnabled(enabled);
+    try {
+      await _repository.setEnabled(enabled);
+    } catch (_) {
+      if (_enabled == enabled) {
+        _enabled = previous;
+        notify();
+      }
+    }
   }
 
   Future<void> setDelaySeconds(int seconds) async {
@@ -51,8 +59,16 @@ class AutoPauseSettingsController extends SafeNotifier {
     if (_delaySeconds == clamped) {
       return;
     }
+    final previous = _delaySeconds;
     _delaySeconds = clamped;
     notify();
-    await _repository.setDelaySeconds(clamped);
+    try {
+      await _repository.setDelaySeconds(clamped);
+    } catch (_) {
+      if (_delaySeconds == clamped) {
+        _delaySeconds = previous;
+        notify();
+      }
+    }
   }
 }

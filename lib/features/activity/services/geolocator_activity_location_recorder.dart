@@ -207,6 +207,10 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
           pauseDelay: Duration(seconds: session.autoPauseDelaySeconds),
         ),
       )..reset(movementAt: _lastPoint?.timestamp ?? _now());
+      if (session.status == ActiveActivityStatus.paused &&
+          session.pausedAutomatically) {
+        _startStream();
+      }
     }
     _emit(ActivityRecorderEvent.recoverableStateChanged(session));
     return session;
@@ -228,11 +232,14 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     if (_positionSubscription != null) {
       return;
     }
+    final distanceFilter = _session?.autoPauseEnabled == true
+        ? LocationDistanceFilters.autoPauseMeters
+        : LocationDistanceFilters.recordingMeters;
     try {
       _positionSubscription = _locationService
           .getPositionStream(
             background: _backgroundConfig,
-            distanceFilter: LocationDistanceFilters.recordingMeters,
+            distanceFilter: distanceFilter,
           )
           .listen(_onPosition, onError: _onStreamError);
     } catch (error, stackTrace) {
