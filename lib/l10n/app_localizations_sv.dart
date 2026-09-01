@@ -518,6 +518,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatiskt pausad';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Inspelning pausad';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Inspelning återupptagen';
+
+  @override
   String get activityHistoryEmpty =>
       'Inga slutförda aktiviteter sparade på den här enheten.';
 

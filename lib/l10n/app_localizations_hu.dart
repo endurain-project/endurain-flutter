@@ -520,6 +520,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatikusan szüneteltetve';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Rögzítés szüneteltetve';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Rögzítés folytatva';
+
+  @override
   String get activityHistoryEmpty =>
       'Nincsenek az eszközön mentett befejezett tevékenységek.';
 

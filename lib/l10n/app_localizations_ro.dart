@@ -519,6 +519,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get activityAutoPausedIndicator => 'În pauză automată';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Înregistrare întreruptă';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Înregistrare reluată';
+
+  @override
   String get activityHistoryEmpty =>
       'Nicio activitate finalizată salvată pe acest dispozitiv.';
 

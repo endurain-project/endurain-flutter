@@ -517,6 +517,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Аутоматски паузирано';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Снимање паузирано';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Снимање настављено';
+
+  @override
   String get activityHistoryEmpty =>
       'Нема завршених активности сачуваних на овом уређају.';
 

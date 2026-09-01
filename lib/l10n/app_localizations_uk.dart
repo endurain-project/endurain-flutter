@@ -515,6 +515,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Автоматично призупинено';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Запис призупинено';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Запис відновлено';
+
+  @override
   String get activityHistoryEmpty =>
       'На цьому пристрої немає збережених завершених активностей.';
 

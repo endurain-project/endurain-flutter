@@ -508,6 +508,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Otomatik duraklatıldı';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Kayıt duraklatıldı';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Kayıt sürdürüldü';
+
+  @override
   String get activityHistoryEmpty =>
       'Bu cihaza kaydedilmiş tamamlanan etkinlik yok.';
 

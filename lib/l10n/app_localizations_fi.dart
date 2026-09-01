@@ -518,6 +518,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaattisesti keskeytetty';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Tallennus keskeytetty';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Tallennusta jatkettu';
+
+  @override
   String get activityHistoryEmpty =>
       'Tälle laitteelle ei ole tallennettu valmiita aktiviteetteja.';
 

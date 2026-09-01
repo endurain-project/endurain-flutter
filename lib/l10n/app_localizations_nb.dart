@@ -514,6 +514,12 @@ class AppLocalizationsNb extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatisk pause';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Opptak satt på pause';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Opptak gjenopptatt';
+
+  @override
   String get activityHistoryEmpty =>
       'Ingen fullførte aktiviteter lagret på denne enheten.';
 

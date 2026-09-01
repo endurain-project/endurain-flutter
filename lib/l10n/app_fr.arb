@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Choisissez combien de temps sans mouvement attendre avant la pause.",
   "activityAutoPauseDelayOptionLabel": "{seconds} secondes",
   "activityAutoPausedIndicator": "En pause automatique",
+  "audioAnnouncementsAutoPaused": "Enregistrement en pause",
+  "audioAnnouncementsAutoResumed": "Enregistrement repris",
   "activityHistoryEmpty": "Aucune activité terminée enregistrée sur cet appareil.",
   "activityHistoryLoadFailed": "Impossible de charger les activités locales.",
   "activityHistoryRefresh": "Actualiser",

@@ -517,6 +517,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatická pauza';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Nahrávání pozastaveno';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nahrávání obnoveno';
+
+  @override
   String get activityHistoryEmpty =>
       'V tomto zařízení nejsou uloženy žádné dokončené aktivity.';
 

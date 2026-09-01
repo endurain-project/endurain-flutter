@@ -510,6 +510,12 @@ class AppLocalizationsLt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatiškai pristabdyta';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Įrašymas pristabdytas';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Įrašymas atnaujintas';
+
+  @override
   String get activityHistoryEmpty =>
       'Šiame įrenginyje nėra įrašytų užbaigtų veiklų.';
 

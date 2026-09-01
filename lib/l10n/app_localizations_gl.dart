@@ -519,6 +519,12 @@ class AppLocalizationsGl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'En pausa automática';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Gravación en pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Gravación retomada';
+
+  @override
   String get activityHistoryEmpty =>
       'Non hai actividades completadas gardadas neste dispositivo.';
 

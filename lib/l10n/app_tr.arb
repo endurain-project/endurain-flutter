@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Duraklatmadan önce hareketsiz geçecek süreyi seçin.",
   "activityAutoPauseDelayOptionLabel": "{seconds} saniye",
   "activityAutoPausedIndicator": "Otomatik duraklatıldı",
+  "audioAnnouncementsAutoPaused": "Kayıt duraklatıldı",
+  "audioAnnouncementsAutoResumed": "Kayıt sürdürüldü",
   "activityHistoryEmpty": "Bu cihaza kaydedilmiş tamamlanan etkinlik yok.",
   "activityHistoryLoadFailed": "Yerel etkinlikler yüklenemedi.",
   "activityHistoryRefresh": "Yenile",

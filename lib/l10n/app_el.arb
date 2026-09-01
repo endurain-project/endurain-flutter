@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Επιλέξτε πόσο χρόνο χωρίς κίνηση θα περιμένει πριν από την παύση.",
   "activityAutoPauseDelayOptionLabel": "{seconds} δευτερόλεπτα",
   "activityAutoPausedIndicator": "Αυτόματη παύση",
+  "audioAnnouncementsAutoPaused": "Η καταγραφή τέθηκε σε παύση",
+  "audioAnnouncementsAutoResumed": "Η καταγραφή συνεχίστηκε",
   "activityHistoryEmpty": "Δεν υπάρχουν ολοκληρωμένες δραστηριότητες αποθηκευμένες σε αυτήν τη συσκευή.",
   "activityHistoryLoadFailed": "Δεν ήταν δυνατή η φόρτωση των τοπικών δραστηριοτήτων.",
   "activityHistoryRefresh": "Ανανέωση",

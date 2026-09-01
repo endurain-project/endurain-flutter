@@ -522,6 +522,12 @@ class AppLocalizationsCa extends AppLocalizations {
   String get activityAutoPausedIndicator => 'En pausa automàtica';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Enregistrament en pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Enregistrament reprès';
+
+  @override
   String get activityHistoryEmpty =>
       'No hi ha activitats completades desades en aquest dispositiu.';
 

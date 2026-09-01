@@ -515,6 +515,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatisch gepauzeerd';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Opname gepauzeerd';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Opname hervat';
+
+  @override
   String get activityHistoryEmpty =>
       'Geen voltooide activiteiten opgeslagen op dit apparaat.';
 

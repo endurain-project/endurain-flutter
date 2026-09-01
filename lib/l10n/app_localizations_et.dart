@@ -514,6 +514,12 @@ class AppLocalizationsEt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaatselt peatatud';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Salvestamine peatatud';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Salvestamine jätkatud';
+
+  @override
   String get activityHistoryEmpty =>
       'Sellesse seadmesse pole salvestatud ühtegi lõpetatud tegevust.';
 

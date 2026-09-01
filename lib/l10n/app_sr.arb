@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Изаберите колико дуго без покрета треба сачекати пре паузирања.",
   "activityAutoPauseDelayOptionLabel": "{seconds} секунди",
   "activityAutoPausedIndicator": "Аутоматски паузирано",
+  "audioAnnouncementsAutoPaused": "Снимање паузирано",
+  "audioAnnouncementsAutoResumed": "Снимање настављено",
   "activityHistoryEmpty": "Нема завршених активности сачуваних на овом уређају.",
   "activityHistoryLoadFailed": "Није могуће учитати локалне активности.",
   "activityHistoryRefresh": "Освежи",

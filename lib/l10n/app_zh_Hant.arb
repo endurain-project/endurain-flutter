@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "選擇在暫停前等待多長時間沒有移動。",
   "activityAutoPauseDelayOptionLabel": "{seconds} 秒",
   "activityAutoPausedIndicator": "自動暫停中",
+  "audioAnnouncementsAutoPaused": "記錄已暫停",
+  "audioAnnouncementsAutoResumed": "記錄已恢復",
   "activityHistoryEmpty": "此裝置上未儲存已完成的活動。",
   "activityHistoryLoadFailed": "無法載入本機活動。",
   "activityHistoryRefresh": "重新整理",

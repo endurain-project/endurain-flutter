@@ -524,6 +524,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Αυτόματη παύση';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Η καταγραφή τέθηκε σε παύση';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Η καταγραφή συνεχίστηκε';
+
+  @override
   String get activityHistoryEmpty =>
       'Δεν υπάρχουν ολοκληρωμένες δραστηριότητες αποθηκευμένες σε αυτήν τη συσκευή.';
 

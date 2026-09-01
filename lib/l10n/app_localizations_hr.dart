@@ -519,6 +519,12 @@ class AppLocalizationsHr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatski pauzirano';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Snimanje pauzirano';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Snimanje nastavljeno';
+
+  @override
   String get activityHistoryEmpty =>
       'Nema dovršenih aktivnosti spremljenih na ovom uređaju.';
 

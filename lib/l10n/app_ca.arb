@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Tria quant de temps sense moviment cal esperar abans de pausar.",
   "activityAutoPauseDelayOptionLabel": "{seconds} segons",
   "activityAutoPausedIndicator": "En pausa automàtica",
+  "audioAnnouncementsAutoPaused": "Enregistrament en pausa",
+  "audioAnnouncementsAutoResumed": "Enregistrament reprès",
   "activityHistoryEmpty": "No hi ha activitats completades desades en aquest dispositiu.",
   "activityHistoryLoadFailed": "No s'han pogut carregar les activitats locals.",
   "activityHistoryRefresh": "Actualitza",

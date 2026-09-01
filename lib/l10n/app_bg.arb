@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Изберете колко дълго да чака без движение, преди да постави записа на пауза.",
   "activityAutoPauseDelayOptionLabel": "{seconds} секунди",
   "activityAutoPausedIndicator": "Автоматична пауза",
+  "audioAnnouncementsAutoPaused": "Записът е поставен на пауза",
+  "audioAnnouncementsAutoResumed": "Записът е възобновен",
   "activityHistoryEmpty": "Няма завършени дейности, записани на това устройство.",
   "activityHistoryLoadFailed": "Локалните дейности не можаха да бъдат заредени.",
   "activityHistoryRefresh": "Опресни",

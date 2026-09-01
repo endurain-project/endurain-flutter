@@ -1023,6 +1023,18 @@ abstract class AppLocalizations {
   /// **'Auto-paused'**
   String get activityAutoPausedIndicator;
 
+  /// Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording paused'**
+  String get audioAnnouncementsAutoPaused;
+
+  /// Spoken cue when recording automatically resumes - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording resumed'**
+  String get audioAnnouncementsAutoResumed;
+
   /// Empty state for local activity history - Used in: activity_history_screen.dart
   ///
   /// In en, this message translates to:

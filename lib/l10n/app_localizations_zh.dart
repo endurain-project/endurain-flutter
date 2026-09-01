@@ -476,6 +476,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityAutoPausedIndicator => '自动暂停中';
 
   @override
+  String get audioAnnouncementsAutoPaused => '记录已暂停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '记录已恢复';
+
+  @override
   String get activityHistoryEmpty => '此设备上未保存已完成的活动。';
 
   @override
@@ -1656,6 +1662,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityAutoPausedIndicator => '自動暫停中';
+
+  @override
+  String get audioAnnouncementsAutoPaused => '記錄已暫停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '記錄已恢復';
 
   @override
   String get activityHistoryEmpty => '此裝置上未儲存已完成的活動。';

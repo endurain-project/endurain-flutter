@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Izvēlieties, cik ilgi bez kustības gaidīt pirms pauzes.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekundes",
   "activityAutoPausedIndicator": "Automātiski pauzēts",
+  "audioAnnouncementsAutoPaused": "Ierakstīšana pauzēta",
+  "audioAnnouncementsAutoResumed": "Ierakstīšana atsākta",
   "activityHistoryEmpty": "Šajā ierīcē nav saglabātu pabeigtu aktivitāšu.",
   "activityHistoryLoadFailed": "Neizdevās ielādēt lokālās aktivitātes.",
   "activityHistoryRefresh": "Atsvaidzināt",

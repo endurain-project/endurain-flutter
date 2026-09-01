@@ -515,6 +515,12 @@ class AppLocalizationsSl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Samodejno prekinjeno';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Snemanje začasno ustavljeno';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Snemanje nadaljevano';
+
+  @override
   String get activityHistoryEmpty =>
       'V tej napravi ni shranjenih dokončanih aktivnosti.';
 

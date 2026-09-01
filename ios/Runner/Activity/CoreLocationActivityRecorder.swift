@@ -408,6 +408,8 @@ final class CoreLocationActivityRecorder:
             type: ActivityRecorderCoordinator.eventAutoResumed,
             session: resumed
         )
+        // Queue the state cue before this fix can enqueue a progress update.
+        speakTransitionCue(autoPaused: false)
         // Persist this same triggering fix as the first point of the new
         // segment, matching the manual resume flow (`resumedFromPause` forces
         // a segment break above).
@@ -427,13 +429,29 @@ final class CoreLocationActivityRecorder:
             type: ActivityRecorderCoordinator.eventAutoPaused,
             session: paused
         )
+        // Cancel queued progress speech before announcing the state change.
         AudioAnnouncer.shared.stop()
+        speakTransitionCue(autoPaused: true)
         flushAnnouncementState()
         stopTimeAnnouncementTimer()
         // Deliberately does not call `stopCollection()`: an automatic pause
         // must keep monitoring location so movement can resume the recording
         // without user interaction, unlike a manual pause which stops
         // collection entirely (see `stopCollection`).
+    }
+
+    private func speakTransitionCue(autoPaused: Bool) {
+        guard
+            let announcementState = currentAnnouncementState(),
+            let message = announcementState.transitionMessage(autoPaused: autoPaused)
+        else {
+            return
+        }
+        AudioAnnouncer.shared.speak(
+            message,
+            duck: announcementState.duckOtherAudio,
+            languageTag: announcementState.languageTag
+        )
     }
 
     private func movementSample(_ location: CLLocation, millis: Int64) -> MovementSample {

@@ -513,6 +513,12 @@ class AppLocalizationsLv extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automātiski pauzēts';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Ierakstīšana pauzēta';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Ierakstīšana atsākta';
+
+  @override
   String get activityHistoryEmpty =>
       'Šajā ierīcē nav saglabātu pabeigtu aktivitāšu.';
 

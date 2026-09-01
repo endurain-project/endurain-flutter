@@ -520,6 +520,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatycznie wstrzymano';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Nagrywanie wstrzymane';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nagrywanie wznowione';
+
+  @override
   String get activityHistoryEmpty =>
       'Brak ukończonych aktywności zapisanych na tym urządzeniu.';
 

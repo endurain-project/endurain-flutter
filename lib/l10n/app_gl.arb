@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Escolle canto tempo sen movemento esperar antes de pausar.",
   "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
   "activityAutoPausedIndicator": "En pausa automática",
+  "audioAnnouncementsAutoPaused": "Gravación en pausa",
+  "audioAnnouncementsAutoResumed": "Gravación retomada",
   "activityHistoryEmpty": "Non hai actividades completadas gardadas neste dispositivo.",
   "activityHistoryLoadFailed": "Non se puideron cargar as actividades locais.",
   "activityHistoryRefresh": "Actualizar",

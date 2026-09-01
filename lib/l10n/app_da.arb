@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Vælg, hvor længe der skal gå uden bevægelse, før der sættes pause.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekunder",
   "activityAutoPausedIndicator": "Automatisk pause",
+  "audioAnnouncementsAutoPaused": "Optagelse sat på pause",
+  "audioAnnouncementsAutoResumed": "Optagelse genoptaget",
   "activityHistoryEmpty": "Ingen gennemførte aktiviteter gemt på denne enhed.",
   "activityHistoryLoadFailed": "Lokale aktiviteter kunne ikke indlæses.",
   "activityHistoryRefresh": "Opdater",

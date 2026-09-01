@@ -663,6 +663,14 @@
   "@activityAutoPausedIndicator": {
     "description": "Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart"
   },
+  "audioAnnouncementsAutoPaused": "Recording paused",
+  "@audioAnnouncementsAutoPaused": {
+    "description": "Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart"
+  },
+  "audioAnnouncementsAutoResumed": "Recording resumed",
+  "@audioAnnouncementsAutoResumed": {
+    "description": "Spoken cue when recording automatically resumes - Used in: audio_announcement_config.dart"
+  },
   "activityHistoryEmpty": "No completed activities saved on this device.",
   "@activityHistoryEmpty": {
     "description": "Empty state for local activity history - Used in: activity_history_screen.dart"

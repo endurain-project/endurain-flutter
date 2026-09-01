@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Alege cât timp fără mișcare se așteaptă înainte de pauză.",
   "activityAutoPauseDelayOptionLabel": "{seconds} secunde",
   "activityAutoPausedIndicator": "În pauză automată",
+  "audioAnnouncementsAutoPaused": "Înregistrare întreruptă",
+  "audioAnnouncementsAutoResumed": "Înregistrare reluată",
   "activityHistoryEmpty": "Nicio activitate finalizată salvată pe acest dispozitiv.",
   "activityHistoryLoadFailed": "Activitățile locale nu au putut fi încărcate.",
   "activityHistoryRefresh": "Reîmprospătează",

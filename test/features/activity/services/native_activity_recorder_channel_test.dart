@@ -178,6 +178,8 @@ void main() {
         messageTemplate:
             'Distance {distance}. Time {duration}. '
             'Lap {lapMetric}. Overall {overallMetric}.',
+        autoPausedMessage: 'Recording paused',
+        autoResumedMessage: 'Recording resumed',
       );
       await channel.start(
         ActivityRecorderStartRequest(
@@ -196,6 +198,8 @@ void main() {
       expect(sent['metric'], 'pace');
       expect(sent['metricLabel'], 'Pace');
       expect(sent['languageTag'], 'en-US');
+      expect(sent['autoPausedMessage'], 'Recording paused');
+      expect(sent['autoResumedMessage'], 'Recording resumed');
     });
 
     test('omits the audio announcement config when absent', () async {

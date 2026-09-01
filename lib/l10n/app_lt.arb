@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Pasirinkite, kiek laiko be judėjimo laukti prieš pristabdant.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sek.",
   "activityAutoPausedIndicator": "Automatiškai pristabdyta",
+  "audioAnnouncementsAutoPaused": "Įrašymas pristabdytas",
+  "audioAnnouncementsAutoResumed": "Įrašymas atnaujintas",
   "activityHistoryEmpty": "Šiame įrenginyje nėra įrašytų užbaigtų veiklų.",
   "activityHistoryLoadFailed": "Nepavyko įkelti vietinių veiklų.",
   "activityHistoryRefresh": "Atnaujinti",

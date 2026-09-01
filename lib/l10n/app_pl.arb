@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Wybierz, jak długo bez ruchu czekać przed wstrzymaniem.",
   "activityAutoPauseDelayOptionLabel": "{seconds} s",
   "activityAutoPausedIndicator": "Automatycznie wstrzymano",
+  "audioAnnouncementsAutoPaused": "Nagrywanie wstrzymane",
+  "audioAnnouncementsAutoResumed": "Nagrywanie wznowione",
   "activityHistoryEmpty": "Brak ukończonych aktywności zapisanych na tym urządzeniu.",
   "activityHistoryLoadFailed": "Nie udało się wczytać lokalnych aktywności.",
   "activityHistoryRefresh": "Odśwież",

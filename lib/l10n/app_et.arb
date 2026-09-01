@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Valige, kui kaua ilma liikumiseta enne peatamist oodata.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekundit",
   "activityAutoPausedIndicator": "Automaatselt peatatud",
+  "audioAnnouncementsAutoPaused": "Salvestamine peatatud",
+  "audioAnnouncementsAutoResumed": "Salvestamine jätkatud",
   "activityHistoryEmpty": "Sellesse seadmesse pole salvestatud ühtegi lõpetatud tegevust.",
   "activityHistoryLoadFailed": "Kohalikke tegevusi ei õnnestunud laadida.",
   "activityHistoryRefresh": "Värskenda",

@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Виберіть, скільки часу без руху чекати перед призупиненням.",
   "activityAutoPauseDelayOptionLabel": "{seconds} с",
   "activityAutoPausedIndicator": "Автоматично призупинено",
+  "audioAnnouncementsAutoPaused": "Запис призупинено",
+  "audioAnnouncementsAutoResumed": "Запис відновлено",
   "activityHistoryEmpty": "На цьому пристрої немає збережених завершених активностей.",
   "activityHistoryLoadFailed": "Не вдалося завантажити локальні активності.",
   "activityHistoryRefresh": "Оновити",

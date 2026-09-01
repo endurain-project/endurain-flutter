@@ -665,6 +665,8 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.TYPE_AUTO_RESUMED,
             resumed,
         )
+        // Queue the state cue before this fix can enqueue a progress update.
+        speakTransitionCue(autoPaused = false)
         // Persist this same triggering fix as the first point of the new
         // segment, matching the manual resume flow (`resumedFromPause` forces
         // a segment break above).
@@ -684,13 +686,26 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.TYPE_AUTO_PAUSED,
             paused,
         )
+        // Cancel queued progress speech before announcing the state change.
         AudioAnnouncer.stop()
+        speakTransitionCue(autoPaused = true)
         flushAnnouncementState()
         announcementHandler.removeCallbacks(timeAnnouncementRunnable)
         // Deliberately does not call `stopCollection()`: an automatic pause
         // must keep monitoring location so movement can resume the recording
         // without user interaction, unlike a manual pause which stops
         // collection entirely (see `stopCollection`).
+    }
+
+    private fun speakTransitionCue(autoPaused: Boolean) {
+        val announcementState = currentAnnouncementState() ?: return
+        val message = announcementState.transitionMessage(autoPaused) ?: return
+        AudioAnnouncer.speak(
+            applicationContext,
+            message,
+            announcementState.duckOtherAudio,
+            announcementState.languageTag,
+        )
     }
 
     private fun movementSample(location: Location, nowMillis: Long): MovementSample {

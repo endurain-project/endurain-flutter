@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Vyberte, ako dlho čakať bez pohybu pred pozastavením.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekúnd",
   "activityAutoPausedIndicator": "Automaticky pozastavené",
+  "audioAnnouncementsAutoPaused": "Nahrávanie pozastavené",
+  "audioAnnouncementsAutoResumed": "Nahrávanie obnovené",
   "activityHistoryEmpty": "V tomto zariadení nie sú uložené žiadne dokončené aktivity.",
   "activityHistoryLoadFailed": "Miestne aktivity sa nepodarilo načítať.",
   "activityHistoryRefresh": "Obnoviť",

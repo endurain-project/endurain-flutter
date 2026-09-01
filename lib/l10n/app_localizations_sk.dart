@@ -517,6 +517,12 @@ class AppLocalizationsSk extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaticky pozastavené';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Nahrávanie pozastavené';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nahrávanie obnovené';
+
+  @override
   String get activityHistoryEmpty =>
       'V tomto zariadení nie sú uložené žiadne dokončené aktivity.';
 

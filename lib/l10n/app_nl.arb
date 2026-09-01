@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Kies hoe lang zonder beweging gewacht moet worden voordat er wordt gepauzeerd.",
   "activityAutoPauseDelayOptionLabel": "{seconds} seconden",
   "activityAutoPausedIndicator": "Automatisch gepauzeerd",
+  "audioAnnouncementsAutoPaused": "Opname gepauzeerd",
+  "audioAnnouncementsAutoResumed": "Opname hervat",
   "activityHistoryEmpty": "Geen voltooide activiteiten opgeslagen op dit apparaat.",
   "activityHistoryLoadFailed": "Kan lokale activiteiten niet laden.",
   "activityHistoryRefresh": "Vernieuwen",

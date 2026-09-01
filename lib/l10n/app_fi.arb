@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Valitse, kuinka kauan ilman liikettä odotetaan ennen keskeytystä.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekuntia",
   "activityAutoPausedIndicator": "Automaattisesti keskeytetty",
+  "audioAnnouncementsAutoPaused": "Tallennus keskeytetty",
+  "audioAnnouncementsAutoResumed": "Tallennusta jatkettu",
   "activityHistoryEmpty": "Tälle laitteelle ei ole tallennettu valmiita aktiviteetteja.",
   "activityHistoryLoadFailed": "Paikallisia aktiviteetteja ei voitu ladata.",
   "activityHistoryRefresh": "Päivitä",

@@ -612,6 +612,8 @@
   "activityAutoPauseDelayHelperText": "Escolha quanto tempo sem movimento esperar antes de pausar.",
   "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
   "activityAutoPausedIndicator": "Em pausa automática",
+  "audioAnnouncementsAutoPaused": "Gravação em pausa",
+  "audioAnnouncementsAutoResumed": "Gravação retomada",
   "activityHistoryEmpty": "Não há atividades concluídas guardadas neste dispositivo.",
   "@activityHistoryEmpty": {
     "description": "Estado vazio do histórico local de atividades - Usado em: activity_history_screen.dart"

@@ -517,6 +517,12 @@ class AppLocalizationsBg extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Автоматична пауза';
 
   @override
+  String get audioAnnouncementsAutoPaused => 'Записът е поставен на пауза';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Записът е възобновен';
+
+  @override
   String get activityHistoryEmpty =>
       'Няма завършени дейности, записани на това устройство.';
 

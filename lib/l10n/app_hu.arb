@@ -134,6 +134,8 @@
   "activityAutoPauseDelayHelperText": "Válaszd ki, mennyi ideig várjon mozgás nélkül szüneteltetés előtt.",
   "activityAutoPauseDelayOptionLabel": "{seconds} másodperc",
   "activityAutoPausedIndicator": "Automatikusan szüneteltetve",
+  "audioAnnouncementsAutoPaused": "Rögzítés szüneteltetve",
+  "audioAnnouncementsAutoResumed": "Rögzítés folytatva",
   "activityHistoryEmpty": "Nincsenek az eszközön mentett befejezett tevékenységek.",
   "activityHistoryLoadFailed": "Nem sikerült betölteni a helyi tevékenységeket.",
   "activityHistoryRefresh": "Frissítés",
