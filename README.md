@@ -162,7 +162,6 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 - Xcode (for iOS development)
 - Android Studio (for Android development)
 - A running Endurain server instance
-- GitHub access to the private `endurain-project/endurain-flutter` repository
 
 ### Installation
 
