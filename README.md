@@ -525,8 +525,9 @@ Contributions are welcomed! This mobile app is part of the main Endurain project
 
 1. Check the [Contributing Guidelines](CONTRIBUTING.md)
 2. Open an issue to discuss changes before submitting a PR
-3. Follow the existing code style and architecture patterns
-4. Test on multiple platforms when possible
+3. Accept the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.md) in the pull request checklist before the PR can be merged
+4. Follow the existing code style and architecture patterns
+5. Test on multiple platforms when possible
 
 ### Development Guidelines
 
@@ -538,7 +539,18 @@ Contributions are welcomed! This mobile app is part of the main Endurain project
 
 ## License
 
-This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU Affero General Public License v3.0
+(AGPL-3.0-only). See [LICENSE](LICENSE) for the full terms. AGPLv3 is a strong
+copyleft license: anyone distributing modified versions, or operating modified
+network-server software, must make the corresponding source available under
+AGPLv3 terms. The mobile app itself is distributed software; the related
+Endurain server has its own licensing and source-availability obligations.
+
+Accepted external contributions are also subject to the
+[Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.md), which gives
+the Project Owner the additional right to relicense those contributions in
+future releases. The Project Owner will preserve the rights already granted to
+the public for releases made under AGPLv3.
 
 ## Trademark Notice
 
