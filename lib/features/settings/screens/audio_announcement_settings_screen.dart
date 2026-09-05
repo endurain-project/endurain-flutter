@@ -132,7 +132,7 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
     required MeasurementSystem measurementSystem,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
     final spoke = await controller.speakPreview(
       AudioAnnouncementConfig.build(
         l10n: l10n,
@@ -142,10 +142,10 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
         languageTag: Localizations.localeOf(context).toLanguageTag(),
       ),
     );
-    if (spoke) {
+    if (spoke || !context.mounted) {
       return;
     }
-    messenger.showSnackBar(
+    messenger?.showSnackBar(
       SnackBar(content: Text(l10n.audioAnnouncementsPreviewUnavailable)),
     );
   }
