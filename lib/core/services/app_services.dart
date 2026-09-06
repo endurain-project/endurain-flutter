@@ -12,6 +12,7 @@ import 'package:endurain/core/services/modules/activity_module.dart';
 import 'package:endurain/core/services/modules/auth_module.dart';
 import 'package:endurain/core/services/modules/health_module.dart';
 import 'package:endurain/core/services/modules/sensors_module.dart';
+import 'package:endurain/core/services/modules/watch_module.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
@@ -42,11 +43,14 @@ import 'package:endurain/features/settings/controllers/audio_announcement_settin
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
+import 'package:endurain/features/watch/services/watch_companion_service.dart';
+import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
 
 /// The application's composition root.
 ///
 /// [AppServices] wires the shared [AppInfrastructure] and the per-feature
-/// modules ([AuthModule], [SensorsModule], [ActivityModule], [HealthModule])
+/// modules ([AuthModule], [SensorsModule], [ActivityModule], [HealthModule],
+/// [WatchModule])
 /// once, in dependency order, and exposes them through a stable public surface
 /// that screens and controllers reach via `AppScope.servicesOf(context)`.
 ///
@@ -82,6 +86,10 @@ class AppServices {
   late final HealthModule _health = HealthModule(
     infra: _infra,
     auth: _auth,
+    activity: _activity,
+  );
+  late final WatchModule _watch = WatchModule(
+    infra: _infra,
     activity: _activity,
   );
 
@@ -176,6 +184,16 @@ class AppServices {
   /// Builds the concrete health-platform adapter for the current platform.
   HealthPlatformAdapter createHealthPlatformAdapter() =>
       _health.createPlatformAdapter();
+
+  // ── Companion watch ────────────────────────────────────────────────────────
+
+  /// App-lifetime coordinator that ingests sessions recorded on a paired
+  /// Apple Watch / Wear OS watch into the local activity + upload pipeline.
+  WatchCompanionService get watchCompanion => _watch.companion;
+
+  /// Builds the companion-watch transport for the current platform.
+  WatchTransportAdapter createWatchTransportAdapter() =>
+      _watch.createTransportAdapter();
 
   // ── External sensors (BLE) ───────────────────────────────────────────────
 
