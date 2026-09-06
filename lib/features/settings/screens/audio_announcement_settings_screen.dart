@@ -173,6 +173,10 @@ class _IntervalCard extends StatelessWidget {
       measurementSystem == MeasurementSystem.imperial
       ? 0.5 * UnitConversions.metersPerMile
       : 500;
+  double get _minDistanceMeters =>
+      measurementSystem == MeasurementSystem.imperial
+      ? 0.1 * UnitConversions.metersPerMile
+      : AudioAnnouncementInterval.minDistanceMeters;
 
   static const int _timeStepSeconds = 60;
 
@@ -257,12 +261,15 @@ class _IntervalCard extends StatelessWidget {
 
   void _step(int direction) {
     if (interval.unit == AudioAnnouncementIntervalUnit.distance) {
-      onChanged(
-        interval.copyWith(
-          distanceMeters:
-              interval.distanceMeters + direction * _distanceStepMeters,
-        ),
-      );
+      // The scale starts at 0.1 and then follows the step: 0.1, 0.5, 1.0, …
+      final nextInterval = direction > 0
+          ? (interval.distanceMeters < _distanceStepMeters
+                ? _distanceStepMeters
+                : interval.distanceMeters + _distanceStepMeters)
+          : (interval.distanceMeters <= _distanceStepMeters
+                ? _minDistanceMeters
+                : interval.distanceMeters - _distanceStepMeters);
+      onChanged(interval.copyWith(distanceMeters: nextInterval));
     } else {
       onChanged(
         interval.copyWith(
