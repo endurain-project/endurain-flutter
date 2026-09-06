@@ -605,6 +605,15 @@
   "@activityRetainUploadedGpxSubtitle": {
     "description": "Subtítulo que explica a retenção privada local de GPX - Usado em: settings_screen.dart"
   },
+  "activityAutoPauseTitle": "Pausa automática",
+  "activityAutoPauseSubtitle": "Coloca em pausa automaticamente quando pára de se mover",
+  "activityAutoPauseToggleLabel": "Pausar automaticamente",
+  "activityAutoPauseToggleDescription": "Coloca a gravação em pausa quando pára de se mover e retoma assim que voltar a mover-se.",
+  "activityAutoPauseDelayHelperText": "Escolha quanto tempo sem movimento esperar antes de pausar.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
+  "activityAutoPausedIndicator": "Em pausa automática",
+  "audioAnnouncementsAutoPaused": "Gravação em pausa",
+  "audioAnnouncementsAutoResumed": "Gravação retomada",
   "activityHistoryEmpty": "Não há atividades concluídas guardadas neste dispositivo.",
   "@activityHistoryEmpty": {
     "description": "Estado vazio do histórico local de atividades - Usado em: activity_history_screen.dart"

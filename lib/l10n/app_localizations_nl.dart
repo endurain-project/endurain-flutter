@@ -489,6 +489,38 @@ class AppLocalizationsNl extends AppLocalizations {
       'Bewaart voltooide routebestanden na het uploaden in de privéopslag van de app.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatisch pauzeren';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pauzeert automatisch wanneer je stopt met bewegen';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatisch pauzeren';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pauzeert de opname wanneer je stopt met bewegen en hervat zodra je weer beweegt.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Kies hoe lang zonder beweging gewacht moet worden voordat er wordt gepauzeerd.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds seconden';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisch gepauzeerd';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Opname gepauzeerd';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Opname hervat';
+
+  @override
   String get activityHistoryEmpty =>
       'Geen voltooide activiteiten opgeslagen op dit apparaat.';
 

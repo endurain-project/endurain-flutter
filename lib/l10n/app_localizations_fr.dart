@@ -495,6 +495,38 @@ class AppLocalizationsFr extends AppLocalizations {
       'Enregistre les fichiers d\'itinéraire terminés dans le stockage privé de l\'application après l\'envoi.';
 
   @override
+  String get activityAutoPauseTitle => 'Pause automatique';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Met en pause automatiquement quand vous arrêtez de bouger';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Mettre en pause automatiquement';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Met l\'enregistrement en pause lorsque vous arrêtez de bouger, et le reprend dès que vous recommencez à bouger.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Choisissez combien de temps sans mouvement attendre avant la pause.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds secondes';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'En pause automatique';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Enregistrement en pause';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Enregistrement repris';
+
+  @override
   String get activityHistoryEmpty =>
       'Aucune activité terminée enregistrée sur cet appareil.';
 

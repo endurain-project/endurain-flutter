@@ -87,6 +87,11 @@ class ActivityRecorderChannel(context: Context) :
         val cadenceDeviceId = call.argument<String>("cadenceDeviceId")
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
+        // `Boolean`/`Int` arguments arrive as their boxed Kotlin types from the
+        // method channel; default conservatively (disabled) if omitted by an
+        // older Dart build.
+        val autoPauseEnabled = call.argument<Boolean>("autoPauseEnabled") ?: false
+        val autoPauseDelaySeconds = call.argument<Int>("autoPauseDelaySeconds") ?: 5
         @Suppress("UNCHECKED_CAST")
         val audioAnnouncements = call.argument<Map<String, Any?>>("audioAnnouncements")
 
@@ -101,6 +106,8 @@ class ActivityRecorderChannel(context: Context) :
             powerDeviceId = powerDeviceId,
             cadenceDeviceId = cadenceDeviceId,
             currentSegmentIndex = 0,
+            autoPauseEnabled = autoPauseEnabled,
+            autoPauseDelaySeconds = autoPauseDelaySeconds,
         )
         store.saveSession(session)
         AnnouncementStateData.fromStartArguments(audioAnnouncements)?.let {
@@ -138,7 +145,8 @@ class ActivityRecorderChannel(context: Context) :
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,
             pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
+            pausedAutomatically = false,
         )
         store.saveSession(updated)
         ActivityRecorderService.pause(appContext)
@@ -160,6 +168,7 @@ class ActivityRecorderChannel(context: Context) :
             status = ActiveActivitySessionData.STATUS_RECORDING,
             resumedAt = IsoTime.format(java.util.Date(nowMillis)),
             pausedAt = null,
+            pausedAutomatically = false,
         )
         store.saveSession(updated)
         ActivityRecorderService.resume(appContext)
@@ -181,7 +190,7 @@ class ActivityRecorderChannel(context: Context) :
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_COMPLETED,
             endedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
         )
         // Mark the session completed before tearing the service down. The
         // collection guard in onLocationFix drops any in-flight fix once the
@@ -221,7 +230,7 @@ class ActivityRecorderChannel(context: Context) :
         val paused = session.copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,
             pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, recoveryMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(recoveryMillis),
         )
         // Persist the pause before stopping collection so any in-flight fix is
         // rejected by the service's recording-state guard.
@@ -229,16 +238,6 @@ class ActivityRecorderChannel(context: Context) :
         ActivityRecorderService.pause(appContext)
         result.success(paused.toMap())
     }
-
-    /**
-     * Accumulated elapsed seconds, mirroring the Dart geolocator recorder:
-     * paused sessions keep their stored value; otherwise add the current
-     * segment's running time from `resumedAt ?? startedAt`.
-     */
-    private fun elapsedSeconds(
-        session: ActiveActivitySessionData,
-        referenceMillis: Long,
-    ): Int = SessionTiming.elapsedSeconds(session, referenceMillis)
 
     private fun isSupportedVersion(call: MethodCall): Boolean {
         val version = call.argument<Int>("version") ?: return true

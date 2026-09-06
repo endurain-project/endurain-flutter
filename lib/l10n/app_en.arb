@@ -629,6 +629,48 @@
   "@activityRetainUploadedGpxSubtitle": {
     "description": "Settings switch subtitle explaining private local GPX retention - Used in: settings_screen.dart"
   },
+  "activityAutoPauseTitle": "Auto-pause",
+  "@activityAutoPauseTitle": {
+    "description": "Auto-pause settings screen title and settings navigation label - Used in: auto_pause_settings_screen.dart, settings_screen.dart"
+  },
+  "activityAutoPauseSubtitle": "Pause automatically when you stop moving",
+  "@activityAutoPauseSubtitle": {
+    "description": "Settings subtitle for auto-pause navigation - Used in: settings_screen.dart"
+  },
+  "activityAutoPauseToggleLabel": "Automatically pause",
+  "@activityAutoPauseToggleLabel": {
+    "description": "Auto-pause switch label - Used in: auto_pause_settings_screen.dart"
+  },
+  "activityAutoPauseToggleDescription": "Pauses recording when you stop moving, and resumes once you start moving again.",
+  "@activityAutoPauseToggleDescription": {
+    "description": "Auto-pause switch subtitle explaining the behavior - Used in: auto_pause_settings_screen.dart"
+  },
+  "activityAutoPauseDelayHelperText": "Choose how long to wait without movement before pausing.",
+  "@activityAutoPauseDelayHelperText": {
+    "description": "Helper text above the auto-pause delay options - Used in: auto_pause_settings_screen.dart"
+  },
+  "activityAutoPauseDelayOptionLabel": "{seconds} seconds",
+  "@activityAutoPauseDelayOptionLabel": {
+    "description": "Auto-pause delay option label - Used in: auto_pause_settings_screen.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "activityAutoPausedIndicator": "Auto-paused",
+  "@activityAutoPausedIndicator": {
+    "description": "Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart"
+  },
+  "audioAnnouncementsAutoPaused": "Recording paused",
+  "@audioAnnouncementsAutoPaused": {
+    "description": "Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart"
+  },
+  "audioAnnouncementsAutoResumed": "Recording resumed",
+  "@audioAnnouncementsAutoResumed": {
+    "description": "Spoken cue when recording automatically resumes - Used in: audio_announcement_config.dart"
+  },
   "activityHistoryEmpty": "No completed activities saved on this device.",
   "@activityHistoryEmpty": {
     "description": "Empty state for local activity history - Used in: activity_history_screen.dart"
@@ -1553,7 +1595,6 @@
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },
-
   "audioAnnouncementsTitle": "Audio Announcements",
   "@audioAnnouncementsTitle": {
     "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
@@ -1657,4 +1698,3 @@
     }
   }
 }
-

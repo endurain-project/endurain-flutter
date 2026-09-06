@@ -482,6 +482,38 @@ class AppLocalizationsTr extends AppLocalizations {
       'Tamamlanan rota dosyalarını yükledikten sonra uygulamanın özel deposunda saklar.';
 
   @override
+  String get activityAutoPauseTitle => 'Otomatik duraklatma';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Hareket etmeyi bıraktığınızda otomatik olarak duraklatır';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Otomatik duraklat';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Hareket etmeyi bıraktığınızda kayıt otomatik olarak duraklatılır ve tekrar hareket etmeye başladığınızda devam eder.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Duraklatmadan önce hareketsiz geçecek süreyi seçin.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds saniye';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Otomatik duraklatıldı';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Kayıt duraklatıldı';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Kayıt sürdürüldü';
+
+  @override
   String get activityHistoryEmpty =>
       'Bu cihaza kaydedilmiş tamamlanan etkinlik yok.';
 

@@ -21,6 +21,9 @@ struct ActiveActivitySessionData {
     let endedAt: String?
     let elapsedDurationSeconds: Int
     let currentSegmentIndex: Int
+    let autoPauseEnabled: Bool
+    let autoPauseDelaySeconds: Int
+    let pausedAutomatically: Bool
     let schemaVersion: Int
 
     init(
@@ -38,6 +41,9 @@ struct ActiveActivitySessionData {
         endedAt: String? = nil,
         elapsedDurationSeconds: Int = 0,
         currentSegmentIndex: Int = 0,
+        autoPauseEnabled: Bool = false,
+        autoPauseDelaySeconds: Int = 5,
+        pausedAutomatically: Bool = false,
         schemaVersion: Int = ActiveActivitySessionData.schemaVersionValue
     ) {
         self.localSessionId = localSessionId
@@ -54,12 +60,37 @@ struct ActiveActivitySessionData {
         self.endedAt = endedAt
         self.elapsedDurationSeconds = elapsedDurationSeconds
         self.currentSegmentIndex = currentSegmentIndex
+        self.autoPauseEnabled = autoPauseEnabled
+        self.autoPauseDelaySeconds = autoPauseDelaySeconds
+        self.pausedAutomatically = pausedAutomatically
         self.schemaVersion = schemaVersion
     }
 
     var isActive: Bool {
         return status == ActiveActivitySessionData.statusRecording
             || status == ActiveActivitySessionData.statusPaused
+    }
+
+    var requiresLocationMonitoring: Bool {
+        return status == ActiveActivitySessionData.statusRecording
+            || (status == ActiveActivitySessionData.statusPaused && pausedAutomatically)
+    }
+
+    /// Accumulated elapsed seconds as of `referenceMillis`: a paused session
+    /// keeps its stored value; otherwise adds the current segment's running
+    /// time from `resumedAt ?? startedAt`. Mirrors the Dart geolocator
+    /// recorder and the Android `elapsedSecondsAt`; shared by
+    /// `ActivityRecorderChannel` (manual pause/stop/recover) and
+    /// `CoreLocationActivityRecorder` (auto-pause).
+    func elapsedSecondsAt(_ referenceMillis: Int64) -> Int {
+        if status == ActiveActivitySessionData.statusPaused {
+            return elapsedDurationSeconds
+        }
+        guard let anchor = IsoTime.toEpochMillis(resumedAt ?? startedAt) else {
+            return elapsedDurationSeconds
+        }
+        let segmentSeconds = Int((referenceMillis - anchor) / 1000)
+        return elapsedDurationSeconds + max(0, segmentSeconds)
     }
 
     /// Channel-safe / JSON-safe dictionary using the same keys the Dart model
@@ -81,6 +112,9 @@ struct ActiveActivitySessionData {
         if let endedAt = endedAt { map["endedAt"] = endedAt }
         map["elapsedDurationSeconds"] = elapsedDurationSeconds
         map["currentSegmentIndex"] = currentSegmentIndex
+        map["autoPauseEnabled"] = autoPauseEnabled
+        map["autoPauseDelaySeconds"] = autoPauseDelaySeconds
+        map["pausedAutomatically"] = pausedAutomatically
         return map
     }
 
@@ -100,7 +134,8 @@ struct ActiveActivitySessionData {
         pausedAt: String?? = nil,
         endedAt: String?? = nil,
         elapsedDurationSeconds: Int? = nil,
-        currentSegmentIndex: Int? = nil
+        currentSegmentIndex: Int? = nil,
+        pausedAutomatically: Bool? = nil
     ) -> ActiveActivitySessionData {
         return ActiveActivitySessionData(
             localSessionId: localSessionId,
@@ -117,6 +152,9 @@ struct ActiveActivitySessionData {
             endedAt: endedAt ?? self.endedAt,
             elapsedDurationSeconds: elapsedDurationSeconds ?? self.elapsedDurationSeconds,
             currentSegmentIndex: currentSegmentIndex ?? self.currentSegmentIndex,
+            autoPauseEnabled: autoPauseEnabled,
+            autoPauseDelaySeconds: autoPauseDelaySeconds,
+            pausedAutomatically: pausedAutomatically ?? self.pausedAutomatically,
             schemaVersion: schemaVersion
         )
     }
@@ -145,11 +183,18 @@ struct ActiveActivitySessionData {
             endedAt: json["endedAt"] as? String,
             elapsedDurationSeconds: JsonScalar.int(json["elapsedDurationSeconds"]) ?? 0,
             currentSegmentIndex: JsonScalar.int(json["currentSegmentIndex"]) ?? 0,
+            // Absent on sessions persisted before schema version 3: default to
+            // disabled rather than the current app preference, so an
+            // in-flight recording recovered after an app update never
+            // silently starts auto-pausing.
+            autoPauseEnabled: (json["autoPauseEnabled"] as? Bool) ?? false,
+            autoPauseDelaySeconds: JsonScalar.int(json["autoPauseDelaySeconds"]) ?? 5,
+            pausedAutomatically: (json["pausedAutomatically"] as? Bool) ?? false,
             schemaVersion: JsonScalar.int(json["schemaVersion"]) ?? schemaVersionValue
         )
     }
 
-    static let schemaVersionValue = 2
+    static let schemaVersionValue = 3
 
     static let statusRecording = "recording"
     static let statusPaused = "paused"

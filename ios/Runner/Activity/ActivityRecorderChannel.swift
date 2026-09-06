@@ -124,6 +124,9 @@ final class ActivityRecorderChannel:
         let heartRateDeviceId = arguments?["hrDeviceId"] as? String
         let powerDeviceId = arguments?["powerDeviceId"] as? String
         let cadenceDeviceId = arguments?["cadenceDeviceId"] as? String
+        // Default conservatively (disabled) if omitted by an older Dart build.
+        let autoPauseEnabled = (arguments?["autoPauseEnabled"] as? Bool) ?? false
+        let autoPauseDelaySeconds = JsonScalar.int(arguments?["autoPauseDelaySeconds"]) ?? 5
         let audioAnnouncements = arguments?["audioAnnouncements"] as? [String: Any]
 
         let session = ActiveActivitySessionData(
@@ -136,7 +139,9 @@ final class ActivityRecorderChannel:
             heartRateDeviceId: heartRateDeviceId,
             powerDeviceId: powerDeviceId,
             cadenceDeviceId: cadenceDeviceId,
-            currentSegmentIndex: 0
+            currentSegmentIndex: 0,
+            autoPauseEnabled: autoPauseEnabled,
+            autoPauseDelaySeconds: autoPauseDelaySeconds
         )
         store.saveSession(session)
         if let announcementState = AnnouncementStateData.fromStartArguments(audioAnnouncements) {
@@ -178,7 +183,8 @@ final class ActivityRecorderChannel:
         let updated = session.copyWith(
             status: ActiveActivitySessionData.statusPaused,
             pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: nowMillis)
+            elapsedDurationSeconds: session.elapsedSecondsAt(nowMillis),
+            pausedAutomatically: false
         )
         store.saveSession(updated)
         recorder.stopCollection()
@@ -202,7 +208,8 @@ final class ActivityRecorderChannel:
         let updated = session.copyWith(
             status: ActiveActivitySessionData.statusRecording,
             resumedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            pausedAt: .some(nil)
+            pausedAt: .some(nil),
+            pausedAutomatically: false
         )
         store.saveSession(updated)
         recorder.markResumed()
@@ -233,7 +240,7 @@ final class ActivityRecorderChannel:
         let updated = session.copyWith(
             status: ActiveActivitySessionData.statusCompleted,
             endedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: nowMillis)
+            elapsedDurationSeconds: session.elapsedSecondsAt(nowMillis)
         )
         store.saveSession(updated)
         ActivityRecorderCoordinator.shared.emitSession(
@@ -280,23 +287,13 @@ final class ActivityRecorderChannel:
         let paused = session.copyWith(
             status: ActiveActivitySessionData.statusPaused,
             pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: recoveryMillis)
+            elapsedDurationSeconds: session.elapsedSecondsAt(recoveryMillis)
         )
         // Save the pause before stopping Core Location so an in-flight update
         // is rejected by the recorder's recording-state guard.
         store.saveSession(paused)
         recorder.stopCollection()
         result(paused.toMap())
-    }
-
-    /// Accumulated elapsed seconds, mirroring the Dart geolocator recorder:
-    /// paused sessions keep their stored value; otherwise add the current
-    /// segment's running time from `resumedAt ?? startedAt`.
-    private func elapsedSeconds(
-        _ session: ActiveActivitySessionData,
-        referenceMillis: Int64
-    ) -> Int {
-        return SessionTiming.elapsedSeconds(session, referenceMillis: referenceMillis)
     }
 
     private func isSupportedVersion(_ arguments: [String: Any]?) -> Bool {

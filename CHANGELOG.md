@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Added localized, on-device audio announcements for distance or elapsed-time milestones during foreground and background activity recording, including distance, duration, and lap plus overall pace or speed.
+- Added configurable activity auto-pause and auto-resume with movement detection, resume hysteresis, and process-recovery support.
+- Added localized, on-device audio announcements for distance or elapsed-time milestones during foreground and background activity recording, including distance, duration, lap plus overall pace or speed, and automatic pause or resume cues.
 - Added audio announcement settings with a master switch, per-activity enablement and distance/time intervals, metric/imperial defaults, optional audio ducking, and an audible per-activity preview.
 - Added durable milestone tracking and privacy-safe native failure logging so delayed updates and recorder restarts do not replay stale milestones, while speech failures cannot interrupt activity recording.
 - Added a contributor license agreement, pull request attestation, and required-status workflow for relicensing rights over accepted external contributions.

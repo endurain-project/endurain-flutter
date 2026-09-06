@@ -497,6 +497,38 @@ class AppLocalizationsDe extends AppLocalizations {
       'Speichert abgeschlossene Routendateien nach dem Upload im privaten App-Speicher.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatische Pause';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pausiert automatisch, wenn du dich nicht mehr bewegst';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatisch pausieren';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pausiert die Aufzeichnung, wenn du dich nicht mehr bewegst, und setzt sie fort, sobald du dich wieder bewegst.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Wähle, wie lange ohne Bewegung gewartet werden soll, bevor pausiert wird.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds Sekunden';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisch pausiert';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Aufzeichnung pausiert';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Aufzeichnung fortgesetzt';
+
+  @override
   String get activityHistoryEmpty =>
       'Keine abgeschlossenen Aktivitäten auf diesem Gerät gespeichert.';
 

@@ -452,6 +452,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityRetainUploadedGpxSubtitle => '上传后将已完成的路线文件存储在应用的私有存储中。';
 
   @override
+  String get activityAutoPauseTitle => '自动暂停';
+
+  @override
+  String get activityAutoPauseSubtitle => '停止移动时自动暂停';
+
+  @override
+  String get activityAutoPauseToggleLabel => '自动暂停';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      '当您停止移动时自动暂停记录,一旦您重新开始移动即恢复。';
+
+  @override
+  String get activityAutoPauseDelayHelperText => '选择在暂停前等待多长时间没有移动。';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => '自动暂停中';
+
+  @override
+  String get audioAnnouncementsAutoPaused => '记录已暂停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '记录已恢复';
+
+  @override
   String get activityHistoryEmpty => '此设备上未保存已完成的活动。';
 
   @override
@@ -1608,6 +1638,36 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       '上傳後將已完成的路線檔案儲存在應用程式的私人儲存空間中。';
+
+  @override
+  String get activityAutoPauseTitle => '自動暫停';
+
+  @override
+  String get activityAutoPauseSubtitle => '停止移動時自動暫停';
+
+  @override
+  String get activityAutoPauseToggleLabel => '自動暫停';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      '當您停止移動時自動暫停記錄,一旦您重新開始移動即恢復。';
+
+  @override
+  String get activityAutoPauseDelayHelperText => '選擇在暫停前等待多長時間沒有移動。';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => '自動暫停中';
+
+  @override
+  String get audioAnnouncementsAutoPaused => '記錄已暫停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '記錄已恢復';
 
   @override
   String get activityHistoryEmpty => '此裝置上未儲存已完成的活動。';
