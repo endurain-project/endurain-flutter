@@ -157,7 +157,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 ### Prerequisites
 
-- Flutter SDK 3.47.1 or higher
+- Flutter SDK 3.47.3 or higher
 - Dart SDK 3.13.0 or higher
 - Xcode (for iOS development)
 - Android Studio (for Android development)

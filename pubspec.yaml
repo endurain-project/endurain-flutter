@@ -16,11 +16,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.9.0+14
+version: 0.9.1+15
 
 environment:
-  sdk: ^3.13.0
-  flutter: '>=3.47.0'
+  sdk: ^3.13.3
+  flutter: '>=3.47.3'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -46,10 +46,10 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Secure storage for credentials
-  flutter_secure_storage: ^11.0.0
+  flutter_secure_storage: ^11.1.0
 
   # Map with OpenStreetMap
-  flutter_map: ^8.3.1
+  flutter_map: ^8.3.2
   latlong2: ^0.10.1
 
   # Location services
@@ -77,7 +77,7 @@ dependencies:
   # pure-Dart package resolves to the latest and captures the same Dart/Flutter
   # errors the local diagnostics recorder already hooks. Native-crash capture
   # can be added later by swapping the injected CrashReporter adapter.
-  sentry: ^9.24.0
+  sentry: ^9.30.0
 
   # System browser OAuth/SSO flow with deep-link callback
   app_links: ^7.2.1
@@ -88,7 +88,7 @@ dependencies:
 
   # SQLite storage for local activity metadata.
   # sqflite provides the native Android/iOS implementation.
-  sqflite: ^2.4.0
+  sqflite: ^2.4.4
 
   # Network connectivity signal for retrying activity uploads when connectivity
   # returns.
@@ -98,7 +98,7 @@ dependencies:
   share_plus: ^13.2.1
 
   # Declarative, deep-link-ready routing for top-level auth-guarded navigation.
-  go_router: ^18.0.0
+  go_router: ^18.0.1
 
   # Health platform sync: HealthKit (iOS) + Health Connect (Android).
   health: ^13.3.1
@@ -108,12 +108,12 @@ dependencies:
   # Services) and actively maintained across Android/iOS/desktop/web. It also
   # requests the BLE runtime permissions itself, so no separate
   # permission_handler dependency is needed.
-  universal_ble: ^2.1.0
+  universal_ble: ^2.3.0
 
   # Standalone Material/Cupertino design packages (Flutter 3.47+), decoupled
   # from the core SDK so they can ship on their own release cadence.
-  material_ui: ^1.1.0
-  cupertino_ui: ^1.0.1
+  material_ui: ^1.2.0
+  cupertino_ui: ^1.0.2
 
 dev_dependencies:
   fake_async: ^1.3.3
@@ -123,7 +123,7 @@ dev_dependencies:
 
   # In-process SQLite (MIT) for unit tests, so the activity store can run
   # without platform channels. Not shipped in the app.
-  sqflite_common_ffi: ^2.4.2
+  sqflite_common_ffi: ^2.4.3
 
   flutter_test:
     sdk: flutter
