@@ -191,6 +191,135 @@ void main() {
     );
   });
 
+  testWidgets('distance controls step between the minimum and half a unit', (
+    tester,
+  ) async {
+    await controller.setMasterEnabled(true);
+    await controller.setInterval(
+      ActivityType.run,
+      const AudioAnnouncementInterval(distanceMeters: 100),
+    );
+    await pumpScreen(tester);
+
+    await tester.tap(find.byIcon(Icons.add_circle_outline).first);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      500,
+    );
+
+    await tester.tap(find.byIcon(Icons.remove_circle_outline).first);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      100,
+    );
+  });
+
+  testWidgets('distance controls snap legacy metric values to the grid', (
+    tester,
+  ) async {
+    await controller.setMasterEnabled(true);
+    await controller.setInterval(
+      ActivityType.run,
+      const AudioAnnouncementInterval(distanceMeters: 600),
+    );
+    await pumpScreen(tester);
+
+    await tester.tap(find.byIcon(Icons.add_circle_outline).first);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      1000,
+    );
+
+    await controller.setInterval(
+      ActivityType.run,
+      const AudioAnnouncementInterval(distanceMeters: 600),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.remove_circle_outline).first);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      500,
+    );
+  });
+
+  testWidgets('distance controls snap legacy imperial values to the grid', (
+    tester,
+  ) async {
+    await controller.setMasterEnabled(true);
+    await controller.setInterval(
+      ActivityType.run,
+      const AudioAnnouncementInterval(
+        distanceMeters: 0.6 * UnitConversions.metersPerMile,
+      ),
+    );
+    await pumpScreen(tester, measurementSystem: MeasurementSystem.imperial);
+
+    await tester.tap(find.byIcon(Icons.add_circle_outline).first);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      UnitConversions.metersPerMile,
+    );
+
+    await controller.setInterval(
+      ActivityType.run,
+      const AudioAnnouncementInterval(
+        distanceMeters: 0.6 * UnitConversions.metersPerMile,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.remove_circle_outline).first);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      0.5 * UnitConversions.metersPerMile,
+    );
+  });
+
+  testWidgets('distance controls snap after switching measurement systems', (
+    tester,
+  ) async {
+    await controller.setMasterEnabled(true);
+    await controller.setInterval(
+      ActivityType.run,
+      const AudioAnnouncementInterval(distanceMeters: 1000),
+    );
+    await pumpScreen(tester, measurementSystem: MeasurementSystem.imperial);
+
+    await tester.tap(find.byIcon(Icons.add_circle_outline).first);
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      UnitConversions.metersPerMile,
+    );
+  });
+
+  testWidgets('distance controls stop at the imperial half-unit maximum', (
+    tester,
+  ) async {
+    await controller.setMasterEnabled(true);
+    await controller.setInterval(
+      ActivityType.run,
+      const AudioAnnouncementInterval(
+        distanceMeters: 31 * UnitConversions.metersPerMile,
+      ),
+    );
+    await pumpScreen(tester, measurementSystem: MeasurementSystem.imperial);
+
+    await tester.tap(find.byIcon(Icons.add_circle_outline).first);
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.intervalFor(ActivityType.run).distanceMeters,
+      31 * UnitConversions.metersPerMile,
+    );
+  });
+
   testWidgets('switching to time updates the subtitle', (tester) async {
     await controller.setMasterEnabled(true);
     await pumpScreen(tester);
