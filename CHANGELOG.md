@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Reconnect to active native recordings after reopening the app without pausing them or creating a replacement activity. Restart interrupted collection within the same session and keep explicit pauses unchanged.
+- Preserve recordings before their first GPS fix and after recorder failures. Failed recordings require an explicit stop before saving or uploading, and remain available for resume or discard.
+- Replay persisted and live GPS points once using session-scoped offsets, retain connection ownership, and support retrying local finalization without replacing the recording.
+
 ## [v0.9.1+15] - 2026-09-11
 
 ### Fixed

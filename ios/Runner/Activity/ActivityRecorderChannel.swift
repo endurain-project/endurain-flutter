@@ -266,27 +266,7 @@ final class ActivityRecorderChannel:
     }
 
     private func handleRecover(result: @escaping FlutterResult) {
-        guard let session = store.loadSession() else {
-            result(nil)
-            return
-        }
-        guard session.status == ActiveActivitySessionData.statusRecording else {
-            result(session.toMap())
-            return
-        }
-        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
-        let recoveryMillis = store.lastPoint().flatMap { IsoTime.toEpochMillis($0.timestamp) }
-            ?? nowMillis
-        let paused = session.copyWith(
-            status: ActiveActivitySessionData.statusPaused,
-            pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: recoveryMillis)
-        )
-        // Save the pause before stopping Core Location so an in-flight update
-        // is rejected by the recorder's recording-state guard.
-        store.saveSession(paused)
-        recorder.stopCollection()
-        result(paused.toMap())
+        result(recorder.recoverActiveSession()?.toMap())
     }
 
     /// Accumulated elapsed seconds, mirroring the Dart geolocator recorder:
@@ -339,7 +319,7 @@ final class ActivityRecorderChannel:
         result(nil)
     }
 
-    static let payloadVersion = 1
+    static let payloadVersion = 2
 
     static let methodChannelName = "endurain/activity_recorder/methods"
     static let eventChannelName = "endurain/activity_recorder/events"

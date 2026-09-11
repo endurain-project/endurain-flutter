@@ -1,6 +1,182 @@
+import CoreLocation
 import XCTest
 
 @testable import Runner
+
+@MainActor
+final class ActivityRecordingRecoveryTests: XCTestCase {
+  private func makeStore() -> ActiveActivityStore {
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+    return ActiveActivityStore(activeDirectory: directory)
+  }
+
+  private func session(_ status: String = ActiveActivitySessionData.statusRecording)
+    -> ActiveActivitySessionData {
+    ActiveActivitySessionData(
+      localSessionId: "existing_session",
+      activityType: "ride",
+      status: status,
+      startedAt: IsoTime.format(Date().addingTimeInterval(-60)),
+      connectionOrigin: "https://example.test",
+      connectionProfileId: "profile_1"
+    )
+  }
+
+  private func location(_ timestamp: Date, latitude: Double) -> CLLocation {
+    CLLocation(
+      coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: -8),
+      altitude: 100,
+      horizontalAccuracy: 5,
+      verticalAccuracy: 5,
+      timestamp: timestamp
+    )
+  }
+
+  func testLiveRecoveryDoesNotStopOrRestartLocationUpdates() throws {
+    let store = makeStore()
+    let original = session()
+    XCTAssertTrue(store.saveSession(original))
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    let firstTime = Date()
+    recorder.locationManager(manager, didUpdateLocations: [location(firstTime, latitude: 41.1)])
+
+    let recovered = try XCTUnwrap(recorder.recoverActiveSession())
+    let again = try XCTUnwrap(recorder.recoverActiveSession())
+
+    XCTAssertEqual(recovered.localSessionId, original.localSessionId)
+    XCTAssertEqual(recovered.connectionProfileId, original.connectionProfileId)
+    XCTAssertEqual(recovered.status, ActiveActivitySessionData.statusRecording)
+    XCTAssertEqual(recovered.startedAt, original.startedAt)
+    XCTAssertNil(recovered.resumedAt)
+    XCTAssertEqual(again.resumedAt, recovered.resumedAt)
+    XCTAssertEqual(manager.startCount, 1)
+    XCTAssertEqual(manager.stopCount, 0)
+    recorder.locationManager(
+      manager,
+      didUpdateLocations: [location(firstTime.addingTimeInterval(1), latitude: 41.2)]
+    )
+    let points = try store.readPoints()
+    XCTAssertEqual(points.count, 2)
+    XCTAssertEqual(points.map { $0.segmentIndex }, [0, 0])
+  }
+
+  func testRestartUsesTheSameSessionAndOpensANewSegment() throws {
+    let store = makeStore()
+    let original = session()
+    XCTAssertTrue(store.saveSession(original))
+    let firstManager = RecoveryLocationManager()
+    let first = CoreLocationActivityRecorder(store: store, manager: firstManager)
+    XCTAssertTrue(first.startCollection())
+    let firstTime = Date().addingTimeInterval(-1)
+    first.locationManager(firstManager, didUpdateLocations: [location(firstTime, latitude: 41.1)])
+    first.stopCollection()
+
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+    let recovered = try XCTUnwrap(recorder.recoverActiveSession())
+    XCTAssertEqual(recovered.localSessionId, original.localSessionId)
+    XCTAssertEqual(recovered.connectionProfileId, original.connectionProfileId)
+    XCTAssertEqual(recovered.status, ActiveActivitySessionData.statusRecording)
+    XCTAssertNotNil(recovered.resumedAt)
+    XCTAssertEqual(manager.startCount, 1)
+    recorder.locationManager(manager, didUpdateLocations: [location(Date(), latitude: 41.2)])
+    XCTAssertEqual(try store.readPoints().map { $0.segmentIndex }, [0, 1])
+  }
+
+  func testPausedAndFailedSessionsStayStoppedWithoutDroppingPoints() throws {
+    for status in [ActiveActivitySessionData.statusPaused, ActiveActivitySessionData.statusFailed] {
+      let store = makeStore()
+      XCTAssertTrue(store.saveSession(session(status)))
+      try store.appendPoints([
+        RecordedActivityPointData(
+          timestamp: IsoTime.nowUtc(), latitude: 41.1, longitude: -8, segmentIndex: 0
+        )
+      ])
+      let manager = RecoveryLocationManager()
+      let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+      let recovered = try XCTUnwrap(recorder.recoverActiveSession())
+      XCTAssertEqual(recovered.status, ActiveActivitySessionData.statusPaused)
+      XCTAssertEqual(recovered.localSessionId, "existing_session")
+      XCTAssertEqual(manager.startCount, 0)
+      XCTAssertEqual(store.pointCount(), 1)
+    }
+  }
+
+  func testRecoveryBeforeFirstFixKeepsRecording() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+
+    XCTAssertEqual(recorder.recoverActiveSession()?.status, ActiveActivitySessionData.statusRecording)
+    XCTAssertEqual(store.loadSession()?.localSessionId, "existing_session")
+    XCTAssertEqual(manager.startCount, 1)
+    XCTAssertEqual(store.pointCount(), 0)
+  }
+
+  func testDeniedPermissionKeepsTheSessionPausedAndRecoverable() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    manager.permission = .denied
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+
+    XCTAssertEqual(recorder.recoverActiveSession()?.status, ActiveActivitySessionData.statusPaused)
+    XCTAssertEqual(store.loadSession()?.localSessionId, "existing_session")
+    XCTAssertEqual(manager.startCount, 0)
+  }
+
+  func testFailedRecoveryWriteDoesNotStartCollectionOrErasePoints() throws {
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+    let store = ActiveActivityStore(activeDirectory: directory)
+    XCTAssertTrue(store.saveSession(session()))
+    try store.appendPoints([
+      RecordedActivityPointData(
+        timestamp: IsoTime.nowUtc(), latitude: 41.1, longitude: -8, segmentIndex: 0
+      )
+    ])
+    let sessionFile = directory.appendingPathComponent("session.json")
+    try FileManager.default.removeItem(at: sessionFile)
+    try FileManager.default.createDirectory(at: sessionFile, withIntermediateDirectories: false)
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    XCTAssertEqual(recorder.recoverActiveSession()?.status, ActiveActivitySessionData.statusFailed)
+    XCTAssertEqual(manager.startCount, 0)
+    XCTAssertEqual(store.pointCount(), 1)
+  }
+}
+
+private final class RecoveryLocationManager: CLLocationManager {
+  var permission = CLAuthorizationStatus.authorizedAlways
+  var startCount = 0
+  var stopCount = 0
+  private var backgroundUpdates = false
+  private var backgroundIndicator = false
+
+  override var authorizationStatus: CLAuthorizationStatus { permission }
+  override var allowsBackgroundLocationUpdates: Bool {
+    get { backgroundUpdates }
+    set { backgroundUpdates = newValue }
+  }
+  override var showsBackgroundLocationIndicator: Bool {
+    get { backgroundIndicator }
+    set { backgroundIndicator = newValue }
+  }
+  override func startUpdatingLocation() { startCount += 1 }
+  override func stopUpdatingLocation() { stopCount += 1 }
+  override func startMonitoringSignificantLocationChanges() {}
+  override func stopMonitoringSignificantLocationChanges() {}
+  override func requestAlwaysAuthorization() {}
+}
 
 /// Unit tests for the native activity-recorder serialization models.
 ///
@@ -188,6 +364,76 @@ final class ActiveRecordingModelsTests: XCTestCase {
     )
 
     XCTAssertEqual(elapsedSeconds, 420)
+  }
+
+  func testInterruptedRecoveryKeepsIdentityAndExcludesUnrecordedTime() {
+    let session = ActiveActivitySessionData(
+      localSessionId: "activity_1",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: "2026-07-15T10:00:00.000Z",
+      connectionOrigin: "https://example.test",
+      connectionProfileId: "profile_1",
+      resumedAt: "2026-07-15T10:10:00.000Z",
+      elapsedDurationSeconds: 300,
+      currentSegmentIndex: 3
+    )
+    let nowMillis = IsoTime.toEpochMillis("2026-07-15T10:20:00.000Z")!
+    let recovered = SessionTiming.afterInterruption(
+      session,
+      lastPointMillis: IsoTime.toEpochMillis("2026-07-15T10:12:00.000Z"),
+      nowMillis: nowMillis
+    )
+
+    XCTAssertEqual(recovered.localSessionId, session.localSessionId)
+    XCTAssertEqual(recovered.connectionOrigin, session.connectionOrigin)
+    XCTAssertEqual(recovered.connectionProfileId, session.connectionProfileId)
+    XCTAssertEqual(recovered.currentSegmentIndex, 3)
+    XCTAssertEqual(recovered.resumedAt, "2026-07-15T10:20:00.000Z")
+    XCTAssertEqual(recovered.elapsedDurationSeconds, 420)
+    XCTAssertEqual(SessionTiming.elapsedSeconds(recovered, referenceMillis: nowMillis + 10_000), 430)
+  }
+
+  func testInterruptedRecoveryWithoutPointsDoesNotInventElapsedTime() {
+    let session = ActiveActivitySessionData(
+      localSessionId: "activity_1",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: "2026-07-15T10:00:00.000Z"
+    )
+    let recovered = SessionTiming.afterInterruption(
+      session,
+      lastPointMillis: nil,
+      nowMillis: IsoTime.toEpochMillis("2026-07-15T11:00:00.000Z")!
+    )
+
+    XCTAssertEqual(recovered.elapsedDurationSeconds, 0)
+    XCTAssertEqual(recovered.status, ActiveActivitySessionData.statusRecording)
+  }
+
+  func testRecoveryDoesNotResumePausedFailedOrCompletedSessions() {
+    let nowMillis = IsoTime.toEpochMillis("2026-07-15T11:00:00.000Z")!
+    for status in [
+      ActiveActivitySessionData.statusPaused,
+      ActiveActivitySessionData.statusFailed,
+      ActiveActivitySessionData.statusCompleted,
+    ] {
+      let session = ActiveActivitySessionData(
+        localSessionId: "activity_1",
+        activityType: "run",
+        status: status,
+        startedAt: "2026-07-15T10:00:00.000Z",
+        elapsedDurationSeconds: 120
+      )
+      let recovered = SessionTiming.afterInterruption(
+        session,
+        lastPointMillis: nil,
+        nowMillis: nowMillis
+      )
+      XCTAssertEqual(recovered.status, status)
+      XCTAssertEqual(recovered.elapsedDurationSeconds, 120)
+      XCTAssertEqual(SessionTiming.elapsedSeconds(session, referenceMillis: nowMillis), 120)
+    }
   }
 
   // MARK: - RecordedActivityPointData

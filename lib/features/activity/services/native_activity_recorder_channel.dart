@@ -13,7 +13,7 @@ class NativeActivityRecorderChannelContract {
 
   /// Schema version for method arguments and event payloads. Native code must
   /// reject or migrate mismatched versions.
-  static const int payloadVersion = 1;
+  static const int payloadVersion = 2;
 
   static const String methodChannelName = 'endurain/activity_recorder/methods';
   static const String eventChannelName = 'endurain/activity_recorder/events';
@@ -36,6 +36,8 @@ class NativeActivityRecorderChannelContract {
   static const String eventSession = 'session';
   static const String eventPoints = 'points';
   static const String eventReason = 'reason';
+  static const String eventLocalSessionId = 'localSessionId';
+  static const String eventPointOffset = 'pointOffset';
 
   // Event type values.
   static const String eventStarted = 'started';
@@ -54,8 +56,8 @@ class NativeActivityRecorderChannelContract {
   static const String errorInvalidArguments = 'invalid_arguments';
 
   /// The native store still holds a recoverable session, so the requested
-  /// transition is not legal. Recoverable: discarding the stale session and
-  /// retrying is the correct response.
+  /// transition is not legal. Recover it before attempting another start;
+  /// never discard an existing recording merely because this error occurred.
   static const String errorInvalidState = 'invalid_state';
 
   /// The native recorder/foreground service could not be started.
@@ -207,10 +209,22 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
       case NativeActivityRecorderChannelContract.eventStopped:
         return session == null ? null : ActivityRecorderEvent.stopped(session);
       case NativeActivityRecorderChannelContract.eventPointBatchAvailable:
+        final localSessionId =
+            payload[NativeActivityRecorderChannelContract.eventLocalSessionId];
+        final pointOffset =
+            payload[NativeActivityRecorderChannelContract.eventPointOffset];
+        if (localSessionId is! String ||
+            localSessionId.isEmpty ||
+            pointOffset is! int ||
+            pointOffset < 0) {
+          return null;
+        }
         return ActivityRecorderEvent.pointBatchAvailable(
           _parsePoints(
             payload[NativeActivityRecorderChannelContract.eventPoints],
           ),
+          localSessionId: localSessionId,
+          pointOffset: pointOffset,
         );
       case NativeActivityRecorderChannelContract.eventRecoverableStateChanged:
         return ActivityRecorderEvent.recoverableStateChanged(session);

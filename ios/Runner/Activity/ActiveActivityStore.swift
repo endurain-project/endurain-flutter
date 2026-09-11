@@ -14,13 +14,13 @@ final class ActiveActivityStore {
     private let fileManager = FileManager.default
     private let queue = DispatchQueue(label: "com.endurain.activity.store")
 
-    private init() {}
+    private let activeDirectory: URL
 
-    private var activeDirectory: URL {
-        let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base
-            .appendingPathComponent("activity_records", isDirectory: true)
-            .appendingPathComponent("active", isDirectory: true)
+    init(activeDirectory: URL? = nil) {
+        self.activeDirectory = activeDirectory
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent("activity_records", isDirectory: true)
+                .appendingPathComponent("active", isDirectory: true)
     }
 
     private var sessionFile: URL {
@@ -44,18 +44,21 @@ final class ActiveActivityStore {
         }
     }
 
-    func saveSession(_ session: ActiveActivitySessionData) {
-        queue.sync {
-            guard let json = session.toJsonString() else { return }
+    @discardableResult
+    func saveSession(_ session: ActiveActivitySessionData) -> Bool {
+        return queue.sync {
+            guard let json = session.toJsonString() else { return false }
             do {
                 try ensureDirectory()
                 try json.data(using: .utf8)?.write(to: sessionFile, options: .atomic)
+                return true
             } catch {
                 // Surface persistence failures via the coordinator; never log
                 // the session payload itself.
                 ActivityRecorderCoordinator.shared.emitFailed(
                     ActivityRecorderCoordinator.reasonPersistenceFailed
                 )
+                return false
             }
         }
     }

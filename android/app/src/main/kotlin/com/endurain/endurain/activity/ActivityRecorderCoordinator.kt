@@ -38,7 +38,11 @@ object ActivityRecorderCoordinator {
         )
     }
 
-    fun emitPointBatch(points: List<RecordedActivityPointData>) {
+    fun emitPointBatch(
+        points: List<RecordedActivityPointData>,
+        localSessionId: String,
+        pointOffset: Int,
+    ) {
         if (points.isEmpty()) {
             return
         }
@@ -46,6 +50,8 @@ object ActivityRecorderCoordinator {
             mapOf(
                 KEY_TYPE to TYPE_POINT_BATCH_AVAILABLE,
                 KEY_POINTS to points.map { it.toMap() },
+                "localSessionId" to localSessionId,
+                "pointOffset" to pointOffset,
             ),
         )
     }
@@ -73,7 +79,7 @@ object ActivityRecorderCoordinator {
         mainHandler.post {
             // The sink may have detached between the null check and delivery.
             if (eventSink === sink) {
-                sink.success(payload)
+                sink.success(payload + ("version" to ActivityRecorderChannel.PAYLOAD_VERSION))
             }
         }
     }

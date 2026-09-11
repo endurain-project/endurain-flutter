@@ -38,6 +38,8 @@ class ActivityRecorderService : Service() {
     private lateinit var store: ActiveActivityStore
     private var locationManager: LocationManager? = null
     private var locationListener: LocationListener? = null
+    private var collectingSessionId: String? = null
+    private var nextPointOffset = 0
 
     private var lastPointEpochMillis: Long? = null
     private var activeNotificationTitle: String? = null
@@ -56,6 +58,7 @@ class ActivityRecorderService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        activeInstance = this
         store = ActiveActivityStore.of(applicationContext)
         locationManager =
             getSystemService(Context.LOCATION_SERVICE) as? LocationManager
@@ -68,6 +71,7 @@ class ActivityRecorderService : Service() {
             ACTION_RESUME -> handleResume()
             ACTION_PAUSE -> handlePause()
             ACTION_STOP -> handleStop()
+            ACTION_RECONNECT -> handleRestart(rebaseTime = false)
             else -> handleRestart()
         }
         return START_STICKY
@@ -135,10 +139,15 @@ class ActivityRecorderService : Service() {
     }
 
     /** Sticky restart after process death: resume only if still recording. */
-    private fun handleRestart() {
+    private fun handleRestart(rebaseTime: Boolean = true) {
         val session = store.loadSession()
         if (session == null || !session.isActive) {
             stopSelf()
+            return
+        }
+        if (collectingSessionId == session.localSessionId &&
+            session.status == ActiveActivitySessionData.STATUS_RECORDING
+        ) {
             return
         }
         if (!hasAnyLocationPermission()) {
@@ -156,6 +165,16 @@ class ActivityRecorderService : Service() {
             return
         }
         if (session.status == ActiveActivitySessionData.STATUS_RECORDING) {
+            if (rebaseTime) {
+                store.saveSession(
+                    SessionTiming.afterInterruption(
+                        session,
+                        store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
+                        System.currentTimeMillis(),
+                    ),
+                )
+            }
+            resumedFromPause = store.lastPoint() != null
             beginCollection()
             startSensorCapture()
         }
@@ -212,6 +231,7 @@ class ActivityRecorderService : Service() {
         }
         locationListener = listener
         lastPointEpochMillis = store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis)
+        nextPointOffset = store.pointCount()
         var registeredProvider = false
         var permissionFailure = false
         for (provider in providers) {
@@ -242,6 +262,7 @@ class ActivityRecorderService : Service() {
             )
             return
         }
+        collectingSessionId = store.loadSession()?.localSessionId
         acquireWakeLock()
         scheduleNextTimeAnnouncement()
     }
@@ -294,17 +315,25 @@ class ActivityRecorderService : Service() {
 
     /**
      * Persists [ActiveActivitySessionData.STATUS_FAILED] for any active session
-     * so Flutter sees a non-recoverable state on re-attach even if the failure
-     * event was dropped while Flutter was detached.
+    * so recovery requires explicit user action even if the failure event was
+    * dropped while Flutter was detached. Points and session ownership remain.
      */
     private fun persistFailure() {
         val session = store.loadSession() ?: return
         if (session.isActive) {
-            store.saveSession(session.copy(status = ActiveActivitySessionData.STATUS_FAILED))
+            val nowMillis = System.currentTimeMillis()
+            store.saveSession(
+                session.copy(
+                    status = ActiveActivitySessionData.STATUS_FAILED,
+                    pausedAt = IsoTime.format(Date(nowMillis)),
+                    elapsedDurationSeconds = SessionTiming.elapsedSeconds(session, nowMillis),
+                ),
+            )
         }
     }
 
     private fun stopCollection() {
+        collectingSessionId = null
         // Released first and unconditionally: the listener may already be null
         // (e.g. a start that never registered a provider), and the wake lock
         // must never outlive collection.
@@ -447,7 +476,12 @@ class ActivityRecorderService : Service() {
             stopSelf()
             return
         }
-        ActivityRecorderCoordinator.emitPointBatch(listOf(point))
+        ActivityRecorderCoordinator.emitPointBatch(
+            listOf(point),
+            session.localSessionId,
+            nextPointOffset,
+        )
+        nextPointOffset += 1
         announceIfDue(nowMillis, location, isNewSegment)
     }
 
@@ -797,16 +831,22 @@ class ActivityRecorderService : Service() {
         stopCollection()
         stopSensorCapture()
         releaseWakeLock()
+        if (activeInstance === this) {
+            activeInstance = null
+        }
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
+        private var activeInstance: ActivityRecorderService? = null
+
         const val ACTION_START = "com.endurain.endurain.activity.action.START"
         const val ACTION_PAUSE = "com.endurain.endurain.activity.action.PAUSE"
         const val ACTION_RESUME = "com.endurain.endurain.activity.action.RESUME"
         const val ACTION_STOP = "com.endurain.endurain.activity.action.STOP"
+        private const val ACTION_RECONNECT = "com.endurain.endurain.activity.action.RECONNECT"
 
         const val EXTRA_TITLE = "title"
         const val EXTRA_TEXT = "text"
@@ -829,6 +869,49 @@ class ActivityRecorderService : Service() {
 
         private fun baseIntent(context: Context, action: String): Intent {
             return Intent(context, ActivityRecorderService::class.java).setAction(action)
+        }
+
+        fun recover(context: Context): ActiveActivitySessionData? {
+            val store = ActiveActivityStore.of(context)
+            val session = store.loadSession() ?: return null
+            if (session.status == ActiveActivitySessionData.STATUS_FAILED) {
+                val paused = session.copy(
+                    status = ActiveActivitySessionData.STATUS_PAUSED,
+                    pausedAt = IsoTime.nowUtc(),
+                    endedAt = null,
+                )
+                store.saveSession(paused)
+                activeInstance?.handlePause()
+                return paused
+            }
+            if (session.status != ActiveActivitySessionData.STATUS_RECORDING ||
+                activeInstance?.collectingSessionId == session.localSessionId
+            ) {
+                return session
+            }
+            val recovered = SessionTiming.afterInterruption(
+                session,
+                store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
+                System.currentTimeMillis(),
+            )
+            store.saveSession(recovered)
+            try {
+                ContextCompat.startForegroundService(
+                    context,
+                    baseIntent(context, ACTION_RECONNECT),
+                )
+            } catch (_: RuntimeException) {
+                val paused = recovered.copy(
+                    status = ActiveActivitySessionData.STATUS_PAUSED,
+                    pausedAt = IsoTime.nowUtc(),
+                )
+                store.saveSession(paused)
+                ActivityRecorderCoordinator.emitFailed(
+                    ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED,
+                )
+                return paused
+            }
+            return recovered
         }
 
         fun start(context: Context, title: String?, text: String?) {

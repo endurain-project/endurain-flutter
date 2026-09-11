@@ -83,6 +83,11 @@ class ActivityRecordingState {
         status == ActivityRecordingStatus.paused;
   }
 
+  bool get canRecover =>
+      status == ActivityRecordingStatus.failed &&
+      startedAt != null &&
+      lastError != ActivityRecordingError.emptyRecording;
+
   ActivityRecordingState copyWith({
     ActivityRecordingStatus? status,
     Object? activityType = kUnset,
