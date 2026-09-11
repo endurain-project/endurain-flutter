@@ -30,6 +30,8 @@ struct AnnouncementStateData: Equatable {
     let metricUnitTemplate: String
     let metricLabel: String
     let messageTemplate: String
+    let autoPausedMessage: String
+    let autoResumedMessage: String
     // Scheduler progress, checkpointed from GPS fixes and the elapsed-time timer.
     var cumulativeDistanceMeters: Double
     var lastAnnouncedDistanceIndex: Int
@@ -58,6 +60,8 @@ struct AnnouncementStateData: Equatable {
         metricUnitTemplate: String,
         metricLabel: String,
         messageTemplate: String,
+        autoPausedMessage: String = "",
+        autoResumedMessage: String = "",
         cumulativeDistanceMeters: Double = 0,
         lastAnnouncedDistanceIndex: Int = 0,
         lastAnnouncedTimeIndex: Int = 0,
@@ -79,6 +83,8 @@ struct AnnouncementStateData: Equatable {
         self.metricUnitTemplate = metricUnitTemplate
         self.metricLabel = metricLabel
         self.messageTemplate = messageTemplate
+        self.autoPausedMessage = autoPausedMessage
+        self.autoResumedMessage = autoResumedMessage
         self.cumulativeDistanceMeters = cumulativeDistanceMeters
         self.lastAnnouncedDistanceIndex = lastAnnouncedDistanceIndex
         self.lastAnnouncedTimeIndex = lastAnnouncedTimeIndex
@@ -91,6 +97,16 @@ struct AnnouncementStateData: Equatable {
 
     var isTimeBased: Bool {
         return intervalUnit == AnnouncementStateData.unitTime
+    }
+
+    func transitionMessage(autoPaused: Bool) -> String? {
+        guard enabled else {
+            return nil
+        }
+        let message = autoPaused ? autoPausedMessage : autoResumedMessage
+        return message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? nil
+            : message
     }
 
     func copyWith(
@@ -116,6 +132,8 @@ struct AnnouncementStateData: Equatable {
             metricUnitTemplate: metricUnitTemplate,
             metricLabel: metricLabel,
             messageTemplate: messageTemplate,
+            autoPausedMessage: autoPausedMessage,
+            autoResumedMessage: autoResumedMessage,
             cumulativeDistanceMeters: cumulativeDistanceMeters ?? self.cumulativeDistanceMeters,
             lastAnnouncedDistanceIndex: lastAnnouncedDistanceIndex ?? self.lastAnnouncedDistanceIndex,
             lastAnnouncedTimeIndex: lastAnnouncedTimeIndex ?? self.lastAnnouncedTimeIndex,
@@ -143,6 +161,8 @@ struct AnnouncementStateData: Equatable {
         map["metricUnitTemplate"] = metricUnitTemplate
         map["metricLabel"] = metricLabel
         map["messageTemplate"] = messageTemplate
+        map["autoPausedMessage"] = autoPausedMessage
+        map["autoResumedMessage"] = autoResumedMessage
         map["cumulativeDistanceMeters"] = cumulativeDistanceMeters
         map["lastAnnouncedDistanceIndex"] = lastAnnouncedDistanceIndex
         map["lastAnnouncedTimeIndex"] = lastAnnouncedTimeIndex
@@ -182,6 +202,8 @@ struct AnnouncementStateData: Equatable {
             metricLabel: (json["metricLabel"] as? String) ?? "",
             messageTemplate: (json["messageTemplate"] as? String)
                 ?? "{distance} {duration} {lapMetric} {overallMetric}",
+            autoPausedMessage: (json["autoPausedMessage"] as? String) ?? "",
+            autoResumedMessage: (json["autoResumedMessage"] as? String) ?? "",
             cumulativeDistanceMeters: JsonScalar.double(json["cumulativeDistanceMeters"]) ?? 0,
             lastAnnouncedDistanceIndex: JsonScalar.int(json["lastAnnouncedDistanceIndex"]) ?? 0,
             lastAnnouncedTimeIndex: JsonScalar.int(json["lastAnnouncedTimeIndex"]) ?? 0,
@@ -216,7 +238,9 @@ struct AnnouncementStateData: Equatable {
             metricUnitTemplate: (map["metricUnitTemplate"] as? String) ?? "{value}",
             metricLabel: (map["metricLabel"] as? String) ?? "",
             messageTemplate: (map["messageTemplate"] as? String)
-                ?? "{distance} {duration} {lapMetric} {overallMetric}"
+                ?? "{distance} {duration} {lapMetric} {overallMetric}",
+            autoPausedMessage: (map["autoPausedMessage"] as? String) ?? "",
+            autoResumedMessage: (map["autoResumedMessage"] as? String) ?? ""
         )
     }
 }

@@ -26,7 +26,10 @@ final class ActiveRecordingModelsTests: XCTestCase {
       pausedAt: "2026-07-15T10:10:00.000Z",
       endedAt: "2026-07-15T10:20:00.000Z",
       elapsedDurationSeconds: 600,
-      currentSegmentIndex: 3
+      currentSegmentIndex: 3,
+      autoPauseEnabled: true,
+      autoPauseDelaySeconds: 15,
+      pausedAutomatically: true
     )
 
     let decoded = ActiveActivitySessionData.fromJson(session.toMap())
@@ -42,6 +45,9 @@ final class ActiveRecordingModelsTests: XCTestCase {
     XCTAssertEqual(decoded?.endedAt, "2026-07-15T10:20:00.000Z")
     XCTAssertEqual(decoded?.elapsedDurationSeconds, 600)
     XCTAssertEqual(decoded?.currentSegmentIndex, 3)
+    XCTAssertEqual(decoded?.autoPauseEnabled, true)
+    XCTAssertEqual(decoded?.autoPauseDelaySeconds, 15)
+    XCTAssertEqual(decoded?.pausedAutomatically, true)
     XCTAssertEqual(
       decoded?.schemaVersion, ActiveActivitySessionData.schemaVersionValue)
   }
@@ -131,6 +137,36 @@ final class ActiveRecordingModelsTests: XCTestCase {
     XCTAssertFalse(session(ActiveActivitySessionData.statusStopping).isActive)
     XCTAssertFalse(session(ActiveActivitySessionData.statusCompleted).isActive)
     XCTAssertFalse(session(ActiveActivitySessionData.statusFailed).isActive)
+  }
+
+  func testSessionRequiresLocationMonitoringWhileRecordingOrAutomaticallyPaused() {
+    func session(
+      _ status: String,
+      pausedAutomatically: Bool = false
+    ) -> ActiveActivitySessionData {
+      ActiveActivitySessionData(
+        localSessionId: "activity_1",
+        activityType: "run",
+        status: status,
+        startedAt: "2026-07-15T10:00:00.000Z",
+        pausedAutomatically: pausedAutomatically
+      )
+    }
+
+    XCTAssertTrue(
+      session(ActiveActivitySessionData.statusRecording).requiresLocationMonitoring)
+    XCTAssertTrue(
+      session(
+        ActiveActivitySessionData.statusPaused,
+        pausedAutomatically: true
+      ).requiresLocationMonitoring)
+    XCTAssertFalse(
+      session(ActiveActivitySessionData.statusPaused).requiresLocationMonitoring)
+    XCTAssertFalse(
+      session(
+        ActiveActivitySessionData.statusCompleted,
+        pausedAutomatically: true
+      ).requiresLocationMonitoring)
   }
 
   func testCopyWithOverridesOnlyProvidedFields() {

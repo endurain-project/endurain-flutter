@@ -34,6 +34,7 @@ class ActivityRecordingState {
     this.currentHeartRateBpm,
     this.currentPowerWatts,
     this.currentCadenceRpm,
+    this.isAutoPaused = false,
     List<ActivityTrackPoint> points = const [],
     List<ActivityTrackSegment> segments = const [],
   }) : _segments = List<ActivityTrackSegment>.unmodifiable(
@@ -71,6 +72,13 @@ class ActivityRecordingState {
   /// recording; the durable per-point cadence still lives on the track points.
   final int? currentCadenceRpm;
 
+  /// Whether the recording is currently paused automatically by the
+  /// movement/auto-pause detector, as opposed to an explicit user pause.
+  /// Only meaningful when [status] is [ActivityRecordingStatus.paused]; the
+  /// UI uses this to show a distinct "auto-paused" indicator and to know
+  /// that this pause may resume on its own once movement is detected again.
+  final bool isAutoPaused;
+
   final List<ActivityTrackPoint> _points;
   final List<ActivityTrackSegment> _segments;
 
@@ -94,6 +102,7 @@ class ActivityRecordingState {
     Object? currentHeartRateBpm = kUnset,
     Object? currentPowerWatts = kUnset,
     Object? currentCadenceRpm = kUnset,
+    bool? isAutoPaused,
     List<ActivityTrackPoint>? points,
     List<ActivityTrackSegment>? segments,
   }) {
@@ -123,6 +132,7 @@ class ActivityRecordingState {
       currentCadenceRpm: identical(currentCadenceRpm, kUnset)
           ? this.currentCadenceRpm
           : currentCadenceRpm as int?,
+      isAutoPaused: isAutoPaused ?? this.isAutoPaused,
       points: points ?? _points,
       segments: segments ?? (points == null ? _segments : const []),
     );

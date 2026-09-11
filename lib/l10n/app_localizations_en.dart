@@ -482,6 +482,38 @@ class AppLocalizationsEn extends AppLocalizations {
       'Stores completed route files in private app storage after upload.';
 
   @override
+  String get activityAutoPauseTitle => 'Auto-pause';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pause automatically when you stop moving';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatically pause';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pauses recording when you stop moving, and resumes once you start moving again.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Choose how long to wait without movement before pausing.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds seconds';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Auto-paused';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Recording paused';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Recording resumed';
+
+  @override
   String get activityHistoryEmpty =>
       'No completed activities saved on this device.';
 

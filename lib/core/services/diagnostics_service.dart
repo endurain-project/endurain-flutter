@@ -181,6 +181,8 @@ class DiagnosticsEvents {
   static const String activityStartFailed = 'activity.start_failed';
   static const String activityPaused = 'activity.paused';
   static const String activityResumed = 'activity.resumed';
+  static const String activityAutoPaused = 'activity.auto_paused';
+  static const String activityAutoResumed = 'activity.auto_resumed';
   static const String activityStopped = 'activity.stopped';
   static const String activityStopFailed = 'activity.stop_failed';
   static const String activityDiscarded = 'activity.discarded';
@@ -193,6 +195,10 @@ class DiagnosticsEvents {
   static const String activityRecorderStarted = 'activity.recorder_started';
   static const String activityRecorderPaused = 'activity.recorder_paused';
   static const String activityRecorderResumed = 'activity.recorder_resumed';
+  static const String activityRecorderAutoPaused =
+      'activity.recorder_auto_paused';
+  static const String activityRecorderAutoResumed =
+      'activity.recorder_auto_resumed';
   static const String activityRecorderStopped = 'activity.recorder_stopped';
   static const String activityRecorderFailed = 'activity.recorder_failed';
   static const String activityActiveSessionRecovered =

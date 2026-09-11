@@ -107,6 +107,8 @@ final class ActivityRecorderCoordinator {
     static let eventPointBatchAvailable = "pointBatchAvailable"
     static let eventPaused = "paused"
     static let eventResumed = "resumed"
+    static let eventAutoPaused = "autoPaused"
+    static let eventAutoResumed = "autoResumed"
     static let eventStopped = "stopped"
     static let eventFailed = "failed"
     static let eventRecoverableStateChanged = "recoverableStateChanged"

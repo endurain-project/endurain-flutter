@@ -492,6 +492,38 @@ class AppLocalizationsEs extends AppLocalizations {
       'Guarda los archivos de ruta completados en el almacenamiento privado de la app después de subirlos.';
 
   @override
+  String get activityAutoPauseTitle => 'Pausa automática';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pausa automáticamente cuando dejas de moverte';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausar automáticamente';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pausa la grabación cuando dejas de moverte y la reanuda en cuanto vuelves a moverte.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Elige cuánto tiempo sin movimiento se debe esperar antes de pausar.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds segundos';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'En pausa automática';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Grabación en pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Grabación reanudada';
+
+  @override
   String get activityHistoryEmpty =>
       'No hay actividades completadas guardadas en este dispositivo.';
 

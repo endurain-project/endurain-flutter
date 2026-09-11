@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 
 /// Typed, language-free recorder failure reasons.
 ///
@@ -25,6 +26,18 @@ enum ActivityRecorderEventType {
   stopped,
   failed,
   recoverableStateChanged,
+
+  /// The recorder paused the recording on its own (movement/auto-pause
+  /// detector), not in response to an explicit [ActivityLocationRecorder.pause]
+  /// call. Distinct from [paused] so a listener can tell manual and automatic
+  /// pauses apart — the requirement that a manual pause never auto-resumes
+  /// depends on this distinction.
+  autoPaused,
+
+  /// The recorder resumed the recording on its own (movement/auto-pause
+  /// detector observed enough consecutive movement), not in response to an
+  /// explicit [ActivityLocationRecorder.resume] call.
+  autoResumed,
 }
 
 /// An event emitted by an [ActivityLocationRecorder].
@@ -52,6 +65,12 @@ class ActivityRecorderEvent {
 
   const ActivityRecorderEvent.resumed(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.resumed, session: session);
+
+  const ActivityRecorderEvent.autoPaused(ActiveActivitySession session)
+    : this(type: ActivityRecorderEventType.autoPaused, session: session);
+
+  const ActivityRecorderEvent.autoResumed(ActiveActivitySession session)
+    : this(type: ActivityRecorderEventType.autoResumed, session: session);
 
   const ActivityRecorderEvent.stopped(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.stopped, session: session);
@@ -85,6 +104,7 @@ class ActivityRecorderStartRequest {
     this.heartRateDeviceId,
     this.powerDeviceId,
     this.cadenceDeviceId,
+    this.autoPauseConfig = const MovementAutoPauseConfig(),
   });
 
   final String localSessionId;
@@ -113,6 +133,11 @@ class ActivityRecorderStartRequest {
   /// recording, or `null` when none is paired. Recorders that support native
   /// cadence capture connect to this device; others ignore it.
   final String? cadenceDeviceId;
+
+  /// Auto-pause configuration snapshotted at recording start (see
+  /// `AutoPauseSettingsRepository`). Recorders that support auto-pause use
+  /// this to drive their movement detector; others ignore it.
+  final MovementAutoPauseConfig autoPauseConfig;
 }
 
 /// Abstraction over the platform mechanism that collects and persists location
@@ -130,6 +155,13 @@ abstract class ActivityLocationRecorder {
   Future<void> start(ActivityRecorderStartRequest request);
 
   /// Pauses collection while keeping the active session recoverable.
+  ///
+  /// This is always a manual pause (i.e. an explicit user action bridged
+  /// through `ActivityRecordingService.pause`); implementations must stop
+  /// monitoring location entirely so a manual pause can never auto-resume.
+  /// Automatic pauses are signaled instead via
+  /// [ActivityRecorderEventType.autoPaused]/[ActivityRecorderEventType.autoResumed]
+  /// events, which keep monitoring alive.
   Future<void> pause();
 
   /// Resumes collection, starting a new track segment.

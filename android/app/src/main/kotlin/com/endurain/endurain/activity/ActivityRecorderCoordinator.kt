@@ -89,6 +89,8 @@ object ActivityRecorderCoordinator {
     const val TYPE_POINT_BATCH_AVAILABLE = "pointBatchAvailable"
     const val TYPE_PAUSED = "paused"
     const val TYPE_RESUMED = "resumed"
+    const val TYPE_AUTO_PAUSED = "autoPaused"
+    const val TYPE_AUTO_RESUMED = "autoResumed"
     const val TYPE_STOPPED = "stopped"
     const val TYPE_FAILED = "failed"
     const val TYPE_RECOVERABLE_STATE_CHANGED = "recoverableStateChanged"

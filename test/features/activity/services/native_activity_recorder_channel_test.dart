@@ -2,6 +2,7 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -129,6 +130,38 @@ void main() {
       expect(args.containsKey('cadenceDeviceId'), isFalse);
     });
 
+    test('sends the auto-pause configuration', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+          autoPauseConfig: const MovementAutoPauseConfig(
+            enabled: true,
+            pauseDelay: Duration(seconds: 20),
+          ),
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args['autoPauseEnabled'], isTrue);
+      expect(args['autoPauseDelaySeconds'], 20);
+    });
+
+    test('defaults to a disabled auto-pause configuration', () async {
+      await channel.start(
+        ActivityRecorderStartRequest(
+          localSessionId: 'session_1',
+          activityType: ActivityType.run,
+          startedAt: DateTime.utc(2026, 6, 3, 9),
+        ),
+      );
+
+      final args = calls.single.arguments as Map;
+      expect(args['autoPauseEnabled'], isFalse);
+      expect(args['autoPauseDelaySeconds'], 5);
+    });
+
     test('includes the audio announcement config when provided', () async {
       const config = AudioAnnouncementConfig(
         enabled: true,
@@ -145,6 +178,8 @@ void main() {
         messageTemplate:
             'Distance {distance}. Time {duration}. '
             'Lap {lapMetric}. Overall {overallMetric}.',
+        autoPausedMessage: 'Recording paused',
+        autoResumedMessage: 'Recording resumed',
       );
       await channel.start(
         ActivityRecorderStartRequest(
@@ -163,6 +198,8 @@ void main() {
       expect(sent['metric'], 'pace');
       expect(sent['metricLabel'], 'Pace');
       expect(sent['languageTag'], 'en-US');
+      expect(sent['autoPausedMessage'], 'Recording paused');
+      expect(sent['autoResumedMessage'], 'Recording resumed');
     });
 
     test('omits the audio announcement config when absent', () async {
