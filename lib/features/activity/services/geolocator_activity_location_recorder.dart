@@ -46,6 +46,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   RecordedActivityPoint? _lastPoint;
   bool _resumedFromPause = false;
   bool _disposed = false;
+  int _nextPointOffset = 0;
 
   @override
   Stream<ActivityRecorderEvent> get events => _eventController.stream;
@@ -71,6 +72,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     _backgroundConfig = request.backgroundConfig;
     _lastPoint = null;
     _resumedFromPause = false;
+    _nextPointOffset = 0;
     await _store.saveSession(session);
     _emit(ActivityRecorderEvent.started(session));
     _diagnostics.recordBreadcrumbSync(
@@ -176,12 +178,28 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   @override
   Future<ActiveActivitySession?> recoverActiveSession() async {
     await _waitForPendingPositions();
-    final session = await _store.loadSession();
+    var session = await _store.loadSession();
     _session = session;
     if (session != null) {
-      _resumedFromPause = false;
       final points = await _store.readPoints();
       _lastPoint = points.isEmpty ? null : points.last;
+      _nextPointOffset = points.length;
+      if (session.status == ActiveActivityStatus.failed ||
+          (session.status == ActiveActivityStatus.recording &&
+              _positionSubscription == null)) {
+        final reference =
+            _lastPoint?.timestamp ?? session.resumedAt ?? session.startedAt;
+        session = session.copyWith(
+          status: ActiveActivityStatus.paused,
+          pausedAt: _now(),
+          endedAt: null,
+          elapsedDurationSeconds: session.status == ActiveActivityStatus.failed
+              ? session.elapsedDurationSeconds
+              : _elapsedDurationSeconds(session, reference),
+        );
+        _session = session;
+        await _store.saveSession(session);
+      }
     }
     _emit(ActivityRecorderEvent.recoverableStateChanged(session));
     return session;
@@ -297,7 +315,14 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       await _store.saveSession(updated);
     }
     _lastPoint = point;
-    _emit(ActivityRecorderEvent.pointBatchAvailable([point]));
+    _emit(
+      ActivityRecorderEvent.pointBatchAvailable(
+        [point],
+        localSessionId: session.localSessionId,
+        pointOffset: _nextPointOffset,
+      ),
+    );
+    _nextPointOffset += 1;
   }
 
   Future<void> _waitForPendingPositions() => _positionQueue;

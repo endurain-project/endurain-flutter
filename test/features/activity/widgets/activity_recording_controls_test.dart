@@ -20,6 +20,37 @@ void main() {
 
     tearDown(PlatformUtils.debugResetOverrides);
 
+    testWidgets('offers recovery controls after an interrupted recording', (
+      tester,
+    ) async {
+      var resumed = false;
+      var stopped = false;
+      final l10n = AppLocalizationsEn();
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityRecordingControls(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.failed,
+              startedAt: DateTime.utc(2026, 9, 11),
+              lastError: ActivityRecordingError.locationStreamFailed,
+            ),
+            selectedActivityType: ActivityType.run,
+            onActivityTypeChanged: (_) {},
+            onStart: (_) => fail('Must not start a replacement recording'),
+            onPause: null,
+            onResume: () => resumed = true,
+            onStop: () => stopped = true,
+          ),
+        ),
+      );
+
+      expect(find.byTooltip(l10n.activityStart), findsNothing);
+      await tester.tap(find.byTooltip(l10n.activityResume));
+      await tester.tap(find.byTooltip(l10n.activityStop));
+      expect(resumed, isTrue);
+      expect(stopped, isTrue);
+    });
+
     testWidgets('shows start action when idle', (tester) async {
       ActivityType? startedType;
 

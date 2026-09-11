@@ -55,6 +55,301 @@ void main() {
       );
     });
 
+    test(
+      'reconnects to a live recording without changing its session',
+      () async {
+        final startedAt = DateTime.utc(2026, 5, 30, 10);
+        final recorder = _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: 'existing_session',
+            activityType: ActivityType.ride,
+            status: ActiveActivityStatus.recording,
+            startedAt: startedAt,
+            resumedAt: startedAt.add(const Duration(minutes: 4)),
+            elapsedDurationSeconds: 60,
+            connectionOrigin: 'https://example.com',
+            connectionProfileId: 'existing_profile',
+          );
+        recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
+        final service = _buildService(
+          recorder: recorder,
+          now: () => startedAt.add(const Duration(minutes: 5)),
+        );
+        addTearDown(service.dispose);
+
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.recording);
+        expect(service.state.elapsedDurationSeconds, 120);
+        expect(service.state.startedAt, startedAt);
+        expect(service.state.endedAt, isNull);
+        expect(service.localSessionId, 'existing_session');
+        expect(service.connectionOrigin, 'https://example.com');
+        expect(service.connectionProfileId, 'existing_profile');
+
+        recorder.emitPoints([
+          _point(
+            latitude: 41.2,
+            longitude: -8.7,
+            timestamp: startedAt.add(const Duration(minutes: 5)),
+          ),
+        ]);
+        await pumpEventQueue();
+
+        expect(service.state.points, hasLength(2));
+        expect(recorder.startCount, 0);
+        expect(recorder.pauseCount, 0);
+        expect(recorder.resumeCount, 0);
+        expect(recorder.discardCount, 0);
+      },
+    );
+
+    group('recovery handoff', () {
+      final startedAt = DateTime.utc(2026, 5, 30, 10);
+
+      _ControllableRecorder recorderFor(ActiveActivityStatus status) {
+        return _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: 'existing_session',
+            activityType: ActivityType.run,
+            status: status,
+            startedAt: startedAt,
+          );
+      }
+
+      for (final status in [
+        ActiveActivityStatus.recording,
+        ActiveActivityStatus.paused,
+        ActiveActivityStatus.failed,
+      ]) {
+        test('preserves a $status session before its first fix', () async {
+          final recorder = recorderFor(status);
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+
+          expect(await service.recoverActiveSession(), isTrue);
+          expect(
+            service.state.status,
+            status == ActiveActivityStatus.recording
+                ? ActivityRecordingStatus.recording
+                : ActivityRecordingStatus.paused,
+          );
+          expect(service.localSessionId, 'existing_session');
+          expect(service.state.points, isEmpty);
+          expect(service.state.endedAt, isNull);
+          expect(recorder.discardCount, 0);
+        });
+      }
+
+      test('replays overlapping and late batches exactly once', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final first = _point(latitude: 41.1, longitude: -8.6);
+        final overlapping = _point(latitude: 41.2, longitude: -8.7);
+        final late = _point(latitude: 41.3, longitude: -8.8);
+        recorder.emitPoints([first]);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        final recovery = service.recoverActiveSession();
+        await pumpEventQueue();
+        recorder.emitPoints([overlapping]);
+        await pumpEventQueue();
+        drain.complete([first, overlapping]);
+        recorder.emitPoints([late]);
+        expect(await recovery, isTrue);
+        await pumpEventQueue();
+
+        expect(service.state.points.map((point) => point.latitude), [
+          41.1,
+          41.2,
+          41.3,
+        ]);
+        expect(recorder.discardCount, 0);
+      });
+
+      test('fills a missing live batch from durable storage', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+        await service.recoverActiveSession();
+
+        recorder._drained.add(_point(latitude: 41.1, longitude: -8.6));
+        recorder.emitPoints([_point(latitude: 41.2, longitude: -8.7)]);
+        await pumpEventQueue();
+
+        expect(service.state.points.map((point) => point.latitude), [
+          41.1,
+          41.2,
+        ]);
+        expect(service.state.status, ActivityRecordingStatus.recording);
+      });
+
+      test('ignores batches belonging to another session', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+        await service.recoverActiveSession();
+
+        recorder._controller.add(
+          ActivityRecorderEvent.pointBatchAvailable(
+            [_point(latitude: 41.1, longitude: -8.6)],
+            localSessionId: 'different_session',
+            pointOffset: 0,
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(service.state.points, isEmpty);
+        expect(service.localSessionId, 'existing_session');
+      });
+
+      test('keeps a failure delivered during recovery visible', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        final recovery = service.recoverActiveSession();
+        await pumpEventQueue();
+        recorder.emitFailure(ActivityRecorderFailureReason.permissionLost);
+        await pumpEventQueue();
+        drain.complete([_point(latitude: 41.1, longitude: -8.6)]);
+        expect(await recovery, isTrue);
+
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(
+          service.state.lastError,
+          ActivityRecordingError.locationPermissionDenied,
+        );
+        expect(service.state.points, hasLength(1));
+        expect(recorder.discardCount, 0);
+      });
+
+      test('retries a failed drain without discarding the session', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording)
+          ..drainOverride = (_) async => throw StateError('read failed');
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(service.state.lastError, ActivityRecordingError.localSaveFailed);
+        expect(recorder.discardCount, 0);
+
+        recorder.drainOverride = null;
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.recording);
+        expect(recorder.recoverCount, 2);
+      });
+
+      test(
+        'recovers an existing session when native start rejects replacement',
+        () async {
+          final recorder = recorderFor(ActiveActivityStatus.recording);
+          recorder.startErrors.add(
+            PlatformException(
+              code: NativeActivityRecorderChannelContract.errorInvalidState,
+            ),
+          );
+          recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.ride);
+
+          expect(recorder.startCount, 1);
+          expect(recorder.discardCount, 0);
+          expect(service.localSessionId, 'existing_session');
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(service.state.activityType, ActivityType.run);
+          expect(service.state.points, hasLength(1));
+        },
+      );
+
+      test('coalesces recovery and blocks a concurrent start', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        final recovery = service.recoverActiveSession();
+        expect(service.recoverActiveSession(), same(recovery));
+        final start = service.start(activityType: ActivityType.ride);
+        await pumpEventQueue();
+        expect(recorder.startCount, 0);
+        drain.complete([]);
+        await recovery;
+        await start;
+
+        expect(recorder.recoverCount, 1);
+        expect(recorder.startCount, 0);
+        expect(service.state.activityType, ActivityType.run);
+      });
+
+      test('does not emit or discard after disposal during recovery', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+
+        final recovery = service.recoverActiveSession();
+        await pumpEventQueue();
+        service.dispose();
+        drain.complete([]);
+
+        expect(await recovery, isFalse);
+        expect(recorder.discardCount, 0);
+      });
+
+      test(
+        'concurrent resume requests only resume the recorder once',
+        () async {
+          final recorder = recorderFor(ActiveActivityStatus.paused);
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+          await service.recoverActiveSession();
+
+          await Future.wait([service.resume(), service.resume()]);
+
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(recorder.resumeCount, 1);
+        },
+      );
+
+      test('continues elapsed time and does not count an explicit pause', () {
+        fakeAsync((clock) {
+          final recorder = recorderFor(ActiveActivityStatus.recording)
+            ..recoveredSession = ActiveActivitySession(
+              localSessionId: 'existing_session',
+              activityType: ActivityType.run,
+              status: ActiveActivityStatus.recording,
+              startedAt: startedAt.subtract(const Duration(minutes: 5)),
+              resumedAt: startedAt.subtract(const Duration(minutes: 1)),
+              elapsedDurationSeconds: 60,
+            );
+          final service = _buildService(
+            recorder: recorder,
+            now: clock.getClock(startedAt).now,
+          );
+
+          service.recoverActiveSession();
+          clock.flushMicrotasks();
+          expect(service.state.elapsedDurationSeconds, 120);
+          clock.elapse(const Duration(seconds: 5));
+          expect(service.state.elapsedDurationSeconds, 125);
+          service.pause();
+          clock.flushMicrotasks();
+          clock.elapse(const Duration(seconds: 10));
+          expect(service.state.elapsedDurationSeconds, 125);
+          service.dispose();
+          clock.flushMicrotasks();
+        });
+      });
+    });
+
     test('forwards background config to the recorder', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -1059,6 +1354,9 @@ class _ControllableRecorder implements ActivityLocationRecorder {
   final List<RecordedActivityPoint> _drained = [];
   final List<RecordedActivityPoint> _pointsPersistedOnStop;
   ActivityRecorderStartRequest? lastStartRequest;
+  ActiveActivitySession? recoveredSession;
+  Future<List<RecordedActivityPoint>> Function(int)? drainOverride;
+  int recoverCount = 0;
 
   /// Errors thrown by successive `start` calls. An entry of `null` (or an
   /// exhausted queue) lets that call succeed.
@@ -1108,12 +1406,17 @@ class _ControllableRecorder implements ActivityLocationRecorder {
 
   @override
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0}) async {
+    final override = drainOverride;
+    if (override != null) {
+      return override(sinceOffset);
+    }
     return _drained.sublist(sinceOffset.clamp(0, _drained.length));
   }
 
   @override
   Future<ActiveActivitySession?> recoverActiveSession() async {
-    return null;
+    recoverCount += 1;
+    return recoveredSession;
   }
 
   @override
@@ -1124,8 +1427,17 @@ class _ControllableRecorder implements ActivityLocationRecorder {
   }
 
   void emitPoints(List<RecordedActivityPoint> points) {
+    final pointOffset = _drained.length;
     _drained.addAll(points);
-    _controller.add(ActivityRecorderEvent.pointBatchAvailable(points));
+    _controller.add(
+      ActivityRecorderEvent.pointBatchAvailable(
+        points,
+        localSessionId:
+            lastStartRequest?.localSessionId ??
+            recoveredSession!.localSessionId,
+        pointOffset: pointOffset,
+      ),
+    );
   }
 
   void emitError(Object error) {

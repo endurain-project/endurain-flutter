@@ -217,6 +217,8 @@ void main() {
       await _sendEvent(codec, {
         NativeActivityRecorderChannelContract.eventType:
             NativeActivityRecorderChannelContract.eventPointBatchAvailable,
+        NativeActivityRecorderChannelContract.eventLocalSessionId: 'session_1',
+        NativeActivityRecorderChannelContract.eventPointOffset: 12,
         NativeActivityRecorderChannelContract.eventPoints: <Object?>[
           {'t': '2026-06-03T09:00:01.000Z', 'lat': 41.1, 'lon': -8.6, 'seg': 0},
         ],
@@ -229,6 +231,8 @@ void main() {
         ActivityRecorderEventType.pointBatchAvailable,
       );
       expect(received.single.points.single.latitude, 41.1);
+      expect(received.single.localSessionId, 'session_1');
+      expect(received.single.pointOffset, 12);
     });
 
     test('parses failure events with a typed reason', () async {

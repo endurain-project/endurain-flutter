@@ -210,24 +210,11 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     private fun handleRecover(result: MethodChannel.Result) {
-        val session = store.loadSession()
-        if (session == null || session.status != ActiveActivitySessionData.STATUS_RECORDING) {
-            result.success(session?.toMap())
-            return
+        try {
+            result.success(ActivityRecorderService.recover(appContext)?.toMap())
+        } catch (_: Exception) {
+            result.error(ERROR_STORE, "Unable to recover recording", null)
         }
-        val nowMillis = System.currentTimeMillis()
-        val recoveryMillis = store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis)
-            ?: nowMillis
-        val paused = session.copy(
-            status = ActiveActivitySessionData.STATUS_PAUSED,
-            pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, recoveryMillis),
-        )
-        // Persist the pause before stopping collection so any in-flight fix is
-        // rejected by the service's recording-state guard.
-        store.saveSession(paused)
-        ActivityRecorderService.pause(appContext)
-        result.success(paused.toMap())
     }
 
     /**
@@ -272,7 +259,7 @@ class ActivityRecorderChannel(context: Context) :
         result.success(null)
     }
     companion object {
-        const val PAYLOAD_VERSION = 1
+        const val PAYLOAD_VERSION = 2
 
         const val METHOD_CHANNEL = "endurain/activity_recorder/methods"
         const val EVENT_CHANNEL = "endurain/activity_recorder/events"
@@ -289,6 +276,7 @@ class ActivityRecorderChannel(context: Context) :
         private const val ERROR_ARGS = "invalid_arguments"
         private const val ERROR_STATE = "invalid_state"
         private const val ERROR_SERVICE = "service_start_failed"
+        private const val ERROR_STORE = "store_read_failed"
         private const val ERROR_VERSION = "unsupported_version"
     }
 }

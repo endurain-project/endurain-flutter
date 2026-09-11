@@ -292,9 +292,9 @@ iOS `.ips` crash reports remain separate system-generated native crash reports. 
 
 ## Manual QA Checklists
 
-### Android: Active Recording — Location Provider Loss
+### Android: Active Recording - Location Provider Loss
 
-Native Kotlin unit coverage is not available for the `onProviderDisabled` path. Use these steps to validate the behavior manually on a physical or emulated Android device.
+Use these steps to validate provider changes on a physical or emulated Android device, in addition to the native service lifecycle tests.
 
 **Prerequisites:** A running Endurain server, a connected Android device with GPS and network location enabled, and developer options active.
 
@@ -306,12 +306,23 @@ Native Kotlin unit coverage is not available for the `onProviderDisabled` path. 
 6. Return to the app.
 
 **Expected results:**
-- The recording shows a non-recoverable failed state (not an active or paused state).
-- No "resume recording" option is offered.
-- After fully restarting the app (force-stop and reopen), no phantom active session is restored from the saved session file.
-- The local activity history shows the completed (or failed) entry with the points collected before providers were disabled.
+- The recording reports a failure and retains the collected points.
+- Resume and Stop remain available. Resume cannot start collection while permission or location services are unavailable.
+- Reopening restores the same session as paused when collection failed. It does not create a completed history entry or upload the interrupted track.
+- Stop opens the existing confirmation dialog, with save and discard choices.
 
-**Recovery path:** Re-enable location providers, then start a new recording as normal.
+**Recovery path:** Re-enable location providers, then resume the existing recording.
+
+### Active Recording Relaunch
+
+1. Start a recording, collect several fixes, then remove the app from recents.
+2. Reopen it. A still-running native recorder must remain recording without a new segment or a reset timer. If collection was terminated, it must restart the same session and create a new segment on the next fix.
+3. Repeat with an explicitly paused recording. It must stay paused.
+4. Repeat before the first GPS fix. The session must not be discarded.
+5. Revoke location permission, reopen, and verify the track is retained without an upload. Restore permission and resume, or explicitly stop and save or discard.
+6. Stop and save normally. Verify exactly one local activity with the original session ID and connection ownership, and no duplicated points around reconnection.
+
+iOS force-quit suppresses background location relaunch until the user opens the app again. Android force-stop and manufacturer battery restrictions can also stop collection. The app preserves the session and restarts when permitted; it cannot reconstruct missing GPS points. Time spent without collection is excluded on restart, using the last persisted fix as the available checkpoint.
 
 ## Development Workflow
 
@@ -500,6 +511,14 @@ Activity metadata lives in a SQLite database (`activity.db`, schema v9) under th
 | `local_activity`       | One row per activity, all metadata columns.              |
 
 Each `local_activity` row contains: `id`, `activity_type`, `started_at`, `ended_at`, `elapsed_duration_seconds`, `distance_meters`, `average_speed_meters_per_second`, `max_speed_meters_per_second`, `elevation_gain_meters`, `point_count`, `gpx_file_name`, `upload_status`, `idempotency_key`, `connection_origin`, `connection_profile_id`, `auto_retry_eligible`, `gpx_cleanup_pending`, `created_at`, `updated_at`, `uploaded_at`, `last_upload_attempt_at`, and `last_upload_error_code`. GPX files live on disk under `gpx/` — only the metadata is stored in the database. Health-imported activities are additionally tracked for provenance and de-duplication in a separate `health_import.db` (schema v3).
+
+### Active Recording Recovery Contract
+
+The native recorder owns collection and the private active-session log. Flutter recovery attaches without pausing a live recorder. A stopped recorder restarts only sessions marked `recording`; explicitly paused and failed sessions stay paused until user action. Only a session marked completed or stopping by an explicit Stop is finalized on recovery, preserving interrupted save/upload retries.
+
+Point events carry the local session ID and an offset into the valid persisted-point log. Flutter subscribes before recovery, buffers events during the initial drain, skips replayed offsets, and drains a missing range before accepting later batches. Events from another session are ignored. Channel payload version 2 is shipped together on Dart, Android, and iOS; the durable session and database schemas are unchanged.
+
+Native tests exercise timing and collection independently of a real GPS receiver. Android uses test-only Robolectric with resources enabled; host-test packaging explicitly depends on Flutter asset generation for the same variant. Run `cd android && ./gradlew :app:testDebugUnitTest` and the iOS `RunnerTests` scheme in addition to `flutter test`.
 
 ### Schema migrations
 
