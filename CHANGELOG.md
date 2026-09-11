@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Corrected distance announcement interval options and snapping so 0.5 is available instead of 0.6.
+- Prevented an audio announcement preview crash when no `ScaffoldMessenger` is available.
+- Aligned Flutter and Dart versions to Flutter 3.47.3 and Dart 3.13.3 across the app, Docker builder, and CI workflows.
+
 ## [v0.9.0+14] - 2026-09-04
 
 ### Added
