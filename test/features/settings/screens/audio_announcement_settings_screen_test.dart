@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -373,11 +375,48 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a rejected preview surfaces a message on Apple platforms', (
+    tester,
+  ) async {
+    PlatformUtils.debugIsApplePlatformOverride = true;
+    previewAdapter.shouldThrow = true;
+    await controller.setMasterEnabled(true);
+    await pumpScreen(tester);
+
+    await tester.tap(find.text(l10n.audioAnnouncementsPreview).first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(l10n.audioAnnouncementsPreviewUnavailable),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a rejected preview ignores feedback after unmounting', (
+    tester,
+  ) async {
+    previewAdapter.pendingPreview = Completer<void>();
+    await controller.setMasterEnabled(true);
+    await pumpScreen(tester);
+
+    await tester.tap(find.text(l10n.audioAnnouncementsPreview).first);
+    await tester.pump();
+    await tester.pumpWidget(const SizedBox.shrink());
+
+    previewAdapter.pendingPreview!.completeError(
+      StateError('no speech engine'),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _RecordingPreviewAdapter implements AudioAnnouncementPreviewAdapter {
   final List<AudioAnnouncementConfig> configs = [];
   bool shouldThrow = false;
+  Completer<void>? pendingPreview;
 
   @override
   Future<void> speakPreview(AudioAnnouncementConfig config) async {
@@ -385,5 +424,6 @@ class _RecordingPreviewAdapter implements AudioAnnouncementPreviewAdapter {
       throw StateError('no speech engine');
     }
     configs.add(config);
+    await pendingPreview?.future;
   }
 }
