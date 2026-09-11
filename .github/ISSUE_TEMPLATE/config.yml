@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Project README
+    url: https://github.com/endurain-project/endurain-flutter#readme
+    about: Please check the project README before creating an issue.
