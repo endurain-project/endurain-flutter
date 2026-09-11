@@ -1,6 +1,7 @@
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
@@ -132,7 +133,6 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
     required MeasurementSystem measurementSystem,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
     final spoke = await controller.speakPreview(
       AudioAnnouncementConfig.build(
         l10n: l10n,
@@ -142,11 +142,12 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
         languageTag: Localizations.localeOf(context).toLanguageTag(),
       ),
     );
-    if (spoke) {
+    if (spoke || !context.mounted) {
       return;
     }
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.audioAnnouncementsPreviewUnavailable)),
+    await DialogUtils.showMessage(
+      context,
+      l10n.audioAnnouncementsPreviewUnavailable,
     );
   }
 }
