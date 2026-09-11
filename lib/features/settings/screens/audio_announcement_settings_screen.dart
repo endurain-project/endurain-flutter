@@ -168,16 +168,14 @@ class _IntervalCard extends StatelessWidget {
   final ValueChanged<AudioAnnouncementInterval> onChanged;
   final VoidCallback onPreview;
 
-  /// Distance step: 0.5 km, or 0.5 mi when imperial (converted to metres).
-  double get _distanceStepMeters =>
+  double get _distanceUnitMeters =>
       measurementSystem == MeasurementSystem.imperial
-      ? 0.5 * UnitConversions.metersPerMile
-      : 500;
-  double get _minDistanceMeters =>
-      measurementSystem == MeasurementSystem.imperial
-      ? 0.1 * UnitConversions.metersPerMile
-      : AudioAnnouncementInterval.minDistanceMeters;
+      ? UnitConversions.metersPerMile
+      : UnitConversions.metersPerKilometer;
 
+  static const double _minDistanceUnits = 0.1;
+  static const double _distanceStepUnits = 0.5;
+  static const double _distanceStepEpsilon = 1e-9;
   static const int _timeStepSeconds = 60;
 
   @override
@@ -261,15 +259,9 @@ class _IntervalCard extends StatelessWidget {
 
   void _step(int direction) {
     if (interval.unit == AudioAnnouncementIntervalUnit.distance) {
-      // The scale starts at 0.1 and then follows the step: 0.1, 0.5, 1.0, …
-      final nextInterval = direction > 0
-          ? (interval.distanceMeters < _distanceStepMeters
-                ? _distanceStepMeters
-                : interval.distanceMeters + _distanceStepMeters)
-          : (interval.distanceMeters <= _distanceStepMeters
-                ? _minDistanceMeters
-                : interval.distanceMeters - _distanceStepMeters);
-      onChanged(interval.copyWith(distanceMeters: nextInterval));
+      onChanged(
+        interval.copyWith(distanceMeters: _steppedDistanceMeters(direction)),
+      );
     } else {
       onChanged(
         interval.copyWith(
@@ -277,6 +269,30 @@ class _IntervalCard extends StatelessWidget {
         ),
       );
     }
+  }
+
+  double _steppedDistanceMeters(int direction) {
+    final currentUnits = interval.distanceMeters / _distanceUnitMeters;
+    final maxUnits =
+        (AudioAnnouncementInterval.maxDistanceMeters /
+                _distanceUnitMeters /
+                _distanceStepUnits)
+            .floor() *
+        _distanceStepUnits;
+
+    if (direction > 0 && currentUnits > maxUnits) {
+      return interval.distanceMeters;
+    }
+
+    final stepIndex = direction > 0
+        ? ((currentUnits + _distanceStepEpsilon) / _distanceStepUnits).floor() +
+              1
+        : ((currentUnits - _distanceStepEpsilon) / _distanceStepUnits).ceil() -
+              1;
+    final nextUnits =
+        (stepIndex < 1 ? _minDistanceUnits : stepIndex * _distanceStepUnits)
+            .clamp(_minDistanceUnits, maxUnits);
+    return nextUnits * _distanceUnitMeters;
   }
 
   String _describe(BuildContext context, AppLocalizations l10n) {
