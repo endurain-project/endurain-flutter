@@ -237,6 +237,11 @@ class DiagnosticsEvents {
   static const String healthImportSelectedFailed =
       'health.import_selected_failed';
   static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
+  static const String watchSyncStarted = 'watch.sync_started';
+  static const String watchSyncFinished = 'watch.sync_finished';
+  static const String watchSyncFailed = 'watch.sync_failed';
+  static const String watchSessionIngested = 'watch.session_ingested';
+  static const String watchSessionIngestFailed = 'watch.session_ingest_failed';
 }
 
 class DiagnosticsService implements DiagnosticsStore {
