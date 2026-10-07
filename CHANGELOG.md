@@ -16,6 +16,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Preserve captured iOS heart-rate, power, and cadence readings across recording relaunches using a session-scoped durable sensor log.
 - Reject unsuccessful iOS recording-state writes instead of acknowledging failed start, pause, resume, or stop transitions.
 
+### Changed
+
+- Show Resume and Stop controls for recoverable failed recordings, and allow the stop confirmation (save or discard) to open for them.
+- Updated `cupertino_icons` to 2.0.0, refreshed locked dependencies, and bumped `actions/upload-artifact` to v7.0.2 in the Android APK workflow.
+- Added Robolectric-based Android native recorder tests, expanded iOS recorder tests, and documented the active recording recovery contract and manual relaunch QA in the README.
+
 ## [v0.9.1+15] - 2026-09-11
 
 ### Fixed
