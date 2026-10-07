@@ -518,6 +518,8 @@ The native recorder owns collection and the private active-session log. Flutter 
 
 Point events carry the local session ID and an offset into the valid persisted-point log. Flutter subscribes before recovery, buffers events during the initial drain, skips replayed offsets, and drains a missing range before accepting later batches. Events from another session are ignored. Channel payload version 2 is shipped together on Dart, Android, and iOS; the durable session and database schemas are unchanged.
 
+On iOS, Dart-owned BLE readings are durably appended to `sensors.jsonl` in the same private active-session directory before being exposed as live values. The log is scoped to the recording ID, restored before rebuilding GPS points, and removed with the recording. Pause, stop, and discard wait for accepted sensor writes; write or read failures retain a recoverable error state instead of reporting success. This preserves readings captured before process termination, but cannot reconstruct measurements never delivered while the app was terminated. Older recordings without a sensor log remain recoverable.
+
 Native tests exercise timing and collection independently of a real GPS receiver. Android uses test-only Robolectric with resources enabled; host-test packaging explicitly depends on Flutter asset generation for the same variant. Run `cd android && ./gradlew :app:testDebugUnitTest` and the iOS `RunnerTests` scheme in addition to `flutter test`.
 
 ### Schema migrations

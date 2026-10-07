@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
@@ -27,10 +28,12 @@ class ActivityRecordingService {
     DiagnosticsRecorder? diagnostics,
     LocationService? locationService,
     Stream<RecordedSensorSample>? sensorReadings,
+    ActivitySensorRecorder? sensorRecorder,
     Map<RecordedSensorKind, Future<String?> Function()> prepareSensorSources =
         const {},
     Duration sensorFreshness = const Duration(seconds: 10),
   }) : _recorder = recorder,
+       _sensorRecorder = sensorRecorder,
        _now = now ?? DateTime.now,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _locationService = locationService ?? LocationService(),
@@ -43,7 +46,9 @@ class ActivityRecordingService {
   final DiagnosticsRecorder _diagnostics;
   final LocationService _locationService;
   final ActivityLocationRecorder _recorder;
+  final ActivitySensorRecorder? _sensorRecorder;
   final Duration _sensorFreshness;
+  final SerialTaskQueue _commands = SerialTaskQueue();
 
   /// Resolves each paired sensor's device id for the native recorder (and frees
   /// the Dart-side BLE connection) at recording start, keyed by sensor kind.
@@ -59,6 +64,9 @@ class ActivityRecordingService {
       kind: SensorReadingBuffer(_sensorFreshness),
   };
   StreamSubscription<RecordedSensorSample>? _sensorSubscription;
+  Future<void> _sensorWrites = Future<void>.value();
+  String? _sensorSessionId;
+  bool _sensorWriteFailed = false;
 
   final StreamController<ActivityRecordingState> _stateController =
       StreamController<ActivityRecordingState>.broadcast();
@@ -103,6 +111,24 @@ class ActivityRecordingService {
   }
 
   Future<void> start({
+    required ActivityType activityType,
+    BackgroundLocationConfig? backgroundConfig,
+    AudioAnnouncementConfig? audioAnnouncementConfig,
+    String? localSessionId,
+    String? connectionOrigin,
+    String? connectionProfileId,
+  }) => _commands.run(
+    () => _start(
+      activityType: activityType,
+      backgroundConfig: backgroundConfig,
+      audioAnnouncementConfig: audioAnnouncementConfig,
+      localSessionId: localSessionId,
+      connectionOrigin: connectionOrigin,
+      connectionProfileId: connectionProfileId,
+    ),
+  );
+
+  Future<void> _start({
     required ActivityType activityType,
     BackgroundLocationConfig? backgroundConfig,
     AudioAnnouncementConfig? audioAnnouncementConfig,
@@ -179,6 +205,8 @@ class ActivityRecordingService {
     _lastBreadcrumbPointCount = 0;
     _nextPointOffset = 0;
     _lastRecordedSegmentIndex = null;
+    _sensorSessionId = null;
+    _sensorWriteFailed = false;
     for (final buffer in _sensorBuffers.values) {
       buffer.clear();
     }
@@ -225,13 +253,22 @@ class ActivityRecordingService {
           cadenceDeviceId: sensorDeviceIds[RecordedSensorKind.cadence],
         ),
       );
+      if (!_isDisposed && _state.status == ActivityRecordingStatus.recording) {
+        _sensorSessionId = _localSessionId;
+      }
     } catch (error, stackTrace) {
       _diagnostics.recordErrorSync(
         error,
         stackTrace,
         source: DiagnosticsSources.activityRecorder,
       );
-      _fail(ActivityRecordingError.locationStreamFailed);
+      _fail(
+        error is PlatformException &&
+                error.code ==
+                    NativeActivityRecorderChannelContract.errorStoreWriteFailed
+            ? ActivityRecordingError.localSaveFailed
+            : ActivityRecordingError.locationStreamFailed,
+      );
     }
   }
 
@@ -257,7 +294,9 @@ class ActivityRecordingService {
     return permission == LocationPermission.always;
   }
 
-  Future<void> pause() async {
+  Future<void> pause() => _commands.run(_pause);
+
+  Future<void> _pause() async {
     await _activeRecovery;
     _ensureNotDisposed();
     if (_state.status == ActivityRecordingStatus.paused) {
@@ -269,6 +308,7 @@ class ActivityRecordingService {
     }
 
     final elapsedDurationSeconds = _currentElapsedDurationSeconds();
+    _sensorSessionId = null;
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
     _cancelElapsedTimer();
@@ -286,13 +326,18 @@ class ActivityRecordingService {
         'segmentCount': _state.segments.length,
       },
     );
+    if (!await _flushSensorWrites()) {
+      return;
+    }
     await _runRecorderCommand(
       _recorder.pause,
       ActivityRecordingError.localSaveFailed,
     );
   }
 
-  Future<void> resume() async {
+  Future<void> resume() => _commands.run(_resume);
+
+  Future<void> _resume() async {
     await _activeRecovery;
     _ensureNotDisposed();
     if (_state.status == ActivityRecordingStatus.failed) {
@@ -338,13 +383,20 @@ class ActivityRecordingService {
       },
     );
     _startElapsedTimer();
-    await _runRecorderCommand(
+    final resumed = await _runRecorderCommand(
       _recorder.resume,
       ActivityRecordingError.localSaveFailed,
     );
+    if (resumed &&
+        !_isDisposed &&
+        _state.status == ActivityRecordingStatus.recording) {
+      _sensorSessionId = _localSessionId;
+    }
   }
 
-  Future<void> stop() async {
+  Future<void> stop() => _commands.run(_stop);
+
+  Future<void> _stop() async {
     await _activeRecovery;
     _ensureNotDisposed();
     if (_state.status == ActivityRecordingStatus.failed) {
@@ -355,6 +407,7 @@ class ActivityRecordingService {
     }
 
     final elapsedDurationSeconds = _currentElapsedDurationSeconds();
+    _sensorSessionId = null;
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _recordingSegmentStartedAt = null;
     _cancelElapsedTimer();
@@ -365,6 +418,9 @@ class ActivityRecordingService {
         elapsedDurationSeconds: elapsedDurationSeconds,
       ),
     );
+    if (!await _flushSensorWrites()) {
+      return;
+    }
     final stopped = await _runRecorderCommand(
       _recorder.stop,
       ActivityRecordingError.localSaveFailed,
@@ -420,9 +476,13 @@ class ActivityRecordingService {
     );
   }
 
-  Future<void> discard() async {
+  Future<void> discard() => _commands.run(_discard);
+
+  Future<void> _discard() async {
     await _activeRecovery;
     _ensureNotDisposed();
+    _sensorSessionId = null;
+    await _sensorWrites;
     _cancelElapsedTimer();
     _recordingSegmentStartedAt = null;
     _elapsedBeforeCurrentSegmentSeconds = 0;
@@ -441,14 +501,22 @@ class ActivityRecordingService {
     _localSessionId = null;
     _connectionOrigin = null;
     _connectionProfileId = null;
+    for (final buffer in _sensorBuffers.values) {
+      buffer.clear();
+    }
+    _sensorWriteFailed = false;
     _emit(ActivityRecordingState());
     _recordBreadcrumb(DiagnosticsEvents.activityDiscarded);
   }
 
   /// Clears the durable recorder session after the completed activity has
   /// been committed to local GPX and metadata storage.
-  Future<void> acknowledgeFinalized() async {
+  Future<void> acknowledgeFinalized() => _commands.run(_acknowledgeFinalized);
+
+  Future<void> _acknowledgeFinalized() async {
     _ensureNotDisposed();
+    _sensorSessionId = null;
+    await _sensorWrites;
     await _recorder.discard();
     _localSessionId = null;
     _connectionOrigin = null;
@@ -610,6 +678,7 @@ class ActivityRecordingService {
   /// detached event sink) are included in the finalized activity.
   Future<bool> _finalizeStateFromStore() async {
     try {
+      await _restoreSensorSamples();
       final recordedPoints = await _recorder.drain();
       if (recordedPoints.isEmpty) {
         return true;
@@ -753,6 +822,7 @@ class ActivityRecordingService {
   }
 
   void _fail(ActivityRecordingError errorKey) {
+    _sensorSessionId = null;
     final elapsedDurationSeconds = _currentElapsedDurationSeconds();
     _elapsedBeforeCurrentSegmentSeconds = elapsedDurationSeconds;
     _cancelElapsedTimer();
@@ -813,8 +883,10 @@ class ActivityRecordingService {
 
   Future<bool> _recoverActiveSession() async {
     _isRecovering = true;
+    _sensorSessionId = null;
     ActiveActivitySession? session;
     try {
+      await _sensorWrites;
       _startRecorderEvents();
       session = await _recorder.recoverActiveSession();
       if (session == null || _isDisposed) {
@@ -823,6 +895,7 @@ class ActivityRecordingService {
       _localSessionId = session.localSessionId;
       _connectionOrigin = session.connectionOrigin;
       _connectionProfileId = session.connectionProfileId;
+      await _restoreSensorSamples();
       final recordedPoints = await _recorder.drain();
       if (_isDisposed) {
         return false;
@@ -894,6 +967,7 @@ class ActivityRecordingService {
     _lastBreadcrumbPointCount = recordedPoints.length;
     _nextPointOffset = recordedPoints.length;
     _lastRecordedSegmentIndex = recordedPoints.lastOrNull?.segmentIndex;
+    _sensorSessionId = isRecording ? session.localSessionId : null;
     _emit(
       ActivityRecordingState(
         status: status,
@@ -963,16 +1037,71 @@ class ActivityRecordingService {
   void _onSensorReading(RecordedSensorSample sample) {
     // Only buffer while actively recording; readings while idle or paused are
     // not associated with any track point.
-    if (_state.status != ActivityRecordingStatus.recording) {
+    final sessionId = _sensorSessionId;
+    if (_state.status != ActivityRecordingStatus.recording ||
+        sessionId == null) {
       return;
     }
+    _sensorWrites = _sensorWrites.then((_) async {
+      if (sessionId != _localSessionId || _sensorWriteFailed) {
+        return;
+      }
+      try {
+        await _sensorRecorder?.appendSensorSample(
+          localSessionId: sessionId,
+          sample: sample,
+        );
+      } catch (error, stackTrace) {
+        if (!_isDisposed && sessionId == _localSessionId) {
+          _sensorWriteFailed = true;
+          _recordRecorderError(error, stackTrace);
+          _fail(ActivityRecordingError.localSaveFailed);
+        }
+        return;
+      }
+      if (!_isDisposed && sessionId == _localSessionId) {
+        _recordSensorSample(sample);
+      }
+    });
+  }
+
+  void _recordSensorSample(RecordedSensorSample sample) {
     _sensorBuffers[sample.kind]!.add(sample.timestamp, sample.value);
     // Surface the live reading immediately so the UI shows a current value even
     // before the next (distance-filtered) GPS point is recorded. The durable
     // per-point value is still stamped from the buffer when points land.
-    if (sample.value != _state.currentSensorValue(sample.kind)) {
+    if (_state.status == ActivityRecordingStatus.recording &&
+        sample.value != _state.currentSensorValue(sample.kind)) {
       _emit(_state.withCurrentSensorValue(sample.kind, sample.value));
     }
+  }
+
+  Future<bool> _flushSensorWrites() async {
+    await _sensorWrites;
+    return !_isDisposed && !_sensorWriteFailed;
+  }
+
+  Future<void> _restoreSensorSamples() async {
+    final recorder = _sensorRecorder;
+    final sessionId = _localSessionId;
+    if (recorder == null || sessionId == null) {
+      return;
+    }
+    final samples = await recorder.drainSensorSamples(
+      localSessionId: sessionId,
+    );
+    if (_isDisposed || sessionId != _localSessionId) {
+      return;
+    }
+    final ordered = samples.toList()
+      ..sort((first, second) => first.timestamp.compareTo(second.timestamp));
+    for (final buffer in _sensorBuffers.values) {
+      buffer.clear();
+    }
+    for (final sample in ordered) {
+      _sensorBuffers[sample.kind]!.add(sample.timestamp, sample.value);
+    }
+    _sensorWriteFailed = false;
   }
 
   void _ensureNotDisposed() {

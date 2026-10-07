@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:flutter/services.dart';
 
@@ -25,6 +26,8 @@ class NativeActivityRecorderChannelContract {
   static const String stop = 'stop';
   static const String discard = 'discard';
   static const String drain = 'drain';
+  static const String appendSensorSample = 'appendSensorSample';
+  static const String drainSensorSamples = 'drainSensorSamples';
   static const String recover = 'recover';
 
   /// Speaks one sample announcement. Independent of the recorder lifecycle:
@@ -68,6 +71,7 @@ class NativeActivityRecorderChannelContract {
 
   /// The durable point store could not be read.
   static const String errorStoreReadFailed = 'store_read_failed';
+  static const String errorStoreWriteFailed = 'store_write_failed';
 }
 
 /// [ActivityLocationRecorder] backed by native platform channels.
@@ -75,7 +79,8 @@ class NativeActivityRecorderChannelContract {
 /// This class isolates all platform-channel concerns from controllers and
 /// widgets. The native side owns background collection and durable persistence;
 /// Dart consumes versioned method results and event payloads only.
-class NativeActivityRecorderChannel implements ActivityLocationRecorder {
+class NativeActivityRecorderChannel
+    implements ActivityLocationRecorder, ActivitySensorRecorder {
   NativeActivityRecorderChannel({
     MethodChannel? methodChannel,
     EventChannel? eventChannel,
@@ -168,6 +173,39 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
       {'sinceOffset': sinceOffset},
     );
     return _parsePoints(result);
+  }
+
+  @override
+  Future<void> appendSensorSample({
+    required String localSessionId,
+    required RecordedSensorSample sample,
+  }) => _methodChannel.invokeMethod<void>(
+    NativeActivityRecorderChannelContract.appendSensorSample,
+    {
+      'version': NativeActivityRecorderChannelContract.payloadVersion,
+      'localSessionId': localSessionId,
+      'sample': sample.toJson(),
+    },
+  );
+
+  @override
+  Future<List<RecordedSensorSample>> drainSensorSamples({
+    required String localSessionId,
+  }) async {
+    final result = await _methodChannel.invokeMethod<List<Object?>>(
+      NativeActivityRecorderChannelContract.drainSensorSamples,
+      {'localSessionId': localSessionId},
+    );
+    if (result == null) {
+      throw const FormatException('Missing recorded sensor samples.');
+    }
+    return [
+      for (final entry in result)
+        if (entry is Map)
+          RecordedSensorSample.fromJson(entry)
+        else
+          throw const FormatException('Invalid recorded sensor sample.'),
+    ];
   }
 
   @override

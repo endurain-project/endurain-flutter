@@ -15,12 +15,24 @@ final class ActiveActivityStore {
     private let queue = DispatchQueue(label: "com.endurain.activity.store")
 
     private let activeDirectory: URL
+    private let directoryRemover: (URL) throws -> Void
+    private let sessionWriter: (Data, URL) throws -> Void
 
-    init(activeDirectory: URL? = nil) {
+    init(
+        activeDirectory: URL? = nil,
+        directoryRemover: @escaping (URL) throws -> Void = { url in
+            try FileManager.default.removeItem(at: url)
+        },
+        sessionWriter: @escaping (Data, URL) throws -> Void = { data, url in
+            try data.write(to: url, options: .atomic)
+        }
+    ) {
         self.activeDirectory = activeDirectory
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("activity_records", isDirectory: true)
                 .appendingPathComponent("active", isDirectory: true)
+            self.directoryRemover = directoryRemover
+        self.sessionWriter = sessionWriter
     }
 
     private var sessionFile: URL {
@@ -29,6 +41,10 @@ final class ActiveActivityStore {
 
     private var pointsFile: URL {
         return activeDirectory.appendingPathComponent("points.jsonl", isDirectory: false)
+    }
+
+    private var sensorFile: URL {
+        return activeDirectory.appendingPathComponent("sensors.jsonl", isDirectory: false)
     }
 
     private var announcementFile: URL {
@@ -47,10 +63,10 @@ final class ActiveActivityStore {
     @discardableResult
     func saveSession(_ session: ActiveActivitySessionData) -> Bool {
         return queue.sync {
-            guard let json = session.toJsonString() else { return false }
+            guard let data = session.toJsonString()?.data(using: .utf8) else { return false }
             do {
                 try ensureDirectory()
-                try json.data(using: .utf8)?.write(to: sessionFile, options: .atomic)
+                try sessionWriter(data, sessionFile)
                 return true
             } catch {
                 // Surface persistence failures via the coordinator; never log
@@ -64,15 +80,17 @@ final class ActiveActivityStore {
     }
 
     func loadSession() -> ActiveActivitySessionData? {
-        return queue.sync {
-            guard
-                let data = try? Data(contentsOf: sessionFile),
-                let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-            else {
-                return orphanedSession()
-            }
-            return ActiveActivitySessionData.fromJson(object) ?? orphanedSession()
+        return queue.sync { loadSessionUnlocked() }
+    }
+
+    private func loadSessionUnlocked() -> ActiveActivitySessionData? {
+        guard
+            let data = try? Data(contentsOf: sessionFile),
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else {
+            return orphanedSession()
         }
+        return ActiveActivitySessionData.fromJson(object) ?? orphanedSession()
     }
 
     func hasRecoverableData() -> Bool {
@@ -105,21 +123,65 @@ final class ActiveActivityStore {
             if payload.isEmpty {
                 return
             }
-            if !fileManager.fileExists(atPath: pointsFile.path) {
-                try payload.write(to: pointsFile)
-            } else {
-                // Throwing variants (iOS 13.4+) rather than the ObjC-bridged
-                // `seekToEndOfFile()`/`write(_:)`/`closeFile()`, which raise an
-                // NSException on I/O failure. Swift cannot catch NSException, so
-                // those would bypass the caller's do/catch — which exists
-                // specifically to convert an append failure into a typed
-                // `persistenceFailed` — and hard-crash the app mid-recording.
-                let handle = try FileHandle(forWritingTo: pointsFile)
-                defer { try? handle.close() }
-                try handle.seekToEnd()
-                try handle.write(contentsOf: payload)
+            try appendLogData(payload, to: pointsFile)
+        }
+    }
+
+    enum SensorError: Error {
+        case invalidSession
+    }
+
+    func appendSensorSample(_ sample: RecordedSensorSampleData, localSessionId: String) throws {
+        try queue.sync {
+            guard let session = loadSessionUnlocked(),
+                  session.localSessionId == localSessionId,
+                  session.status == ActiveActivitySessionData.statusRecording else {
+                throw SensorError.invalidSession
+            }
+            var payload = try JSONSerialization.data(withJSONObject: sample.toMap())
+            payload.append(10)
+            try appendLogData(payload, to: sensorFile)
+        }
+    }
+
+    func readSensorSamples(localSessionId: String) throws -> [RecordedSensorSampleData] {
+        return try queue.sync {
+            guard loadSessionUnlocked()?.localSessionId == localSessionId else {
+                throw SensorError.invalidSession
+            }
+            guard fileManager.fileExists(atPath: sensorFile.path) else {
+                return []
+            }
+            let content = try String(contentsOf: sensorFile, encoding: .utf8)
+            return content.split(separator: "\n").compactMap { line in
+                guard let data = String(line).data(using: .utf8),
+                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    return nil
+                }
+                return RecordedSensorSampleData.fromJson(json)
             }
         }
+    }
+
+    private func appendLogData(_ payload: Data, to file: URL) throws {
+        if !fileManager.fileExists(atPath: file.path) {
+            guard fileManager.createFile(atPath: file.path, contents: nil) else {
+                throw CocoaError(.fileWriteUnknown)
+            }
+        }
+        let handle = try FileHandle(forUpdating: file)
+        defer { try? handle.close() }
+        let endOffset = try handle.seekToEnd()
+        if endOffset > 0 {
+            try handle.seek(toOffset: endOffset - 1)
+            let lastByte = try handle.read(upToCount: 1)
+            try handle.seekToEnd()
+            if lastByte != Data([10]) {
+                try handle.write(contentsOf: Data([10]))
+            }
+        }
+        try handle.write(contentsOf: payload)
+        try handle.synchronize()
     }
 
     /// Reads persisted points, skipping malformed lines, returning entries at or
@@ -175,9 +237,20 @@ final class ActiveActivityStore {
         }
     }
 
-    func clear() {
-        queue.sync {
-            try? fileManager.removeItem(at: activeDirectory)
+    @discardableResult
+    func clear() -> Bool {
+        return queue.sync {
+            do {
+                if fileManager.fileExists(atPath: activeDirectory.path) {
+                    try directoryRemover(activeDirectory)
+                }
+                return true
+            } catch {
+                ActivityRecorderCoordinator.shared.emitFailed(
+                    ActivityRecorderCoordinator.reasonPersistenceFailed
+                )
+                return false
+            }
         }
     }
 

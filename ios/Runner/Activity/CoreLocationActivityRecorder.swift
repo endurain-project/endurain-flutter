@@ -16,8 +16,8 @@ import Dispatch
 /// where the foreground service takes over the BLE connection because a
 /// backgrounded Dart isolate cannot hold one reliably — iOS keeps the
 /// `universal_ble` connection alive through the `bluetooth-central` background
-/// mode. `ActivityRecordingService` therefore streams readings in and stamps
-/// them onto points itself, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
+/// mode. `ActivityRecordingService` persists readings in the native sensor log
+/// and stamps them onto points when draining, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
 /// are never sent to this recorder. Points written here leave the sensor fields
 /// nil by design; do not add a second CoreBluetooth connection here without
 /// first removing the Dart-side one, or the two will fight over the same
@@ -198,6 +198,14 @@ final class CoreLocationActivityRecorder:
         isCollecting = false
     }
 
+    func stopAfterPersistenceFailure() {
+        stopCollection()
+        persistFailure()
+        ActivityRecorderCoordinator.shared.emitFailed(
+            ActivityRecorderCoordinator.reasonPersistenceFailed
+        )
+    }
+
     /// Schedules one main-queue callback at the next elapsed-time threshold.
     /// One-shot scheduling avoids polling and serializes state with GPS fixes.
     private func scheduleNextTimeAnnouncement() {
@@ -364,17 +372,16 @@ final class CoreLocationActivityRecorder:
         // boundary. A crash between the two only leaves the session one segment
         // ahead of an unwritten point, which recovery continues cleanly.
         if segmentChanged {
-            store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex))
+            guard store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex)) else {
+                stopCollection()
+                return
+            }
         }
 
         do {
             try store.appendPoints(produced)
         } catch {
-            stopCollection()
-            persistFailure()
-            ActivityRecorderCoordinator.shared.emitFailed(
-                ActivityRecorderCoordinator.reasonPersistenceFailed
-            )
+            stopAfterPersistenceFailure()
             return
         }
 

@@ -1,7 +1,257 @@
 import CoreLocation
+import Flutter
 import XCTest
 
 @testable import Runner
+
+@MainActor
+final class ActiveSensorRecordingTests: XCTestCase {
+  private var directory: URL!
+  private var store: ActiveActivityStore!
+  private let sessionId = "sensor_session"
+
+  override func setUpWithError() throws {
+    directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    store = ActiveActivityStore(activeDirectory: directory)
+    XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
+      localSessionId: sessionId,
+      activityType: "ride",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: "2026-09-11T10:00:00.000Z"
+    )))
+  }
+
+  override func tearDownWithError() throws {
+    if FileManager.default.fileExists(atPath: directory.path) {
+      try FileManager.default.removeItem(at: directory)
+    }
+  }
+
+  func testSamplesSurviveAReplacementStoreInstance() throws {
+    let samples = [
+      RecordedSensorSampleData(kind: "heartRate", timestamp: "2026-09-11T10:00:01.000Z", value: 142),
+      RecordedSensorSampleData(kind: "power", timestamp: "2026-09-11T10:00:01.000Z", value: 230),
+      RecordedSensorSampleData(kind: "cadence", timestamp: "2026-09-11T10:00:01.000Z", value: 88),
+    ]
+    for sample in samples {
+      try store.appendSensorSample(sample, localSessionId: sessionId)
+    }
+    let recovered = ActiveActivityStore(activeDirectory: directory)
+    XCTAssertEqual(try recovered.readSensorSamples(localSessionId: sessionId), samples)
+  }
+
+  func testRejectsSamplesAndReadsForAnotherSession() throws {
+    let sample = RecordedSensorSampleData(kind: "heartRate", timestamp: IsoTime.nowUtc(), value: 142)
+    XCTAssertThrowsError(try store.appendSensorSample(sample, localSessionId: "other"))
+    XCTAssertThrowsError(try store.readSensorSamples(localSessionId: "other"))
+    XCTAssertEqual(try store.readSensorSamples(localSessionId: sessionId), [])
+  }
+
+  func testPausedSessionRetainsSamplesButRejectsNewWrites() throws {
+    let sample = RecordedSensorSampleData(kind: "power", timestamp: IsoTime.nowUtc(), value: 0)
+    try store.appendSensorSample(sample, localSessionId: sessionId)
+    let session = try XCTUnwrap(store.loadSession())
+    XCTAssertTrue(store.saveSession(session.copyWith(status: ActiveActivitySessionData.statusPaused)))
+    XCTAssertThrowsError(try store.appendSensorSample(sample, localSessionId: sessionId))
+    XCTAssertEqual(try store.readSensorSamples(localSessionId: sessionId), [sample])
+  }
+
+  func testAppendAfterTruncatedTailPreservesTheNextSample() throws {
+    let sample = RecordedSensorSampleData(kind: "cadence", timestamp: IsoTime.nowUtc(), value: 88)
+    try Data("{\"kind\":".utf8).write(to: directory.appendingPathComponent("sensors.jsonl"))
+    try store.appendSensorSample(sample, localSessionId: sessionId)
+    XCTAssertEqual(try store.readSensorSamples(localSessionId: sessionId), [sample])
+  }
+
+  func testDiscardRemovesSamplesAndRejectsLateWrites() throws {
+    let sample = RecordedSensorSampleData(kind: "heartRate", timestamp: IsoTime.nowUtc(), value: 142)
+    try store.appendSensorSample(sample, localSessionId: sessionId)
+    store.clear()
+    XCTAssertThrowsError(try store.appendSensorSample(sample, localSessionId: sessionId))
+    XCTAssertFalse(FileManager.default.fileExists(atPath: directory.path))
+  }
+
+  func testChannelRoundTripsSamplesAndReportsWriteFailures() throws {
+    let channel = ActivityRecorderChannel(store: store)
+    let sample = RecordedSensorSampleData(kind: "heartRate", timestamp: IsoTime.nowUtc(), value: 142)
+    let append = FlutterMethodCall(methodName: ActivityRecorderChannel.methodAppendSensorSample, arguments: [
+      "version": ActivityRecorderChannel.payloadVersion,
+      "localSessionId": sessionId,
+      "sample": sample.toMap(),
+    ])
+    var appendReply: Any?
+    channel.handle(append) { appendReply = $0 }
+    XCTAssertNil(appendReply)
+    var drained: Any?
+    channel.handle(FlutterMethodCall(
+      methodName: ActivityRecorderChannel.methodDrainSensorSamples,
+      arguments: ["localSessionId": sessionId]
+    )) { drained = $0 }
+    let payloads = try XCTUnwrap(drained as? [[String: Any]])
+    XCTAssertEqual(payloads.compactMap(RecordedSensorSampleData.fromJson), [sample])
+    let sensorFile = directory.appendingPathComponent("sensors.jsonl")
+    try FileManager.default.removeItem(at: sensorFile)
+    try FileManager.default.createDirectory(at: sensorFile, withIntermediateDirectories: false)
+    channel.handle(append) { appendReply = $0 }
+    XCTAssertEqual((appendReply as? FlutterError)?.code, ActivityRecorderChannel.errorStoreWrite)
+    XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusFailed)
+  }
+
+  func testSampleValidationRejectsMalformedValues() {
+    let sample = RecordedSensorSampleData(kind: "power", timestamp: IsoTime.nowUtc(), value: 0)
+    XCTAssertEqual(RecordedSensorSampleData.fromJson(sample.toMap()), sample)
+    for invalid: Any in [-1, true, 1.5, "142"] {
+      var payload = sample.toMap()
+      payload["value"] = invalid
+      XCTAssertNil(RecordedSensorSampleData.fromJson(payload))
+    }
+    for (key, invalid) in [("schemaVersion", 2 as Any), ("kind", "unknown"), ("t", "invalid")] {
+      var payload = sample.toMap()
+      payload[key] = invalid
+      XCTAssertNil(RecordedSensorSampleData.fromJson(payload))
+    }
+  }
+}
+
+@MainActor
+final class ActivityRecorderChannelPersistenceTests: XCTestCase {
+  private enum WriteFailure: Error {
+    case simulated
+  }
+
+  func testStartDoesNotAcknowledgeFailedPersistence() throws {
+    try assertFailedWrite(method: ActivityRecorderChannel.methodStart)
+  }
+
+  func testPauseDoesNotAcknowledgeFailedPersistence() throws {
+    try assertFailedWrite(
+      method: ActivityRecorderChannel.methodPause,
+      initialStatus: ActiveActivitySessionData.statusRecording
+    )
+  }
+
+  func testResumeDoesNotStartCollectionAfterFailedPersistence() throws {
+    try assertFailedWrite(
+      method: ActivityRecorderChannel.methodResume,
+      initialStatus: ActiveActivitySessionData.statusPaused
+    )
+  }
+
+  func testStopDoesNotAcknowledgeFailedPersistence() throws {
+    try assertFailedWrite(
+      method: ActivityRecorderChannel.methodStop,
+      initialStatus: ActiveActivitySessionData.statusRecording
+    )
+  }
+
+  func testDiscardRetainsTheRecordingAndReportsDeletionFailure() throws {
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+    var failDeletion = true
+    let store = ActiveActivityStore(
+      activeDirectory: directory,
+      directoryRemover: { url in
+        if failDeletion {
+          throw WriteFailure.simulated
+        }
+        try FileManager.default.removeItem(at: url)
+      }
+    )
+    XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
+      localSessionId: "retained_session",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: IsoTime.nowUtc()
+    )))
+    let sample = RecordedSensorSampleData(kind: "heartRate", timestamp: IsoTime.nowUtc(), value: 142)
+    try store.appendSensorSample(sample, localSessionId: "retained_session")
+    let channel = ActivityRecorderChannel(store: store)
+    defer { _ = channel.onCancel(withArguments: nil) }
+    var events: [String] = []
+    _ = channel.onListen(withArguments: nil) { payload in
+      if let event = payload as? [String: Any], let type = event["type"] as? String {
+        events.append(type)
+      }
+    }
+    let discard = FlutterMethodCall(methodName: ActivityRecorderChannel.methodDiscard, arguments: nil)
+    var reply: Any?
+    channel.handle(discard) { reply = $0 }
+    XCTAssertEqual((reply as? FlutterError)?.code, ActivityRecorderChannel.errorStoreWrite)
+    XCTAssertEqual(events, [ActivityRecorderCoordinator.eventFailed])
+    XCTAssertEqual(try store.readSensorSamples(localSessionId: "retained_session"), [sample])
+    failDeletion = false
+    channel.handle(discard) { reply = $0 }
+    XCTAssertNil(reply)
+    XCTAssertFalse(store.hasRecoverableData())
+    XCTAssertEqual(events.last, ActivityRecorderCoordinator.eventRecoverableStateChanged)
+  }
+
+  private func assertFailedWrite(method: String, initialStatus: String? = nil) throws {
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+    var failWrites = false
+    let store = ActiveActivityStore(activeDirectory: directory) { data, url in
+      if failWrites {
+        throw WriteFailure.simulated
+      }
+      try data.write(to: url, options: .atomic)
+    }
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let channel = ActivityRecorderChannel(store: store, recorder: recorder)
+    defer {
+      recorder.stopCollection()
+      _ = channel.onCancel(withArguments: nil)
+    }
+    if let initialStatus {
+      XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
+        localSessionId: "write_failure_session",
+        activityType: "run",
+        status: initialStatus,
+        startedAt: IsoTime.nowUtc()
+      )))
+      try store.appendPoints([
+        RecordedActivityPointData(
+          timestamp: IsoTime.nowUtc(), latitude: 41.1, longitude: -8, segmentIndex: 0
+        )
+      ])
+      if initialStatus == ActiveActivitySessionData.statusRecording {
+        XCTAssertTrue(recorder.startCollection())
+      }
+    }
+    let startsBeforeCommand = manager.startCount
+    var events: [[String: Any]] = []
+    _ = channel.onListen(withArguments: nil) { payload in
+      if let event = payload as? [String: Any] {
+        events.append(event)
+      }
+    }
+    failWrites = true
+    var replies = 0
+    var reply: Any?
+
+    channel.handle(FlutterMethodCall(methodName: method, arguments: [
+      "version": ActivityRecorderChannel.payloadVersion,
+      "localSessionId": "write_failure_session",
+      "activityType": "run",
+    ])) { value in
+      replies += 1
+      reply = value
+    }
+
+    XCTAssertEqual(replies, 1)
+    XCTAssertEqual((reply as? FlutterError)?.code, ActivityRecorderChannel.errorStoreWrite)
+    XCTAssertEqual(manager.startCount, startsBeforeCommand)
+    XCTAssertEqual(store.loadSession()?.status, initialStatus)
+    XCTAssertEqual(store.pointCount(), initialStatus == nil ? 0 : 1)
+    XCTAssertEqual(events.compactMap { $0["type"] as? String }, [
+      ActivityRecorderCoordinator.eventFailed
+    ])
+  }
+}
 
 @MainActor
 final class ActivityRecordingRecoveryTests: XCTestCase {
@@ -152,6 +402,33 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     XCTAssertEqual(recorder.recoverActiveSession()?.status, ActiveActivitySessionData.statusFailed)
     XCTAssertEqual(manager.startCount, 0)
     XCTAssertEqual(store.pointCount(), 1)
+  }
+
+  func testSegmentWriteFailureDoesNotAppendUncommittedPoints() throws {
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+    var failWrites = false
+    let store = ActiveActivityStore(activeDirectory: directory) { data, url in
+      if failWrites {
+        throw CocoaError(.fileWriteOutOfSpace)
+      }
+      try data.write(to: url, options: .atomic)
+    }
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    let firstTime = Date()
+    recorder.locationManager(manager, didUpdateLocations: [location(firstTime, latitude: 41.1)])
+    failWrites = true
+    recorder.locationManager(manager, didUpdateLocations: [
+      location(firstTime.addingTimeInterval(31), latitude: 41.2)
+    ])
+    XCTAssertEqual(store.pointCount(), 1)
+    XCTAssertEqual(store.loadSession()?.currentSegmentIndex, 0)
+    XCTAssertEqual(manager.stopCount, 1)
   }
 }
 

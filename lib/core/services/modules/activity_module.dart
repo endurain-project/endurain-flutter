@@ -178,10 +178,16 @@ class ActivityModule {
     final usesNativeHeartRate = usesNativeHeartRateHandoff(
       defaultTargetPlatform,
     );
+    final recorder = createLocationRecorder(locationService: loc);
     return ActivityRecordingService(
       diagnostics: _infra.diagnostics,
       locationService: loc,
-      recorder: createLocationRecorder(locationService: loc),
+      recorder: recorder,
+      sensorRecorder: switch (recorder) {
+        final ActivitySensorRecorder sensorRecorder when !usesNativeHeartRate =>
+          sensorRecorder,
+        _ => null,
+      },
       // Only Android hands the sensors off to the native foreground service,
       // whose FOREGROUND_SERVICE_CONNECTED_DEVICE model must own the single GATT
       // links. iOS keeps the Dart (universal_ble) connections — alive in the

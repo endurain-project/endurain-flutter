@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 
 /// Typed, language-free recorder failure reasons.
 ///
@@ -163,4 +164,15 @@ abstract class ActivityLocationRecorder {
 
   /// Releases resources held by the recorder.
   Future<void> dispose();
+}
+
+abstract class ActivitySensorRecorder {
+  Future<void> appendSensorSample({
+    required String localSessionId,
+    required RecordedSensorSample sample,
+  });
+
+  Future<List<RecordedSensorSample>> drainSensorSamples({
+    required String localSessionId,
+  });
 }

@@ -1150,6 +1150,231 @@ void main() {
       );
     });
 
+    group('durable sensor recovery', () {
+      final pointTime = DateTime.utc(2026, 5, 30, 10, 0, 30);
+
+      test(
+        'start reports a durable-write failure as a storage error',
+        () async {
+          final recorder = _ControllableRecorder()
+            ..startErrors.add(
+              PlatformException(
+                code:
+                    NativeActivityRecorderChannelContract.errorStoreWriteFailed,
+              ),
+            );
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          expect(service.state.status, ActivityRecordingStatus.failed);
+          expect(
+            service.state.lastError,
+            ActivityRecordingError.localSaveFailed,
+          );
+        },
+      );
+
+      test(
+        'resume cannot overtake a pause waiting for sensor persistence',
+        () async {
+          final storedSamples = <RecordedSensorSample>[];
+          final pending = Completer<void>();
+          final sensorRecorder = _StoredSensorRecorder(storedSamples)
+            ..pendingWrite = pending.future;
+          final recorder = _ControllableRecorder();
+          final readings = StreamController<({DateTime timestamp, int bpm})>();
+          addTearDown(readings.close);
+          final service = _buildService(
+            recorder: recorder,
+            sensorRecorder: sensorRecorder,
+            heartRateReadings: readings.stream,
+          );
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          readings.add((timestamp: pointTime, bpm: 142));
+          await pumpEventQueue();
+          final pausing = service.pause();
+          await pumpEventQueue();
+          final resuming = service.resume();
+          await pumpEventQueue();
+          expect(recorder.pauseCount, 0);
+          expect(recorder.resumeCount, 0);
+          pending.complete();
+          await Future.wait([pausing, resuming]);
+          expect(recorder.pauseCount, 1);
+          expect(recorder.resumeCount, 1);
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(storedSamples.map((sample) => sample.value), [142]);
+        },
+      );
+
+      test('a fresh service restores all captured sensor kinds', () async {
+        final storedSamples = <RecordedSensorSample>[];
+        final readings = StreamController<RecordedSensorSample>();
+        addTearDown(readings.close);
+        final firstRecorder = _ControllableRecorder();
+        final first = ActivityRecordingService(
+          recorder: firstRecorder,
+          locationService: _location(LocationPermission.always),
+          sensorRecorder: _StoredSensorRecorder(storedSamples),
+          sensorReadings: readings.stream,
+          now: () => pointTime,
+        );
+        await first.start(activityType: ActivityType.ride);
+        final sessionId = first.localSessionId!;
+        for (final entry in {
+          RecordedSensorKind.heartRate: 142,
+          RecordedSensorKind.power: 230,
+          RecordedSensorKind.cadence: 88,
+        }.entries) {
+          readings.add(
+            RecordedSensorSample(
+              kind: entry.key,
+              timestamp: pointTime,
+              value: entry.value,
+            ),
+          );
+        }
+        await pumpEventQueue();
+        firstRecorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+        expect(storedSamples, hasLength(3));
+        first.dispose();
+
+        final restoredRecorder = _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: sessionId,
+            activityType: ActivityType.ride,
+            status: ActiveActivityStatus.recording,
+            startedAt: pointTime,
+          )
+          .._drained.addAll(firstRecorder._drained);
+        final restored = _buildService(
+          recorder: restoredRecorder,
+          sensorRecorder: _StoredSensorRecorder(storedSamples),
+          now: () => pointTime,
+        );
+        addTearDown(restored.dispose);
+        expect(await restored.recoverActiveSession(), isTrue);
+        expect(restored.state.points.single.heartRateBpm, 142);
+        expect(restored.state.points.single.powerWatts, 230);
+        expect(restored.state.points.single.cadenceRpm, 88);
+        await restored.stop();
+        expect(restored.state.status, ActivityRecordingStatus.completed);
+        expect(restored.state.points.single.heartRateBpm, 142);
+        expect(restored.state.points.single.powerWatts, 230);
+        expect(restored.state.points.single.cadenceRpm, 88);
+        expect(restored.localSessionId, sessionId);
+      });
+
+      for (final command in ['pause', 'stop', 'discard']) {
+        test('$command waits for accepted sensor writes', () async {
+          final storedSamples = <RecordedSensorSample>[];
+          final pending = Completer<void>();
+          final sensorRecorder = _StoredSensorRecorder(storedSamples)
+            ..pendingWrite = pending.future;
+          final recorder = _ControllableRecorder();
+          final readings = StreamController<({DateTime timestamp, int bpm})>();
+          addTearDown(readings.close);
+          final service = _buildService(
+            recorder: recorder,
+            sensorRecorder: sensorRecorder,
+            heartRateReadings: readings.stream,
+          );
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          recorder.emitPoints([
+            _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+          ]);
+          readings.add((timestamp: pointTime, bpm: 142));
+          await pumpEventQueue();
+          final transition = switch (command) {
+            'pause' => service.pause(),
+            'stop' => service.stop(),
+            _ => service.discard(),
+          };
+          await pumpEventQueue();
+          expect(
+            recorder.pauseCount + recorder.stopCount + recorder.discardCount,
+            0,
+          );
+          readings.add((timestamp: pointTime, bpm: 160));
+          await pumpEventQueue();
+          pending.complete();
+          await transition;
+          expect(storedSamples.map((sample) => sample.value), [142]);
+          expect(
+            recorder.pauseCount + recorder.stopCount + recorder.discardCount,
+            1,
+          );
+        });
+      }
+
+      test(
+        'sensor write failure is visible and prevents false completion',
+        () async {
+          final recorder = _ControllableRecorder();
+          final pending = Completer<void>();
+          final sensorRecorder = _StoredSensorRecorder([])
+            ..pendingWrite = pending.future
+            ..writeError = StateError('write failed');
+          final readings = StreamController<({DateTime timestamp, int bpm})>();
+          addTearDown(readings.close);
+          final service = _buildService(
+            recorder: recorder,
+            sensorRecorder: sensorRecorder,
+            heartRateReadings: readings.stream,
+          );
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          readings.add((timestamp: pointTime, bpm: 142));
+          await pumpEventQueue();
+          final stopping = service.stop();
+          await pumpEventQueue();
+          pending.complete();
+          await stopping;
+          expect(service.state.status, ActivityRecordingStatus.failed);
+          expect(
+            service.state.lastError,
+            ActivityRecordingError.localSaveFailed,
+          );
+          expect(service.state.currentHeartRateBpm, isNull);
+          expect(recorder.stopCount, 0);
+          expect(recorder.discardCount, 0);
+        },
+      );
+
+      test('sensor read failure preserves the session for retry', () async {
+        final recorder = _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: 'sensor_recovery',
+            activityType: ActivityType.ride,
+            status: ActiveActivityStatus.paused,
+            startedAt: pointTime,
+          )
+          .._drained.add(
+            _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+          );
+        final sensorRecorder = _StoredSensorRecorder([])
+          ..readError = StateError('read failed');
+        final service = _buildService(
+          recorder: recorder,
+          sensorRecorder: sensorRecorder,
+        );
+        addTearDown(service.dispose);
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(service.state.lastError, ActivityRecordingError.localSaveFailed);
+        expect(recorder.discardCount, 0);
+        sensorRecorder.readError = null;
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.paused);
+        expect(service.state.points, hasLength(1));
+      });
+    });
+
     group('power and cadence stamping', () {
       final pointTime = DateTime.utc(2026, 5, 30, 10, 0, 30);
 
@@ -1270,6 +1495,7 @@ ActivityRecordingService _buildService({
   Stream<({DateTime timestamp, int bpm})>? heartRateReadings,
   Stream<({DateTime timestamp, int watts})>? powerReadings,
   Stream<({DateTime timestamp, int rpm})>? cadenceReadings,
+  ActivitySensorRecorder? sensorRecorder,
   Duration sensorFreshness = const Duration(seconds: 10),
   Future<String?> Function()? prepareHeartRateSource,
   Future<String?> Function()? preparePowerSource,
@@ -1310,6 +1536,7 @@ ActivityRecordingService _buildService({
         LocationService(platformAdapter: RecordingLocationPlatformAdapter()),
     diagnostics: diagnostics,
     now: now,
+    sensorRecorder: sensorRecorder,
     sensorReadings: sensorStreams.isEmpty
         ? null
         : StreamGroup.merge(sensorStreams),
@@ -1446,6 +1673,33 @@ class _ControllableRecorder implements ActivityLocationRecorder {
 
   void emitFailure(ActivityRecorderFailureReason reason) {
     _controller.add(ActivityRecorderEvent.failed(reason));
+  }
+}
+
+class _StoredSensorRecorder implements ActivitySensorRecorder {
+  _StoredSensorRecorder(this.samples);
+
+  final List<RecordedSensorSample> samples;
+  Future<void>? pendingWrite;
+  Object? writeError;
+  Object? readError;
+
+  @override
+  Future<void> appendSensorSample({
+    required String localSessionId,
+    required RecordedSensorSample sample,
+  }) async {
+    await pendingWrite;
+    if (writeError case final error?) throw error;
+    samples.add(sample);
+  }
+
+  @override
+  Future<List<RecordedSensorSample>> drainSensorSamples({
+    required String localSessionId,
+  }) async {
+    if (readError case final error?) throw error;
+    return List.of(samples);
   }
 }
 
