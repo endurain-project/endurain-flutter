@@ -461,7 +461,10 @@ final class CoreLocationActivityRecorder:
             pausedAt: .some(nil),
             pausedAutomatically: false
         )
-        store.saveSession(resumed)
+        guard store.saveSession(resumed) else {
+            stopAfterPersistenceFailure()
+            return
+        }
         resumedFromPause = true
         ActivityRecorderCoordinator.shared.emitSession(
             type: ActivityRecorderCoordinator.eventAutoResumed,
@@ -483,7 +486,10 @@ final class CoreLocationActivityRecorder:
             elapsedDurationSeconds: session.elapsedSecondsAt(nowMillis),
             pausedAutomatically: true
         )
-        store.saveSession(paused)
+        guard store.saveSession(paused) else {
+            stopAfterPersistenceFailure()
+            return
+        }
         ActivityRecorderCoordinator.shared.emitSession(
             type: ActivityRecorderCoordinator.eventAutoPaused,
             session: paused
