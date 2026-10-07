@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [v0.9.2+16] - 2026-10-07
+
+### Fixed
+
+- Reconnect to active native recordings after reopening the app without pausing them or creating a replacement activity. Restart interrupted collection within the same session and keep explicit pauses unchanged.
+- Preserve recordings before their first GPS fix and after recorder failures. Failed recordings require an explicit stop before saving or uploading, and remain available for resume or discard.
+- Replay persisted and live GPS points once using session-scoped offsets, retain connection ownership, and support retrying local finalization without replacing the recording.
+- Preserve captured iOS heart-rate, power, and cadence readings across recording relaunches using a session-scoped durable sensor log.
+- Reject unsuccessful iOS recording-state writes instead of acknowledging failed start, pause, resume, or stop transitions.
+
+### Changed
+
+- Show Resume and Stop controls for recoverable failed recordings, and allow the stop confirmation (save or discard) to open for them.
+- Updated `cupertino_icons` to 2.0.0, refreshed locked dependencies, and bumped `actions/upload-artifact` to v7.0.2 in the Android APK workflow.
+- Added Robolectric-based Android native recorder tests, expanded iOS recorder tests, and documented the active recording recovery contract and manual relaunch QA in the README.
+
 ## [v0.9.1+15] - 2026-09-11
 
 ### Fixed

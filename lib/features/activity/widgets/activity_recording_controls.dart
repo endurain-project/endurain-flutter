@@ -208,6 +208,7 @@ class ActivityRecordingControls extends StatelessWidget {
           ),
         ];
       case ActivityRecordingStatus.paused:
+      case ActivityRecordingStatus.failed when state.canRecover:
         return [
           _controlButton(
             label: l10n.activityResume,
@@ -251,7 +252,8 @@ class ActivityRecordingControls extends StatelessWidget {
   }
 
   String? _recordingErrorMessage(AppLocalizations l10n) {
-    if (state.status != ActivityRecordingStatus.failed) {
+    if (state.status != ActivityRecordingStatus.failed &&
+        state.lastError == null) {
       return null;
     }
     return state.lastError?.localizedMessage(l10n) ??

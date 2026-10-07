@@ -13,7 +13,7 @@ enum SessionTiming {
         _ session: ActiveActivitySessionData,
         referenceMillis: Int64
     ) -> Int {
-        if session.status == ActiveActivitySessionData.statusPaused {
+        if session.status != ActiveActivitySessionData.statusRecording {
             return session.elapsedDurationSeconds
         }
         guard let anchor = IsoTime.toEpochMillis(session.resumedAt ?? session.startedAt) else {
@@ -21,5 +21,24 @@ enum SessionTiming {
         }
         let segmentSeconds = Int((referenceMillis - anchor) / 1000)
         return session.elapsedDurationSeconds + max(0, segmentSeconds)
+    }
+
+    static func afterInterruption(
+        _ session: ActiveActivitySessionData,
+        lastPointMillis: Int64?,
+        nowMillis: Int64
+    ) -> ActiveActivitySessionData {
+        guard session.status == ActiveActivitySessionData.statusRecording else {
+            return session
+        }
+        let referenceMillis = lastPointMillis
+            ?? IsoTime.toEpochMillis(session.resumedAt ?? session.startedAt)
+            ?? nowMillis
+        return session.copyWith(
+            resumedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
+            pausedAt: .some(nil),
+            endedAt: .some(nil),
+            elapsedDurationSeconds: elapsedSeconds(session, referenceMillis: referenceMillis)
+        )
     }
 }

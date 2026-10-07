@@ -1,6 +1,7 @@
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:flutter/services.dart';
@@ -200,6 +201,116 @@ void main() {
       expect(points.single.longitude, -8.0);
     });
 
+    test('persists versioned sensor samples for the active session', () async {
+      for (final kind in RecordedSensorKind.values) {
+        final sample = RecordedSensorSample(
+          kind: kind,
+          timestamp: DateTime.utc(2026, 9, 11, 10),
+          value: 142,
+        );
+        await channel.appendSensorSample(
+          localSessionId: 'session_1',
+          sample: sample,
+        );
+        final call = calls.last;
+        expect(call.method, 'appendSensorSample');
+        expect(call.arguments, {
+          'version': NativeActivityRecorderChannelContract.payloadVersion,
+          'localSessionId': 'session_1',
+          'sample': {
+            'schemaVersion': 1,
+            'kind': kind.name,
+            't': '2026-09-11T10:00:00.000Z',
+            'value': 142,
+          },
+        });
+      }
+    });
+
+    test('restores timestamped sensor samples without dropping zero', () async {
+      messenger.setMockMethodCallHandler(methodChannel, (call) async {
+        expect(call.method, 'drainSensorSamples');
+        expect(call.arguments, {'localSessionId': 'session_1'});
+        return [
+          for (final kind in RecordedSensorKind.values)
+            {
+              'schemaVersion': 1,
+              'kind': kind.name,
+              't': '2026-09-11T10:00:00.000Z',
+              'value': 0,
+            },
+        ];
+      });
+      final samples = await channel.drainSensorSamples(
+        localSessionId: 'session_1',
+      );
+      expect(samples.map((sample) => sample.kind), RecordedSensorKind.values);
+      expect(samples.map((sample) => sample.value), everyElement(0));
+      expect(
+        samples.map((sample) => sample.timestamp),
+        everyElement(DateTime.utc(2026, 9, 11, 10)),
+      );
+    });
+
+    test('propagates sensor persistence failures', () async {
+      messenger.setMockMethodCallHandler(methodChannel, (call) async {
+        throw PlatformException(code: 'store_write_failed');
+      });
+      await expectLater(
+        channel.appendSensorSample(
+          localSessionId: 'session_1',
+          sample: RecordedSensorSample(
+            kind: RecordedSensorKind.heartRate,
+            timestamp: DateTime.utc(2026, 9, 11, 10),
+            value: 142,
+          ),
+        ),
+        throwsA(isA<PlatformException>()),
+      );
+    });
+
+    test('rejects missing or malformed sensor drains', () async {
+      for (final payload in [
+        null,
+        [null],
+        [<String, Object?>{}],
+      ]) {
+        messenger.setMockMethodCallHandler(methodChannel, (_) async => payload);
+        await expectLater(
+          channel.drainSensorSamples(localSessionId: 'session_1'),
+          throwsFormatException,
+        );
+      }
+    });
+
+    test('validates the durable sensor schema', () {
+      final sample = RecordedSensorSample(
+        kind: RecordedSensorKind.power,
+        timestamp: DateTime.utc(2026, 9, 11, 10),
+        value: 0,
+      );
+      expect(RecordedSensorSample.fromJson(sample.toJson()).value, 0);
+      for (final invalid in [-1, true, 1.5, '142']) {
+        expect(
+          () => RecordedSensorSample.fromJson({
+            ...sample.toJson(),
+            'value': invalid,
+          }),
+          throwsFormatException,
+        );
+      }
+      for (final invalid in [
+        {'schemaVersion': 2},
+        {'kind': 'unknown'},
+        {'t': 'invalid'},
+      ]) {
+        expect(
+          () => RecordedSensorSample.fromJson({...sample.toJson(), ...invalid}),
+          throwsFormatException,
+        );
+      }
+    });
+
     test('parses a recovered session', () async {
       final session = await channel.recoverActiveSession();
 
@@ -217,6 +328,8 @@ void main() {
       await _sendEvent(codec, {
         NativeActivityRecorderChannelContract.eventType:
             NativeActivityRecorderChannelContract.eventPointBatchAvailable,
+        NativeActivityRecorderChannelContract.eventLocalSessionId: 'session_1',
+        NativeActivityRecorderChannelContract.eventPointOffset: 12,
         NativeActivityRecorderChannelContract.eventPoints: <Object?>[
           {'t': '2026-06-03T09:00:01.000Z', 'lat': 41.1, 'lon': -8.6, 'seg': 0},
         ],
@@ -229,6 +342,8 @@ void main() {
         ActivityRecorderEventType.pointBatchAvailable,
       );
       expect(received.single.points.single.latitude, 41.1);
+      expect(received.single.localSessionId, 'session_1');
+      expect(received.single.pointOffset, 12);
     });
 
     test('parses failure events with a typed reason', () async {

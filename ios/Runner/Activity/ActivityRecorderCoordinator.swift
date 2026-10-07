@@ -11,7 +11,7 @@ import Flutter
 final class ActivityRecorderCoordinator {
     static let shared = ActivityRecorderCoordinator()
 
-    private let payloadVersion = 1
+    private let payloadVersion = 2
 
     private var eventSink: FlutterEventSink?
     private var eventSinkGeneration = 0
@@ -40,7 +40,11 @@ final class ActivityRecorderCoordinator {
         ])
     }
 
-    func emitPointBatch(_ points: [RecordedActivityPointData]) {
+    func emitPointBatch(
+        _ points: [RecordedActivityPointData],
+        localSessionId: String,
+        pointOffset: Int
+    ) {
         if points.isEmpty {
             return
         }
@@ -48,6 +52,8 @@ final class ActivityRecorderCoordinator {
             "version": payloadVersion,
             "type": ActivityRecorderCoordinator.eventPointBatchAvailable,
             "points": points.map { $0.toMap() },
+            "localSessionId": localSessionId,
+            "pointOffset": pointOffset,
         ])
     }
 

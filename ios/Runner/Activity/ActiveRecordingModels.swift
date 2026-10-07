@@ -289,6 +289,33 @@ struct RecordedActivityPointData {
     }
 }
 
+struct RecordedSensorSampleData: Equatable {
+    let kind: String
+    let timestamp: String
+    let value: Int
+
+    func toMap() -> [String: Any] {
+        return ["schemaVersion": 1, "kind": kind, "t": timestamp, "value": value]
+    }
+
+    static func fromJson(_ json: [String: Any]) -> RecordedSensorSampleData? {
+        guard
+            json["schemaVersion"] as? Int == 1,
+            let kind = json["kind"] as? String,
+            ["heartRate", "power", "cadence"].contains(kind),
+            let timestamp = json["t"] as? String,
+            IsoTime.toEpochMillis(timestamp) != nil,
+            let number = json["value"] as? NSNumber,
+            CFGetTypeID(number) != CFBooleanGetTypeID(),
+            let value = json["value"] as? Int,
+            value >= 0
+        else {
+            return nil
+        }
+        return RecordedSensorSampleData(kind: kind, timestamp: timestamp, value: value)
+    }
+}
+
 /// UTC ISO-8601 helpers compatible with Dart `DateTime.toIso8601String()`.
 enum IsoTime {
     static func nowUtc() -> String {

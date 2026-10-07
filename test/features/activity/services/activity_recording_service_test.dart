@@ -55,6 +55,301 @@ void main() {
       );
     });
 
+    test(
+      'reconnects to a live recording without changing its session',
+      () async {
+        final startedAt = DateTime.utc(2026, 5, 30, 10);
+        final recorder = _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: 'existing_session',
+            activityType: ActivityType.ride,
+            status: ActiveActivityStatus.recording,
+            startedAt: startedAt,
+            resumedAt: startedAt.add(const Duration(minutes: 4)),
+            elapsedDurationSeconds: 60,
+            connectionOrigin: 'https://example.com',
+            connectionProfileId: 'existing_profile',
+          );
+        recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
+        final service = _buildService(
+          recorder: recorder,
+          now: () => startedAt.add(const Duration(minutes: 5)),
+        );
+        addTearDown(service.dispose);
+
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.recording);
+        expect(service.state.elapsedDurationSeconds, 120);
+        expect(service.state.startedAt, startedAt);
+        expect(service.state.endedAt, isNull);
+        expect(service.localSessionId, 'existing_session');
+        expect(service.connectionOrigin, 'https://example.com');
+        expect(service.connectionProfileId, 'existing_profile');
+
+        recorder.emitPoints([
+          _point(
+            latitude: 41.2,
+            longitude: -8.7,
+            timestamp: startedAt.add(const Duration(minutes: 5)),
+          ),
+        ]);
+        await pumpEventQueue();
+
+        expect(service.state.points, hasLength(2));
+        expect(recorder.startCount, 0);
+        expect(recorder.pauseCount, 0);
+        expect(recorder.resumeCount, 0);
+        expect(recorder.discardCount, 0);
+      },
+    );
+
+    group('recovery handoff', () {
+      final startedAt = DateTime.utc(2026, 5, 30, 10);
+
+      _ControllableRecorder recorderFor(ActiveActivityStatus status) {
+        return _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: 'existing_session',
+            activityType: ActivityType.run,
+            status: status,
+            startedAt: startedAt,
+          );
+      }
+
+      for (final status in [
+        ActiveActivityStatus.recording,
+        ActiveActivityStatus.paused,
+        ActiveActivityStatus.failed,
+      ]) {
+        test('preserves a $status session before its first fix', () async {
+          final recorder = recorderFor(status);
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+
+          expect(await service.recoverActiveSession(), isTrue);
+          expect(
+            service.state.status,
+            status == ActiveActivityStatus.recording
+                ? ActivityRecordingStatus.recording
+                : ActivityRecordingStatus.paused,
+          );
+          expect(service.localSessionId, 'existing_session');
+          expect(service.state.points, isEmpty);
+          expect(service.state.endedAt, isNull);
+          expect(recorder.discardCount, 0);
+        });
+      }
+
+      test('replays overlapping and late batches exactly once', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final first = _point(latitude: 41.1, longitude: -8.6);
+        final overlapping = _point(latitude: 41.2, longitude: -8.7);
+        final late = _point(latitude: 41.3, longitude: -8.8);
+        recorder.emitPoints([first]);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        final recovery = service.recoverActiveSession();
+        await pumpEventQueue();
+        recorder.emitPoints([overlapping]);
+        await pumpEventQueue();
+        drain.complete([first, overlapping]);
+        recorder.emitPoints([late]);
+        expect(await recovery, isTrue);
+        await pumpEventQueue();
+
+        expect(service.state.points.map((point) => point.latitude), [
+          41.1,
+          41.2,
+          41.3,
+        ]);
+        expect(recorder.discardCount, 0);
+      });
+
+      test('fills a missing live batch from durable storage', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+        await service.recoverActiveSession();
+
+        recorder._drained.add(_point(latitude: 41.1, longitude: -8.6));
+        recorder.emitPoints([_point(latitude: 41.2, longitude: -8.7)]);
+        await pumpEventQueue();
+
+        expect(service.state.points.map((point) => point.latitude), [
+          41.1,
+          41.2,
+        ]);
+        expect(service.state.status, ActivityRecordingStatus.recording);
+      });
+
+      test('ignores batches belonging to another session', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+        await service.recoverActiveSession();
+
+        recorder._controller.add(
+          ActivityRecorderEvent.pointBatchAvailable(
+            [_point(latitude: 41.1, longitude: -8.6)],
+            localSessionId: 'different_session',
+            pointOffset: 0,
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(service.state.points, isEmpty);
+        expect(service.localSessionId, 'existing_session');
+      });
+
+      test('keeps a failure delivered during recovery visible', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        final recovery = service.recoverActiveSession();
+        await pumpEventQueue();
+        recorder.emitFailure(ActivityRecorderFailureReason.permissionLost);
+        await pumpEventQueue();
+        drain.complete([_point(latitude: 41.1, longitude: -8.6)]);
+        expect(await recovery, isTrue);
+
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(
+          service.state.lastError,
+          ActivityRecordingError.locationPermissionDenied,
+        );
+        expect(service.state.points, hasLength(1));
+        expect(recorder.discardCount, 0);
+      });
+
+      test('retries a failed drain without discarding the session', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording)
+          ..drainOverride = (_) async => throw StateError('read failed');
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(service.state.lastError, ActivityRecordingError.localSaveFailed);
+        expect(recorder.discardCount, 0);
+
+        recorder.drainOverride = null;
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.recording);
+        expect(recorder.recoverCount, 2);
+      });
+
+      test(
+        'recovers an existing session when native start rejects replacement',
+        () async {
+          final recorder = recorderFor(ActiveActivityStatus.recording);
+          recorder.startErrors.add(
+            PlatformException(
+              code: NativeActivityRecorderChannelContract.errorInvalidState,
+            ),
+          );
+          recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.ride);
+
+          expect(recorder.startCount, 1);
+          expect(recorder.discardCount, 0);
+          expect(service.localSessionId, 'existing_session');
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(service.state.activityType, ActivityType.run);
+          expect(service.state.points, hasLength(1));
+        },
+      );
+
+      test('coalesces recovery and blocks a concurrent start', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        final recovery = service.recoverActiveSession();
+        expect(service.recoverActiveSession(), same(recovery));
+        final start = service.start(activityType: ActivityType.ride);
+        await pumpEventQueue();
+        expect(recorder.startCount, 0);
+        drain.complete([]);
+        await recovery;
+        await start;
+
+        expect(recorder.recoverCount, 1);
+        expect(recorder.startCount, 0);
+        expect(service.state.activityType, ActivityType.run);
+      });
+
+      test('does not emit or discard after disposal during recovery', () async {
+        final recorder = recorderFor(ActiveActivityStatus.recording);
+        final drain = Completer<List<RecordedActivityPoint>>();
+        recorder.drainOverride = (_) => drain.future;
+        final service = _buildService(recorder: recorder);
+
+        final recovery = service.recoverActiveSession();
+        await pumpEventQueue();
+        service.dispose();
+        drain.complete([]);
+
+        expect(await recovery, isFalse);
+        expect(recorder.discardCount, 0);
+      });
+
+      test(
+        'concurrent resume requests only resume the recorder once',
+        () async {
+          final recorder = recorderFor(ActiveActivityStatus.paused);
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+          await service.recoverActiveSession();
+
+          await Future.wait([service.resume(), service.resume()]);
+
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(recorder.resumeCount, 1);
+        },
+      );
+
+      test('continues elapsed time and does not count an explicit pause', () {
+        fakeAsync((clock) {
+          final recorder = recorderFor(ActiveActivityStatus.recording)
+            ..recoveredSession = ActiveActivitySession(
+              localSessionId: 'existing_session',
+              activityType: ActivityType.run,
+              status: ActiveActivityStatus.recording,
+              startedAt: startedAt.subtract(const Duration(minutes: 5)),
+              resumedAt: startedAt.subtract(const Duration(minutes: 1)),
+              elapsedDurationSeconds: 60,
+            );
+          final service = _buildService(
+            recorder: recorder,
+            now: clock.getClock(startedAt).now,
+          );
+
+          service.recoverActiveSession();
+          clock.flushMicrotasks();
+          expect(service.state.elapsedDurationSeconds, 120);
+          clock.elapse(const Duration(seconds: 5));
+          expect(service.state.elapsedDurationSeconds, 125);
+          service.pause();
+          clock.flushMicrotasks();
+          clock.elapse(const Duration(seconds: 10));
+          expect(service.state.elapsedDurationSeconds, 125);
+          service.dispose();
+          clock.flushMicrotasks();
+        });
+      });
+    });
+
     test('forwards background config to the recorder', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -855,6 +1150,231 @@ void main() {
       );
     });
 
+    group('durable sensor recovery', () {
+      final pointTime = DateTime.utc(2026, 5, 30, 10, 0, 30);
+
+      test(
+        'start reports a durable-write failure as a storage error',
+        () async {
+          final recorder = _ControllableRecorder()
+            ..startErrors.add(
+              PlatformException(
+                code:
+                    NativeActivityRecorderChannelContract.errorStoreWriteFailed,
+              ),
+            );
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          expect(service.state.status, ActivityRecordingStatus.failed);
+          expect(
+            service.state.lastError,
+            ActivityRecordingError.localSaveFailed,
+          );
+        },
+      );
+
+      test(
+        'resume cannot overtake a pause waiting for sensor persistence',
+        () async {
+          final storedSamples = <RecordedSensorSample>[];
+          final pending = Completer<void>();
+          final sensorRecorder = _StoredSensorRecorder(storedSamples)
+            ..pendingWrite = pending.future;
+          final recorder = _ControllableRecorder();
+          final readings = StreamController<({DateTime timestamp, int bpm})>();
+          addTearDown(readings.close);
+          final service = _buildService(
+            recorder: recorder,
+            sensorRecorder: sensorRecorder,
+            heartRateReadings: readings.stream,
+          );
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          readings.add((timestamp: pointTime, bpm: 142));
+          await pumpEventQueue();
+          final pausing = service.pause();
+          await pumpEventQueue();
+          final resuming = service.resume();
+          await pumpEventQueue();
+          expect(recorder.pauseCount, 0);
+          expect(recorder.resumeCount, 0);
+          pending.complete();
+          await Future.wait([pausing, resuming]);
+          expect(recorder.pauseCount, 1);
+          expect(recorder.resumeCount, 1);
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(storedSamples.map((sample) => sample.value), [142]);
+        },
+      );
+
+      test('a fresh service restores all captured sensor kinds', () async {
+        final storedSamples = <RecordedSensorSample>[];
+        final readings = StreamController<RecordedSensorSample>();
+        addTearDown(readings.close);
+        final firstRecorder = _ControllableRecorder();
+        final first = ActivityRecordingService(
+          recorder: firstRecorder,
+          locationService: _location(LocationPermission.always),
+          sensorRecorder: _StoredSensorRecorder(storedSamples),
+          sensorReadings: readings.stream,
+          now: () => pointTime,
+        );
+        await first.start(activityType: ActivityType.ride);
+        final sessionId = first.localSessionId!;
+        for (final entry in {
+          RecordedSensorKind.heartRate: 142,
+          RecordedSensorKind.power: 230,
+          RecordedSensorKind.cadence: 88,
+        }.entries) {
+          readings.add(
+            RecordedSensorSample(
+              kind: entry.key,
+              timestamp: pointTime,
+              value: entry.value,
+            ),
+          );
+        }
+        await pumpEventQueue();
+        firstRecorder.emitPoints([
+          _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+        ]);
+        await pumpEventQueue();
+        expect(storedSamples, hasLength(3));
+        first.dispose();
+
+        final restoredRecorder = _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: sessionId,
+            activityType: ActivityType.ride,
+            status: ActiveActivityStatus.recording,
+            startedAt: pointTime,
+          )
+          .._drained.addAll(firstRecorder._drained);
+        final restored = _buildService(
+          recorder: restoredRecorder,
+          sensorRecorder: _StoredSensorRecorder(storedSamples),
+          now: () => pointTime,
+        );
+        addTearDown(restored.dispose);
+        expect(await restored.recoverActiveSession(), isTrue);
+        expect(restored.state.points.single.heartRateBpm, 142);
+        expect(restored.state.points.single.powerWatts, 230);
+        expect(restored.state.points.single.cadenceRpm, 88);
+        await restored.stop();
+        expect(restored.state.status, ActivityRecordingStatus.completed);
+        expect(restored.state.points.single.heartRateBpm, 142);
+        expect(restored.state.points.single.powerWatts, 230);
+        expect(restored.state.points.single.cadenceRpm, 88);
+        expect(restored.localSessionId, sessionId);
+      });
+
+      for (final command in ['pause', 'stop', 'discard']) {
+        test('$command waits for accepted sensor writes', () async {
+          final storedSamples = <RecordedSensorSample>[];
+          final pending = Completer<void>();
+          final sensorRecorder = _StoredSensorRecorder(storedSamples)
+            ..pendingWrite = pending.future;
+          final recorder = _ControllableRecorder();
+          final readings = StreamController<({DateTime timestamp, int bpm})>();
+          addTearDown(readings.close);
+          final service = _buildService(
+            recorder: recorder,
+            sensorRecorder: sensorRecorder,
+            heartRateReadings: readings.stream,
+          );
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          recorder.emitPoints([
+            _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+          ]);
+          readings.add((timestamp: pointTime, bpm: 142));
+          await pumpEventQueue();
+          final transition = switch (command) {
+            'pause' => service.pause(),
+            'stop' => service.stop(),
+            _ => service.discard(),
+          };
+          await pumpEventQueue();
+          expect(
+            recorder.pauseCount + recorder.stopCount + recorder.discardCount,
+            0,
+          );
+          readings.add((timestamp: pointTime, bpm: 160));
+          await pumpEventQueue();
+          pending.complete();
+          await transition;
+          expect(storedSamples.map((sample) => sample.value), [142]);
+          expect(
+            recorder.pauseCount + recorder.stopCount + recorder.discardCount,
+            1,
+          );
+        });
+      }
+
+      test(
+        'sensor write failure is visible and prevents false completion',
+        () async {
+          final recorder = _ControllableRecorder();
+          final pending = Completer<void>();
+          final sensorRecorder = _StoredSensorRecorder([])
+            ..pendingWrite = pending.future
+            ..writeError = StateError('write failed');
+          final readings = StreamController<({DateTime timestamp, int bpm})>();
+          addTearDown(readings.close);
+          final service = _buildService(
+            recorder: recorder,
+            sensorRecorder: sensorRecorder,
+            heartRateReadings: readings.stream,
+          );
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          readings.add((timestamp: pointTime, bpm: 142));
+          await pumpEventQueue();
+          final stopping = service.stop();
+          await pumpEventQueue();
+          pending.complete();
+          await stopping;
+          expect(service.state.status, ActivityRecordingStatus.failed);
+          expect(
+            service.state.lastError,
+            ActivityRecordingError.localSaveFailed,
+          );
+          expect(service.state.currentHeartRateBpm, isNull);
+          expect(recorder.stopCount, 0);
+          expect(recorder.discardCount, 0);
+        },
+      );
+
+      test('sensor read failure preserves the session for retry', () async {
+        final recorder = _ControllableRecorder()
+          ..recoveredSession = ActiveActivitySession(
+            localSessionId: 'sensor_recovery',
+            activityType: ActivityType.ride,
+            status: ActiveActivityStatus.paused,
+            startedAt: pointTime,
+          )
+          .._drained.add(
+            _point(latitude: 41.1, longitude: -8.6, timestamp: pointTime),
+          );
+        final sensorRecorder = _StoredSensorRecorder([])
+          ..readError = StateError('read failed');
+        final service = _buildService(
+          recorder: recorder,
+          sensorRecorder: sensorRecorder,
+        );
+        addTearDown(service.dispose);
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.failed);
+        expect(service.state.lastError, ActivityRecordingError.localSaveFailed);
+        expect(recorder.discardCount, 0);
+        sensorRecorder.readError = null;
+        expect(await service.recoverActiveSession(), isTrue);
+        expect(service.state.status, ActivityRecordingStatus.paused);
+        expect(service.state.points, hasLength(1));
+      });
+    });
+
     group('power and cadence stamping', () {
       final pointTime = DateTime.utc(2026, 5, 30, 10, 0, 30);
 
@@ -975,6 +1495,7 @@ ActivityRecordingService _buildService({
   Stream<({DateTime timestamp, int bpm})>? heartRateReadings,
   Stream<({DateTime timestamp, int watts})>? powerReadings,
   Stream<({DateTime timestamp, int rpm})>? cadenceReadings,
+  ActivitySensorRecorder? sensorRecorder,
   Duration sensorFreshness = const Duration(seconds: 10),
   Future<String?> Function()? prepareHeartRateSource,
   Future<String?> Function()? preparePowerSource,
@@ -1015,6 +1536,7 @@ ActivityRecordingService _buildService({
         LocationService(platformAdapter: RecordingLocationPlatformAdapter()),
     diagnostics: diagnostics,
     now: now,
+    sensorRecorder: sensorRecorder,
     sensorReadings: sensorStreams.isEmpty
         ? null
         : StreamGroup.merge(sensorStreams),
@@ -1059,6 +1581,9 @@ class _ControllableRecorder implements ActivityLocationRecorder {
   final List<RecordedActivityPoint> _drained = [];
   final List<RecordedActivityPoint> _pointsPersistedOnStop;
   ActivityRecorderStartRequest? lastStartRequest;
+  ActiveActivitySession? recoveredSession;
+  Future<List<RecordedActivityPoint>> Function(int)? drainOverride;
+  int recoverCount = 0;
 
   /// Errors thrown by successive `start` calls. An entry of `null` (or an
   /// exhausted queue) lets that call succeed.
@@ -1108,12 +1633,17 @@ class _ControllableRecorder implements ActivityLocationRecorder {
 
   @override
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0}) async {
+    final override = drainOverride;
+    if (override != null) {
+      return override(sinceOffset);
+    }
     return _drained.sublist(sinceOffset.clamp(0, _drained.length));
   }
 
   @override
   Future<ActiveActivitySession?> recoverActiveSession() async {
-    return null;
+    recoverCount += 1;
+    return recoveredSession;
   }
 
   @override
@@ -1124,8 +1654,17 @@ class _ControllableRecorder implements ActivityLocationRecorder {
   }
 
   void emitPoints(List<RecordedActivityPoint> points) {
+    final pointOffset = _drained.length;
     _drained.addAll(points);
-    _controller.add(ActivityRecorderEvent.pointBatchAvailable(points));
+    _controller.add(
+      ActivityRecorderEvent.pointBatchAvailable(
+        points,
+        localSessionId:
+            lastStartRequest?.localSessionId ??
+            recoveredSession!.localSessionId,
+        pointOffset: pointOffset,
+      ),
+    );
   }
 
   void emitError(Object error) {
@@ -1134,6 +1673,33 @@ class _ControllableRecorder implements ActivityLocationRecorder {
 
   void emitFailure(ActivityRecorderFailureReason reason) {
     _controller.add(ActivityRecorderEvent.failed(reason));
+  }
+}
+
+class _StoredSensorRecorder implements ActivitySensorRecorder {
+  _StoredSensorRecorder(this.samples);
+
+  final List<RecordedSensorSample> samples;
+  Future<void>? pendingWrite;
+  Object? writeError;
+  Object? readError;
+
+  @override
+  Future<void> appendSensorSample({
+    required String localSessionId,
+    required RecordedSensorSample sample,
+  }) async {
+    await pendingWrite;
+    if (writeError case final error?) throw error;
+    samples.add(sample);
+  }
+
+  @override
+  Future<List<RecordedSensorSample>> drainSensorSamples({
+    required String localSessionId,
+  }) async {
+    if (readError case final error?) throw error;
+    return List.of(samples);
   }
 }
 

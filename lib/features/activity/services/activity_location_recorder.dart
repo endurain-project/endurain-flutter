@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 
 /// Typed, language-free recorder failure reasons.
 ///
@@ -38,14 +39,23 @@ class ActivityRecorderEvent {
     this.session,
     this.points = const <RecordedActivityPoint>[],
     this.failureReason,
+    this.localSessionId,
+    this.pointOffset,
   });
 
   const ActivityRecorderEvent.started(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.started, session: session);
 
   const ActivityRecorderEvent.pointBatchAvailable(
-    List<RecordedActivityPoint> points,
-  ) : this(type: ActivityRecorderEventType.pointBatchAvailable, points: points);
+    List<RecordedActivityPoint> points, {
+    required String localSessionId,
+    required int pointOffset,
+  }) : this(
+         type: ActivityRecorderEventType.pointBatchAvailable,
+         points: points,
+         localSessionId: localSessionId,
+         pointOffset: pointOffset,
+       );
 
   const ActivityRecorderEvent.paused(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.paused, session: session);
@@ -70,6 +80,8 @@ class ActivityRecorderEvent {
   final ActiveActivitySession? session;
   final List<RecordedActivityPoint> points;
   final ActivityRecorderFailureReason? failureReason;
+  final String? localSessionId;
+  final int? pointOffset;
 }
 
 /// Request used to start a new recording through an [ActivityLocationRecorder].
@@ -144,9 +156,23 @@ abstract class ActivityLocationRecorder {
   /// Returns persisted points from [sinceOffset] for incremental syncing.
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0});
 
-  /// Returns a recoverable active session if one exists, otherwise `null`.
+  /// Reconnects to the existing session without pausing a live recorder.
+  /// Returns `recording` only when collection is running or being restarted,
+  /// `paused` when explicit user action is needed, or `null` when absent.
+  /// Does not complete, discard, or replace an interrupted recording.
   Future<ActiveActivitySession?> recoverActiveSession();
 
   /// Releases resources held by the recorder.
   Future<void> dispose();
+}
+
+abstract class ActivitySensorRecorder {
+  Future<void> appendSensorSample({
+    required String localSessionId,
+    required RecordedSensorSample sample,
+  });
+
+  Future<List<RecordedSensorSample>> drainSensorSamples({
+    required String localSessionId,
+  });
 }

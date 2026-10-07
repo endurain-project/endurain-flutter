@@ -155,15 +155,17 @@ void main() {
         expect(service.state.status, ActivityRecordingStatus.paused);
       });
 
-      test('clears and returns false for an empty-point session', () async {
+      test('preserves a paused session before its first point', () async {
         store.session = storedSession(ActiveActivityStatus.paused);
         final service = buildService();
         addTearDown(service.dispose);
 
         final recovered = await service.recoverActiveSession();
 
-        expect(recovered, isFalse);
-        expect(store.session, isNull);
+        expect(recovered, isTrue);
+        expect(service.state.status, ActivityRecordingStatus.paused);
+        expect(store.session, isNotNull);
+        expect(store.clearCount, 0);
       });
 
       test('recovers a completed session for durable finalization', () async {

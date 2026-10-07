@@ -175,7 +175,8 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   }
 
   Future<void> _confirmStopActivity() async {
-    if (_isStopConfirmationOpen || !_activityController.state.isActive) {
+    final state = _activityController.state;
+    if (_isStopConfirmationOpen || (!state.isActive && !state.canRecover)) {
       return;
     }
 
