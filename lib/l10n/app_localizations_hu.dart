@@ -494,6 +494,38 @@ class AppLocalizationsHu extends AppLocalizations {
       'A befejezett útvonalfájlokat a feltöltés után az alkalmazás privát tárhelyén tárolja.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatikus szüneteltetés';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatikusan szünetelteti, ha megállsz';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatikus szüneteltetés';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'A rögzítés automatikusan szünetel, ha megállsz, és folytatódik, amint újra mozogni kezdesz.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Válaszd ki, mennyi ideig várjon mozgás nélkül szüneteltetés előtt.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds másodperc';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatikusan szüneteltetve';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Rögzítés szüneteltetve';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Rögzítés folytatva';
+
+  @override
   String get activityHistoryEmpty =>
       'Nincsenek az eszközön mentett befejezett tevékenységek.';
 

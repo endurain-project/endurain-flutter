@@ -24,6 +24,8 @@ final class AnnouncementModelsTests: XCTestCase {
       metricLabel: "Vitesse",
       messageTemplate:
         "Distance {distance}. Temps {duration}. Tour {lapMetric}. Total {overallMetric}.",
+      autoPausedMessage: "Enregistrement en pause",
+      autoResumedMessage: "Enregistrement repris",
       cumulativeDistanceMeters: 4321.5,
       lastAnnouncedDistanceIndex: 4,
       lastAnnouncedTimeIndex: 2,
@@ -96,6 +98,8 @@ final class AnnouncementModelsTests: XCTestCase {
       "metricLabel": "Pace",
       "messageTemplate":
         "Distance {distance}. Time {duration}. Lap {lapMetric}. Overall {overallMetric}.",
+      "autoPausedMessage": "Recording paused",
+      "autoResumedMessage": "Recording resumed",
     ]
 
     let state = AnnouncementStateData.fromStartArguments(args)
@@ -104,6 +108,8 @@ final class AnnouncementModelsTests: XCTestCase {
     XCTAssertEqual(state?.duckOtherAudio, false)
     XCTAssertEqual(state?.languageTag, "en-US")
     XCTAssertEqual(state?.metric, AnnouncementStateData.metricPace)
+    XCTAssertEqual(state?.transitionMessage(autoPaused: true), "Recording paused")
+    XCTAssertEqual(state?.transitionMessage(autoPaused: false), "Recording resumed")
     XCTAssertEqual(state?.cumulativeDistanceMeters, 0)
     XCTAssertEqual(state?.lastAnnouncedDistanceIndex, 0)
   }
@@ -114,6 +120,30 @@ final class AnnouncementModelsTests: XCTestCase {
 
   func testFromStartArgumentsReturnsNilWithoutALanguageTag() {
     XCTAssertNil(AnnouncementStateData.fromStartArguments(["enabled": true]))
+  }
+
+  func testTransitionMessagesRequireEnabledAnnouncementsAndNonBlankText() {
+    var map = sampleState().toMap()
+    map["enabled"] = false
+    XCTAssertNil(AnnouncementStateData.fromJson(map)?.transitionMessage(autoPaused: true))
+
+    map["enabled"] = true
+    map["autoPausedMessage"] = ""
+    map["autoResumedMessage"] = " "
+    let state = AnnouncementStateData.fromJson(map)
+    XCTAssertNil(state?.transitionMessage(autoPaused: true))
+    XCTAssertNil(state?.transitionMessage(autoPaused: false))
+  }
+
+  func testLegacyStateWithoutTransitionMessagesRemainsSilent() {
+    var map = sampleState().toMap()
+    map.removeValue(forKey: "autoPausedMessage")
+    map.removeValue(forKey: "autoResumedMessage")
+
+    let state = AnnouncementStateData.fromJson(map)
+
+    XCTAssertNil(state?.transitionMessage(autoPaused: true))
+    XCTAssertNil(state?.transitionMessage(autoPaused: false))
   }
 
   func testToMapOmitsAbsentOptionalLastPoint() {

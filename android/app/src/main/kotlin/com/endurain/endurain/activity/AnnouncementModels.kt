@@ -35,6 +35,8 @@ data class AnnouncementStateData(
     val metricUnitTemplate: String,
     val metricLabel: String,
     val messageTemplate: String,
+    val autoPausedMessage: String = "",
+    val autoResumedMessage: String = "",
     // Scheduler progress, checkpointed from GPS fixes and the elapsed-time timer.
     val cumulativeDistanceMeters: Double = 0.0,
     val lastAnnouncedDistanceIndex: Int = 0,
@@ -47,6 +49,14 @@ data class AnnouncementStateData(
 ) {
     val isTimeBased: Boolean
         get() = intervalUnit == UNIT_TIME
+
+    fun transitionMessage(autoPaused: Boolean): String? {
+        if (!enabled) {
+            return null
+        }
+        return (if (autoPaused) autoPausedMessage else autoResumedMessage)
+            .takeIf { it.isNotBlank() }
+    }
 
     fun toJson(): JSONObject {
         return JSONObject().apply {
@@ -62,6 +72,8 @@ data class AnnouncementStateData(
             put("metricUnitTemplate", metricUnitTemplate)
             put("metricLabel", metricLabel)
             put("messageTemplate", messageTemplate)
+            put("autoPausedMessage", autoPausedMessage)
+            put("autoResumedMessage", autoResumedMessage)
             put("cumulativeDistanceMeters", cumulativeDistanceMeters)
             put("lastAnnouncedDistanceIndex", lastAnnouncedDistanceIndex)
             put("lastAnnouncedTimeIndex", lastAnnouncedTimeIndex)
@@ -97,6 +109,8 @@ data class AnnouncementStateData(
                     "messageTemplate",
                     "{distance} {duration} {lapMetric} {overallMetric}",
                 ),
+                autoPausedMessage = json.optString("autoPausedMessage", ""),
+                autoResumedMessage = json.optString("autoResumedMessage", ""),
                 cumulativeDistanceMeters = json.optDouble("cumulativeDistanceMeters", 0.0),
                 lastAnnouncedDistanceIndex = json.optInt("lastAnnouncedDistanceIndex", 0),
                 lastAnnouncedTimeIndex = json.optInt("lastAnnouncedTimeIndex", 0),
@@ -137,6 +151,8 @@ data class AnnouncementStateData(
                 metricLabel = map["metricLabel"] as? String ?: "",
                 messageTemplate = map["messageTemplate"] as? String
                     ?: "{distance} {duration} {lapMetric} {overallMetric}",
+                autoPausedMessage = map["autoPausedMessage"] as? String ?: "",
+                autoResumedMessage = map["autoResumedMessage"] as? String ?: "",
             )
         }
     }

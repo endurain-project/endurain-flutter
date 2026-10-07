@@ -491,6 +491,38 @@ class AppLocalizationsSk extends AppLocalizations {
       'Po nahraní ukladá dokončené súbory trás do súkromného úložiska aplikácie.';
 
   @override
+  String get activityAutoPauseTitle => 'Automatická pauza';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automaticky pozastaví, keď sa prestanete pohybovať';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automaticky pozastaviť';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Nahrávanie sa automaticky pozastaví, keď sa prestanete pohybovať, a obnoví sa, keď sa znova začnete pohybovať.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Vyberte, ako dlho čakať bez pohybu pred pozastavením.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekúnd';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaticky pozastavené';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Nahrávanie pozastavené';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nahrávanie obnovené';
+
+  @override
   String get activityHistoryEmpty =>
       'V tomto zariadení nie sú uložené žiadne dokončené aktivity.';
 

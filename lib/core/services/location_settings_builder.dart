@@ -7,6 +7,7 @@ class LocationDistanceFilters {
   static const int currentPositionMeters = 10;
   static const int mapMeters = 5;
   static const int recordingMeters = 3;
+  static const int autoPauseMeters = 0;
 }
 
 /// Localized text shown in the persistent notification that keeps location

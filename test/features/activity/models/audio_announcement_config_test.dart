@@ -137,6 +137,20 @@ void main() {
       );
     });
 
+    test('master opt-out keeps transition cues disabled', () {
+      final config = AudioAnnouncementConfig.build(
+        l10n: l10n,
+        settings: AudioAnnouncementSettings.defaults(),
+        activityType: ActivityType.run,
+        measurementSystem: MeasurementSystem.metric,
+        languageTag: 'en-US',
+      );
+
+      expect(config.enabled, isFalse);
+      expect(config.autoPausedMessage, 'Recording paused');
+      expect(config.autoResumedMessage, 'Recording resumed');
+    });
+
     test('toChannelMap serializes every field', () {
       final config = AudioAnnouncementConfig.build(
         l10n: l10n,
@@ -162,6 +176,8 @@ void main() {
       expect(map['metricUnitTemplate'], isA<String>());
       expect(map['metricLabel'], l10n.activityStatPace);
       expect(map['messageTemplate'], isA<String>());
+      expect(map['autoPausedMessage'], 'Recording paused');
+      expect(map['autoResumedMessage'], 'Recording resumed');
     });
   });
 }

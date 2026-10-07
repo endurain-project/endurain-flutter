@@ -492,6 +492,38 @@ class AppLocalizationsPt extends AppLocalizations {
       'Guarda ficheiros de percurso concluídos no armazenamento privado da app depois do envio.';
 
   @override
+  String get activityAutoPauseTitle => 'Pausa automática';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Coloca em pausa automaticamente quando pára de se mover';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausar automaticamente';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Coloca a gravação em pausa quando pára de se mover e retoma assim que voltar a mover-se.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Escolha quanto tempo sem movimento esperar antes de pausar.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds segundos';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Em pausa automática';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Gravação em pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Gravação retomada';
+
+  @override
   String get activityHistoryEmpty =>
       'Não há atividades concluídas guardadas neste dispositivo.';
 

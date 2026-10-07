@@ -489,6 +489,38 @@ class AppLocalizationsUk extends AppLocalizations {
       'Зберігає завершені файли маршрутів у приватному сховищі застосунку після завантаження.';
 
   @override
+  String get activityAutoPauseTitle => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Автоматично призупиняє, коли ви припиняєте рух';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Автоматично призупиняти';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Запис автоматично призупиняється, коли ви припиняєте рух, і відновлюється, щойно ви знову починаєте рухатися.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Виберіть, скільки часу без руху чекати перед призупиненням.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds с';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Автоматично призупинено';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Запис призупинено';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Запис відновлено';
+
+  @override
   String get activityHistoryEmpty =>
       'На цьому пристрої немає збережених завершених активностей.';
 
