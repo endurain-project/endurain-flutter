@@ -5,19 +5,13 @@
 /// the neighbours of a query timestamp; the closer of the two is returned when
 /// it falls within [_freshness], else `null`.
 ///
-/// **Retention invariant — do not prune by age.** The buffer intentionally
-/// keeps every reading for the whole recording session (it is only released by
-/// [clear], called at recording start). This is required for correctness: at
-/// stop, the recording service re-drains *all* persisted track points —
-/// including points captured while the app was backgrounded, which are only
-/// stamped at finalization — and re-stamps each one from this buffer. On
-/// platforms where the recorder does not persist sensor values itself (e.g. iOS
-/// heart rate, which stays on the Dart BLE connection), this buffer is the
-/// *sole* source of those values, so dropping older readings would silently
-/// lose heart-rate/power/cadence data from long or backgrounded activities. The
-/// footprint is bounded and small: readings are only appended while actively
-/// recording, at the sensors' native notification rate (~1 Hz), and cleared
-/// when the next recording starts.
+/// The buffer keeps the recording's readings so finalization can re-stamp all
+/// persisted points, including points delivered after a background gap. On
+/// iOS, readings are persisted in the native sensor log before entering this
+/// buffer, then restored from that log on recovery and finalization. Android
+/// persists sensor values on the points themselves. Memory usage scales with
+/// recording duration; [clear] releases readings when their session is cleared
+/// or replaced.
 class SensorReadingBuffer {
   SensorReadingBuffer(this._freshness);
 

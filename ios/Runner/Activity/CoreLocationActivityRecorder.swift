@@ -16,8 +16,8 @@ import Dispatch
 /// where the foreground service takes over the BLE connection because a
 /// backgrounded Dart isolate cannot hold one reliably — iOS keeps the
 /// `universal_ble` connection alive through the `bluetooth-central` background
-/// mode. `ActivityRecordingService` therefore streams readings in and stamps
-/// them onto points itself, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
+/// mode. `ActivityRecordingService` persists readings in the native sensor log
+/// and stamps them onto points when draining, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
 /// are never sent to this recorder. Points written here leave the sensor fields
 /// nil by design; do not add a second CoreBluetooth connection here without
 /// first removing the Dart-side one, or the two will fight over the same
@@ -37,17 +37,19 @@ final class CoreLocationActivityRecorder:
     private static let maxTimeAnnouncementIntervalSeconds = 3600
 
     private let store: ActiveActivityStore
-    private let manager = CLLocationManager()
+    private let manager: CLLocationManager
     private let announcementStateCache = AnnouncementStateCache()
 
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
     private var autoPauseDetector: MovementAutoPauseDetector?
+    private var nextPointOffset = 0
     private var timeAnnouncementTimer: DispatchSourceTimer?
 
-    init(store: ActiveActivityStore) {
+    init(store: ActiveActivityStore, manager: CLLocationManager = CLLocationManager()) {
         self.store = store
+        self.manager = manager
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
@@ -61,6 +63,9 @@ final class CoreLocationActivityRecorder:
     /// Returns false and emits a typed failure when location use is denied.
     @discardableResult
     func startCollection() -> Bool {
+        if isCollecting {
+            return true
+        }
         let status = currentAuthorizationStatus()
         switch status {
         case .denied, .restricted:
@@ -105,6 +110,7 @@ final class CoreLocationActivityRecorder:
             pauseDelayMillis: Int64((session?.autoPauseDelaySeconds ?? 5)) * 1000
         ))
         autoPauseDetector?.reset(movementAtMillis: lastPointEpochMillis ?? nowMillis)
+        nextPointOffset = store.pointCount()
         manager.startUpdatingLocation()
         startTerminationRecovery()
         isCollecting = true
@@ -149,7 +155,48 @@ final class CoreLocationActivityRecorder:
         else {
             return false
         }
-        return startCollection()
+        return recoverActiveSession()?.requiresLocationMonitoring == true
+            && isCollecting
+    }
+
+    func recoverActiveSession() -> ActiveActivitySessionData? {
+        guard let session = store.loadSession() else {
+            return nil
+        }
+        if session.status == ActiveActivitySessionData.statusFailed {
+            let paused = session.copyWith(
+                status: ActiveActivitySessionData.statusPaused,
+                pausedAt: .some(IsoTime.nowUtc()),
+                endedAt: .some(nil)
+            )
+            guard store.saveSession(paused) else {
+                return session
+            }
+            stopCollection()
+            return paused
+        }
+        guard session.requiresLocationMonitoring, !isCollecting else {
+            return session
+        }
+        let recovered = SessionTiming.afterInterruption(
+            session,
+            lastPointMillis: IsoTime.toEpochMillis(store.lastPoint()?.timestamp),
+            nowMillis: Int64(Date().timeIntervalSince1970 * 1000)
+        )
+        guard store.saveSession(recovered) else {
+            return session.copyWith(status: ActiveActivitySessionData.statusFailed)
+        }
+        resumedFromPause = recovered.status == ActiveActivitySessionData.statusRecording
+            && store.lastPoint() != nil
+        if !startCollection() {
+            let paused = recovered.copyWith(
+                status: ActiveActivitySessionData.statusPaused,
+                pausedAt: .some(IsoTime.nowUtc())
+            )
+            store.saveSession(paused)
+            return paused
+        }
+        return recovered
     }
 
     func stopCollection() {
@@ -165,6 +212,14 @@ final class CoreLocationActivityRecorder:
         // `startCollection` always rebuilds a fresh detector for the next
         // active period.
         autoPauseDetector = nil
+    }
+
+    func stopAfterPersistenceFailure() {
+        stopCollection()
+        persistFailure()
+        ActivityRecorderCoordinator.shared.emitFailed(
+            ActivityRecorderCoordinator.reasonPersistenceFailed
+        )
     }
 
     /// Schedules one main-queue callback at the next elapsed-time threshold.
@@ -359,21 +414,25 @@ final class CoreLocationActivityRecorder:
         // segment ahead of an unwritten point, which recovery continues
         // cleanly.
         if isNewSegment {
-            store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex))
+            guard store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex)) else {
+                stopCollection()
+                return
+            }
         }
 
         do {
             try store.appendPoints([point])
         } catch {
-            stopCollection()
-            persistFailure()
-            ActivityRecorderCoordinator.shared.emitFailed(
-                ActivityRecorderCoordinator.reasonPersistenceFailed
-            )
+            stopAfterPersistenceFailure()
             return
         }
 
-        ActivityRecorderCoordinator.shared.emitPointBatch([point])
+        ActivityRecorderCoordinator.shared.emitPointBatch(
+            [point],
+            localSessionId: session.localSessionId,
+            pointOffset: nextPointOffset
+        )
+        nextPointOffset += 1
         announceForBatch([point], isNewSegmentFlags: [isNewSegment], session: session)
     }
 
@@ -612,14 +671,18 @@ final class CoreLocationActivityRecorder:
 
     // MARK: - Helpers
 
-    /// Persists `statusFailed` for any active session so Flutter sees a
-    /// non-recoverable state on re-attach even if the failure event was dropped
-    /// while Flutter was suspended.
+    /// Persists `statusFailed` so recovery requires explicit user action even
+    /// if the failure event was dropped while Flutter was suspended.
     private func persistFailure() {
         guard let session = store.loadSession(), session.isActive else {
             return
         }
-        store.saveSession(session.copyWith(status: ActiveActivitySessionData.statusFailed))
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        store.saveSession(session.copyWith(
+            status: ActiveActivitySessionData.statusFailed,
+            pausedAt: .some(IsoTime.nowUtc()),
+            elapsedDurationSeconds: SessionTiming.elapsedSeconds(session, referenceMillis: nowMillis)
+        ))
     }
 
     private func currentAuthorizationStatus() -> CLAuthorizationStatus {

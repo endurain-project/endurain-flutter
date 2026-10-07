@@ -14,11 +14,20 @@ import Flutter
 final class ActivityRecorderChannel:
     NSObject,
     @preconcurrency FlutterStreamHandler {
-    private let store = ActiveActivityStore.shared
-    private lazy var recorder = CoreLocationActivityRecorder(store: store)
+    private let store: ActiveActivityStore
+    private let recorder: CoreLocationActivityRecorder
 
     private var methodChannel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
+
+    init(
+        store: ActiveActivityStore = .shared,
+        recorder: CoreLocationActivityRecorder? = nil
+    ) {
+        self.store = store
+        self.recorder = recorder ?? CoreLocationActivityRecorder(store: store)
+        super.init()
+    }
 
     /// Re-arms location collection after iOS relaunched the app in the
     /// background for a significant location change.
@@ -65,7 +74,7 @@ final class ActivityRecorderChannel:
 
     // MARK: - Method dispatch
 
-    private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case ActivityRecorderChannel.methodStart:
             handleStart(call, result: result)
@@ -79,6 +88,10 @@ final class ActivityRecorderChannel:
             handleDiscard(result: result)
         case ActivityRecorderChannel.methodDrain:
             handleDrain(call, result: result)
+        case ActivityRecorderChannel.methodAppendSensorSample:
+            handleAppendSensorSample(call, result: result)
+        case ActivityRecorderChannel.methodDrainSensorSamples:
+            handleDrainSensorSamples(call, result: result)
         case ActivityRecorderChannel.methodRecover:
             handleRecover(result: result)
         case ActivityRecorderChannel.methodSpeakPreview:
@@ -143,7 +156,9 @@ final class ActivityRecorderChannel:
             autoPauseEnabled: autoPauseEnabled,
             autoPauseDelaySeconds: autoPauseDelaySeconds
         )
-        store.saveSession(session)
+        guard persistSession(session, result: result) else {
+            return
+        }
         if let announcementState = AnnouncementStateData.fromStartArguments(audioAnnouncements) {
             store.saveAnnouncementState(announcementState)
         }
@@ -154,7 +169,9 @@ final class ActivityRecorderChannel:
             // behind makes `hasRecoverableData()` true forever, so every later
             // `start` is rejected with `invalid_state` and recording stays
             // broken until the app is relaunched.
-            store.clear()
+            guard clearStore(result: result) else {
+                return
+            }
             result(FlutterError(
                 code: ActivityRecorderChannel.errorService,
                 message: "Unable to start recorder",
@@ -186,7 +203,9 @@ final class ActivityRecorderChannel:
             elapsedDurationSeconds: session.elapsedSecondsAt(nowMillis),
             pausedAutomatically: false
         )
-        store.saveSession(updated)
+        guard persistSession(updated, result: result) else {
+            return
+        }
         recorder.stopCollection()
         ActivityRecorderCoordinator.shared.emitSession(
             type: ActivityRecorderCoordinator.eventPaused,
@@ -211,10 +230,17 @@ final class ActivityRecorderChannel:
             pausedAt: .some(nil),
             pausedAutomatically: false
         )
-        store.saveSession(updated)
+        guard persistSession(updated, result: result) else {
+            return
+        }
         recorder.markResumed()
         if !recorder.startCollection() {
-            store.saveSession(updated.copyWith(status: ActiveActivitySessionData.statusFailed))
+            guard persistSession(
+                updated.copyWith(status: ActiveActivitySessionData.statusFailed),
+                result: result
+            ) else {
+                return
+            }
             result(FlutterError(
                 code: ActivityRecorderChannel.errorService,
                 message: "Unable to resume recorder",
@@ -242,7 +268,9 @@ final class ActivityRecorderChannel:
             endedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
             elapsedDurationSeconds: session.elapsedSecondsAt(nowMillis)
         )
-        store.saveSession(updated)
+        guard persistSession(updated, result: result) else {
+            return
+        }
         ActivityRecorderCoordinator.shared.emitSession(
             type: ActivityRecorderCoordinator.eventStopped,
             session: updated
@@ -250,11 +278,41 @@ final class ActivityRecorderChannel:
         result(nil)
     }
 
+    private func persistSession(
+        _ session: ActiveActivitySessionData,
+        result: FlutterResult
+    ) -> Bool {
+        guard store.saveSession(session) else {
+            recorder.stopCollection()
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorStoreWrite,
+                message: "Unable to persist recording state",
+                details: nil
+            ))
+            return false
+        }
+        return true
+    }
+
     private func handleDiscard(result: @escaping FlutterResult) {
         recorder.stopCollection()
-        store.clear()
+        guard clearStore(result: result) else {
+            return
+        }
         ActivityRecorderCoordinator.shared.emitRecoverableStateChanged(nil)
         result(nil)
+    }
+
+    private func clearStore(result: FlutterResult) -> Bool {
+        guard store.clear() else {
+            result(FlutterError(
+                code: Self.errorStoreWrite,
+                message: "Unable to remove recording data",
+                details: nil
+            ))
+            return false
+        }
+        return true
     }
 
     private func handleDrain(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -273,27 +331,42 @@ final class ActivityRecorderChannel:
     }
 
     private func handleRecover(result: @escaping FlutterResult) {
-        guard let session = store.loadSession() else {
+        result(recorder.recoverActiveSession()?.toMap())
+    }
+
+    private func handleAppendSensorSample(_ call: FlutterMethodCall, result: FlutterResult) {
+        let arguments = call.arguments as? [String: Any]
+        guard isSupportedVersion(arguments),
+              let localSessionId = arguments?["localSessionId"] as? String,
+              let payload = arguments?["sample"] as? [String: Any],
+              let sample = RecordedSensorSampleData.fromJson(payload) else {
+            result(FlutterError(code: Self.errorArgs, message: "Invalid sensor sample", details: nil))
+            return
+        }
+        do {
+            try store.appendSensorSample(sample, localSessionId: localSessionId)
             result(nil)
+        } catch ActiveActivityStore.SensorError.invalidSession {
+            result(FlutterError(code: Self.errorState, message: "Recording changed", details: nil))
+        } catch {
+            recorder.stopAfterPersistenceFailure()
+            result(FlutterError(code: Self.errorStoreWrite, message: "Unable to persist sensor sample", details: nil))
+        }
+    }
+
+    private func handleDrainSensorSamples(_ call: FlutterMethodCall, result: FlutterResult) {
+        let arguments = call.arguments as? [String: Any]
+        guard let localSessionId = arguments?["localSessionId"] as? String else {
+            result(FlutterError(code: Self.errorArgs, message: "Missing localSessionId", details: nil))
             return
         }
-        guard session.status == ActiveActivitySessionData.statusRecording else {
-            result(session.toMap())
-            return
+        do {
+            result(try store.readSensorSamples(localSessionId: localSessionId).map { $0.toMap() })
+        } catch ActiveActivityStore.SensorError.invalidSession {
+            result(FlutterError(code: Self.errorState, message: "Recording changed", details: nil))
+        } catch {
+            result(FlutterError(code: Self.errorStore, message: "Unable to read sensor samples", details: nil))
         }
-        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
-        let recoveryMillis = store.lastPoint().flatMap { IsoTime.toEpochMillis($0.timestamp) }
-            ?? nowMillis
-        let paused = session.copyWith(
-            status: ActiveActivitySessionData.statusPaused,
-            pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            elapsedDurationSeconds: session.elapsedSecondsAt(recoveryMillis)
-        )
-        // Save the pause before stopping Core Location so an in-flight update
-        // is rejected by the recorder's recording-state guard.
-        store.saveSession(paused)
-        recorder.stopCollection()
-        result(paused.toMap())
     }
 
     private func isSupportedVersion(_ arguments: [String: Any]?) -> Bool {
@@ -336,7 +409,7 @@ final class ActivityRecorderChannel:
         result(nil)
     }
 
-    static let payloadVersion = 1
+    static let payloadVersion = 2
 
     static let methodChannelName = "endurain/activity_recorder/methods"
     static let eventChannelName = "endurain/activity_recorder/events"
@@ -347,6 +420,8 @@ final class ActivityRecorderChannel:
     static let methodStop = "stop"
     static let methodDiscard = "discard"
     static let methodDrain = "drain"
+    static let methodAppendSensorSample = "appendSensorSample"
+    static let methodDrainSensorSamples = "drainSensorSamples"
     static let methodRecover = "recover"
     static let methodSpeakPreview = "speakAnnouncementPreview"
 
@@ -355,4 +430,5 @@ final class ActivityRecorderChannel:
     static let errorService = "service_start_failed"
     static let errorVersion = "unsupported_version"
     static let errorStore = "store_read_failed"
+    static let errorStoreWrite = "store_write_failed"
 }

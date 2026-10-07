@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
@@ -305,10 +303,9 @@ void main() {
       platform.addPosition(testPosition(latitude: 41.11, longitude: -8.61));
       await tester.pump();
 
-      unawaited(activityController.pause());
-      await tester.pump();
-      unawaited(activityController.resume());
-      await tester.pump();
+      expect(activityController.state.points, hasLength(2));
+      await _completeRecorderCommand(tester, activityController.pause);
+      await _completeRecorderCommand(tester, activityController.resume);
 
       platform.addPosition(testPosition(latitude: 41.30, longitude: -8.80));
       await tester.pump();
@@ -568,6 +565,21 @@ class _MapTestApp extends TestMaterialApp {
 
 Future<void> _pumpMapFrame(WidgetTester tester) async {
   await tester.pump();
+  await tester.pump();
+}
+
+Future<void> _completeRecorderCommand(
+  WidgetTester tester,
+  Future<void> Function() command,
+) async {
+  var completed = false;
+  final result = command().whenComplete(() => completed = true);
+  for (var frame = 0; frame < 20 && !completed; frame++) {
+    await tester.pump();
+    await tester.runAsync(() async {});
+  }
+  expect(completed, isTrue, reason: 'Recorder command did not complete.');
+  await result;
   await tester.pump();
 }
 

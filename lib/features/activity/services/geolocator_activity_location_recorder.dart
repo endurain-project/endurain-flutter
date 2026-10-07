@@ -48,6 +48,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   bool _resumedFromPause = false;
   bool _disposed = false;
   MovementAutoPauseDetector? _autoPauseDetector;
+  int _nextPointOffset = 0;
 
   @override
   Stream<ActivityRecorderEvent> get events => _eventController.stream;
@@ -78,6 +79,7 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     _resumedFromPause = false;
     _autoPauseDetector = MovementAutoPauseDetector(config: autoPauseConfig)
       ..reset(movementAt: request.startedAt);
+    _nextPointOffset = 0;
     await _store.saveSession(session);
     _emit(ActivityRecorderEvent.started(session));
     _diagnostics.recordBreadcrumbSync(
@@ -192,12 +194,12 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   @override
   Future<ActiveActivitySession?> recoverActiveSession() async {
     await _waitForPendingPositions();
-    final session = await _store.loadSession();
+    var session = await _store.loadSession();
     _session = session;
     if (session != null) {
-      _resumedFromPause = false;
       final points = await _store.readPoints();
       _lastPoint = points.isEmpty ? null : points.last;
+      _nextPointOffset = points.length;
       // Rebuild the detector from the session's own snapshotted config (not
       // whatever the current app preference is) so a recovered recording keeps
       // behaving the way it did when it started.
@@ -207,7 +209,23 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
           pauseDelay: Duration(seconds: session.autoPauseDelaySeconds),
         ),
       )..reset(movementAt: _lastPoint?.timestamp ?? _now());
-      if (session.status == ActiveActivityStatus.paused &&
+      if (session.status == ActiveActivityStatus.failed ||
+          (session.status == ActiveActivityStatus.recording &&
+              _positionSubscription == null)) {
+        final reference =
+            _lastPoint?.timestamp ?? session.resumedAt ?? session.startedAt;
+        session = session.copyWith(
+          status: ActiveActivityStatus.paused,
+          pausedAt: _now(),
+          endedAt: null,
+          pausedAutomatically: false,
+          elapsedDurationSeconds: session.status == ActiveActivityStatus.failed
+              ? session.elapsedDurationSeconds
+              : _elapsedDurationSeconds(session, reference),
+        );
+        _session = session;
+        await _store.saveSession(session);
+      } else if (session.status == ActiveActivityStatus.paused &&
           session.pausedAutomatically) {
         _startStream();
       }
@@ -361,7 +379,14 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       await _store.saveSession(updated);
     }
     _lastPoint = point;
-    _emit(ActivityRecorderEvent.pointBatchAvailable([point]));
+    _emit(
+      ActivityRecorderEvent.pointBatchAvailable(
+        [point],
+        localSessionId: session.localSessionId,
+        pointOffset: _nextPointOffset,
+      ),
+    );
+    _nextPointOffset += 1;
   }
 
   /// Feeds a position received while auto-paused. The recorder keeps

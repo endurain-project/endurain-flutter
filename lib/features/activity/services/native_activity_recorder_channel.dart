@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:flutter/services.dart';
 
@@ -13,7 +14,7 @@ class NativeActivityRecorderChannelContract {
 
   /// Schema version for method arguments and event payloads. Native code must
   /// reject or migrate mismatched versions.
-  static const int payloadVersion = 1;
+  static const int payloadVersion = 2;
 
   static const String methodChannelName = 'endurain/activity_recorder/methods';
   static const String eventChannelName = 'endurain/activity_recorder/events';
@@ -25,6 +26,8 @@ class NativeActivityRecorderChannelContract {
   static const String stop = 'stop';
   static const String discard = 'discard';
   static const String drain = 'drain';
+  static const String appendSensorSample = 'appendSensorSample';
+  static const String drainSensorSamples = 'drainSensorSamples';
   static const String recover = 'recover';
 
   /// Speaks one sample announcement. Independent of the recorder lifecycle:
@@ -36,6 +39,8 @@ class NativeActivityRecorderChannelContract {
   static const String eventSession = 'session';
   static const String eventPoints = 'points';
   static const String eventReason = 'reason';
+  static const String eventLocalSessionId = 'localSessionId';
+  static const String eventPointOffset = 'pointOffset';
 
   // Event type values.
   static const String eventStarted = 'started';
@@ -56,8 +61,8 @@ class NativeActivityRecorderChannelContract {
   static const String errorInvalidArguments = 'invalid_arguments';
 
   /// The native store still holds a recoverable session, so the requested
-  /// transition is not legal. Recoverable: discarding the stale session and
-  /// retrying is the correct response.
+  /// transition is not legal. Recover it before attempting another start;
+  /// never discard an existing recording merely because this error occurred.
   static const String errorInvalidState = 'invalid_state';
 
   /// The native recorder/foreground service could not be started.
@@ -68,6 +73,7 @@ class NativeActivityRecorderChannelContract {
 
   /// The durable point store could not be read.
   static const String errorStoreReadFailed = 'store_read_failed';
+  static const String errorStoreWriteFailed = 'store_write_failed';
 }
 
 /// [ActivityLocationRecorder] backed by native platform channels.
@@ -75,7 +81,8 @@ class NativeActivityRecorderChannelContract {
 /// This class isolates all platform-channel concerns from controllers and
 /// widgets. The native side owns background collection and durable persistence;
 /// Dart consumes versioned method results and event payloads only.
-class NativeActivityRecorderChannel implements ActivityLocationRecorder {
+class NativeActivityRecorderChannel
+    implements ActivityLocationRecorder, ActivitySensorRecorder {
   NativeActivityRecorderChannel({
     MethodChannel? methodChannel,
     EventChannel? eventChannel,
@@ -173,6 +180,39 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
   }
 
   @override
+  Future<void> appendSensorSample({
+    required String localSessionId,
+    required RecordedSensorSample sample,
+  }) => _methodChannel.invokeMethod<void>(
+    NativeActivityRecorderChannelContract.appendSensorSample,
+    {
+      'version': NativeActivityRecorderChannelContract.payloadVersion,
+      'localSessionId': localSessionId,
+      'sample': sample.toJson(),
+    },
+  );
+
+  @override
+  Future<List<RecordedSensorSample>> drainSensorSamples({
+    required String localSessionId,
+  }) async {
+    final result = await _methodChannel.invokeMethod<List<Object?>>(
+      NativeActivityRecorderChannelContract.drainSensorSamples,
+      {'localSessionId': localSessionId},
+    );
+    if (result == null) {
+      throw const FormatException('Missing recorded sensor samples.');
+    }
+    return [
+      for (final entry in result)
+        if (entry is Map)
+          RecordedSensorSample.fromJson(entry)
+        else
+          throw const FormatException('Invalid recorded sensor sample.'),
+    ];
+  }
+
+  @override
   Future<ActiveActivitySession?> recoverActiveSession() async {
     final result = await _methodChannel.invokeMethod<Map<Object?, Object?>>(
       NativeActivityRecorderChannelContract.recover,
@@ -219,10 +259,22 @@ class NativeActivityRecorderChannel implements ActivityLocationRecorder {
       case NativeActivityRecorderChannelContract.eventStopped:
         return session == null ? null : ActivityRecorderEvent.stopped(session);
       case NativeActivityRecorderChannelContract.eventPointBatchAvailable:
+        final localSessionId =
+            payload[NativeActivityRecorderChannelContract.eventLocalSessionId];
+        final pointOffset =
+            payload[NativeActivityRecorderChannelContract.eventPointOffset];
+        if (localSessionId is! String ||
+            localSessionId.isEmpty ||
+            pointOffset is! int ||
+            pointOffset < 0) {
+          return null;
+        }
         return ActivityRecorderEvent.pointBatchAvailable(
           _parsePoints(
             payload[NativeActivityRecorderChannelContract.eventPoints],
           ),
+          localSessionId: localSessionId,
+          pointOffset: pointOffset,
         );
       case NativeActivityRecorderChannelContract.eventRecoverableStateChanged:
         return ActivityRecorderEvent.recoverableStateChanged(session);

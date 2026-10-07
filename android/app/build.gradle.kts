@@ -89,10 +89,25 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 flutter {
     source = "../.."
+}
+
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
+        tasks.matching {
+            it.name == "package${variantName}UnitTestForUnitTest"
+        }.configureEach {
+            dependsOn("copyFlutterAssets$variantName")
+        }
+    }
 }
 
 dependencies {
@@ -107,6 +122,7 @@ dependencies {
     // Plugin orders it ahead of that stub jar for `testDebugUnitTest`.
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
+    testImplementation("org.robolectric:robolectric:4.17")
 }
 
 kotlin {

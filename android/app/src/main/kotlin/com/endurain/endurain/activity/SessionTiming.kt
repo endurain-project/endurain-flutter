@@ -17,12 +17,31 @@ object SessionTiming {
         session: ActiveActivitySessionData,
         referenceMillis: Long,
     ): Int {
-        if (session.status == ActiveActivitySessionData.STATUS_PAUSED) {
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
             return session.elapsedDurationSeconds
         }
         val anchor = IsoTime.toEpochMillis(session.resumedAt ?: session.startedAt)
             ?: return session.elapsedDurationSeconds
         val segmentSeconds = ((referenceMillis - anchor) / 1000L).toInt()
         return session.elapsedDurationSeconds + max(0, segmentSeconds)
+    }
+
+    fun afterInterruption(
+        session: ActiveActivitySessionData,
+        lastPointMillis: Long?,
+        nowMillis: Long,
+    ): ActiveActivitySessionData {
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return session
+        }
+        val referenceMillis = lastPointMillis
+            ?: IsoTime.toEpochMillis(session.resumedAt ?: session.startedAt)
+            ?: nowMillis
+        return session.copy(
+            resumedAt = IsoTime.format(java.util.Date(nowMillis)),
+            pausedAt = null,
+            endedAt = null,
+            elapsedDurationSeconds = elapsedSeconds(session, referenceMillis),
+        )
     }
 }
