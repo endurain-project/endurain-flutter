@@ -31,12 +31,11 @@ typedef ActivityFileUploader = Future<http.StreamedResponse> Function(
 ///
 /// In production this wraps `ApiClient.getJsonObject` (token-refreshing,
 /// profile-scoped). Required to follow a `202 Accepted` upload to completion.
-typedef IngestionJobFetcher =
-    Future<Map<String, dynamic>> Function(
-      String endpoint, {
-      String? expectedOrigin,
-      String? expectedProfileId,
-    });
+typedef IngestionJobFetcher = Future<Map<String, dynamic>> Function(
+  String endpoint, {
+  String? expectedOrigin,
+  String? expectedProfileId,
+});
 
 /// Controls how long [ActivityUploadService] waits for a `202 Accepted`
 /// upload's ingestion job to finish before giving up.
