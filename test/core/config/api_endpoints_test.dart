@@ -48,7 +48,7 @@ void main() {
       test('activityUploadEndpoint', () {
         expect(
           endpoints.activityUploadEndpoint,
-          '/api/v1/activities/create/upload',
+          '/api/v1/activities/upload',
         );
       });
     });
@@ -65,7 +65,7 @@ void main() {
       });
 
       test('activityUploadEndpoint uses v2 base', () {
-        expect(v2.activityUploadEndpoint, '/api/v2/activities/create/upload');
+        expect(v2.activityUploadEndpoint, '/api/v2/activities/upload');
       });
     });
   });

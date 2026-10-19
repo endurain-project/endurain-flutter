@@ -56,6 +56,8 @@ class ApiResponse {
     throw const AppException(AppErrorCode.unexpectedResponseFormat);
   }
 
+  /// Extracts a bounded error message. Supports RFC 9457 problem documents
+  /// (`detail`, then `title`) plus legacy `message`/`error` bodies.
   static String? errorDetail(http.Response response) {
     if (response.body.trim().isEmpty) {
       return null;
@@ -66,6 +68,7 @@ class ApiResponse {
       if (data is Map) {
         final raw =
             data['detail']?.toString() ??
+            data['title']?.toString() ??
             data['message']?.toString() ??
             data['error']?.toString();
         return _bounded(raw);
