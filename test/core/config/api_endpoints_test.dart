@@ -46,10 +46,7 @@ void main() {
       });
 
       test('activityUploadEndpoint', () {
-        expect(
-          endpoints.activityUploadEndpoint,
-          '/api/v1/activities/upload',
-        );
+        expect(endpoints.activityUploadEndpoint, '/api/v1/activities/upload');
       });
     });
 
