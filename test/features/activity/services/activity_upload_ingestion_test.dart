@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -111,6 +112,72 @@ void main() {
       expect(fetches, 3);
     });
 
+    test('keeps polling through a transient status check error', () async {
+      var fetches = 0;
+      final service = _service(
+        uploadBody: {'id': 'job-1'},
+        jobs: const [],
+        fetch: (_) async {
+          fetches++;
+          if (fetches == 1) {
+            throw const AppException(
+              AppErrorCode.activityUploadFailed,
+              statusCode: 503,
+            );
+          }
+          if (fetches == 2) {
+            throw const SocketException('offline');
+          }
+          return {'id': 'job-1', 'completed_at': '2026-10-19T21:14:33Z'};
+        },
+      );
+
+      await service.uploadGpx(_request());
+
+      expect(fetches, 3);
+    });
+
+    test('stops on a permanent status check error', () async {
+      var fetches = 0;
+      final service = _service(
+        uploadBody: {'id': 'job-1'},
+        jobs: const [],
+        fetch: (_) async {
+          fetches++;
+          throw const AppException(
+            AppErrorCode.activityUploadFailed,
+            statusCode: 404,
+          );
+        },
+      );
+
+      await expectLater(
+        service.uploadGpx(_request()),
+        throwsA(isA<AppException>().having((e) => e.statusCode, 'status', 404)),
+      );
+      expect(fetches, 1);
+    });
+
+    test('stops when the session expired during a status check', () async {
+      final service = _service(
+        uploadBody: {'id': 'job-1'},
+        jobs: const [],
+        fetch: (_) async =>
+            throw const AppException(AppErrorCode.sessionExpired),
+      );
+
+      await expectLater(
+        service.uploadGpx(_request()),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.sessionExpired,
+          ),
+        ),
+      );
+    });
+
     test('does not poll when the 202 body has no job id', () async {
       var fetches = 0;
       final service = _service(
@@ -146,6 +213,7 @@ ActivityUploadService _service({
   int uploadStatus = 202,
   int maxPolls = 10,
   void Function(String endpoint)? onFetch,
+  Future<Map<String, dynamic>> Function(String endpoint)? fetch,
 }) {
   var poll = 0;
   return ActivityUploadService(
@@ -164,6 +232,9 @@ ActivityUploadService _service({
         },
     fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) async {
       onFetch?.call(endpoint);
+      if (fetch != null) {
+        return fetch(endpoint);
+      }
       final index = poll < jobs.length ? poll : jobs.length - 1;
       poll++;
       return jobs[index];

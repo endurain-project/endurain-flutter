@@ -35,6 +35,7 @@ void main() {
 
       expect(error.code, AppErrorCode.loginFailed);
       expect(error.details, 'Invalid login');
+      expect(error.statusCode, 400);
     });
 
     test('uses plain body as error detail when response is not JSON', () {

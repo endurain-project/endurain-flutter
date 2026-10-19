@@ -239,9 +239,17 @@ class ActivityUploadService {
           expectedOrigin: expectedOrigin,
           expectedProfileId: expectedProfileId,
         );
-      } on AppException {
+      } on AppException catch (error) {
+        // A transient status check failure must not abandon a job that may
+        // still succeed; auth and permanent (4xx) failures end the attempt.
+        if (_isTransientPollError(error)) {
+          continue;
+        }
         rethrow;
       } catch (error) {
+        if (_isTransientIoError(error)) {
+          continue;
+        }
         throw AppException(AppErrorCode.activityUploadFailed, cause: error);
       }
 
@@ -263,6 +271,19 @@ class ActivityUploadService {
       AppErrorCode.activityUploadFailed,
       cause: TimeoutException('Ingestion job $jobId did not finish'),
     );
+  }
+
+  /// Whether a failed job status check is worth polling through: a request
+  /// timeout, a recognized I/O failure, or a 5xx response.
+  static bool _isTransientPollError(AppException error) {
+    if (error.code == AppErrorCode.requestTimeout) {
+      return true;
+    }
+    if (error.cause case final cause?) {
+      return _isTransientIoError(cause);
+    }
+    final status = error.statusCode;
+    return status != null && status >= 500;
   }
 
   static const _failedStatuses = {'failed', 'error', 'cancelled', 'canceled'};

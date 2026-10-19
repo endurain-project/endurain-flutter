@@ -26,7 +26,11 @@ class ApiResponse {
   }
 
   static AppException failure(http.Response response, AppErrorCode code) {
-    return AppException(code, details: errorDetail(response));
+    return AppException(
+      code,
+      details: errorDetail(response),
+      statusCode: response.statusCode,
+    );
   }
 
   static String requiredString(Map<String, dynamic> data, String key) {
