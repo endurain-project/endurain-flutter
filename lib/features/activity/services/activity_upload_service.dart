@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:endurain/core/config/api_endpoints.dart';
@@ -26,6 +27,36 @@ typedef ActivityFileUploader = Future<http.StreamedResponse> Function(
   String? expectedProfileId,
 });
 
+/// Fetches the ingestion job at [endpoint] and returns its decoded JSON.
+///
+/// In production this wraps `ApiClient.getJsonObject` (token-refreshing,
+/// profile-scoped). Required to follow a `202 Accepted` upload to completion.
+typedef IngestionJobFetcher =
+    Future<Map<String, dynamic>> Function(
+      String endpoint, {
+      String? expectedOrigin,
+      String? expectedProfileId,
+    });
+
+/// Controls how long [ActivityUploadService] waits for a `202 Accepted`
+/// upload's ingestion job to finish before giving up.
+///
+/// A job still unfinished after [maxPolls] checks is treated as a transient
+/// failure: the record stays retryable and the retry replays the upload with
+/// the same idempotency key, which the server de-duplicates.
+class IngestionPollPolicy {
+  const IngestionPollPolicy({
+    this.maxPolls = 30,
+    Future<void> Function(int poll)? delay,
+  }) : delay = delay ?? _defaultDelay;
+
+  final int maxPolls;
+  final Future<void> Function(int poll) delay;
+
+  static Future<void> _defaultDelay(int poll) =>
+      Future.delayed(const Duration(seconds: 2));
+}
+
 /// Controls how many times [ActivityUploadService.performUploadAttempt]
 /// retries transient failures and how long it waits between attempts.
 ///
@@ -48,7 +79,14 @@ class ActivityUploadRetryPolicy {
 }
 
 class ActivityUploadConfig {
-  const ActivityUploadConfig({required this.endpoint, required this.fieldName});
+  const ActivityUploadConfig({
+    required this.endpoint,
+    required this.fieldName,
+    this.ingestionJobPath = _defaultJobPath,
+  });
+
+  static String _defaultJobPath(String jobId) =>
+      '/api/v1/activities/ingestion-jobs/${Uri.encodeComponent(jobId)}';
 
   /// Build from [ApiEndpoints] so a custom `AppConfig.apiBasePath` is
   /// reflected in the upload endpoint path.
@@ -56,11 +94,17 @@ class ActivityUploadConfig {
     return ActivityUploadConfig(
       endpoint: endpoints.activityUploadEndpoint,
       fieldName: ApiConstants.activityUploadFieldName,
+      ingestionJobPath: endpoints.activityIngestionJobEndpoint,
     );
   }
 
   final String endpoint;
   final String fieldName;
+
+  /// Builds the status path for an ingestion job id.
+  final String Function(String jobId) ingestionJobPath;
+
+  String ingestionJobEndpoint(String jobId) => ingestionJobPath(jobId);
 
   bool get isConfigured {
     return endpoint.trim().isNotEmpty && fieldName.trim().isNotEmpty;
@@ -91,13 +135,19 @@ class ActivityUploadService {
     ActivityUploadConfig? config,
     ActivityFileUploader? uploadFile,
     ActivityUploadRetryPolicy? retryPolicy,
+    IngestionJobFetcher? fetchIngestionJob,
+    IngestionPollPolicy? pollPolicy,
   }) : _config = config,
        _uploadFile = uploadFile,
-       _retryPolicy = retryPolicy ?? const ActivityUploadRetryPolicy();
+       _retryPolicy = retryPolicy ?? const ActivityUploadRetryPolicy(),
+       _fetchIngestionJob = fetchIngestionJob,
+       _pollPolicy = pollPolicy ?? const IngestionPollPolicy();
 
   final ActivityUploadConfig? _config;
   final ActivityFileUploader? _uploadFile;
   final ActivityUploadRetryPolicy _retryPolicy;
+  final IngestionJobFetcher? _fetchIngestionJob;
+  final IngestionPollPolicy _pollPolicy;
   final Map<String, Future<LocalActivityRecord>> _inFlightAttempts = {};
 
   bool get isConfigured =>
@@ -127,6 +177,14 @@ class ActivityUploadService {
     }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      final jobId = await _readJobId(response);
+      if (jobId != null && _fetchIngestionJob != null) {
+        await _awaitIngestion(
+          jobId,
+          expectedOrigin: request.expectedOrigin,
+          expectedProfileId: request.expectedProfileId,
+        );
+      }
       return;
     }
     if (response.statusCode == 401) {
@@ -137,6 +195,109 @@ class ActivityUploadService {
       AppErrorCode.activityUploadFailed,
       details: 'HTTP ${response.statusCode}',
     );
+  }
+
+  /// Reads the ingestion job id from a `202 Accepted` body.
+  ///
+  /// Returns `null` for any other response or a body without a string `id`
+  /// (servers that import inline), which callers treat as already complete.
+  static Future<String?> _readJobId(http.StreamedResponse response) async {
+    if (response.statusCode != 202) {
+      return null;
+    }
+    try {
+      final body = json.decode(await response.stream.bytesToString());
+      final id = body is Map ? body['id'] : null;
+      return id is String && id.isNotEmpty ? id : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Polls the ingestion job until it finishes.
+  ///
+  /// Returns on success. Throws [AppErrorCode.activityUploadFailed] with
+  /// `job: <error_code>` details when the job fails (permanent, not retried
+  /// automatically), or with a [TimeoutException] cause when it is still
+  /// running after the poll budget (transient, retried automatically).
+  Future<void> _awaitIngestion(
+    String jobId, {
+    String? expectedOrigin,
+    String? expectedProfileId,
+  }) async {
+    final fetch = _fetchIngestionJob!;
+    final endpoint = _config!.ingestionJobEndpoint(jobId);
+    final polls = _pollPolicy.maxPolls.clamp(1, 1 << 20);
+
+    for (var poll = 0; poll < polls; poll++) {
+      if (poll > 0) {
+        await _pollPolicy.delay(poll);
+      }
+      final Map<String, dynamic> job;
+      try {
+        job = await fetch(
+          endpoint,
+          expectedOrigin: expectedOrigin,
+          expectedProfileId: expectedProfileId,
+        );
+      } on AppException {
+        rethrow;
+      } catch (error) {
+        throw AppException(AppErrorCode.activityUploadFailed, cause: error);
+      }
+
+      switch (_classifyJob(job)) {
+        case _JobOutcome.succeeded:
+          return;
+        case _JobOutcome.failed:
+          final code = job['error_code'];
+          throw AppException(
+            AppErrorCode.activityUploadFailed,
+            details: 'job: ${code is String ? code : job['status']}',
+          );
+        case _JobOutcome.running:
+          continue;
+      }
+    }
+
+    throw AppException(
+      AppErrorCode.activityUploadFailed,
+      cause: TimeoutException('Ingestion job $jobId did not finish'),
+    );
+  }
+
+  static const _failedStatuses = {'failed', 'error', 'cancelled', 'canceled'};
+  static const _succeededStatuses = {
+    'completed',
+    'complete',
+    'succeeded',
+    'success',
+    'done',
+    'finished',
+  };
+
+  /// A job is finished once it reports a terminal status or a `completed_at`
+  /// time; it succeeded only if nothing failed and no `error_code` is set.
+  static _JobOutcome _classifyJob(Map<String, dynamic> job) {
+    final status = job['status'] is String
+        ? (job['status'] as String).toLowerCase()
+        : '';
+    final failedFiles = job['files_failed'];
+    final hasFailure =
+        job['error_code'] != null ||
+        (failedFiles is num && failedFiles > 0) ||
+        _failedStatuses.contains(status);
+    if (hasFailure) {
+      final finished =
+          job['completed_at'] != null ||
+          _failedStatuses.contains(status) ||
+          job['error_code'] != null;
+      return finished ? _JobOutcome.failed : _JobOutcome.running;
+    }
+    if (_succeededStatuses.contains(status) || job['completed_at'] != null) {
+      return _JobOutcome.succeeded;
+    }
+    return _JobOutcome.running;
   }
 
   /// Performs a complete upload workflow for [record]:
@@ -382,3 +543,5 @@ class ActivityUploadService {
     return updated;
   }
 }
+
+enum _JobOutcome { succeeded, failed, running }

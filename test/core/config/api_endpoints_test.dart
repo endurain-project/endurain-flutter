@@ -48,6 +48,13 @@ void main() {
       test('activityUploadEndpoint', () {
         expect(endpoints.activityUploadEndpoint, '/api/v1/activities/upload');
       });
+
+      test('activityIngestionJobEndpoint encodes the job id', () {
+        expect(
+          endpoints.activityIngestionJobEndpoint('a b/1'),
+          '/api/v1/activities/ingestion-jobs/a%20b%2F1',
+        );
+      });
     });
 
     group('custom /api/v2 base', () {
