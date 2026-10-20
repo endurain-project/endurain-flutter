@@ -39,6 +39,26 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Tiedostomuotoa ei tueta';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Tiedosto on vioittunut tai sitä ei voitu lukea';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Tiedostosta ei löytynyt aktiviteetteja';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Aktiviteetin tuonnissa tapahtui virhe. Yritä uudelleen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktiviteettien tarjoaja ei ole tällä hetkellä saatavilla. Yritä myöhemmin uudelleen.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Aktiviteettien lataamista ei ole vielä määritetty';
 

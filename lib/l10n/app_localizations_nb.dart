@@ -39,6 +39,26 @@ class AppLocalizationsNb extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Filformatet støttes ikke';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Filen er ødelagt eller kunne ikke leses';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Fant ingen aktiviteter i filen';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Noe gikk galt under importen av aktiviteten. Prøv igjen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktivitetsleverandøren er ikke tilgjengelig akkurat nå. Prøv igjen senere.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Opplasting av aktiviteter er ikke konfigurert ennå';
 

@@ -35,10 +35,17 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
     AppErrorCode.activityLocalRecordInvalid =>
       l10n.errorActivityLocalRecordInvalid,
     AppErrorCode.activityLocalSaveFailed => l10n.errorActivityLocalSaveFailed,
-    AppErrorCode.activityUploadFailed =>
-      details == null
-          ? l10n.errorActivityUploadFailed
-          : l10n.errorActivityUploadFailedWithDetails(details),
+    AppErrorCode.activityUploadFailed => switch (details) {
+      null => l10n.errorActivityUploadFailed,
+      // Ingestion job `error_code` values, reported by the server on a
+      // failed upload.
+      'unsupported_format' => l10n.errorActivityIngestionUnsupportedFormat,
+      'invalid_file' => l10n.errorActivityIngestionInvalidFile,
+      'no_activities_found' => l10n.errorActivityIngestionNoActivitiesFound,
+      'processing_failed' => l10n.errorActivityIngestionProcessingFailed,
+      'provider_unavailable' => l10n.errorActivityIngestionProviderUnavailable,
+      _ => l10n.errorActivityUploadFailedWithDetails(details),
+    },
     AppErrorCode.activityUploadNotConfigured =>
       l10n.errorActivityUploadNotConfigured,
     AppErrorCode.fetchProvidersFailed =>

@@ -26,7 +26,11 @@ class ApiResponse {
   }
 
   static AppException failure(http.Response response, AppErrorCode code) {
-    return AppException(code, details: errorDetail(response));
+    return AppException(
+      code,
+      details: errorDetail(response),
+      statusCode: response.statusCode,
+    );
   }
 
   static String requiredString(Map<String, dynamic> data, String key) {
@@ -56,6 +60,11 @@ class ApiResponse {
     throw const AppException(AppErrorCode.unexpectedResponseFormat);
   }
 
+  /// Error fields in priority order: RFC 9457 problem documents (`detail`,
+  /// then `title`) followed by legacy `message`/`error` bodies.
+  static const _errorKeys = ['detail', 'title', 'message', 'error'];
+
+  /// Extracts a bounded error message from the first nonblank error field.
   static String? errorDetail(http.Response response) {
     if (response.body.trim().isEmpty) {
       return null;
@@ -64,11 +73,13 @@ class ApiResponse {
     try {
       final data = json.decode(response.body);
       if (data is Map) {
-        final raw =
-            data['detail']?.toString() ??
-            data['message']?.toString() ??
-            data['error']?.toString();
-        return _bounded(raw);
+        for (final key in _errorKeys) {
+          final value = _bounded(data[key]?.toString());
+          if (value != null) {
+            return value;
+          }
+        }
+        return null;
       }
     } catch (_) {
       // Body is not JSON — return a bounded, sanitized snippet so a

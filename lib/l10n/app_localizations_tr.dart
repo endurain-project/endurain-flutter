@@ -39,6 +39,25 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Dosya biçimi desteklenmiyor';
+
+  @override
+  String get errorActivityIngestionInvalidFile => 'Dosya bozuk veya okunamadı';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Dosyada hiç etkinlik bulunamadı';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Etkinlik içe aktarılırken bir sorun oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Etkinlik sağlayıcısı şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Etkinlik yükleme henüz yapılandırılmadı';
 

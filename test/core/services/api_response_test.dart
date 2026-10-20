@@ -35,6 +35,7 @@ void main() {
 
       expect(error.code, AppErrorCode.loginFailed);
       expect(error.details, 'Invalid login');
+      expect(error.statusCode, 400);
     });
 
     test('uses plain body as error detail when response is not JSON', () {
@@ -94,6 +95,22 @@ void main() {
           400,
         );
         expect(ApiResponse.errorDetail(response), 'from detail');
+      });
+
+      test('falls back to RFC 9457 "title" when "detail" is absent', () {
+        final response = http.Response(
+          '{"type":"about:blank","title":"Not Found","status":404}',
+          404,
+        );
+        expect(ApiResponse.errorDetail(response), 'Not Found');
+      });
+
+      test('falls back to "title" when "detail" is blank', () {
+        final response = http.Response(
+          '{"detail":"  ","title":"Not Found","status":404}',
+          404,
+        );
+        expect(ApiResponse.errorDetail(response), 'Not Found');
       });
 
       test('falls back to "message" when "detail" is absent', () {

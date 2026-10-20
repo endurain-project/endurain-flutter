@@ -65,11 +65,14 @@ AppErrorCode? appErrorCodeByName(Object? value) =>
     value is String ? _appErrorCodesByName[value] : null;
 
 class AppException implements Exception {
-  const AppException(this.code, {this.details, this.cause});
+  const AppException(this.code, {this.details, this.cause, this.statusCode});
 
   final AppErrorCode code;
   final String? details;
   final Object? cause;
+
+  /// HTTP status of the failed response, when the failure came from one.
+  final int? statusCode;
 
   @override
   String toString() {

@@ -39,6 +39,26 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Le format du fichier n\'est pas pris en charge';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Le fichier est corrompu ou n\'a pas pu être lu';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Aucune activité n\'a été trouvée dans le fichier';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Une erreur s\'est produite lors de l\'importation de l\'activité. Réessayez.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Le fournisseur d\'activités est indisponible pour le moment. Réessayez plus tard.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'L\'envoi d\'activités n\'est pas encore configuré';
 
