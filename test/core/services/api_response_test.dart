@@ -105,6 +105,14 @@ void main() {
         expect(ApiResponse.errorDetail(response), 'Not Found');
       });
 
+      test('falls back to "title" when "detail" is blank', () {
+        final response = http.Response(
+          '{"detail":"  ","title":"Not Found","status":404}',
+          404,
+        );
+        expect(ApiResponse.errorDetail(response), 'Not Found');
+      });
+
       test('falls back to "message" when "detail" is absent', () {
         final response = http.Response(
           '{"message":"from message","error":"from error"}',
