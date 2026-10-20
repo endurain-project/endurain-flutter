@@ -215,8 +215,8 @@ class ActivityUploadService {
 
   /// Polls the ingestion job until it finishes.
   ///
-  /// Returns on success. Throws [AppErrorCode.activityUploadFailed] with
-  /// `job: <error_code>` details when the job fails (permanent, not retried
+  /// Returns on success. Throws [AppErrorCode.activityUploadFailed] with the
+  /// job's `error_code` as details when the job fails (permanent, not retried
   /// automatically), or with a [TimeoutException] cause when it is still
   /// running after the poll budget (transient, retried automatically).
   Future<void> _awaitIngestion(
@@ -260,7 +260,7 @@ class ActivityUploadService {
           final code = job['error_code'];
           throw AppException(
             AppErrorCode.activityUploadFailed,
-            details: 'job: ${code is String ? code : job['status']}',
+            details: code is String ? code : null,
           );
         case _JobOutcome.running:
           continue;
@@ -286,38 +286,19 @@ class ActivityUploadService {
     return status != null && status >= 500;
   }
 
-  static const _failedStatuses = {'failed', 'error', 'cancelled', 'canceled'};
-  static const _succeededStatuses = {
-    'completed',
-    'complete',
-    'succeeded',
-    'success',
-    'done',
-    'finished',
-  };
-
-  /// A job is finished once it reports a terminal status or a `completed_at`
-  /// time; it succeeded only if nothing failed and no `error_code` is set.
+  /// Classifies an `IngestionJobStatus`: `pending` and `processing` are still
+  /// running, `failed` is terminal failure, and `completed` is success unless
+  /// any file failed. An unknown status keeps polling so a status added by a
+  /// newer server cannot be mistaken for success.
   static _JobOutcome _classifyJob(Map<String, dynamic> job) {
-    final status = job['status'] is String
-        ? (job['status'] as String).toLowerCase()
-        : '';
     final failedFiles = job['files_failed'];
-    final hasFailure =
-        job['error_code'] != null ||
-        (failedFiles is num && failedFiles > 0) ||
-        _failedStatuses.contains(status);
-    if (hasFailure) {
-      final finished =
-          job['completed_at'] != null ||
-          _failedStatuses.contains(status) ||
-          job['error_code'] != null;
-      return finished ? _JobOutcome.failed : _JobOutcome.running;
-    }
-    if (_succeededStatuses.contains(status) || job['completed_at'] != null) {
-      return _JobOutcome.succeeded;
-    }
-    return _JobOutcome.running;
+    return switch (job['status']) {
+      'failed' => _JobOutcome.failed,
+      'completed' when failedFiles is num && failedFiles > 0 =>
+        _JobOutcome.failed,
+      'completed' => _JobOutcome.succeeded,
+      _ => _JobOutcome.running,
+    };
   }
 
   /// Performs a complete upload workflow for [record]:

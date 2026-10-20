@@ -16,7 +16,7 @@ void main() {
         uploadBody: {'id': 'job 1', 'status': 'pending'},
         jobs: [
           {'id': 'job 1', 'status': 'pending', 'completed_at': null},
-          {'id': 'job 1', 'status': 'running', 'completed_at': null},
+          {'id': 'job 1', 'status': 'processing', 'completed_at': null},
           {
             'id': 'job 1',
             'status': 'completed',
@@ -34,15 +34,32 @@ void main() {
       expect(fetched.first, '/jobs/job%201');
     });
 
-    test('treats completed_at without a failure as success', () async {
+    test('keeps polling on a status it does not recognize', () async {
+      var fetches = 0;
       final service = _service(
         uploadBody: {'id': 'job-1'},
         jobs: [
-          {'id': 'job-1', 'completed_at': '2026-10-19T21:14:33Z'},
+          {
+            'id': 'job-1',
+            'status': 'queued_for_review',
+            'completed_at': '2026-10-19T21:14:33Z',
+          },
         ],
+        maxPolls: 2,
+        onFetch: (_) => fetches++,
       );
 
-      await service.uploadGpx(_request());
+      await expectLater(
+        service.uploadGpx(_request()),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.cause,
+            'cause',
+            isA<TimeoutException>(),
+          ),
+        ),
+      );
+      expect(fetches, 2);
     });
 
     test('fails permanently with the job error code', () async {
@@ -63,7 +80,7 @@ void main() {
         throwsA(
           isA<AppException>()
               .having((e) => e.code, 'code', AppErrorCode.activityUploadFailed)
-              .having((e) => e.details, 'details', 'job: unsupported_format')
+              .having((e) => e.details, 'details', 'unsupported_format')
               .having((e) => e.cause, 'cause', isNull),
         ),
       );
@@ -128,7 +145,11 @@ void main() {
           if (fetches == 2) {
             throw const SocketException('offline');
           }
-          return {'id': 'job-1', 'completed_at': '2026-10-19T21:14:33Z'};
+          return {
+            'id': 'job-1',
+            'status': 'completed',
+            'completed_at': '2026-10-19T21:14:33Z',
+          };
         },
       );
 
