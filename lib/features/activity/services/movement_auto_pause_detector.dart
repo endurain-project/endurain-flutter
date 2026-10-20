@@ -59,6 +59,9 @@ enum MovementAutoPauseTransition {
 /// geolocator fallback recorder; the native Android/iOS recorders implement
 /// the same algorithm directly (see `MovementAutoPauseDetector.kt` and
 /// `MovementAutoPauseDetector.swift`) since they cannot depend on Dart code.
+/// All three run the shared vectors in
+/// `test/fixtures/movement_auto_pause_vectors.json`; extend that file when
+/// changing the algorithm.
 ///
 /// The detector combines two signals to decide whether a sample counts as
 /// "moving", per the task's "reliable speed and accuracy-filtered

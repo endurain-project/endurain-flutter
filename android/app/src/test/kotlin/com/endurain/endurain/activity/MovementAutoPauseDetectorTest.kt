@@ -1,7 +1,9 @@
 package com.endurain.endurain.activity
 
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.io.File
 
 /**
  * JVM unit tests for [MovementAutoPauseDetector].
@@ -240,5 +242,66 @@ class MovementAutoPauseDetectorTest {
         // One arc-minute of latitude is ~1852 meters (a nautical mile).
         val meters = MovementAutoPauseDetector.haversineMeters(0.0, 0.0, 1.0 / 60.0, 0.0)
         assertEquals(1852.0, meters, 5.0)
+    }
+
+    // ── Shared vectors ──────────────────────────────────────────────────────
+
+    /**
+     * Runs the vectors in test/fixtures/movement_auto_pause_vectors.json, which
+     * the Dart and Swift detector tests also run, keeping the three
+     * implementations in sync.
+     */
+    @Test
+    fun sharedVectorsMatchExpectedTransitions() {
+        val cases = JSONObject(findVectorsFile().readText()).getJSONArray("cases")
+        for (i in 0 until cases.length()) {
+            val spec = cases.getJSONObject(i)
+            val name = spec.getString("name")
+            val config = spec.getJSONObject("config")
+            val detector = MovementAutoPauseDetector(
+                MovementAutoPauseConfig(
+                    enabled = config.getBoolean("enabled"),
+                    pauseDelayMillis = config.getLong("pauseDelaySeconds") * 1_000L,
+                    consecutiveMovingSamplesToResume =
+                        config.optInt("consecutiveMovingSamplesToResume", 3),
+                ),
+            )
+            detector.reset(baseMillis)
+            val steps = spec.getJSONArray("steps")
+            for (j in 0 until steps.length()) {
+                val step = steps.getJSONObject(j)
+                val sample = sample(
+                    step.getInt("t"),
+                    lat = step.optDouble("lat", 38.7),
+                    lon = step.optDouble("lon", -9.1),
+                    speed = if (step.has("speed")) step.getDouble("speed") else null,
+                    accuracy = step.optDouble("accuracy", 5.0),
+                )
+                val actual = if (step.getString("mode") == "paused") {
+                    detector.onAutoPausedPoint(sample)
+                } else {
+                    detector.onActivePoint(sample)
+                }
+                val expected = when (step.getString("expect")) {
+                    "autoPause" -> MovementAutoPauseTransition.AUTO_PAUSE
+                    "autoResume" -> MovementAutoPauseTransition.AUTO_RESUME
+                    else -> MovementAutoPauseTransition.NONE
+                }
+                assertEquals("$name: step at t=${step.getInt("t")}", expected, actual)
+            }
+        }
+    }
+
+    /** Gradle's working directory is android/app; walk up to the repo root. */
+    private fun findVectorsFile(): File {
+        var dir: File? = File(System.getProperty("user.dir")!!).absoluteFile
+        while (dir != null) {
+            val candidate = File(dir, "test/fixtures/movement_auto_pause_vectors.json")
+            if (candidate.isFile) {
+                return candidate
+            }
+            dir = dir.parentFile
+        }
+        throw AssertionError("movement_auto_pause_vectors.json not found")
     }
 }

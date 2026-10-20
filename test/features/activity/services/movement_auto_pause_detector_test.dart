@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -214,6 +217,54 @@ void main() {
         detector.onActivePoint(point(second: 100, speed: 0)),
         MovementAutoPauseTransition.none,
       );
+    });
+
+    // The same vectors run against the Kotlin and Swift detectors, keeping the
+    // three implementations in sync.
+    group('shared vectors', () {
+      final vectors =
+          jsonDecode(
+                File(
+                  'test/fixtures/movement_auto_pause_vectors.json',
+                ).readAsStringSync(),
+              )
+              as Map<String, dynamic>;
+      for (final testCase in vectors['cases'] as List<dynamic>) {
+        final spec = testCase as Map<String, dynamic>;
+        test(spec['name'] as String, () {
+          final config = spec['config'] as Map<String, dynamic>;
+          final detector = MovementAutoPauseDetector(
+            config: MovementAutoPauseConfig(
+              enabled: config['enabled'] as bool,
+              pauseDelay: Duration(
+                seconds: config['pauseDelaySeconds'] as int,
+              ),
+              consecutiveMovingSamplesToResume:
+                  (config['consecutiveMovingSamplesToResume'] as int?) ?? 3,
+            ),
+          )..reset(movementAt: base);
+          for (final raw in spec['steps'] as List<dynamic>) {
+            final step = raw as Map<String, dynamic>;
+            final sample = RecordedActivityPoint(
+              timestamp: base.add(Duration(seconds: step['t'] as int)),
+              latitude: (step['lat'] as num?)?.toDouble() ?? 38.7,
+              longitude: (step['lon'] as num?)?.toDouble() ?? -9.1,
+              segmentIndex: 0,
+              speedMetersPerSecond: (step['speed'] as num?)?.toDouble(),
+              horizontalAccuracyMeters:
+                  (step['accuracy'] as num?)?.toDouble() ?? 5,
+            );
+            final actual = step['mode'] == 'paused'
+                ? detector.onAutoPausedPoint(sample)
+                : detector.onActivePoint(sample);
+            expect(
+              actual.name,
+              step['expect'],
+              reason: 'step at t=${step['t']}',
+            );
+          }
+        });
+      }
     });
   });
 }

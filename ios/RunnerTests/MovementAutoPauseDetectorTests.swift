@@ -198,4 +198,53 @@ final class MovementAutoPauseDetectorTests: XCTestCase {
     let meters = MovementAutoPauseDetector.haversineMeters(0.0, 0.0, 1.0 / 60.0, 0.0)
     XCTAssertEqual(meters, 1852.0, accuracy: 5.0)
   }
+
+  // MARK: - Shared vectors
+
+  /// Runs the vectors in test/fixtures/movement_auto_pause_vectors.json, which
+  /// the Dart and Kotlin detector tests also run, keeping the three
+  /// implementations in sync. Located relative to this source file so the
+  /// fixture needs no Xcode resource wiring.
+  func testSharedVectorsMatchExpectedTransitions() throws {
+    let url = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()  // RunnerTests
+      .deletingLastPathComponent()  // ios
+      .deletingLastPathComponent()  // repo root
+      .appendingPathComponent("test/fixtures/movement_auto_pause_vectors.json")
+    let root = try XCTUnwrap(
+      JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+    let cases = try XCTUnwrap(root["cases"] as? [[String: Any]])
+    for spec in cases {
+      let name = spec["name"] as? String ?? "?"
+      let config = try XCTUnwrap(spec["config"] as? [String: Any])
+      let detector = MovementAutoPauseDetector(
+        config: MovementAutoPauseConfig(
+          enabled: config["enabled"] as? Bool ?? false,
+          pauseDelayMillis: Int64(config["pauseDelaySeconds"] as? Int ?? 5) * 1000,
+          consecutiveMovingSamplesToResume:
+            config["consecutiveMovingSamplesToResume"] as? Int ?? 3))
+      detector.reset(movementAtMillis: baseMillis)
+      for step in try XCTUnwrap(spec["steps"] as? [[String: Any]]) {
+        let t = step["t"] as? Int ?? 0
+        let input = sample(
+          t,
+          lat: step["lat"] as? Double ?? 38.7,
+          lon: step["lon"] as? Double ?? -9.1,
+          speed: step["speed"] as? Double,
+          accuracy: step["accuracy"] as? Double ?? 5.0)
+        let actual =
+          step["mode"] as? String == "paused"
+          ? detector.onAutoPausedPoint(input)
+          : detector.onActivePoint(input)
+        let label: String
+        switch actual {
+        case .none: label = "none"
+        case .autoPause: label = "autoPause"
+        case .autoResume: label = "autoResume"
+        }
+        XCTAssertEqual(
+          label, step["expect"] as? String, "\(name): step at t=\(t)")
+      }
+    }
+  }
 }
