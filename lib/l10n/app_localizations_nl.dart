@@ -39,6 +39,26 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Het bestandsformaat wordt niet ondersteund';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Het bestand is beschadigd of kon niet worden gelezen';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Er zijn geen activiteiten gevonden in het bestand';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Er is iets misgegaan bij het importeren van de activiteit. Probeer het opnieuw.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'De activiteitenprovider is momenteel niet beschikbaar. Probeer het later opnieuw.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Het uploaden van activiteiten is nog niet geconfigureerd';
 

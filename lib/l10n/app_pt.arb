@@ -45,6 +45,26 @@
       }
     }
   },
+  "errorActivityIngestionUnsupportedFormat": "O formato do ficheiro não é suportado",
+  "@errorActivityIngestionUnsupportedFormat": {
+    "description": "Envio falhou porque o formato do ficheiro não é suportado - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionInvalidFile": "O ficheiro está corrompido ou não foi possível lê-lo",
+  "@errorActivityIngestionInvalidFile": {
+    "description": "Envio falhou porque o ficheiro está corrompido ou ilegível - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionNoActivitiesFound": "Não foram encontradas atividades no ficheiro",
+  "@errorActivityIngestionNoActivitiesFound": {
+    "description": "Envio falhou porque o ficheiro não contém atividades - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionProcessingFailed": "Ocorreu um erro ao importar a atividade. Tente novamente.",
+  "@errorActivityIngestionProcessingFailed": {
+    "description": "Envio falhou porque o servidor não conseguiu importar a atividade - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionProviderUnavailable": "O fornecedor de atividades não está disponível neste momento. Tente novamente mais tarde.",
+  "@errorActivityIngestionProviderUnavailable": {
+    "description": "Envio falhou porque o fornecedor de atividades não está disponível - Usado em: error_localizations.dart"
+  },
   "errorActivityUploadNotConfigured": "O envio de atividades ainda não está configurado",
   "@errorActivityUploadNotConfigured": {
     "description": "Envio de atividade bloqueado porque endpoint e campo multipart não estão configurados - Usado em: error_localizations.dart"

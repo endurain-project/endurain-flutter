@@ -207,6 +207,36 @@ abstract class AppLocalizations {
   /// **'Could not upload activity: {details}'**
   String errorActivityUploadFailedWithDetails(String details);
 
+  /// Upload failed because the file format is unsupported - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The file format isn\'t supported'**
+  String get errorActivityIngestionUnsupportedFormat;
+
+  /// Upload failed because the file is corrupt or unreadable - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The file is corrupt or couldn\'t be read'**
+  String get errorActivityIngestionInvalidFile;
+
+  /// Upload failed because the file contains no activities - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No activities were found in the file'**
+  String get errorActivityIngestionNoActivitiesFound;
+
+  /// Upload failed because the server could not import the activity - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while importing the activity. Try again.'**
+  String get errorActivityIngestionProcessingFailed;
+
+  /// Upload failed because the activity provider is unavailable - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The activity provider is unavailable right now. Try again later.'**
+  String get errorActivityIngestionProviderUnavailable;
+
   /// Activity upload blocked because endpoint and multipart field are not configured - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:

@@ -39,6 +39,26 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Failo formatas nepalaikomas';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Failas sugadintas arba jo nepavyko perskaityti';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Faile nerasta jokių veiklų';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Importuojant veiklą įvyko klaida. Bandykite dar kartą.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Veiklų teikėjas šiuo metu nepasiekiamas. Bandykite vėliau.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Veiklų įkėlimas dar nesukonfigūruotas';
 

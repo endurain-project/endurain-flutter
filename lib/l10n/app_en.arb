@@ -45,6 +45,26 @@
       }
     }
   },
+  "errorActivityIngestionUnsupportedFormat": "The file format isn't supported",
+  "@errorActivityIngestionUnsupportedFormat": {
+    "description": "Upload failed because the file format is unsupported - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionInvalidFile": "The file is corrupt or couldn't be read",
+  "@errorActivityIngestionInvalidFile": {
+    "description": "Upload failed because the file is corrupt or unreadable - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionNoActivitiesFound": "No activities were found in the file",
+  "@errorActivityIngestionNoActivitiesFound": {
+    "description": "Upload failed because the file contains no activities - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionProcessingFailed": "Something went wrong while importing the activity. Try again.",
+  "@errorActivityIngestionProcessingFailed": {
+    "description": "Upload failed because the server could not import the activity - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionProviderUnavailable": "The activity provider is unavailable right now. Try again later.",
+  "@errorActivityIngestionProviderUnavailable": {
+    "description": "Upload failed because the activity provider is unavailable - Used in: error_localizations.dart"
+  },
   "errorActivityUploadNotConfigured": "Activity upload is not configured yet",
   "@errorActivityUploadNotConfigured": {
     "description": "Activity upload blocked because endpoint and multipart field are not configured - Used in: error_localizations.dart"
