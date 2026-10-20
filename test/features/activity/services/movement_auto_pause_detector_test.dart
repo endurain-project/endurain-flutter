@@ -222,25 +222,21 @@ void main() {
     // The same vectors run against the Kotlin and Swift detectors, keeping the
     // three implementations in sync.
     group('shared vectors', () {
-      final vectors =
-          jsonDecode(
-                File(
-                  'test/fixtures/movement_auto_pause_vectors.json',
-                ).readAsStringSync(),
-              )
-              as Map<String, dynamic>;
-      for (final testCase in vectors['cases'] as List<dynamic>) {
+      final file = File('test/fixtures/movement_auto_pause_vectors.json');
+      final json = jsonDecode(file.readAsStringSync());
+      final cases = (json as Map<String, dynamic>)['cases'] as List<dynamic>;
+      const resumeKey = 'consecutiveMovingSamplesToResume';
+      for (final testCase in cases) {
         final spec = testCase as Map<String, dynamic>;
         test(spec['name'] as String, () {
           final config = spec['config'] as Map<String, dynamic>;
+          final delay = config['pauseDelaySeconds'] as int;
+          final resumeAfter = (config[resumeKey] as int?) ?? 3;
           final detector = MovementAutoPauseDetector(
             config: MovementAutoPauseConfig(
               enabled: config['enabled'] as bool,
-              pauseDelay: Duration(
-                seconds: config['pauseDelaySeconds'] as int,
-              ),
-              consecutiveMovingSamplesToResume:
-                  (config['consecutiveMovingSamplesToResume'] as int?) ?? 3,
+              pauseDelay: Duration(seconds: delay),
+              consecutiveMovingSamplesToResume: resumeAfter,
             ),
           )..reset(movementAt: base);
           for (final raw in spec['steps'] as List<dynamic>) {
@@ -257,11 +253,7 @@ void main() {
             final actual = step['mode'] == 'paused'
                 ? detector.onAutoPausedPoint(sample)
                 : detector.onActivePoint(sample);
-            expect(
-              actual.name,
-              step['expect'],
-              reason: 'step at t=${step['t']}',
-            );
+            expect(actual.name, step['expect'], reason: 't=${step['t']}');
           }
         });
       }
