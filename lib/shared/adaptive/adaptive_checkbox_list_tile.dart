@@ -30,6 +30,9 @@ class AdaptiveCheckboxListTile extends StatelessWidget {
           checked: showControl ? value : null,
           enabled: enabled,
           child: CupertinoListTile(
+            padding: subtitle == null
+                ? null
+                : adaptiveCupertinoSubtitleTilePadding,
             leading: secondary,
             title: title,
             subtitle: subtitle == null

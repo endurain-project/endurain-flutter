@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v0.10.1+18] - 2026-10-20
+
+### Fixed
+
+- Added vertical padding to iOS list tiles with subtitles so wrapped subtitle text no longer touches the top and bottom edges (for example in Audio Announcements settings).
+
 ## [v0.10.0+17] - 2026-10-20
 
 ### Added
