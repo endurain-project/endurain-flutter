@@ -234,12 +234,15 @@ class ActivityRecorderService : Service() {
         locationListener = listener
         val session = store.loadSession()
         lastPointEpochMillis = store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis)
+        // Anchor stillness to this collection (re)start, not the last stored
+        // point: that point can predate a manual pause or provider restart,
+        // which would let the first slow fix auto-pause immediately.
         autoPauseDetector = MovementAutoPauseDetector(
             MovementAutoPauseConfig(
                 enabled = session?.autoPauseEnabled ?: false,
                 pauseDelayMillis = (session?.autoPauseDelaySeconds ?: 5) * 1000L,
             ),
-        ).also { it.reset(lastPointEpochMillis ?: System.currentTimeMillis()) }
+        ).also { it.reset(System.currentTimeMillis()) }
         val minUpdateDistanceMeters = if (session?.autoPauseEnabled == true) {
             0f
         } else {

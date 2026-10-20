@@ -143,6 +143,13 @@ final class MovementAutoPauseDetector {
             sample.latitude,
             sample.longitude
         )
+        // Displacement inside the combined uncertainty radius is jitter, not
+        // movement.
+        let uncertainty = (previous.horizontalAccuracyMeters ?? 0)
+            + (sample.horizontalAccuracyMeters ?? 0)
+        if meters <= uncertainty {
+            return false
+        }
         return (meters / seconds) >= config.movingSpeedThresholdMetersPerSecond
     }
 

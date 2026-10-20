@@ -127,6 +127,25 @@ void main() {
           );
         },
       );
+
+      test('speedless jitter within the accuracy radius is not movement', () {
+        final detector = MovementAutoPauseDetector(
+          config: const MovementAutoPauseConfig(
+            enabled: true,
+            pauseDelay: Duration(seconds: 5),
+          ),
+        )..reset(movementAt: base);
+
+        // ~0.00003 degrees of latitude is ~3 meters: a derived ~3 m/s, but well
+        // inside the combined 5 m + 5 m accuracy radius, so it is GPS jitter.
+        detector.onActivePoint(point(second: 0, latitude: 38.7));
+        detector.onActivePoint(point(second: 1, latitude: 38.70003));
+        detector.onActivePoint(point(second: 2, latitude: 38.7));
+        expect(
+          detector.onActivePoint(point(second: 5, latitude: 38.70003)),
+          MovementAutoPauseTransition.autoPause,
+        );
+      });
     });
 
     group('onAutoPausedPoint (auto-resume)', () {

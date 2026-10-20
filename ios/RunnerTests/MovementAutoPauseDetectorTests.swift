@@ -113,6 +113,23 @@ final class MovementAutoPauseDetectorTests: XCTestCase {
     }
   }
 
+  func testSpeedlessJitterWithinAccuracyRadiusIsNotMovement() {
+    let detector = MovementAutoPauseDetector(
+      config: MovementAutoPauseConfig(enabled: true, pauseDelayMillis: 5_000))
+    detector.reset(movementAtMillis: baseMillis)
+
+    // ~0.00003 degrees of latitude is ~3 meters: a derived ~3 m/s, but well
+    // inside the combined 5 m + 5 m accuracy radius, so it is GPS jitter.
+    _ = detector.onActivePoint(sample(0, lat: 38.7, speed: nil))
+    _ = detector.onActivePoint(sample(1, lat: 38.70003, speed: nil))
+    _ = detector.onActivePoint(sample(2, lat: 38.7, speed: nil))
+    guard
+      case .autoPause = detector.onActivePoint(sample(5, lat: 38.70003, speed: nil))
+    else {
+      return XCTFail("expected .autoPause")
+    }
+  }
+
   // MARK: - onAutoPausedPoint: auto-resume
 
   func testAutoResumesOnlyAfterEnoughConsecutiveMovingSamples() {

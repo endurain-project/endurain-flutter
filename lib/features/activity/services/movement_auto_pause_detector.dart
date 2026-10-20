@@ -168,6 +168,14 @@ class MovementAutoPauseDetector {
       point.latitude,
       point.longitude,
     );
+    // Displacement inside the combined uncertainty radius is jitter, not
+    // movement.
+    final uncertainty =
+        (previous.horizontalAccuracyMeters ?? 0) +
+        (point.horizontalAccuracyMeters ?? 0);
+    if (meters <= uncertainty) {
+      return false;
+    }
     return (meters / seconds) >= config.movingSpeedThresholdMetersPerSecond;
   }
 }

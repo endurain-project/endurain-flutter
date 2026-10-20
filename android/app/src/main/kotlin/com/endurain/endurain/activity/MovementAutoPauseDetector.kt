@@ -159,6 +159,13 @@ class MovementAutoPauseDetector(private val config: MovementAutoPauseConfig) {
             sample.latitude,
             sample.longitude,
         )
+        // Displacement inside the combined uncertainty radius is jitter, not
+        // movement.
+        val uncertainty = (previous.horizontalAccuracyMeters ?: 0.0) +
+            (sample.horizontalAccuracyMeters ?: 0.0)
+        if (meters <= uncertainty) {
+            return false
+        }
         return (meters / seconds) >= config.movingSpeedThresholdMetersPerSecond
     }
 

@@ -109,7 +109,10 @@ final class CoreLocationActivityRecorder:
             enabled: session?.autoPauseEnabled ?? false,
             pauseDelayMillis: Int64((session?.autoPauseDelaySeconds ?? 5)) * 1000
         ))
-        autoPauseDetector?.reset(movementAtMillis: lastPointEpochMillis ?? nowMillis)
+        // Anchor stillness to this collection (re)start, not the last stored
+        // point: that point can predate a manual pause, which would let the
+        // first slow fix auto-pause immediately.
+        autoPauseDetector?.reset(movementAtMillis: nowMillis)
         nextPointOffset = store.pointCount()
         manager.startUpdatingLocation()
         startTerminationRecovery()

@@ -135,6 +135,24 @@ class MovementAutoPauseDetectorTest {
         )
     }
 
+    @Test
+    fun speedlessJitterWithinAccuracyRadiusIsNotMovement() {
+        val detector = MovementAutoPauseDetector(
+            MovementAutoPauseConfig(enabled = true, pauseDelayMillis = 5_000L),
+        )
+        detector.reset(baseMillis)
+
+        // ~0.00003 degrees of latitude is ~3 meters: a derived ~3 m/s, but well
+        // inside the combined 5 m + 5 m accuracy radius, so it is GPS jitter.
+        detector.onActivePoint(sample(0, lat = 38.7, speed = null))
+        detector.onActivePoint(sample(1, lat = 38.70003, speed = null))
+        detector.onActivePoint(sample(2, lat = 38.7, speed = null))
+        assertEquals(
+            MovementAutoPauseTransition.AUTO_PAUSE,
+            detector.onActivePoint(sample(5, lat = 38.70003, speed = null)),
+        )
+    }
+
     // ── onAutoPausedPoint: auto-resume ──────────────────────────────────────
 
     @Test
