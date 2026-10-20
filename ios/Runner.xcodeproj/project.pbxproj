@@ -36,7 +36,7 @@
 		AA00000000000000000000C2 /* AnnouncementSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */; };
 		AA00000000000000000000C4 /* AnnouncementStateCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C5 /* AnnouncementStateCache.swift */; };
 		AA00000000000000000000C6 /* AnnouncementStateCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */; };
-		AA00000000000000000000C8 /* HealthKitHeartRateMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C9 /* HealthKitHeartRateMonitor.swift */; };
+		AA00000000000000000000CC /* HealthKitHeartRateMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */; };
 		AA00000000000000000000CA /* HealthKitHeartRateMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000CB /* HealthKitHeartRateMonitorTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -101,7 +101,7 @@
 		AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementSchedulerTests.swift; sourceTree = "<group>"; };
 		AA00000000000000000000C5 /* AnnouncementStateCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AnnouncementStateCache.swift; sourceTree = "<group>"; };
 		AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementStateCacheTests.swift; sourceTree = "<group>"; };
-		AA00000000000000000000C9 /* HealthKitHeartRateMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/HealthKitHeartRateMonitor.swift; sourceTree = "<group>"; };
+		AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/HealthKitHeartRateMonitor.swift; sourceTree = "<group>"; };
 		AA00000000000000000000CB /* HealthKitHeartRateMonitorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HealthKitHeartRateMonitorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -195,7 +195,7 @@
 				AA00000000000000000000AB /* AudioAnnouncer.swift */,
 				AA00000000000000000000AC /* SessionTiming.swift */,
 				AA00000000000000000000C5 /* AnnouncementStateCache.swift */,
-				AA00000000000000000000C9 /* HealthKitHeartRateMonitor.swift */,
+				AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -378,7 +378,7 @@
 				AA00000000000000000000BB /* AudioAnnouncer.swift in Sources */,
 				AA00000000000000000000BC /* SessionTiming.swift in Sources */,
 				AA00000000000000000000C4 /* AnnouncementStateCache.swift in Sources */,
-				AA00000000000000000000C8 /* HealthKitHeartRateMonitor.swift in Sources */,
+				AA00000000000000000000CC /* HealthKitHeartRateMonitor.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
