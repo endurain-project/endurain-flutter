@@ -38,6 +38,8 @@ class AudioAnnouncementConfig {
     required this.metricUnitTemplate,
     required this.metricLabel,
     required this.messageTemplate,
+    this.autoPausedMessage = '',
+    this.autoResumedMessage = '',
   });
 
   /// Sentinel substituted into the unit templates in place of a real value.
@@ -62,6 +64,8 @@ class AudioAnnouncementConfig {
   final String metricUnitTemplate;
   final String metricLabel;
   final String messageTemplate;
+  final String autoPausedMessage;
+  final String autoResumedMessage;
 
   /// Builds the config for [activityType] from the current [settings],
   /// [measurementSystem], and localized strings in [l10n].
@@ -118,6 +122,8 @@ class AudioAnnouncementConfig {
         lapMetricPlaceholder,
         overallMetricPlaceholder,
       ),
+      autoPausedMessage: l10n.audioAnnouncementsAutoPaused,
+      autoResumedMessage: l10n.audioAnnouncementsAutoResumed,
     );
   }
 
@@ -136,6 +142,8 @@ class AudioAnnouncementConfig {
       'metricUnitTemplate': metricUnitTemplate,
       'metricLabel': metricLabel,
       'messageTemplate': messageTemplate,
+      'autoPausedMessage': autoPausedMessage,
+      'autoResumedMessage': autoResumedMessage,
     };
   }
 }

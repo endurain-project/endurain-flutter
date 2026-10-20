@@ -16,11 +16,13 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
 class ActivityRecordingController extends SafeNotifier {
@@ -31,6 +33,7 @@ class ActivityRecordingController extends SafeNotifier {
     LocalActivityRepository? localActivityRepository,
     LocalActivitySummaryBuilder? localActivitySummaryBuilder,
     this._retentionSettingsRepository,
+    this._autoPauseSettingsRepository,
     Future<bool> Function()? isUploadAuthorized,
     Future<ConnectionProfile?> Function()? activeConnectionProfile,
     DiagnosticsRecorder? diagnostics,
@@ -62,6 +65,7 @@ class ActivityRecordingController extends SafeNotifier {
   final LocalActivityRepository _localActivityRepository;
   final LocalActivitySummaryBuilder _localActivitySummaryBuilder;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
+  final AutoPauseSettingsRepository? _autoPauseSettingsRepository;
   final Future<bool> Function() _isUploadAuthorized;
   final Future<ConnectionProfile?> Function() _activeConnectionProfile;
   final DiagnosticsRecorder _diagnostics;
@@ -131,6 +135,23 @@ class ActivityRecordingController extends SafeNotifier {
     selectActivityType(type);
     final localActivityId = _localActivityIdProvider();
     final profile = await _activeConnectionProfile();
+    final autoPauseRepository = _autoPauseSettingsRepository;
+    if (autoPauseRepository != null) {
+      try {
+        _recordingService.configureAutoPause(
+          await autoPauseRepository.getConfig(),
+        );
+      } catch (_) {
+        _recordingService.configureAutoPause(
+          const MovementAutoPauseConfig(
+            enabled: AutoPauseSettingsRepository.defaultEnabled,
+            pauseDelay: Duration(
+              seconds: AutoPauseSettingsRepository.defaultDelaySeconds,
+            ),
+          ),
+        );
+      }
+    }
     await _recordingService.start(
       activityType: _selectedActivityType,
       backgroundConfig: _backgroundConfig,

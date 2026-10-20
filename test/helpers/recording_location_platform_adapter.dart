@@ -9,6 +9,7 @@ Position recordingPosition({
   double longitude = -8,
   DateTime? timestamp,
   double accuracy = 5,
+  double speed = 3,
 }) {
   return Position(
     latitude: latitude,
@@ -19,7 +20,7 @@ Position recordingPosition({
     altitudeAccuracy: 1,
     heading: 90,
     headingAccuracy: 1,
-    speed: 3,
+    speed: speed,
     speedAccuracy: 1,
   );
 }
