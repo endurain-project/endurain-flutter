@@ -39,6 +39,26 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Faila formāts netiek atbalstīts';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fails ir bojāts vai to nevarēja nolasīt';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Failā netika atrastas aktivitātes';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Importējot aktivitāti, radās kļūda. Mēģiniet vēlreiz.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktivitāšu sniedzējs pašlaik nav pieejams. Mēģiniet vēlāk.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Aktivitāšu augšupielāde vēl nav konfigurēta';
 
@@ -485,6 +505,38 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Pēc augšupielādes saglabā pabeigtos maršrutu failus lietotnes privātajā krātuvē.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automātiska pauze';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automātiski aptur, kad pārstājat kustēties';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automātiski pauzēt';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Ierakstīšana automātiski tiek apturēta, kad pārstājat kustēties, un atsākta, tiklīdz atkal sākat kustēties.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Izvēlieties, cik ilgi bez kustības gaidīt pirms pauzes.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekundes';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automātiski pauzēts';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Ierakstīšana pauzēta';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Ierakstīšana atsākta';
 
   @override
   String get activityHistoryEmpty =>

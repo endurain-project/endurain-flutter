@@ -40,6 +40,26 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'A fájlformátum nem támogatott';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'A fájl sérült, vagy nem olvasható';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'A fájlban nem található tevékenység';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Hiba történt a tevékenység importálása közben. Próbáld újra.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'A tevékenységszolgáltató jelenleg nem érhető el. Próbáld újra később.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'A tevékenységek feltöltése még nincs beállítva';
 
@@ -492,6 +512,38 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'A befejezett útvonalfájlokat a feltöltés után az alkalmazás privát tárhelyén tárolja.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatikus szüneteltetés';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatikusan szünetelteti, ha megállsz';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatikus szüneteltetés';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'A rögzítés automatikusan szünetel, ha megállsz, és folytatódik, amint újra mozogni kezdesz.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Válaszd ki, mennyi ideig várjon mozgás nélkül szüneteltetés előtt.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds másodperc';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatikusan szüneteltetve';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Rögzítés szüneteltetve';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Rögzítés folytatva';
 
   @override
   String get activityHistoryEmpty =>

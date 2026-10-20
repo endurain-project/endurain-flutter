@@ -39,6 +39,26 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Формат файлу не підтримується';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Файл пошкоджено або його не вдалося прочитати';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'У файлі не знайдено активностей';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Під час імпорту активності сталася помилка. Спробуйте ще раз.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Постачальник активностей зараз недоступний. Спробуйте пізніше.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Завантаження активностей ще не налаштовано';
 
@@ -487,6 +507,38 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Зберігає завершені файли маршрутів у приватному сховищі застосунку після завантаження.';
+
+  @override
+  String get activityAutoPauseTitle => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Автоматично призупиняє, коли ви припиняєте рух';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Автоматично призупиняти';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Запис автоматично призупиняється, коли ви припиняєте рух, і відновлюється, щойно ви знову починаєте рухатися.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Виберіть, скільки часу без руху чекати перед призупиненням.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds с';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Автоматично призупинено';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Запис призупинено';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Запис відновлено';
 
   @override
   String get activityHistoryEmpty =>

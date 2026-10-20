@@ -39,6 +39,26 @@ class AppLocalizationsNb extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Filformatet støttes ikke';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Filen er ødelagt eller kunne ikke leses';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Fant ingen aktiviteter i filen';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Noe gikk galt under importen av aktiviteten. Prøv igjen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktivitetsleverandøren er ikke tilgjengelig akkurat nå. Prøv igjen senere.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Opplasting av aktiviteter er ikke konfigurert ennå';
 
@@ -486,6 +506,38 @@ class AppLocalizationsNb extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Lagrer fullførte rutefiler i appens private lagring etter opplasting.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatisk pause';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Setter automatisk pause når du slutter å bevege deg';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Sett automatisk pause';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Setter opptaket på pause når du slutter å bevege deg, og gjenopptar det når du beveger deg igjen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Velg hvor lenge uten bevegelse det skal gå før pause.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisk pause';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Opptak satt på pause';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Opptak gjenopptatt';
 
   @override
   String get activityHistoryEmpty =>

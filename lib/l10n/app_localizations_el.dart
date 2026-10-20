@@ -40,6 +40,26 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Η μορφή του αρχείου δεν υποστηρίζεται';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Το αρχείο είναι κατεστραμμένο ή δεν ήταν δυνατή η ανάγνωσή του';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Δεν βρέθηκαν δραστηριότητες στο αρχείο';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Παρουσιάστηκε σφάλμα κατά την εισαγωγή της δραστηριότητας. Δοκιμάστε ξανά.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Ο πάροχος δραστηριοτήτων δεν είναι διαθέσιμος αυτή τη στιγμή. Δοκιμάστε ξανά αργότερα.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Η μεταφόρτωση δραστηριοτήτων δεν έχει ρυθμιστεί ακόμη';
 
@@ -496,6 +516,38 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Αποθηκεύει τα ολοκληρωμένα αρχεία διαδρομής στον ιδιωτικό χώρο αποθήκευσης της εφαρμογής μετά τη μεταφόρτωση.';
+
+  @override
+  String get activityAutoPauseTitle => 'Αυτόματη παύση';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Παύση αυτόματα όταν σταματήσετε να κινείστε';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Αυτόματη παύση';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Η καταγραφή τίθεται σε παύση αυτόματα όταν σταματήσετε να κινείστε και συνεχίζεται μόλις ξανακινηθείτε.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Επιλέξτε πόσο χρόνο χωρίς κίνηση θα περιμένει πριν από την παύση.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds δευτερόλεπτα';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Αυτόματη παύση';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Η καταγραφή τέθηκε σε παύση';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Η καταγραφή συνεχίστηκε';
 
   @override
   String get activityHistoryEmpty =>

@@ -39,6 +39,26 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Formát souboru není podporován';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Soubor je poškozený nebo ho nelze přečíst';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'V souboru nebyly nalezeny žádné aktivity';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Při importu aktivity došlo k chybě. Zkuste to znovu.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Poskytovatel aktivit je momentálně nedostupný. Zkuste to později.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Nahrávání aktivit ještě není nastaveno';
 
@@ -489,6 +509,38 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Po nahrání ukládá dokončené soubory tras do soukromého úložiště aplikace.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatická pauza';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automaticky pozastaví, když se přestanete pohybovat';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automaticky pozastavit';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Nahrávání se pozastaví, když se přestanete pohybovat, a obnoví se, jakmile se znovu začnete pohybovat.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Vyberte, jak dlouho čekat bez pohybu, než dojde k pozastavení.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekund';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatická pauza';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Nahrávání pozastaveno';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nahrávání obnoveno';
 
   @override
   String get activityHistoryEmpty =>

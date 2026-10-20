@@ -39,6 +39,26 @@ class AppLocalizationsGl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'O formato do ficheiro non é compatible';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'O ficheiro está danado ou non se puido ler';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Non se atoparon actividades no ficheiro';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Algo saíu mal ao importar a actividade. Téntao de novo.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'O provedor de actividades non está dispoñible neste momento. Téntao de novo máis tarde.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'A subida de actividades aínda non está configurada';
 
@@ -491,6 +511,38 @@ class AppLocalizationsGl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Garda os ficheiros de ruta completados no almacenamento privado da aplicación despois de subilos.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pausa automática';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pon en pausa automaticamente cando deixas de moverte';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausar automaticamente';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pon en pausa a gravación cando deixas de moverte e retómaa en canto voltas a moverte.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Escolle canto tempo sen movemento esperar antes de pausar.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds segundos';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'En pausa automática';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Gravación en pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Gravación retomada';
 
   @override
   String get activityHistoryEmpty =>

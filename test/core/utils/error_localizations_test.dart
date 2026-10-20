@@ -32,6 +32,55 @@ void main() {
       );
     });
 
+    test('localizes ingestion job error codes of a failed upload', () {
+      final expected = <String, String>{
+        'unsupported_format': l10n.errorActivityIngestionUnsupportedFormat,
+        'invalid_file': l10n.errorActivityIngestionInvalidFile,
+        'no_activities_found': l10n.errorActivityIngestionNoActivitiesFound,
+        'processing_failed': l10n.errorActivityIngestionProcessingFailed,
+        'provider_unavailable': l10n.errorActivityIngestionProviderUnavailable,
+      };
+
+      for (final entry in expected.entries) {
+        expect(
+          localizedErrorMessage(
+            AppException(AppErrorCode.activityUploadFailed, details: entry.key),
+            l10n,
+          ),
+          entry.value,
+        );
+      }
+      expect(expected.values.toSet(), hasLength(expected.length));
+    });
+
+    test('shows an unknown upload failure detail as before', () {
+      expect(
+        localizedErrorMessage(
+          const AppException(
+            AppErrorCode.activityUploadFailed,
+            details: 'HTTP 422',
+          ),
+          l10n,
+        ),
+        l10n.errorActivityUploadFailedWithDetails('HTTP 422'),
+      );
+    });
+
+    test('localizes ingestion job error codes in other languages', () {
+      final pt = AppLocalizationsPt();
+
+      expect(
+        localizedErrorMessage(
+          const AppException(
+            AppErrorCode.activityUploadFailed,
+            details: 'unsupported_format',
+          ),
+          pt,
+        ),
+        'O formato do ficheiro não é suportado',
+      );
+    });
+
     test('strips plain Exception prefix from fallback errors', () {
       expect(
         localizedErrorMessage(Exception('Network failed'), l10n),

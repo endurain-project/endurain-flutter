@@ -39,6 +39,26 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Failo formatas nepalaikomas';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Failas sugadintas arba jo nepavyko perskaityti';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Faile nerasta jokių veiklų';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Importuojant veiklą įvyko klaida. Bandykite dar kartą.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Veiklų teikėjas šiuo metu nepasiekiamas. Bandykite vėliau.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Veiklų įkėlimas dar nesukonfigūruotas';
 
@@ -482,6 +502,38 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Po įkėlimo užbaigtus maršrutų failus saugo privačioje programos saugykloje.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatinė pauzė';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatiškai pristabdo, kai nustojate judėti';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatiškai pristabdyti';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Įrašymas automatiškai pristabdomas, kai nustojate judėti, ir tęsiamas, kai vėl pradedate judėti.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Pasirinkite, kiek laiko be judėjimo laukti prieš pristabdant.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sek.';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatiškai pristabdyta';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Įrašymas pristabdytas';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Įrašymas atnaujintas';
 
   @override
   String get activityHistoryEmpty =>

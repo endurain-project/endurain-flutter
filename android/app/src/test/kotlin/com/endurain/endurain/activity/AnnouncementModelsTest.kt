@@ -29,6 +29,8 @@ class AnnouncementModelsTest {
         messageTemplate =
             "Distance {distance}. Temps {duration}. " +
                 "Tour {lapMetric}. Total {overallMetric}.",
+        autoPausedMessage = "Enregistrement en pause",
+        autoResumedMessage = "Enregistrement repris",
         cumulativeDistanceMeters = 4321.5,
         lastAnnouncedDistanceIndex = 4,
         lastAnnouncedTimeIndex = 2,
@@ -91,6 +93,8 @@ class AnnouncementModelsTest {
             "messageTemplate" to
                 "Distance {distance}. Time {duration}. " +
                 "Lap {lapMetric}. Overall {overallMetric}.",
+            "autoPausedMessage" to "Recording paused",
+            "autoResumedMessage" to "Recording resumed",
         )
 
         val state = AnnouncementStateData.fromStartArguments(args)
@@ -99,6 +103,8 @@ class AnnouncementModelsTest {
         assertEquals(false, state?.duckOtherAudio)
         assertEquals("en-US", state?.languageTag)
         assertEquals(AnnouncementStateData.METRIC_PACE, state?.metric)
+        assertEquals("Recording paused", state?.transitionMessage(autoPaused = true))
+        assertEquals("Recording resumed", state?.transitionMessage(autoPaused = false))
         // Progress fields always start clean for a brand-new recording.
         assertEquals(0.0, state?.cumulativeDistanceMeters ?: -1.0, 0.0)
         assertEquals(0, state?.lastAnnouncedDistanceIndex)
@@ -112,6 +118,25 @@ class AnnouncementModelsTest {
     @Test
     fun fromStartArgumentsReturnsNullWithoutALanguageTag() {
         assertNull(AnnouncementStateData.fromStartArguments(mapOf("enabled" to true)))
+    }
+
+    @Test
+    fun transitionMessagesRequireEnabledAnnouncementsAndNonBlankText() {
+        assertNull(sampleState().copy(enabled = false).transitionMessage(autoPaused = true))
+        assertNull(sampleState().copy(autoPausedMessage = "").transitionMessage(autoPaused = true))
+        assertNull(sampleState().copy(autoResumedMessage = " ").transitionMessage(autoPaused = false))
+    }
+
+    @Test
+    fun legacyStateWithoutTransitionMessagesRemainsSilent() {
+        val json = sampleState().toJson()
+        json.remove("autoPausedMessage")
+        json.remove("autoResumedMessage")
+
+        val state = AnnouncementStateData.fromJson(json)
+
+        assertNull(state?.transitionMessage(autoPaused = true))
+        assertNull(state?.transitionMessage(autoPaused = false))
     }
 
     @Test

@@ -39,6 +39,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat => '不支持该文件格式';
+
+  @override
+  String get errorActivityIngestionInvalidFile => '文件已损坏或无法读取';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound => '文件中未找到任何活动';
+
+  @override
+  String get errorActivityIngestionProcessingFailed => '导入活动时出错，请重试。';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable => '活动提供方当前不可用，请稍后重试。';
+
+  @override
   String get errorActivityUploadNotConfigured => '尚未配置活动上传';
 
   @override
@@ -450,6 +465,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get activityRetainUploadedGpxSubtitle => '上传后将已完成的路线文件存储在应用的私有存储中。';
+
+  @override
+  String get activityAutoPauseTitle => '自动暂停';
+
+  @override
+  String get activityAutoPauseSubtitle => '停止移动时自动暂停';
+
+  @override
+  String get activityAutoPauseToggleLabel => '自动暂停';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      '当您停止移动时自动暂停记录,一旦您重新开始移动即恢复。';
+
+  @override
+  String get activityAutoPauseDelayHelperText => '选择在暂停前等待多长时间没有移动。';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => '自动暂停中';
+
+  @override
+  String get audioAnnouncementsAutoPaused => '记录已暂停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '记录已恢复';
 
   @override
   String get activityHistoryEmpty => '此设备上未保存已完成的活动。';
@@ -1196,6 +1241,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat => '不支援此檔案格式';
+
+  @override
+  String get errorActivityIngestionInvalidFile => '檔案已損毀或無法讀取';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound => '檔案中找不到任何活動';
+
+  @override
+  String get errorActivityIngestionProcessingFailed => '匯入活動時發生錯誤，請重試。';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable => '活動提供者目前無法使用，請稍後再試。';
+
+  @override
   String get errorActivityUploadNotConfigured => '尚未設定活動上傳';
 
   @override
@@ -1608,6 +1668,36 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       '上傳後將已完成的路線檔案儲存在應用程式的私人儲存空間中。';
+
+  @override
+  String get activityAutoPauseTitle => '自動暫停';
+
+  @override
+  String get activityAutoPauseSubtitle => '停止移動時自動暫停';
+
+  @override
+  String get activityAutoPauseToggleLabel => '自動暫停';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      '當您停止移動時自動暫停記錄,一旦您重新開始移動即恢復。';
+
+  @override
+  String get activityAutoPauseDelayHelperText => '選擇在暫停前等待多長時間沒有移動。';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => '自動暫停中';
+
+  @override
+  String get audioAnnouncementsAutoPaused => '記錄已暫停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '記錄已恢復';
 
   @override
   String get activityHistoryEmpty => '此裝置上未儲存已完成的活動。';

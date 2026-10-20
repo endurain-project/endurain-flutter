@@ -20,8 +20,10 @@ import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/services/server_settings_service.dart';
 import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
+import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
@@ -116,6 +118,8 @@ class AppServices {
   LocalActivityRepository get localActivities => _activity.localActivities;
   ActivityRetentionSettingsRepository get activityRetentionSettings =>
       _activity.retentionSettings;
+  AutoPauseSettingsRepository get activityAutoPauseSettings =>
+      _activity.autoPauseSettings;
   ActivityUploadQueue get activityUploadQueue => _activity.uploadQueue;
   ActivityRecordingController get activityRecordingController =>
       _activity.recordingController;
@@ -222,5 +226,11 @@ class AppServices {
       measurementSystemController: _infra.measurementSystemController,
       secureStorage: _infra.secureStorage,
     );
+  }
+
+  /// Builds a route-owned [AutoPauseSettingsController] for the auto-pause
+  /// settings screen.
+  AutoPauseSettingsController createAutoPauseSettingsController() {
+    return AutoPauseSettingsController(repository: _activity.autoPauseSettings);
   }
 }

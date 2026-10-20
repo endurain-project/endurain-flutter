@@ -39,6 +39,26 @@ class AppLocalizationsBg extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Форматът на файла не се поддържа';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Файлът е повреден или не може да бъде прочетен';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Във файла не са намерени дейности';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Нещо се обърка при импортирането на дейността. Опитайте отново.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Доставчикът на дейности в момента не е достъпен. Опитайте отново по-късно.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Качването на дейности още не е конфигурирано';
 
@@ -489,6 +509,38 @@ class AppLocalizationsBg extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Записва завършените файлове с маршрути в частното хранилище на приложението след качване.';
+
+  @override
+  String get activityAutoPauseTitle => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Пауза автоматично, когато спрете да се движите';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Записът се поставя на пауза автоматично, когато спрете да се движите, и се възобновява, щом отново започнете да се движите.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Изберете колко дълго да чака без движение, преди да постави записа на пауза.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds секунди';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Автоматична пауза';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Записът е поставен на пауза';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Записът е възобновен';
 
   @override
   String get activityHistoryEmpty =>

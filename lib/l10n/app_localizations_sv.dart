@@ -40,6 +40,26 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Filformatet stöds inte';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Filen är skadad eller kunde inte läsas';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Inga aktiviteter hittades i filen';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Något gick fel när aktiviteten importerades. Försök igen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktivitetsleverantören är inte tillgänglig just nu. Försök igen senare.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Uppladdning av aktiviteter är inte konfigurerad än';
 
@@ -490,6 +510,38 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Sparar slutförda ruttfiler i appens privata lagring efter uppladdning.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatisk paus';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pausar automatiskt när du slutar röra dig';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausa automatiskt';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pausar inspelningen när du slutar röra dig och återupptar den när du börjar röra dig igen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Välj hur länge utan rörelse den ska vänta innan pausning.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatiskt pausad';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Inspelning pausad';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Inspelning återupptagen';
 
   @override
   String get activityHistoryEmpty =>

@@ -39,6 +39,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'The file format isn\'t supported';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'The file is corrupt or couldn\'t be read';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'No activities were found in the file';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Something went wrong while importing the activity. Try again.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'The activity provider is unavailable right now. Try again later.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Activity upload is not configured yet';
 
@@ -480,6 +500,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Stores completed route files in private app storage after upload.';
+
+  @override
+  String get activityAutoPauseTitle => 'Auto-pause';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pause automatically when you stop moving';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatically pause';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pauses recording when you stop moving, and resumes once you start moving again.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Choose how long to wait without movement before pausing.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds seconds';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Auto-paused';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Recording paused';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Recording resumed';
 
   @override
   String get activityHistoryEmpty =>

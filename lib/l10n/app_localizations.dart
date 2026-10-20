@@ -207,6 +207,36 @@ abstract class AppLocalizations {
   /// **'Could not upload activity: {details}'**
   String errorActivityUploadFailedWithDetails(String details);
 
+  /// Upload failed because the file format is unsupported - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The file format isn\'t supported'**
+  String get errorActivityIngestionUnsupportedFormat;
+
+  /// Upload failed because the file is corrupt or unreadable - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The file is corrupt or couldn\'t be read'**
+  String get errorActivityIngestionInvalidFile;
+
+  /// Upload failed because the file contains no activities - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No activities were found in the file'**
+  String get errorActivityIngestionNoActivitiesFound;
+
+  /// Upload failed because the server could not import the activity - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while importing the activity. Try again.'**
+  String get errorActivityIngestionProcessingFailed;
+
+  /// Upload failed because the activity provider is unavailable - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The activity provider is unavailable right now. Try again later.'**
+  String get errorActivityIngestionProviderUnavailable;
+
   /// Activity upload blocked because endpoint and multipart field are not configured - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
@@ -980,6 +1010,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stores completed route files in private app storage after upload.'**
   String get activityRetainUploadedGpxSubtitle;
+
+  /// Auto-pause settings screen title and settings navigation label - Used in: auto_pause_settings_screen.dart, settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-pause'**
+  String get activityAutoPauseTitle;
+
+  /// Settings subtitle for auto-pause navigation - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pause automatically when you stop moving'**
+  String get activityAutoPauseSubtitle;
+
+  /// Auto-pause switch label - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically pause'**
+  String get activityAutoPauseToggleLabel;
+
+  /// Auto-pause switch subtitle explaining the behavior - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pauses recording when you stop moving, and resumes once you start moving again.'**
+  String get activityAutoPauseToggleDescription;
+
+  /// Helper text above the auto-pause delay options - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how long to wait without movement before pausing.'**
+  String get activityAutoPauseDelayHelperText;
+
+  /// Auto-pause delay option label - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds'**
+  String activityAutoPauseDelayOptionLabel(int seconds);
+
+  /// Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-paused'**
+  String get activityAutoPausedIndicator;
+
+  /// Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording paused'**
+  String get audioAnnouncementsAutoPaused;
+
+  /// Spoken cue when recording automatically resumes - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording resumed'**
+  String get audioAnnouncementsAutoResumed;
 
   /// Empty state for local activity history - Used in: activity_history_screen.dart
   ///

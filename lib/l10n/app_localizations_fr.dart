@@ -39,6 +39,26 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Le format du fichier n\'est pas pris en charge';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Le fichier est corrompu ou n\'a pas pu être lu';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Aucune activité n\'a été trouvée dans le fichier';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Une erreur s\'est produite lors de l\'importation de l\'activité. Réessayez.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Le fournisseur d\'activités est indisponible pour le moment. Réessayez plus tard.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'L\'envoi d\'activités n\'est pas encore configuré';
 
@@ -493,6 +513,38 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Enregistre les fichiers d\'itinéraire terminés dans le stockage privé de l\'application après l\'envoi.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pause automatique';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Met en pause automatiquement quand vous arrêtez de bouger';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Mettre en pause automatiquement';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Met l\'enregistrement en pause lorsque vous arrêtez de bouger, et le reprend dès que vous recommencez à bouger.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Choisissez combien de temps sans mouvement attendre avant la pause.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds secondes';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'En pause automatique';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Enregistrement en pause';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Enregistrement repris';
 
   @override
   String get activityHistoryEmpty =>

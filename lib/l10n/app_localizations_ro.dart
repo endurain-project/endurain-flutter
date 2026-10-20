@@ -39,6 +39,26 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Formatul fișierului nu este acceptat';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fișierul este corupt sau nu a putut fi citit';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Nu s-au găsit activități în fișier';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'A apărut o eroare la importarea activității. Încearcă din nou.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Furnizorul de activități nu este disponibil momentan. Încearcă din nou mai târziu.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Încărcarea activităților nu este încă configurată';
 
@@ -491,6 +511,38 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Salvează fișierele de traseu finalizate în stocarea privată a aplicației după încărcare.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pauză automată';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pune automat pauză când te oprești din mișcare';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pauză automată';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Înregistrarea este pusă automat pe pauză când te oprești din mișcare și reia imediat ce te miști din nou.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Alege cât timp fără mișcare se așteaptă înainte de pauză.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds secunde';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'În pauză automată';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Înregistrare întreruptă';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Înregistrare reluată';
 
   @override
   String get activityHistoryEmpty =>

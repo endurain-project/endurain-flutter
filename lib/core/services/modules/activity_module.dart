@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_infrastructure.dart';
 import 'package:endurain/core/services/modules/auth_module.dart';
 import 'package:endurain/core/services/modules/sensors_module.dart';
@@ -10,6 +11,7 @@ import 'package:endurain/features/activity/controllers/local_activity_history_co
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -52,6 +54,13 @@ class ActivityModule {
     uploadFile: _auth.apiClient.uploadFile,
     config: ActivityUploadConfig.fromEndpoints(_infra.endpoints),
     retryPolicy: const ActivityUploadRetryPolicy(maxAttempts: 3),
+    fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) =>
+        _auth.apiClient.getJsonObject(
+          endpoint,
+          failureCode: AppErrorCode.activityUploadFailed,
+          expectedOrigin: expectedOrigin,
+          expectedProfileId: expectedProfileId,
+        ),
   );
 
   late final LocalActivityGpxStorage gpxStorage = LocalActivityGpxStorage();
@@ -87,6 +96,9 @@ class ActivityModule {
     return const UnsupportedAudioAnnouncementPreviewAdapter();
   }
 
+  late final AutoPauseSettingsRepository autoPauseSettings =
+      AutoPauseSettingsRepository(preferences: _infra.preferences);
+
   /// App-lifetime durable upload queue. Drains locally-stored activities whose
   /// upload has not yet succeeded; triggered on app-resume (see `app.dart`) and
   /// whenever connectivity is restored.
@@ -112,6 +124,7 @@ class ActivityModule {
       uploadService: upload,
       localActivityRepository: localActivities,
       retentionSettingsRepository: retentionSettings,
+      autoPauseSettingsRepository: autoPauseSettings,
       isUploadAuthorized: _auth.service.isAuthenticated,
       activeConnectionProfile: _auth.session.getConnectionProfile,
       diagnostics: _infra.diagnostics,

@@ -39,6 +39,26 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Het bestandsformaat wordt niet ondersteund';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Het bestand is beschadigd of kon niet worden gelezen';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Er zijn geen activiteiten gevonden in het bestand';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Er is iets misgegaan bij het importeren van de activiteit. Probeer het opnieuw.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'De activiteitenprovider is momenteel niet beschikbaar. Probeer het later opnieuw.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Het uploaden van activiteiten is nog niet geconfigureerd';
 
@@ -487,6 +507,38 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Bewaart voltooide routebestanden na het uploaden in de privéopslag van de app.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatisch pauzeren';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pauzeert automatisch wanneer je stopt met bewegen';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatisch pauzeren';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pauzeert de opname wanneer je stopt met bewegen en hervat zodra je weer beweegt.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Kies hoe lang zonder beweging gewacht moet worden voordat er wordt gepauzeerd.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds seconden';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisch gepauzeerd';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Opname gepauzeerd';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Opname hervat';
 
   @override
   String get activityHistoryEmpty =>

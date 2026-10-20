@@ -39,6 +39,26 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Il formato del file non è supportato';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Il file è danneggiato o non è stato possibile leggerlo';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Nessuna attività trovata nel file';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Si è verificato un errore durante l\'importazione dell\'attività. Riprova.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Il fornitore di attività non è al momento disponibile. Riprova più tardi.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Il caricamento delle attività non è ancora configurato';
 
@@ -491,6 +511,38 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Salva i file di percorso completati nell\'archivio privato dell\'app dopo il caricamento.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pausa automatica';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Mette in pausa automaticamente quando smetti di muoverti';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausa automatica';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Mette in pausa la registrazione quando smetti di muoverti e la riprende non appena ricominci a muoverti.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Scegli per quanto tempo senza movimento attendere prima di mettere in pausa.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds secondi';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'In pausa automatica';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Registrazione in pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Registrazione ripresa';
 
   @override
   String get activityHistoryEmpty =>

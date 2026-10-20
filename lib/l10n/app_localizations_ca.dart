@@ -39,6 +39,26 @@ class AppLocalizationsCa extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'El format del fitxer no és compatible';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'El fitxer està malmès o no s\'ha pogut llegir';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'No s\'ha trobat cap activitat al fitxer';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Alguna cosa ha anat malament en importar l\'activitat. Torna-ho a provar.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'El proveïdor d\'activitats no està disponible ara mateix. Torna-ho a provar més tard.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'La pujada d\'activitats encara no està configurada';
 
@@ -494,6 +514,38 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Desa els fitxers de ruta completats a l\'emmagatzematge privat de l\'aplicació després de penjar-los.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pausa automàtica';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Fa una pausa automàticament quan deixes de moure\'t';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausa automàticament';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Posa en pausa l\'enregistrament quan deixes de moure\'t i el reprèn quan tornes a moure\'t.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Tria quant de temps sense moviment cal esperar abans de pausar.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds segons';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'En pausa automàtica';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Enregistrament en pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Enregistrament reprès';
 
   @override
   String get activityHistoryEmpty =>

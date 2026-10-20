@@ -39,6 +39,26 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Format pliku nie jest obsługiwany';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Plik jest uszkodzony lub nie można go odczytać';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'W pliku nie znaleziono żadnych aktywności';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Podczas importowania aktywności wystąpił błąd. Spróbuj ponownie.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Dostawca aktywności jest obecnie niedostępny. Spróbuj ponownie później.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Przesyłanie aktywności nie jest jeszcze skonfigurowane';
 
@@ -492,6 +512,38 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Zapisuje ukończone pliki tras w prywatnej pamięci aplikacji po przesłaniu.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatyczna pauza';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatycznie wstrzymuje, gdy przestaniesz się poruszać';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Wstrzymuj automatycznie';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Nagrywanie jest automatycznie wstrzymywane, gdy przestaniesz się poruszać, i wznawiane, gdy znów zaczniesz się poruszać.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Wybierz, jak długo bez ruchu czekać przed wstrzymaniem.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatycznie wstrzymano';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Nagrywanie wstrzymane';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nagrywanie wznowione';
 
   @override
   String get activityHistoryEmpty =>

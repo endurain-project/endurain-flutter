@@ -39,6 +39,26 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Failivormingut ei toetata';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fail on rikutud või seda ei õnnestunud lugeda';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Failist ei leitud ühtegi tegevust';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Tegevuse importimisel läks midagi valesti. Proovi uuesti.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Tegevuste pakkuja ei ole praegu saadaval. Proovi hiljem uuesti.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Tegevuste üleslaadimine pole veel seadistatud';
 
@@ -486,6 +506,38 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Salvestab lõpetatud marsruudifailid pärast üleslaadimist rakenduse privaatsesse mällu.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automaatne paus';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Peatab automaatselt, kui lõpetate liikumise';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automaatne peatamine';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Salvestus peatub automaatselt, kui lõpetate liikumise, ja jätkub, kui hakkate uuesti liikuma.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Valige, kui kaua ilma liikumiseta enne peatamist oodata.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekundit';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaatselt peatatud';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Salvestamine peatatud';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Salvestamine jätkatud';
 
   @override
   String get activityHistoryEmpty =>

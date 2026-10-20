@@ -39,6 +39,26 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Tiedostomuotoa ei tueta';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Tiedosto on vioittunut tai sitä ei voitu lukea';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Tiedostosta ei löytynyt aktiviteetteja';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Aktiviteetin tuonnissa tapahtui virhe. Yritä uudelleen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktiviteettien tarjoaja ei ole tällä hetkellä saatavilla. Yritä myöhemmin uudelleen.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Aktiviteettien lataamista ei ole vielä määritetty';
 
@@ -490,6 +510,38 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Tallentaa valmiit reittitiedostot sovelluksen yksityiseen tallennustilaan latauksen jälkeen.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automaattinen tauko';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Keskeyttää automaattisesti, kun lopetat liikkumisen';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Keskeytä automaattisesti';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Tallennus keskeytyy automaattisesti, kun lopetat liikkumisen, ja jatkuu, kun aloitat liikkumisen uudelleen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Valitse, kuinka kauan ilman liikettä odotetaan ennen keskeytystä.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekuntia';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaattisesti keskeytetty';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Tallennus keskeytetty';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Tallennusta jatkettu';
 
   @override
   String get activityHistoryEmpty =>

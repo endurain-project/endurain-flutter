@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
@@ -16,6 +17,7 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
@@ -24,6 +26,7 @@ import 'package:endurain/features/activity/services/activity_recording_service.d
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -31,6 +34,18 @@ import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
+
+class _ThrowingPreferencesBackend implements AppPreferencesBackend {
+  @override
+  Future<void> delete(String key) => Future.error(StateError('unavailable'));
+
+  @override
+  Future<String?> read(String key) => Future.error(StateError('unavailable'));
+
+  @override
+  Future<void> write(String key, String value) =>
+      Future.error(StateError('unavailable'));
+}
 
 void main() {
   group('ActivityRecordingController', () {
@@ -47,6 +62,37 @@ void main() {
       expect(controller.state.status, ActivityRecordingStatus.recording);
       expect(controller.state.activityType, ActivityType.ride);
     });
+
+    test(
+      'starts recording when auto-pause preferences are unavailable',
+      () async {
+        final adapter = RecordingLocationPlatformAdapter();
+        final store = InMemoryActiveActivityStore();
+        final service = _recordingService(adapter: adapter, store: store)
+          ..configureAutoPause(
+            const MovementAutoPauseConfig(pauseDelay: Duration(seconds: 60)),
+          );
+        final controller = ActivityRecordingController(
+          recordingService: service,
+          autoPauseSettingsRepository: AutoPauseSettingsRepository(
+            preferences: AppPreferencesStore(
+              backend: _ThrowingPreferencesBackend(),
+            ),
+          ),
+        );
+        addTearDown(controller.dispose);
+
+        await controller.start(ActivityType.run);
+        await pumpEventQueue();
+
+        expect(controller.state.status, ActivityRecordingStatus.recording);
+        expect(store.session?.autoPauseEnabled, isTrue);
+        expect(
+          store.session?.autoPauseDelaySeconds,
+          AutoPauseSettingsRepository.defaultDelaySeconds,
+        );
+      },
+    );
 
     group('active recording recovery', () {
       test('returns false when no active session exists', () async {

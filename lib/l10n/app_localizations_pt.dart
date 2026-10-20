@@ -39,6 +39,26 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'O formato do ficheiro não é suportado';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'O ficheiro está corrompido ou não foi possível lê-lo';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Não foram encontradas atividades no ficheiro';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Ocorreu um erro ao importar a atividade. Tente novamente.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'O fornecedor de atividades não está disponível neste momento. Tente novamente mais tarde.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'O envio de atividades ainda não está configurado';
 
@@ -490,6 +510,38 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Guarda ficheiros de percurso concluídos no armazenamento privado da app depois do envio.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pausa automática';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Coloca em pausa automaticamente quando pára de se mover';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausar automaticamente';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Coloca a gravação em pausa quando pára de se mover e retoma assim que voltar a mover-se.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Escolha quanto tempo sem movimento esperar antes de pausar.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds segundos';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Em pausa automática';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Gravação em pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Gravação retomada';
 
   @override
   String get activityHistoryEmpty =>

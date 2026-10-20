@@ -46,9 +46,13 @@ void main() {
       });
 
       test('activityUploadEndpoint', () {
+        expect(endpoints.activityUploadEndpoint, '/api/v1/activities/upload');
+      });
+
+      test('activityIngestionJobEndpoint encodes the job id', () {
         expect(
-          endpoints.activityUploadEndpoint,
-          '/api/v1/activities/create/upload',
+          endpoints.activityIngestionJobEndpoint('a b/1'),
+          '/api/v1/activities/ingestion-jobs/a%20b%2F1',
         );
       });
     });
@@ -65,7 +69,7 @@ void main() {
       });
 
       test('activityUploadEndpoint uses v2 base', () {
-        expect(v2.activityUploadEndpoint, '/api/v2/activities/create/upload');
+        expect(v2.activityUploadEndpoint, '/api/v2/activities/upload');
       });
     });
   });

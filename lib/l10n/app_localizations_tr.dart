@@ -39,6 +39,25 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Dosya biçimi desteklenmiyor';
+
+  @override
+  String get errorActivityIngestionInvalidFile => 'Dosya bozuk veya okunamadı';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Dosyada hiç etkinlik bulunamadı';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Etkinlik içe aktarılırken bir sorun oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Etkinlik sağlayıcısı şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Etkinlik yükleme henüz yapılandırılmadı';
 
@@ -480,6 +499,38 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Tamamlanan rota dosyalarını yükledikten sonra uygulamanın özel deposunda saklar.';
+
+  @override
+  String get activityAutoPauseTitle => 'Otomatik duraklatma';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Hareket etmeyi bıraktığınızda otomatik olarak duraklatır';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Otomatik duraklat';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Hareket etmeyi bıraktığınızda kayıt otomatik olarak duraklatılır ve tekrar hareket etmeye başladığınızda devam eder.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Duraklatmadan önce hareketsiz geçecek süreyi seçin.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds saniye';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Otomatik duraklatıldı';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Kayıt duraklatıldı';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Kayıt sürdürüldü';
 
   @override
   String get activityHistoryEmpty =>

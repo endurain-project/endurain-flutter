@@ -39,6 +39,26 @@ class AppLocalizationsDa extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Filformatet understøttes ikke';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Filen er beskadiget eller kunne ikke læses';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Der blev ikke fundet nogen aktiviteter i filen';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Noget gik galt under importen af aktiviteten. Prøv igen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktivitetsudbyderen er ikke tilgængelig lige nu. Prøv igen senere.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Upload af aktiviteter er endnu ikke konfigureret';
 
@@ -487,6 +507,38 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Gemmer gennemførte rutefiler i appens private lagring efter upload.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatisk pause';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Sætter automatisk pause, når du holder op med at bevæge dig';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Sæt automatisk pause';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Sætter optagelsen på pause, når du holder op med at bevæge dig, og genoptager den, når du bevæger dig igen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Vælg, hvor længe der skal gå uden bevægelse, før der sættes pause.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisk pause';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Optagelse sat på pause';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Optagelse genoptaget';
 
   @override
   String get activityHistoryEmpty =>

@@ -138,6 +138,18 @@ class ActivityRecordingControls extends StatelessWidget {
                         ActivityCompletionSummary(state: state)
                       else
                         ActivityStatsDisplay(state: state),
+                      if (state.status == ActivityRecordingStatus.paused &&
+                          state.isAutoPaused) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.activityAutoPausedIndicator,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                       if (state.isActive ||
                           state.status == ActivityRecordingStatus.stopping ||
                           state.status == ActivityRecordingStatus.completed)

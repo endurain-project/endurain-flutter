@@ -56,10 +56,13 @@ class ActiveActivitySession {
     this.endedAt,
     this.elapsedDurationSeconds = 0,
     this.currentSegmentIndex = 0,
+    this.autoPauseEnabled = false,
+    this.autoPauseDelaySeconds = 5,
+    this.pausedAutomatically = false,
     this.schemaVersion = currentSchemaVersion,
   });
 
-  static const int currentSchemaVersion = 2;
+  static const int currentSchemaVersion = 3;
 
   final String localSessionId;
   final ActivityType activityType;
@@ -82,6 +85,31 @@ class ActiveActivitySession {
   final DateTime? endedAt;
   final int elapsedDurationSeconds;
   final int currentSegmentIndex;
+
+  /// Snapshot of the auto-pause preference in effect when this recording
+  /// started (see `AutoPauseSettingsRepository`), so a recovered recording
+  /// keeps behaving the way it did when it started even if the user later
+  /// changes the app preference. `false` (and a schema version below 3) means
+  /// a session persisted before auto-pause existed — treated as disabled
+  /// rather than defaulting to the current preference, so an in-flight
+  /// recording's behavior never silently changes underneath an app update.
+  final bool autoPauseEnabled;
+
+  /// Snapshot of the configured stillness delay (seconds) in effect when this
+  /// recording started. Only meaningful when [autoPauseEnabled] is `true`.
+  final int autoPauseDelaySeconds;
+
+  /// Whether the current [ActiveActivityStatus.paused] session was paused
+  /// automatically (by the movement detector) rather than by explicit user
+  /// action. Meaningless when [status] is not [ActiveActivityStatus.paused].
+  ///
+  /// This is the durable half of the manual/automatic distinction: a manual
+  /// pause never auto-resumes because the recorder stops monitoring location
+  /// entirely (see the recorder implementations), but this flag also lets a
+  /// recovered session (e.g. after the app was killed while auto-paused)
+  /// preserve that it should show as auto-paused rather than manually paused.
+  final bool pausedAutomatically;
+
   final int schemaVersion;
 
   bool get isActive =>
@@ -103,6 +131,9 @@ class ActiveActivitySession {
     Object? endedAt = kUnset,
     int? elapsedDurationSeconds,
     int? currentSegmentIndex,
+    bool? autoPauseEnabled,
+    int? autoPauseDelaySeconds,
+    bool? pausedAutomatically,
     int? schemaVersion,
   }) {
     return ActiveActivitySession(
@@ -135,6 +166,10 @@ class ActiveActivitySession {
       elapsedDurationSeconds:
           elapsedDurationSeconds ?? this.elapsedDurationSeconds,
       currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
+      autoPauseEnabled: autoPauseEnabled ?? this.autoPauseEnabled,
+      autoPauseDelaySeconds:
+          autoPauseDelaySeconds ?? this.autoPauseDelaySeconds,
+      pausedAutomatically: pausedAutomatically ?? this.pausedAutomatically,
       schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
@@ -158,6 +193,9 @@ class ActiveActivitySession {
       if (endedAt != null) 'endedAt': endedAt!.toUtcIso8601(),
       'elapsedDurationSeconds': elapsedDurationSeconds,
       'currentSegmentIndex': currentSegmentIndex,
+      'autoPauseEnabled': autoPauseEnabled,
+      'autoPauseDelaySeconds': autoPauseDelaySeconds,
+      'pausedAutomatically': pausedAutomatically,
     };
   }
 
@@ -188,6 +226,13 @@ class ActiveActivitySession {
       endedAt: jsonDateTime(json['endedAt']),
       elapsedDurationSeconds: jsonInt(json['elapsedDurationSeconds']) ?? 0,
       currentSegmentIndex: jsonInt(json['currentSegmentIndex']) ?? 0,
+      // Absent on sessions persisted before schema version 3 (or by a native
+      // recorder build that predates auto-pause): default to disabled rather
+      // than the current app preference, so an in-flight recording recovered
+      // after an app update never silently starts auto-pausing.
+      autoPauseEnabled: jsonBool(json['autoPauseEnabled']) ?? false,
+      autoPauseDelaySeconds: jsonInt(json['autoPauseDelaySeconds']) ?? 5,
+      pausedAutomatically: jsonBool(json['pausedAutomatically']) ?? false,
       schemaVersion: jsonInt(json['schemaVersion']) ?? currentSchemaVersion,
     );
   }

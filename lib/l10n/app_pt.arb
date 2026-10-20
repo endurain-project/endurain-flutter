@@ -45,6 +45,26 @@
       }
     }
   },
+  "errorActivityIngestionUnsupportedFormat": "O formato do ficheiro não é suportado",
+  "@errorActivityIngestionUnsupportedFormat": {
+    "description": "Envio falhou porque o formato do ficheiro não é suportado - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionInvalidFile": "O ficheiro está corrompido ou não foi possível lê-lo",
+  "@errorActivityIngestionInvalidFile": {
+    "description": "Envio falhou porque o ficheiro está corrompido ou ilegível - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionNoActivitiesFound": "Não foram encontradas atividades no ficheiro",
+  "@errorActivityIngestionNoActivitiesFound": {
+    "description": "Envio falhou porque o ficheiro não contém atividades - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionProcessingFailed": "Ocorreu um erro ao importar a atividade. Tente novamente.",
+  "@errorActivityIngestionProcessingFailed": {
+    "description": "Envio falhou porque o servidor não conseguiu importar a atividade - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionProviderUnavailable": "O fornecedor de atividades não está disponível neste momento. Tente novamente mais tarde.",
+  "@errorActivityIngestionProviderUnavailable": {
+    "description": "Envio falhou porque o fornecedor de atividades não está disponível - Usado em: error_localizations.dart"
+  },
   "errorActivityUploadNotConfigured": "O envio de atividades ainda não está configurado",
   "@errorActivityUploadNotConfigured": {
     "description": "Envio de atividade bloqueado porque endpoint e campo multipart não estão configurados - Usado em: error_localizations.dart"
@@ -605,6 +625,15 @@
   "@activityRetainUploadedGpxSubtitle": {
     "description": "Subtítulo que explica a retenção privada local de GPX - Usado em: settings_screen.dart"
   },
+  "activityAutoPauseTitle": "Pausa automática",
+  "activityAutoPauseSubtitle": "Coloca em pausa automaticamente quando pára de se mover",
+  "activityAutoPauseToggleLabel": "Pausar automaticamente",
+  "activityAutoPauseToggleDescription": "Coloca a gravação em pausa quando pára de se mover e retoma assim que voltar a mover-se.",
+  "activityAutoPauseDelayHelperText": "Escolha quanto tempo sem movimento esperar antes de pausar.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
+  "activityAutoPausedIndicator": "Em pausa automática",
+  "audioAnnouncementsAutoPaused": "Gravação em pausa",
+  "audioAnnouncementsAutoResumed": "Gravação retomada",
   "activityHistoryEmpty": "Não há atividades concluídas guardadas neste dispositivo.",
   "@activityHistoryEmpty": {
     "description": "Estado vazio do histórico local de atividades - Usado em: activity_history_screen.dart"
