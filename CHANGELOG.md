@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v0.10.0+17] - 2026-10-20
+
+### Added
+
+- Auto-pause and auto-resume for recordings. Recording pauses automatically when you stop moving and resumes when you start again, with a configurable delay and optional audio announcements (localized).
+
+### Changed
+
+- Compatibility with Endurain v0.20.0: uploads now wait for the server to finish importing the activity before marking it as uploaded, so failed imports are no longer reported as successful. Import errors are shown as localized messages.
+- Updated dependencies, including `sentry` 10.1.0 and `universal_ble` 3.1.0.
+
 ## [v0.9.2+16] - 2026-10-07
 
 ### Fixed
