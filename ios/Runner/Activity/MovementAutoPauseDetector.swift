@@ -57,7 +57,10 @@ final class MovementAutoPauseDetector {
     private let config: MovementAutoPauseConfig
 
     private var lastReliableSample: MovementSample?
-    private var lastMovementAtMillis: Int64?
+    /// When movement was last observed (or the timer was anchored). Callers use
+    /// it to back-date an auto-pause so the stillness delay is not counted as
+    /// recorded time.
+    private(set) var lastMovementAtMillis: Int64?
     private var consecutiveMovingSamples = 0
 
     init(config: MovementAutoPauseConfig) {

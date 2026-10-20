@@ -67,7 +67,13 @@ data class MovementSample(
 class MovementAutoPauseDetector(private val config: MovementAutoPauseConfig) {
 
     private var lastReliableSample: MovementSample? = null
-    private var lastMovementAtMillis: Long? = null
+    /**
+     * When movement was last observed (or the timer was anchored). Callers use
+     * it to back-date an auto-pause so the stillness delay is not counted as
+     * recorded time.
+     */
+    var lastMovementAtMillis: Long? = null
+        private set
     private var consecutiveMovingSamples = 0
 
     /**

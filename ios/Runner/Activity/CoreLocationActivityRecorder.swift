@@ -483,10 +483,17 @@ final class CoreLocationActivityRecorder:
     }
 
     private func transitionToAutoPaused(_ session: ActiveActivitySessionData, nowMillis: Int64) {
+        // Back-date the pause to when movement last stopped so the stillness
+        // delay is not counted as recorded time.
+        let anchorMillis = IsoTime.toEpochMillis(session.resumedAt ?? session.startedAt)
+        var pausedAtMillis = min(autoPauseDetector?.lastMovementAtMillis ?? nowMillis, nowMillis)
+        if let anchorMillis = anchorMillis {
+            pausedAtMillis = max(pausedAtMillis, min(anchorMillis, nowMillis))
+        }
         let paused = session.copyWith(
             status: ActiveActivitySessionData.statusPaused,
-            pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(nowMillis) / 1000))),
-            elapsedDurationSeconds: session.elapsedSecondsAt(nowMillis),
+            pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(pausedAtMillis) / 1000))),
+            elapsedDurationSeconds: session.elapsedSecondsAt(pausedAtMillis),
             pausedAutomatically: true
         )
         guard store.saveSession(paused) else {

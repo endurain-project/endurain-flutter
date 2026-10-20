@@ -77,6 +77,11 @@ class MovementAutoPauseDetector {
   DateTime? _lastMovementAt;
   int _consecutiveMovingSamples = 0;
 
+  /// When movement was last observed (or the timer was anchored). Callers use
+  /// it to back-date an auto-pause so the stillness delay is not counted as
+  /// recorded time.
+  DateTime? get lastMovementAt => _lastMovementAt;
+
   /// Resets all tracked history.
   ///
   /// Call this whenever the recording (re)starts or transitions between

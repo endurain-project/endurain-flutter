@@ -436,10 +436,19 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     ActiveActivitySession session, {
     required DateTime at,
   }) async {
+    // Back-date the pause to when movement last stopped so the stillness delay
+    // is not counted as recorded time.
+    final anchor = session.resumedAt ?? session.startedAt;
+    var pausedAt = _autoPauseDetector?.lastMovementAt ?? at;
+    if (pausedAt.isAfter(at)) {
+      pausedAt = at;
+    } else if (pausedAt.isBefore(anchor)) {
+      pausedAt = anchor;
+    }
     final paused = session.copyWith(
       status: ActiveActivityStatus.paused,
-      elapsedDurationSeconds: _elapsedDurationSeconds(session, at),
-      pausedAt: at,
+      elapsedDurationSeconds: _elapsedDurationSeconds(session, pausedAt),
+      pausedAt: pausedAt,
       pausedAutomatically: true,
     );
     _session = paused;

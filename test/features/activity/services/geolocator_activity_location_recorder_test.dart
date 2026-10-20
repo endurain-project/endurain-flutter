@@ -219,30 +219,29 @@ void main() {
         addTearDown(subscription.cancel);
 
         await recorder.start(autoPauseRequest());
-        adapter.addPosition(
-          recordingPosition(
-            latitude: 41.1,
-            longitude: -8.6,
-            timestamp: startedAt,
-            speed: 0,
-          ),
-        );
-        await pumpEventQueue();
-        adapter.addPosition(
-          recordingPosition(
-            latitude: 41.1,
-            longitude: -8.6,
-            timestamp: startedAt.add(const Duration(seconds: 5)),
-            speed: 0,
-          ),
-        );
-        await pumpEventQueue();
+        for (final (seconds, speed) in [(10, 2.0), (12, 0.0), (15, 0.0)]) {
+          adapter.addPosition(
+            recordingPosition(
+              latitude: 41.1,
+              longitude: -8.6,
+              timestamp: startedAt.add(Duration(seconds: seconds)),
+              speed: speed,
+            ),
+          );
+          await pumpEventQueue();
+        }
 
         expect(store.session?.status, ActiveActivityStatus.paused);
         expect(store.session?.pausedAutomatically, isTrue);
-        expect(store.session?.elapsedDurationSeconds, 5);
+        // The pause is back-dated to the last movement (10 s), so the 5 s
+        // stillness delay is not counted as recorded time.
+        expect(store.session?.elapsedDurationSeconds, 10);
+        expect(
+          store.session?.pausedAt,
+          startedAt.add(const Duration(seconds: 10)),
+        );
         // The stillness fix that crossed the delay is not itself recorded.
-        expect(store.points, hasLength(1));
+        expect(store.points, hasLength(2));
         expect(
           events.map((event) => event.type),
           contains(ActivityRecorderEventType.autoPaused),

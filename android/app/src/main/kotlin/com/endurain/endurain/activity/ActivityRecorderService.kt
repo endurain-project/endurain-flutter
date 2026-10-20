@@ -713,10 +713,16 @@ class ActivityRecorderService : Service() {
     }
 
     private fun transitionToAutoPaused(session: ActiveActivitySessionData, nowMillis: Long) {
+        // Back-date the pause to when movement last stopped so the stillness
+        // delay is not counted as recorded time.
+        val anchorMillis = IsoTime.toEpochMillis(session.resumedAt ?: session.startedAt)
+        val pausedAtMillis = (autoPauseDetector?.lastMovementAtMillis ?: nowMillis)
+            .coerceAtLeast(anchorMillis ?: Long.MIN_VALUE)
+            .coerceAtMost(nowMillis)
         val paused = session.copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,
-            pausedAt = IsoTime.format(Date(nowMillis)),
-            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
+            pausedAt = IsoTime.format(Date(pausedAtMillis)),
+            elapsedDurationSeconds = session.elapsedSecondsAt(pausedAtMillis),
             pausedAutomatically = true,
         )
         store.saveSession(paused)
