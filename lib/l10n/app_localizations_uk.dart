@@ -39,6 +39,26 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Формат файлу не підтримується';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Файл пошкоджено або його не вдалося прочитати';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'У файлі не знайдено активностей';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Під час імпорту активності сталася помилка. Спробуйте ще раз.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Постачальник активностей зараз недоступний. Спробуйте пізніше.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Завантаження активностей ще не налаштовано';
 

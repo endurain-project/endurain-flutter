@@ -39,6 +39,26 @@ class AppLocalizationsSk extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Formát súboru nie je podporovaný';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Súbor je poškodený alebo sa nedá prečítať';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'V súbore sa nenašli žiadne aktivity';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Pri importe aktivity sa vyskytla chyba. Skúste to znova.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Poskytovateľ aktivít momentálne nie je dostupný. Skúste to neskôr.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Nahrávanie aktivít ešte nie je nastavené';
 

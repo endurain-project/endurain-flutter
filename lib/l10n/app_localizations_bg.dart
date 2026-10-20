@@ -39,6 +39,26 @@ class AppLocalizationsBg extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Форматът на файла не се поддържа';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Файлът е повреден или не може да бъде прочетен';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Във файла не са намерени дейности';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Нещо се обърка при импортирането на дейността. Опитайте отново.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Доставчикът на дейности в момента не е достъпен. Опитайте отново по-късно.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Качването на дейности още не е конфигурирано';
 

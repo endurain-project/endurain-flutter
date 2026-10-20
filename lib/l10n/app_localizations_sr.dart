@@ -39,6 +39,26 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Формат датотеке није подржан';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Датотека је оштећена или није могла да се прочита';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'У датотеци нису пронађене активности';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Дошло је до грешке при увозу активности. Покушајте поново.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Пружалац активности тренутно није доступан. Покушајте поново касније.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Отпремање активности још није подешено';
 

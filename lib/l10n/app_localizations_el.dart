@@ -40,6 +40,26 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Η μορφή του αρχείου δεν υποστηρίζεται';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Το αρχείο είναι κατεστραμμένο ή δεν ήταν δυνατή η ανάγνωσή του';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Δεν βρέθηκαν δραστηριότητες στο αρχείο';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Παρουσιάστηκε σφάλμα κατά την εισαγωγή της δραστηριότητας. Δοκιμάστε ξανά.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Ο πάροχος δραστηριοτήτων δεν είναι διαθέσιμος αυτή τη στιγμή. Δοκιμάστε ξανά αργότερα.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Η μεταφόρτωση δραστηριοτήτων δεν έχει ρυθμιστεί ακόμη';
 

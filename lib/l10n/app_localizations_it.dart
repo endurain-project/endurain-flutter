@@ -39,6 +39,26 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Il formato del file non è supportato';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Il file è danneggiato o non è stato possibile leggerlo';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Nessuna attività trovata nel file';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Si è verificato un errore durante l\'importazione dell\'attività. Riprova.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Il fornitore di attività non è al momento disponibile. Riprova più tardi.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Il caricamento delle attività non è ancora configurato';
 

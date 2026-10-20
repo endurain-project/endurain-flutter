@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_infrastructure.dart';
 import 'package:endurain/core/services/modules/auth_module.dart';
 import 'package:endurain/core/services/modules/sensors_module.dart';
@@ -53,6 +54,13 @@ class ActivityModule {
     uploadFile: _auth.apiClient.uploadFile,
     config: ActivityUploadConfig.fromEndpoints(_infra.endpoints),
     retryPolicy: const ActivityUploadRetryPolicy(maxAttempts: 3),
+    fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) =>
+        _auth.apiClient.getJsonObject(
+          endpoint,
+          failureCode: AppErrorCode.activityUploadFailed,
+          expectedOrigin: expectedOrigin,
+          expectedProfileId: expectedProfileId,
+        ),
   );
 
   late final LocalActivityGpxStorage gpxStorage = LocalActivityGpxStorage();

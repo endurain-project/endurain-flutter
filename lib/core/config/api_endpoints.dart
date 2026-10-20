@@ -37,5 +37,9 @@ class ApiEndpoints {
   String get serverSettingsEndpoint => '$_base/public/server_settings';
 
   // Activity endpoints
-  String get activityUploadEndpoint => '$_base/activities/create/upload';
+  String get activityUploadEndpoint => '$_base/activities/upload';
+
+  /// Status of a background ingestion job created by an upload (`202`).
+  String activityIngestionJobEndpoint(String jobId) =>
+      '$_base/activities/ingestion-jobs/${Uri.encodeComponent(jobId)}';
 }

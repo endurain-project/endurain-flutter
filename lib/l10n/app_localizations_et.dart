@@ -39,6 +39,26 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Failivormingut ei toetata';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fail on rikutud või seda ei õnnestunud lugeda';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Failist ei leitud ühtegi tegevust';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Tegevuse importimisel läks midagi valesti. Proovi uuesti.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Tegevuste pakkuja ei ole praegu saadaval. Proovi hiljem uuesti.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Tegevuste üleslaadimine pole veel seadistatud';
 

@@ -39,6 +39,26 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Formatul fișierului nu este acceptat';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fișierul este corupt sau nu a putut fi citit';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Nu s-au găsit activități în fișier';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'A apărut o eroare la importarea activității. Încearcă din nou.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Furnizorul de activități nu este disponibil momentan. Încearcă din nou mai târziu.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Încărcarea activităților nu este încă configurată';
 

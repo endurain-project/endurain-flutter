@@ -40,6 +40,26 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'A fájlformátum nem támogatott';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'A fájl sérült, vagy nem olvasható';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'A fájlban nem található tevékenység';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Hiba történt a tevékenység importálása közben. Próbáld újra.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'A tevékenységszolgáltató jelenleg nem érhető el. Próbáld újra később.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'A tevékenységek feltöltése még nincs beállítva';
 

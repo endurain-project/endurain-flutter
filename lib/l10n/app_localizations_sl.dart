@@ -39,6 +39,26 @@ class AppLocalizationsSl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Oblika datoteke ni podprta';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Datoteka je poškodovana ali je ni bilo mogoče prebrati';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'V datoteki ni bilo najdenih aktivnosti';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Pri uvozu aktivnosti je prišlo do napake. Poskusite znova.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Ponudnik aktivnosti trenutno ni na voljo. Poskusite znova pozneje.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Nalaganje aktivnosti še ni nastavljeno';
 

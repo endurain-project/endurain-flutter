@@ -39,6 +39,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat => '不支持该文件格式';
+
+  @override
+  String get errorActivityIngestionInvalidFile => '文件已损坏或无法读取';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound => '文件中未找到任何活动';
+
+  @override
+  String get errorActivityIngestionProcessingFailed => '导入活动时出错，请重试。';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable => '活动提供方当前不可用，请稍后重试。';
+
+  @override
   String get errorActivityUploadNotConfigured => '尚未配置活动上传';
 
   @override
@@ -1224,6 +1239,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String errorActivityUploadFailedWithDetails(String details) {
     return '無法上傳活動：$details';
   }
+
+  @override
+  String get errorActivityIngestionUnsupportedFormat => '不支援此檔案格式';
+
+  @override
+  String get errorActivityIngestionInvalidFile => '檔案已損毀或無法讀取';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound => '檔案中找不到任何活動';
+
+  @override
+  String get errorActivityIngestionProcessingFailed => '匯入活動時發生錯誤，請重試。';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable => '活動提供者目前無法使用，請稍後再試。';
 
   @override
   String get errorActivityUploadNotConfigured => '尚未設定活動上傳';

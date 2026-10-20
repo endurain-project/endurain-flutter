@@ -31,7 +31,7 @@ void main() {
         const ApiEndpoints(v2Config),
       );
 
-      expect(config.endpoint, '/api/v2/activities/create/upload');
+      expect(config.endpoint, '/api/v2/activities/upload');
       expect(config.fieldName, ApiConstants.activityUploadFieldName);
       expect(config.isConfigured, isTrue);
     });
