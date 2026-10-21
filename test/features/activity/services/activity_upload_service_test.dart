@@ -324,6 +324,55 @@ void main() {
       expect(uploadCalls, 0);
     });
 
+    test('half-assigned record is not claimed and never uploads', () async {
+      final record = await _createRecord(
+        repository,
+        id: 'svc_half_assigned',
+        connectionOrigin: null,
+      );
+      var uploadCalls = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        activeConnectionProfile: () async => const ConnectionProfile(
+          id: 'profile-1',
+          origin: 'https://endurain.example',
+          kind: ConnectionKind.selfHosted,
+        ),
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploadCalls++;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
+      );
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.notAuthenticated,
+          ),
+        ),
+      );
+      expect(uploadCalls, 0);
+      final stored = await repository.get(record.id);
+      expect(stored?.connectionOrigin, isNull);
+    });
+
     test('concurrent attempts for one record share one upload', () async {
       final record = await _createRecord(repository, id: 'svc_single_flight');
       final started = Completer<void>();

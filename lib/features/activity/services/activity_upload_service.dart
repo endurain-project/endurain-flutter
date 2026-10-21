@@ -342,8 +342,7 @@ class ActivityUploadService {
   }
 
   static bool _lacksConnection(LocalActivityRecord record) =>
-      (record.connectionOrigin?.isEmpty ?? true) ||
-      (record.connectionProfileId?.isEmpty ?? true);
+      record.connectionOrigin == null && record.connectionProfileId == null;
 
   /// Activities recorded while signed out carry no origin/profile. When the
   /// user has since signed in, claim them for the active connection (as the
