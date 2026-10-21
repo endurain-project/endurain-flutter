@@ -1,0 +1,83 @@
+name: iOS
+
+# The macOS job is the slowest one, so pull requests only run it when they
+# touch the iOS project, plugin dependencies or this workflow. Pushes to main
+# always run it, since a merge can break the iOS project even when neither
+# side did on its own.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "ios/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/ios.yml"
+      - ".github/actions/**"
+
+env:
+  # Keep in sync with ci.yml.
+  FLUTTER_VERSION: 3.47.3
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Never cancel verification of a commit that has landed on main.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  ios-test:
+    name: iOS build and unit tests
+    # macOS runners cannot use container jobs, so unlike ci.yml this job does
+    # not use the CI builder image and checks out Flutter at the pinned version.
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+
+      # Cold-booting a simulator takes minutes on a fresh runner, so start it
+      # now and let it boot while Flutter is installed and the app is built.
+      # An available iPhone is picked instead of a hard-coded model, since
+      # runner images change which simulators they ship.
+      - name: Boot simulator
+        shell: bash
+        run: |
+          set -euo pipefail
+          udid=$(xcrun simctl list devices available --json | jq -r \
+            '[.devices | to_entries[] | select(.key | test("iOS")) | .value[]
+              | select(.name | startswith("iPhone"))][0].udid')
+          echo "Using simulator $udid"
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+          xcrun simctl boot "$udid"
+
+      - name: Install Flutter
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "$FLUTTER_VERSION" \
+            https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      - name: Generate Xcode config
+        shell: bash
+        run: flutter build ios --simulator --debug --config-only
+
+      - name: Run native XCTests
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcrun simctl bootstatus "$SIMULATOR_UDID"
+          xcodebuild test \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -destination "id=$SIMULATOR_UDID" \
+            CODE_SIGNING_ALLOWED=NO
