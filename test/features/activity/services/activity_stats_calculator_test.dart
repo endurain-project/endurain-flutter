@@ -1,5 +1,6 @@
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -190,6 +191,84 @@ void main() {
       expect(stats.maxSpeedMetersPerSecond, closeTo(74.2, 0.5));
     });
 
+    test('ignores a GPS spike when deriving max speed for a run', () {
+      // ~3 m/s steady jog with one fix 50 m ahead for a second.
+      final points = [
+        for (var i = 0; i < 4; i++)
+          _point(latitude: 0, longitude: i * 0.00003, seconds: i),
+        _point(latitude: 0, longitude: 0.0005, seconds: 4),
+        for (var i = 5; i < 9; i++)
+          _point(latitude: 0, longitude: i * 0.00003, seconds: i),
+      ];
+
+      final stats = calculator.calculate(
+        oneSegment(points),
+        activityType: ActivityType.run,
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, closeTo(3.3, 0.2));
+    });
+
+    test('median window rejects a spike that stays inside the speed cap', () {
+      // 10 m/s blip (36 km/h) among ~3 m/s samples: plausible for a runner,
+      // so only the median window keeps it from becoming the max.
+      final longitudes = [0.0, 0.00003, 0.00006, 0.00009, 0.00018, 0.00021];
+      final stats = calculator.calculate(
+        oneSegment([
+          for (var i = 0; i < longitudes.length; i++)
+            _point(latitude: 0, longitude: longitudes[i], seconds: i),
+          _point(latitude: 0, longitude: 0.00024, seconds: 6),
+          _point(latitude: 0, longitude: 0.00027, seconds: 7),
+        ]),
+        activityType: ActivityType.run,
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, lessThan(4));
+    });
+
+    test('floors very short intervals when deriving speed', () {
+      // 10 m in 0.1 s must not read as 100 m/s.
+      final stats = calculator.calculate(
+        oneSegment([
+          ActivityTrackPoint(
+            latitude: 0,
+            longitude: 0,
+            timestamp: DateTime.utc(2026),
+          ),
+          ActivityTrackPoint(
+            latitude: 0,
+            longitude: 0.00009,
+            timestamp: DateTime.utc(2026)
+                .add(const Duration(milliseconds: 100)),
+          ),
+        ]),
+        activityType: ActivityType.run,
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, closeTo(10, 0.1));
+    });
+
+    test('segment-start placeholders do not lower the median max speed', () {
+      // Five short segments of ~3 m/s: zero placeholders must not fill the
+      // median window and report a max of zero.
+      final segments = [
+        for (var s = 0; s < 5; s++)
+          ActivityTrackSegment(
+            points: [
+              _point(latitude: 0, longitude: 0, seconds: s * 100),
+              _point(latitude: 0, longitude: 0.00003, seconds: s * 100 + 1),
+            ],
+          ),
+      ];
+
+      final stats = calculator.calculate(
+        segments,
+        activityType: ActivityType.run,
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, closeTo(3.3, 0.2));
+    });
+
     test('reports zero max speed for a single-point segment', () {
       final stats = calculator.calculate(
         oneSegment([_point(latitude: 0, longitude: 0)]),
@@ -259,6 +338,22 @@ void main() {
       );
 
       expect(stats.elevationGainMeters, isNull);
+    });
+
+    test('matches the shared elevation parity vector', () {
+      // Cross-implementation vector: the Endurain backend's
+      // `compute_elevation_gain_and_loss` must return the same gain for this
+      // exact series. 60 samples, a 0.5 m/step climb under +/-4 m of jitter.
+      final elevations = [
+        for (var index = 0; index < 60; index += 1)
+          100 + 0.5 * index + (index.isEven ? 4 : -4),
+      ];
+
+      final stats = calculator.calculate(
+        oneSegment(_elevationProfile(elevations)),
+      );
+
+      expect(stats.elevationGainMeters, closeTo(22.3956043956, 1e-6));
     });
 
     test('smooths the flattened GPX elevation stream across segments', () {
