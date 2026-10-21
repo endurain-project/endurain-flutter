@@ -67,6 +67,9 @@ class ActivityStatsCalculator {
     int? currentCadenceRpm;
     var hasCadenceReading = false;
     final speeds = <double>[];
+    // Measured interval speeds only; the per-segment zero placeholders in
+    // [speeds] would otherwise pull down the median window used for max speed.
+    final maxSpeedSamples = <double>[];
     final heartRates = <int>[];
     final powers = <int>[];
     final cadences = <int>[];
@@ -126,8 +129,13 @@ class ActivityStatsCalculator {
             Duration.microsecondsPerSecond;
         if (pairSeconds > 0) {
           durationSeconds += pairSeconds;
-          final pairSpeed = pairDistanceMeters / pairSeconds;
+          // Same floor the outlier filter applies, so two fixes a fraction of a
+          // second apart cannot report a speed the filter judged plausible.
+          final pairSpeed =
+              pairDistanceMeters /
+              math.max(pairSeconds, _outlierFilter.minimumIntervalSeconds);
           speeds.add(pairSpeed);
+          maxSpeedSamples.add(pairSpeed);
           currentSpeedMetersPerSecond = pairSpeed;
         } else {
           speeds.add(0);
@@ -154,7 +162,9 @@ class ActivityStatsCalculator {
       durationSeconds: durationSeconds.round(),
       averageSpeedMetersPerSecond: speeds.isEmpty ? null : _mean(speeds),
       currentSpeedMetersPerSecond: currentSpeedMetersPerSecond,
-      maxSpeedMetersPerSecond: speeds.isEmpty ? null : _maxSpeed(speeds),
+      maxSpeedMetersPerSecond: speeds.isEmpty
+          ? null
+          : (maxSpeedSamples.isEmpty ? 0 : _maxSpeed(maxSpeedSamples)),
       elevationGainMeters: elevationGainMeters,
       currentHeartRateBpm: currentHeartRateBpm,
       averageHeartRateBpm: _backendRoundedMean(heartRates),

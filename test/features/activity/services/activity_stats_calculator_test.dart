@@ -226,6 +226,49 @@ void main() {
       expect(stats.maxSpeedMetersPerSecond, lessThan(4));
     });
 
+    test('floors very short intervals when deriving speed', () {
+      // 10 m in 0.1 s must not read as 100 m/s.
+      final stats = calculator.calculate(
+        oneSegment([
+          ActivityTrackPoint(
+            latitude: 0,
+            longitude: 0,
+            timestamp: DateTime.utc(2026),
+          ),
+          ActivityTrackPoint(
+            latitude: 0,
+            longitude: 0.00009,
+            timestamp: DateTime.utc(2026)
+                .add(const Duration(milliseconds: 100)),
+          ),
+        ]),
+        activityType: ActivityType.run,
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, closeTo(10, 0.1));
+    });
+
+    test('segment-start placeholders do not lower the median max speed', () {
+      // Five short segments of ~3 m/s: zero placeholders must not fill the
+      // median window and report a max of zero.
+      final segments = [
+        for (var s = 0; s < 5; s++)
+          ActivityTrackSegment(
+            points: [
+              _point(latitude: 0, longitude: 0, seconds: s * 100),
+              _point(latitude: 0, longitude: 0.00003, seconds: s * 100 + 1),
+            ],
+          ),
+      ];
+
+      final stats = calculator.calculate(
+        segments,
+        activityType: ActivityType.run,
+      );
+
+      expect(stats.maxSpeedMetersPerSecond, closeTo(3.3, 0.2));
+    });
+
     test('reports zero max speed for a single-point segment', () {
       final stats = calculator.calculate(
         oneSegment([_point(latitude: 0, longitude: 0)]),
