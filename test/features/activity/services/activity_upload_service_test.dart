@@ -5,6 +5,7 @@ import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -232,6 +233,104 @@ void main() {
       },
     );
 
+    test(
+      'originless record is claimed for the active profile and uploaded',
+      () async {
+        final record = await _createRecord(
+          repository,
+          id: 'svc_claim',
+          connectionOrigin: null,
+          connectionProfileId: null,
+        );
+        String? uploadedOrigin;
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          activeConnectionProfile: () async => const ConnectionProfile(
+            id: 'profile-1',
+            origin: 'https://endurain.example',
+            kind: ConnectionKind.selfHosted,
+          ),
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                uploadedOrigin = expectedOrigin;
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  201,
+                );
+              },
+        );
+
+        final result = await service.performUploadAttempt(
+          record: record,
+          repository: repository,
+        );
+
+        expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+        expect(result.connectionOrigin, 'https://endurain.example');
+        expect(result.connectionProfileId, 'profile-1');
+        expect(uploadedOrigin, 'https://endurain.example');
+      },
+    );
+
+    test('claiming leaves other guest records unassigned', () async {
+      final record = await _createRecord(
+        repository,
+        id: 'svc_claim_selected',
+        connectionOrigin: null,
+        connectionProfileId: null,
+      );
+      await _createRecord(
+        repository,
+        id: 'svc_claim_other',
+        connectionOrigin: null,
+        connectionProfileId: null,
+      );
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        activeConnectionProfile: () async => const ConnectionProfile(
+          id: 'profile-1',
+          origin: 'https://endurain.example',
+          kind: ConnectionKind.selfHosted,
+        ),
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                401,
+              );
+            },
+      );
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(isA<AppException>()),
+      );
+
+      final other = await repository.get('svc_claim_other');
+      expect(other?.connectionOrigin, isNull);
+      expect(other?.connectionProfileId, isNull);
+    });
+
     test('originless guest record never reaches the uploader', () async {
       final record = await _createRecord(
         repository,
@@ -272,6 +371,55 @@ void main() {
         ),
       );
       expect(uploadCalls, 0);
+    });
+
+    test('half-assigned record is not claimed and never uploads', () async {
+      final record = await _createRecord(
+        repository,
+        id: 'svc_half_assigned',
+        connectionOrigin: null,
+      );
+      var uploadCalls = 0;
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        activeConnectionProfile: () async => const ConnectionProfile(
+          id: 'profile-1',
+          origin: 'https://endurain.example',
+          kind: ConnectionKind.selfHosted,
+        ),
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              uploadCalls++;
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                201,
+              );
+            },
+      );
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.notAuthenticated,
+          ),
+        ),
+      );
+      expect(uploadCalls, 0);
+      final stored = await repository.get(record.id);
+      expect(stored?.connectionOrigin, isNull);
     });
 
     test('concurrent attempts for one record share one upload', () async {

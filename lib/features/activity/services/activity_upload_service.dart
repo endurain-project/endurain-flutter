@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -136,17 +137,20 @@ class ActivityUploadService {
     ActivityUploadRetryPolicy? retryPolicy,
     IngestionJobFetcher? fetchIngestionJob,
     IngestionPollPolicy? pollPolicy,
+    Future<ConnectionProfile?> Function()? activeConnectionProfile,
   }) : _config = config,
        _uploadFile = uploadFile,
        _retryPolicy = retryPolicy ?? const ActivityUploadRetryPolicy(),
        _fetchIngestionJob = fetchIngestionJob,
-       _pollPolicy = pollPolicy ?? const IngestionPollPolicy();
+       _pollPolicy = pollPolicy ?? const IngestionPollPolicy(),
+       _activeConnectionProfile = activeConnectionProfile;
 
   final ActivityUploadConfig? _config;
   final ActivityFileUploader? _uploadFile;
   final ActivityUploadRetryPolicy _retryPolicy;
   final IngestionJobFetcher? _fetchIngestionJob;
   final IngestionPollPolicy _pollPolicy;
+  final Future<ConnectionProfile?> Function()? _activeConnectionProfile;
   final Map<String, Future<LocalActivityRecord>> _inFlightAttempts = {};
 
   bool get isConfigured =>
@@ -337,6 +341,35 @@ class ActivityUploadService {
     return attempt;
   }
 
+  static bool _lacksConnection(LocalActivityRecord record) =>
+      record.connectionOrigin == null && record.connectionProfileId == null;
+
+  /// Activities recorded while signed out carry no origin/profile. When the
+  /// user has since signed in, claim just this record for the active
+  /// connection so a manual upload or retry works without a restart. Other
+  /// guest records stay unassigned until their own upload or the queue drain.
+  Future<LocalActivityRecord> _claimForActiveProfile(
+    LocalActivityRecord record,
+    LocalActivityRepository repository,
+    DateTime Function() clock,
+  ) async {
+    final profileProvider = _activeConnectionProfile;
+    if (profileProvider == null) {
+      return record;
+    }
+    final profile = await profileProvider();
+    if (profile == null) {
+      return record;
+    }
+    await repository.bindRecordToProfile(
+      id: record.id,
+      origin: profile.origin,
+      profileId: profile.id,
+      updatedAt: clock().toUtc(),
+    );
+    return await repository.get(record.id) ?? record;
+  }
+
   Future<LocalActivityRecord> _performUploadAttempt({
     required LocalActivityRecord record,
     required LocalActivityRepository repository,
@@ -347,7 +380,15 @@ class ActivityUploadService {
     if (persisted == null) {
       throw const AppException(AppErrorCode.activityLocalActivityNotFound);
     }
-    final current = persisted;
+    var current = persisted;
+    if (current.uploadStatus != LocalActivityUploadStatus.uploaded &&
+        _lacksConnection(current)) {
+      current = await _claimForActiveProfile(
+        current,
+        repository,
+        now ?? DateTime.now,
+      );
+    }
     if (current.uploadStatus == LocalActivityUploadStatus.uploaded) {
       if (current.gpxCleanupPending) {
         return _retryUploadedGpxCleanup(
