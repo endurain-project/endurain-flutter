@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Stronger elevation smoothing (9-sample median, 21-sample moving average) for the elevation gain shown on the device, matching the updated Endurain server so both report the same value (#17).
+
 ## [v0.10.1+18] - 2026-10-20
 
 ### Fixed
