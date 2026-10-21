@@ -5,6 +5,7 @@ import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -229,6 +230,55 @@ void main() {
         expect(result.uploadedAt, now);
         expect(result.lastUploadErrorCode, isNull);
         expect(await repository.hasGpx(result), isTrue);
+      },
+    );
+
+    test(
+      'originless record is claimed for the active profile and uploaded',
+      () async {
+        final record = await _createRecord(
+          repository,
+          id: 'svc_claim',
+          connectionOrigin: null,
+          connectionProfileId: null,
+        );
+        String? uploadedOrigin;
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          activeConnectionProfile: () async => const ConnectionProfile(
+            id: 'profile-1',
+            origin: 'https://endurain.example',
+            kind: ConnectionKind.selfHosted,
+          ),
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                uploadedOrigin = expectedOrigin;
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  201,
+                );
+              },
+        );
+
+        final result = await service.performUploadAttempt(
+          record: record,
+          repository: repository,
+        );
+
+        expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+        expect(result.connectionOrigin, 'https://endurain.example');
+        expect(result.connectionProfileId, 'profile-1');
+        expect(uploadedOrigin, 'https://endurain.example');
       },
     );
 
