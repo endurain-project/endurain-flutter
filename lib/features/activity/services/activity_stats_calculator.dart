@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:endurain/features/activity/models/activity_recording_stats.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/services/activity_track_outlier_filter.dart';
 import 'package:endurain/features/activity/services/geo_distance.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -13,10 +15,20 @@ import 'package:latlong2/latlong.dart';
 /// elevation is smoothed before deltas are summed, and zero heart-rate and
 /// power samples are treated as sensor dropouts rather than readings.
 class ActivityStatsCalculator {
-  ActivityStatsCalculator({Distance? distance})
-    : _distance = distance ?? geodesicDistance;
+  ActivityStatsCalculator({
+    Distance? distance,
+    ActivityTrackOutlierFilter outlierFilter =
+        const ActivityTrackOutlierFilter(),
+  }) : _distance = distance ?? geodesicDistance,
+       _outlierFilter = outlierFilter;
 
   final Distance _distance;
+  final ActivityTrackOutlierFilter _outlierFilter;
+
+  /// Number of consecutive speed samples whose median is compared when finding
+  /// the max speed. A single GPS glitch (or two) can no longer set the record.
+  /// Keep in sync with the backend's max speed calculation.
+  static const int _maxSpeedMedianWindow = 5;
 
   /// Windows and threshold used by the backend's elevation smoothing pipeline.
   static const int _elevationMedianWindow = 6;
@@ -25,11 +37,18 @@ class ActivityStatsCalculator {
   static const double _minimumElevationMeters = -9999.99;
   static const double _maximumElevationMeters = 9999.99;
 
-  /// Calculates stats from [segments], computing distance only within each
+  /// Calculates stats from [rawSegments], computing distance only within each
   /// segment so that gaps between pause-and-resume boundaries are not counted.
   ///
+  /// Fixes that imply a speed [activityType] cannot reach are discarded first,
+  /// the same way they are before the GPX is uploaded.
+  ///
   /// Passing an empty list returns zero stats.
-  ActivityRecordingStats calculate(List<ActivityTrackSegment> segments) {
+  ActivityRecordingStats calculate(
+    List<ActivityTrackSegment> rawSegments, {
+    ActivityType? activityType,
+  }) {
+    final segments = _outlierFilter.filter(rawSegments, activityType);
     if (segments.isEmpty) {
       return const ActivityRecordingStats(
         distanceMeters: 0,
@@ -133,7 +152,7 @@ class ActivityStatsCalculator {
       durationSeconds: durationSeconds.round(),
       averageSpeedMetersPerSecond: speeds.isEmpty ? null : _mean(speeds),
       currentSpeedMetersPerSecond: currentSpeedMetersPerSecond,
-      maxSpeedMetersPerSecond: speeds.isEmpty ? null : speeds.reduce(math.max),
+      maxSpeedMetersPerSecond: speeds.isEmpty ? null : _maxSpeed(speeds),
       elevationGainMeters: elevationGainMeters,
       currentHeartRateBpm: currentHeartRateBpm,
       averageHeartRateBpm: _backendRoundedMean(heartRates),
@@ -144,6 +163,27 @@ class ActivityStatsCalculator {
           ? _backendRoundedMean(cadences)
           : null,
     );
+  }
+
+  /// Highest speed that holds across a median-window window.
+  ///
+  /// Series shorter than the window use the plain maximum.
+  static double _maxSpeed(List<double> speeds) {
+    if (speeds.length < _maxSpeedMedianWindow) {
+      return speeds.reduce(math.max);
+    }
+    var best = 0.0;
+    for (
+      var start = 0;
+      start + _maxSpeedMedianWindow <= speeds.length;
+      start += 1
+    ) {
+      best = math.max(
+        best,
+        _median(speeds.sublist(start, start + _maxSpeedMedianWindow)),
+      );
+    }
+    return best;
   }
 
   /// Total ascent over an elevation series.
