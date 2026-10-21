@@ -271,7 +271,12 @@ class AuthService {
   /// Returns true if server logout succeeded, false if it failed
   /// Local tokens are always cleared regardless of server response
   Future<bool> logout() async {
-    final session = await _sessionStore.readSession();
+    // An unreadable store must not block sign-out: treat it as no session so
+    // the local clear below still runs.
+    final session = await _sessionStore.readSession().then<AuthSession?>(
+      (value) => value,
+      onError: (Object _) => null,
+    );
 
     bool serverLogoutSuccess = true;
 

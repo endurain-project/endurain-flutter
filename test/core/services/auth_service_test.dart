@@ -230,6 +230,20 @@ void main() {
       expect(await _readSession(storage), isNull);
     });
 
+    test(
+      'logout still completes when the stored session is unreadable',
+      () async {
+        final service = AuthService(
+          storage: SecureStorageService(storage: _UnreadableStorage()),
+          httpClient: MockClient((request) async {
+            fail('No server call without a readable session.');
+          }),
+        );
+
+        expect(await service.logout(), isTrue);
+      },
+    );
+
     test('throws when no server URL is configured for login', () async {
       final service = AuthService(
         storage: SecureStorageService(),
@@ -915,4 +929,31 @@ Future<void> _seedSession(
 
 Future<dynamic> _readSession(SecureStorageService storage) {
   return AuthSessionStore(storage: storage).readSession();
+}
+
+/// Fake [FlutterSecureStorage] whose reads fail but deletes succeed.
+class _UnreadableStorage extends Fake implements FlutterSecureStorage {
+  @override
+  Future<String?> read({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    throw Exception('keystore unavailable');
+  }
+
+  @override
+  Future<void> delete({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {}
 }
