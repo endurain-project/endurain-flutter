@@ -343,17 +343,19 @@ flutter test
 CI runs formatting, Dart analysis, the Dart test suite with a coverage
 threshold, the Kotlin unit tests, and a debug Android build.
 
-**iOS is not verified by CI**, because building it and running its XCTest suite
-both require a macOS runner that this project does not have. If your change
-touches `ios/**`, verify it locally before opening a pull request:
+A separate iOS workflow builds the app for the simulator and runs the native
+XCTests in `ios/RunnerTests` on a macOS runner. Pull requests only run it when
+they change `ios/**`, `pubspec.yaml`, `pubspec.lock`, the workflow or its
+shared actions; pushes to `main` always run it. It takes about 15 minutes, so
+for quicker feedback while changing `ios/**`, build locally first:
 
 ```bash
 # Compiles the Swift sources and the Xcode project configuration
 flutter build ios --simulator --debug
 ```
 
-Run the native iOS tests in `ios/RunnerTests` from Xcode when changing
-`ios/Runner/Activity/**` — they never run automatically.
+CI does not sign the app or run it on a device, so check device-only behaviour
+(HealthKit, background location, entitlements) on a real iPhone.
 
 Collect coverage and check a minimum line coverage threshold:
 
