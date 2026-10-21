@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.10.2+19] - 2026-10-21
+
+### Fixed
+
+- Wrong max speed and pace spikes (#11). GPS fixes that imply a speed the activity cannot reach (for example 80 km/h while running), including a poor first fix after a pause, are now dropped before the GPX is uploaded and before on-device stats are computed. Max speed is also taken from a short median window so a single glitch can no longer set it.
+- The app no longer hangs on the splash screen when secure storage cannot be read at launch. It starts in guest mode and restores the signed-in session when the storage becomes readable again. Signing in recovers from an unusable store (for example an invalidated Android Keystore key), logout still clears local data when the stored session cannot be read, and queued activity uploads retry instead of failing (#27).
 
 ### Changed
 
