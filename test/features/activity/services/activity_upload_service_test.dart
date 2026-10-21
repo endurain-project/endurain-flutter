@@ -505,6 +505,36 @@ void main() {
     });
 
     test(
+      'unreadable secure storage is transient, not a permanent failure',
+      () async {
+        final record = await _createRecord(repository, id: 'svc_storage_read');
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          uploadFile:
+              (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) {
+                throw const AppException(AppErrorCode.secureStorageReadFailed);
+              },
+        );
+
+        await expectLater(
+          service.performUploadAttempt(record: record, repository: repository),
+          throwsA(isA<AppException>()),
+        );
+
+        final persisted = await repository.get(record.id);
+        expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+        expect(
+          persisted.lastUploadErrorCode,
+          AppErrorCode.secureStorageReadFailed,
+        );
+        expect(persisted.autoRetryEligible, isTrue);
+      },
+    );
+
+    test(
       'throws activityUploadNotConfigured when service is not configured',
       () async {
         final record = await _createRecord(

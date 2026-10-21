@@ -454,7 +454,8 @@ class ActivityUploadService {
   }
 
   /// Returns true if [error] represents a failure worth retrying (5xx
-  /// response or network-level I/O error). Auth failures, missing GPX, and
+  /// response, network-level I/O error, or secure storage temporarily
+  /// unreadable). Auth failures, missing GPX, and
   /// configuration errors are not transient.
   ///
   /// An unexpected non-[AppException] (e.g. a `TypeError`/`StateError` from a
@@ -466,7 +467,8 @@ class ActivityUploadService {
       return _isTransientIoError(error);
     }
     if (error.code == AppErrorCode.requestTimeout ||
-        error.code == AppErrorCode.transientAuthUnavailable) {
+        error.code == AppErrorCode.transientAuthUnavailable ||
+        error.code == AppErrorCode.secureStorageReadFailed) {
       return true;
     }
     if (error.code != AppErrorCode.activityUploadFailed) {

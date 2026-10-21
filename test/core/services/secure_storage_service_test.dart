@@ -1,4 +1,5 @@
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -226,6 +227,119 @@ void main() {
       expect(fake.values['k'], 'v');
     });
 
+    group('server URL mirror', () {
+      test('falls back to the mirror when secure storage throws', () async {
+        final backend = _MemoryBackend();
+        final preferences = AppPreferencesStore(backend: backend);
+        await preferences.write(
+          key: 'server_url',
+          value: 'https://mirror.test',
+        );
+        final storage = SecureStorageService(
+          storage: _ThrowingStorage(),
+          preferences: preferences,
+        );
+
+        expect(await storage.getServerUrl(), 'https://mirror.test');
+      });
+
+      test('falls back to the mirror when the secure value is gone', () async {
+        FlutterSecureStorage.setMockInitialValues(<String, String>{});
+        final preferences = AppPreferencesStore(backend: _MemoryBackend());
+        await preferences.write(
+          key: 'server_url',
+          value: 'https://mirror.test',
+        );
+        final storage = SecureStorageService(preferences: preferences);
+
+        expect(await storage.getServerUrl(), 'https://mirror.test');
+      });
+
+      test('prefers the secure value over the mirror', () async {
+        FlutterSecureStorage.setMockInitialValues(<String, String>{
+          'server_url': 'https://secure.test',
+        });
+        final preferences = AppPreferencesStore(backend: _MemoryBackend());
+        await preferences.write(
+          key: 'server_url',
+          value: 'https://mirror.test',
+        );
+        final storage = SecureStorageService(preferences: preferences);
+
+        expect(await storage.getServerUrl(), 'https://secure.test');
+      });
+
+      test('rethrows the read failure when the mirror is empty', () {
+        final storage = SecureStorageService(
+          storage: _ThrowingStorage(),
+          preferences: AppPreferencesStore(backend: _MemoryBackend()),
+        );
+
+        expect(
+          storage.getServerUrl,
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              AppErrorCode.secureStorageReadFailed,
+            ),
+          ),
+        );
+      });
+
+      test('setServerUrl writes both stores', () async {
+        FlutterSecureStorage.setMockInitialValues(<String, String>{});
+        final backend = _MemoryBackend();
+        final storage = SecureStorageService(
+          preferences: AppPreferencesStore(backend: backend),
+        );
+
+        await storage.setServerUrl('https://example.test');
+
+        expect(await storage.read(key: 'server_url'), 'https://example.test');
+        expect(await backend.read('server_url'), 'https://example.test');
+      });
+
+      test('setServerUrl succeeds when the mirror write fails', () async {
+        FlutterSecureStorage.setMockInitialValues(<String, String>{});
+        final storage = SecureStorageService(
+          preferences: AppPreferencesStore(backend: _FailingBackend()),
+        );
+
+        await storage.setServerUrl('https://example.test');
+
+        expect(await storage.read(key: 'server_url'), 'https://example.test');
+      });
+
+      test('clearAuthTokens keeps the mirrored server URL', () async {
+        FlutterSecureStorage.setMockInitialValues(<String, String>{});
+        final backend = _MemoryBackend();
+        final storage = SecureStorageService(
+          preferences: AppPreferencesStore(backend: backend),
+        );
+        await storage.setServerUrl('https://example.test');
+
+        await storage.clearAuthTokens();
+
+        expect(await storage.getServerUrl(), 'https://example.test');
+      });
+    });
+
+    test('resetAll removes every secure value', () async {
+      FlutterSecureStorage.setMockInitialValues(<String, String>{
+        'a': '1',
+        'b': '2',
+      });
+      final storage = SecureStorageService(
+        preferences: AppPreferencesStore(backend: _MemoryBackend()),
+      );
+
+      await storage.resetAll();
+
+      expect(await storage.read(key: 'a'), isNull);
+      expect(await storage.read(key: 'b'), isNull);
+    });
+
     test('delete throws secureStorageDeleteFailed on platform exception', () {
       final storage = SecureStorageService(storage: _ThrowingWriteStorage());
 
@@ -241,4 +355,29 @@ void main() {
       );
     });
   });
+}
+
+class _MemoryBackend implements AppPreferencesBackend {
+  final Map<String, String> _values = {};
+
+  @override
+  Future<String?> read(String key) async => _values[key];
+
+  @override
+  Future<void> write(String key, String value) async => _values[key] = value;
+
+  @override
+  Future<void> delete(String key) async => _values.remove(key);
+}
+
+class _FailingBackend implements AppPreferencesBackend {
+  @override
+  Future<String?> read(String key) async => throw StateError('unavailable');
+
+  @override
+  Future<void> write(String key, String value) async =>
+      throw StateError('unavailable');
+
+  @override
+  Future<void> delete(String key) async => throw StateError('unavailable');
 }
