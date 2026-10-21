@@ -25,6 +25,8 @@ class ActivityTrackOutlierFilter {
 
   /// After this many rejected fixes in a row the next one is accepted, so a
   /// genuine relocation (tunnel, signal loss) cannot erase the rest of a track.
+  /// If it still breaks the speed limit it starts a new segment, so the jump
+  /// is never counted as distance or speed.
   final int maxConsecutiveDrops;
 
   /// Fastest speed (m/s) considered plausible for [type], with headroom above
@@ -40,7 +42,8 @@ class ActivityTrackOutlierFilter {
   }
 
   /// Returns [segments] without implausible fixes. Segments are filtered
-  /// independently; one that ends up empty is kept so segment counts match.
+  /// independently, and one is split where the track relocated. A segment that
+  /// ends up empty is kept so segment counts match.
   List<ActivityTrackSegment> filter(
     List<ActivityTrackSegment> segments,
     ActivityType? type,
@@ -48,16 +51,17 @@ class ActivityTrackOutlierFilter {
     final cap = maxSpeedMetersPerSecond(type);
     return [
       for (final segment in segments)
-        ActivityTrackSegment(points: _filterPoints(segment.points, cap)),
+        for (final points in _filterPoints(segment.points, cap))
+          ActivityTrackSegment(points: points),
     ];
   }
 
-  List<ActivityTrackPoint> _filterPoints(
+  List<List<ActivityTrackPoint>> _filterPoints(
     List<ActivityTrackPoint> points,
     double cap,
   ) {
     if (points.length < 2) {
-      return points;
+      return [points];
     }
     var start = 0;
     // A bad first fix has no predecessor to be compared with, so judge it
@@ -69,18 +73,26 @@ class ActivityTrackOutlierFilter {
       start += 1;
     }
 
-    final kept = <ActivityTrackPoint>[points[start]];
+    final filtered = <List<ActivityTrackPoint>>[];
+    var kept = <ActivityTrackPoint>[points[start]];
     var drops = 0;
     for (var index = start + 1; index < points.length; index += 1) {
       final candidate = points[index];
-      if (drops < maxConsecutiveDrops && _exceeds(kept.last, candidate, cap)) {
+      final exceeds = _exceeds(kept.last, candidate, cap);
+      if (drops < maxConsecutiveDrops && exceeds) {
         drops += 1;
         continue;
       }
+      if (exceeds) {
+        filtered.add(kept);
+        kept = [candidate];
+      } else {
+        kept.add(candidate);
+      }
       drops = 0;
-      kept.add(candidate);
     }
-    return kept;
+    filtered.add(kept);
+    return filtered;
   }
 
   bool _exceeds(ActivityTrackPoint from, ActivityTrackPoint to, double cap) {

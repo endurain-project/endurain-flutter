@@ -24,8 +24,8 @@ void main() {
     ]) {
       return filter
           .filter([ActivityTrackSegment(points: points)], type)
-          .single
-          .points;
+          .expand((segment) => segment.points)
+          .toList();
     }
 
     test('keeps a steady run untouched', () {
@@ -63,14 +63,20 @@ void main() {
       expect(kept.first.timestamp.second, 1);
     });
 
-    test('accepts a persistent relocation after repeated drops', () {
+    test('splits the track where a persistent relocation is accepted', () {
       final points = [
-        point(0, 0),
-        for (var i = 1; i <= 6; i++) point(500 + i * 3.0, i.toDouble()),
+        for (var i = 0; i < 3; i++) point(i * 3.0, i.toDouble()),
+        for (var i = 3; i <= 8; i++) point(500 + i * 3.0, i.toDouble()),
       ];
-      final kept = run(points);
-      expect(kept.length, greaterThan(3));
-      expect(kept.last.timestamp.second, 6);
+      final segments = filter.filter([
+        ActivityTrackSegment(points: points),
+      ], ActivityType.run);
+
+      expect(segments, hasLength(2));
+      expect(segments[0].points, hasLength(3));
+      // Three fixes are dropped, the fourth starts the new segment.
+      expect(segments[1].points.first.timestamp.second, 6);
+      expect(segments[1].points.last.timestamp.second, 8);
     });
 
     test('allows cycling speeds that would be impossible for a run', () {
