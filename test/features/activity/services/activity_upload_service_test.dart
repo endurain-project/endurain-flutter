@@ -282,6 +282,55 @@ void main() {
       },
     );
 
+    test('claiming leaves other guest records unassigned', () async {
+      final record = await _createRecord(
+        repository,
+        id: 'svc_claim_selected',
+        connectionOrigin: null,
+        connectionProfileId: null,
+      );
+      await _createRecord(
+        repository,
+        id: 'svc_claim_other',
+        connectionOrigin: null,
+        connectionProfileId: null,
+      );
+      final service = ActivityUploadService(
+        config: const ActivityUploadConfig(
+          endpoint: '/upload',
+          fieldName: 'file',
+        ),
+        activeConnectionProfile: () async => const ConnectionProfile(
+          id: 'profile-1',
+          origin: 'https://endurain.example',
+          kind: ConnectionKind.selfHosted,
+        ),
+        uploadFile:
+            (
+              _,
+              _,
+              _, {
+              idempotencyKey,
+              expectedOrigin,
+              expectedProfileId,
+            }) async {
+              return http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                401,
+              );
+            },
+      );
+
+      await expectLater(
+        service.performUploadAttempt(record: record, repository: repository),
+        throwsA(isA<AppException>()),
+      );
+
+      final other = await repository.get('svc_claim_other');
+      expect(other?.connectionOrigin, isNull);
+      expect(other?.connectionProfileId, isNull);
+    });
+
     test('originless guest record never reaches the uploader', () async {
       final record = await _createRecord(
         repository,

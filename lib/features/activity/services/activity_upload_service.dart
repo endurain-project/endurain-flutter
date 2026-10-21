@@ -345,8 +345,9 @@ class ActivityUploadService {
       record.connectionOrigin == null && record.connectionProfileId == null;
 
   /// Activities recorded while signed out carry no origin/profile. When the
-  /// user has since signed in, claim them for the active connection (as the
-  /// upload queue does) so a manual upload or retry works without a restart.
+  /// user has since signed in, claim just this record for the active
+  /// connection so a manual upload or retry works without a restart. Other
+  /// guest records stay unassigned until their own upload or the queue drain.
   Future<LocalActivityRecord> _claimForActiveProfile(
     LocalActivityRecord record,
     LocalActivityRepository repository,
@@ -360,7 +361,8 @@ class ActivityUploadService {
     if (profile == null) {
       return record;
     }
-    await repository.bindUnassignedToProfile(
+    await repository.bindRecordToProfile(
+      id: record.id,
       origin: profile.origin,
       profileId: profile.id,
       updatedAt: clock().toUtc(),

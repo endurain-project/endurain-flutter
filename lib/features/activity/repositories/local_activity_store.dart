@@ -41,4 +41,14 @@ abstract interface class LocalActivityStore {
     required String profileId,
     required DateTime updatedAt,
   });
+
+  /// Assigns [origin]/[profileId] to the single record [id] when it has no
+  /// connection yet, stamping [updatedAt]. Returns the number of records bound
+  /// (0 when the record is missing or already bound).
+  Future<int> bindRecordToProfile({
+    required String id,
+    required String origin,
+    required String profileId,
+    required DateTime updatedAt,
+  });
 }
