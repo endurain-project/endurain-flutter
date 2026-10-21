@@ -31,8 +31,10 @@ class ActivityStatsCalculator {
   static const int _maxSpeedMedianWindow = 5;
 
   /// Windows and threshold used by the backend's elevation smoothing pipeline.
-  static const int _elevationMedianWindow = 6;
-  static const int _elevationAverageWindow = 3;
+  /// Keep in sync with `compute_elevation_gain_and_loss` on the server; both
+  /// are verified against the shared fixture in `activity_stats_calculator_test`.
+  static const int _elevationMedianWindow = 9;
+  static const int _elevationAverageWindow = 21;
   static const double _elevationThresholdMeters = 0.1;
   static const double _minimumElevationMeters = -9999.99;
   static const double _maximumElevationMeters = 9999.99;

@@ -297,6 +297,22 @@ void main() {
       expect(stats.elevationGainMeters, isNull);
     });
 
+    test('matches the shared elevation parity vector', () {
+      // Cross-implementation vector: the Endurain backend's
+      // `compute_elevation_gain_and_loss` must return the same gain for this
+      // exact series. 60 samples, a 0.5 m/step climb under +/-4 m of jitter.
+      final elevations = [
+        for (var index = 0; index < 60; index += 1)
+          100 + 0.5 * index + (index.isEven ? 4 : -4),
+      ];
+
+      final stats = calculator.calculate(
+        oneSegment(_elevationProfile(elevations)),
+      );
+
+      expect(stats.elevationGainMeters, closeTo(22.3956043956, 1e-6));
+    });
+
     test('smooths the flattened GPX elevation stream across segments', () {
       final seg1 = ActivityTrackSegment(
         points: _elevationProfile(climbElevationProfile()),
