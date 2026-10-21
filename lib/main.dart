@@ -66,8 +66,14 @@ Future<void> main() async {
 
       // Start remote crash reporting only if the user previously opted in.
       // No-op (and no network) otherwise; the two diagnostics channels are
-      // independent.
-      await crashReporting.initializeIfEnabled();
+      // independent. Best-effort and bounded: a failure or stall here (it
+      // reads preferences and may start a network transport) must never keep
+      // the app from reaching `runApp`.
+      try {
+        await crashReporting.initializeIfEnabled().timeout(
+          const Duration(seconds: 5),
+        );
+      } catch (_) {}
 
       FlutterError.onError = (details) {
         FlutterError.presentError(details);

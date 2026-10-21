@@ -87,6 +87,8 @@ android {
             // Never publish a debug-signed artifact. The release task checks
             // required upload-key inputs before this variant is configured.
             signingConfig = signingConfigs.getByName("release")
+            // Appended to the Flutter Gradle plugin's own R8 rules.
+            proguardFiles("proguard-rules.pro")
         }
     }
 

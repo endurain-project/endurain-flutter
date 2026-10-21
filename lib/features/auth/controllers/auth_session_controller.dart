@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
@@ -26,6 +28,10 @@ class AuthSessionController extends SafeNotifier {
 
   final AuthService _authService;
 
+  /// Upper bound for the launch session read so a stalled secure-storage call
+  /// can never pin the app on the splash.
+  static const _initializeTimeout = Duration(seconds: 3);
+
   SessionMode _mode = SessionMode.loading;
 
   /// Set when the stored session could not be read (secure storage
@@ -45,17 +51,23 @@ class AuthSessionController extends SafeNotifier {
     notify();
 
     try {
-      _mode = await _authService.isAuthenticated()
+      _mode = await _authService.hasStoredSession().timeout(_initializeTimeout)
           ? SessionMode.authenticated
           : SessionMode.guest;
       _sessionUnreadable = false;
     } catch (_) {
-      // Secure storage unavailable: start usable in guest mode instead of
-      // hanging on the splash, and retry when the app resumes.
+      // Secure storage unavailable, or the read stalled past
+      // [_initializeTimeout]: start usable in guest mode instead of hanging on
+      // the splash, and retry when the app resumes.
       _mode = SessionMode.guest;
       _sessionUnreadable = true;
     }
     notify();
+    // Confirm a restored session with the server off the launch path. A
+    // definitive rejection drops to guest; a transient failure keeps the session.
+    if (_mode == SessionMode.authenticated) {
+      unawaited(revalidate());
+    }
   }
 
   void markAuthenticated() {

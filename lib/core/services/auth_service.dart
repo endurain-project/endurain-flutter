@@ -308,6 +308,12 @@ class AuthService {
     return serverLogoutSuccess;
   }
 
+  /// Whether a session is stored locally. Never touches the network, so it is
+  /// safe to await on the launch path; use [isAuthenticated] to also confirm
+  /// the session is still accepted by the server.
+  Future<bool> hasStoredSession() async =>
+      await _sessionStore.readSession() != null;
+
   /// Check if user is authenticated
   Future<bool> isAuthenticated() async {
     final session = await _sessionStore.readSession();

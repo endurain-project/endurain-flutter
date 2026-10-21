@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/models/app_exception.dart';
@@ -79,6 +81,37 @@ void main() {
       expect(controller.mode, SessionMode.authenticated);
       controller.dispose();
     });
+
+    test(
+      'launch does not wait for the server to confirm the session',
+      () async {
+        final service = _FakeAuthService(authenticated: true, hang: true);
+        final controller = AuthSessionController(authService: service);
+
+        await controller.initialize();
+
+        expect(controller.isAuthenticated, isTrue);
+        controller.dispose();
+      },
+    );
+
+    test(
+      'launch revalidation drops to guest when the server rejects',
+      () async {
+        final service = _FakeAuthService(
+          authenticated: true,
+          rejectOnConfirm: true,
+        );
+        final controller = AuthSessionController(authService: service);
+
+        await controller.initialize();
+        expect(controller.isAuthenticated, isTrue);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.isGuest, isTrue);
+        controller.dispose();
+      },
+    );
 
     test('initializes into guest mode when there is no session', () async {
       final controller = AuthSessionController(
@@ -185,17 +218,41 @@ void main() {
 }
 
 class _FakeAuthService extends AuthService {
-  _FakeAuthService({this.authenticated = false, this.throws = false})
-    : super(
-        storage: SecureStorageService(),
-        sessionStore: AuthSessionStore(storage: SecureStorageService()),
-      );
+  _FakeAuthService({
+    this.authenticated = false,
+    this.throws = false,
+    this.hang = false,
+    this.rejectOnConfirm = false,
+  }) : super(
+         storage: SecureStorageService(),
+         sessionStore: AuthSessionStore(storage: SecureStorageService()),
+       );
 
   bool authenticated;
   bool throws;
 
+  /// [isAuthenticated] (the server confirmation) never completes.
+  final bool hang;
+
+  /// The server confirmation reports the session as rejected.
+  final bool rejectOnConfirm;
+
+  @override
+  Future<bool> hasStoredSession() async {
+    if (throws) {
+      throw const AppException(AppErrorCode.secureStorageReadFailed);
+    }
+    return authenticated;
+  }
+
   @override
   Future<bool> isAuthenticated() async {
+    if (hang) {
+      return Completer<bool>().future;
+    }
+    if (rejectOnConfirm) {
+      return false;
+    }
     if (throws) {
       throw const AppException(AppErrorCode.secureStorageReadFailed);
     }
