@@ -88,4 +88,10 @@ jobs:
       # fake server; the Android counterpart is integration.yml.
       - name: Run integration tests
         shell: bash
-        run: flutter test integration_test -d "$SIMULATOR_UDID"
+        run: |
+          set -euo pipefail
+          # xcodebuild test can leave the simulator shut down; -b boots it
+          # again if needed and waits until it is ready.
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b
+          flutter devices
+          flutter test integration_test -d "$SIMULATOR_UDID"
