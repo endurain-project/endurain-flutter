@@ -1,6 +1,6 @@
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/core/services/app_scope.dart';
-import 'package:endurain/core/services/crash_reporting_service.dart';
+import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';

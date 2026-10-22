@@ -611,7 +611,7 @@ and `endurain-scalable-mobile.instructions.md`):
 ### Phase K — Composition root wiring ✅
 
 **Step K1 — Platform adapter factory in `AppServices`.**
-- File: `lib/core/services/app_services.dart`.
+- File: `lib/app/app_services.dart`.
 - Add `HealthPlatformAdapter createHealthPlatformAdapter()` that returns
   `HealthPackagePlatformAdapter` on `defaultTargetPlatform == android || iOS` and
   `UnsupportedHealthPlatformAdapter` otherwise — exactly mirroring

@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:endurain/core/services/app_services.dart';
+import 'package:endurain/app/app_services.dart';
 
 class AppScope extends InheritedWidget {
   const AppScope({super.key, required this.services, required super.child});

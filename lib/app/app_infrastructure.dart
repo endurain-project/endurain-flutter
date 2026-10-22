@@ -2,7 +2,7 @@ import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/connectivity_service.dart';
-import 'package:endurain/core/services/crash_reporting_service.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';

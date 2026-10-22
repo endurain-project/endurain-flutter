@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/core/navigation/app_routes.dart';
+import 'package:endurain/app/navigation/app_routes.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/features/map/screens/map_screen.dart';
 import 'package:endurain/features/settings/screens/settings_screen.dart';

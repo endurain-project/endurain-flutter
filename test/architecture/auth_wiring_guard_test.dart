@@ -41,22 +41,22 @@ void main() {
     'AuthService': {
       'core/services/auth_service.dart',
       'core/services/api_client.dart',
-      'core/services/modules/auth_module.dart',
+      'app/modules/auth_module.dart',
     },
     'SsoService': {
       'core/services/sso_service.dart',
-      'core/services/modules/auth_module.dart',
+      'app/modules/auth_module.dart',
     },
     'ApiClient': {
       'core/services/api_client.dart',
-      'core/services/modules/auth_module.dart',
+      'app/modules/auth_module.dart',
     },
     'AuthSessionStore': {
       'core/services/auth_session_store.dart',
       'core/services/auth_service.dart',
       'core/services/sso_service.dart',
       'core/services/api_client.dart',
-      'core/services/modules/auth_module.dart',
+      'app/modules/auth_module.dart',
     },
   };
 

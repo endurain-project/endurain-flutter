@@ -1,5 +1,5 @@
 import 'package:endurain/core/services/api_client.dart';
-import 'package:endurain/core/services/app_infrastructure.dart';
+import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/server_settings_service.dart';

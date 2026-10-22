@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/sso_service.dart';

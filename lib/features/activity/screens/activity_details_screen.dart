@@ -1,6 +1,6 @@
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/error_localizations.dart';

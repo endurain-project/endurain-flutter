@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:endurain/core/navigation/app_router.dart';
-import 'package:endurain/core/navigation/app_routes.dart';
-import 'package:endurain/core/services/app_scope.dart';
-import 'package:endurain/core/services/app_services.dart';
+import 'package:endurain/app/navigation/app_router.dart';
+import 'package:endurain/app/navigation/app_routes.dart';
+import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:endurain/features/auth/screens/login_screen.dart';

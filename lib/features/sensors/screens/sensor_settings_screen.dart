@@ -1,5 +1,5 @@
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/sensors/controllers/sensor_section_controller.dart';
 import 'package:endurain/features/sensors/controllers/sensor_section_view.dart';

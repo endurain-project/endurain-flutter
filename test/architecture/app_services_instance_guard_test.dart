@@ -52,7 +52,7 @@ void main() {
       'main.dart',
       // Declares the class (constructor) and builds the test-only fallback.
       'app.dart',
-      'core/services/app_services.dart',
+      'app/app_services.dart',
     };
 
     final offenders = <String>[

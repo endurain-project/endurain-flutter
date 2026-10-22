@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/crash_reporting_service.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';

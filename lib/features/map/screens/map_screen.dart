@@ -1,17 +1,14 @@
 import 'dart:async';
-import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
-import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
@@ -22,6 +19,8 @@ import 'package:endurain/features/activity/widgets/activity_stop_confirmation_di
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
+import 'package:endurain/features/map/widgets/location_marker.dart';
+import 'package:endurain/features/map/widgets/map_sensor_indicators.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -324,7 +323,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
               width: LocationMarkerConstants.markerSize,
               height: LocationMarkerConstants.markerSize,
               alignment: Alignment.center,
-              child: _LocationMarker(heading: _displayHeading),
+              child: LocationMarker(heading: _displayHeading),
             ),
           ],
         ),
@@ -390,7 +389,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
                       listenable: Listenable.merge(
                         _sensorControllers.values.toList(),
                       ),
-                      builder: (context, _) => _MapSensorIndicators(
+                      builder: (context, _) => MapSensorIndicators(
                         controllers: _sensorControllers.values.toList(),
                       ),
                     ),
@@ -429,251 +428,4 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       ),
     );
   }
-}
-
-/// Shared rounded pill container for the top-of-map indicators.
-class _MapPill extends StatelessWidget {
-  const _MapPill({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final isApplePlatform = PlatformUtils.isApplePlatform;
-    final backgroundColor = isApplePlatform
-        ? CupertinoDynamicColor.resolve(
-            CupertinoTheme.of(context).barBackgroundColor,
-            context,
-          )
-        : Theme.of(context).colorScheme.surface;
-    final textColor = isApplePlatform
-        ? CupertinoColors.label.resolveFrom(context)
-        : Theme.of(context).colorScheme.onSurface;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            blurRadius: 8,
-            color: Color(0x33000000),
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: DefaultTextStyle.merge(
-          style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-/// The top-of-map row of live sensor indicators.
-///
-/// Renders one pill per heart-rate, power, or cadence sensor that is connected
-/// (live value) or searching (a remembered sensor still (re)connecting).
-/// Sensors with no remembered device contribute nothing.
-class _MapSensorIndicators extends StatelessWidget {
-  const _MapSensorIndicators({required this.controllers});
-
-  final List<MapSensorController> controllers;
-
-  @override
-  Widget build(BuildContext context) {
-    final chips = <Widget>[];
-    for (final controller in controllers) {
-      switch (controller.status) {
-        case MapSensorStatus.connected:
-          chips.add(
-            _MapSensorChip(
-              kind: controller.kind,
-              value: controller.currentValue!,
-            ),
-          );
-        case MapSensorStatus.searching:
-          chips.add(_MapSensorSearchingChip(kind: controller.kind));
-        case MapSensorStatus.idle:
-          break;
-      }
-    }
-    if (chips.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      alignment: WrapAlignment.center,
-      children: chips,
-    );
-  }
-}
-
-/// The icon for a map sensor pill of [kind], matching the Sensors screen glyphs.
-AdaptiveIcon _mapSensorIcon(SensorMeasurementKind kind) {
-  return switch (kind) {
-    SensorMeasurementKind.heartRate => const AdaptiveIcon(
-      materialIcon: Icons.favorite,
-      cupertinoIcon: CupertinoIcons.heart_fill,
-      color: Color(0xFFE53935),
-      size: 16,
-    ),
-    SensorMeasurementKind.power => const AdaptiveIcon(
-      materialIcon: Icons.bolt,
-      cupertinoIcon: CupertinoIcons.bolt_fill,
-      size: 16,
-    ),
-    SensorMeasurementKind.cadence => const AdaptiveIcon(
-      materialIcon: Icons.autorenew,
-      cupertinoIcon: CupertinoIcons.arrow_2_circlepath,
-      size: 16,
-    ),
-  };
-}
-
-/// The localized live value for a map sensor pill of [kind].
-String _mapSensorValueLabel(
-  AppLocalizations l10n,
-  SensorMeasurementKind kind,
-  int value,
-) {
-  return switch (kind) {
-    SensorMeasurementKind.heartRate => l10n.sensorsBpm('$value'),
-    SensorMeasurementKind.power => l10n.sensorsWatts('$value'),
-    SensorMeasurementKind.cadence => l10n.sensorsRpm('$value'),
-  };
-}
-
-/// Compact pill showing a live sensor value on the map.
-class _MapSensorChip extends StatelessWidget {
-  const _MapSensorChip({required this.kind, required this.value});
-
-  final SensorMeasurementKind kind;
-  final int value;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return _MapPill(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _mapSensorIcon(kind),
-          const SizedBox(width: 6),
-          Text(_mapSensorValueLabel(l10n, kind, value)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Compact pill shown while a remembered sensor of [kind] is being
-/// (re)connected.
-class _MapSensorSearchingChip extends StatelessWidget {
-  const _MapSensorSearchingChip({required this.kind});
-
-  final SensorMeasurementKind kind;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return _MapPill(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _mapSensorIcon(kind),
-          const SizedBox(width: 6),
-          const SizedBox(
-            width: 14,
-            height: 14,
-            child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-          ),
-          const SizedBox(width: 8),
-          Text(l10n.sensorsScanning),
-        ],
-      ),
-    );
-  }
-}
-
-/// Blue dot with white border and directional cone
-class _LocationMarker extends StatelessWidget {
-  const _LocationMarker({required this.heading});
-
-  final double heading;
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: heading * math.pi / 180, // Convert degrees to radians
-      child: CustomPaint(
-        size: const Size(
-          LocationMarkerConstants.markerSize,
-          LocationMarkerConstants.markerSize,
-        ),
-        painter: _LocationMarkerPainter(),
-      ),
-    );
-  }
-}
-
-/// Custom painter for the location marker
-class _LocationMarkerPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 5;
-
-    // Draw directional cone (pointing upward when heading is 0)
-    final conePaint = Paint()
-      ..color = LocationMarkerConstants.activityBlue.withValues(
-        alpha: LocationMarkerConstants.coneOpacity,
-      )
-      ..style = PaintingStyle.fill;
-
-    final conePath = ui.Path()
-      ..moveTo(center.dx, center.dy) // Center of circle
-      ..lineTo(
-        center.dx - radius * LocationMarkerConstants.coneWidthMultiplier,
-        center.dy - radius * LocationMarkerConstants.coneHeightMultiplier,
-      ) // Left point
-      ..arcToPoint(
-        Offset(
-          center.dx + radius * LocationMarkerConstants.coneWidthMultiplier,
-          center.dy - radius * LocationMarkerConstants.coneHeightMultiplier,
-        ), // Right point
-        radius: Radius.circular(
-          radius * LocationMarkerConstants.coneArcRadiusMultiplier,
-        ),
-        clockwise: true,
-      )
-      ..close();
-
-    canvas.drawPath(conePath, conePaint);
-
-    // Draw white border circle
-    final borderPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(
-      center,
-      radius + LocationMarkerConstants.borderWidth,
-      borderPaint,
-    );
-
-    // Draw blue dot
-    final dotPaint = Paint()
-      ..color = LocationMarkerConstants.activityBlue
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(center, radius, dotPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

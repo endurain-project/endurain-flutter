@@ -6,7 +6,7 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 
 import 'package:endurain/app.dart';
 import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/services/app_services.dart';
+import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';

@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/modules/activity_module.dart';
+import 'package:endurain/app/modules/activity_module.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/app_infrastructure.dart';
-import 'package:endurain/core/services/modules/auth_module.dart';
-import 'package:endurain/core/services/modules/sensors_module.dart';
+import 'package:endurain/app/app_infrastructure.dart';
+import 'package:endurain/app/modules/auth_module.dart';
+import 'package:endurain/app/modules/sensors_module.dart';
 import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';

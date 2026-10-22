@@ -1,5 +1,5 @@
 import 'package:endurain/core/models/measurement_system.dart';
-import 'package:endurain/core/services/app_scope.dart';
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:flutter/widgets.dart';

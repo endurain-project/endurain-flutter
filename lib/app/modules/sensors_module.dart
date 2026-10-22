@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/app_infrastructure.dart';
+import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
