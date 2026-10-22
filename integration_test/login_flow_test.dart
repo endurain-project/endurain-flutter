@@ -8,7 +8,6 @@ import 'package:endurain/app/widgets/app_bottom_nav.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive_button.dart';
 import 'package:endurain/shared/adaptive/adaptive_text_form_field.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -86,15 +85,16 @@ void main() {
 }
 
 Future<void> _selectHttp(WidgetTester tester) async {
-  final dropdown = find.byType(DropdownButtonFormField<String>);
-  if (dropdown.evaluate().isNotEmpty) {
-    await tester.tap(dropdown);
+  // iOS shows both protocols in a segmented control. Elsewhere only the
+  // selected protocol is visible until the dropdown is opened. Matching by text
+  // avoids depending on the dropdown's widget type, which comes from the
+  // `material_ui` package rather than `flutter/material.dart`.
+  if (find.text('HTTP').evaluate().isEmpty) {
+    await tester.tap(find.text('HTTPS'));
     await tester.pump(const Duration(milliseconds: 500));
-    // The open menu and the closed field both show the label; take the menu's.
-    await tester.tap(find.text('HTTP').last);
-  } else {
-    await tester.tap(find.text('HTTP'));
   }
+  // An open dropdown also lists the selected value; take the menu's item.
+  await tester.tap(find.text('HTTP').last);
   await tester.pump(const Duration(milliseconds: 300));
 }
 
