@@ -11,6 +11,8 @@ on:
   pull_request:
     paths:
       - "ios/**"
+      - "lib/**"
+      - "integration_test/**"
       - "pubspec.yaml"
       - "pubspec.lock"
       - ".github/workflows/ios.yml"
@@ -81,3 +83,9 @@ jobs:
             -scheme Runner \
             -destination "id=$SIMULATOR_UDID" \
             CODE_SIGNING_ALLOWED=NO
+
+      # Boots the real app on the simulator and signs in against an in-process
+      # fake server; the Android counterpart is integration.yml.
+      - name: Run integration tests
+        shell: bash
+        run: flutter test integration_test -d "$SIMULATOR_UDID"
