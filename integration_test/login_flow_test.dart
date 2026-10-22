@@ -6,6 +6,7 @@ import 'package:endurain/app.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/widgets/app_bottom_nav.dart';
 import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/shared/adaptive/adaptive_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -50,12 +51,12 @@ void main() {
     await tester.tap(find.text(l10n.settingsTab).first);
     await _pumpUntil(tester, find.text(l10n.signInConnectServer));
     await tester.tap(find.text(l10n.signInConnectServer));
-    await _pumpUntil(tester, find.byType(TextFormField));
+    await _pumpUntil(tester, find.byType(AdaptiveTextFormField));
 
     // Server step: the fake server speaks plain HTTP, so switch the protocol.
     await _selectHttp(tester);
     await tester.enterText(
-      find.byType(TextFormField),
+      find.byType(AdaptiveTextFormField),
       '127.0.0.1:${server.port}',
     );
     await tester.tap(find.text(l10n.next));
@@ -64,7 +65,7 @@ void main() {
 
     // Credentials step.
     await _pumpUntil(tester, find.text(l10n.login));
-    final fields = find.byType(TextFormField);
+    final fields = find.byType(AdaptiveTextFormField);
     await tester.enterText(fields.at(0), 'athlete');
     await tester.enterText(fields.at(1), 'correct-horse');
     await tester.tap(find.text(l10n.login));
