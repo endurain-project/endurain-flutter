@@ -62,15 +62,12 @@ dependencies:
   path_provider: ^2.1.6
 
   # Non-secret key/value storage for display and language preferences.
-  #
-  # TODO: shared_preferences_android 2.5.0-2.5.1 breaks release builds (R8
-  # renames the Kotlin classes it calls over JNI; flutter/flutter#194649).
-  # android/app/proguard-rules.pro works around it. Once 2.5.2 (which ships its
-  # own consumer rules, flutter/packages#13311) is on pub.dev: upgrade it, raise
-  # the transitive floor, then delete the rules, the proguardFiles line in
-  # android/app/build.gradle.kts and
-  # test/architecture/android_proguard_rules_test.dart.
   shared_preferences: ^2.5.5
+
+  # Floor for the transitive Android implementation. 2.5.0-2.5.1 break release
+  # builds (R8 renames the Kotlin classes called over JNI;
+  # flutter/flutter#194649); 2.5.2 ships its own consumer rules. Do not lower.
+  shared_preferences_android: ^2.5.2
 
   # HTTP client for API requests
   http: ^1.2.2
