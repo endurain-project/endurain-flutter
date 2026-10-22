@@ -185,6 +185,8 @@ class DiagnosticsEvents {
   static const String activityAutoResumed = 'activity.auto_resumed';
   static const String activityStopped = 'activity.stopped';
   static const String activityStopFailed = 'activity.stop_failed';
+  static const String secureStorageServerUrlFallback =
+      'secure_storage.server_url_fallback';
   static const String activityDiscarded = 'activity.discarded';
   static const String activityFailed = 'activity.failed';
   static const String activityGpxGenerationFailed =

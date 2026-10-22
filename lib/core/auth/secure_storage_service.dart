@@ -1,3 +1,4 @@
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
@@ -7,8 +8,10 @@ class SecureStorageService {
   SecureStorageService({
     FlutterSecureStorage? storage,
     AppPreferencesStore? preferences,
+    DiagnosticsRecorder? diagnostics,
   }) : _storage = storage ?? _defaultStorage(),
-       _preferences = preferences ?? AppPreferencesStore();
+       _preferences = preferences ?? AppPreferencesStore(),
+       _diagnostics = diagnostics;
 
   final FlutterSecureStorage _storage;
 
@@ -16,6 +19,8 @@ class SecureStorageService {
   /// when the Android Keystore is unavailable or invalidated; the URL is not
   /// sensitive, so it is kept here as well to survive that.
   final AppPreferencesStore _preferences;
+
+  final DiagnosticsRecorder? _diagnostics;
 
   /// Builds the production [FlutterSecureStorage] with hardened platform
   /// options rather than relying on package defaults (which can shift between
@@ -134,6 +139,13 @@ class SecureStorageService {
       mirrored = null;
     }
     if (mirrored != null && mirrored.isNotEmpty) {
+      if (secureError != null) {
+        // Only the error type is recorded; its text may carry platform detail.
+        _diagnostics?.recordBreadcrumbSync(
+          DiagnosticsEvents.secureStorageServerUrlFallback,
+          details: {'errorType': secureError.runtimeType.toString()},
+        );
+      }
       return mirrored;
     }
     if (secureError != null) {

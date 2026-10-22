@@ -40,7 +40,9 @@ class AppInfrastructure {
 
   late final ApiEndpoints endpoints = ApiEndpoints(config);
 
-  late final SecureStorageService secureStorage = SecureStorageService();
+  late final SecureStorageService secureStorage = SecureStorageService(
+    diagnostics: diagnostics,
+  );
 
   late final AppPreferencesStore preferences = AppPreferencesStore();
 

@@ -1,4 +1,5 @@
 import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -243,6 +244,30 @@ void main() {
         expect(await storage.getServerUrl(), 'https://mirror.test');
       });
 
+      test(
+        'records a breadcrumb when the fallback hides a read failure',
+        () async {
+          final preferences = AppPreferencesStore(backend: _MemoryBackend());
+          await preferences.write(
+            key: 'server_url',
+            value: 'https://mirror.test',
+          );
+          final diagnostics = _RecordingDiagnostics();
+          final storage = SecureStorageService(
+            storage: _ThrowingStorage(),
+            preferences: preferences,
+            diagnostics: diagnostics,
+          );
+
+          await storage.getServerUrl();
+
+          expect(diagnostics.events, [
+            DiagnosticsEvents.secureStorageServerUrlFallback,
+          ]);
+          expect(diagnostics.details.single, {'errorType': 'AppException'});
+        },
+      );
+
       test('falls back to the mirror when the secure value is gone', () async {
         FlutterSecureStorage.setMockInitialValues(<String, String>{});
         final preferences = AppPreferencesStore(backend: _MemoryBackend());
@@ -380,4 +405,25 @@ class _FailingBackend implements AppPreferencesBackend {
 
   @override
   Future<void> delete(String key) async => throw StateError('unavailable');
+}
+
+class _RecordingDiagnostics implements DiagnosticsRecorder {
+  final events = <String>[];
+  final details = <Map<String, Object?>>[];
+
+  @override
+  void recordBreadcrumbSync(
+    String event, {
+    Map<String, Object?> details = const {},
+  }) {
+    events.add(event);
+    this.details.add(details);
+  }
+
+  @override
+  void recordErrorSync(
+    Object error,
+    StackTrace stackTrace, {
+    String source = DiagnosticsSources.uncaught,
+  }) {}
 }
