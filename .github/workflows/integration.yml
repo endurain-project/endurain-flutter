@@ -19,7 +19,7 @@ on:
 
 env:
   # Keep in sync with ci.yml.
-  FLUTTER_VERSION: 3.47.3
+  FLUTTER_VERSION: 3.47.7
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.3
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
       options: --device /dev/kvm
     steps:
       - name: Checkout code

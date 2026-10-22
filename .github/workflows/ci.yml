@@ -9,7 +9,7 @@ on:
 env:
   # Keep in sync with docker/flutter-build/Dockerfile, the image workflow and
   # ios.yml.
-  FLUTTER_VERSION: 3.47.3
+  FLUTTER_VERSION: 3.47.7
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +25,7 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.3
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -42,7 +42,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.3
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -59,7 +59,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.3
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -89,7 +89,7 @@ jobs:
     name: Android unit tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.3
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -126,7 +126,7 @@ jobs:
     name: Android build
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.3
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -1,8 +1,8 @@
 # Copilot Instructions for Endurain mobile app
 
 ## Tech Stack
-- **Flutter**: 3.47+ (stable channel; CI pins 3.47.3)
-- **Dart**: 3.13.3+
+- **Flutter**: 3.47+ (stable channel; CI pins 3.47.7)
+- **Dart**: 3.13.5+
 - **Platforms**: Android, iOS
 - **State Management**: `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and exposed via `AppScope`; obtain services with `AppScope.servicesOf(context)`
 - **Map Provider**: OpenStreetMap (flutter_map + latlong2)
