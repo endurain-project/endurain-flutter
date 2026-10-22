@@ -140,10 +140,13 @@ class SecureStorageService {
     }
     if (mirrored != null && mirrored.isNotEmpty) {
       if (secureError != null) {
-        // Only the error type is recorded; its text may carry platform detail.
+        // read() wraps platform failures in AppException, so record the wrapped
+        // cause's type. Only types are recorded; the text may carry platform
+        // detail.
+        final cause = secureError is AppException ? secureError.cause : null;
         _diagnostics?.recordBreadcrumbSync(
           DiagnosticsEvents.secureStorageServerUrlFallback,
-          details: {'errorType': secureError.runtimeType.toString()},
+          details: {'errorType': (cause ?? secureError).runtimeType.toString()},
         );
       }
       return mirrored;

@@ -264,7 +264,9 @@ void main() {
           expect(diagnostics.events, [
             DiagnosticsEvents.secureStorageServerUrlFallback,
           ]);
-          expect(diagnostics.details.single, {'errorType': 'AppException'});
+          expect(diagnostics.details.single, {
+            'errorType': Exception('x').runtimeType.toString(),
+          });
         },
       );
 
