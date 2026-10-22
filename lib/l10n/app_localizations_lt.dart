@@ -165,11 +165,11 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Jūsų prisijungimo sesija prarasta. Prisijunkite iš naujo.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Nepavyko užbaigti vieningo prisijungimo (SSO). Bandykite dar kartą.';
 
   @override
   String get errorNotAuthenticated => 'Nesate prisijungę';
@@ -877,10 +877,6 @@ class AppLocalizationsLt extends AppLocalizations {
   String get healthAccessHeartRate => 'Širdies ritmas';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Treniruotės atstumas, kalorijos ir žingsniai';
-
-  @override
   String get healthAccessAllowed => 'Leidžiama';
 
   @override
@@ -1208,11 +1204,11 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serveris bandė nukreipti į nesaugų ryšį. Užklausa užblokuota siekiant apsaugoti jūsų prisijungimo duomenis.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serveris nukreipė per daug kartų. Patikrinkite serverio adresą.';
 
   @override
   String get audioAnnouncementsTitle => 'Balso pranešimai';

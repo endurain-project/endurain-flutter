@@ -169,11 +169,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Se ha perdido tu sesión de inicio de sesión. Inicia sesión de nuevo.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'No se pudo completar el inicio de sesión único. Inténtalo de nuevo.';
 
   @override
   String get errorNotAuthenticated => 'No has iniciado sesión';
@@ -886,10 +886,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'frecuencia cardiaca';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Distancia, calorías y pasos del entrenamiento';
 
   @override
   String get healthAccessAllowed => 'Permitido';

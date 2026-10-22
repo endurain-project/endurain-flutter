@@ -170,11 +170,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'La tua sessione di accesso è andata persa. Effettua di nuovo l\'accesso.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Non è stato possibile completare l\'accesso singolo. Riprova.';
 
   @override
   String get errorNotAuthenticated => 'Non hai effettuato l\'accesso';
@@ -890,10 +890,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'Frequenza cardiaca';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Distanza, calorie e passi dell\'allenamento';
 
   @override
   String get healthAccessAllowed => 'Consentito';

@@ -1080,10 +1080,6 @@
   "@healthAccessHeartRate": {
     "description": "Categoria de dados de saúde - Usado em: health_access_screen.dart"
   },
-  "healthAccessWorkoutSummary": "Distância, calorias e passos do treino",
-  "@healthAccessWorkoutSummary": {
-    "description": "Categorias de enriquecimento de treino do Health Connect exigidas pelo pacote de saúde - Usado em: health_access_screen.dart"
-  },
   "healthAccessAllowed": "Permitido",
   "@healthAccessAllowed": {
     "description": "Estado de permissão de dados de saúde no Android - Usado em: health_access_screen.dart"

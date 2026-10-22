@@ -873,10 +873,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get healthAccessHeartRate => 'Heart rate';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Workout distance, calories, and steps';
-
-  @override
   String get healthAccessAllowed => 'Allowed';
 
   @override

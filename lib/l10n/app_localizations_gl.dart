@@ -170,11 +170,11 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Perdeuse a túa sesión de inicio de sesión. Inicia sesión de novo.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Non se puido completar o inicio de sesión único. Téntao de novo.';
 
   @override
   String get errorNotAuthenticated => 'Non iniciaches sesión';
@@ -889,10 +889,6 @@ class AppLocalizationsGl extends AppLocalizations {
   String get healthAccessHeartRate => 'Frecuencia cardíaca';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Distancia, calorías e pasos do adestramento';
-
-  @override
   String get healthAccessAllowed => 'Permitido';
 
   @override
@@ -1225,11 +1221,11 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'O servidor intentou redirixir a unha conexión non segura. A solicitude bloqueouse para protexer as túas credenciais.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'O servidor redirixiu demasiadas veces. Comproba o enderezo do servidor.';
 
   @override
   String get audioAnnouncementsTitle => 'Anuncios de voz';

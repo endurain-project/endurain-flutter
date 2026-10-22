@@ -38,8 +38,8 @@
   "errorMfaVerificationFailed": "Preverjanje MFA ni uspelo",
   "errorMfaVerificationFailedWithDetails": "Preverjanje MFA ni uspelo: {details}",
   "errorNoSessionIdReceived": "Strežnik ni vrnil ID-ja seje",
-  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
-  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "errorMfaSessionMissing": "Vaša prijavna seja je bila izgubljena. Prijavite se znova.",
+  "errorSsoCallbackFailed": "Enotne prijave (SSO) ni bilo mogoče dokončati. Poskusite znova.",
   "errorNotAuthenticated": "Niste prijavljeni",
   "errorPkceVerifierMissingRestartLogin": "Preverjevalnika prijave ni bilo mogoče najti. Znova začnite prijavo.",
   "errorServerUrlNotConfigured": "URL strežnika ni nastavljen",
@@ -264,7 +264,6 @@
   "healthAccessWorkouts": "Vadbe",
   "healthAccessWorkoutRoutes": "Vadbene poti",
   "healthAccessHeartRate": "Srčni utrip",
-  "healthAccessWorkoutSummary": "Razdalja, kalorije in koraki vadbe",
   "healthAccessAllowed": "Dovoljeno",
   "healthAccessNeedsAttention": "Potrebuje pozornost",
   "healthAccessManagedBySystem": "Upravlja se v sistemskih nastavitvah",
@@ -450,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Strežnik je poskušal preusmeriti na nezavarovano povezavo. Zahteva je bila blokirana za zaščito vaših poverilnic.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Strežnik je preusmeril preveč krat. Preverite naslov strežnika.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

@@ -38,8 +38,8 @@
   "errorMfaVerificationFailed": "Az MFA-ellenőrzés sikertelen",
   "errorMfaVerificationFailedWithDetails": "Az MFA-ellenőrzés sikertelen: {details}",
   "errorNoSessionIdReceived": "Nem érkezett munkamenet-azonosító a kiszolgálótól",
-  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
-  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "errorMfaSessionMissing": "A bejelentkezési munkamenet elveszett. Jelentkezzen be újra.",
+  "errorSsoCallbackFailed": "Az egyszeri bejelentkezést (SSO) nem sikerült befejezni. Kérjük, próbálja újra.",
   "errorNotAuthenticated": "Nincs bejelentkezve",
   "errorPkceVerifierMissingRestartLogin": "A bejelentkezési ellenőrző nem található. Kezdje újra a bejelentkezést.",
   "errorServerUrlNotConfigured": "A kiszolgáló URL-címe nincs beállítva",
@@ -264,7 +264,6 @@
   "healthAccessWorkouts": "Edzések",
   "healthAccessWorkoutRoutes": "Edzés útvonalak",
   "healthAccessHeartRate": "Pulzusszám",
-  "healthAccessWorkoutSummary": "Edzéstáv, kalóriák és lépések",
   "healthAccessAllowed": "Engedélyezett",
   "healthAccessNeedsAttention": "Figyelmet igényel",
   "healthAccessManagedBySystem": "A rendszer beállításaiban kezelhető",
@@ -450,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "A kiszolgáló nem biztonságos kapcsolatra próbált átirányítani. A kérést letiltottuk a hitelesítő adatai védelme érdekében.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "A kiszolgáló túl sokszor irányított át. Ellenőrizze a kiszolgáló címét.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

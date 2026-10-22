@@ -38,8 +38,8 @@
   "errorMfaVerificationFailed": "Η επαλήθευση MFA απέτυχε",
   "errorMfaVerificationFailedWithDetails": "Η επαλήθευση MFA απέτυχε: {details}",
   "errorNoSessionIdReceived": "Δεν ελήφθη αναγνωριστικό συνεδρίας από τον διακομιστή",
-  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
-  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "errorMfaSessionMissing": "Η συνεδρία σύνδεσής σας χάθηκε. Συνδεθείτε ξανά.",
+  "errorSsoCallbackFailed": "Η ενιαία σύνδεση (SSO) δεν ολοκληρώθηκε. Δοκιμάστε ξανά.",
   "errorNotAuthenticated": "Δεν έχετε συνδεθεί",
   "errorPkceVerifierMissingRestartLogin": "Ο επαληθευτής σύνδεσης δεν βρέθηκε. Ξεκινήστε ξανά τη σύνδεση.",
   "errorServerUrlNotConfigured": "Το URL του διακομιστή δεν έχει ρυθμιστεί",
@@ -264,7 +264,6 @@
   "healthAccessWorkouts": "Προπονήσεις",
   "healthAccessWorkoutRoutes": "Διαδρομές προπόνησης",
   "healthAccessHeartRate": "Καρδιακός ρυθμός",
-  "healthAccessWorkoutSummary": "Απόσταση, θερμίδες και βήματα προπόνησης",
   "healthAccessAllowed": "Επιτρέπεται",
   "healthAccessNeedsAttention": "Χρειάζεται προσοχή",
   "healthAccessManagedBySystem": "Διαχειρίζεται στις ρυθμίσεις συστήματος",
@@ -450,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Ο διακομιστής προσπάθησε να ανακατευθύνει σε μη ασφαλή σύνδεση. Το αίτημα αποκλείστηκε για την προστασία των διαπιστευτηρίων σας.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Ο διακομιστής έκανε υπερβολικά πολλές ανακατευθύνσεις. Ελέγξτε τη διεύθυνση του διακομιστή.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

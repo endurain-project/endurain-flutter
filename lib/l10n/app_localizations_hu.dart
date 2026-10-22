@@ -171,11 +171,11 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'A bejelentkezési munkamenet elveszett. Jelentkezzen be újra.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Az egyszeri bejelentkezést (SSO) nem sikerült befejezni. Kérjük, próbálja újra.';
 
   @override
   String get errorNotAuthenticated => 'Nincs bejelentkezve';
@@ -889,9 +889,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String get healthAccessHeartRate => 'Pulzusszám';
 
   @override
-  String get healthAccessWorkoutSummary => 'Edzéstáv, kalóriák és lépések';
-
-  @override
   String get healthAccessAllowed => 'Engedélyezett';
 
   @override
@@ -1221,11 +1218,11 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'A kiszolgáló nem biztonságos kapcsolatra próbált átirányítani. A kérést letiltottuk a hitelesítő adatai védelme érdekében.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'A kiszolgáló túl sokszor irányított át. Ellenőrizze a kiszolgáló címét.';
 
   @override
   String get audioAnnouncementsTitle => 'Hangos bejelentések';

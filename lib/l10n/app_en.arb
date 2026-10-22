@@ -1164,10 +1164,6 @@
   "@healthAccessHeartRate": {
     "description": "Health data category - Used in: health_access_screen.dart"
   },
-  "healthAccessWorkoutSummary": "Workout distance, calories, and steps",
-  "@healthAccessWorkoutSummary": {
-    "description": "Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart"
-  },
   "healthAccessAllowed": "Allowed",
   "@healthAccessAllowed": {
     "description": "Android health data permission status - Used in: health_access_screen.dart"

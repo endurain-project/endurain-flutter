@@ -166,11 +166,11 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Jūsu pieteikšanās sesija tika zaudēta. Lūdzu, piesakieties vēlreiz.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Vienotās pierakstīšanās (SSO) process netika pabeigts. Lūdzu, mēģiniet vēlreiz.';
 
   @override
   String get errorNotAuthenticated => 'Jūs neesat pieteicies';
@@ -882,10 +882,6 @@ class AppLocalizationsLv extends AppLocalizations {
   String get healthAccessHeartRate => 'Sirdsdarbība';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Treniņa distance, kalorijas un soļi';
-
-  @override
   String get healthAccessAllowed => 'Atļauts';
 
   @override
@@ -1212,11 +1208,11 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serveris mēģināja novirzīt uz nedrošu savienojumu. Pieprasījums tika bloķēts, lai aizsargātu jūsu akreditācijas datus.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serveris novirzīja pārāk daudz reižu. Pārbaudiet servera adresi.';
 
   @override
   String get audioAnnouncementsTitle => 'Balss paziņojumi';

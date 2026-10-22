@@ -168,11 +168,11 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Je inlogsessie is verloren gegaan. Meld je opnieuw aan.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Eenmalige aanmelding (SSO) kon niet worden voltooid. Probeer het opnieuw.';
 
   @override
   String get errorNotAuthenticated => 'Je bent niet aangemeld';
@@ -883,10 +883,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'Hartslag';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Trainingsafstand, calorieën en stappen';
 
   @override
   String get healthAccessAllowed => 'Toegestaan';

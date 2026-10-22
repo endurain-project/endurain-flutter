@@ -888,10 +888,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get healthAccessHeartRate => 'Frequência cardíaca';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Distância, calorias e passos do treino';
-
-  @override
   String get healthAccessAllowed => 'Permitido';
 
   @override

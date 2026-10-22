@@ -149,12 +149,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorNoSessionIdReceived => '未从服务器收到会话 ID';
 
   @override
-  String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+  String get errorMfaSessionMissing => '您的登录会话已丢失。请重新登录。';
 
   @override
-  String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+  String get errorSsoCallbackFailed => '无法完成单点登录。请重试。';
 
   @override
   String get errorNotAuthenticated => '您尚未登录';
@@ -828,9 +826,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get healthAccessHeartRate => '心率';
 
   @override
-  String get healthAccessWorkoutSummary => '锻炼距离、热量和步数';
-
-  @override
   String get healthAccessAllowed => '允许';
 
   @override
@@ -1145,11 +1140,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      '服务器试图重定向到不安全的连接。为保护您的凭据，该请求已被拦截。';
 
   @override
-  String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+  String get errorTooManyRedirects => '服务器重定向次数过多。请检查服务器地址。';
 
   @override
   String get audioAnnouncementsTitle => '语音播报';
@@ -1359,12 +1353,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get errorNoSessionIdReceived => '未從伺服器收到工作階段 ID';
 
   @override
-  String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+  String get errorMfaSessionMissing => '您的登入工作階段已遺失。請重新登入。';
 
   @override
-  String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+  String get errorSsoCallbackFailed => '無法完成單一登入。請重試。';
 
   @override
   String get errorNotAuthenticated => '您尚未登入';
@@ -2039,9 +2031,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get healthAccessHeartRate => '心率';
 
   @override
-  String get healthAccessWorkoutSummary => '運動距離、熱量與步數';
-
-  @override
   String get healthAccessAllowed => '允許';
 
   @override
@@ -2340,27 +2329,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get unitsTitle => 'Units';
+  String get unitsTitle => '單位';
 
   @override
-  String get unitsSubtitle => 'Distance, speed, and elevation units';
+  String get unitsSubtitle => '距離、速度與海拔單位';
 
   @override
-  String get unitsSystemDefault => 'Follow device region';
+  String get unitsSystemDefault => '依裝置地區設定';
 
   @override
-  String get unitsMetric => 'Metric (km)';
+  String get unitsMetric => '公制（公里）';
 
   @override
-  String get unitsImperial => 'Imperial (mi)';
+  String get unitsImperial => '英制（英里）';
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      '伺服器嘗試重新導向至不安全的連線。為保護您的憑證，此請求已被封鎖。';
 
   @override
-  String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+  String get errorTooManyRedirects => '伺服器重新導向次數過多。請檢查伺服器位址。';
 
   @override
   String get audioAnnouncementsTitle => '語音播報';

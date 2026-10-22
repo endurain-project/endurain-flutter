@@ -173,11 +173,11 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Η συνεδρία σύνδεσής σας χάθηκε. Συνδεθείτε ξανά.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Η ενιαία σύνδεση (SSO) δεν ολοκληρώθηκε. Δοκιμάστε ξανά.';
 
   @override
   String get errorNotAuthenticated => 'Δεν έχετε συνδεθεί';
@@ -896,10 +896,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get healthAccessHeartRate => 'Καρδιακός ρυθμός';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Απόσταση, θερμίδες και βήματα προπόνησης';
-
-  @override
   String get healthAccessAllowed => 'Επιτρέπεται';
 
   @override
@@ -1229,11 +1225,11 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Ο διακομιστής προσπάθησε να ανακατευθύνει σε μη ασφαλή σύνδεση. Το αίτημα αποκλείστηκε για την προστασία των διαπιστευτηρίων σας.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Ο διακομιστής έκανε υπερβολικά πολλές ανακατευθύνσεις. Ελέγξτε τη διεύθυνση του διακομιστή.';
 
   @override
   String get audioAnnouncementsTitle => 'Φωνητικές ανακοινώσεις';

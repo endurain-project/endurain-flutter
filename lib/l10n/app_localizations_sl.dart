@@ -168,11 +168,11 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Vaša prijavna seja je bila izgubljena. Prijavite se znova.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Enotne prijave (SSO) ni bilo mogoče dokončati. Poskusite znova.';
 
   @override
   String get errorNotAuthenticated => 'Niste prijavljeni';
@@ -884,9 +884,6 @@ class AppLocalizationsSl extends AppLocalizations {
   String get healthAccessHeartRate => 'Srčni utrip';
 
   @override
-  String get healthAccessWorkoutSummary => 'Razdalja, kalorije in koraki vadbe';
-
-  @override
   String get healthAccessAllowed => 'Dovoljeno';
 
   @override
@@ -1218,11 +1215,11 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Strežnik je poskušal preusmeriti na nezavarovano povezavo. Zahteva je bila blokirana za zaščito vaših poverilnic.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Strežnik je preusmeril preveč krat. Preverite naslov strežnika.';
 
   @override
   String get audioAnnouncementsTitle => 'Zvočna obvestila';

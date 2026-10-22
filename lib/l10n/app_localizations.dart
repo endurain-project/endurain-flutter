@@ -1683,12 +1683,6 @@ abstract class AppLocalizations {
   /// **'Heart rate'**
   String get healthAccessHeartRate;
 
-  /// Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Workout distance, calories, and steps'**
-  String get healthAccessWorkoutSummary;
-
   /// Android health data permission status - Used in: health_access_screen.dart
   ///
   /// In en, this message translates to:

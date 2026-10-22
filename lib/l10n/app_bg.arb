@@ -38,8 +38,8 @@
   "errorMfaVerificationFailed": "Неуспешно потвърждаване на MFA",
   "errorMfaVerificationFailedWithDetails": "Неуспешно потвърждаване на MFA: {details}",
   "errorNoSessionIdReceived": "Не е получен идентификатор на сесия от сървъра",
-  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
-  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "errorMfaSessionMissing": "Сесията ви за вход беше загубена. Моля, влезте отново.",
+  "errorSsoCallbackFailed": "Единният вход (SSO) не можа да бъде завършен. Моля, опитайте отново.",
   "errorNotAuthenticated": "Не сте влезли",
   "errorPkceVerifierMissingRestartLogin": "Верификаторът за вход не бе намерен. Започнете входа отначало.",
   "errorServerUrlNotConfigured": "URL адресът на сървъра не е конфигуриран",
@@ -264,7 +264,6 @@
   "healthAccessWorkouts": "Тренировки",
   "healthAccessWorkoutRoutes": "Тренировъчни маршрути",
   "healthAccessHeartRate": "Сърдечна честота",
-  "healthAccessWorkoutSummary": "Разстояние, калории и стъпки от тренировки",
   "healthAccessAllowed": "Разрешено",
   "healthAccessNeedsAttention": "Нуждае се от внимание",
   "healthAccessManagedBySystem": "Управлява се в системните настройки",
@@ -450,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Сървърът се опита да пренасочи към незащитена връзка. Заявката беше блокирана, за да защити данните ви за вход.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Сървърът пренасочи твърде много пъти. Проверете адреса на сървъра.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

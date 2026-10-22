@@ -168,11 +168,11 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Kirjautumisistuntosi katosi. Kirjaudu sisään uudelleen.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Kertakirjautumista (SSO) ei voitu suorittaa loppuun. Yritä uudelleen.';
 
   @override
   String get errorNotAuthenticated => 'Et ole kirjautunut sisään';
@@ -886,10 +886,6 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthAccessHeartRate => 'Syke';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Harjoituksen matka, kalorit ja askeleet';
-
-  @override
   String get healthAccessAllowed => 'Sallittu';
 
   @override
@@ -1217,11 +1213,11 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Palvelin yritti ohjata suojaamattomaan yhteyteen. Pyyntö estettiin tunnistetietojesi suojaamiseksi.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Palvelin ohjasi liian monta kertaa. Tarkista palvelimen osoite.';
 
   @override
   String get audioAnnouncementsTitle => 'Ääni-ilmoitukset';

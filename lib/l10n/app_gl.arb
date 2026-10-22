@@ -38,8 +38,8 @@
   "errorMfaVerificationFailed": "Produciuse un erro na verificación MFA",
   "errorMfaVerificationFailedWithDetails": "Produciuse un erro na verificación MFA: {details}",
   "errorNoSessionIdReceived": "O servidor non devolveu ningún identificador de sesión",
-  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
-  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "errorMfaSessionMissing": "Perdeuse a túa sesión de inicio de sesión. Inicia sesión de novo.",
+  "errorSsoCallbackFailed": "Non se puido completar o inicio de sesión único. Téntao de novo.",
   "errorNotAuthenticated": "Non iniciaches sesión",
   "errorPkceVerifierMissingRestartLogin": "Non se atopou o verificador de inicio de sesión. Volve iniciar sesión.",
   "errorServerUrlNotConfigured": "O URL do servidor non está configurado",
@@ -264,7 +264,6 @@
   "healthAccessWorkouts": "Adestramentos",
   "healthAccessWorkoutRoutes": "Rutas de adestramento",
   "healthAccessHeartRate": "Frecuencia cardíaca",
-  "healthAccessWorkoutSummary": "Distancia, calorías e pasos do adestramento",
   "healthAccessAllowed": "Permitido",
   "healthAccessNeedsAttention": "Necesita atención",
   "healthAccessManagedBySystem": "Xestionado na configuración do sistema",
@@ -450,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "O servidor intentou redirixir a unha conexión non segura. A solicitude bloqueouse para protexer as túas credenciais.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "O servidor redirixiu demasiadas veces. Comproba o enderezo do servidor.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

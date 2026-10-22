@@ -168,12 +168,11 @@ class AppLocalizationsUk extends AppLocalizations {
       'Сервер не повернув ідентифікатор сеансу';
 
   @override
-  String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+  String get errorMfaSessionMissing => 'Сеанс входу втрачено. Увійдіть знову.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Не вдалося завершити єдиний вхід (SSO). Спробуйте ще раз.';
 
   @override
   String get errorNotAuthenticated => 'Ви не ввійшли';
@@ -883,10 +882,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get healthAccessHeartRate => 'ЧСС';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Відстань, калорії та кроки тренування';
-
-  @override
   String get healthAccessAllowed => 'Дозволено';
 
   @override
@@ -1215,11 +1210,11 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Сервер спробував перенаправити на незахищене з\'єднання. Запит заблоковано для захисту ваших облікових даних.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Сервер надто багато разів перенаправляв. Перевірте адресу сервера.';
 
   @override
   String get audioAnnouncementsTitle => 'Голосові оголошення';

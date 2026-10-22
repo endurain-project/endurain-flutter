@@ -168,11 +168,11 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Påloggingsøkten din gikk tapt. Logg inn på nytt.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Enkel pålogging (SSO) kunne ikke fullføres. Prøv igjen.';
 
   @override
   String get errorNotAuthenticated => 'Du er ikke pålogget';
@@ -882,10 +882,6 @@ class AppLocalizationsNb extends AppLocalizations {
   String get healthAccessHeartRate => 'Hjertefrekvens';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Treningsdistanse, kalorier og skritt';
-
-  @override
   String get healthAccessAllowed => 'Tillatt';
 
   @override
@@ -1212,11 +1208,11 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serveren prøvde å omdirigere til en usikker tilkobling. Forespørselen ble blokkert for å beskytte påloggingsinformasjonen din.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serveren omdirigerte for mange ganger. Sjekk serveradressen.';
 
   @override
   String get audioAnnouncementsTitle => 'Lydmeldinger';

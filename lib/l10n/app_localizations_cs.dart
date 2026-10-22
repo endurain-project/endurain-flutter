@@ -169,11 +169,11 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Vaše přihlašovací relace byla ztracena. Přihlaste se prosím znovu.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Jednotné přihlášení se nepodařilo dokončit. Zkuste to prosím znovu.';
 
   @override
   String get errorNotAuthenticated => 'Nejste přihlášeni';
@@ -886,10 +886,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get healthAccessHeartRate => 'Srdeční frekvence';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Vzdálenost, kalorie a kroky z tréninků';
-
-  @override
   String get healthAccessAllowed => 'Povoleno';
 
   @override
@@ -1220,11 +1216,11 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Server se pokusil přesměrovat na nezabezpečené připojení. Požadavek byl zablokován na ochranu vašich přihlašovacích údajů.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Server přesměroval příliš mnohokrát. Zkontrolujte adresu serveru.';
 
   @override
   String get audioAnnouncementsTitle => 'Hlasová oznámení';

@@ -161,11 +161,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorMfaSessionMissing =>
-      'Your sign-in session was lost. Please sign in again.';
+      'Oturum açma oturumunuz kayboldu. Lütfen tekrar oturum açın.';
 
   @override
   String get errorSsoCallbackFailed =>
-      'Single sign-on could not be completed. Please try again.';
+      'Çoklu oturum açma (SSO) tamamlanamadı. Lütfen tekrar deneyin.';
 
   @override
   String get errorNotAuthenticated => 'Oturum açmadınız';
@@ -875,10 +875,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get healthAccessHeartRate => 'Kalp atış hızı';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Antrenman mesafesi, kaloriler ve adımlar';
-
-  @override
   String get healthAccessAllowed => 'İzin verildi';
 
   @override
@@ -1205,11 +1201,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Sunucu güvenli olmayan bir bağlantıya yönlendirmeye çalıştı. Kimlik bilgilerinizi korumak için istek engellendi.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Sunucu çok fazla kez yönlendirme yaptı. Sunucu adresini kontrol edin.';
 
   @override
   String get audioAnnouncementsTitle => 'Sesli Duyurular';

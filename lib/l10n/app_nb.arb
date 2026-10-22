@@ -38,8 +38,8 @@
   "errorMfaVerificationFailed": "MFA-verifisering mislyktes",
   "errorMfaVerificationFailedWithDetails": "MFA-verifisering mislyktes: {details}",
   "errorNoSessionIdReceived": "Ingen økt-ID ble mottatt fra serveren",
-  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
-  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "errorMfaSessionMissing": "Påloggingsøkten din gikk tapt. Logg inn på nytt.",
+  "errorSsoCallbackFailed": "Enkel pålogging (SSO) kunne ikke fullføres. Prøv igjen.",
   "errorNotAuthenticated": "Du er ikke pålogget",
   "errorPkceVerifierMissingRestartLogin": "Påloggingsverifikatoren ble ikke funnet. Start påloggingen på nytt.",
   "errorServerUrlNotConfigured": "Server-URL er ikke konfigurert",
@@ -264,7 +264,6 @@
   "healthAccessWorkouts": "Treninger",
   "healthAccessWorkoutRoutes": "Treningsruter",
   "healthAccessHeartRate": "Hjertefrekvens",
-  "healthAccessWorkoutSummary": "Treningsdistanse, kalorier og skritt",
   "healthAccessAllowed": "Tillatt",
   "healthAccessNeedsAttention": "Trenger oppmerksomhet",
   "healthAccessManagedBySystem": "Administrert i systeminnstillinger",
@@ -450,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serveren prøvde å omdirigere til en usikker tilkobling. Forespørselen ble blokkert for å beskytte påloggingsinformasjonen din.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serveren omdirigerte for mange ganger. Sjekk serveradressen.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },
