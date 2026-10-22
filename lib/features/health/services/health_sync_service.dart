@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/utils/scoped_storage_key.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';

@@ -1,7 +1,7 @@
-import 'package:endurain/features/health/repositories/health_import_store.dart';
-import 'package:endurain/features/health/models/health_imported_workout.dart';
 import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/sqlite_migration_runner.dart';
+import 'package:endurain/features/health/models/health_imported_workout.dart';
+import 'package:endurain/features/health/repositories/health_import_store.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// SQLite-backed [HealthImportStore] implemented with sqflite.

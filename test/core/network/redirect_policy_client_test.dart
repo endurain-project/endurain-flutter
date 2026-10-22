@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/redirect_policy_client.dart';
+import 'package:endurain/core/network/redirect_policy_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 

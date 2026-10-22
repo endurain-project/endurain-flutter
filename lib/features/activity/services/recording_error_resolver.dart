@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:geolocator/geolocator.dart';

@@ -1,9 +1,9 @@
-import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/app/app_infrastructure.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/auth_session_store.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/auth_session_store.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
+import 'package:endurain/core/network/api_client.dart';
 
 /// Wires the authentication feature: session storage, password/MFA login, SSO,
 /// public server-settings discovery, and the authenticated API client.

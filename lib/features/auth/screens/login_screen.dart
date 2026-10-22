@@ -1,22 +1,22 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/core/services/platform/app_links_service.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/platform/url_launcher_service.dart';
-import 'package:endurain/core/models/identity_provider.dart';
-import 'package:endurain/core/utils/validators.dart';
-import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/models/identity_provider.dart';
+import 'package:endurain/core/services/platform/app_links_service.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({

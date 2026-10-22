@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';

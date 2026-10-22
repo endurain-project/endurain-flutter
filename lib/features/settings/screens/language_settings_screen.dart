@@ -1,14 +1,13 @@
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
-
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/localization/app_locales.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Native names (autonyms) for the supported languages, shown in each
 /// language's own script as is conventional for a language picker. Keyed by

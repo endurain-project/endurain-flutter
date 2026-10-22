@@ -1,3 +1,4 @@
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
@@ -8,9 +9,8 @@ import 'package:endurain/features/activity/screens/activity_history_screen.dart'
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/fake_share_service.dart';
 

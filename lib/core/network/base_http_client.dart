@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/api_response.dart';
-import 'package:endurain/core/services/redirect_policy_client.dart';
+import 'package:endurain/core/network/api_response.dart';
+import 'package:endurain/core/network/redirect_policy_client.dart';
+import 'package:http/http.dart' as http;
 
 /// A thin wrapper around [http.Client] that provides standard unauthenticated
 /// request helpers used by auth, SSO, and server-settings services.

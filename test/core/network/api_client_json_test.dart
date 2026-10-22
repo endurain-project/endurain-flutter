@@ -1,11 +1,12 @@
 import 'dart:convert';
 
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/auth_session_store.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/api_client.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/auth_session_store.dart';
-import 'package:endurain/core/services/base_http_client.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/models/auth_session.dart';
+import 'package:endurain/core/network/api_client.dart';
+import 'package:endurain/core/network/base_http_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -382,6 +383,6 @@ Future<void> _seedSession(
   );
 }
 
-Future<dynamic> _readSession(SecureStorageService storage) {
+Future<AuthSession?> _readSession(SecureStorageService storage) {
   return AuthSessionStore(storage: storage).readSession();
 }

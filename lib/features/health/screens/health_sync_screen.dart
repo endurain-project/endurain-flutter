@@ -1,5 +1,6 @@
-import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
@@ -10,7 +11,6 @@ import 'package:endurain/features/health/widgets/health_sync_imported_view.dart'
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 class HealthSyncScreen extends StatefulWidget {

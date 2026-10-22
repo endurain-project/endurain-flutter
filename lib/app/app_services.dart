@@ -1,24 +1,23 @@
-import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/app/app_infrastructure.dart';
-import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/auth_session_store.dart';
-import 'package:endurain/core/services/connectivity_service.dart';
-import 'package:endurain/features/settings/services/crash_reporting_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/app/modules/activity_module.dart';
 import 'package:endurain/app/modules/auth_module.dart';
 import 'package:endurain/app/modules/health_module.dart';
 import 'package:endurain/app/modules/sensors_module.dart';
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/auth_session_store.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
+import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/network/api_client.dart';
+import 'package:endurain/core/network/connectivity_service.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
@@ -44,6 +43,7 @@ import 'package:endurain/features/settings/controllers/audio_announcement_settin
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 
 /// The application's composition root.
 ///

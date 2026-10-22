@@ -1,6 +1,6 @@
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/measurement_system.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';

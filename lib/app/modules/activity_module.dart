@@ -1,18 +1,19 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/app/modules/auth_module.dart';
 import 'package:endurain/app/modules/sensors_module.dart';
-import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
-import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
@@ -24,7 +25,6 @@ import 'package:endurain/features/activity/services/audio_announcement_preview_a
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
-import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:flutter/foundation.dart';

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:endurain/app.dart';
-import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/app/app_services.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 

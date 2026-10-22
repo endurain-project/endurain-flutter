@@ -1,6 +1,6 @@
-import 'package:geolocator/geolocator.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/core/services/platform/location_platform_adapter.dart';
-import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LocationService {
   LocationService({LocationPlatformAdapter? platformAdapter})

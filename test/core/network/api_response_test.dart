@@ -1,7 +1,7 @@
+import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/network/api_response.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/api_response.dart';
 
 void main() {
   group('ApiResponse', () {

@@ -1,9 +1,9 @@
+import 'package:endurain/core/auth/auth_session_store.dart';
+import 'package:endurain/core/auth/pkce_token_exchanger.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/auth_session_store.dart';
-import 'package:endurain/core/services/base_http_client.dart';
-import 'package:endurain/core/services/pkce_token_exchanger.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/network/base_http_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;

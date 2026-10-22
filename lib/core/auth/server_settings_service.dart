@@ -1,11 +1,11 @@
-import 'package:http/http.dart' as http;
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/base_http_client.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/models/server_settings.dart';
+import 'package:endurain/core/network/base_http_client.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
+import 'package:http/http.dart' as http;
 
 /// Service for fetching server settings.
 ///

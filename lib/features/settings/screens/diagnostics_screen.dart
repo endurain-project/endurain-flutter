@@ -1,17 +1,17 @@
-import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/features/settings/services/crash_reporting_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/settings/controllers/diagnostics_controller.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DiagnosticsScreen extends StatefulWidget {
   const DiagnosticsScreen({super.key, this.diagnostics, this.crashReporting});

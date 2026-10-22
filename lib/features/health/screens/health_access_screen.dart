@@ -1,5 +1,5 @@
-import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';

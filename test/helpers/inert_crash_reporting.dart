@@ -1,6 +1,6 @@
-import 'package:endurain/core/services/crash_reporter.dart';
-import 'package:endurain/features/settings/services/crash_reporting_service.dart';
+import 'package:endurain/core/diagnostics/crash_reporter.dart';
 import 'package:endurain/features/settings/repositories/crash_reporting_settings_repository.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 
 import 'fake_preferences_store.dart';
 

@@ -1,8 +1,8 @@
+import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;

@@ -1,9 +1,9 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/health/models/health_route_point.dart';
 import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const builder = HealthWorkoutGpxBuilder();

@@ -1,18 +1,15 @@
 import 'dart:io';
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
 import 'package:endurain/core/utils/connection_identity.dart';
 import 'package:endurain/features/health/repositories/sqflite_health_import_store.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   const profileA = 'profile-a';
   const profileB = 'profile-b';
 
-  setUpAll(() {
-    sqfliteFfiInit();
-  });
+  setUpAll(sqfliteFfiInit);
 
   SqfliteHealthImportStore makeStore({DateTime Function()? now}) =>
       SqfliteHealthImportStore(

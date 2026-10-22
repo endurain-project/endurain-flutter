@@ -1,18 +1,18 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/app/app_services.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/utils/validators.dart';
-import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/features/settings/controllers/server_settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ServerSettingsScreen extends StatefulWidget {
   const ServerSettingsScreen({

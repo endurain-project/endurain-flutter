@@ -1,6 +1,7 @@
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
@@ -94,6 +95,14 @@ class SecureStorageService {
   }
 
   bool _isDuplicateKeychainItem(Object error) {
+    // Prefer the structured platform error; the keychain status code is
+    // stable across plugin versions, unlike the surrounding message text.
+    if (error is PlatformException) {
+      final text = '${error.code} ${error.message} ${error.details}';
+      if (text.contains('-25299')) {
+        return true;
+      }
+    }
     final message = error.toString().toLowerCase();
     return message.contains('errsecduplicateitem') ||
         message.contains('duplicate item') ||

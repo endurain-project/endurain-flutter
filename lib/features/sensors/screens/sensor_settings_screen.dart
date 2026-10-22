@@ -1,5 +1,6 @@
-import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/sensors/controllers/sensor_section_controller.dart';
 import 'package:endurain/features/sensors/controllers/sensor_section_view.dart';
@@ -8,7 +9,6 @@ import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Settings screen to discover, connect, and monitor external Bluetooth Low

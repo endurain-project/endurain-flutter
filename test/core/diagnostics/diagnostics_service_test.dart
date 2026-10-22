@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

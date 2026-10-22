@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/core/services/location_settings_builder.dart';
-import 'package:endurain/core/utils/serial_task_queue.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/core/utils/id_generation.dart';
-import 'package:endurain/features/activity/models/activity_recording_error.dart';
+import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
-import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
+import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
@@ -714,11 +714,7 @@ class ActivityRecordingService {
   }
 
   void _disposeRecorderWithoutThrow() {
-    unawaited(
-      _recorder.dispose().catchError((Object error, StackTrace stackTrace) {
-        _recordRecorderError(error, stackTrace);
-      }),
-    );
+    unawaited(_recorder.dispose().catchError(_recordRecorderError));
   }
 
   /// Rebuilds the in-memory recording state from the durable store before

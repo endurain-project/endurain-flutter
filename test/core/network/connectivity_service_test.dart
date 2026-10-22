@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:endurain/core/services/connectivity_service.dart';
+import 'package:endurain/core/network/connectivity_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

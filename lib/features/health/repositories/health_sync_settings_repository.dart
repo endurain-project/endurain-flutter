@@ -1,5 +1,5 @@
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/scoped_storage_key.dart';
 
 /// User-facing settings for the health sync feature.

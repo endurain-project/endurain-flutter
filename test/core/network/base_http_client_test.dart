@@ -1,9 +1,9 @@
+import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/network/base_http_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:endurain/core/constants/api_constants.dart';
-import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/base_http_client.dart';
 
 void main() {
   group('BaseHttpClient', () {

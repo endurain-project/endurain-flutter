@@ -9,8 +9,8 @@
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/shared/adaptive/adaptive_scaffold.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   setUp(() {

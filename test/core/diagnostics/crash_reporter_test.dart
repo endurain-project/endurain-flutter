@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/crash_reporter.dart';
+import 'package:endurain/core/diagnostics/crash_reporter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

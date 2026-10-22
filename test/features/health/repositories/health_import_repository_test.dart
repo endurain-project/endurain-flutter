@@ -1,14 +1,11 @@
+import 'package:endurain/features/health/repositories/health_import_repository.dart';
+import 'package:endurain/features/health/repositories/sqflite_health_import_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import 'package:endurain/features/health/repositories/health_import_repository.dart';
-import 'package:endurain/features/health/repositories/sqflite_health_import_store.dart';
-
 void main() {
   const profileId = 'profile-x';
-  setUpAll(() {
-    sqfliteFfiInit();
-  });
+  setUpAll(sqfliteFfiInit);
 
   HealthImportRepository makeRepo() => HealthImportRepository(
     store: SqfliteHealthImportStore(

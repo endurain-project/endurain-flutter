@@ -1,18 +1,18 @@
 import 'dart:async';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 // Recording type relationships (controller -> service -> recorder):
 // the durable session model survives app restarts; the ephemeral state model
 // drives the live UI.
 
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
-import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
@@ -51,9 +51,7 @@ class ActivityRecordingController extends SafeNotifier {
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
        _now = now ?? DateTime.now {
-    _stateSubscription = _recordingService.stateStream.listen((state) {
-      _setState(state);
-    });
+    _stateSubscription = _recordingService.stateStream.listen(_setState);
   }
 
   static Future<bool> _alwaysAuthorized() async => true;

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:endurain/core/services/crash_reporter.dart';
+import 'package:endurain/core/diagnostics/crash_reporter.dart';
 import 'package:endurain/core/utils/diagnostics_redaction.dart';
 import 'package:sentry/sentry.dart';
 

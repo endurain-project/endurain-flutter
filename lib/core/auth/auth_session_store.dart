@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';

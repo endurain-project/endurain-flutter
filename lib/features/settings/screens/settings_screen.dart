@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
+import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
 import 'package:endurain/features/settings/screens/audio_announcement_settings_screen.dart';
@@ -18,10 +18,10 @@ import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
 import 'package:endurain/features/settings/screens/units_settings_screen.dart';
-import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
-import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Public GitHub organization for the project, opened from the settings screen.
 const String _sourceCodeUrl = 'https://github.com/endurain-project';

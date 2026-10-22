@@ -1,8 +1,8 @@
+import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/app/app_services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/app/app_services.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

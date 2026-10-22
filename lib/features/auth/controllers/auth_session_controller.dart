@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// The high-level session state that drives top-level routing.

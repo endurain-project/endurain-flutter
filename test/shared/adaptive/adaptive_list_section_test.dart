@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

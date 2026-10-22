@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/crash_reporter.dart';
+import 'package:endurain/core/diagnostics/crash_reporter.dart';
 import 'package:endurain/features/settings/repositories/crash_reporting_settings_repository.dart';
 
 /// Coordinates opt-in remote crash reporting.

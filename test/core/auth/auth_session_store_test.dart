@@ -1,9 +1,9 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/core/auth/auth_session_store.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/core/services/auth_session_store.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

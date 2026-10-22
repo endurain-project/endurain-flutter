@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/crash_reporter.dart';
+import 'package:endurain/core/diagnostics/crash_reporter.dart';
 
 /// A [CrashReporter] that records interactions for assertions instead of
 /// contacting a backend.

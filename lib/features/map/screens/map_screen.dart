@@ -1,13 +1,10 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/constants/map_constants.dart';
+import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -16,15 +13,18 @@ import 'package:endurain/features/activity/screens/activity_history_screen.dart'
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/widgets/location_marker.dart';
 import 'package:endurain/features/map/widgets/map_sensor_indicators.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({

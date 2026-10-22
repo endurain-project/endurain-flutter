@@ -1,22 +1,22 @@
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/network/connectivity_service.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/core/services/connectivity_service.dart';
-import 'package:endurain/features/settings/services/crash_reporting_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/platform/device_measurement_system_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/platform/sentry_crash_reporter.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/repositories/crash_reporting_settings_repository.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
 import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// Shared, feature-agnostic infrastructure wired once and handed to every

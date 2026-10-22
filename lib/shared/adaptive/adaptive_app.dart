@@ -1,8 +1,8 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/theme/app_theme.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AdaptiveApp extends StatelessWidget {
   /// Hosts a single [home] widget (used by tests and simple, non-routed apps).

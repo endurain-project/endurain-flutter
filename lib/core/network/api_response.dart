@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:http/http.dart' as http;
 
 class ApiResponse {
   const ApiResponse._();

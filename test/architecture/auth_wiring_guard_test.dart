@@ -39,23 +39,23 @@ void main() {
   // store for standalone (test) construction.
   const allowed = <String, Set<String>>{
     'AuthService': {
-      'core/services/auth_service.dart',
-      'core/services/api_client.dart',
+      'core/auth/auth_service.dart',
+      'core/network/api_client.dart',
       'app/modules/auth_module.dart',
     },
     'SsoService': {
-      'core/services/sso_service.dart',
+      'core/auth/sso_service.dart',
       'app/modules/auth_module.dart',
     },
     'ApiClient': {
-      'core/services/api_client.dart',
+      'core/network/api_client.dart',
       'app/modules/auth_module.dart',
     },
     'AuthSessionStore': {
-      'core/services/auth_session_store.dart',
-      'core/services/auth_service.dart',
-      'core/services/sso_service.dart',
-      'core/services/api_client.dart',
+      'core/auth/auth_session_store.dart',
+      'core/auth/auth_service.dart',
+      'core/auth/sso_service.dart',
+      'core/network/api_client.dart',
       'app/modules/auth_module.dart',
     },
   };

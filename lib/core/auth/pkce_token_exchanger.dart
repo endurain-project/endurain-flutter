@@ -1,10 +1,10 @@
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/auth_session_store.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/api_response.dart';
-import 'package:endurain/core/services/auth_session_store.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/base_http_client.dart';
+import 'package:endurain/core/network/api_response.dart';
+import 'package:endurain/core/network/base_http_client.dart';
 
 /// Owns the shared POST-exchange-save path for PKCE session token exchanges.
 ///
