@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA patvirtinimas nepavyko",
   "errorMfaVerificationFailedWithDetails": "MFA patvirtinimas nepavyko: {details}",
   "errorNoSessionIdReceived": "Iš serverio negautas seanso ID",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Nesate prisijungę",
   "errorPkceVerifierMissingRestartLogin": "Prisijungimo tikrintuvas nerastas. Pradėkite prisijungimą iš naujo.",
   "errorServerUrlNotConfigured": "Serverio URL nesukonfigūruotas",

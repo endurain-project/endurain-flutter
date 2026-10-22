@@ -95,18 +95,36 @@ class SentryCrashReporter implements CrashReporter {
     }
   }
 
-  /// Redacts sensitive substrings from every exception value before the event
-  /// is sent, using the same rules as the local diagnostics recorder.
+  /// Redacts sensitive substrings from every free-text field of the event
+  /// before it is sent, using the same rules as the local diagnostics recorder.
+  ///
+  /// Request data, user, extras and non-allow-listed contexts are dropped
+  /// outright; the remaining strings are redacted.
   FutureOr<SentryEvent?> _scrubEvent(SentryEvent event, Hint hint) {
-    final exceptions = event.exceptions;
-    if (exceptions != null) {
-      for (final exception in exceptions) {
-        final value = exception.value;
-        if (value != null) {
-          exception.value = redactDiagnosticText(value, maxLength: 800);
-        }
-      }
+    String? redact(String? value) =>
+        value == null ? null : redactDiagnosticText(value, maxLength: 800);
+
+    for (final exception in event.exceptions ?? const <SentryException>[]) {
+      exception.value = redact(exception.value);
     }
+    final message = event.message;
+    if (message != null) {
+      message.formatted = redact(message.formatted) ?? '';
+      message.template = redact(message.template);
+      message.params = null;
+    }
+    event.request = null;
+    event.user = null;
+    // ignore: deprecated_member_use
+    event.extra = null;
+    event.breadcrumbs = null;
+    event.contexts.removeWhere((key, _) => !_allowedContexts.contains(key));
+    event.tags = {
+      for (final entry in (event.tags ?? const <String, String>{}).entries)
+        entry.key: redactDiagnosticText(entry.value, maxLength: 200),
+    };
     return event;
   }
+
+  static const _allowedContexts = {'device', 'os', 'app', 'runtimes'};
 }

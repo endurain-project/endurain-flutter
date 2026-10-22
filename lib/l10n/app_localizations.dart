@@ -399,6 +399,18 @@ abstract class AppLocalizations {
   /// **'No session ID was received from the server'**
   String get errorNoSessionIdReceived;
 
+  /// Error when the MFA step has no pending login username - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in session was lost. Please sign in again.'**
+  String get errorMfaSessionMissing;
+
+  /// Generic error when the SSO deep-link callback reports a failure - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Single sign-on could not be completed. Please try again.'**
+  String get errorSsoCallbackFailed;
+
   /// Error when an authenticated request has no token - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:

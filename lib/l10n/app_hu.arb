@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Az MFA-ellenőrzés sikertelen",
   "errorMfaVerificationFailedWithDetails": "Az MFA-ellenőrzés sikertelen: {details}",
   "errorNoSessionIdReceived": "Nem érkezett munkamenet-azonosító a kiszolgálótól",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Nincs bejelentkezve",
   "errorPkceVerifierMissingRestartLogin": "A bejelentkezési ellenőrző nem található. Kezdje újra a bejelentkezést.",
   "errorServerUrlNotConfigured": "A kiszolgáló URL-címe nincs beállítva",

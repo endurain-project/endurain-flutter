@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-verificatie mislukt",
   "errorMfaVerificationFailedWithDetails": "MFA-verificatie mislukt: {details}",
   "errorNoSessionIdReceived": "Er is geen sessie-ID van de server ontvangen",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Je bent niet aangemeld",
   "errorPkceVerifierMissingRestartLogin": "De aanmeldverifier is niet gevonden. Start het aanmelden opnieuw.",
   "errorServerUrlNotConfigured": "Server-URL is niet geconfigureerd",

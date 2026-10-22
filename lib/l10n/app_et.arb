@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA kinnitamine ebaõnnestus",
   "errorMfaVerificationFailedWithDetails": "MFA kinnitamine ebaõnnestus: {details}",
   "errorNoSessionIdReceived": "Serverilt ei saadud seansi ID-d",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Te pole sisse logitud",
   "errorPkceVerifierMissingRestartLogin": "Sisselogimise kinnitajat ei leitud. Alustage sisselogimist uuesti.",
   "errorServerUrlNotConfigured": "Serveri URL pole seadistatud",

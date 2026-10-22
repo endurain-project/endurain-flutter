@@ -169,6 +169,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'O servidor não devolveu um ID de sessão';
 
   @override
+  String get errorMfaSessionMissing =>
+      'A sua sessão de início de sessão perdeu-se. Inicie sessão novamente.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Não foi possível concluir o início de sessão único. Tente novamente.';
+
+  @override
   String get errorNotAuthenticated => 'Não tem sessão iniciada';
 
   @override

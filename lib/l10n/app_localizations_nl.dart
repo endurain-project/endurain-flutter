@@ -167,6 +167,14 @@ class AppLocalizationsNl extends AppLocalizations {
       'Er is geen sessie-ID van de server ontvangen';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'Je bent niet aangemeld';
 
   @override

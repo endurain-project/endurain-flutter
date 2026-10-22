@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA doğrulaması başarısız oldu",
   "errorMfaVerificationFailedWithDetails": "MFA doğrulaması başarısız oldu: {details}",
   "errorNoSessionIdReceived": "Sunucudan oturum kimliği alınmadı",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Oturum açmadınız",
   "errorPkceVerifierMissingRestartLogin": "Oturum açma doğrulayıcısı bulunamadı. Lütfen oturum açmayı yeniden başlatın.",
   "errorServerUrlNotConfigured": "Sunucu URL'si yapılandırılmadı",

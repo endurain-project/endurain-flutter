@@ -167,6 +167,14 @@ class AppLocalizationsBg extends AppLocalizations {
       'Не е получен идентификатор на сесия от сървъра';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'Не сте влезли';
 
   @override

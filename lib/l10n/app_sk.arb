@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Overenie MFA zlyhalo",
   "errorMfaVerificationFailedWithDetails": "Overenie MFA zlyhalo: {details}",
   "errorNoSessionIdReceived": "Zo servera nebolo prijaté žiadne ID relácie",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Nie ste prihlásení",
   "errorPkceVerifierMissingRestartLogin": "Overovateľ prihlásenia sa nenašiel. Začnite prihlásenie znova.",
   "errorServerUrlNotConfigured": "Adresa URL servera nie je nastavená",

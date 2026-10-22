@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-vahvistus epäonnistui",
   "errorMfaVerificationFailedWithDetails": "MFA-vahvistus epäonnistui: {details}",
   "errorNoSessionIdReceived": "Palvelimelta ei saatu istuntotunnusta",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Et ole kirjautunut sisään",
   "errorPkceVerifierMissingRestartLogin": "Kirjautumisen vahvistajaa ei löytynyt. Aloita kirjautuminen uudelleen.",
   "errorServerUrlNotConfigured": "Palvelimen URL-osoitetta ei ole määritetty",

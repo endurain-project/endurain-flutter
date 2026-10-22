@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Помилка перевірки MFA",
   "errorMfaVerificationFailedWithDetails": "Помилка перевірки MFA: {details}",
   "errorNoSessionIdReceived": "Сервер не повернув ідентифікатор сеансу",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Ви не ввійшли",
   "errorPkceVerifierMissingRestartLogin": "Верифікатор входу не знайдено. Почніть вхід знову.",
   "errorServerUrlNotConfigured": "URL сервера не налаштовано",

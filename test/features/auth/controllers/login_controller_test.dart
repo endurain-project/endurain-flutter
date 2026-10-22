@@ -159,7 +159,14 @@ void main() {
       );
       await Future<void>.delayed(Duration.zero);
 
-      expect(errors.single, 'access_denied');
+      expect(
+        errors.single,
+        isA<AppException>().having(
+          (exception) => exception.code,
+          'code',
+          AppErrorCode.ssoCallbackFailed,
+        ),
+      );
       expect(controller.isLoading, isFalse);
       expect(await storage.getAccessToken(), isNull);
       controller.dispose();
@@ -472,7 +479,7 @@ void main() {
         isA<AppException>().having(
           (exception) => exception.code,
           'code',
-          AppErrorCode.noSessionIdReceived,
+          AppErrorCode.mfaSessionMissing,
         ),
       );
       controller.dispose();

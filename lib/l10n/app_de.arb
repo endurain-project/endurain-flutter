@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-Überprüfung fehlgeschlagen",
   "errorMfaVerificationFailedWithDetails": "MFA-Überprüfung fehlgeschlagen: {details}",
   "errorNoSessionIdReceived": "Vom Server wurde keine Sitzungs-ID empfangen",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Du bist nicht angemeldet",
   "errorPkceVerifierMissingRestartLogin": "Der Anmelde-Verifier wurde nicht gefunden. Bitte starte die Anmeldung erneut.",
   "errorServerUrlNotConfigured": "Server-URL ist nicht konfiguriert",

@@ -149,6 +149,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorNoSessionIdReceived => '未从服务器收到会话 ID';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => '您尚未登录';
 
   @override
@@ -1349,6 +1357,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorNoSessionIdReceived => '未從伺服器收到工作階段 ID';
+
+  @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
 
   @override
   String get errorNotAuthenticated => '您尚未登入';

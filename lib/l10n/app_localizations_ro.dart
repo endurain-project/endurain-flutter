@@ -168,6 +168,14 @@ class AppLocalizationsRo extends AppLocalizations {
       'Nu s-a primit niciun ID de sesiune de la server';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'Nu sunteți autentificat';
 
   @override

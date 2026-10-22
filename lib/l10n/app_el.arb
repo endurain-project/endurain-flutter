@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Η επαλήθευση MFA απέτυχε",
   "errorMfaVerificationFailedWithDetails": "Η επαλήθευση MFA απέτυχε: {details}",
   "errorNoSessionIdReceived": "Δεν ελήφθη αναγνωριστικό συνεδρίας από τον διακομιστή",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Δεν έχετε συνδεθεί",
   "errorPkceVerifierMissingRestartLogin": "Ο επαληθευτής σύνδεσης δεν βρέθηκε. Ξεκινήστε ξανά τη σύνδεση.",
   "errorServerUrlNotConfigured": "Το URL του διακομιστή δεν έχει ρυθμιστεί",

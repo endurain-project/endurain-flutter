@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA pārbaude neizdevās",
   "errorMfaVerificationFailedWithDetails": "MFA pārbaude neizdevās: {details}",
   "errorNoSessionIdReceived": "No servera netika saņemts sesijas ID",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Jūs neesat pieteicies",
   "errorPkceVerifierMissingRestartLogin": "Pieteikšanās verificētājs netika atrasts. Sāciet pieteikšanos no jauna.",
   "errorServerUrlNotConfigured": "Servera URL nav konfigurēts",

@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Weryfikacja MFA nie powiodła się",
   "errorMfaVerificationFailedWithDetails": "Weryfikacja MFA nie powiodła się: {details}",
   "errorNoSessionIdReceived": "Serwer nie zwrócił identyfikatora sesji",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Nie jesteś zalogowany",
   "errorPkceVerifierMissingRestartLogin": "Nie znaleziono weryfikatora logowania. Rozpocznij logowanie ponownie.",
   "errorServerUrlNotConfigured": "Adres URL serwera nie jest skonfigurowany",

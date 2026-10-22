@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Preverjanje MFA ni uspelo",
   "errorMfaVerificationFailedWithDetails": "Preverjanje MFA ni uspelo: {details}",
   "errorNoSessionIdReceived": "Strežnik ni vrnil ID-ja seje",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Niste prijavljeni",
   "errorPkceVerifierMissingRestartLogin": "Preverjevalnika prijave ni bilo mogoče najti. Znova začnite prijavo.",
   "errorServerUrlNotConfigured": "URL strežnika ni nastavljen",

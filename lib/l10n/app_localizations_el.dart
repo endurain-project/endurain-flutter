@@ -172,6 +172,14 @@ class AppLocalizationsEl extends AppLocalizations {
       'Δεν ελήφθη αναγνωριστικό συνεδρίας από τον διακομιστή';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'Δεν έχετε συνδεθεί';
 
   @override

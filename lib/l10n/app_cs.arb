@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Ověření MFA se nezdařilo",
   "errorMfaVerificationFailedWithDetails": "Ověření MFA se nezdařilo: {details}",
   "errorNoSessionIdReceived": "Ze serveru nebylo přijato žádné ID relace",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Nejste přihlášeni",
   "errorPkceVerifierMissingRestartLogin": "Ověřovač přihlášení nebyl nalezen. Zahajte přihlášení znovu.",
   "errorServerUrlNotConfigured": "Adresa URL serveru není nastavena",

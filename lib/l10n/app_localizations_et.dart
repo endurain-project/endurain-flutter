@@ -166,6 +166,14 @@ class AppLocalizationsEt extends AppLocalizations {
   String get errorNoSessionIdReceived => 'Serverilt ei saadud seansi ID-d';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'Te pole sisse logitud';
 
   @override

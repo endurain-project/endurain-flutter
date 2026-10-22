@@ -167,6 +167,14 @@ class AppLocalizationsSl extends AppLocalizations {
   String get errorNoSessionIdReceived => 'Strežnik ni vrnil ID-ja seje';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'Niste prijavljeni';
 
   @override

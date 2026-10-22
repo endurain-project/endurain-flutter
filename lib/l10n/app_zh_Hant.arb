@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA 驗證失敗",
   "errorMfaVerificationFailedWithDetails": "MFA 驗證失敗：{details}",
   "errorNoSessionIdReceived": "未從伺服器收到工作階段 ID",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "您尚未登入",
   "errorPkceVerifierMissingRestartLogin": "找不到登入驗證器。請重新開始登入。",
   "errorServerUrlNotConfigured": "未設定伺服器網址",

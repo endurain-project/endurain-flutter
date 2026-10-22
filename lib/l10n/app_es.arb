@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Error en la verificación MFA",
   "errorMfaVerificationFailedWithDetails": "Error en la verificación MFA: {details}",
   "errorNoSessionIdReceived": "El servidor no devolvió ningún ID de sesión",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "No has iniciado sesión",
   "errorPkceVerifierMissingRestartLogin": "No se encontró el verificador de inicio de sesión. Vuelve a iniciar sesión.",
   "errorServerUrlNotConfigured": "La URL del servidor no está configurada",

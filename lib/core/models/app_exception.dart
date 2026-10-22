@@ -27,6 +27,7 @@ enum AppErrorCode {
   loginError,
   loginFailed,
   mfaVerificationError,
+  mfaSessionMissing,
   mfaVerificationFailed,
   noSessionIdReceived,
   notAuthenticated,
@@ -37,6 +38,10 @@ enum AppErrorCode {
   secureStorageWriteFailed,
   serverUrlNotConfigured,
   sessionExpired,
+
+  /// The SSO deep-link callback reported a failure. The server-supplied text is
+  /// deliberately discarded: the link is attacker-controllable.
+  ssoCallbackFailed,
   ssoTokenExchangeError,
   tokenExchangeFailed,
 

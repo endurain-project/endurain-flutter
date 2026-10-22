@@ -169,6 +169,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Aucun identifiant de session n\'a été reçu du serveur';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'Vous n\'êtes pas connecté';
 
   @override

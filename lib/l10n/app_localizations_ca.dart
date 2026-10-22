@@ -171,6 +171,14 @@ class AppLocalizationsCa extends AppLocalizations {
       'El servidor no ha retornat cap identificador de sessió';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Your sign-in session was lost. Please sign in again.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Single sign-on could not be completed. Please try again.';
+
+  @override
   String get errorNotAuthenticated => 'No heu iniciat la sessió';
 
   @override

@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Ha fallat la verificació MFA",
   "errorMfaVerificationFailedWithDetails": "Ha fallat la verificació MFA: {details}",
   "errorNoSessionIdReceived": "El servidor no ha retornat cap identificador de sessió",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "No heu iniciat la sessió",
   "errorPkceVerifierMissingRestartLogin": "No s'ha trobat el verificador d'inici de sessió. Torneu a començar l'inici de sessió.",
   "errorServerUrlNotConfigured": "L'URL del servidor no està configurat",

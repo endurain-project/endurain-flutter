@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Verificarea MFA a eșuat",
   "errorMfaVerificationFailedWithDetails": "Verificarea MFA a eșuat: {details}",
   "errorNoSessionIdReceived": "Nu s-a primit niciun ID de sesiune de la server",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Nu sunteți autentificat",
   "errorPkceVerifierMissingRestartLogin": "Verificatorul de autentificare nu a fost găsit. Reîncepeți autentificarea.",
   "errorServerUrlNotConfigured": "URL-ul serverului nu este configurat",

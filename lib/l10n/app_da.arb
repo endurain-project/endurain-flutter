@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-bekræftelse mislykkedes",
   "errorMfaVerificationFailedWithDetails": "MFA-bekræftelse mislykkedes: {details}",
   "errorNoSessionIdReceived": "Der blev ikke modtaget noget sessions-id fra serveren",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Du er ikke logget ind",
   "errorPkceVerifierMissingRestartLogin": "Loginverifikatoren blev ikke fundet. Start login forfra.",
   "errorServerUrlNotConfigured": "Server-URL er ikke konfigureret",

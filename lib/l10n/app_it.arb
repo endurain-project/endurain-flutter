@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Verifica MFA non riuscita",
   "errorMfaVerificationFailedWithDetails": "Verifica MFA non riuscita: {details}",
   "errorNoSessionIdReceived": "Nessun ID di sessione ricevuto dal server",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Non hai effettuato l'accesso",
   "errorPkceVerifierMissingRestartLogin": "Verificatore di accesso non trovato. Riavvia l'accesso.",
   "errorServerUrlNotConfigured": "L'URL del server non è configurato",

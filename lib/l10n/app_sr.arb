@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Верификација MFA није успела",
   "errorMfaVerificationFailedWithDetails": "Верификација MFA није успела: {details}",
   "errorNoSessionIdReceived": "Са сервера није примљен ИД сесије",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Нисте пријављени",
   "errorPkceVerifierMissingRestartLogin": "Верификатор пријаве није пронађен. Поново започните пријаву.",
   "errorServerUrlNotConfigured": "URL сервера није подешен",

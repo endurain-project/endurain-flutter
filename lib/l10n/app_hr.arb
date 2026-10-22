@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Provjera MFA nije uspjela",
   "errorMfaVerificationFailedWithDetails": "Provjera MFA nije uspjela: {details}",
   "errorNoSessionIdReceived": "Od poslužitelja nije primljen ID sesije",
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
   "errorNotAuthenticated": "Niste prijavljeni",
   "errorPkceVerifierMissingRestartLogin": "Verifikator prijave nije pronađen. Ponovno započnite prijavu.",
   "errorServerUrlNotConfigured": "URL poslužitelja nije konfiguriran",

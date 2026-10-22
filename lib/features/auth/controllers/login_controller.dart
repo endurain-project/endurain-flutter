@@ -179,7 +179,7 @@ class LoginController extends SafeNotifier {
   Future<void> submitMfa(String mfaCode) async {
     final username = _mfaUsername;
     if (username == null || username.isEmpty) {
-      _notifyError(const AppException(AppErrorCode.noSessionIdReceived));
+      _notifyError(const AppException(AppErrorCode.mfaSessionMissing));
       return;
     }
 
@@ -229,9 +229,10 @@ class LoginController extends SafeNotifier {
         uri.queryParameters['message'] ?? uri.queryParameters['error'];
 
     if (error != null && error.isNotEmpty) {
+      // Any app can fire this deep link, so never surface its text to the user.
       clearSsoPkce();
       _setLoading(false);
-      _notifyError(error);
+      _notifyError(const AppException(AppErrorCode.ssoCallbackFailed));
       return;
     }
 
