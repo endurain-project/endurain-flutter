@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:endurain/app.dart';
 import 'package:endurain/app/app_services.dart';
+import 'package:endurain/app/widgets/app_bottom_nav.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,12 +38,19 @@ void main() {
 
   testWidgets('signs in with username and password', (tester) async {
     await tester.pumpWidget(App(services: services));
-    await _pumpUntil(tester, find.byType(TextFormField));
+    // Signed out, the app starts in guest mode on the home shell; the login
+    // screen is reached through Settings.
+    await _pumpUntil(tester, find.byType(AppBottomNav));
 
     // Resolve below Localizations; the root App element sits above it.
     final l10n = AppLocalizations.of(
-      tester.element(find.byType(TextFormField).first),
+      tester.element(find.byType(AppBottomNav)),
     )!;
+
+    await tester.tap(find.text(l10n.settingsTab).first);
+    await _pumpUntil(tester, find.text(l10n.signInConnectServer));
+    await tester.tap(find.text(l10n.signInConnectServer));
+    await _pumpUntil(tester, find.byType(TextFormField));
 
     // Server step: the fake server speaks plain HTTP, so switch the protocol.
     await _selectHttp(tester);
