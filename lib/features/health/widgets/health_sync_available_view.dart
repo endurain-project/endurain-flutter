@@ -1,3 +1,4 @@
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
@@ -13,9 +14,8 @@ import 'package:endurain/features/health/widgets/health_sync_inline_error.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter/foundation.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The "Available" tab: import range, auto-sync toggle, notices, and the list
 /// of health-platform workouts eligible for import.
@@ -416,7 +416,7 @@ class HealthSyncAvailableView extends StatelessWidget {
         children: [
           AdaptiveButton(
             label: l10n.healthSyncImportSelected(selectedCount),
-            onPressed: canImport ? () => controller.importSelected() : null,
+            onPressed: canImport ? controller.importSelected : null,
             expand: true,
           ),
         ],

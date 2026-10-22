@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();

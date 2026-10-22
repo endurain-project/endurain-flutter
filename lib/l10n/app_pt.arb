@@ -215,6 +215,14 @@
   "@errorNoSessionIdReceived": {
     "description": "Erro quando a autenticação é concluída sem ID de sessão - Usado em: error_localizations.dart"
   },
+  "errorMfaSessionMissing": "A sua sessão de início de sessão perdeu-se. Inicie sessão novamente.",
+  "@errorMfaSessionMissing": {
+    "description": "Erro quando o passo MFA não tem nome de utilizador de início de sessão pendente - Usado em: error_localizations.dart"
+  },
+  "errorSsoCallbackFailed": "Não foi possível concluir o início de sessão único. Tente novamente.",
+  "@errorSsoCallbackFailed": {
+    "description": "Erro genérico quando o callback do link de SSO reporta uma falha - Usado em: error_localizations.dart"
+  },
   "errorNotAuthenticated": "Não tem sessão iniciada",
   "@errorNotAuthenticated": {
     "description": "Erro quando um pedido autenticado não tem token - Usado em: error_localizations.dart"
@@ -1077,10 +1085,6 @@
   "healthAccessHeartRate": "Frequência cardíaca",
   "@healthAccessHeartRate": {
     "description": "Categoria de dados de saúde - Usado em: health_access_screen.dart"
-  },
-  "healthAccessWorkoutSummary": "Distância, calorias e passos do treino",
-  "@healthAccessWorkoutSummary": {
-    "description": "Categorias de enriquecimento de treino do Health Connect exigidas pelo pacote de saúde - Usado em: health_access_screen.dart"
   },
   "healthAccessAllowed": "Permitido",
   "@healthAccessAllowed": {

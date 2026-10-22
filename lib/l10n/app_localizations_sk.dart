@@ -168,6 +168,14 @@ class AppLocalizationsSk extends AppLocalizations {
       'Zo servera nebolo prijaté žiadne ID relácie';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Vaša prihlasovacia relácia sa stratila. Prihláste sa znova.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Jednotné prihlásenie (SSO) sa nepodarilo dokončiť. Skúste to znova.';
+
+  @override
   String get errorNotAuthenticated => 'Nie ste prihlásení';
 
   @override
@@ -881,10 +889,6 @@ class AppLocalizationsSk extends AppLocalizations {
   String get healthAccessHeartRate => 'Srdcová frekvencia';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Vzdialenosť, kalórie a kroky tréningu';
-
-  @override
   String get healthAccessAllowed => 'Povolené';
 
   @override
@@ -1215,11 +1219,11 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Server sa pokúsil presmerovať na nezabezpečené pripojenie. Požiadavka bola zablokovaná na ochranu vašich prihlasovacích údajov.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Server presmeroval príliš veľakrát. Skontrolujte adresu servera.';
 
   @override
   String get audioAnnouncementsTitle => 'Hlasové oznámenia';

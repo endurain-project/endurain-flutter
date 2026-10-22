@@ -167,6 +167,14 @@ class AppLocalizationsNl extends AppLocalizations {
       'Er is geen sessie-ID van de server ontvangen';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Je inlogsessie is verloren gegaan. Meld je opnieuw aan.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Eenmalige aanmelding (SSO) kon niet worden voltooid. Probeer het opnieuw.';
+
+  @override
   String get errorNotAuthenticated => 'Je bent niet aangemeld';
 
   @override
@@ -875,10 +883,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'Hartslag';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Trainingsafstand, calorieën en stappen';
 
   @override
   String get healthAccessAllowed => 'Toegestaan';

@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA kinnitamine ebaõnnestus",
   "errorMfaVerificationFailedWithDetails": "MFA kinnitamine ebaõnnestus: {details}",
   "errorNoSessionIdReceived": "Serverilt ei saadud seansi ID-d",
+  "errorMfaSessionMissing": "Teie sisselogimissessioon läks kaotsi. Palun logige uuesti sisse.",
+  "errorSsoCallbackFailed": "Ühekordset sisselogimist (SSO) ei õnnestunud lõpetada. Proovige uuesti.",
   "errorNotAuthenticated": "Te pole sisse logitud",
   "errorPkceVerifierMissingRestartLogin": "Sisselogimise kinnitajat ei leitud. Alustage sisselogimist uuesti.",
   "errorServerUrlNotConfigured": "Serveri URL pole seadistatud",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Treeningud",
   "healthAccessWorkoutRoutes": "Treeningu marsruudid",
   "healthAccessHeartRate": "Südame löögisagedus",
-  "healthAccessWorkoutSummary": "Treeningu vahemaa, kalorid ja sammud",
   "healthAccessAllowed": "Lubatud",
   "healthAccessNeedsAttention": "Vajab tähelepanu",
   "healthAccessManagedBySystem": "Hallatakse süsteemiseadetes",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Server püüdis suunata ümber ebaturvalisele ühendusele. Päring blokeeriti teie volituste kaitsmiseks.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Server suunas liiga mitu korda ümber. Kontrollige serveri aadressi.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

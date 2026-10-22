@@ -169,6 +169,14 @@ class AppLocalizationsHr extends AppLocalizations {
       'Od poslužitelja nije primljen ID sesije';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Vaša sesija prijave je izgubljena. Prijavite se ponovno.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Jedinstvenu prijavu (SSO) nije bilo moguće dovršiti. Pokušajte ponovno.';
+
+  @override
   String get errorNotAuthenticated => 'Niste prijavljeni';
 
   @override
@@ -879,10 +887,6 @@ class AppLocalizationsHr extends AppLocalizations {
   String get healthAccessHeartRate => 'Otkucaji srca';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Udaljenost, kalorije i koraci vježbanja';
-
-  @override
   String get healthAccessAllowed => 'Dopušteno';
 
   @override
@@ -1210,11 +1214,11 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Poslužitelj je pokušao preusmjeriti na nesigurnu vezu. Zahtjev je blokiran radi zaštite vaših vjerodajnica.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Poslužitelj je preusmjeravao previše puta. Provjerite adresu poslužitelja.';
 
   @override
   String get audioAnnouncementsTitle => 'Govorne najave';

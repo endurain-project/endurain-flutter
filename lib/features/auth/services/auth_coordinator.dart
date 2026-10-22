@@ -1,8 +1,8 @@
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
 
 /// Coordinates the auth-related services used by the login flow.
 ///

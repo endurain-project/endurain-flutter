@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/core/services/app_scope.dart';
-import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -18,7 +19,6 @@ import 'package:endurain/features/map/repositories/map_settings_repository.dart'
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ActivityHistoryScreen extends StatefulWidget {

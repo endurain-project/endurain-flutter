@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';

@@ -169,6 +169,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Nessun ID di sessione ricevuto dal server';
 
   @override
+  String get errorMfaSessionMissing =>
+      'La tua sessione di accesso è andata persa. Effettua di nuovo l\'accesso.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Non è stato possibile completare l\'accesso singolo. Riprova.';
+
+  @override
   String get errorNotAuthenticated => 'Non hai effettuato l\'accesso';
 
   @override
@@ -882,10 +890,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'Frequenza cardiaca';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Distanza, calorie e passi dell\'allenamento';
 
   @override
   String get healthAccessAllowed => 'Consentito';

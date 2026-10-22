@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Verificarea MFA a eșuat",
   "errorMfaVerificationFailedWithDetails": "Verificarea MFA a eșuat: {details}",
   "errorNoSessionIdReceived": "Nu s-a primit niciun ID de sesiune de la server",
+  "errorMfaSessionMissing": "Sesiunea dvs. de autentificare s-a pierdut. Autentificați-vă din nou.",
+  "errorSsoCallbackFailed": "Autentificarea unică (SSO) nu a putut fi finalizată. Încercați din nou.",
   "errorNotAuthenticated": "Nu sunteți autentificat",
   "errorPkceVerifierMissingRestartLogin": "Verificatorul de autentificare nu a fost găsit. Reîncepeți autentificarea.",
   "errorServerUrlNotConfigured": "URL-ul serverului nu este configurat",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Antrenamente",
   "healthAccessWorkoutRoutes": "Trasee de antrenament",
   "healthAccessHeartRate": "Ritmul cardiac",
-  "healthAccessWorkoutSummary": "Distanță, calorii și pași din antrenament",
   "healthAccessAllowed": "Permis",
   "healthAccessNeedsAttention": "Necesită atenție",
   "healthAccessManagedBySystem": "Gestionat în setările sistemului",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serverul a încercat să redirecționeze către o conexiune nesigură. Solicitarea a fost blocată pentru a vă proteja datele de autentificare.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serverul a redirecționat de prea multe ori. Verificați adresa serverului.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

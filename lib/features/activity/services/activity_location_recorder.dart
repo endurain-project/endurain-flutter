@@ -1,10 +1,10 @@
-import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 
 /// Typed, language-free recorder failure reasons.
 ///

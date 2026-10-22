@@ -1,11 +1,11 @@
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();

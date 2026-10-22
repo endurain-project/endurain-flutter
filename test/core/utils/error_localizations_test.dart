@@ -1,9 +1,9 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/l10n/app_localizations_pt.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();

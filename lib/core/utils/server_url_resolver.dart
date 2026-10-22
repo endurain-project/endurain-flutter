@@ -1,6 +1,6 @@
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 
 /// Resolves the server base URL for a request.
 ///

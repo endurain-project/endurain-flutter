@@ -1,12 +1,12 @@
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/widgets/activity_completion_summary.dart';
-import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/device_locale.dart';
 import '../../../helpers/elevation_profile.dart';

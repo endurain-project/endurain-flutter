@@ -16,11 +16,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.10.2+19
+version: 0.10.3+20
 
 environment:
-  sdk: ^3.13.3
-  flutter: '>=3.47.3'
+  sdk: ^3.13.5
+  flutter: '>=3.47.7'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -62,15 +62,12 @@ dependencies:
   path_provider: ^2.1.6
 
   # Non-secret key/value storage for display and language preferences.
-  #
-  # TODO: shared_preferences_android 2.5.0-2.5.1 breaks release builds (R8
-  # renames the Kotlin classes it calls over JNI; flutter/flutter#194649).
-  # android/app/proguard-rules.pro works around it. Once 2.5.2 (which ships its
-  # own consumer rules, flutter/packages#13311) is on pub.dev: upgrade it, raise
-  # the transitive floor, then delete the rules, the proguardFiles line in
-  # android/app/build.gradle.kts and
-  # test/architecture/android_proguard_rules_test.dart.
   shared_preferences: ^2.5.5
+
+  # Floor for the transitive Android implementation. 2.5.0-2.5.1 break release
+  # builds (R8 renames the Kotlin classes called over JNI;
+  # flutter/flutter#194649); 2.5.2 ships its own consumer rules. Do not lower.
+  shared_preferences_android: ^2.5.2
 
   # HTTP client for API requests
   http: ^1.2.2
@@ -134,6 +131,10 @@ dev_dependencies:
   sqflite_common_ffi: ^2.4.3
 
   flutter_test:
+    sdk: flutter
+
+  # On-device smoke tests under integration_test/ (run in CI on an emulator).
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to

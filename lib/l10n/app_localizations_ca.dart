@@ -171,6 +171,14 @@ class AppLocalizationsCa extends AppLocalizations {
       'El servidor no ha retornat cap identificador de sessió';
 
   @override
+  String get errorMfaSessionMissing =>
+      'S\'ha perdut la sessió d\'inici de sessió. Torna a iniciar la sessió.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'No s\'ha pogut completar l\'inici de sessió únic. Torna-ho a provar.';
+
+  @override
   String get errorNotAuthenticated => 'No heu iniciat la sessió';
 
   @override
@@ -884,10 +892,6 @@ class AppLocalizationsCa extends AppLocalizations {
   String get healthAccessHeartRate => 'Freqüència cardíaca';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Distància, calories i passos dels entrenaments';
-
-  @override
   String get healthAccessAllowed => 'Permès';
 
   @override
@@ -1221,11 +1225,11 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'El servidor ha intentat redirigir a una connexió no segura. La sol·licitud s\'ha bloquejat per protegir les teves credencials.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'El servidor ha redirigit massa vegades. Comprova l\'adreça del servidor.';
 
   @override
   String get audioAnnouncementsTitle => 'Anuncis de veu';

@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_data_access_details.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('UnsupportedHealthPlatformAdapter', () {

@@ -1,12 +1,12 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/foundation.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
+import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/services/health_package_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
-import 'package:endurain/features/activity/models/activity_type.dart';
-import 'package:endurain/features/health/models/health_workout.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
 
 // These tests verify the adapter contract using the

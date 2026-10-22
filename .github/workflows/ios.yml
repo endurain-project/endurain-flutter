@@ -11,6 +11,8 @@ on:
   pull_request:
     paths:
       - "ios/**"
+      - "lib/**"
+      - "integration_test/**"
       - "pubspec.yaml"
       - "pubspec.lock"
       - ".github/workflows/ios.yml"
@@ -18,7 +20,7 @@ on:
 
 env:
   # Keep in sync with ci.yml.
-  FLUTTER_VERSION: 3.47.3
+  FLUTTER_VERSION: 3.47.7
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -81,3 +83,20 @@ jobs:
             -scheme Runner \
             -destination "id=$SIMULATOR_UDID" \
             CODE_SIGNING_ALLOWED=NO
+
+      # Boots the real app on the simulator and signs in against an in-process
+      # fake server; the Android counterpart is integration.yml.
+      - name: Run integration tests
+        shell: bash
+        # The suite takes about a minute; a hung launch must fail fast rather
+        # than run into the job timeout and be cancelled without a result.
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          # xcodebuild test leaves the simulator in a used state (and can shut
+          # it down). Start from a clean, booted one, as on a fresh install.
+          xcrun simctl shutdown "$SIMULATOR_UDID" || true
+          xcrun simctl erase "$SIMULATOR_UDID"
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b
+          flutter devices
+          flutter test integration_test -d "$SIMULATOR_UDID" --reporter expanded

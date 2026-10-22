@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-vahvistus epäonnistui",
   "errorMfaVerificationFailedWithDetails": "MFA-vahvistus epäonnistui: {details}",
   "errorNoSessionIdReceived": "Palvelimelta ei saatu istuntotunnusta",
+  "errorMfaSessionMissing": "Kirjautumisistuntosi katosi. Kirjaudu sisään uudelleen.",
+  "errorSsoCallbackFailed": "Kertakirjautumista (SSO) ei voitu suorittaa loppuun. Yritä uudelleen.",
   "errorNotAuthenticated": "Et ole kirjautunut sisään",
   "errorPkceVerifierMissingRestartLogin": "Kirjautumisen vahvistajaa ei löytynyt. Aloita kirjautuminen uudelleen.",
   "errorServerUrlNotConfigured": "Palvelimen URL-osoitetta ei ole määritetty",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Harjoitukset",
   "healthAccessWorkoutRoutes": "Harjoitusreitit",
   "healthAccessHeartRate": "Syke",
-  "healthAccessWorkoutSummary": "Harjoituksen matka, kalorit ja askeleet",
   "healthAccessAllowed": "Sallittu",
   "healthAccessNeedsAttention": "Vaatii huomiota",
   "healthAccessManagedBySystem": "Hallittu järjestelmäasetuksissa",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Palvelin yritti ohjata suojaamattomaan yhteyteen. Pyyntö estettiin tunnistetietojesi suojaamiseksi.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Palvelin ohjasi liian monta kertaa. Tarkista palvelimen osoite.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

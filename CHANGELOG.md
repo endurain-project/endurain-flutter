@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.10.3+20] - 2026-10-22
+
+### Security
+
+- Crash reports sent to Sentry now drop request data, user information, extras and breadcrumbs, and redact event messages and tags, keeping only device, OS, app and runtime context.
+- Error text from an SSO sign-in callback is no longer shown to the user, since any app can trigger that deep link. A generic localized error is shown instead.
+- Secure storage is configured with explicit hardened options: Keychain items are available after first unlock and stay on the device, and a transient Android Keystore failure no longer silently erases the stored server and session.
+
+### Fixed
+
+- The configured server URL now survives a secure storage failure or reset thanks to a non-secret mirror. Falling back to the mirror is recorded in diagnostics.
+- A missing multi-factor session now shows its own error instead of an unrelated one.
+
+### Changed
+
+- Android release builds no longer need the temporary ProGuard rules. `shared_preferences_android` is now required at 2.5.2 or newer, which ships its own consumer rules.
+- Internal restructuring: the app wiring and navigation moved to `lib/app/`, the core services were split into `auth`, `network`, `diagnostics` and `location` packages, and the recording service and map screen were broken into smaller focused components. There are no user-visible changes.
+- Stricter lint rules (`avoid_dynamic_calls`, `directives_ordering`, `unnecessary_lambdas`) and sorted imports.
+- Updated localized error and health access strings.
+
+### Added
+
+- On-device login flow smoke tests (`integration_test/`), run in CI on an Android emulator and an iOS simulator, plus Dependabot configuration.
+- Unit tests for the recording clock, permission gate and sensor session.
+
 ## [v0.10.2+19] - 2026-10-21
 
 ### Fixed

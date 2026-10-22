@@ -168,6 +168,14 @@ class AppLocalizationsSr extends AppLocalizations {
   String get errorNoSessionIdReceived => 'Са сервера није примљен ИД сесије';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Ваша сесија пријаве је изгубљена. Пријавите се поново.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Јединствену пријаву (SSO) није било могуће завршити. Покушајте поново.';
+
+  @override
   String get errorNotAuthenticated => 'Нисте пријављени';
 
   @override
@@ -878,10 +886,6 @@ class AppLocalizationsSr extends AppLocalizations {
   String get healthAccessHeartRate => 'Откуцаји срца';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Раздаљина, калорије и кораци вежбања';
-
-  @override
   String get healthAccessAllowed => 'Дозвољено';
 
   @override
@@ -1210,11 +1214,11 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Сервер је покушао да преусмери на небезбедну везу. Захтев је блокиран ради заштите ваших акредитива.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Сервер је преусмеравао превише пута. Проверите адресу сервера.';
 
   @override
   String get audioAnnouncementsTitle => 'Гласовна обавештења';

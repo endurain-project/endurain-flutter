@@ -168,6 +168,14 @@ class AppLocalizationsRo extends AppLocalizations {
       'Nu s-a primit niciun ID de sesiune de la server';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Sesiunea dvs. de autentificare s-a pierdut. Autentificați-vă din nou.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Autentificarea unică (SSO) nu a putut fi finalizată. Încercați din nou.';
+
+  @override
   String get errorNotAuthenticated => 'Nu sunteți autentificat';
 
   @override
@@ -882,10 +890,6 @@ class AppLocalizationsRo extends AppLocalizations {
   String get healthAccessHeartRate => 'Ritmul cardiac';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Distanță, calorii și pași din antrenament';
-
-  @override
   String get healthAccessAllowed => 'Permis';
 
   @override
@@ -1213,11 +1217,11 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serverul a încercat să redirecționeze către o conexiune nesigură. Solicitarea a fost blocată pentru a vă proteja datele de autentificare.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serverul a redirecționat de prea multe ori. Verificați adresa serverului.';
 
   @override
   String get audioAnnouncementsTitle => 'Anunțuri vocale';

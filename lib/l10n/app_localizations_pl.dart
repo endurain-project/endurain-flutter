@@ -169,6 +169,14 @@ class AppLocalizationsPl extends AppLocalizations {
       'Serwer nie zwrócił identyfikatora sesji';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Twoja sesja logowania została utracona. Zaloguj się ponownie.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Nie udało się ukończyć logowania jednokrotnego (SSO). Spróbuj ponownie.';
+
+  @override
   String get errorNotAuthenticated => 'Nie jesteś zalogowany';
 
   @override
@@ -883,9 +891,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get healthAccessHeartRate => 'Tętno';
 
   @override
-  String get healthAccessWorkoutSummary => 'Dystans, kalorie i kroki treningu';
-
-  @override
   String get healthAccessAllowed => 'Dozwolone';
 
   @override
@@ -1217,11 +1222,11 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serwer próbował przekierować na niezabezpieczone połączenie. Żądanie zostało zablokowane, aby chronić Twoje dane logowania.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serwer przekierowywał zbyt wiele razy. Sprawdź adres serwera.';
 
   @override
   String get audioAnnouncementsTitle => 'Komunikaty głosowe';

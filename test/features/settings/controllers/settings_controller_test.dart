@@ -1,7 +1,7 @@
-import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';

@@ -1,6 +1,6 @@
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/measurement_system.dart';
-import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';

@@ -157,7 +157,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 ### Prerequisites
 
-- Flutter SDK 3.47.3 or higher
+- Flutter SDK 3.47.7 or higher
 - Dart SDK 3.13.0 or higher
 - Xcode (for iOS development)
 - Android Studio (for Android development)
@@ -366,8 +366,8 @@ dart run tool/check_coverage.dart \
   --min-file-line-coverage 60 \
   --exclude "lib/l10n/app_localizations*.dart" \
   --exclude "lib/core/theme/app_theme_tokens.dart" \
-  --exclude "lib/core/navigation/app_routes.dart" \
-  --exclude "lib/shared/widgets/app_bottom_nav.dart" \
+  --exclude "lib/app/navigation/app_routes.dart" \
+  --exclude "lib/app/widgets/app_bottom_nav.dart" \
   --exclude "lib/core/services/platform/*.dart" \
   --exclude "lib/features/health/services/health_package_platform_adapter.dart" \
   --exclude "lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart"

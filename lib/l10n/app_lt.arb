@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA patvirtinimas nepavyko",
   "errorMfaVerificationFailedWithDetails": "MFA patvirtinimas nepavyko: {details}",
   "errorNoSessionIdReceived": "Iš serverio negautas seanso ID",
+  "errorMfaSessionMissing": "Jūsų prisijungimo sesija prarasta. Prisijunkite iš naujo.",
+  "errorSsoCallbackFailed": "Nepavyko užbaigti vieningo prisijungimo (SSO). Bandykite dar kartą.",
   "errorNotAuthenticated": "Nesate prisijungę",
   "errorPkceVerifierMissingRestartLogin": "Prisijungimo tikrintuvas nerastas. Pradėkite prisijungimą iš naujo.",
   "errorServerUrlNotConfigured": "Serverio URL nesukonfigūruotas",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Treniruotės",
   "healthAccessWorkoutRoutes": "Treniruočių maršrutai",
   "healthAccessHeartRate": "Širdies ritmas",
-  "healthAccessWorkoutSummary": "Treniruotės atstumas, kalorijos ir žingsniai",
   "healthAccessAllowed": "Leidžiama",
   "healthAccessNeedsAttention": "Reikia dėmesio",
   "healthAccessManagedBySystem": "Tvarkomas sistemos nustatymuose",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serveris bandė nukreipti į nesaugų ryšį. Užklausa užblokuota siekiant apsaugoti jūsų prisijungimo duomenis.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serveris nukreipė per daug kartų. Patikrinkite serverio adresą.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

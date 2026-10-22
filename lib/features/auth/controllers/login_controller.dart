@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -84,10 +84,8 @@ class LoginController extends SafeNotifier {
     );
   }
 
-  Future<IdentityProvider?> submitServerUrl(String serverUrl) async {
-    _setLoading(true);
-
-    try {
+  Future<IdentityProvider?> submitServerUrl(String serverUrl) {
+    return _guarded<IdentityProvider?>(() async {
       final url = serverUrl.trim();
       _serverUrl = url;
       final settings = await _authCoordinator.getServerSettings(url);
@@ -119,20 +117,14 @@ class LoginController extends SafeNotifier {
         return providers.first;
       }
       return null;
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-      return null;
-    }
+    });
   }
 
   Future<String?> beginSsoLogin(
     IdentityProvider provider, {
     required String serverUrl,
-  }) async {
-    _setLoading(true);
-
-    try {
+  }) {
+    return _guarded<String?>(() async {
       _serverUrl = serverUrl.trim();
       final oauthUrl = await _authCoordinator.initiateSsoLogin(
         provider,
@@ -140,21 +132,15 @@ class LoginController extends SafeNotifier {
       );
       _setLoading(false);
       return oauthUrl;
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-      return null;
-    }
+    });
   }
 
   Future<void> submitLogin({
     required String serverUrl,
     required String username,
     required String password,
-  }) async {
-    _setLoading(true);
-
-    try {
+  }) {
+    return _guarded(() async {
       _serverUrl = serverUrl.trim();
       final result = await _authCoordinator.login(
         username: username.trim(),
@@ -170,32 +156,24 @@ class LoginController extends SafeNotifier {
         await _commitServerSettings();
         _onLoginSuccess?.call();
       }
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-    }
+    });
   }
 
-  Future<void> submitMfa(String mfaCode) async {
+  Future<void> submitMfa(String mfaCode) {
     final username = _mfaUsername;
     if (username == null || username.isEmpty) {
-      _notifyError(const AppException(AppErrorCode.noSessionIdReceived));
-      return;
+      _notifyError(const AppException(AppErrorCode.mfaSessionMissing));
+      return Future<void>.value();
     }
 
-    _setLoading(true);
-
-    try {
+    return _guarded(() async {
       await _authCoordinator.verifyMfa(
         username: username,
         mfaCode: mfaCode.trim(),
       );
       await _commitServerSettings();
       _onLoginSuccess?.call();
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-    }
+    });
   }
 
   void backToServerStep() {
@@ -229,9 +207,10 @@ class LoginController extends SafeNotifier {
         uri.queryParameters['message'] ?? uri.queryParameters['error'];
 
     if (error != null && error.isNotEmpty) {
+      // Any app can fire this deep link, so never surface its text to the user.
       clearSsoPkce();
       _setLoading(false);
-      _notifyError(error);
+      _notifyError(const AppException(AppErrorCode.ssoCallbackFailed));
       return;
     }
 
@@ -251,6 +230,20 @@ class LoginController extends SafeNotifier {
     } catch (error) {
       _setLoading(false);
       _notifyError(error);
+    }
+  }
+
+  /// Runs [action] with the loading flag raised. On failure the flag is lowered
+  /// and the error reported; on success [action] owns lowering the flag, since
+  /// some flows stay busy (e.g. while navigating away after sign-in).
+  Future<T?> _guarded<T>(Future<T> Function() action) async {
+    _setLoading(true);
+    try {
+      return await action();
+    } catch (error) {
+      _setLoading(false);
+      _notifyError(error);
+      return null;
     }
   }
 

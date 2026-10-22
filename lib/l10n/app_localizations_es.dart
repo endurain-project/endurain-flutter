@@ -168,6 +168,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'El servidor no devolvió ningún ID de sesión';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Se ha perdido tu sesión de inicio de sesión. Inicia sesión de nuevo.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'No se pudo completar el inicio de sesión único. Inténtalo de nuevo.';
+
+  @override
   String get errorNotAuthenticated => 'No has iniciado sesión';
 
   @override
@@ -878,10 +886,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'frecuencia cardiaca';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Distancia, calorías y pasos del entrenamiento';
 
   @override
   String get healthAccessAllowed => 'Permitido';
