@@ -1,0 +1,75 @@
+name: Integration
+
+# On-device smoke tests (integration_test/) on an Android emulator. The iOS
+# counterpart runs inside ios.yml, which already boots a simulator. The job runs
+# in the CI builder image like ci.yml; the emulator additionally needs hardware
+# acceleration, so /dev/kvm is passed through to the container.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "lib/**"
+      - "android/**"
+      - "integration_test/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/integration.yml"
+
+env:
+  # Keep in sync with ci.yml.
+  FLUTTER_VERSION: 3.47.7
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Never cancel verification of a commit that has landed on main.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  android-integration:
+    name: Android emulator smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # android-emulator-runner reads ANDROID_HOME; the builder image only
+      # defines ANDROID_SDK_ROOT, which leaves the emulator path "undefined".
+      ANDROID_HOME: /opt/android-sdk
+    container:
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
+      options: --device /dev/kvm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      # The emulator binary links against X11, audio and GL libraries that the
+      # builder image does not ship. Installed per run to keep the shared image
+      # small; move them into docker/flutter-build/Dockerfile if the extra
+      # minute matters.
+      - name: Install emulator runtime libraries
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends \
+            libasound2 libgl1 libnss3 libpulse0 libx11-6 libxcomposite1 \
+            libxcursor1 libxdamage1 libxext6 libxi6 libxkbfile1 libxrandr2 \
+            libxrender1 libxtst6
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Run integration tests
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          script: flutter test integration_test
