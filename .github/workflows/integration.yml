@@ -16,6 +16,7 @@ on:
       - "pubspec.yaml"
       - "pubspec.lock"
       - ".github/workflows/integration.yml"
+      - ".github/actions/**"
 
 env:
   # Keep in sync with ci.yml.

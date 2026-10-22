@@ -88,10 +88,15 @@ jobs:
       # fake server; the Android counterpart is integration.yml.
       - name: Run integration tests
         shell: bash
+        # The suite takes about a minute; a hung launch must fail fast rather
+        # than run into the job timeout and be cancelled without a result.
+        timeout-minutes: 12
         run: |
           set -euo pipefail
-          # xcodebuild test can leave the simulator shut down; -b boots it
-          # again if needed and waits until it is ready.
+          # xcodebuild test leaves the simulator in a used state (and can shut
+          # it down). Start from a clean, booted one, as on a fresh install.
+          xcrun simctl shutdown "$SIMULATOR_UDID" || true
+          xcrun simctl erase "$SIMULATOR_UDID"
           xcrun simctl bootstatus "$SIMULATOR_UDID" -b
           flutter devices
-          flutter test integration_test -d "$SIMULATOR_UDID"
+          flutter test integration_test -d "$SIMULATOR_UDID" --reporter expanded

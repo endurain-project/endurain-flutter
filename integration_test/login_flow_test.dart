@@ -6,7 +6,6 @@ import 'package:endurain/app.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/widgets/app_bottom_nav.dart';
 import 'package:endurain/l10n/app_localizations.dart';
-import 'package:endurain/shared/adaptive/adaptive_button.dart';
 import 'package:endurain/shared/adaptive/adaptive_text_form_field.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -72,7 +71,10 @@ void main() {
     final fields = find.byType(AdaptiveTextFormField);
     await tester.enterText(fields.at(0), 'athlete');
     await tester.enterText(fields.at(1), 'correct-horse');
-    await tester.tap(find.widgetWithText(AdaptiveButton, l10n.login));
+    // Submit from the keyboard, as a user would. With the keyboard up on a
+    // fresh install the Login button can be scrolled out of the widget tree, so
+    // tapping it is unreliable. The password field's "done" action runs login.
+    await tester.testTextInput.receiveAction(TextInputAction.done);
 
     // The login screen is replaced by the signed-in shell.
     await _pumpUntil(
