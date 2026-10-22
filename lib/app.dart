@@ -94,6 +94,10 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       // no-ops when none is paired, Bluetooth is off, or a recording currently
       // owns the sensor.
       unawaited(_services.reconnectRememberedSensors());
+      // Pull any workout a paired companion watch finished while the phone app
+      // was backgrounded. Inert (and cheap) on builds and platforms without a
+      // watch transport; ingested sessions trigger the upload queue themselves.
+      unawaited(_services.watchCompanion.syncPendingSessions());
     }
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
