@@ -39,7 +39,10 @@ void main() {
     await tester.pumpWidget(App(services: services));
     await _pumpUntil(tester, find.byType(TextFormField));
 
-    final l10n = AppLocalizations.of(tester.element(find.byType(App)))!;
+    // Resolve below Localizations; the root App element sits above it.
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(TextFormField).first),
+    )!;
 
     // Server step: the fake server speaks plain HTTP, so switch the protocol.
     await _selectHttp(tester);
