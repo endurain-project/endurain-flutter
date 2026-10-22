@@ -6,6 +6,7 @@ import 'package:endurain/app.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/widgets/app_bottom_nav.dart';
 import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/shared/adaptive/adaptive_button.dart';
 import 'package:endurain/shared/adaptive/adaptive_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,6 +53,9 @@ void main() {
     await _pumpUntil(tester, find.text(l10n.signInConnectServer));
     await tester.tap(find.text(l10n.signInConnectServer));
     await _pumpUntil(tester, find.byType(AdaptiveTextFormField));
+    // The login route is still sliding in on iOS; taps would miss until it
+    // lands. `pumpAndSettle` is avoided because the map keeps animating.
+    await tester.pump(const Duration(seconds: 1));
 
     // Server step: the fake server speaks plain HTTP, so switch the protocol.
     await _selectHttp(tester);
@@ -63,15 +67,20 @@ void main() {
     await _pumpUntil(tester, find.text(l10n.warnHttpServerUrlConfirm));
     await tester.tap(find.text(l10n.warnHttpServerUrlConfirm));
 
-    // Credentials step.
-    await _pumpUntil(tester, find.text(l10n.login));
+    // Credentials step. The screen title is also "Login", so wait for an
+    // element only this step shows.
+    await _pumpUntil(tester, find.text(l10n.showPassword));
     final fields = find.byType(AdaptiveTextFormField);
     await tester.enterText(fields.at(0), 'athlete');
     await tester.enterText(fields.at(1), 'correct-horse');
-    await tester.tap(find.text(l10n.login));
+    await tester.tap(find.widgetWithText(AdaptiveButton, l10n.login));
 
     // The login screen is replaced by the signed-in shell.
-    await _pumpUntil(tester, find.text(l10n.login), present: false);
+    await _pumpUntil(
+      tester,
+      find.byType(AdaptiveTextFormField),
+      present: false,
+    );
     expect(await services.auth.hasStoredSession(), isTrue);
   });
 }
