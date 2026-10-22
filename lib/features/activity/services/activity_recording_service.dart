@@ -18,7 +18,7 @@ import 'package:endurain/features/activity/services/activity_location_recorder.d
 import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/features/activity/services/recording_elapsed_clock.dart';
-import 'package:endurain/features/activity/services/recording_error_resolver.dart';
+import 'package:endurain/features/activity/services/recording_permission_gate.dart';
 import 'package:endurain/features/activity/services/recording_sensor_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;

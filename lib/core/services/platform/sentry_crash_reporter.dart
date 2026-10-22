@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:endurain/core/diagnostics/crash_reporter.dart';
 import 'package:endurain/core/utils/diagnostics_redaction.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:sentry/sentry.dart';
 
 /// [CrashReporter] backed by the pure-Dart Sentry SDK.
@@ -49,7 +50,7 @@ class SentryCrashReporter implements CrashReporter {
         // Belt-and-suspenders: we forward only our own errors and scrub them,
         // but make sure the SDK never enriches events with PII on its own.
         options.sendDefaultPii = false;
-        options.beforeSend = _scrubEvent;
+        options.beforeSend = scrubEvent;
         // Drop SDK-generated breadcrumbs entirely; the local diagnostics
         // recorder is the breadcrumb trail, and remote reporting is limited to
         // scrubbed error events by design.
@@ -100,7 +101,8 @@ class SentryCrashReporter implements CrashReporter {
   ///
   /// Request data, user, extras and non-allow-listed contexts are dropped
   /// outright; the remaining strings are redacted.
-  FutureOr<SentryEvent?> _scrubEvent(SentryEvent event, Hint hint) {
+  @visibleForTesting
+  FutureOr<SentryEvent?> scrubEvent(SentryEvent event, Hint hint) {
     String? redact(String? value) =>
         value == null ? null : redactDiagnosticText(value, maxLength: 800);
 
