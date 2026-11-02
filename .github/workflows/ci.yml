@@ -7,7 +7,8 @@ on:
   pull_request:
 
 env:
-  # Keep in sync with docker/flutter-build/Dockerfile and the image workflow.
+  # Keep in sync with docker/flutter-build/Dockerfile, the image workflow and
+  # ios.yml.
   FLUTTER_VERSION: 3.47.3
 
 concurrency:

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
@@ -26,7 +28,15 @@ class AuthSessionController extends SafeNotifier {
 
   final AuthService _authService;
 
+  /// Upper bound for the launch session read so a stalled secure-storage call
+  /// can never pin the app on the splash.
+  static const _initializeTimeout = Duration(seconds: 3);
+
   SessionMode _mode = SessionMode.loading;
+
+  /// Set when the stored session could not be read (secure storage
+  /// unavailable). The session may still exist, so [revalidate] retries.
+  bool _sessionUnreadable = false;
 
   SessionMode get mode => _mode;
   bool get isLoading => _mode == SessionMode.loading;
@@ -40,13 +50,28 @@ class AuthSessionController extends SafeNotifier {
     _mode = SessionMode.loading;
     notify();
 
-    _mode = await _authService.isAuthenticated()
-        ? SessionMode.authenticated
-        : SessionMode.guest;
+    try {
+      _mode = await _authService.hasStoredSession().timeout(_initializeTimeout)
+          ? SessionMode.authenticated
+          : SessionMode.guest;
+      _sessionUnreadable = false;
+    } catch (_) {
+      // Secure storage unavailable, or the read stalled past
+      // [_initializeTimeout]: start usable in guest mode instead of hanging on
+      // the splash, and retry when the app resumes.
+      _mode = SessionMode.guest;
+      _sessionUnreadable = true;
+    }
     notify();
+    // Confirm a restored session with the server off the launch path. A
+    // definitive rejection drops to guest; a transient failure keeps the session.
+    if (_mode == SessionMode.authenticated) {
+      unawaited(revalidate());
+    }
   }
 
   void markAuthenticated() {
+    _sessionUnreadable = false;
     _setMode(SessionMode.authenticated);
   }
 
@@ -63,12 +88,27 @@ class AuthSessionController extends SafeNotifier {
   /// app-resumed lifecycle event (guest/loading are left untouched). When the
   /// session has expired the mode drops back to [SessionMode.guest] so the app
   /// stays usable locally until the user signs in again.
+  ///
+  /// If the stored session was unreadable at launch, the check is retried here
+  /// and the mode is promoted to [SessionMode.authenticated] once it succeeds.
+  /// A read failure while authenticated keeps the current mode.
   Future<void> revalidate() async {
-    if (_mode != SessionMode.authenticated) {
+    final retryingUnreadable = _mode == SessionMode.guest && _sessionUnreadable;
+    if (_mode != SessionMode.authenticated && !retryingUnreadable) {
       return;
     }
-    final stillAuthenticated = await _authService.isAuthenticated();
-    if (!stillAuthenticated) {
+    final bool stillAuthenticated;
+    try {
+      stillAuthenticated = await _authService.isAuthenticated();
+    } catch (_) {
+      return;
+    }
+    _sessionUnreadable = false;
+    if (retryingUnreadable) {
+      if (stillAuthenticated) {
+        _setMode(SessionMode.authenticated);
+      }
+    } else if (!stillAuthenticated) {
       _setMode(SessionMode.guest);
     }
   }

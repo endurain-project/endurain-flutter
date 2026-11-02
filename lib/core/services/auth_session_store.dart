@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/id_generation.dart';
@@ -97,7 +98,18 @@ class AuthSessionStore {
         expiresInSeconds: expiresInSeconds,
         accountId: accountId,
       );
-      await _writeCanonicalSession(session);
+      try {
+        await _writeCanonicalSession(session);
+      } on AppException catch (error) {
+        if (error.code != AppErrorCode.secureStorageWriteFailed) {
+          rethrow;
+        }
+        // The store is unusable (e.g. invalidated Android Keystore key). The
+        // user just signed in explicitly, so reset it and write once more
+        // rather than leaving them unable to sign in until reinstall.
+        await _storage.resetAll();
+        await _writeCanonicalSession(session);
+      }
     });
   }
 

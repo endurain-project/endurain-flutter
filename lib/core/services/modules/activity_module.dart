@@ -54,6 +54,7 @@ class ActivityModule {
     uploadFile: _auth.apiClient.uploadFile,
     config: ActivityUploadConfig.fromEndpoints(_infra.endpoints),
     retryPolicy: const ActivityUploadRetryPolicy(maxAttempts: 3),
+    activeConnectionProfile: _auth.session.getConnectionProfile,
     fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) =>
         _auth.apiClient.getJsonObject(
           endpoint,

@@ -24,6 +24,9 @@ class AdaptiveSwitchListTile extends StatelessWidget {
     if (PlatformUtils.isApplePlatform) {
       return MergeSemantics(
         child: CupertinoListTile(
+          padding: subtitle == null
+              ? null
+              : adaptiveCupertinoSubtitleTilePadding,
           leading: leading,
           title: Text(title),
           subtitle: subtitle == null

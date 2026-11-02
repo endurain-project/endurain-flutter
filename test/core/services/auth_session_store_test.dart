@@ -1,5 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 
@@ -114,6 +116,50 @@ void main() {
       expect(await storage.getAccessTokenExpiresAt(), isNull);
     });
 
+    test('saveSession resets an unusable store and signs in', () async {
+      final fake = _BrokenStorage();
+      final store = AuthSessionStore(
+        storage: SecureStorageService(
+          storage: fake,
+          preferences: AppPreferencesStore(backend: _NoopBackend()),
+        ),
+      );
+
+      await store.saveSession(
+        origin: 'https://example.test',
+        accessToken: 'access-1',
+        refreshToken: 'refresh-1',
+        sessionId: 'session-1',
+        accountId: '42',
+        expiresInSeconds: 3600,
+      );
+
+      expect(fake.deleteAllCalls, 1);
+      expect((await store.readSession())?.accessToken, 'access-1');
+    });
+
+    test('readSession surfaces a read failure instead of clearing', () async {
+      final fake = _BrokenStorage();
+      final store = AuthSessionStore(
+        storage: SecureStorageService(
+          storage: fake,
+          preferences: AppPreferencesStore(backend: _NoopBackend()),
+        ),
+      );
+
+      await expectLater(
+        store.readSession(),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageReadFailed,
+          ),
+        ),
+      );
+      expect(fake.deleteAllCalls, 0);
+    });
+
     test('returns the stored server URL', () async {
       final storage = SecureStorageService();
       final store = AuthSessionStore(storage: storage);
@@ -213,4 +259,80 @@ void main() {
       );
     });
   });
+}
+
+/// Fake [FlutterSecureStorage] simulating an unusable store (e.g. an
+/// invalidated Android Keystore key): reads and writes throw until
+/// [deleteAll] resets it.
+class _BrokenStorage extends Fake implements FlutterSecureStorage {
+  final Map<String, String> values = {};
+  bool broken = true;
+  int deleteAllCalls = 0;
+
+  @override
+  Future<String?> read({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    if (broken) throw Exception('keystore unavailable');
+    return values[key];
+  }
+
+  @override
+  Future<void> write({
+    required String key,
+    required String? value,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    if (broken) throw Exception('keystore unavailable');
+    values[key] = value!;
+  }
+
+  @override
+  Future<void> delete({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    values.remove(key);
+  }
+
+  @override
+  Future<void> deleteAll({
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    deleteAllCalls++;
+    values.clear();
+    broken = false;
+  }
+}
+
+class _NoopBackend implements AppPreferencesBackend {
+  @override
+  Future<String?> read(String key) async => null;
+
+  @override
+  Future<void> write(String key, String value) async {}
+
+  @override
+  Future<void> delete(String key) async {}
 }

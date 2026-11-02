@@ -3,17 +3,25 @@ import 'package:endurain/features/activity/models/activity_recording_state.dart'
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/services/activity_track_outlier_filter.dart';
 
 class ActivityGpxBuilder {
-  const ActivityGpxBuilder();
+  const ActivityGpxBuilder({
+    this.outlierFilter = const ActivityTrackOutlierFilter(),
+  });
+
+  final ActivityTrackOutlierFilter outlierFilter;
 
   String build(ActivityRecordingState state, {String? trackName}) {
+    final segments = _segmentsForGpx(state);
     return buildGpxDocument(
       name: trackName ?? _defaultTrackName(state.activityType),
       type: _trackType(state.activityType),
       metadataTime: _metadataTime(state),
-      bounds: GpxBounds.fromPoints(state.points.map(_toGpxPoint)),
-      segments: _segmentsForGpx(state)
+      bounds: GpxBounds.fromPoints(
+        segments.expand((segment) => segment.points).map(_toGpxPoint),
+      ),
+      segments: segments
           .map(
             (segment) =>
                 segment.points.map(_toGpxPoint).toList(growable: false),
@@ -41,7 +49,8 @@ class ActivityGpxBuilder {
   }
 
   List<ActivityTrackSegment> _segmentsForGpx(ActivityRecordingState state) {
-    final segments = state.segments
+    final segments = outlierFilter
+        .filter(state.segments, state.activityType)
         .where((segment) => segment.points.isNotEmpty)
         .toList(growable: false);
     if (segments.isEmpty) {

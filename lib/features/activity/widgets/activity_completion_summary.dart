@@ -34,7 +34,10 @@ class ActivityCompletionSummary extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatter = this.formatter ?? context.statsFormatter;
     final theme = Theme.of(context);
-    final stats = calculator.calculate(state.segments);
+    final stats = calculator.calculate(
+      state.segments,
+      activityType: state.activityType,
+    );
     final activityType = state.activityType ?? ActivityType.other;
     final durationSeconds = reportedActivityDurationSeconds(
       statsDurationSeconds: stats.durationSeconds,

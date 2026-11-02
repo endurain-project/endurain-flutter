@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/auth_service.dart';
 import 'package:endurain/core/services/auth_session_store.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
@@ -13,6 +16,50 @@ void main() {
   });
 
   group('AuthSessionController', () {
+    test(
+      'starts in guest mode when the stored session is unreadable',
+      () async {
+        final controller = AuthSessionController(
+          authService: _FakeAuthService(throws: true),
+        );
+
+        await controller.initialize();
+
+        expect(controller.isGuest, isTrue);
+        expect(controller.isLoading, isFalse);
+        controller.dispose();
+      },
+    );
+
+    test(
+      'resume promotes to authenticated once the session is readable',
+      () async {
+        final service = _FakeAuthService(throws: true);
+        final controller = AuthSessionController(authService: service);
+        await controller.initialize();
+        expect(controller.isGuest, isTrue);
+
+        service.throws = false;
+        service.authenticated = true;
+        await controller.revalidate();
+
+        expect(controller.isAuthenticated, isTrue);
+        controller.dispose();
+      },
+    );
+
+    test('resume leaves a genuine guest untouched', () async {
+      final service = _FakeAuthService(authenticated: false);
+      final controller = AuthSessionController(authService: service);
+      await controller.initialize();
+
+      service.authenticated = true;
+      await controller.revalidate();
+
+      expect(controller.isGuest, isTrue);
+      controller.dispose();
+    });
+
     test('initializes from stored auth state', () async {
       final storage = SecureStorageService();
       await AuthSessionStore(storage: storage).saveSession(
@@ -34,6 +81,37 @@ void main() {
       expect(controller.mode, SessionMode.authenticated);
       controller.dispose();
     });
+
+    test(
+      'launch does not wait for the server to confirm the session',
+      () async {
+        final service = _FakeAuthService(authenticated: true, hang: true);
+        final controller = AuthSessionController(authService: service);
+
+        await controller.initialize();
+
+        expect(controller.isAuthenticated, isTrue);
+        controller.dispose();
+      },
+    );
+
+    test(
+      'launch revalidation drops to guest when the server rejects',
+      () async {
+        final service = _FakeAuthService(
+          authenticated: true,
+          rejectOnConfirm: true,
+        );
+        final controller = AuthSessionController(authService: service);
+
+        await controller.initialize();
+        expect(controller.isAuthenticated, isTrue);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.isGuest, isTrue);
+        controller.dispose();
+      },
+    );
 
     test('initializes into guest mode when there is no session', () async {
       final controller = AuthSessionController(
@@ -108,6 +186,18 @@ void main() {
         controller.dispose();
       });
 
+      test('keeps the current mode when the session cannot be read', () async {
+        final controller = AuthSessionController(
+          authService: _FakeAuthService(throws: true),
+        );
+        controller.markAuthenticated();
+
+        await controller.revalidate();
+
+        expect(controller.isAuthenticated, isTrue);
+        controller.dispose();
+      });
+
       test('drops to guest when the session expires on resume', () async {
         final controller = AuthSessionController(
           authService: _FakeAuthService(authenticated: false),
@@ -128,14 +218,44 @@ void main() {
 }
 
 class _FakeAuthService extends AuthService {
-  _FakeAuthService({required this.authenticated})
-    : super(
-        storage: SecureStorageService(),
-        sessionStore: AuthSessionStore(storage: SecureStorageService()),
-      );
+  _FakeAuthService({
+    this.authenticated = false,
+    this.throws = false,
+    this.hang = false,
+    this.rejectOnConfirm = false,
+  }) : super(
+         storage: SecureStorageService(),
+         sessionStore: AuthSessionStore(storage: SecureStorageService()),
+       );
 
-  final bool authenticated;
+  bool authenticated;
+  bool throws;
+
+  /// [isAuthenticated] (the server confirmation) never completes.
+  final bool hang;
+
+  /// The server confirmation reports the session as rejected.
+  final bool rejectOnConfirm;
 
   @override
-  Future<bool> isAuthenticated() async => authenticated;
+  Future<bool> hasStoredSession() async {
+    if (throws) {
+      throw const AppException(AppErrorCode.secureStorageReadFailed);
+    }
+    return authenticated;
+  }
+
+  @override
+  Future<bool> isAuthenticated() async {
+    if (hang) {
+      return Completer<bool>().future;
+    }
+    if (rejectOnConfirm) {
+      return false;
+    }
+    if (throws) {
+      throw const AppException(AppErrorCode.secureStorageReadFailed);
+    }
+    return authenticated;
+  }
 }

@@ -1,12 +1,21 @@
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
-  SecureStorageService({FlutterSecureStorage? storage})
-    : _storage = storage ?? _defaultStorage();
+  SecureStorageService({
+    FlutterSecureStorage? storage,
+    AppPreferencesStore? preferences,
+  }) : _storage = storage ?? _defaultStorage(),
+       _preferences = preferences ?? AppPreferencesStore();
 
   final FlutterSecureStorage _storage;
+
+  /// Non-secret mirror of the server URL. Secure storage can lose its contents
+  /// when the Android Keystore is unavailable or invalidated; the URL is not
+  /// sensitive, so it is kept here as well to survive that.
+  final AppPreferencesStore _preferences;
 
   /// Builds the production [FlutterSecureStorage] with hardened platform
   /// options rather than relying on package defaults (which can shift between
@@ -19,8 +28,15 @@ class SecureStorageService {
   /// - **Apple (iOS/macOS):** `first_unlock_this_device` keychain
   ///   accessibility so tokens are unreadable before the first device unlock
   ///   after boot and never sync to iCloud Keychain or device backups.
+  ///
+  /// `resetOnError` is disabled on Android. Its default (`true`) makes the
+  /// plugin delete stored values whenever a native read or write throws (for
+  /// example a transient Keystore failure), which silently wiped the server
+  /// configuration and session. A storage failure now surfaces as an
+  /// [AppException] instead of erasing data.
   static FlutterSecureStorage _defaultStorage() {
     return const FlutterSecureStorage(
+      aOptions: AndroidOptions(resetOnError: false),
       iOptions: IOSOptions(
         accessibility: KeychainAccessibility.first_unlock_this_device,
       ),
@@ -94,9 +110,44 @@ class SecureStorageService {
   }
 
   // Server-specific methods
-  Future<String?> getServerUrl() => read(key: _serverUrlKey);
-  Future<void> setServerUrl(String url) =>
-      write(key: _serverUrlKey, value: url);
+  //
+  // The URL is mirrored to [_preferences] so a secure-storage failure or reset
+  // does not lose the configured server. Mirror errors never fail the call.
+  Future<String?> getServerUrl() async {
+    String? secureValue;
+    Object? secureError;
+    try {
+      secureValue = await read(key: _serverUrlKey);
+    } catch (e) {
+      secureError = e;
+    }
+    if (secureValue != null && secureValue.isNotEmpty) {
+      return secureValue;
+    }
+
+    String? mirrored;
+    try {
+      mirrored = await _preferences.read(key: _serverUrlKey);
+    } catch (_) {
+      mirrored = null;
+    }
+    if (mirrored != null && mirrored.isNotEmpty) {
+      return mirrored;
+    }
+    if (secureError != null) {
+      throw secureError;
+    }
+    return secureValue;
+  }
+
+  Future<void> setServerUrl(String url) async {
+    try {
+      await _preferences.write(key: _serverUrlKey, value: url);
+    } catch (_) {
+      // The mirror is best-effort; secure storage remains authoritative.
+    }
+    await write(key: _serverUrlKey, value: url);
+  }
 
   Future<String?> getUsername() => read(key: _usernameKey);
   Future<void> setUsername(String username) =>
@@ -147,6 +198,20 @@ class SecureStorageService {
     await deleteRefreshToken();
     await deleteSessionId();
     await deleteAccessTokenExpiresAt();
+  }
+
+  /// Deletes every value in secure storage.
+  ///
+  /// Recovery path for an unreadable store (e.g. an invalidated Android
+  /// Keystore key). Because `resetOnError` is disabled, such a store would
+  /// otherwise keep failing forever; call this only from an explicit user
+  /// action that replaces the stored session (sign-in).
+  Future<void> resetAll() async {
+    try {
+      await _storage.deleteAll();
+    } catch (e) {
+      throw AppException(AppErrorCode.secureStorageDeleteFailed, cause: e);
+    }
   }
 
   // Clear all auth tokens

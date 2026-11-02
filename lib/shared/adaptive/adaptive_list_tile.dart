@@ -34,6 +34,7 @@ class AdaptiveListTile extends StatelessWidget {
 
     if (isApplePlatform) {
       return CupertinoListTile(
+        padding: subtitle == null ? null : adaptiveCupertinoSubtitleTilePadding,
         leading: leading,
         title: Text(title, style: titleStyle),
         subtitle: subtitle == null
