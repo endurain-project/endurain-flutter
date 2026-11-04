@@ -240,13 +240,31 @@ class ActivityRecordingService {
     // its device id and releasing the Dart-side BLE link. A handoff failure for
     // any kind must never block the recording start.
     final sensorDeviceIds = <RecordedSensorKind, String?>{};
+    debugPrint(
+      'ActivityRecordingService.start: preparing native sensor sources count=${_prepareSensorSources.length}',
+    );
     for (final entry in _prepareSensorSources.entries) {
       try {
-        sensorDeviceIds[entry.key] = await entry.value();
-      } catch (_) {
+        final prepared = await entry.value();
+        sensorDeviceIds[entry.key] = prepared;
+        debugPrint(
+          'ActivityRecordingService.start: sensor=${entry.key.name} prepared=${prepared != null}',
+        );
+      } catch (error, stackTrace) {
         sensorDeviceIds[entry.key] = null;
+        debugPrint(
+          'ActivityRecordingService.start: sensor=${entry.key.name} handoff failed: $error',
+        );
+        _diagnostics.recordErrorSync(
+          error,
+          stackTrace,
+          source: DiagnosticsSources.activityRecorder,
+        );
       }
     }
+    debugPrint(
+      'ActivityRecordingService.start: native start request hr=${sensorDeviceIds[RecordedSensorKind.heartRate] != null} power=${sensorDeviceIds[RecordedSensorKind.power] != null} cadence=${sensorDeviceIds[RecordedSensorKind.cadence] != null}',
+    );
     try {
       await _startRecorder(
         ActivityRecorderStartRequest(

@@ -64,11 +64,21 @@ class SensorsModule {
   /// device id to record from, or `null` when no sensor of that kind is paired.
   Future<String?> prepareNativeSource(SensorMeasurementKind kind) async {
     final sensor = services[kind]!;
+    final connectedDevicePresent = sensor.connectedDevice != null;
+    debugPrint(
+      'SensorsModule.prepareNativeSource: kind=$kind connected=${connectedDevicePresent ? 'yes' : 'no'}',
+    );
     final device = sensor.connectedDevice ?? await sensor.rememberedDevice();
     if (device == null) {
+      debugPrint(
+        'SensorsModule.prepareNativeSource: kind=$kind returned null because no sensor was connected or remembered.',
+      );
       return null;
     }
     await sensor.disconnect();
+    debugPrint(
+      'SensorsModule.prepareNativeSource: kind=$kind handoff complete; deviceIdPresent=${device.id.isNotEmpty}',
+    );
     return device.id;
   }
 
