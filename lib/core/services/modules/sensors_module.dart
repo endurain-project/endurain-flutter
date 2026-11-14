@@ -49,12 +49,13 @@ class SensorsModule {
   SensorService get power => services[SensorMeasurementKind.power]!;
   SensorService get cadence => services[SensorMeasurementKind.cadence]!;
 
-  /// Best-effort reconnect of every remembered sensor. A no-op per kind when
-  /// nothing is remembered, one is already connected, Bluetooth is off, or the
-  /// `canAutoReconnect` gate currently forbids it.
+  /// Best-effort reconnect of every remembered sensor on cold launch or
+  /// foreground resume. Unlike the one-shot [SensorService.tryReconnectRemembered],
+  /// this path retries a few times so the platform has time to expose the
+  /// previously-paired sensor after the app re-enters the foreground.
   Future<void> reconnectRemembered() async {
     await Future.wait([
-      for (final sensor in services.values) sensor.tryReconnectRemembered(),
+      for (final sensor in services.values) sensor.autoConnectRemembered(),
     ]);
   }
 
