@@ -194,7 +194,11 @@ class AppServices {
   /// Best-effort reconnect of every remembered sensor (heart rate, power,
   /// cadence). A no-op per kind when nothing is remembered, one is already
   /// connected, Bluetooth is off, or a recording currently owns the sensor.
-  Future<void> reconnectRememberedSensors() => _sensors.reconnectRemembered();
+  ///
+  /// Pass [withRetries] on cold launch to activate Bluetooth and retry; resume
+  /// and post-recording callers use the default one-shot, non-prompting path.
+  Future<void> reconnectRememberedSensors({bool withRetries = false}) =>
+      _sensors.reconnectRemembered(withRetries: withRetries);
 
   /// Builds a BLE sensor adapter for [profiles] on the current platform.
   SensorConnectionAdapter createSensorConnectionAdapter(

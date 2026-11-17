@@ -52,9 +52,18 @@ class SensorsModule {
   /// Best-effort reconnect of every remembered sensor. A no-op per kind when
   /// nothing is remembered, one is already connected, Bluetooth is off, or the
   /// `canAutoReconnect` gate currently forbids it.
-  Future<void> reconnectRemembered() async {
+  ///
+  /// By default this is a one-shot attempt that never prompts. Pass
+  /// [withRetries] on cold launch to use [SensorService.autoConnectRemembered]
+  /// instead, which activates the Bluetooth stack (requesting permission when
+  /// needed) and retries a few times.
+  Future<void> reconnectRemembered({bool withRetries = false}) async {
     await Future.wait([
-      for (final sensor in services.values) sensor.tryReconnectRemembered(),
+      for (final sensor in services.values)
+        if (withRetries)
+          sensor.autoConnectRemembered()
+        else
+          sensor.tryReconnectRemembered(),
     ]);
   }
 

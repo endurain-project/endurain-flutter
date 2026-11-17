@@ -18,10 +18,14 @@ import Dispatch
 /// `universal_ble` connection alive through the `bluetooth-central` background
 /// mode. `ActivityRecordingService` persists readings in the native sensor log
 /// and stamps them onto points when draining, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
-/// are never sent to this recorder. Points written here leave the sensor fields
-/// nil by design; do not add a second CoreBluetooth connection here without
-/// first removing the Dart-side one, or the two will fight over the same
-/// peripheral's notifications.
+/// are never sent to this recorder. Points written here leave power and
+/// cadence nil by design; do not add a second CoreBluetooth connection here
+/// without first removing the Dart-side one, or the two will fight over the
+/// same peripheral's notifications.
+///
+/// Heart rate is the exception: on iOS 26+ `HealthKitHeartRateMonitor` fills
+/// it from HealthKit (e.g. AirPods Pro 3), and a BLE reading stamped by Dart
+/// still takes priority.
 @MainActor
 final class CoreLocationActivityRecorder:
     NSObject,
@@ -39,6 +43,7 @@ final class CoreLocationActivityRecorder:
     private let store: ActiveActivityStore
     private let manager: CLLocationManager
     private let announcementStateCache = AnnouncementStateCache()
+    private let heartRateMonitor: HealthKitHeartRateMonitor
 
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
@@ -47,10 +52,31 @@ final class CoreLocationActivityRecorder:
     private var nextPointOffset = 0
     private var timeAnnouncementTimer: DispatchSourceTimer?
 
-    init(store: ActiveActivityStore, manager: CLLocationManager = CLLocationManager()) {
+    init(
+        store: ActiveActivityStore,
+        manager: CLLocationManager = CLLocationManager(),
+        heartRateMonitor: HealthKitHeartRateMonitor? = nil
+    ) {
         self.store = store
         self.manager = manager
+        self.heartRateMonitor = heartRateMonitor ?? HealthKitHeartRateMonitor()
         super.init()
+        // HealthKit readings join the sensor log so Dart matches the nearest
+        // reading to each point and can show it live while standing still.
+        self.heartRateMonitor.onSample = { [weak self] bpm, date in
+            guard let self,
+                  let sessionId = self.store.loadSession()?.localSessionId else {
+                return
+            }
+            try? self.store.appendSensorSample(
+                RecordedSensorSampleData(
+                    kind: "heartRate",
+                    timestamp: IsoTime.format(date),
+                    value: bpm
+                ),
+                localSessionId: sessionId
+            )
+        }
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.distanceFilter = CoreLocationActivityRecorder.distanceFilterMeters
@@ -116,6 +142,7 @@ final class CoreLocationActivityRecorder:
         nextPointOffset = store.pointCount()
         manager.startUpdatingLocation()
         startTerminationRecovery()
+        heartRateMonitor.start(activityType: session?.activityType ?? "other")
         isCollecting = true
         scheduleNextTimeAnnouncement()
         return true
@@ -208,6 +235,7 @@ final class CoreLocationActivityRecorder:
         manager.stopUpdatingLocation()
         manager.stopMonitoringSignificantLocationChanges()
         manager.allowsBackgroundLocationUpdates = false
+        heartRateMonitor.stop()
         AudioAnnouncer.shared.stop()
         isCollecting = false
         // A manual pause reaches here and must stop monitoring movement
@@ -713,7 +741,8 @@ final class CoreLocationActivityRecorder:
         millis: Int64,
         segmentIndex: Int
     ) -> RecordedActivityPointData {
-        let timestamp = IsoTime.format(Date(timeIntervalSince1970: Double(millis) / 1000))
+        let date = Date(timeIntervalSince1970: Double(millis) / 1000)
+        let timestamp = IsoTime.format(date)
 
         var headingAccuracy: Double?
         if #available(iOS 13.4, *), location.courseAccuracy >= 0 {
@@ -738,9 +767,9 @@ final class CoreLocationActivityRecorder:
             speedAccuracyMetersPerSecond: location.speedAccuracy >= 0
                 ? location.speedAccuracy
                 : nil,
-            // Sensor values are stamped by the Dart layer on this platform
+            // Power and cadence are stamped by the Dart layer on this platform
             // (see the type doc), so they are intentionally nil here.
-            heartRateBpm: nil,
+            heartRateBpm: heartRateMonitor.heartRateBpm(at: date),
             powerWatts: nil,
             cadenceRpm: nil
         )
