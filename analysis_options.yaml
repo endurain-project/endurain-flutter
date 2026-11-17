@@ -13,6 +13,9 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    # gen_l10n output still references the deprecated flutter_localizations
+    # delegates; the app builds its own list in app_locales.dart.
+    - lib/l10n/app_localizations.dart
     - build/**
     - android/**
     - ios/**

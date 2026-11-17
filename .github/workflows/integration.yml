@@ -20,7 +20,7 @@ on:
 
 env:
   # Keep in sync with ci.yml.
-  FLUTTER_VERSION: 3.47.7
+  FLUTTER_VERSION: 3.50.0
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,7 +41,7 @@ jobs:
       # defines ANDROID_SDK_ROOT, which leaves the emulator path "undefined".
       ANDROID_HOME: /opt/android-sdk
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.47.7
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.0
       options: --device /dev/kvm
     steps:
       - name: Checkout code
