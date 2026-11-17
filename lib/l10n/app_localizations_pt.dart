@@ -256,6 +256,25 @@ class AppLocalizationsPt extends AppLocalizations {
   String get logoutConfirmMessage => 'Tem certeza que deseja sair?';
 
   @override
+  String get legacyDataTitle =>
+      'Atividades de antes da atualização do servidor';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. São suas, $username? Se forem, as que ainda estão pendentes serão carregadas para a sua conta.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. Pertencem à conta com que acabou de iniciar sessão? Se sim, as que ainda estão pendentes serão carregadas para essa conta.';
+
+  @override
+  String get legacyDataConfirm => 'São minhas';
+
+  @override
+  String get legacyDataDecline => 'Não são minhas';
+
+  @override
   String get logoutServerFailedWarning =>
       'Não foi possível sair do servidor, mas saiu localmente';
 

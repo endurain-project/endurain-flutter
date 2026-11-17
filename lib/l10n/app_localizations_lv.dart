@@ -250,6 +250,25 @@ class AppLocalizationsLv extends AppLocalizations {
   String get logoutConfirmMessage => 'Vai tiešām vēlaties atteikties?';
 
   @override
+  String get legacyDataTitle =>
+      'Aktivitātes no laika pirms servera atjaunināšanas';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Šajā ierīcē ir aktivitātes, kas saglabātas šī servera kontam pirms servera atjaunināšanas. Vai tās ir jūsu, $username? Ja jā, vēl gaidošās tiks augšupielādētas jūsu kontā.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Šajā ierīcē ir aktivitātes, kas saglabātas šī servera kontam pirms servera atjaunināšanas. Vai tās pieder kontam, kurā tikko pierakstījāties? Ja jā, vēl gaidošās tiks augšupielādētas tajā.';
+
+  @override
+  String get legacyDataConfirm => 'Tās ir manas';
+
+  @override
+  String get legacyDataDecline => 'Nav manas';
+
+  @override
   String get logoutServerFailedWarning =>
       'Neizdevās atteikties no servera, bet atteikšanās veikta lokāli';
 

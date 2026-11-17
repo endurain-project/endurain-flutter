@@ -257,6 +257,24 @@ class AppLocalizationsHu extends AppLocalizations {
   String get logoutConfirmMessage => 'Biztosan ki szeretne jelentkezni?';
 
   @override
+  String get legacyDataTitle => 'A szerverfrissítés előtti tevékenységek';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Ezen az eszközön olyan tevékenységek vannak, amelyeket a szerver frissítése előtt mentettek egy ezen a szerveren lévő fiókhoz. Ezek az Önéi, $username? Ha igen, a még várakozók feltöltődnek az Ön fiókjába.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Ezen az eszközön olyan tevékenységek vannak, amelyeket a szerver frissítése előtt mentettek egy ezen a szerveren lévő fiókhoz. Ahhoz a fiókhoz tartoznak, amellyel most jelentkezett be? Ha igen, a még várakozók oda töltődnek fel.';
+
+  @override
+  String get legacyDataConfirm => 'Az enyéim';
+
+  @override
+  String get legacyDataDecline => 'Nem az enyéim';
+
+  @override
   String get logoutServerFailedWarning =>
       'Nem sikerült kijelentkezni a kiszolgálóból, de a helyi kijelentkezés megtörtént';
 

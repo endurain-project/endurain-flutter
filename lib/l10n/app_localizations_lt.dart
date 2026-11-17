@@ -249,6 +249,25 @@ class AppLocalizationsLt extends AppLocalizations {
   String get logoutConfirmMessage => 'Ar tikrai norite atsijungti?';
 
   @override
+  String get legacyDataTitle =>
+      'Veiklos iš laikotarpio prieš serverio atnaujinimą';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos jūsų, $username? Jei taip, dar laukiančios bus įkeltos į jūsų paskyrą.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos priklauso paskyrai, prie kurios ką tik prisijungėte? Jei taip, dar laukiančios bus įkeltos į ją.';
+
+  @override
+  String get legacyDataConfirm => 'Jos mano';
+
+  @override
+  String get legacyDataDecline => 'Ne mano';
+
+  @override
   String get logoutServerFailedWarning =>
       'Nepavyko atsijungti nuo serverio, bet atsijungta vietoje';
 

@@ -90,7 +90,7 @@ void main() {
     session.markAuthenticated();
     final router = buildAppRouter(
       session: session,
-      onLoginSuccess: () {},
+      onLoginSuccess: (_) async {},
       onLogout: session.continueAsGuest,
     );
     addTearDown(router.dispose);
@@ -125,7 +125,7 @@ void main() {
     session.continueAsGuest();
     final router = buildAppRouter(
       session: session,
-      onLoginSuccess: session.markAuthenticated,
+      onLoginSuccess: (_) async => session.markAuthenticated(),
       onLogout: session.continueAsGuest,
     );
     addTearDown(router.dispose);

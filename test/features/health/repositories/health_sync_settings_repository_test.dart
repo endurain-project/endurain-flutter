@@ -80,4 +80,36 @@ void main() {
       expect(await repo.isConnected(profileB), isTrue);
     });
   });
+
+  group('moveProfile', () {
+    test('moves both settings and removes the old ones', () async {
+      final repo = makeRepo();
+      await repo.setConnected(profileA, true);
+      await repo.setAutoSyncOnResumeEnabled(profileA, true);
+
+      await repo.moveProfile(fromProfileId: profileA, toProfileId: profileB);
+
+      expect(await repo.isConnected(profileB), isTrue);
+      expect(await repo.isAutoSyncOnResumeEnabled(profileB), isTrue);
+      expect(await repo.isConnected(profileA), isFalse);
+      expect(await repo.isAutoSyncOnResumeEnabled(profileA), isFalse);
+    });
+
+    test('keeps a value the target already has', () async {
+      final repo = makeRepo();
+      await repo.setAutoSyncOnResumeEnabled(profileA, true);
+      await repo.setAutoSyncOnResumeEnabled(profileB, false);
+
+      await repo.moveProfile(fromProfileId: profileA, toProfileId: profileB);
+
+      expect(await repo.isAutoSyncOnResumeEnabled(profileB), isFalse);
+    });
+
+    test('is a no-op when there is nothing to move', () async {
+      final repo = makeRepo();
+      await repo.moveProfile(fromProfileId: profileA, toProfileId: profileB);
+      expect(await repo.isConnected(profileB), isFalse);
+      expect(await repo.isAutoSyncOnResumeEnabled(profileB), isFalse);
+    });
+  });
 }

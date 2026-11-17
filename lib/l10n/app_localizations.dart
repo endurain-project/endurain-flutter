@@ -537,6 +537,36 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to logout?'**
   String get logoutConfirmMessage;
 
+  /// Title of the dialog after sign-in that asks whether activities saved before the server upgraded its account ids belong to the signed-in account - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Activities from before the server update'**
+  String get legacyDataTitle;
+
+  /// Body of that dialog after a password sign-in, naming the username that signed in - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This device has activities saved for an account on this server from before the server was updated. Are they yours, {username}? If they are, any still waiting will be uploaded to your account.'**
+  String legacyDataMessageWithUsername(String username);
+
+  /// Body of that dialog after an SSO sign-in, when no username is known - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.'**
+  String get legacyDataMessage;
+
+  /// Button that keeps the activities with the signed-in account - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'They\'re mine'**
+  String get legacyDataConfirm;
+
+  /// Button that says the activities belong to someone else - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not mine'**
+  String get legacyDataDecline;
+
   /// Warning shown when server logout fails but local logout succeeds - Used in: server_settings_screen.dart
   ///
   /// In en, this message translates to:

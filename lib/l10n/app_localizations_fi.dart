@@ -254,6 +254,25 @@ class AppLocalizationsFi extends AppLocalizations {
   String get logoutConfirmMessage => 'Haluatko varmasti kirjautua ulos?';
 
   @override
+  String get legacyDataTitle =>
+      'Aktiviteetit ajalta ennen palvelimen päivitystä';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Tällä laitteella on aktiviteetteja, jotka on tallennettu tämän palvelimen tilille ennen palvelimen päivitystä. Ovatko ne sinun, $username? Jos ovat, vielä odottavat ladataan tilillesi.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Tällä laitteella on aktiviteetteja, jotka on tallennettu tämän palvelimen tilille ennen palvelimen päivitystä. Kuuluvatko ne tilille, jolla juuri kirjauduit sisään? Jos kuuluvat, vielä odottavat ladataan sille.';
+
+  @override
+  String get legacyDataConfirm => 'Ne ovat minun';
+
+  @override
+  String get legacyDataDecline => 'Eivät ole minun';
+
+  @override
   String get logoutServerFailedWarning =>
       'Palvelimelta ei voitu kirjautua ulos, mutta uloskirjautuminen tehtiin paikallisesti';
 

@@ -31,12 +31,14 @@ class ActivityUploadQueue {
     this._retentionSettingsRepository,
     Future<bool> Function()? isUploadAuthorized,
     Future<ConnectionProfile?> Function()? activeConnectionProfile,
+    Future<void> Function(ConnectionProfile profile)? reconcileProfile,
     DiagnosticsRecorder? diagnostics,
     DateTime Function()? now,
     Stream<bool>? connectivitySignal,
   }) : _uploadService = uploadService,
        _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
        _activeConnectionProfile = activeConnectionProfile,
+       _reconcileProfile = reconcileProfile,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _now = now ?? DateTime.now {
     if (connectivitySignal != null) {
@@ -82,6 +84,10 @@ class ActivityUploadQueue {
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
   final Future<bool> Function() _isUploadAuthorized;
   final Future<ConnectionProfile?> Function()? _activeConnectionProfile;
+
+  /// Moves records the active profile owns under an earlier profile id onto
+  /// it before the drain selects them (see `LegacyProfileAdoptionService`).
+  final Future<void> Function(ConnectionProfile profile)? _reconcileProfile;
   final DiagnosticsRecorder _diagnostics;
   final DateTime Function() _now;
 
@@ -143,6 +149,7 @@ class ActivityUploadQueue {
         profileId: activeProfile.id,
         updatedAt: _now().toUtc(),
       );
+      await _reconcileProfile?.call(activeProfile);
     }
 
     final records = await _repository.listByUploadStatus(_drainableStatuses);

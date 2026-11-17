@@ -256,6 +256,24 @@ class AppLocalizationsHr extends AppLocalizations {
   String get logoutConfirmMessage => 'Jeste li sigurni da se želite odjaviti?';
 
   @override
+  String get legacyDataTitle => 'Aktivnosti od prije ažuriranja poslužitelja';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Na ovom uređaju postoje aktivnosti spremljene za račun na ovom poslužitelju od prije njegova ažuriranja. Jesu li vaše, $username? Ako jesu, one koje još čekaju bit će prenesene na vaš račun.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Na ovom uređaju postoje aktivnosti spremljene za račun na ovom poslužitelju od prije njegova ažuriranja. Pripadaju li računu s kojim ste se upravo prijavili? Ako da, one koje još čekaju bit će prenesene na njega.';
+
+  @override
+  String get legacyDataConfirm => 'Moje su';
+
+  @override
+  String get legacyDataDecline => 'Nisu moje';
+
+  @override
   String get logoutServerFailedWarning =>
       'Odjava s poslužitelja nije uspjela, ali ste odjavljeni lokalno';
 

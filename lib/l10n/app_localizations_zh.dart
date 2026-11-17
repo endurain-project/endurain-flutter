@@ -224,6 +224,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logoutConfirmMessage => '确定要退出登录吗？';
 
   @override
+  String get legacyDataTitle => '服务器更新前的活动';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return '此设备上保存有服务器更新前属于此服务器上某个账户的活动。它们是你的吗，$username？如果是，仍在等待的活动将上传到你的账户。';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      '此设备上保存有服务器更新前属于此服务器上某个账户的活动。它们属于你刚刚登录的账户吗？如果是，仍在等待的活动将上传到该账户。';
+
+  @override
+  String get legacyDataConfirm => '是我的';
+
+  @override
+  String get legacyDataDecline => '不是我的';
+
+  @override
   String get logoutServerFailedWarning => '无法从服务器退出登录，但已在本地退出';
 
   @override
@@ -1426,6 +1444,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get logoutConfirmMessage => '確定要登出嗎？';
+
+  @override
+  String get legacyDataTitle => '伺服器更新前的活動';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return '此裝置上儲存了伺服器更新前屬於此伺服器上某個帳號的活動。這些是你的嗎，$username？如果是，仍在等待的活動將上傳到你的帳號。';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      '此裝置上儲存了伺服器更新前屬於此伺服器上某個帳號的活動。這些屬於你剛剛登入的帳號嗎？如果是，仍在等待的活動將上傳到該帳號。';
+
+  @override
+  String get legacyDataConfirm => '是我的';
+
+  @override
+  String get legacyDataDecline => '不是我的';
 
   @override
   String get logoutServerFailedWarning => '無法從伺服器登出，但已在本機登出';

@@ -252,6 +252,24 @@ class AppLocalizationsEt extends AppLocalizations {
   String get logoutConfirmMessage => 'Kas soovite kindlasti välja logida?';
 
   @override
+  String get legacyDataTitle => 'Tegevused enne serveri uuendamist';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need on teie omad, $username? Kui on, laaditakse veel ootel olevad teie kontole üles.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need kuuluvad kontole, millega just sisse logisite? Kui jah, laaditakse veel ootel olevad sinna üles.';
+
+  @override
+  String get legacyDataConfirm => 'Need on minu omad';
+
+  @override
+  String get legacyDataDecline => 'Pole minu omad';
+
+  @override
   String get logoutServerFailedWarning =>
       'Serverist väljalogimine ebaõnnestus, kuid väljalogimine tehti kohapeal';
 

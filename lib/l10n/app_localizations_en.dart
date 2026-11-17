@@ -247,6 +247,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirmMessage => 'Are you sure you want to logout?';
 
   @override
+  String get legacyDataTitle => 'Activities from before the server update';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'This device has activities saved for an account on this server from before the server was updated. Are they yours, $username? If they are, any still waiting will be uploaded to your account.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.';
+
+  @override
+  String get legacyDataConfirm => 'They\'re mine';
+
+  @override
+  String get legacyDataDecline => 'Not mine';
+
+  @override
   String get logoutServerFailedWarning =>
       'Could not logout from server, but logged out locally';
 

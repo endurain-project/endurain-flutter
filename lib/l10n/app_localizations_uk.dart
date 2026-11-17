@@ -252,6 +252,24 @@ class AppLocalizationsUk extends AppLocalizations {
   String get logoutConfirmMessage => 'Ви впевнені, що хочете вийти?';
 
   @override
+  String get legacyDataTitle => 'Активності до оновлення сервера';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'На цьому пристрої є активності, збережені для облікового запису на цьому сервері ще до його оновлення. Вони ваші, $username? Якщо так, ті, що ще очікують, буде завантажено до вашого облікового запису.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'На цьому пристрої є активності, збережені для облікового запису на цьому сервері ще до його оновлення. Вони належать обліковому запису, у який ви щойно увійшли? Якщо так, ті, що ще очікують, буде завантажено до нього.';
+
+  @override
+  String get legacyDataConfirm => 'Вони мої';
+
+  @override
+  String get legacyDataDecline => 'Не мої';
+
+  @override
   String get logoutServerFailedWarning =>
       'Не вдалося вийти із сервера, але вихід виконано локально';
 

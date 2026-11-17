@@ -254,6 +254,24 @@ class AppLocalizationsSr extends AppLocalizations {
       'Да ли сте сигурни да желите да се одјавите?';
 
   @override
+  String get legacyDataTitle => 'Активности од пре ажурирања сервера';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'На овом уређају постоје активности сачуване за налог на овом серверу од пре његовог ажурирања. Да ли су ваше, $username? Ако јесу, оне које још чекају биће отпремљене на ваш налог.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'На овом уређају постоје активности сачуване за налог на овом серверу од пре његовог ажурирања. Да ли припадају налогу са којим сте се управо пријавили? Ако да, оне које још чекају биће отпремљене на њега.';
+
+  @override
+  String get legacyDataConfirm => 'Моје су';
+
+  @override
+  String get legacyDataDecline => 'Нису моје';
+
+  @override
   String get logoutServerFailedWarning =>
       'Одјава са сервера није успела, али сте одјављени локално';
 

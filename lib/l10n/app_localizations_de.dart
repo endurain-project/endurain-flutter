@@ -258,6 +258,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get logoutConfirmMessage => 'Möchtest du dich wirklich abmelden?';
 
   @override
+  String get legacyDataTitle => 'Aktivitäten von vor dem Server-Update';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Auf diesem Gerät sind Aktivitäten für ein Konto auf diesem Server gespeichert, die vor dem Update des Servers aufgezeichnet wurden. Gehören sie dir, $username? Wenn ja, werden die noch wartenden in dein Konto hochgeladen.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Auf diesem Gerät sind Aktivitäten für ein Konto auf diesem Server gespeichert, die vor dem Update des Servers aufgezeichnet wurden. Gehören sie zu dem Konto, mit dem du dich gerade angemeldet hast? Wenn ja, werden die noch wartenden dorthin hochgeladen.';
+
+  @override
+  String get legacyDataConfirm => 'Sie gehören mir';
+
+  @override
+  String get legacyDataDecline => 'Nicht meine';
+
+  @override
   String get logoutServerFailedWarning =>
       'Abmeldung vom Server nicht möglich, aber lokal abgemeldet';
 

@@ -326,6 +326,32 @@
   "@logoutConfirmMessage": {
     "description": "Logout confirmation dialog message - Used in: server_settings_screen.dart"
   },
+  "legacyDataTitle": "Activities from before the server update",
+  "@legacyDataTitle": {
+    "description": "Title of the dialog after sign-in that asks whether activities saved before the server upgraded its account ids belong to the signed-in account - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataMessageWithUsername": "This device has activities saved for an account on this server from before the server was updated. Are they yours, {username}? If they are, any still waiting will be uploaded to your account.",
+  "@legacyDataMessageWithUsername": {
+    "description": "Body of that dialog after a password sign-in, naming the username that signed in - Used in: legacy_profile_adoption_dialog.dart",
+    "placeholders": {
+      "username": {
+        "type": "String",
+        "example": "alex"
+      }
+    }
+  },
+  "legacyDataMessage": "This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.",
+  "@legacyDataMessage": {
+    "description": "Body of that dialog after an SSO sign-in, when no username is known - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataConfirm": "They're mine",
+  "@legacyDataConfirm": {
+    "description": "Button that keeps the activities with the signed-in account - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataDecline": "Not mine",
+  "@legacyDataDecline": {
+    "description": "Button that says the activities belong to someone else - Used in: legacy_profile_adoption_dialog.dart"
+  },
   "logoutServerFailedWarning": "Could not logout from server, but logged out locally",
   "@logoutServerFailedWarning": {
     "description": "Warning shown when server logout fails but local logout succeeds - Used in: server_settings_screen.dart"

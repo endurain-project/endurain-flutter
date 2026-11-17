@@ -246,6 +246,24 @@ class AppLocalizationsTr extends AppLocalizations {
       'Oturumu kapatmak istediğinizden emin misiniz?';
 
   @override
+  String get legacyDataTitle => 'Sunucu güncellemesinden önceki etkinlikler';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Bu cihazda, bu sunucudaki bir hesap için sunucu güncellenmeden önce kaydedilmiş etkinlikler var. Bunlar sizin mi, $username? Öyleyse hâlâ bekleyenler hesabınıza yüklenecek.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Bu cihazda, bu sunucudaki bir hesap için sunucu güncellenmeden önce kaydedilmiş etkinlikler var. Bunlar az önce oturum açtığınız hesaba mı ait? Öyleyse hâlâ bekleyenler o hesaba yüklenecek.';
+
+  @override
+  String get legacyDataConfirm => 'Benim';
+
+  @override
+  String get legacyDataDecline => 'Benim değil';
+
+  @override
   String get logoutServerFailedWarning =>
       'Sunucudan oturum kapatılamadı, ancak yerel olarak kapatıldı';
 

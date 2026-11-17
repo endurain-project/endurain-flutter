@@ -255,6 +255,25 @@ class AppLocalizationsRo extends AppLocalizations {
   String get logoutConfirmMessage => 'Sigur doriți să vă deconectați?';
 
   @override
+  String get legacyDataTitle =>
+      'Activități de dinainte de actualizarea serverului';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Pe acest dispozitiv există activități salvate pentru un cont de pe acest server de dinainte de actualizarea lui. Sunt ale dumneavoastră, $username? Dacă da, cele care încă așteaptă vor fi încărcate în contul dumneavoastră.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Pe acest dispozitiv există activități salvate pentru un cont de pe acest server de dinainte de actualizarea lui. Aparțin contului cu care tocmai v-ați conectat? Dacă da, cele care încă așteaptă vor fi încărcate în el.';
+
+  @override
+  String get legacyDataConfirm => 'Sunt ale mele';
+
+  @override
+  String get legacyDataDecline => 'Nu sunt ale mele';
+
+  @override
   String get logoutServerFailedWarning =>
       'Deconectarea de la server nu a reușit, dar v-ați deconectat local';
 

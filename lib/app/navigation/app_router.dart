@@ -22,7 +22,7 @@ import 'package:go_router/go_router.dart';
 /// whose branches map to the existing tabs — the redirect guard stays the same.
 GoRouter buildAppRouter({
   required AuthSessionController session,
-  required VoidCallback onLoginSuccess,
+  required Future<void> Function(BuildContext context) onLoginSuccess,
   required VoidCallback onLogout,
 }) {
   return GoRouter(
@@ -39,9 +39,14 @@ GoRouter buildAppRouter({
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => LoginScreen(
-          onLoginSuccess: () {
-            onLoginSuccess();
-            context.go(AppRoutes.home);
+          // Awaited before leaving: the callback may ask the user a question
+          // on this route (see `LegacyProfileAdoptionService`) before it marks
+          // the session authenticated, which redirects to home.
+          onLoginSuccess: () async {
+            await onLoginSuccess(context);
+            if (context.mounted) {
+              context.go(AppRoutes.home);
+            }
           },
           // Login is pushed on top of home (from the Settings tab), so
           // cancelling pops back to Settings. Fall back to home if login was

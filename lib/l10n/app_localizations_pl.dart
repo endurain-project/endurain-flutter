@@ -256,6 +256,24 @@ class AppLocalizationsPl extends AppLocalizations {
   String get logoutConfirmMessage => 'Czy na pewno chcesz się wylogować?';
 
   @override
+  String get legacyDataTitle => 'Aktywności sprzed aktualizacji serwera';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Na tym urządzeniu są aktywności zapisane dla konta na tym serwerze sprzed jego aktualizacji. Czy są Twoje, $username? Jeśli tak, te, które wciąż czekają, zostaną przesłane na Twoje konto.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Na tym urządzeniu są aktywności zapisane dla konta na tym serwerze sprzed jego aktualizacji. Czy należą do konta, na które właśnie się zalogowano? Jeśli tak, te, które wciąż czekają, zostaną na nie przesłane.';
+
+  @override
+  String get legacyDataConfirm => 'Są moje';
+
+  @override
+  String get legacyDataDecline => 'Nie są moje';
+
+  @override
   String get logoutServerFailedWarning =>
       'Nie udało się wylogować z serwera, ale wylogowano lokalnie';
 

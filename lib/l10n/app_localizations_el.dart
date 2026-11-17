@@ -259,6 +259,25 @@ class AppLocalizationsEl extends AppLocalizations {
       'Είστε βέβαιοι ότι θέλετε να αποσυνδεθείτε;';
 
   @override
+  String get legacyDataTitle =>
+      'Δραστηριότητες από πριν από την ενημέρωση του διακομιστή';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Είναι δικές σας, $username; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν στον λογαριασμό σας.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Ανήκουν στον λογαριασμό με τον οποίο μόλις συνδεθήκατε; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν σε αυτόν.';
+
+  @override
+  String get legacyDataConfirm => 'Είναι δικές μου';
+
+  @override
+  String get legacyDataDecline => 'Δεν είναι δικές μου';
+
+  @override
   String get logoutServerFailedWarning =>
       'Δεν ήταν δυνατή η αποσύνδεση από τον διακομιστή, αλλά έγινε αποσύνδεση τοπικά';
 

@@ -256,6 +256,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get logoutConfirmMessage => 'Voulez-vous vraiment vous déconnecter ?';
 
   @override
+  String get legacyDataTitle => 'Activités d\'avant la mise à jour du serveur';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Cet appareil contient des activités enregistrées pour un compte de ce serveur avant sa mise à jour. Sont-elles à vous, $username ? Si oui, celles qui sont encore en attente seront envoyées sur votre compte.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Cet appareil contient des activités enregistrées pour un compte de ce serveur avant sa mise à jour. Appartiennent-elles au compte avec lequel vous venez de vous connecter ? Si oui, celles qui sont encore en attente y seront envoyées.';
+
+  @override
+  String get legacyDataConfirm => 'Elles sont à moi';
+
+  @override
+  String get legacyDataDecline => 'Pas à moi';
+
+  @override
   String get logoutServerFailedWarning =>
       'Impossible de se déconnecter du serveur, mais déconnexion locale effectuée';
 

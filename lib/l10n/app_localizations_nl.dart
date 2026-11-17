@@ -252,6 +252,24 @@ class AppLocalizationsNl extends AppLocalizations {
   String get logoutConfirmMessage => 'Weet je zeker dat je je wilt afmelden?';
 
   @override
+  String get legacyDataTitle => 'Activiteiten van vóór de serverupdate';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Zijn ze van jou, $username? Zo ja, dan worden de activiteiten die nog wachten naar je account geüpload.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Horen ze bij het account waarmee je net bent ingelogd? Zo ja, dan worden de activiteiten die nog wachten daarnaar geüpload.';
+
+  @override
+  String get legacyDataConfirm => 'Ze zijn van mij';
+
+  @override
+  String get legacyDataDecline => 'Niet van mij';
+
+  @override
   String get logoutServerFailedWarning =>
       'Kan niet afmelden bij de server, maar lokaal afgemeld';
 

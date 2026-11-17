@@ -326,6 +326,32 @@
   "@logoutConfirmMessage": {
     "description": "Mensagem do diálogo de confirmação de logout - Usado em: server_settings_screen.dart"
   },
+  "legacyDataTitle": "Atividades de antes da atualização do servidor",
+  "@legacyDataTitle": {
+    "description": "Título da caixa de diálogo após o início de sessão que pergunta se as atividades guardadas antes de o servidor mudar os ids das contas pertencem à conta com sessão iniciada - Usado em: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataMessageWithUsername": "Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. São suas, {username}? Se forem, as que ainda estão pendentes serão carregadas para a sua conta.",
+  "@legacyDataMessageWithUsername": {
+    "description": "Corpo dessa caixa de diálogo após um início de sessão com palavra-passe, com o nome de utilizador - Usado em: legacy_profile_adoption_dialog.dart",
+    "placeholders": {
+      "username": {
+        "type": "String",
+        "example": "alex"
+      }
+    }
+  },
+  "legacyDataMessage": "Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. Pertencem à conta com que acabou de iniciar sessão? Se sim, as que ainda estão pendentes serão carregadas para essa conta.",
+  "@legacyDataMessage": {
+    "description": "Corpo dessa caixa de diálogo após um início de sessão SSO, sem nome de utilizador - Usado em: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataConfirm": "São minhas",
+  "@legacyDataConfirm": {
+    "description": "Botão que mantém as atividades com a conta com sessão iniciada - Usado em: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataDecline": "Não são minhas",
+  "@legacyDataDecline": {
+    "description": "Botão que indica que as atividades pertencem a outra pessoa - Usado em: legacy_profile_adoption_dialog.dart"
+  },
   "logoutServerFailedWarning": "Não foi possível sair do servidor, mas saiu localmente",
   "@logoutServerFailedWarning": {
     "description": "Aviso exibido quando o logout do servidor falha mas o logout local é bem-sucedido - Usado em: server_settings_screen.dart"

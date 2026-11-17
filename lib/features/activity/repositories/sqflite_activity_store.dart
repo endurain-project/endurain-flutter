@@ -355,6 +355,43 @@ class SqfliteActivityStore implements LocalActivityStore {
   }
 
   @override
+  Future<List<String>> listConnectionProfileIds({
+    required String origin,
+  }) async {
+    final db = await _open();
+    final rows = await db.query(
+      _tableActivity,
+      distinct: true,
+      columns: ['connection_profile_id'],
+      where: 'connection_origin = ? AND connection_profile_id IS NOT NULL',
+      whereArgs: [origin],
+    );
+    return [for (final row in rows) row['connection_profile_id']! as String];
+  }
+
+  @override
+  Future<int> rebindConnectionProfile({
+    required String origin,
+    required String fromProfileId,
+    required String toProfileId,
+    required DateTime updatedAt,
+  }) async {
+    if (fromProfileId == toProfileId) {
+      return 0;
+    }
+    final db = await _open();
+    return db.update(
+      _tableActivity,
+      {
+        'connection_profile_id': toProfileId,
+        'updated_at': updatedAt.toUtcIso8601(),
+      },
+      where: 'connection_origin = ? AND connection_profile_id = ?',
+      whereArgs: [origin, fromProfileId],
+    );
+  }
+
+  @override
   Future<List<LocalActivityRecord>> listByUploadStatus(
     Set<LocalActivityUploadStatus> statuses,
   ) async {

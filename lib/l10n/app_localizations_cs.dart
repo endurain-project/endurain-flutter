@@ -254,6 +254,24 @@ class AppLocalizationsCs extends AppLocalizations {
   String get logoutConfirmMessage => 'Opravdu se chcete odhlásit?';
 
   @override
+  String get legacyDataTitle => 'Aktivity z doby před aktualizací serveru';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'V tomto zařízení jsou aktivity uložené pro účet na tomto serveru z doby před jeho aktualizací. Jsou vaše, $username? Pokud ano, ty, které ještě čekají, se nahrají do vašeho účtu.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'V tomto zařízení jsou aktivity uložené pro účet na tomto serveru z doby před jeho aktualizací. Patří k účtu, ke kterému jste se právě přihlásili? Pokud ano, ty, které ještě čekají, se do něj nahrají.';
+
+  @override
+  String get legacyDataConfirm => 'Jsou moje';
+
+  @override
+  String get legacyDataDecline => 'Nejsou moje';
+
+  @override
   String get logoutServerFailedWarning =>
       'Odhlášení ze serveru se nezdařilo, ale odhlášení proběhlo místně';
 

@@ -251,6 +251,24 @@ class AppLocalizationsNb extends AppLocalizations {
   String get logoutConfirmMessage => 'Er du sikker på at du vil logge ut?';
 
   @override
+  String get legacyDataTitle => 'Aktiviteter fra før serveroppdateringen';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Denne enheten har aktiviteter lagret for en konto på denne serveren fra før serveren ble oppdatert. Er de dine, $username? Hvis de er det, blir de som fortsatt venter lastet opp til kontoen din.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Denne enheten har aktiviteter lagret for en konto på denne serveren fra før serveren ble oppdatert. Tilhører de kontoen du nettopp logget inn med? Hvis de gjør det, blir de som fortsatt venter lastet opp til den.';
+
+  @override
+  String get legacyDataConfirm => 'De er mine';
+
+  @override
+  String get legacyDataDecline => 'Ikke mine';
+
+  @override
   String get logoutServerFailedWarning =>
       'Kunne ikke logge ut fra serveren, men logget ut lokalt';
 

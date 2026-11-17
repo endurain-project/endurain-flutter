@@ -253,6 +253,24 @@ class AppLocalizationsBg extends AppLocalizations {
   String get logoutConfirmMessage => 'Наистина ли искате да излезете?';
 
   @override
+  String get legacyDataTitle => 'Активности отпреди обновяването на сървъра';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Ваши ли са, $username? Ако са, чакащите ще бъдат качени във вашия акаунт.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Принадлежат ли на акаунта, с който току-що влязохте? Ако е така, чакащите ще бъдат качени в него.';
+
+  @override
+  String get legacyDataConfirm => 'Мои са';
+
+  @override
+  String get legacyDataDecline => 'Не са мои';
+
+  @override
   String get logoutServerFailedWarning =>
       'Изходът от сървъра не бе успешен, но излязохте локално';
 

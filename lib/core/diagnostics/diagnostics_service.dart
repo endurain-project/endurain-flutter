@@ -245,6 +245,10 @@ class DiagnosticsEvents {
   static const String healthImportSelectedFailed =
       'health.import_selected_failed';
   static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
+  static const String legacyProfileAdopted = 'account.legacy_profile_adopted';
+  static const String legacyProfileDeclined = 'account.legacy_profile_declined';
+  static const String legacyProfileMigrationFailed =
+      'account.legacy_profile_migration_failed';
 }
 
 class DiagnosticsService implements DiagnosticsStore {

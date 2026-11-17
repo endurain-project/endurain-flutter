@@ -111,19 +111,45 @@ class DialogUtils {
     required String confirmText,
     bool isDestructive = false,
   }) async {
+    final confirmed = await showChoiceDialog(
+      context,
+      title: title,
+      message: message,
+      confirmText: confirmText,
+      isDestructive: isDestructive,
+    );
+    return confirmed ?? false;
+  }
+
+  /// Shows a platform-adaptive two-choice dialog.
+  ///
+  /// Returns `true` for [confirmText], `false` for [cancelText] (the localized
+  /// "Cancel" when omitted), and `null` when the dialog is dismissed without a
+  /// choice (back button, or a barrier tap when [barrierDismissible]).
+  /// [barrierDismissible] defaults to each platform's own default.
+  static Future<bool?> showChoiceDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String confirmText,
+    String? cancelText,
+    bool isDestructive = false,
+    bool? barrierDismissible,
+  }) {
     final l10n = AppLocalizations.of(context)!;
-    bool? confirmed = false;
+    final cancelLabel = cancelText ?? l10n.cancel;
 
     if (PlatformUtils.isApplePlatform) {
-      confirmed = await showCupertinoDialog<bool>(
+      return showCupertinoDialog<bool>(
         context: context,
+        barrierDismissible: barrierDismissible ?? false,
         builder: (context) => CupertinoAlertDialog(
           title: Text(title),
           content: Text(message),
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.cancel),
+              child: Text(cancelLabel),
             ),
             CupertinoDialogAction(
               isDestructiveAction: isDestructive,
@@ -133,26 +159,24 @@ class DialogUtils {
           ],
         ),
       );
-    } else {
-      confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(confirmText),
-            ),
-          ],
-        ),
-      );
     }
-
-    return confirmed ?? false;
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: barrierDismissible ?? true,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(cancelLabel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(confirmText),
+          ),
+        ],
+      ),
+    );
   }
 }

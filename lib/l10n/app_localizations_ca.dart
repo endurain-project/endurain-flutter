@@ -259,6 +259,25 @@ class AppLocalizationsCa extends AppLocalizations {
   String get logoutConfirmMessage => 'Segur que voleu tancar la sessió?';
 
   @override
+  String get legacyDataTitle =>
+      'Activitats d\'abans de l\'actualització del servidor';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Aquest dispositiu té activitats desades per a un compte d\'aquest servidor d\'abans que s\'actualitzés. Són vostres, $username? Si ho són, les que encara estan pendents es pujaran al vostre compte.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Aquest dispositiu té activitats desades per a un compte d\'aquest servidor d\'abans que s\'actualitzés. Pertanyen al compte amb què acabeu d\'iniciar la sessió? Si és així, les que encara estan pendents s\'hi pujaran.';
+
+  @override
+  String get legacyDataConfirm => 'Són meves';
+
+  @override
+  String get legacyDataDecline => 'No són meves';
+
+  @override
   String get logoutServerFailedWarning =>
       'No s\'ha pogut tancar la sessió al servidor, però s\'ha tancat localment';
 

@@ -257,6 +257,25 @@ class AppLocalizationsGl extends AppLocalizations {
   String get logoutConfirmMessage => 'Seguro que queres pechar a sesión?';
 
   @override
+  String get legacyDataTitle =>
+      'Actividades de antes da actualización do servidor';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Este dispositivo ten actividades gardadas para unha conta deste servidor de antes de que se actualizase. Son túas, $username? Se o son, as que seguen pendentes subiranse á túa conta.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Este dispositivo ten actividades gardadas para unha conta deste servidor de antes de que se actualizase. Pertencen á conta coa que acabas de iniciar sesión? Se é así, as que seguen pendentes subiranse a ela.';
+
+  @override
+  String get legacyDataConfirm => 'Son miñas';
+
+  @override
+  String get legacyDataDecline => 'Non son miñas';
+
+  @override
   String get logoutServerFailedWarning =>
       'Non se puido pechar a sesión no servidor, pero pechouse localmente';
 

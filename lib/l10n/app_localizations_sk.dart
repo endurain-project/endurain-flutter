@@ -255,6 +255,24 @@ class AppLocalizationsSk extends AppLocalizations {
   String get logoutConfirmMessage => 'Naozaj sa chcete odhlásiť?';
 
   @override
+  String get legacyDataTitle => 'Aktivity spred aktualizácie servera';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Sú vaše, $username? Ak áno, tie, ktoré ešte čakajú, sa nahrajú do vášho účtu.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Patria k účtu, do ktorého ste sa práve prihlásili? Ak áno, tie, ktoré ešte čakajú, sa doň nahrajú.';
+
+  @override
+  String get legacyDataConfirm => 'Sú moje';
+
+  @override
+  String get legacyDataDecline => 'Nie sú moje';
+
+  @override
   String get logoutServerFailedWarning =>
       'Odhlásenie zo servera zlyhalo, ale odhlásenie prebehlo miestne';
 

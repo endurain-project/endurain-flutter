@@ -255,6 +255,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get logoutConfirmMessage => '¿Seguro que quieres cerrar sesión?';
 
   @override
+  String get legacyDataTitle =>
+      'Actividades de antes de la actualización del servidor';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Este dispositivo tiene actividades guardadas para una cuenta de este servidor de antes de que se actualizara. ¿Son tuyas, $username? Si lo son, las que siguen pendientes se subirán a tu cuenta.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Este dispositivo tiene actividades guardadas para una cuenta de este servidor de antes de que se actualizara. ¿Pertenecen a la cuenta con la que acabas de iniciar sesión? Si es así, las que siguen pendientes se subirán a ella.';
+
+  @override
+  String get legacyDataConfirm => 'Son mías';
+
+  @override
+  String get legacyDataDecline => 'No son mías';
+
+  @override
   String get logoutServerFailedWarning =>
       'No se pudo cerrar sesión en el servidor, pero se cerró localmente';
 
