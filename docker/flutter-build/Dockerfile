@@ -11,7 +11,7 @@
 
 # Pinned base. The digest is the multi-arch manifest digest for the tag in the
 # trailing comment.
-FROM eclipse-temurin:17-jdk-jammy@sha256:beabb759e6f9653c843958d1d1f5cecb881dfb85aa6081e2bef099ab1260344e
+FROM eclipse-temurin:25-jdk-jammy@sha256:5ba254809ef542504d40d47271c7d6c4f240fe40ca1386259806d431f13b6b4f
 # eclipse-temurin:17-jdk-jammy
 
 # --- Toolchain versions (override via --build-arg to upgrade) ---------------
