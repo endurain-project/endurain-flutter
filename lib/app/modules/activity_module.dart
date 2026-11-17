@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/app/modules/auth_module.dart';
 import 'package:endurain/app/modules/sensors_module.dart';
+import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
@@ -63,13 +64,20 @@ class ActivityModule {
     config: ActivityUploadConfig.fromEndpoints(_infra.endpoints),
     retryPolicy: const ActivityUploadRetryPolicy(maxAttempts: 3),
     activeConnectionProfile: _auth.session.getConnectionProfile,
-    fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) =>
-        _auth.apiClient.getJsonObject(
-          endpoint,
-          failureCode: AppErrorCode.activityUploadFailed,
-          expectedOrigin: expectedOrigin,
-          expectedProfileId: expectedProfileId,
+    fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) async {
+      final read = await _auth.apiClient.getJsonObjectWithHeaders(
+        endpoint,
+        failureCode: AppErrorCode.activityUploadFailed,
+        expectedOrigin: expectedOrigin,
+        expectedProfileId: expectedProfileId,
+      );
+      return (
+        job: read.body,
+        retryAfter: ActivityUploadService.parseRetryAfter(
+          read.headers[ApiConstants.retryAfterHeader],
         ),
+      );
+    },
   );
 
   late final LocalActivityGpxStorage gpxStorage = LocalActivityGpxStorage();

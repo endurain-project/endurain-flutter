@@ -66,6 +66,7 @@
   "legacyDataMessage": "Tällä laitteella on aktiviteetteja, jotka on tallennettu tämän palvelimen tilille ennen palvelimen päivitystä. Kuuluvatko ne tilille, jolla juuri kirjauduit sisään? Jos kuuluvat, vielä odottavat ladataan sille.",
   "legacyDataConfirm": "Ne ovat minun",
   "legacyDataDecline": "Eivät ole minun",
+  "errorActivityUploadLimit": "Palvelimella on liian monta latausta käynnissä. Sovellus yrittää myöhemmin uudelleen.",
   "errorPasswordChangeFailed": "Salasanaa ei voitu vaihtaa",
   "errorPasswordChangeFailedWithDetails": "Salasanaa ei voitu vaihtaa: {details}",
   "errorSignInStepUnsupported": "Palvelin pyysi kirjautumisvaihetta, jota tämä sovellusversio ei tue. Päivitä sovellus ja yritä uudelleen.",

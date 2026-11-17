@@ -273,6 +273,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get legacyDataDecline => 'Inte mina';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Servern har för många av dina uppladdningar pågående. Appen försöker igen senare.';
+
+  @override
   String get errorPasswordChangeFailed => 'Det gick inte att ändra lösenordet';
 
   @override

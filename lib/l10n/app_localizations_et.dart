@@ -270,6 +270,10 @@ class AppLocalizationsEt extends AppLocalizations {
   String get legacyDataDecline => 'Pole minu omad';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Serveris on liiga palju teie üleslaadimisi pooleli. Rakendus proovib hiljem uuesti.';
+
+  @override
   String get errorPasswordChangeFailed => 'Parooli ei saanud muuta';
 
   @override

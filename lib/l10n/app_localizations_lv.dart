@@ -269,6 +269,10 @@ class AppLocalizationsLv extends AppLocalizations {
   String get legacyDataDecline => 'Nav manas';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Serverī notiek pārāk daudz jūsu augšupielāžu. Lietotne mēģinās vēlreiz vēlāk.';
+
+  @override
   String get errorPasswordChangeFailed => 'Paroli neizdevās nomainīt';
 
   @override

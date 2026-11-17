@@ -66,6 +66,7 @@
   "legacyDataMessage": "Denne enhed har aktiviteter gemt for en konto på denne server fra før serveren blev opdateret. Tilhører de den konto, du lige har logget ind med? Hvis de gør, bliver dem, der stadig venter, uploadet til den.",
   "legacyDataConfirm": "De er mine",
   "legacyDataDecline": "Ikke mine",
+  "errorActivityUploadLimit": "Serveren har for mange af dine uploads i gang. Appen prøver igen senere.",
   "errorPasswordChangeFailed": "Adgangskoden kunne ikke ændres",
   "errorPasswordChangeFailedWithDetails": "Adgangskoden kunne ikke ændres: {details}",
   "errorSignInStepUnsupported": "Serveren bad om et login-trin, som denne version af appen ikke understøtter. Opdater appen, og prøv igen.",

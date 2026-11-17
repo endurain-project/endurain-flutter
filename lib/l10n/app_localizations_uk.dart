@@ -270,6 +270,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get legacyDataDecline => 'Не мої';
 
   @override
+  String get errorActivityUploadLimit =>
+      'На сервері виконується забагато ваших завантажень. Застосунок спробує знову пізніше.';
+
+  @override
   String get errorPasswordChangeFailed => 'Не вдалося змінити пароль';
 
   @override

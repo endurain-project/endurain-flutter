@@ -63,11 +63,21 @@ void main() {
         expect(endpoints.activityUploadEndpoint, '/api/v1/activities/upload');
       });
 
-      test('activityIngestionJobEndpoint encodes the job id', () {
+      test('jobEndpoint encodes the job id', () {
+        expect(endpoints.jobEndpoint('a b/1'), '/api/v1/jobs/a%20b%2F1');
+      });
+
+      test('isJobPath accepts only a single job path on this API', () {
+        expect(endpoints.isJobPath('/api/v1/jobs/0c0f8e0e'), isTrue);
+        expect(endpoints.isJobPath('/api/v1/jobs/'), isFalse);
+        expect(endpoints.isJobPath('/api/v1/jobs/a/b'), isFalse);
+        expect(endpoints.isJobPath('/api/v1/jobs/a?x=1'), isFalse);
+        expect(endpoints.isJobPath('/api/v1/profile'), isFalse);
         expect(
-          endpoints.activityIngestionJobEndpoint('a b/1'),
-          '/api/v1/activities/ingestion-jobs/a%20b%2F1',
+          endpoints.isJobPath('https://evil.example/api/v1/jobs/a'),
+          isFalse,
         );
+        expect(endpoints.isJobPath('/api/v1/jobs/..'), isFalse);
       });
     });
 

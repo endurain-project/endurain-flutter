@@ -274,6 +274,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get legacyDataDecline => 'Pas à moi';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Le serveur a trop de vos envois en cours. L\'application réessaiera plus tard.';
+
+  @override
   String get errorPasswordChangeFailed =>
       'Impossible de changer le mot de passe';
 

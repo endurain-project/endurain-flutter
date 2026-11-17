@@ -66,6 +66,7 @@
   "legacyDataMessage": "Denne enheten har aktiviteter lagret for en konto på denne serveren fra før serveren ble oppdatert. Tilhører de kontoen du nettopp logget inn med? Hvis de gjør det, blir de som fortsatt venter lastet opp til den.",
   "legacyDataConfirm": "De er mine",
   "legacyDataDecline": "Ikke mine",
+  "errorActivityUploadLimit": "Serveren har for mange av opplastingene dine i gang. Appen prøver igjen senere.",
   "errorPasswordChangeFailed": "Kunne ikke endre passordet",
   "errorPasswordChangeFailedWithDetails": "Kunne ikke endre passordet: {details}",
   "errorSignInStepUnsupported": "Serveren ba om et påloggingstrinn denne versjonen av appen ikke støtter. Oppdater appen og prøv igjen.",

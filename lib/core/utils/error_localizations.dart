@@ -44,6 +44,9 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       'no_activities_found' => l10n.errorActivityIngestionNoActivitiesFound,
       'processing_failed' => l10n.errorActivityIngestionProcessingFailed,
       'provider_unavailable' => l10n.errorActivityIngestionProviderUnavailable,
+      // Set by the upload service for a `409` at the server's cap on open
+      // uploads; the upload is retried later.
+      'upload_limit' => l10n.errorActivityUploadLimit,
       _ => l10n.errorActivityUploadFailedWithDetails(details),
     },
     AppErrorCode.activityUploadNotConfigured =>

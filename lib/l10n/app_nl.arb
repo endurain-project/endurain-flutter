@@ -66,6 +66,7 @@
   "legacyDataMessage": "Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Horen ze bij het account waarmee je net bent ingelogd? Zo ja, dan worden de activiteiten die nog wachten daarnaar geüpload.",
   "legacyDataConfirm": "Ze zijn van mij",
   "legacyDataDecline": "Niet van mij",
+  "errorActivityUploadLimit": "De server heeft te veel uploads van je in behandeling. De app probeert het later opnieuw.",
   "errorPasswordChangeFailed": "Kan het wachtwoord niet wijzigen",
   "errorPasswordChangeFailedWithDetails": "Kan het wachtwoord niet wijzigen: {details}",
   "errorSignInStepUnsupported": "Deze server vroeg om een inlogstap die deze versie van de app niet ondersteunt. Werk de app bij en probeer het opnieuw.",

@@ -273,6 +273,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get legacyDataDecline => 'Eivät ole minun';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Palvelimella on liian monta latausta käynnissä. Sovellus yrittää myöhemmin uudelleen.';
+
+  @override
   String get errorPasswordChangeFailed => 'Salasanaa ei voitu vaihtaa';
 
   @override

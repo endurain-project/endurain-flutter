@@ -66,6 +66,7 @@
   "legacyDataMessage": "Su questo dispositivo ci sono attività salvate per un account di questo server da prima del suo aggiornamento. Appartengono all'account con cui hai appena effettuato l'accesso? Se sì, quelle ancora in attesa verranno caricate lì.",
   "legacyDataConfirm": "Sono mie",
   "legacyDataDecline": "Non sono mie",
+  "errorActivityUploadLimit": "Il server ha troppi tuoi caricamenti in corso. L'app riproverà più tardi.",
   "errorPasswordChangeFailed": "Impossibile cambiare la password",
   "errorPasswordChangeFailedWithDetails": "Impossibile cambiare la password: {details}",
   "errorSignInStepUnsupported": "Questo server ha richiesto un passaggio di accesso che questa versione dell'app non supporta. Aggiorna l'app e riprova.",

@@ -66,6 +66,7 @@
   "legacyDataMessage": "Šajā ierīcē ir aktivitātes, kas saglabātas šī servera kontam pirms servera atjaunināšanas. Vai tās pieder kontam, kurā tikko pierakstījāties? Ja jā, vēl gaidošās tiks augšupielādētas tajā.",
   "legacyDataConfirm": "Tās ir manas",
   "legacyDataDecline": "Nav manas",
+  "errorActivityUploadLimit": "Serverī notiek pārāk daudz jūsu augšupielāžu. Lietotne mēģinās vēlreiz vēlāk.",
   "errorPasswordChangeFailed": "Paroli neizdevās nomainīt",
   "errorPasswordChangeFailedWithDetails": "Paroli neizdevās nomainīt: {details}",
   "errorSignInStepUnsupported": "Serveris pieprasīja pierakstīšanās soli, ko šī lietotnes versija neatbalsta. Atjauniniet lietotni un mēģiniet vēlreiz.",

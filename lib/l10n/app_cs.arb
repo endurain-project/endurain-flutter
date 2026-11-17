@@ -66,6 +66,7 @@
   "legacyDataMessage": "V tomto zařízení jsou aktivity uložené pro účet na tomto serveru z doby před jeho aktualizací. Patří k účtu, ke kterému jste se právě přihlásili? Pokud ano, ty, které ještě čekají, se do něj nahrají.",
   "legacyDataConfirm": "Jsou moje",
   "legacyDataDecline": "Nejsou moje",
+  "errorActivityUploadLimit": "Server má rozpracováno příliš mnoho vašich nahrávání. Aplikace to zkusí znovu později.",
   "errorPasswordChangeFailed": "Heslo se nepodařilo změnit",
   "errorPasswordChangeFailedWithDetails": "Heslo se nepodařilo změnit: {details}",
   "errorSignInStepUnsupported": "Server požádal o krok přihlášení, který tato verze aplikace nepodporuje. Aktualizujte aplikaci a zkuste to znovu.",

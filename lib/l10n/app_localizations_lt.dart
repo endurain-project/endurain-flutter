@@ -268,6 +268,10 @@ class AppLocalizationsLt extends AppLocalizations {
   String get legacyDataDecline => 'Ne mano';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Serveryje vykdoma per daug jūsų įkėlimų. Programa bandys dar kartą vėliau.';
+
+  @override
   String get errorPasswordChangeFailed => 'Nepavyko pakeisti slaptažodžio';
 
   @override

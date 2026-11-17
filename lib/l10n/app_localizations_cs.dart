@@ -272,6 +272,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get legacyDataDecline => 'Nejsou moje';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Server má rozpracováno příliš mnoho vašich nahrávání. Aplikace to zkusí znovu později.';
+
+  @override
   String get errorPasswordChangeFailed => 'Heslo se nepodařilo změnit';
 
   @override

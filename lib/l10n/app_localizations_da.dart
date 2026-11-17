@@ -269,6 +269,10 @@ class AppLocalizationsDa extends AppLocalizations {
   String get legacyDataDecline => 'Ikke mine';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Serveren har for mange af dine uploads i gang. Appen prøver igen senere.';
+
+  @override
   String get errorPasswordChangeFailed => 'Adgangskoden kunne ikke ændres';
 
   @override

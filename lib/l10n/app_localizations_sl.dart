@@ -270,6 +270,10 @@ class AppLocalizationsSl extends AppLocalizations {
   String get legacyDataDecline => 'Niso moje';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Na strežniku poteka preveč vaših nalaganj. Aplikacija bo poskusila znova pozneje.';
+
+  @override
   String get errorPasswordChangeFailed => 'Gesla ni bilo mogoče spremeniti';
 
   @override

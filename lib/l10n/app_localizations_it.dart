@@ -275,6 +275,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get legacyDataDecline => 'Non sono mie';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Il server ha troppi tuoi caricamenti in corso. L\'app riproverà più tardi.';
+
+  @override
   String get errorPasswordChangeFailed => 'Impossibile cambiare la password';
 
   @override

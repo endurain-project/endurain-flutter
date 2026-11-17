@@ -265,6 +265,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get legacyDataDecline => 'Not mine';
 
   @override
+  String get errorActivityUploadLimit =>
+      'The server has too many of your uploads in progress. The app will try again later.';
+
+  @override
   String get errorPasswordChangeFailed => 'Could not change the password';
 
   @override

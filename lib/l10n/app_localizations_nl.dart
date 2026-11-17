@@ -270,6 +270,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get legacyDataDecline => 'Niet van mij';
 
   @override
+  String get errorActivityUploadLimit =>
+      'De server heeft te veel uploads van je in behandeling. De app probeert het later opnieuw.';
+
+  @override
   String get errorPasswordChangeFailed => 'Kan het wachtwoord niet wijzigen';
 
   @override

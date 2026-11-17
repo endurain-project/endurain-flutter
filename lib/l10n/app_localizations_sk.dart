@@ -273,6 +273,10 @@ class AppLocalizationsSk extends AppLocalizations {
   String get legacyDataDecline => 'Nie sú moje';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Na serveri prebieha príliš veľa vašich nahrávaní. Aplikácia to skúsi znova neskôr.';
+
+  @override
   String get errorPasswordChangeFailed => 'Heslo sa nepodarilo zmeniť';
 
   @override

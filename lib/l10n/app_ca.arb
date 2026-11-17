@@ -66,6 +66,7 @@
   "legacyDataMessage": "Aquest dispositiu té activitats desades per a un compte d'aquest servidor d'abans que s'actualitzés. Pertanyen al compte amb què acabeu d'iniciar la sessió? Si és així, les que encara estan pendents s'hi pujaran.",
   "legacyDataConfirm": "Són meves",
   "legacyDataDecline": "No són meves",
+  "errorActivityUploadLimit": "El servidor té massa pujades vostres en curs. L'aplicació ho tornarà a provar més tard.",
   "errorPasswordChangeFailed": "No s'ha pogut canviar la contrasenya",
   "errorPasswordChangeFailedWithDetails": "No s'ha pogut canviar la contrasenya: {details}",
   "errorSignInStepUnsupported": "Aquest servidor ha demanat un pas d'inici de sessió que aquesta versió de l'aplicació no admet. Actualitzeu l'aplicació i torneu-ho a provar.",

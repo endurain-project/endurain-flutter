@@ -278,6 +278,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get legacyDataDecline => 'Δεν είναι δικές μου';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Ο διακομιστής έχει πάρα πολλές μεταφορτώσεις σας σε εξέλιξη. Η εφαρμογή θα προσπαθήσει ξανά αργότερα.';
+
+  @override
   String get errorPasswordChangeFailed =>
       'Δεν ήταν δυνατή η αλλαγή του κωδικού πρόσβασης';
 

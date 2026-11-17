@@ -264,6 +264,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get legacyDataDecline => 'Benim değil';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Sunucuda devam eden çok fazla yüklemeniz var. Uygulama daha sonra yeniden deneyecek.';
+
+  @override
   String get errorPasswordChangeFailed => 'Parola değiştirilemedi';
 
   @override

@@ -352,6 +352,10 @@
   "@legacyDataDecline": {
     "description": "Botão que indica que as atividades pertencem a outra pessoa - Usado em: legacy_profile_adoption_dialog.dart"
   },
+  "errorActivityUploadLimit": "O servidor tem demasiados carregamentos seus em curso. A aplicação volta a tentar mais tarde.",
+  "@errorActivityUploadLimit": {
+    "description": "Erro de carregamento quando o servidor já tem o número máximo de carregamentos em curso do utilizador; repetido mais tarde - Usado em: error_localizations.dart"
+  },
   "errorPasswordChangeFailed": "Não foi possível alterar a palavra-passe",
   "@errorPasswordChangeFailed": {
     "description": "Erro quando a nova palavra-passe escolhida no início de sessão é recusada - Usado em: error_localizations.dart"

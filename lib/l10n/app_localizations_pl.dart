@@ -274,6 +274,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get legacyDataDecline => 'Nie są moje';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Na serwerze trwa zbyt wiele Twoich przesyłań. Aplikacja spróbuje ponownie później.';
+
+  @override
   String get errorPasswordChangeFailed => 'Nie udało się zmienić hasła';
 
   @override

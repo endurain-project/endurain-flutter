@@ -66,6 +66,7 @@
   "legacyDataMessage": "Bu cihazda, bu sunucudaki bir hesap için sunucu güncellenmeden önce kaydedilmiş etkinlikler var. Bunlar az önce oturum açtığınız hesaba mı ait? Öyleyse hâlâ bekleyenler o hesaba yüklenecek.",
   "legacyDataConfirm": "Benim",
   "legacyDataDecline": "Benim değil",
+  "errorActivityUploadLimit": "Sunucuda devam eden çok fazla yüklemeniz var. Uygulama daha sonra yeniden deneyecek.",
   "errorPasswordChangeFailed": "Parola değiştirilemedi",
   "errorPasswordChangeFailedWithDetails": "Parola değiştirilemedi: {details}",
   "errorSignInStepUnsupported": "Bu sunucu, uygulamanın bu sürümünün desteklemediği bir oturum açma adımı istedi. Uygulamayı güncelleyip yeniden deneyin.",

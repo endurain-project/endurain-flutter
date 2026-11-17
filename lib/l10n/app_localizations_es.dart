@@ -274,6 +274,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get legacyDataDecline => 'No son mías';
 
   @override
+  String get errorActivityUploadLimit =>
+      'El servidor tiene demasiadas subidas tuyas en curso. La aplicación lo intentará de nuevo más tarde.';
+
+  @override
   String get errorPasswordChangeFailed => 'No se pudo cambiar la contraseña';
 
   @override

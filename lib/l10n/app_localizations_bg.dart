@@ -271,6 +271,10 @@ class AppLocalizationsBg extends AppLocalizations {
   String get legacyDataDecline => 'Не са мои';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Сървърът има твърде много ваши качвания в процес. Приложението ще опита отново по-късно.';
+
+  @override
   String get errorPasswordChangeFailed => 'Паролата не можа да бъде сменена';
 
   @override

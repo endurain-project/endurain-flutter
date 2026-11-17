@@ -66,6 +66,7 @@
   "legacyDataMessage": "Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need kuuluvad kontole, millega just sisse logisite? Kui jah, laaditakse veel ootel olevad sinna üles.",
   "legacyDataConfirm": "Need on minu omad",
   "legacyDataDecline": "Pole minu omad",
+  "errorActivityUploadLimit": "Serveris on liiga palju teie üleslaadimisi pooleli. Rakendus proovib hiljem uuesti.",
   "errorPasswordChangeFailed": "Parooli ei saanud muuta",
   "errorPasswordChangeFailedWithDetails": "Parooli ei saanud muuta: {details}",
   "errorSignInStepUnsupported": "Server küsis sisselogimise sammu, mida see rakenduse versioon ei toeta. Uuendage rakendust ja proovige uuesti.",

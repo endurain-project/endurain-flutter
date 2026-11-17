@@ -66,6 +66,7 @@
   "legacyDataMessage": "Ezen az eszközön olyan tevékenységek vannak, amelyeket a szerver frissítése előtt mentettek egy ezen a szerveren lévő fiókhoz. Ahhoz a fiókhoz tartoznak, amellyel most jelentkezett be? Ha igen, a még várakozók oda töltődnek fel.",
   "legacyDataConfirm": "Az enyéim",
   "legacyDataDecline": "Nem az enyéim",
+  "errorActivityUploadLimit": "A szerveren túl sok feltöltése van folyamatban. Az alkalmazás később újra megpróbálja.",
   "errorPasswordChangeFailed": "A jelszót nem sikerült megváltoztatni",
   "errorPasswordChangeFailedWithDetails": "A jelszót nem sikerült megváltoztatni: {details}",
   "errorSignInStepUnsupported": "A szerver olyan bejelentkezési lépést kért, amelyet az alkalmazás ezen verziója nem támogat. Frissítse az alkalmazást, és próbálja újra.",

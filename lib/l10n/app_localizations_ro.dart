@@ -274,6 +274,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get legacyDataDecline => 'Nu sunt ale mele';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Serverul are prea multe încărcări ale dumneavoastră în curs. Aplicația va încerca din nou mai târziu.';
+
+  @override
   String get errorPasswordChangeFailed => 'Parola nu a putut fi schimbată';
 
   @override

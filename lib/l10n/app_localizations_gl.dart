@@ -276,6 +276,10 @@ class AppLocalizationsGl extends AppLocalizations {
   String get legacyDataDecline => 'Non son miñas';
 
   @override
+  String get errorActivityUploadLimit =>
+      'O servidor ten demasiadas subidas túas en curso. A aplicación volverá tentalo máis tarde.';
+
+  @override
   String get errorPasswordChangeFailed => 'Non se puido cambiar o contrasinal';
 
   @override

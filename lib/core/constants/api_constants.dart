@@ -19,6 +19,10 @@ class ApiConstants {
   /// server returned as `device_id` at an earlier sign-in.
   static const String deviceIdHeader = 'X-Device-Id';
 
+  // Response headers of a `202` and of a job read.
+  static const String contentLocationHeader = 'content-location';
+  static const String retryAfterHeader = 'retry-after';
+
   // Request timeouts
   static const Duration defaultRequestTimeout = Duration(seconds: 30);
   static const Duration defaultUploadTimeout = Duration(seconds: 120);

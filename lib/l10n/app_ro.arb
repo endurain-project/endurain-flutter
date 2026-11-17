@@ -66,6 +66,7 @@
   "legacyDataMessage": "Pe acest dispozitiv există activități salvate pentru un cont de pe acest server de dinainte de actualizarea lui. Aparțin contului cu care tocmai v-ați conectat? Dacă da, cele care încă așteaptă vor fi încărcate în el.",
   "legacyDataConfirm": "Sunt ale mele",
   "legacyDataDecline": "Nu sunt ale mele",
+  "errorActivityUploadLimit": "Serverul are prea multe încărcări ale dumneavoastră în curs. Aplicația va încerca din nou mai târziu.",
   "errorPasswordChangeFailed": "Parola nu a putut fi schimbată",
   "errorPasswordChangeFailedWithDetails": "Parola nu a putut fi schimbată: {details}",
   "errorSignInStepUnsupported": "Serverul a cerut un pas de conectare pe care această versiune a aplicației nu îl acceptă. Actualizați aplicația și încercați din nou.",

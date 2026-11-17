@@ -66,6 +66,7 @@
   "legacyDataMessage": "Este dispositivo ten actividades gardadas para unha conta deste servidor de antes de que se actualizase. Pertencen á conta coa que acabas de iniciar sesión? Se é así, as que seguen pendentes subiranse a ela.",
   "legacyDataConfirm": "Son miñas",
   "legacyDataDecline": "Non son miñas",
+  "errorActivityUploadLimit": "O servidor ten demasiadas subidas túas en curso. A aplicación volverá tentalo máis tarde.",
   "errorPasswordChangeFailed": "Non se puido cambiar o contrasinal",
   "errorPasswordChangeFailedWithDetails": "Non se puido cambiar o contrasinal: {details}",
   "errorSignInStepUnsupported": "Este servidor pediu un paso de inicio de sesión que esta versión da aplicación non admite. Actualiza a aplicación e téntao de novo.",

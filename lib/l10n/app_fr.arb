@@ -66,6 +66,7 @@
   "legacyDataMessage": "Cet appareil contient des activités enregistrées pour un compte de ce serveur avant sa mise à jour. Appartiennent-elles au compte avec lequel vous venez de vous connecter ? Si oui, celles qui sont encore en attente y seront envoyées.",
   "legacyDataConfirm": "Elles sont à moi",
   "legacyDataDecline": "Pas à moi",
+  "errorActivityUploadLimit": "Le serveur a trop de vos envois en cours. L'application réessaiera plus tard.",
   "errorPasswordChangeFailed": "Impossible de changer le mot de passe",
   "errorPasswordChangeFailedWithDetails": "Impossible de changer le mot de passe : {details}",
   "errorSignInStepUnsupported": "Ce serveur demande une étape de connexion que cette version de l'application ne prend pas en charge. Mettez l'application à jour et réessayez.",

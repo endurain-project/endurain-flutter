@@ -276,6 +276,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get legacyDataDecline => 'Nicht meine';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Auf dem Server laufen zu viele deiner Uploads. Die App versucht es später erneut.';
+
+  @override
   String get errorPasswordChangeFailed =>
       'Das Passwort konnte nicht geändert werden';
 

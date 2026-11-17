@@ -278,6 +278,10 @@ class AppLocalizationsCa extends AppLocalizations {
   String get legacyDataDecline => 'No són meves';
 
   @override
+  String get errorActivityUploadLimit =>
+      'El servidor té massa pujades vostres en curs. L\'aplicació ho tornarà a provar més tard.';
+
+  @override
   String get errorPasswordChangeFailed =>
       'No s\'ha pogut canviar la contrasenya';
 

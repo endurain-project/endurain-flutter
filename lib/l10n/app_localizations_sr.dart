@@ -272,6 +272,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get legacyDataDecline => 'Нису моје';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Сервер има превише ваших отпремања у току. Апликација ће покушати поново касније.';
+
+  @override
   String get errorPasswordChangeFailed => 'Лозинка није могла да се промени';
 
   @override

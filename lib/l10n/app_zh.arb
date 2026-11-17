@@ -66,6 +66,7 @@
   "legacyDataMessage": "此设备上保存有服务器更新前属于此服务器上某个账户的活动。它们属于你刚刚登录的账户吗？如果是，仍在等待的活动将上传到该账户。",
   "legacyDataConfirm": "是我的",
   "legacyDataDecline": "不是我的",
+  "errorActivityUploadLimit": "服务器上你正在进行的上传过多。应用稍后会重试。",
   "errorPasswordChangeFailed": "无法更改密码",
   "errorPasswordChangeFailedWithDetails": "无法更改密码：{details}",
   "errorSignInStepUnsupported": "此服务器要求的登录步骤不受此版本应用支持。请更新应用后重试。",

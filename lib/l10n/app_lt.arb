@@ -66,6 +66,7 @@
   "legacyDataMessage": "Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos priklauso paskyrai, prie kurios ką tik prisijungėte? Jei taip, dar laukiančios bus įkeltos į ją.",
   "legacyDataConfirm": "Jos mano",
   "legacyDataDecline": "Ne mano",
+  "errorActivityUploadLimit": "Serveryje vykdoma per daug jūsų įkėlimų. Programa bandys dar kartą vėliau.",
   "errorPasswordChangeFailed": "Nepavyko pakeisti slaptažodžio",
   "errorPasswordChangeFailedWithDetails": "Nepavyko pakeisti slaptažodžio: {details}",
   "errorSignInStepUnsupported": "Serveris paprašė prisijungimo žingsnio, kurio ši programos versija nepalaiko. Atnaujinkite programą ir bandykite dar kartą.",

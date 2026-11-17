@@ -66,6 +66,7 @@
   "legacyDataMessage": "Na tym urządzeniu są aktywności zapisane dla konta na tym serwerze sprzed jego aktualizacji. Czy należą do konta, na które właśnie się zalogowano? Jeśli tak, te, które wciąż czekają, zostaną na nie przesłane.",
   "legacyDataConfirm": "Są moje",
   "legacyDataDecline": "Nie są moje",
+  "errorActivityUploadLimit": "Na serwerze trwa zbyt wiele Twoich przesyłań. Aplikacja spróbuje ponownie później.",
   "errorPasswordChangeFailed": "Nie udało się zmienić hasła",
   "errorPasswordChangeFailedWithDetails": "Nie udało się zmienić hasła: {details}",
   "errorSignInStepUnsupported": "Serwer zażądał kroku logowania, którego ta wersja aplikacji nie obsługuje. Zaktualizuj aplikację i spróbuj ponownie.",

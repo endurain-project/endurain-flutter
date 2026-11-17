@@ -242,6 +242,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get legacyDataDecline => '不是我的';
 
   @override
+  String get errorActivityUploadLimit => '服务器上你正在进行的上传过多。应用稍后会重试。';
+
+  @override
   String get errorPasswordChangeFailed => '无法更改密码';
 
   @override
@@ -1514,6 +1517,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get legacyDataDecline => '不是我的';
+
+  @override
+  String get errorActivityUploadLimit => '伺服器上你正在進行的上傳過多。應用程式稍後會重試。';
 
   @override
   String get errorPasswordChangeFailed => '無法變更密碼';

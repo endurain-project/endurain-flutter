@@ -567,6 +567,12 @@ abstract class AppLocalizations {
   /// **'Not mine'**
   String get legacyDataDecline;
 
+  /// Upload error when the server already has the maximum number of open uploads for the user; retried later - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The server has too many of your uploads in progress. The app will try again later.'**
+  String get errorActivityUploadLimit;
+
   /// Error when the new password chosen at sign-in is refused - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:

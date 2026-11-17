@@ -269,6 +269,10 @@ class AppLocalizationsNb extends AppLocalizations {
   String get legacyDataDecline => 'Ikke mine';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Serveren har for mange av opplastingene dine i gang. Appen prøver igjen senere.';
+
+  @override
   String get errorPasswordChangeFailed => 'Kunne ikke endre passordet';
 
   @override

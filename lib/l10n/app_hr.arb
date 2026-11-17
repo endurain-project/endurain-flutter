@@ -66,6 +66,7 @@
   "legacyDataMessage": "Na ovom uređaju postoje aktivnosti spremljene za račun na ovom poslužitelju od prije njegova ažuriranja. Pripadaju li računu s kojim ste se upravo prijavili? Ako da, one koje još čekaju bit će prenesene na njega.",
   "legacyDataConfirm": "Moje su",
   "legacyDataDecline": "Nisu moje",
+  "errorActivityUploadLimit": "Poslužitelj ima previše vaših prijenosa u tijeku. Aplikacija će pokušati ponovno kasnije.",
   "errorPasswordChangeFailed": "Lozinku nije moguće promijeniti",
   "errorPasswordChangeFailedWithDetails": "Lozinku nije moguće promijeniti: {details}",
   "errorSignInStepUnsupported": "Poslužitelj je zatražio korak prijave koji ova verzija aplikacije ne podržava. Ažurirajte aplikaciju i pokušajte ponovno.",

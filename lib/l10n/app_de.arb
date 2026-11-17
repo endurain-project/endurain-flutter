@@ -66,6 +66,7 @@
   "legacyDataMessage": "Auf diesem Gerät sind Aktivitäten für ein Konto auf diesem Server gespeichert, die vor dem Update des Servers aufgezeichnet wurden. Gehören sie zu dem Konto, mit dem du dich gerade angemeldet hast? Wenn ja, werden die noch wartenden dorthin hochgeladen.",
   "legacyDataConfirm": "Sie gehören mir",
   "legacyDataDecline": "Nicht meine",
+  "errorActivityUploadLimit": "Auf dem Server laufen zu viele deiner Uploads. Die App versucht es später erneut.",
   "errorPasswordChangeFailed": "Das Passwort konnte nicht geändert werden",
   "errorPasswordChangeFailedWithDetails": "Das Passwort konnte nicht geändert werden: {details}",
   "errorSignInStepUnsupported": "Der Server verlangt einen Anmeldeschritt, den diese App-Version nicht unterstützt. Aktualisiere die App und versuche es erneut.",

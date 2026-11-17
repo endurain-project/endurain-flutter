@@ -66,6 +66,7 @@
   "legacyDataMessage": "V tej napravi so dejavnosti, shranjene za račun na tem strežniku izpred njegove posodobitve. Ali pripadajo računu, s katerim ste se pravkar prijavili? Če da, bodo tiste, ki še čakajo, naložene vanj.",
   "legacyDataConfirm": "So moje",
   "legacyDataDecline": "Niso moje",
+  "errorActivityUploadLimit": "Na strežniku poteka preveč vaših nalaganj. Aplikacija bo poskusila znova pozneje.",
   "errorPasswordChangeFailed": "Gesla ni bilo mogoče spremeniti",
   "errorPasswordChangeFailedWithDetails": "Gesla ni bilo mogoče spremeniti: {details}",
   "errorSignInStepUnsupported": "Strežnik je zahteval korak prijave, ki ga ta različica aplikacije ne podpira. Posodobite aplikacijo in poskusite znova.",

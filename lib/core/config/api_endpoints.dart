@@ -52,7 +52,19 @@ class ApiEndpoints {
   // Activity endpoints
   String get activityUploadEndpoint => '$_base/activities/upload';
 
-  /// Status of a background ingestion job created by an upload (`202`).
-  String activityIngestionJobEndpoint(String jobId) =>
-      '$_base/activities/ingestion-jobs/${Uri.encodeComponent(jobId)}';
+  /// A background job, such as the one an upload starts (`202`).
+  String jobEndpoint(String jobId) =>
+      '$_base/jobs/${Uri.encodeComponent(jobId)}';
+
+  /// Whether [path] is a job path on this API (the `Content-Location` a `202`
+  /// names), so a server-supplied header can never steer the client's bearer
+  /// token to another route.
+  bool isJobPath(String path) {
+    final prefix = '$_base/jobs/';
+    if (!path.startsWith(prefix) || path.contains('?') || path.contains('#')) {
+      return false;
+    }
+    final id = path.substring(prefix.length);
+    return id.isNotEmpty && !id.contains('/') && !id.contains('..');
+  }
 }

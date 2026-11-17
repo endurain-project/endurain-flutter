@@ -274,6 +274,10 @@ class AppLocalizationsHr extends AppLocalizations {
   String get legacyDataDecline => 'Nisu moje';
 
   @override
+  String get errorActivityUploadLimit =>
+      'Poslužitelj ima previše vaših prijenosa u tijeku. Aplikacija će pokušati ponovno kasnije.';
+
+  @override
   String get errorPasswordChangeFailed => 'Lozinku nije moguće promijeniti';
 
   @override

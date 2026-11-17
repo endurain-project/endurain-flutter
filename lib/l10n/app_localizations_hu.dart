@@ -275,6 +275,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get legacyDataDecline => 'Nem az enyéim';
 
   @override
+  String get errorActivityUploadLimit =>
+      'A szerveren túl sok feltöltése van folyamatban. Az alkalmazás később újra megpróbálja.';
+
+  @override
   String get errorPasswordChangeFailed =>
       'A jelszót nem sikerült megváltoztatni';
 
