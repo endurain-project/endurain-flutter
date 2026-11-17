@@ -313,6 +313,22 @@ class AppLocalizationsDa extends AppLocalizations {
       'Denne server tillader ikke single sign-on fra denne app. Bed din administrator om at tilføje com.endurain.endurain:/auth/sso/callback til ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Din administrator kræver totrinsbekræftelse. Opsæt det i Endurains webapp, og prøv igen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktivitetsfilen er for stor til denne server';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Denne server accepterer ikke denne type aktivitetsfil';
+
+  @override
+  String get errorTooManyRequests =>
+      'For mange forsøg. Vent lidt, og prøv igen.';
+
+  @override
   String get passwordChangeTitle => 'Vælg en ny adgangskode';
 
   @override

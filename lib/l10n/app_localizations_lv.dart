@@ -313,6 +313,22 @@ class AppLocalizationsLv extends AppLocalizations {
       'Šis serveris neatļauj vienoto pierakstīšanos no šīs lietotnes. Lūdziet administratoram pievienot com.endurain.endurain:/auth/sso/callback sarakstam ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Jūsu administrators pieprasa divpakāpju verifikāciju. Iestatiet to Endurain tīmekļa lietotnē un mēģiniet vēlreiz.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktivitātes fails ir pārāk liels šim serverim';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Šis serveris nepieņem šāda veida aktivitātes failu';
+
+  @override
+  String get errorTooManyRequests =>
+      'Pārāk daudz mēģinājumu. Uzgaidiet brīdi un mēģiniet vēlreiz.';
+
+  @override
   String get passwordChangeTitle => 'Izvēlieties jaunu paroli';
 
   @override

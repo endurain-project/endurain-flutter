@@ -314,6 +314,22 @@ class AppLocalizationsEt extends AppLocalizations {
       'See server ei luba sellest rakendusest ühekordset sisselogimist. Paluge administraatoril lisada com.endurain.endurain:/auth/sso/callback loendisse ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Teie administraator nõuab kaheastmelist kinnitust. Seadistage see Enduraini veebirakenduses ja proovige uuesti.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Tegevuse fail on sellele serverile liiga suur';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'See server ei võta seda tüüpi tegevuse faili vastu';
+
+  @override
+  String get errorTooManyRequests =>
+      'Liiga palju katseid. Oodake hetk ja proovige uuesti.';
+
+  @override
   String get passwordChangeTitle => 'Valige uus parool';
 
   @override

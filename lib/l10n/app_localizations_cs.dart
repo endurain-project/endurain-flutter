@@ -315,6 +315,22 @@ class AppLocalizationsCs extends AppLocalizations {
       'Tento server nepovoluje jednotné přihlášení z této aplikace. Požádejte správce, aby přidal com.endurain.endurain:/auth/sso/callback do ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Váš správce vyžaduje dvoufázové ověření. Nastavte ho ve webové aplikaci Endurain a zkuste to znovu.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Soubor aktivity je pro tento server příliš velký';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Tento server tento druh souboru aktivity nepřijímá';
+
+  @override
+  String get errorTooManyRequests =>
+      'Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.';
+
+  @override
   String get passwordChangeTitle => 'Zvolte nové heslo';
 
   @override

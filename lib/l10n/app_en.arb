@@ -402,6 +402,22 @@
   "@errorSsoRedirectNotAllowed": {
     "description": "Error before SSO when the server does not list the app callback address; keep the address and variable name verbatim - Used in: error_localizations.dart"
   },
+  "errorActivityMfaEnrolmentRequired": "Your administrator requires two-step verification. Set it up in the Endurain web app, then try again.",
+  "@errorActivityMfaEnrolmentRequired": {
+    "description": "Upload error when the administrator requires two-step verification and the account has none - Used in: error_localizations.dart"
+  },
+  "errorActivityFileTooLarge": "The activity file is too large for this server",
+  "@errorActivityFileTooLarge": {
+    "description": "Upload error when the server refuses the file as too large - Used in: error_localizations.dart"
+  },
+  "errorActivityUnsupportedFileType": "This server doesn't accept this kind of activity file",
+  "@errorActivityUnsupportedFileType": {
+    "description": "Upload error when the server refuses the file type - Used in: error_localizations.dart"
+  },
+  "errorTooManyRequests": "Too many attempts. Wait a moment and try again.",
+  "@errorTooManyRequests": {
+    "description": "Error when the server rate-limits sign-in attempts - Used in: error_localizations.dart"
+  },
   "passwordChangeTitle": "Choose a new password",
   "@passwordChangeTitle": {
     "description": "Title of the sign-in step that asks for a new password - Used in: login_screen.dart"

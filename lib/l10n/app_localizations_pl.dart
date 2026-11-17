@@ -318,6 +318,22 @@ class AppLocalizationsPl extends AppLocalizations {
       'Ten serwer nie zezwala na logowanie jednokrotne z tej aplikacji. Poproś administratora o dodanie com.endurain.endurain:/auth/sso/callback do ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Twój administrator wymaga weryfikacji dwuetapowej. Skonfiguruj ją w aplikacji webowej Endurain i spróbuj ponownie.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Plik aktywności jest za duży dla tego serwera';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ten serwer nie przyjmuje tego rodzaju pliku aktywności';
+
+  @override
+  String get errorTooManyRequests =>
+      'Zbyt wiele prób. Poczekaj chwilę i spróbuj ponownie.';
+
+  @override
   String get passwordChangeTitle => 'Wybierz nowe hasło';
 
   @override

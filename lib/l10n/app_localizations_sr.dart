@@ -316,6 +316,22 @@ class AppLocalizationsSr extends AppLocalizations {
       'Овај сервер не дозвољава јединствену пријаву из ове апликације. Замолите администратора да дода com.endurain.endurain:/auth/sso/callback у ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ваш администратор захтева верификацију у два корака. Подесите је у веб апликацији Endurain и покушајте поново.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Датотека активности је превелика за овај сервер';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Овај сервер не прихвата ову врсту датотеке активности';
+
+  @override
+  String get errorTooManyRequests =>
+      'Превише покушаја. Сачекајте тренутак и покушајте поново.';
+
+  @override
   String get passwordChangeTitle => 'Изаберите нову лозинку';
 
   @override

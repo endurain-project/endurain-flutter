@@ -308,6 +308,22 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu sunucu bu uygulamadan çoklu oturum açmaya izin vermiyor. Yöneticinizden com.endurain.endurain:/auth/sso/callback adresini ALLOWED_REDIRECT_URIS listesine eklemesini isteyin.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Yöneticiniz iki adımlı doğrulama istiyor. Endurain web uygulamasında kurun ve yeniden deneyin.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Etkinlik dosyası bu sunucu için çok büyük';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Bu sunucu bu tür etkinlik dosyasını kabul etmiyor';
+
+  @override
+  String get errorTooManyRequests =>
+      'Çok fazla deneme. Biraz bekleyip yeniden deneyin.';
+
+  @override
   String get passwordChangeTitle => 'Yeni bir parola seçin';
 
   @override

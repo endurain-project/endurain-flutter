@@ -227,7 +227,8 @@ class ActivityUploadService {
     if (response.statusCode == 401) {
       throw const AppException(AppErrorCode.sessionExpired);
     }
-    if (response.statusCode == 409 && !await _isKeyConflict(response)) {
+    final problem = await _readProblem(response);
+    if (response.statusCode == 409 && !_isKeyConflict(problem)) {
       // The server's cap on open uploads (10 per user). Not worth an
       // immediate retry, but the next drain uploads it once a job finishes.
       throw const AppException(
@@ -238,13 +239,48 @@ class ActivityUploadService {
 
     throw AppException(
       AppErrorCode.activityUploadFailed,
-      details: 'HTTP ${response.statusCode}',
+      details: switch (response.statusCode) {
+        403 when problem.type.contains('mfa-enrolment-required') =>
+          mfaEnrolmentRequiredDetails,
+        413 => fileTooLargeDetails,
+        415 => unsupportedFileTypeDetails,
+        _ => 'HTTP ${response.statusCode}',
+      },
     );
   }
+
+  /// [AppException.details] of an upload the server refused because an
+  /// administrator requires two-step verification the account has not set up.
+  static const String mfaEnrolmentRequiredDetails = 'mfa_enrolment_required';
+
+  /// [AppException.details] of a file over the server's size limit (`413`).
+  static const String fileTooLargeDetails = 'file_too_large';
+
+  /// [AppException.details] of a file type the server does not accept (`415`).
+  static const String unsupportedFileTypeDetails = 'unsupported_file_type';
 
   /// [AppException.details] of an upload refused at the server's cap on open
   /// uploads; such a record stays eligible for the next automatic retry.
   static const String uploadLimitDetails = 'upload_limit';
+
+  /// Reads the RFC 9457 problem document of a refused upload; both fields are
+  /// empty when the body is missing or not a problem document.
+  static Future<({String type, String detail})> _readProblem(
+    http.StreamedResponse response,
+  ) async {
+    try {
+      final body = json.decode(await response.stream.bytesToString());
+      if (body is Map) {
+        return (
+          type: body['type'] is String ? body['type'] as String : '',
+          detail: body['detail'] is String ? body['detail'] as String : '',
+        );
+      }
+    } catch (_) {
+      // Not JSON: no problem to read.
+    }
+    return (type: '', detail: '');
+  }
 
   /// Whether a `409` refused the `Idempotency-Key` itself (the same key sent
   /// with a different file), which no retry can fix.
@@ -252,15 +288,8 @@ class ActivityUploadService {
   /// Both `409`s of the upload route carry `urn:endurain:error:conflict`; only
   /// the problem `detail` tells them apart, so any other `409` is read as the
   /// cap on open uploads.
-  static Future<bool> _isKeyConflict(http.StreamedResponse response) async {
-    try {
-      final body = json.decode(await response.stream.bytesToString());
-      final detail = body is Map ? body['detail'] : null;
-      return detail is String && detail.contains('Idempotency-Key');
-    } catch (_) {
-      return false;
-    }
-  }
+  static bool _isKeyConflict(({String type, String detail}) problem) =>
+      problem.detail.contains('Idempotency-Key');
 
   /// Reads the job a `202 Accepted` names: the path to poll (the
   /// `Content-Location` when it is a job path on this API, else built from the

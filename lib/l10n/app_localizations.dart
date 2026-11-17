@@ -633,6 +633,30 @@ abstract class AppLocalizations {
   /// **'This server does not allow single sign-on from this app. Ask your administrator to add com.endurain.endurain:/auth/sso/callback to ALLOWED_REDIRECT_URIS.'**
   String get errorSsoRedirectNotAllowed;
 
+  /// Upload error when the administrator requires two-step verification and the account has none - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your administrator requires two-step verification. Set it up in the Endurain web app, then try again.'**
+  String get errorActivityMfaEnrolmentRequired;
+
+  /// Upload error when the server refuses the file as too large - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The activity file is too large for this server'**
+  String get errorActivityFileTooLarge;
+
+  /// Upload error when the server refuses the file type - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server doesn\'t accept this kind of activity file'**
+  String get errorActivityUnsupportedFileType;
+
+  /// Error when the server rate-limits sign-in attempts - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a moment and try again.'**
+  String get errorTooManyRequests;
+
   /// Title of the sign-in step that asks for a new password - Used in: login_screen.dart
   ///
   /// In en, this message translates to:

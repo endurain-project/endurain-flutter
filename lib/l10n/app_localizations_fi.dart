@@ -317,6 +317,22 @@ class AppLocalizationsFi extends AppLocalizations {
       'Tämä palvelin ei salli kertakirjautumista tästä sovelluksesta. Pyydä ylläpitäjää lisäämään com.endurain.endurain:/auth/sso/callback asetukseen ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ylläpitäjäsi vaatii kaksivaiheisen vahvistuksen. Ota se käyttöön Endurainin verkkosovelluksessa ja yritä uudelleen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktiviteettitiedosto on liian suuri tälle palvelimelle';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Tämä palvelin ei hyväksy tämäntyyppistä aktiviteettitiedostoa';
+
+  @override
+  String get errorTooManyRequests =>
+      'Liian monta yritystä. Odota hetki ja yritä uudelleen.';
+
+  @override
   String get passwordChangeTitle => 'Valitse uusi salasana';
 
   @override

@@ -47,6 +47,9 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       // Set by the upload service for a `409` at the server's cap on open
       // uploads; the upload is retried later.
       'upload_limit' => l10n.errorActivityUploadLimit,
+      'mfa_enrolment_required' => l10n.errorActivityMfaEnrolmentRequired,
+      'file_too_large' => l10n.errorActivityFileTooLarge,
+      'unsupported_file_type' => l10n.errorActivityUnsupportedFileType,
       _ => l10n.errorActivityUploadFailedWithDetails(details),
     },
     AppErrorCode.activityUploadNotConfigured =>
@@ -74,6 +77,13 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorLoginError
           : l10n.errorLoginErrorWithDetails(details),
+    // A rate-limited sign-in step: the server's own text is in its language,
+    // not the user's, so say it in the app's.
+    AppErrorCode.loginFailed ||
+    AppErrorCode.mfaVerificationFailed ||
+    AppErrorCode.passwordChangeFailed ||
+    AppErrorCode.tokenExchangeFailed when error.statusCode == 429 =>
+      l10n.errorTooManyRequests,
     AppErrorCode.loginFailed =>
       details == null
           ? l10n.errorLoginFailed

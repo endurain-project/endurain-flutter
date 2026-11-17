@@ -320,6 +320,22 @@ class AppLocalizationsHu extends AppLocalizations {
       'Ez a szerver nem engedélyezi az egyszeri bejelentkezést ebből az alkalmazásból. Kérje meg a rendszergazdát, hogy adja hozzá a(z) com.endurain.endurain:/auth/sso/callback címet a(z) ALLOWED_REDIRECT_URIS listához.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'A rendszergazda kétlépéses ellenőrzést ír elő. Állítsa be az Endurain webalkalmazásában, majd próbálja újra.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'A tevékenységfájl túl nagy ehhez a szerverhez';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ez a szerver nem fogadja el az ilyen típusú tevékenységfájlt';
+
+  @override
+  String get errorTooManyRequests =>
+      'Túl sok próbálkozás. Várjon egy kicsit, majd próbálja újra.';
+
+  @override
   String get passwordChangeTitle => 'Válasszon új jelszót';
 
   @override

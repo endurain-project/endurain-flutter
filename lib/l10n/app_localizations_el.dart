@@ -323,6 +323,22 @@ class AppLocalizationsEl extends AppLocalizations {
       'Αυτός ο διακομιστής δεν επιτρέπει ενιαία σύνδεση από αυτή την εφαρμογή. Ζητήστε από τον διαχειριστή σας να προσθέσει το com.endurain.endurain:/auth/sso/callback στο ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ο διαχειριστής σας απαιτεί επαλήθευση δύο βημάτων. Ρυθμίστε την στην εφαρμογή ιστού του Endurain και δοκιμάστε ξανά.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Το αρχείο δραστηριότητας είναι πολύ μεγάλο για αυτόν τον διακομιστή';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Αυτός ο διακομιστής δεν δέχεται αυτό το είδος αρχείου δραστηριότητας';
+
+  @override
+  String get errorTooManyRequests =>
+      'Πάρα πολλές προσπάθειες. Περιμένετε λίγο και δοκιμάστε ξανά.';
+
+  @override
   String get passwordChangeTitle => 'Επιλέξτε νέο κωδικό πρόσβασης';
 
   @override

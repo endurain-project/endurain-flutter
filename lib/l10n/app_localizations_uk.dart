@@ -314,6 +314,22 @@ class AppLocalizationsUk extends AppLocalizations {
       'Цей сервер не дозволяє єдиний вхід із цього застосунку. Попросіть адміністратора додати com.endurain.endurain:/auth/sso/callback до ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ваш адміністратор вимагає двоетапної перевірки. Налаштуйте її у вебзастосунку Endurain і спробуйте знову.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Файл активності завеликий для цього сервера';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Цей сервер не приймає такий тип файлу активності';
+
+  @override
+  String get errorTooManyRequests =>
+      'Забагато спроб. Зачекайте трохи й спробуйте знову.';
+
+  @override
   String get passwordChangeTitle => 'Виберіть новий пароль';
 
   @override

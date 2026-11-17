@@ -307,6 +307,36 @@ void main() {
       );
     });
 
+    for (final (status, body, expected) in [
+      (
+        403,
+        {'type': 'urn:endurain:error:mfa-enrolment-required'},
+        ActivityUploadService.mfaEnrolmentRequiredDetails,
+      ),
+      (403, {'type': 'urn:endurain:error:permission-denied'}, 'HTTP 403'),
+      (413, <String, Object?>{}, ActivityUploadService.fileTooLargeDetails),
+      (
+        415,
+        <String, Object?>{},
+        ActivityUploadService.unsupportedFileTypeDetails,
+      ),
+    ]) {
+      test('a $status refusal reports $expected', () async {
+        final service = _service(
+          uploadStatus: status,
+          uploadBody: body,
+          jobs: const [],
+        );
+
+        await expectLater(
+          service.uploadGpx(_request()),
+          throwsA(
+            isA<AppException>().having((e) => e.details, 'details', expected),
+          ),
+        );
+      });
+    }
+
     test('a 409 for a reused Idempotency-Key is a plain failure', () async {
       final service = _service(
         uploadStatus: 409,

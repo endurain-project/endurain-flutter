@@ -323,6 +323,22 @@ class AppLocalizationsCa extends AppLocalizations {
       'Aquest servidor no permet l\'inici de sessió únic des d\'aquesta aplicació. Demaneu a l\'administrador que afegeixi com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'El vostre administrador exigeix la verificació en dos passos. Configureu-la a l\'aplicació web d\'Endurain i torneu-ho a provar.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'El fitxer de l\'activitat és massa gran per a aquest servidor';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Aquest servidor no accepta aquest tipus de fitxer d\'activitat';
+
+  @override
+  String get errorTooManyRequests =>
+      'Massa intents. Espereu un moment i torneu-ho a provar.';
+
+  @override
   String get passwordChangeTitle => 'Trieu una contrasenya nova';
 
   @override

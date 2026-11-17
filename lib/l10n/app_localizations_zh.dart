@@ -279,6 +279,19 @@ class AppLocalizationsZh extends AppLocalizations {
       '此服务器不允许从此应用进行单点登录。请让管理员将 com.endurain.endurain:/auth/sso/callback 添加到 ALLOWED_REDIRECT_URIS。';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      '你的管理员要求启用两步验证。请在 Endurain 网页应用中设置，然后重试。';
+
+  @override
+  String get errorActivityFileTooLarge => '活动文件对此服务器来说太大';
+
+  @override
+  String get errorActivityUnsupportedFileType => '此服务器不接受这种类型的活动文件';
+
+  @override
+  String get errorTooManyRequests => '尝试次数过多。请稍候再试。';
+
+  @override
   String get passwordChangeTitle => '选择新密码';
 
   @override
@@ -1554,6 +1567,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get errorSsoRedirectNotAllowed =>
       '此伺服器不允許從此應用程式進行單一登入。請管理員將 com.endurain.endurain:/auth/sso/callback 加入 ALLOWED_REDIRECT_URIS。';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      '你的管理員要求啟用兩步驟驗證。請在 Endurain 網頁應用程式中設定，然後重試。';
+
+  @override
+  String get errorActivityFileTooLarge => '活動檔案對此伺服器來說太大';
+
+  @override
+  String get errorActivityUnsupportedFileType => '此伺服器不接受這種類型的活動檔案';
+
+  @override
+  String get errorTooManyRequests => '嘗試次數過多。請稍候再試。';
 
   @override
   String get passwordChangeTitle => '選擇新密碼';

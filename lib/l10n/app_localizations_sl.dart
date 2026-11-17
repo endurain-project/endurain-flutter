@@ -313,6 +313,22 @@ class AppLocalizationsSl extends AppLocalizations {
       'Ta strežnik ne dovoljuje enotne prijave iz te aplikacije. Prosite skrbnika, naj doda com.endurain.endurain:/auth/sso/callback v ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Vaš skrbnik zahteva dvostopenjsko preverjanje. Nastavite ga v spletni aplikaciji Endurain in poskusite znova.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Datoteka dejavnosti je za ta strežnik prevelika';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ta strežnik te vrste datoteke dejavnosti ne sprejema';
+
+  @override
+  String get errorTooManyRequests =>
+      'Preveč poskusov. Počakajte trenutek in poskusite znova.';
+
+  @override
   String get passwordChangeTitle => 'Izberite novo geslo';
 
   @override

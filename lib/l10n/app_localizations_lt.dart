@@ -312,6 +312,22 @@ class AppLocalizationsLt extends AppLocalizations {
       'Šis serveris neleidžia vieningo prisijungimo iš šios programos. Paprašykite administratoriaus įtraukti com.endurain.endurain:/auth/sso/callback į ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Jūsų administratorius reikalauja dviejų žingsnių patvirtinimo. Nustatykite jį „Endurain“ žiniatinklio programoje ir bandykite dar kartą.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Veiklos failas per didelis šiam serveriui';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Šis serveris nepriima tokio tipo veiklos failo';
+
+  @override
+  String get errorTooManyRequests =>
+      'Per daug bandymų. Šiek tiek palaukite ir bandykite dar kartą.';
+
+  @override
   String get passwordChangeTitle => 'Pasirinkite naują slaptažodį';
 
   @override

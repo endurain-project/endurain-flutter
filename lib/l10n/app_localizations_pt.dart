@@ -320,6 +320,22 @@ class AppLocalizationsPt extends AppLocalizations {
       'Este servidor não permite o início de sessão único a partir desta aplicação. Peça ao seu administrador para adicionar com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'O seu administrador exige a verificação em dois passos. Configure-a na aplicação web do Endurain e tente novamente.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'O ficheiro da atividade é demasiado grande para este servidor';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Este servidor não aceita este tipo de ficheiro de atividade';
+
+  @override
+  String get errorTooManyRequests =>
+      'Demasiadas tentativas. Aguarde um momento e tente novamente.';
+
+  @override
   String get passwordChangeTitle => 'Escolha uma nova palavra-passe';
 
   @override

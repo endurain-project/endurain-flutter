@@ -321,6 +321,22 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dieser Server erlaubt keine Single-Sign-on-Anmeldung aus dieser App. Bitte deinen Administrator, com.endurain.endurain:/auth/sso/callback zu ALLOWED_REDIRECT_URIS hinzuzufügen.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Dein Administrator verlangt eine Zwei-Faktor-Bestätigung. Richte sie in der Endurain-Web-App ein und versuche es erneut.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Die Aktivitätsdatei ist für diesen Server zu groß';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Dieser Server akzeptiert diese Art von Aktivitätsdatei nicht';
+
+  @override
+  String get errorTooManyRequests =>
+      'Zu viele Versuche. Warte einen Moment und versuche es erneut.';
+
+  @override
   String get passwordChangeTitle => 'Neues Passwort wählen';
 
   @override

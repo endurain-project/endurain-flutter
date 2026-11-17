@@ -315,6 +315,22 @@ class AppLocalizationsBg extends AppLocalizations {
       'Този сървър не позволява единен вход от това приложение. Помолете администратора си да добави com.endurain.endurain:/auth/sso/callback към ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Администраторът ви изисква двустепенна проверка. Настройте я в уеб приложението на Endurain и опитайте отново.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Файлът с активността е твърде голям за този сървър';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Този сървър не приема този вид файл с активност';
+
+  @override
+  String get errorTooManyRequests =>
+      'Твърде много опити. Изчакайте малко и опитайте отново.';
+
+  @override
   String get passwordChangeTitle => 'Изберете нова парола';
 
   @override

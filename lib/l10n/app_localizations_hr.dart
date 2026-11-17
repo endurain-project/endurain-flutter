@@ -318,6 +318,22 @@ class AppLocalizationsHr extends AppLocalizations {
       'Ovaj poslužitelj ne dopušta jedinstvenu prijavu iz ove aplikacije. Zamolite administratora da doda com.endurain.endurain:/auth/sso/callback u ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Vaš administrator zahtijeva provjeru u dva koraka. Postavite je u web-aplikaciji Endurain i pokušajte ponovno.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Datoteka aktivnosti prevelika je za ovaj poslužitelj';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ovaj poslužitelj ne prihvaća ovu vrstu datoteke aktivnosti';
+
+  @override
+  String get errorTooManyRequests =>
+      'Previše pokušaja. Pričekajte trenutak i pokušajte ponovno.';
+
+  @override
   String get passwordChangeTitle => 'Odaberite novu lozinku';
 
   @override

@@ -313,6 +313,22 @@ class AppLocalizationsNb extends AppLocalizations {
       'Denne serveren tillater ikke enkel pålogging fra denne appen. Be administratoren din om å legge til com.endurain.endurain:/auth/sso/callback i ALLOWED_REDIRECT_URIS.';
 
   @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Administratoren din krever tostegsbekreftelse. Sett den opp i Endurains nettapp, og prøv igjen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktivitetsfilen er for stor for denne serveren';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Denne serveren godtar ikke denne typen aktivitetsfil';
+
+  @override
+  String get errorTooManyRequests =>
+      'For mange forsøk. Vent litt og prøv igjen.';
+
+  @override
   String get passwordChangeTitle => 'Velg et nytt passord';
 
   @override
