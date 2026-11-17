@@ -114,7 +114,7 @@ dependencies {
     // Used by the native activity recorder service for notification/permission
     // helpers. Kept as an explicit dependency since plugin transitive deps are
     // not exposed to the app compile classpath.
-    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.core:core-ktx:1.19.1")
 
     // JVM unit tests for the native activity-recorder models. `org.json` is
     // pulled in as a real implementation because the android.jar on the
@@ -122,7 +122,7 @@ dependencies {
     // Plugin orders it ahead of that stub jar for `testDebugUnitTest`.
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
-    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("org.robolectric:robolectric:4.18")
 }
 
 kotlin {
