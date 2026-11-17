@@ -1,22 +1,12 @@
 name: iOS
 
-# The macOS job is the slowest one, so pull requests only run it when they
-# touch the iOS project, plugin dependencies or this workflow. Pushes to main
-# always run it, since a merge can break the iOS project even when neither
-# side did on its own.
+# macOS runners are the most expensive, so this only runs on pushes to main.
+# To check a branch before merging, start it by hand from the Actions tab.
 on:
   push:
     branches:
       - main
-  pull_request:
-    paths:
-      - "ios/**"
-      - "lib/**"
-      - "integration_test/**"
-      - "pubspec.yaml"
-      - "pubspec.lock"
-      - ".github/workflows/ios.yml"
-      - ".github/actions/**"
+  workflow_dispatch:
 
 env:
   # Keep in sync with ci.yml.

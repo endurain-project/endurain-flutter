@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:endurain/app.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/widgets/app_bottom_nav.dart';
+import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive_text_form_field.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -76,12 +77,10 @@ void main() {
     // tapping it is unreliable. The password field's "done" action runs login.
     await tester.testTextInput.receiveAction(TextInputAction.done);
 
-    // The login screen is replaced by the signed-in shell.
-    await _pumpUntil(
-      tester,
-      find.byType(AdaptiveTextFormField),
-      present: false,
-    );
+    // The login screen is replaced by the signed-in shell. Wait for the screen
+    // itself, not its fields: the form is swapped for a spinner as soon as
+    // login starts, long before the session has been stored.
+    await _pumpUntil(tester, find.byType(LoginScreen), present: false);
     expect(await services.auth.hasStoredSession(), isTrue);
   });
 }

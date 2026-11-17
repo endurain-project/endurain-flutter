@@ -1,11 +1,11 @@
-import 'dart:async';
-
-import 'package:endurain/core/diagnostics/diagnostics_service.dart';
-import 'package:endurain/core/location/location_settings_builder.dart';
 // Recording type relationships (controller -> service -> recorder):
 // the durable session model survives app restarts; the ephemeral state model
 // drives the live UI.
 
+import 'dart:async';
+
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/utils/id_generation.dart';
