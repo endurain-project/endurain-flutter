@@ -18,7 +18,7 @@ on:
 
 env:
   # Keep in sync with ci.yml.
-  FLUTTER_VERSION: 3.47.3
+  FLUTTER_VERSION: 3.50.0
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
