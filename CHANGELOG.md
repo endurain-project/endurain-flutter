@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.10.3+20] - 2026-10-22
+## [v0.11.0+20] - 2026-11-17
 
 ### Security
 
@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Remembered heart rate sensors now reconnect reliably on Android. Native Bluetooth addresses are normalized so they match the stored device IDs, and cold starts and returning to the foreground retry the reconnect instead of trying once (#38).
 - The configured server URL now survives a secure storage failure or reset thanks to a non-secret mirror. Falling back to the mirror is recorded in diagnostics.
 - A missing multi-factor session now shows its own error instead of an unrelated one.
 
@@ -23,9 +24,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Internal restructuring: the app wiring and navigation moved to `lib/app/`, the core services were split into `auth`, `network`, `diagnostics` and `location` packages, and the recording service and map screen were broken into smaller focused components. There are no user-visible changes.
 - Stricter lint rules (`avoid_dynamic_calls`, `directives_ordering`, `unnecessary_lambdas`) and sorted imports.
 - Updated localized error and health access strings.
+- Updated dependencies and raised the minimum to Flutter 3.50.0 (Dart 3.14.0); the CI builder image and workflows use it.
 
 ### Added
 
+- Live heart rate from HealthKit during iOS recordings (iOS 26+). Sources such as AirPods Pro 3 now fill heart rate on recorded points; readings from a connected Bluetooth sensor still take priority (#23).
 - On-device login flow smoke tests (`integration_test/`), run in CI on an Android emulator and an iOS simulator, plus Dependabot configuration.
 - Unit tests for the recording clock, permission gate and sensor session.
 
