@@ -6,10 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [v0.11.0+20] - 2026-11-17
 
+This release requires Endurain server v0.21 or newer, and older app versions cannot sign in to a v0.21 server. If your server sets `ALLOWED_REDIRECT_URIS`, it must include `com.endurain.endurain:/auth/sso/callback` for single sign-on to work.
+
 ### Security
 
 - Crash reports sent to Sentry now drop request data, user information, extras and breadcrumbs, and redact event messages and tags, keeping only device, OS, app and runtime context.
-- Error text from an SSO sign-in callback is no longer shown to the user, since any app can trigger that deep link. A generic localized error is shown instead.
+- Error text from an SSO sign-in callback is no longer shown to the user, since any app can trigger that deep link. A generic localized error is shown instead, or a specific one when the link carries one of the server's documented failure codes.
+- The refresh token is sent in the request body instead of the `Authorization` header, as Endurain v0.21 requires.
 - Secure storage is configured with explicit hardened options: Keychain items are available after first unlock and stay on the device, and a transient Android Keystore failure no longer silently erases the stored server and session.
 
 ### Fixed
@@ -17,17 +20,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Remembered heart rate sensors now reconnect reliably on Android. Native Bluetooth addresses are normalized so they match the stored device IDs, and cold starts and returning to the foreground retry the reconnect instead of trying once (#38).
 - The configured server URL now survives a secure storage failure or reset thanks to a non-secret mirror. Falling back to the mirror is recorded in diagnostics.
 - A missing multi-factor session now shows its own error instead of an unrelated one.
+- Activity uploads no longer poll a finished job until they give up and retry, and the app now waits the interval the server asks for between checks.
+- Failed uploads and sign-in steps now say why: the file is too large or of an unsupported type, an administrator requires two-step verification the account has not set up, or there were too many sign-in attempts.
 
 ### Changed
 
+- Compatibility with Endurain server v0.21: sign-in follows the server's steps (including a second factor after single sign-on), uses the new token exchange route and PKCE form fields, accepts UUID account and provider ids, reads the paged provider list and the renamed public settings route, loads uploaded provider icons, and stores and sends the device id so a sign-in from this app is not reported as a new device each time. Uploads follow the new `/jobs/{id}` API, and an upload refused because the server already has 10 in progress is retried later.
+- The single sign-on callback is now `com.endurain.endurain:/auth/sso/callback` on Android and iOS, and the app checks the server allows it before opening the browser. Links to the old `endurain://` address no longer open the app.
 - Android release builds no longer need the temporary ProGuard rules. `shared_preferences_android` is now required at 2.5.2 or newer, which ships its own consumer rules.
 - Internal restructuring: the app wiring and navigation moved to `lib/app/`, the core services were split into `auth`, `network`, `diagnostics` and `location` packages, and the recording service and map screen were broken into smaller focused components. There are no user-visible changes.
 - Stricter lint rules (`avoid_dynamic_calls`, `directives_ordering`, `unnecessary_lambdas`) and sorted imports.
 - Updated localized error and health access strings.
-- Updated dependencies and raised the minimum to Flutter 3.50.0 (Dart 3.14.0); the CI builder image and workflows use it.
+- Updated dependencies and raised the minimum to Flutter 3.50.0 (Dart 3.14.0); the CI builder image and workflows use it. Android builds now use Gradle 9.9.1, Android Gradle Plugin 9.5.1 and Kotlin 2.4.21, and the Flutter build image uses Java 25.
 
 ### Added
 
+- Activities and health imports saved before the server moved to Endurain v0.21 follow their account to its new id. They are moved silently when the username matches, and the user is asked when it cannot be matched, so queued uploads still go out and no health workout is imported twice.
+- A "choose a new password" step at sign-in, for accounts whose password an administrator set.
 - Live heart rate from HealthKit during iOS recordings (iOS 26+). Sources such as AirPods Pro 3 now fill heart rate on recorded points; readings from a connected Bluetooth sensor still take priority (#23).
 - On-device login flow smoke tests (`integration_test/`), run in CI on an Android emulator and an iOS simulator, plus Dependabot configuration.
 - Unit tests for the recording clock, permission gate and sensor session.
