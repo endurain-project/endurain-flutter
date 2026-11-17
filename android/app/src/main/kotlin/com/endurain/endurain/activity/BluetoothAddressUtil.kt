@@ -9,13 +9,14 @@ internal object BluetoothAddressUtil {
      * Android requires uppercase hex digits in direct Bluetooth addresses, so the
      * address is trimmed and uppercased before being handed to
      * BluetoothAdapter.getRemoteDevice(). We intentionally do not strip invalid
-     * characters here: malformed addresses should fail early so the native
-     * recorder can avoid connecting with an unusable value.
+     * characters here: malformed addresses should fail early. Null or blank input yields null so
+     * the caller can treat the sensor as absent.
      */
     fun normalize(raw: String?): String? {
-        if (raw == null) {
+        val trimmed = raw?.trim()
+        if (trimmed.isNullOrEmpty()) {
             return null
         }
-        return raw.trim().uppercase(Locale.US)
+        return trimmed.uppercase(Locale.US)
     }
 }

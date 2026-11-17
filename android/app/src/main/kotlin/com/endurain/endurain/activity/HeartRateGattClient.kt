@@ -118,12 +118,7 @@ class HeartRateGattClient(private val context: Context) {
             if (!adapter.isEnabled) {
                 return
             }
-            val normalizedAddress = BluetoothAddressUtil.normalize(deviceId)
-            if (normalizedAddress == null) {
-                gatt = null
-                return
-            }
-            val device = adapter.getRemoteDevice(normalizedAddress)
+            val device = adapter.getRemoteDevice(deviceId)
             gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 device.connectGatt(context, true, callback, BluetoothDevice.TRANSPORT_LE)
             } else {

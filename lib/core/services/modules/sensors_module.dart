@@ -49,13 +49,21 @@ class SensorsModule {
   SensorService get power => services[SensorMeasurementKind.power]!;
   SensorService get cadence => services[SensorMeasurementKind.cadence]!;
 
-  /// Best-effort reconnect of every remembered sensor on cold launch or
-  /// foreground resume. Unlike the one-shot [SensorService.tryReconnectRemembered],
-  /// this path retries a few times so the platform has time to expose the
-  /// previously-paired sensor after the app re-enters the foreground.
-  Future<void> reconnectRemembered() async {
+  /// Best-effort reconnect of every remembered sensor. A no-op per kind when
+  /// nothing is remembered, one is already connected, Bluetooth is off, or the
+  /// `canAutoReconnect` gate currently forbids it.
+  ///
+  /// By default this is a one-shot attempt that never prompts. Pass
+  /// [withRetries] on cold launch to use [SensorService.autoConnectRemembered]
+  /// instead, which activates the Bluetooth stack (requesting permission when
+  /// needed) and retries a few times.
+  Future<void> reconnectRemembered({bool withRetries = false}) async {
     await Future.wait([
-      for (final sensor in services.values) sensor.autoConnectRemembered(),
+      for (final sensor in services.values)
+        if (withRetries)
+          sensor.autoConnectRemembered()
+        else
+          sensor.tryReconnectRemembered(),
     ]);
   }
 
@@ -65,21 +73,11 @@ class SensorsModule {
   /// device id to record from, or `null` when no sensor of that kind is paired.
   Future<String?> prepareNativeSource(SensorMeasurementKind kind) async {
     final sensor = services[kind]!;
-    final connectedDevicePresent = sensor.connectedDevice != null;
-    debugPrint(
-      'SensorsModule.prepareNativeSource: kind=$kind connected=${connectedDevicePresent ? 'yes' : 'no'}',
-    );
     final device = sensor.connectedDevice ?? await sensor.rememberedDevice();
     if (device == null) {
-      debugPrint(
-        'SensorsModule.prepareNativeSource: kind=$kind returned null because no sensor was connected or remembered.',
-      );
       return null;
     }
     await sensor.disconnect();
-    debugPrint(
-      'SensorsModule.prepareNativeSource: kind=$kind handoff complete; deviceIdPresent=${device.id.isNotEmpty}',
-    );
     return device.id;
   }
 

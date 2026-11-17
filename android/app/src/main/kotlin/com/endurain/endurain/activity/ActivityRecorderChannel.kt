@@ -82,9 +82,12 @@ class ActivityRecorderChannel(context: Context) :
         val startedAt = call.argument<String>("startedAt") ?: IsoTime.nowUtc()
         val connectionOrigin = call.argument<String>("connectionOrigin")
         val connectionProfileId = call.argument<String>("connectionProfileId")
-        val heartRateDeviceId = call.argument<String>("hrDeviceId")
-        val powerDeviceId = call.argument<String>("powerDeviceId")
-        val cadenceDeviceId = call.argument<String>("cadenceDeviceId")
+        val heartRateDeviceId =
+            BluetoothAddressUtil.normalize(call.argument<String>("hrDeviceId"))
+        val powerDeviceId =
+            BluetoothAddressUtil.normalize(call.argument<String>("powerDeviceId"))
+        val cadenceDeviceId =
+            BluetoothAddressUtil.normalize(call.argument<String>("cadenceDeviceId"))
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
         // `Boolean`/`Int` arguments arrive as their boxed Kotlin types from the

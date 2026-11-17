@@ -23,4 +23,10 @@ class BluetoothAddressUtilTest {
     fun normalize_returnsNullForNullInput() {
         assertNull(BluetoothAddressUtil.normalize(null))
     }
+
+    @Test
+    fun normalize_returnsNullForBlankInput() {
+        assertNull(BluetoothAddressUtil.normalize(""))
+        assertNull(BluetoothAddressUtil.normalize("  \n"))
+    }
 }
