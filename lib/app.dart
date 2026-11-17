@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
-import 'package:go_router/go_router.dart';
-import 'package:endurain/core/navigation/app_router.dart';
-import 'package:endurain/core/services/app_scope.dart';
-import 'package:endurain/core/services/app_services.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/app/app_services.dart';
+import 'package:endurain/app/navigation/app_router.dart';
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 class App extends StatefulWidget {
   const App({

@@ -1,6 +1,6 @@
+import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/localization/app_locales.dart';
-import 'package:endurain/core/services/app_scope.dart';
-import 'package:endurain/core/services/app_services.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 

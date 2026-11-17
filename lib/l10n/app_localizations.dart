@@ -399,6 +399,18 @@ abstract class AppLocalizations {
   /// **'No session ID was received from the server'**
   String get errorNoSessionIdReceived;
 
+  /// Error when the MFA step has no pending login username - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in session was lost. Please sign in again.'**
+  String get errorMfaSessionMissing;
+
+  /// Generic error when the SSO deep-link callback reports a failure - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Single sign-on could not be completed. Please try again.'**
+  String get errorSsoCallbackFailed;
+
   /// Error when an authenticated request has no token - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
@@ -1670,12 +1682,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Heart rate'**
   String get healthAccessHeartRate;
-
-  /// Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Workout distance, calories, and steps'**
-  String get healthAccessWorkoutSummary;
 
   /// Android health data permission status - Used in: health_access_screen.dart
   ///

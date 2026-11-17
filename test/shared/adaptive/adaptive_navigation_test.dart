@@ -1,8 +1,8 @@
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/shared/adaptive/adaptive_navigation.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   tearDown(PlatformUtils.debugResetOverrides);

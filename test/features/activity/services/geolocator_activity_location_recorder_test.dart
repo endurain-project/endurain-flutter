@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
@@ -7,9 +10,6 @@ import 'package:endurain/features/activity/repositories/active_activity_store.da
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
-import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/recording_location_platform_adapter.dart';

@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-bekræftelse mislykkedes",
   "errorMfaVerificationFailedWithDetails": "MFA-bekræftelse mislykkedes: {details}",
   "errorNoSessionIdReceived": "Der blev ikke modtaget noget sessions-id fra serveren",
+  "errorMfaSessionMissing": "Din login-session gik tabt. Log ind igen.",
+  "errorSsoCallbackFailed": "Single sign-on kunne ikke gennemføres. Prøv igen.",
   "errorNotAuthenticated": "Du er ikke logget ind",
   "errorPkceVerifierMissingRestartLogin": "Loginverifikatoren blev ikke fundet. Start login forfra.",
   "errorServerUrlNotConfigured": "Server-URL er ikke konfigureret",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Træning",
   "healthAccessWorkoutRoutes": "Træningsruter",
   "healthAccessHeartRate": "Puls",
-  "healthAccessWorkoutSummary": "Træningsdistance, kalorier og skridt",
   "healthAccessAllowed": "Tilladt",
   "healthAccessNeedsAttention": "Har brug for opmærksomhed",
   "healthAccessManagedBySystem": "Administreret i systemindstillinger",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serveren forsøgte at omdirigere til en usikker forbindelse. Anmodningen blev blokeret for at beskytte dine loginoplysninger.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serveren omdirigerede for mange gange. Tjek serveradressen.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

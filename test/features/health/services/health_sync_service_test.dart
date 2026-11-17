@@ -1,14 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
+import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
@@ -24,10 +20,13 @@ import 'package:endurain/features/health/repositories/health_import_repository.d
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
 import 'package:endurain/features/health/services/health_sync_service.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../../../helpers/fake_preferences_store.dart';
 import '../fakes/fake_health_import_store.dart';
 import '../fakes/fake_health_platform_adapter.dart';
-import '../../../helpers/fake_preferences_store.dart';
 
 // Fake ActivityUploadQueue that records drain() calls.
 class _FakeUploadQueue extends ActivityUploadQueue {

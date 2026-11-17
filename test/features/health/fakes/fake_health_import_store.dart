@@ -1,5 +1,5 @@
-import 'package:endurain/features/health/repositories/health_import_store.dart';
 import 'package:endurain/features/health/models/health_imported_workout.dart';
+import 'package:endurain/features/health/repositories/health_import_store.dart';
 
 /// In-memory [HealthImportStore] for tests.
 class FakeHealthImportStore implements HealthImportStore {

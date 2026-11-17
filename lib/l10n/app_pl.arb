@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Weryfikacja MFA nie powiodła się",
   "errorMfaVerificationFailedWithDetails": "Weryfikacja MFA nie powiodła się: {details}",
   "errorNoSessionIdReceived": "Serwer nie zwrócił identyfikatora sesji",
+  "errorMfaSessionMissing": "Twoja sesja logowania została utracona. Zaloguj się ponownie.",
+  "errorSsoCallbackFailed": "Nie udało się ukończyć logowania jednokrotnego (SSO). Spróbuj ponownie.",
   "errorNotAuthenticated": "Nie jesteś zalogowany",
   "errorPkceVerifierMissingRestartLogin": "Nie znaleziono weryfikatora logowania. Rozpocznij logowanie ponownie.",
   "errorServerUrlNotConfigured": "Adres URL serwera nie jest skonfigurowany",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Treningi",
   "healthAccessWorkoutRoutes": "Trasy treningowe",
   "healthAccessHeartRate": "Tętno",
-  "healthAccessWorkoutSummary": "Dystans, kalorie i kroki treningu",
   "healthAccessAllowed": "Dozwolone",
   "healthAccessNeedsAttention": "Potrzebuje uwagi",
   "healthAccessManagedBySystem": "Zarządzane w ustawieniach systemu",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serwer próbował przekierować na niezabezpieczone połączenie. Żądanie zostało zablokowane, aby chronić Twoje dane logowania.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serwer przekierowywał zbyt wiele razy. Sprawdź adres serwera.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

@@ -1,7 +1,7 @@
 import 'dart:ui';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:endurain/core/services/app_services.dart';
+import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';

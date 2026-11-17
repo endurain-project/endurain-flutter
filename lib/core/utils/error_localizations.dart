@@ -75,6 +75,7 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorLoginFailed
           : l10n.errorLoginFailedWithDetails(details),
+    AppErrorCode.mfaSessionMissing => l10n.errorMfaSessionMissing,
     AppErrorCode.mfaVerificationError =>
       details == null
           ? l10n.errorMfaVerificationError
@@ -94,6 +95,7 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
     AppErrorCode.secureStorageWriteFailed => l10n.errorSecureStorageWriteFailed,
     AppErrorCode.serverUrlNotConfigured => l10n.errorServerUrlNotConfigured,
     AppErrorCode.sessionExpired => l10n.errorSessionExpired,
+    AppErrorCode.ssoCallbackFailed => l10n.errorSsoCallbackFailed,
     AppErrorCode.ssoTokenExchangeError =>
       details == null
           ? l10n.errorSsoTokenExchangeError

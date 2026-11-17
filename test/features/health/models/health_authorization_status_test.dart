@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('HealthAuthorizationStatus', () {

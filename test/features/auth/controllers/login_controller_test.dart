@@ -1,22 +1,22 @@
 import 'dart:async';
 
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/auth_session_store.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
+import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/constants/map_constants.dart';
+import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/identity_provider.dart' as core;
+import 'package:endurain/features/auth/controllers/login_controller.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/config/api_endpoints.dart';
-import 'package:endurain/core/constants/map_constants.dart';
-import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/models/identity_provider.dart' as core;
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/auth_session_store.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
-import 'package:endurain/features/auth/services/auth_coordinator.dart';
-import 'package:endurain/features/auth/controllers/login_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 import '../../../helpers/fake_app_links_service.dart';
 import '../../../helpers/fake_preferences_store.dart';
@@ -159,7 +159,14 @@ void main() {
       );
       await Future<void>.delayed(Duration.zero);
 
-      expect(errors.single, 'access_denied');
+      expect(
+        errors.single,
+        isA<AppException>().having(
+          (exception) => exception.code,
+          'code',
+          AppErrorCode.ssoCallbackFailed,
+        ),
+      );
       expect(controller.isLoading, isFalse);
       expect(await storage.getAccessToken(), isNull);
       controller.dispose();
@@ -472,7 +479,7 @@ void main() {
         isA<AppException>().having(
           (exception) => exception.code,
           'code',
-          AppErrorCode.noSessionIdReceived,
+          AppErrorCode.mfaSessionMissing,
         ),
       );
       controller.dispose();

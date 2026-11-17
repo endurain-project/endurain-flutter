@@ -2,8 +2,8 @@ import 'dart:collection';
 
 import 'package:endurain/core/utils/copy_with.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
-import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
+import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 

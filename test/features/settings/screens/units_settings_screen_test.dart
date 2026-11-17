@@ -6,8 +6,8 @@ import 'package:endurain/features/settings/repositories/measurement_settings_rep
 import 'package:endurain/features/settings/screens/units_settings_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
 

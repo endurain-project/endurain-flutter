@@ -1,16 +1,16 @@
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
-import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/widget_test_app.dart';

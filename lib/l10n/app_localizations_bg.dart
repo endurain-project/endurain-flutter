@@ -167,6 +167,14 @@ class AppLocalizationsBg extends AppLocalizations {
       'Не е получен идентификатор на сесия от сървъра';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Сесията ви за вход беше загубена. Моля, влезте отново.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Единният вход (SSO) не можа да бъде завършен. Моля, опитайте отново.';
+
+  @override
   String get errorNotAuthenticated => 'Не сте влезли';
 
   @override
@@ -878,10 +886,6 @@ class AppLocalizationsBg extends AppLocalizations {
   String get healthAccessHeartRate => 'Сърдечна честота';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Разстояние, калории и стъпки от тренировки';
-
-  @override
   String get healthAccessAllowed => 'Разрешено';
 
   @override
@@ -1214,11 +1218,11 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Сървърът се опита да пренасочи към незащитена връзка. Заявката беше блокирана, за да защити данните ви за вход.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Сървърът пренасочи твърде много пъти. Проверете адреса на сървъра.';
 
   @override
   String get audioAnnouncementsTitle => 'Аудио известия';

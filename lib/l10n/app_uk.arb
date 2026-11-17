@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Помилка перевірки MFA",
   "errorMfaVerificationFailedWithDetails": "Помилка перевірки MFA: {details}",
   "errorNoSessionIdReceived": "Сервер не повернув ідентифікатор сеансу",
+  "errorMfaSessionMissing": "Сеанс входу втрачено. Увійдіть знову.",
+  "errorSsoCallbackFailed": "Не вдалося завершити єдиний вхід (SSO). Спробуйте ще раз.",
   "errorNotAuthenticated": "Ви не ввійшли",
   "errorPkceVerifierMissingRestartLogin": "Верифікатор входу не знайдено. Почніть вхід знову.",
   "errorServerUrlNotConfigured": "URL сервера не налаштовано",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Тренування",
   "healthAccessWorkoutRoutes": "Маршрути тренувань",
   "healthAccessHeartRate": "ЧСС",
-  "healthAccessWorkoutSummary": "Відстань, калорії та кроки тренування",
   "healthAccessAllowed": "Дозволено",
   "healthAccessNeedsAttention": "Потребує уваги",
   "healthAccessManagedBySystem": "Керується в налаштуваннях системи",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Сервер спробував перенаправити на незахищене з'єднання. Запит заблоковано для захисту ваших облікових даних.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Сервер надто багато разів перенаправляв. Перевірте адресу сервера.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

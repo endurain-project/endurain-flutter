@@ -1,6 +1,6 @@
-import 'package:endurain/core/services/location_service.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
+import 'package:geolocator/geolocator.dart';
 
 class DeviceAccessController extends SafeNotifier {
   DeviceAccessController({required LocationService locationService})

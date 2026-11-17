@@ -1,6 +1,6 @@
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
+import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/sqlite_migration_runner.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';

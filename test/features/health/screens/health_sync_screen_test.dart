@@ -1,4 +1,5 @@
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -15,12 +16,11 @@ import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
-import '../fakes/fake_health_sync_service.dart';
 import '../../../helpers/widget_test_app.dart';
+import '../fakes/fake_health_sync_service.dart';
 
 void main() {
   final start = DateTime.utc(2025, 6, 1, 9, 0);
@@ -109,9 +109,7 @@ void main() {
       AppLocalizations.of(tester.element(find.byType(HealthSyncScreen)))!;
 
   group('HealthSyncScreen', () {
-    tearDown(() {
-      PlatformUtils.debugResetOverrides();
-    });
+    tearDown(PlatformUtils.debugResetOverrides);
 
     testWidgets('shows unsupported message when SDK is unsupported', (
       tester,

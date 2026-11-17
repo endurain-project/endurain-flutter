@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA 验证失败",
   "errorMfaVerificationFailedWithDetails": "MFA 验证失败：{details}",
   "errorNoSessionIdReceived": "未从服务器收到会话 ID",
+  "errorMfaSessionMissing": "您的登录会话已丢失。请重新登录。",
+  "errorSsoCallbackFailed": "无法完成单点登录。请重试。",
   "errorNotAuthenticated": "您尚未登录",
   "errorPkceVerifierMissingRestartLogin": "未找到登录验证器。请重新开始登录。",
   "errorServerUrlNotConfigured": "未配置服务器网址",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "锻炼",
   "healthAccessWorkoutRoutes": "锻炼路线",
   "healthAccessHeartRate": "心率",
-  "healthAccessWorkoutSummary": "锻炼距离、热量和步数",
   "healthAccessAllowed": "允许",
   "healthAccessNeedsAttention": "需要注意",
   "healthAccessManagedBySystem": "在系统设置中管理",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "服务器试图重定向到不安全的连接。为保护您的凭据，该请求已被拦截。",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "服务器重定向次数过多。请检查服务器地址。",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

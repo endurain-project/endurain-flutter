@@ -1,4 +1,4 @@
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/utils/scoped_storage_key.dart';
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

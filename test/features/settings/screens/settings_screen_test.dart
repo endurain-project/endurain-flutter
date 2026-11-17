@@ -1,18 +1,18 @@
-import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
-import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
+import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
 import 'package:endurain/features/settings/screens/settings_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../helpers/fake_preferences_store.dart';

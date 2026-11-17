@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA pārbaude neizdevās",
   "errorMfaVerificationFailedWithDetails": "MFA pārbaude neizdevās: {details}",
   "errorNoSessionIdReceived": "No servera netika saņemts sesijas ID",
+  "errorMfaSessionMissing": "Jūsu pieteikšanās sesija tika zaudēta. Lūdzu, piesakieties vēlreiz.",
+  "errorSsoCallbackFailed": "Vienotās pierakstīšanās (SSO) process netika pabeigts. Lūdzu, mēģiniet vēlreiz.",
   "errorNotAuthenticated": "Jūs neesat pieteicies",
   "errorPkceVerifierMissingRestartLogin": "Pieteikšanās verificētājs netika atrasts. Sāciet pieteikšanos no jauna.",
   "errorServerUrlNotConfigured": "Servera URL nav konfigurēts",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Treniņi",
   "healthAccessWorkoutRoutes": "Treniņu maršruti",
   "healthAccessHeartRate": "Sirdsdarbība",
-  "healthAccessWorkoutSummary": "Treniņa distance, kalorijas un soļi",
   "healthAccessAllowed": "Atļauts",
   "healthAccessNeedsAttention": "Nepieciešama uzmanība",
   "healthAccessManagedBySystem": "Pārvalda sistēmas iestatījumos",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serveris mēģināja novirzīt uz nedrošu savienojumu. Pieprasījums tika bloķēts, lai aizsargātu jūsu akreditācijas datus.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serveris novirzīja pārāk daudz reižu. Pārbaudiet servera adresi.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

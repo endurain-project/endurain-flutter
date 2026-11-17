@@ -170,6 +170,14 @@ class AppLocalizationsSv extends AppLocalizations {
       'Inget sessions-ID togs emot från servern';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Din inloggningssession gick förlorad. Logga in igen.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Enkel inloggning (SSO) kunde inte slutföras. Försök igen.';
+
+  @override
   String get errorNotAuthenticated => 'Du är inte inloggad';
 
   @override
@@ -877,9 +885,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get healthAccessHeartRate => 'Puls';
 
   @override
-  String get healthAccessWorkoutSummary => 'Träningsdistans, kalorier och steg';
-
-  @override
   String get healthAccessAllowed => 'Tillåtet';
 
   @override
@@ -1205,11 +1210,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Servern försökte omdirigera till en osäker anslutning. Begäran blockerades för att skydda dina inloggningsuppgifter.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Servern omdirigerade för många gånger. Kontrollera serveradressen.';
 
   @override
   String get audioAnnouncementsTitle => 'Röstmeddelanden';

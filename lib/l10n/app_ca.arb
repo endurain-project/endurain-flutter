@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Ha fallat la verificació MFA",
   "errorMfaVerificationFailedWithDetails": "Ha fallat la verificació MFA: {details}",
   "errorNoSessionIdReceived": "El servidor no ha retornat cap identificador de sessió",
+  "errorMfaSessionMissing": "S'ha perdut la sessió d'inici de sessió. Torna a iniciar la sessió.",
+  "errorSsoCallbackFailed": "No s'ha pogut completar l'inici de sessió únic. Torna-ho a provar.",
   "errorNotAuthenticated": "No heu iniciat la sessió",
   "errorPkceVerifierMissingRestartLogin": "No s'ha trobat el verificador d'inici de sessió. Torneu a començar l'inici de sessió.",
   "errorServerUrlNotConfigured": "L'URL del servidor no està configurat",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Entrenaments",
   "healthAccessWorkoutRoutes": "Rutes d'entrenament",
   "healthAccessHeartRate": "Freqüència cardíaca",
-  "healthAccessWorkoutSummary": "Distància, calories i passos dels entrenaments",
   "healthAccessAllowed": "Permès",
   "healthAccessNeedsAttention": "Necessita atenció",
   "healthAccessManagedBySystem": "Gestionat a la configuració del sistema",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "El servidor ha intentat redirigir a una connexió no segura. La sol·licitud s'ha bloquejat per protegir les teves credencials.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "El servidor ha redirigit massa vegades. Comprova l'adreça del servidor.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

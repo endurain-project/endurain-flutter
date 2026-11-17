@@ -58,9 +58,9 @@ void main() {
 
   // Wiring every feature together is the composition root's whole job.
   bool isCompositionRoot(String path) =>
-      path.startsWith('core/services/modules/') ||
-      path == 'core/services/app_services.dart' ||
-      path == 'core/services/app_infrastructure.dart';
+      path.startsWith('app/modules/') ||
+      path == 'app/app_services.dart' ||
+      path == 'app/app_infrastructure.dart';
 
   test('no feature imports another feature\'s store', () {
     final offenders = <String>[];

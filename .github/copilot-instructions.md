@@ -168,7 +168,7 @@ The authoritative list is `pubspec.yaml`; keep this section in sync when adding 
 
 ### Navigation
 Top-level, auth-guarded routing uses `go_router` in
-`lib/core/navigation/app_router.dart`: the router redirects between the splash,
+`lib/app/navigation/app_router.dart`: the router redirects between the splash,
 login, and home destinations based on `AuthSessionController` state. Add new
 top-level destinations there. Use `Navigator.push` for sub-navigation within a
 destination:

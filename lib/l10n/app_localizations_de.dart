@@ -172,6 +172,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Vom Server wurde keine Sitzungs-ID empfangen';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Deine Anmeldesitzung ist verloren gegangen. Bitte melde dich erneut an.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Die Anmeldung per Single Sign-on konnte nicht abgeschlossen werden. Bitte versuche es erneut.';
+
+  @override
   String get errorNotAuthenticated => 'Du bist nicht angemeldet';
 
   @override
@@ -884,10 +892,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'Herzfrequenz';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Trainingsdistanz, Kalorien und Schritte';
 
   @override
   String get healthAccessAllowed => 'Erlaubt';

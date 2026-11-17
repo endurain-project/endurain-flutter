@@ -38,6 +38,8 @@
   "errorMfaVerificationFailed": "Overenie MFA zlyhalo",
   "errorMfaVerificationFailedWithDetails": "Overenie MFA zlyhalo: {details}",
   "errorNoSessionIdReceived": "Zo servera nebolo prijaté žiadne ID relácie",
+  "errorMfaSessionMissing": "Vaša prihlasovacia relácia sa stratila. Prihláste sa znova.",
+  "errorSsoCallbackFailed": "Jednotné prihlásenie (SSO) sa nepodarilo dokončiť. Skúste to znova.",
   "errorNotAuthenticated": "Nie ste prihlásení",
   "errorPkceVerifierMissingRestartLogin": "Overovateľ prihlásenia sa nenašiel. Začnite prihlásenie znova.",
   "errorServerUrlNotConfigured": "Adresa URL servera nie je nastavená",
@@ -262,7 +264,6 @@
   "healthAccessWorkouts": "Tréningy",
   "healthAccessWorkoutRoutes": "Tréningové trasy",
   "healthAccessHeartRate": "Srdcová frekvencia",
-  "healthAccessWorkoutSummary": "Vzdialenosť, kalórie a kroky tréningu",
   "healthAccessAllowed": "Povolené",
   "healthAccessNeedsAttention": "Vyžaduje pozornosť",
   "healthAccessManagedBySystem": "Spravované v systémových nastaveniach",
@@ -448,11 +449,11 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Server sa pokúsil presmerovať na nezabezpečené pripojenie. Požiadavka bola zablokovaná na ochranu vašich prihlasovacích údajov.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Server presmeroval príliš veľakrát. Skontrolujte adresu servera.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
   },

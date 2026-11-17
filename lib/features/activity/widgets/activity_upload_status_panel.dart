@@ -1,9 +1,9 @@
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ActivityUploadStatusPanel extends StatelessWidget {

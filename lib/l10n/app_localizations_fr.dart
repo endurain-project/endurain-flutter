@@ -169,6 +169,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Aucun identifiant de session n\'a été reçu du serveur';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Votre session de connexion a été perdue. Veuillez vous reconnecter.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'L\'authentification unique n\'a pas pu être finalisée. Veuillez réessayer.';
+
+  @override
   String get errorNotAuthenticated => 'Vous n\'êtes pas connecté';
 
   @override
@@ -882,10 +890,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get healthAccessHeartRate => 'Fréquence cardiaque';
-
-  @override
-  String get healthAccessWorkoutSummary =>
-      'Distance, calories et pas de l’entraînement';
 
   @override
   String get healthAccessAllowed => 'Autorisé';

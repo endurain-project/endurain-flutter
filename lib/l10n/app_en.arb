@@ -215,6 +215,14 @@
   "@errorNoSessionIdReceived": {
     "description": "Error when auth succeeds without session ID - Used in: error_localizations.dart"
   },
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "@errorMfaSessionMissing": {
+    "description": "Error when the MFA step has no pending login username - Used in: error_localizations.dart"
+  },
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "@errorSsoCallbackFailed": {
+    "description": "Generic error when the SSO deep-link callback reports a failure - Used in: error_localizations.dart"
+  },
   "errorNotAuthenticated": "You are not signed in",
   "@errorNotAuthenticated": {
     "description": "Error when an authenticated request has no token - Used in: error_localizations.dart"
@@ -1155,10 +1163,6 @@
   "healthAccessHeartRate": "Heart rate",
   "@healthAccessHeartRate": {
     "description": "Health data category - Used in: health_access_screen.dart"
-  },
-  "healthAccessWorkoutSummary": "Workout distance, calories, and steps",
-  "@healthAccessWorkoutSummary": {
-    "description": "Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart"
   },
   "healthAccessAllowed": "Allowed",
   "@healthAccessAllowed": {

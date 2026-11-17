@@ -1,20 +1,12 @@
 name: iOS
 
-# The macOS job is the slowest one, so pull requests only run it when they
-# touch the iOS project, plugin dependencies or this workflow. Pushes to main
-# always run it, since a merge can break the iOS project even when neither
-# side did on its own.
+# macOS runners are the most expensive, so this only runs on pushes to main.
+# To check a branch before merging, start it by hand from the Actions tab.
 on:
   push:
     branches:
       - main
-  pull_request:
-    paths:
-      - "ios/**"
-      - "pubspec.yaml"
-      - "pubspec.lock"
-      - ".github/workflows/ios.yml"
-      - ".github/actions/**"
+  workflow_dispatch:
 
 env:
   # Keep in sync with ci.yml.
@@ -81,3 +73,20 @@ jobs:
             -scheme Runner \
             -destination "id=$SIMULATOR_UDID" \
             CODE_SIGNING_ALLOWED=NO
+
+      # Boots the real app on the simulator and signs in against an in-process
+      # fake server; the Android counterpart is integration.yml.
+      - name: Run integration tests
+        shell: bash
+        # The suite takes about a minute; a hung launch must fail fast rather
+        # than run into the job timeout and be cancelled without a result.
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          # xcodebuild test leaves the simulator in a used state (and can shut
+          # it down). Start from a clean, booted one, as on a fresh install.
+          xcrun simctl shutdown "$SIMULATOR_UDID" || true
+          xcrun simctl erase "$SIMULATOR_UDID"
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b
+          flutter devices
+          flutter test integration_test -d "$SIMULATOR_UDID" --reporter expanded

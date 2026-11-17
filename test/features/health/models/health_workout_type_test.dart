@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('HealthWorkoutType.toActivityType', () {

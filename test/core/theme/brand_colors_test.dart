@@ -1,9 +1,9 @@
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/theme/app_theme.dart';
 import 'package:endurain/core/theme/app_theme_tokens.dart';
 import 'package:endurain/core/theme/brand_colors.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   group('BrandColors', () {
