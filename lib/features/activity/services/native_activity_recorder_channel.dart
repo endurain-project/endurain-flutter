@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/utils/json_parsing.dart';
+import 'package:flutter/foundation.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
@@ -113,6 +114,9 @@ class NativeActivityRecorderChannel
 
   @override
   Future<void> start(ActivityRecorderStartRequest request) {
+    debugPrint(
+      'NativeActivityRecorderChannel.start: hr=${request.heartRateDeviceId != null} power=${request.powerDeviceId != null} cadence=${request.cadenceDeviceId != null} localSessionPresent=${request.localSessionId.isNotEmpty}',
+    );
     return _methodChannel.invokeMethod<void>(
       NativeActivityRecorderChannelContract.start,
       {
