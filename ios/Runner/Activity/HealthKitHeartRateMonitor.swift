@@ -1,5 +1,6 @@
 import Foundation
 import HealthKit
+import os
 
 /// Live heart rate from HealthKit while a recording collects points.
 ///
@@ -15,16 +16,33 @@ import HealthKit
 /// overlays its readings onto drained points.
 @MainActor
 final class HealthKitHeartRateMonitor: NSObject {
-    /// Maximum distance between a point and the latest sample, matching the
+    /// Maximum distance between a point and the nearest sample, matching the
     /// Dart sensor buffer freshness.
     static let freshnessSeconds: TimeInterval = 10
+    /// Samples kept for nearest-reading matching of batched location fixes.
+    static let maxSamples = 120
+    /// Consecutive failed or lost sessions tolerated before giving up.
+    static let maxRestarts = 3
+
+    typealias Sample = (bpm: Int, date: Date)
+
+    private static let log = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "endurain",
+        category: "HealthKitHeartRate"
+    )
+
+    /// Called on the main actor for every accepted sample, so the owner can
+    /// persist it to the sensor log.
+    var onSample: ((Int, Date) -> Void)?
 
     private let healthStore = HKHealthStore()
     /// A `LiveWorkout`; typed loosely because it only exists on iOS 26+.
     private var liveWorkout: AnyObject?
-    private var latestSample: (bpm: Int, date: Date)?
-    /// Bumped on every start/stop so a late authorization callback cannot
-    /// start a session after collection already stopped.
+    private var samples: [Sample] = []
+    private var activityType = "other"
+    private var restartCount = 0
+    /// Bumped on every start/stop so a late authorization or recovery callback
+    /// cannot start a session after collection already stopped.
     private var generation = 0
 
     func start(activityType: String) {
@@ -33,38 +51,67 @@ final class HealthKitHeartRateMonitor: NSObject {
               HKHealthStore.isHealthDataAvailable() else {
             return
         }
+        self.activityType = activityType
+        restartCount = 0
         generation += 1
         let startGeneration = generation
         healthStore.requestAuthorization(
             toShare: [HKObjectType.workoutType()],
             read: [HKQuantityType(.heartRate)]
-        ) { [weak self] success, _ in
+        ) { [weak self] success, error in
             Task { @MainActor in
-                guard let self, success, self.generation == startGeneration else {
+                guard let self, self.generation == startGeneration else {
                     return
                 }
-                self.beginSession(activityType: activityType)
+                guard success else {
+                    if let error {
+                        Self.log.error("authorization failed: \(error.localizedDescription, privacy: .public)")
+                    }
+                    return
+                }
+                self.recoverThenBegin(generation: startGeneration)
             }
         }
     }
 
     func stop() {
         generation += 1
-        latestSample = nil
+        samples.removeAll()
         guard #available(iOS 26.0, *), let workout = liveWorkout as? LiveWorkout else {
             return
         }
         liveWorkout = nil
-        workout.session.end()
-        workout.builder.discardWorkout()
+        workout.end()
     }
 
-    /// The latest heart rate if it was sampled close enough to `date`.
+    /// The sample nearest to `date`, if within the freshness window.
     func heartRateBpm(at date: Date) -> Int? {
-        Self.freshBpm(latestSample, at: date)
+        Self.nearestBpm(samples, at: date)
     }
 
-    static func freshBpm(_ sample: (bpm: Int, date: Date)?, at date: Date) -> Int? {
+    static func nearestBpm(_ samples: [Sample], at date: Date) -> Int? {
+        var best: Sample?
+        var bestDistance = TimeInterval.infinity
+        for sample in samples {
+            let distance = abs(sample.date.timeIntervalSince(date))
+            if distance < bestDistance {
+                best = sample
+                bestDistance = distance
+            }
+        }
+        return freshBpm(best, at: date)
+    }
+
+    static func appending(_ sample: Sample, to samples: [Sample]) -> [Sample] {
+        var result = samples
+        result.append(sample)
+        if result.count > maxSamples {
+            result.removeFirst(result.count - maxSamples)
+        }
+        return result
+    }
+
+    static func freshBpm(_ sample: Sample?, at date: Date) -> Int? {
         guard let sample,
               abs(sample.date.timeIntervalSince(date)) <= freshnessSeconds else {
             return nil
@@ -87,8 +134,31 @@ final class HealthKitHeartRateMonitor: NSObject {
         }
     }
 
+    /// After the app was terminated mid-recording, HealthKit may still hold
+    /// the old session. End and discard it first, otherwise creating a new one
+    /// can fail silently.
     @available(iOS 26.0, *)
-    private func beginSession(activityType: String) {
+    private func recoverThenBegin(generation startGeneration: Int) {
+        healthStore.recoverActiveWorkoutSession { [weak self] session, error in
+            Task { @MainActor in
+                guard let self, self.generation == startGeneration else {
+                    return
+                }
+                if let error {
+                    Self.log.error("recovery failed: \(error.localizedDescription, privacy: .public)")
+                }
+                if let session {
+                    Self.log.info("ending orphaned workout session")
+                    session.end()
+                    session.associatedWorkoutBuilder().discardWorkout()
+                }
+                self.beginSession()
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private func beginSession() {
         guard liveWorkout == nil,
               healthStore.authorizationStatus(for: HKObjectType.workoutType()) == .sharingAuthorized
         else {
@@ -101,6 +171,8 @@ final class HealthKitHeartRateMonitor: NSObject {
         do {
             session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
         } catch {
+            Self.log.error("session creation failed: \(error.localizedDescription, privacy: .public)")
+            scheduleRestart()
             return
         }
         let builder = session.associatedWorkoutBuilder()
@@ -109,19 +181,76 @@ final class HealthKitHeartRateMonitor: NSObject {
             workoutConfiguration: configuration
         )
         builder.delegate = self
-        liveWorkout = LiveWorkout(session: session, builder: builder)
+        session.delegate = self
+        let workout = LiveWorkout(session: session, builder: builder)
+        liveWorkout = workout
         let startDate = Date()
         session.startActivity(with: startDate)
-        builder.beginCollection(withStart: startDate) { _, _ in }
+        let startGeneration = generation
+        let builderId = ObjectIdentifier(builder)
+        builder.beginCollection(withStart: startDate) { [weak self] success, error in
+            guard !success else {
+                return
+            }
+            let message = error?.localizedDescription ?? "unknown error"
+            Task { @MainActor in
+                Self.log.error("beginCollection failed: \(message, privacy: .public)")
+                guard let self, self.generation == startGeneration else {
+                    return
+                }
+                self.handleSessionLost(builderId: builderId)
+            }
+        }
     }
 
+    /// Drops the current session (e.g. taken over by another app, or failed
+    /// to start) and starts a fresh one, up to `maxRestarts` times.
     @available(iOS 26.0, *)
-    private func record(bpm: Int, at date: Date, builderId: ObjectIdentifier) {
+    private func handleSessionLost(builderId: ObjectIdentifier) {
         guard let workout = liveWorkout as? LiveWorkout,
               ObjectIdentifier(workout.builder) == builderId else {
             return
         }
-        latestSample = (bpm, date)
+        liveWorkout = nil
+        workout.end()
+        scheduleRestart()
+    }
+
+    private func scheduleRestart() {
+        guard #available(iOS 26.0, *), restartCount < Self.maxRestarts else {
+            Self.log.error("giving up on HealthKit heart rate after repeated failures")
+            return
+        }
+        restartCount += 1
+        let startGeneration = generation
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard let self, self.generation == startGeneration else {
+                return
+            }
+            self.beginSession()
+        }
+    }
+
+    @available(iOS 26.0, *)
+    fileprivate func record(bpm: Int, at date: Date, builderId: ObjectIdentifier) {
+        guard let workout = liveWorkout as? LiveWorkout,
+              ObjectIdentifier(workout.builder) == builderId else {
+            return
+        }
+        samples = Self.appending((bpm, date), to: samples)
+        restartCount = 0
+        onSample?(bpm, date)
+    }
+
+    @available(iOS 26.0, *)
+    fileprivate func sessionEnded(sessionId: ObjectIdentifier) {
+        guard let workout = liveWorkout as? LiveWorkout,
+              ObjectIdentifier(workout.session) == sessionId else {
+            return
+        }
+        Self.log.info("workout session ended externally; restarting")
+        handleSessionLost(builderId: ObjectIdentifier(workout.builder))
     }
 }
 
@@ -133,6 +262,41 @@ private final class LiveWorkout {
     init(session: HKWorkoutSession, builder: HKLiveWorkoutBuilder) {
         self.session = session
         self.builder = builder
+    }
+
+    func end() {
+        session.end()
+        builder.discardWorkout()
+    }
+}
+
+@available(iOS 26.0, *)
+extension HealthKitHeartRateMonitor: HKWorkoutSessionDelegate {
+    nonisolated func workoutSession(
+        _ workoutSession: HKWorkoutSession,
+        didChangeTo toState: HKWorkoutSessionState,
+        from fromState: HKWorkoutSessionState,
+        date: Date
+    ) {
+        guard toState == .ended || toState == .stopped else {
+            return
+        }
+        let sessionId = ObjectIdentifier(workoutSession)
+        Task { @MainActor [weak self] in
+            self?.sessionEnded(sessionId: sessionId)
+        }
+    }
+
+    nonisolated func workoutSession(
+        _ workoutSession: HKWorkoutSession,
+        didFailWithError error: Error
+    ) {
+        let sessionId = ObjectIdentifier(workoutSession)
+        let message = error.localizedDescription
+        Task { @MainActor [weak self] in
+            Self.log.error("workout session failed: \(message, privacy: .public)")
+            self?.sessionEnded(sessionId: sessionId)
+        }
     }
 }
 

@@ -61,6 +61,22 @@ final class CoreLocationActivityRecorder:
         self.manager = manager
         self.heartRateMonitor = heartRateMonitor ?? HealthKitHeartRateMonitor()
         super.init()
+        // HealthKit readings join the sensor log so Dart matches the nearest
+        // reading to each point and can show it live while standing still.
+        self.heartRateMonitor.onSample = { [weak self] bpm, date in
+            guard let self,
+                  let sessionId = self.store.loadSession()?.localSessionId else {
+                return
+            }
+            try? self.store.appendSensorSample(
+                RecordedSensorSampleData(
+                    kind: "heartRate",
+                    timestamp: IsoTime.format(date),
+                    value: bpm
+                ),
+                localSessionId: sessionId
+            )
+        }
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.distanceFilter = CoreLocationActivityRecorder.distanceFilterMeters
@@ -126,7 +142,7 @@ final class CoreLocationActivityRecorder:
         nextPointOffset = store.pointCount()
         manager.startUpdatingLocation()
         startTerminationRecovery()
-        heartRateMonitor.start(activityType: store.loadSession()?.activityType ?? "other")
+        heartRateMonitor.start(activityType: session?.activityType ?? "other")
         isCollecting = true
         scheduleNextTimeAnnouncement()
         return true
