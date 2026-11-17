@@ -16,9 +16,9 @@ FROM eclipse-temurin:17-jdk-jammy@sha256:beabb759e6f9653c843958d1d1f5cecb881dfb8
 
 # --- Toolchain versions (override via --build-arg to upgrade) ---------------
 # Flutter SDK. The SHA256 is published by the Flutter release storage bucket.
-ARG FLUTTER_VERSION=3.47.7
-ARG FLUTTER_ARCHIVE=flutter_linux_3.47.7-stable.tar.xz
-ARG FLUTTER_SHA256=af7455f540df951184c7953fbe3cf884766e7541dacf8571f9f582db03dd6230
+ARG FLUTTER_VERSION=3.50.0
+ARG FLUTTER_ARCHIVE=flutter_linux_3.50.0-stable.tar.xz
+ARG FLUTTER_SHA256=6ea2d806fd57269ae783e6788e2a81fc26eaad782f1e0d0ff38623bb765ff9f5
 ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/releases/stable/linux
 
 # Android SDK. The command-line tools SHA256 is published directly on the
