@@ -273,6 +273,64 @@ class AppLocalizationsSk extends AppLocalizations {
   String get legacyDataDecline => 'Nie sú moje';
 
   @override
+  String get errorPasswordChangeFailed => 'Heslo sa nepodarilo zmeniť';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Heslo sa nepodarilo zmeniť: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Server požiadal o krok prihlásenia, ktorý táto verzia aplikácie nepodporuje. Aktualizujte aplikáciu a skúste to znova.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Váš poskytovateľ identity nezdieľal e-mailovú adresu, ktorá je potrebná na vytvorenie účtu.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Váš poskytovateľ identity neoveril vašu e-mailovú adresu. Overte ju tam a skúste to znova.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Tomuto prihláseniu nezodpovedá žiadny účet a tento server nevytvára účty automaticky. Obráťte sa na správcu.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Túto e-mailovú adresu už používa účet, ale tento poskytovateľ sa doň nemôže prihlásiť. Prihláste sa inak alebo sa obráťte na správcu.';
+
+  @override
+  String get errorSsoApprovalPending => 'Váš účet čaká na schválenie správcom.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Tento účet je zakázaný. Obráťte sa na správcu.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Tento server nepovoľuje jednotné prihlásenie z tejto aplikácie. Požiadajte správcu, aby pridal com.endurain.endurain:/auth/sso/callback do ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Zvoľte nové heslo';
+
+  @override
+  String get passwordChangeMessage =>
+      'Správca vám nastavil heslo. Na dokončenie prihlásenia zvoľte nové.';
+
+  @override
+  String get newPassword => 'Nové heslo';
+
+  @override
+  String get confirmNewPassword => 'Potvrďte nové heslo';
+
+  @override
+  String get passwordsDoNotMatch => 'Heslá sa nezhodujú';
+
+  @override
+  String get changePassword => 'Zmeniť heslo';
+
+  @override
   String get logoutServerFailedWarning =>
       'Odhlásenie zo servera zlyhalo, ale odhlásenie prebehlo miestne';
 

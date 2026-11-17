@@ -2,8 +2,10 @@ import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/auth_session_store.dart';
 import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sign_in_flow.dart';
 import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/network/api_client.dart';
+import 'package:endurain/core/network/base_http_client.dart';
 
 /// Wires the authentication feature: session storage, password/MFA login, SSO,
 /// public server-settings discovery, and the authenticated API client.
@@ -21,12 +23,24 @@ class AuthModule {
     config: _infra.config,
   );
 
+  /// The step-by-step sign-in (`next_step`) shared by password and SSO
+  /// sign-ins: an SSO sign-in of an account with MFA continues at
+  /// [AuthService.verifyMfa], so both services must hold the same pending
+  /// state.
+  late final SignInFlow signInFlow = SignInFlow(
+    sessionStore: session,
+    http: BaseHttpClient(),
+    storage: _infra.secureStorage,
+    endpoints: _infra.endpoints,
+  );
+
   /// Password/MFA login, token refresh, and logout.
   late final AuthService service = AuthService(
     storage: _infra.secureStorage,
     sessionStore: session,
     config: _infra.config,
     endpoints: _infra.endpoints,
+    signInFlow: signInFlow,
   );
 
   /// SSO/OAuth (PKCE) login against the server's identity providers.
@@ -35,6 +49,7 @@ class AuthModule {
     sessionStore: session,
     config: _infra.config,
     endpoints: _infra.endpoints,
+    signInFlow: signInFlow,
   );
 
   /// Public server-settings discovery (local-login/SSO availability).

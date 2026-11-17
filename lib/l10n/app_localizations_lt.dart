@@ -268,6 +268,65 @@ class AppLocalizationsLt extends AppLocalizations {
   String get legacyDataDecline => 'Ne mano';
 
   @override
+  String get errorPasswordChangeFailed => 'Nepavyko pakeisti slaptažodžio';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Nepavyko pakeisti slaptažodžio: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveris paprašė prisijungimo žingsnio, kurio ši programos versija nepalaiko. Atnaujinkite programą ir bandykite dar kartą.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Jūsų tapatybės teikėjas nepateikė el. pašto adreso, kurio reikia paskyrai sukurti.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Jūsų tapatybės teikėjas nepatvirtino jūsų el. pašto adreso. Patvirtinkite jį ten ir bandykite dar kartą.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Šį prisijungimą atitinkančios paskyros nėra, o šis serveris paskyrų automatiškai nekuria. Kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Šį el. pašto adresą jau naudoja paskyra, bet šis teikėjas negali prie jos prisijungti. Prisijunkite kitu būdu arba kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Jūsų paskyra laukia administratoriaus patvirtinimo.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ši paskyra išjungta. Kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Šis serveris neleidžia vieningo prisijungimo iš šios programos. Paprašykite administratoriaus įtraukti com.endurain.endurain:/auth/sso/callback į ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Pasirinkite naują slaptažodį';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administratorius nustatė jūsų slaptažodį. Norėdami baigti prisijungimą, pasirinkite naują.';
+
+  @override
+  String get newPassword => 'Naujas slaptažodis';
+
+  @override
+  String get confirmNewPassword => 'Patvirtinkite naują slaptažodį';
+
+  @override
+  String get passwordsDoNotMatch => 'Slaptažodžiai nesutampa';
+
+  @override
+  String get changePassword => 'Keisti slaptažodį';
+
+  @override
   String get logoutServerFailedWarning =>
       'Nepavyko atsijungti nuo serverio, bet atsijungta vietoje';
 

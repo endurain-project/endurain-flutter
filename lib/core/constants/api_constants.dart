@@ -15,6 +15,10 @@ class ApiConstants {
   /// caused by automatic retry. Servers that ignore it are unaffected.
   static const String idempotencyKeyHeader = 'Idempotency-Key';
 
+  /// Names this app installation to the server on sign-in, with the id the
+  /// server returned as `device_id` at an earlier sign-in.
+  static const String deviceIdHeader = 'X-Device-Id';
+
   // Request timeouts
   static const Duration defaultRequestTimeout = Duration(seconds: 30);
   static const Duration defaultUploadTimeout = Duration(seconds: 120);

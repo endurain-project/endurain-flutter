@@ -80,7 +80,9 @@ void main() {
         storage: storage,
         httpClient: MockClient((request) async {
           expect(request.url.path, '/api/v1/auth/refresh');
-          expect(request.headers['Authorization'], 'Bearer refresh-1');
+          // The refresh token goes in the body, never the Authorization header.
+          expect(request.headers['Authorization'], isNull);
+          expect(jsonDecode(request.body), {'refresh_token': 'refresh-1'});
           return http.Response(
             jsonEncode({
               'access_token': 'access-2',

@@ -31,17 +31,31 @@ void main() {
         expect(endpoints.idpLoginEndpoint, '/api/v1/public/idp/login');
       });
 
-      test('idpSessionTokenExchangeEndpoint', () {
+      test('passwordChangeEndpoint', () {
         expect(
-          endpoints.idpSessionTokenExchangeEndpoint,
-          '/api/v1/public/idp/session',
+          endpoints.passwordChangeEndpoint,
+          '/api/v1/auth/password-change',
+        );
+      });
+
+      test('sessionTokensEndpoint encodes the session id', () {
+        expect(
+          endpoints.sessionTokensEndpoint('a b/1'),
+          '/api/v1/auth/sessions/a%20b%2F1/tokens',
+        );
+      });
+
+      test('idpIconEndpoint encodes the slug', () {
+        expect(
+          endpoints.idpIconEndpoint('my idp'),
+          '/api/v1/public/idp/my%20idp/icon',
         );
       });
 
       test('serverSettingsEndpoint', () {
         expect(
           endpoints.serverSettingsEndpoint,
-          '/api/v1/public/server_settings',
+          '/api/v1/public/server-settings',
         );
       });
 
@@ -65,7 +79,7 @@ void main() {
       });
 
       test('serverSettingsEndpoint uses v2 base', () {
-        expect(v2.serverSettingsEndpoint, '/api/v2/public/server_settings');
+        expect(v2.serverSettingsEndpoint, '/api/v2/public/server-settings');
       });
 
       test('activityUploadEndpoint uses v2 base', () {

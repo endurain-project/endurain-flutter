@@ -269,6 +269,65 @@ class AppLocalizationsDa extends AppLocalizations {
   String get legacyDataDecline => 'Ikke mine';
 
   @override
+  String get errorPasswordChangeFailed => 'Adgangskoden kunne ikke ændres';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Adgangskoden kunne ikke ændres: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveren bad om et login-trin, som denne version af appen ikke understøtter. Opdater appen, og prøv igen.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Din identitetsudbyder delte ikke en e-mailadresse, som er nødvendig for at oprette din konto.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Din identitetsudbyder har ikke bekræftet din e-mailadresse. Bekræft den der, og prøv igen.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ingen konto matcher dette login, og serveren opretter ikke konti automatisk. Spørg din administrator.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'En konto bruger allerede denne e-mailadresse, men denne udbyder kan ikke logge ind på den. Log ind på en anden måde, eller spørg din administrator.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Din konto venter på godkendelse fra en administrator.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Denne konto er deaktiveret. Kontakt din administrator.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Denne server tillader ikke single sign-on fra denne app. Bed din administrator om at tilføje com.endurain.endurain:/auth/sso/callback til ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Vælg en ny adgangskode';
+
+  @override
+  String get passwordChangeMessage =>
+      'En administrator har angivet din adgangskode. Vælg en ny for at afslutte login.';
+
+  @override
+  String get newPassword => 'Ny adgangskode';
+
+  @override
+  String get confirmNewPassword => 'Bekræft ny adgangskode';
+
+  @override
+  String get passwordsDoNotMatch => 'Adgangskoderne er ikke ens';
+
+  @override
+  String get changePassword => 'Skift adgangskode';
+
+  @override
   String get logoutServerFailedWarning =>
       'Kunne ikke logge ud fra serveren, men loggede ud lokalt';
 

@@ -272,6 +272,65 @@ class AppLocalizationsSr extends AppLocalizations {
   String get legacyDataDecline => 'Нису моје';
 
   @override
+  String get errorPasswordChangeFailed => 'Лозинка није могла да се промени';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Лозинка није могла да се промени: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Сервер је затражио корак пријаве који ова верзија апликације не подржава. Ажурирајте апликацију и покушајте поново.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Ваш добављач идентитета није поделио адресу е-поште, која је потребна за прављење налога.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Ваш добављач идентитета није потврдио вашу адресу е-поште. Потврдите је тамо и покушајте поново.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ниједан налог не одговара овој пријави, а овај сервер не прави налоге аутоматски. Обратите се администратору.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Налог већ користи ову адресу е-поште, али овај добављач не може да се пријави на њега. Пријавите се на други начин или се обратите администратору.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Ваш налог чека одобрење администратора.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Овај налог је онемогућен. Обратите се администратору.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Овај сервер не дозвољава јединствену пријаву из ове апликације. Замолите администратора да дода com.endurain.endurain:/auth/sso/callback у ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Изаберите нову лозинку';
+
+  @override
+  String get passwordChangeMessage =>
+      'Администратор вам је поставио лозинку. Изаберите нову да бисте довршили пријаву.';
+
+  @override
+  String get newPassword => 'Нова лозинка';
+
+  @override
+  String get confirmNewPassword => 'Потврдите нову лозинку';
+
+  @override
+  String get passwordsDoNotMatch => 'Лозинке се не подударају';
+
+  @override
+  String get changePassword => 'Промени лозинку';
+
+  @override
   String get logoutServerFailedWarning =>
       'Одјава са сервера није успела, али сте одјављени локално';
 

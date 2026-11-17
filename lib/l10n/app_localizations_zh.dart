@@ -242,6 +242,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get legacyDataDecline => '不是我的';
 
   @override
+  String get errorPasswordChangeFailed => '无法更改密码';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return '无法更改密码：$details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported => '此服务器要求的登录步骤不受此版本应用支持。请更新应用后重试。';
+
+  @override
+  String get errorSsoEmailMissing => '你的身份提供方未共享电子邮件地址，而创建账户需要该地址。';
+
+  @override
+  String get errorSsoEmailUnverified => '你的身份提供方尚未验证你的电子邮件地址。请在那里验证后重试。';
+
+  @override
+  String get errorSsoAutoCreateDisabled => '没有与此次登录匹配的账户，且此服务器不会自动创建账户。请联系管理员。';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      '已有账户使用此电子邮件地址，但此身份提供方无法登录该账户。请改用其他方式登录，或联系管理员。';
+
+  @override
+  String get errorSsoApprovalPending => '你的账户正在等待管理员批准。';
+
+  @override
+  String get errorSsoAccountDisabled => '此账户已停用。请联系管理员。';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      '此服务器不允许从此应用进行单点登录。请让管理员将 com.endurain.endurain:/auth/sso/callback 添加到 ALLOWED_REDIRECT_URIS。';
+
+  @override
+  String get passwordChangeTitle => '选择新密码';
+
+  @override
+  String get passwordChangeMessage => '管理员为你设置了密码。请选择新密码以完成登录。';
+
+  @override
+  String get newPassword => '新密码';
+
+  @override
+  String get confirmNewPassword => '确认新密码';
+
+  @override
+  String get passwordsDoNotMatch => '两次输入的密码不一致';
+
+  @override
+  String get changePassword => '更改密码';
+
+  @override
   String get logoutServerFailedWarning => '无法从服务器退出登录，但已在本地退出';
 
   @override
@@ -1462,6 +1514,58 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get legacyDataDecline => '不是我的';
+
+  @override
+  String get errorPasswordChangeFailed => '無法變更密碼';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return '無法變更密碼：$details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported => '此伺服器要求的登入步驟不受此版本應用程式支援。請更新應用程式後重試。';
+
+  @override
+  String get errorSsoEmailMissing => '你的身分提供者未分享電子郵件地址，而建立帳號需要該地址。';
+
+  @override
+  String get errorSsoEmailUnverified => '你的身分提供者尚未驗證你的電子郵件地址。請在那裡驗證後重試。';
+
+  @override
+  String get errorSsoAutoCreateDisabled => '沒有與此次登入相符的帳號，且此伺服器不會自動建立帳號。請聯絡管理員。';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      '已有帳號使用此電子郵件地址，但此身分提供者無法登入該帳號。請改用其他方式登入，或聯絡管理員。';
+
+  @override
+  String get errorSsoApprovalPending => '你的帳號正在等待管理員核准。';
+
+  @override
+  String get errorSsoAccountDisabled => '此帳號已停用。請聯絡管理員。';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      '此伺服器不允許從此應用程式進行單一登入。請管理員將 com.endurain.endurain:/auth/sso/callback 加入 ALLOWED_REDIRECT_URIS。';
+
+  @override
+  String get passwordChangeTitle => '選擇新密碼';
+
+  @override
+  String get passwordChangeMessage => '管理員為你設定了密碼。請選擇新密碼以完成登入。';
+
+  @override
+  String get newPassword => '新密碼';
+
+  @override
+  String get confirmNewPassword => '確認新密碼';
+
+  @override
+  String get passwordsDoNotMatch => '兩次輸入的密碼不一致';
+
+  @override
+  String get changePassword => '變更密碼';
 
   @override
   String get logoutServerFailedWarning => '無法從伺服器登出，但已在本機登出';

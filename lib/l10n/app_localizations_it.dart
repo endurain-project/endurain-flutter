@@ -275,6 +275,65 @@ class AppLocalizationsIt extends AppLocalizations {
   String get legacyDataDecline => 'Non sono mie';
 
   @override
+  String get errorPasswordChangeFailed => 'Impossibile cambiare la password';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Impossibile cambiare la password: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Questo server ha richiesto un passaggio di accesso che questa versione dell\'app non supporta. Aggiorna l\'app e riprova.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Il tuo provider di identità non ha condiviso un indirizzo email, necessario per creare il tuo account.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Il tuo provider di identità non ha verificato il tuo indirizzo email. Verificalo lì e riprova.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Nessun account corrisponde a questo accesso e questo server non crea account automaticamente. Chiedi al tuo amministratore.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Un account usa già questo indirizzo email, ma questo provider non può accedervi. Accedi in un altro modo o chiedi al tuo amministratore.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Il tuo account è in attesa dell\'approvazione di un amministratore.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Questo account è disattivato. Contatta il tuo amministratore.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Questo server non consente l\'accesso singolo da questa app. Chiedi al tuo amministratore di aggiungere com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Scegli una nuova password';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un amministratore ha impostato la tua password. Scegline una nuova per completare l\'accesso.';
+
+  @override
+  String get newPassword => 'Nuova password';
+
+  @override
+  String get confirmNewPassword => 'Conferma la nuova password';
+
+  @override
+  String get passwordsDoNotMatch => 'Le password non corrispondono';
+
+  @override
+  String get changePassword => 'Cambia password';
+
+  @override
   String get logoutServerFailedWarning =>
       'Impossibile uscire dal server, ma disconnessione locale effettuata';
 

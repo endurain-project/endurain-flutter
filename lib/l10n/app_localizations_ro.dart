@@ -274,6 +274,65 @@ class AppLocalizationsRo extends AppLocalizations {
   String get legacyDataDecline => 'Nu sunt ale mele';
 
   @override
+  String get errorPasswordChangeFailed => 'Parola nu a putut fi schimbată';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Parola nu a putut fi schimbată: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serverul a cerut un pas de conectare pe care această versiune a aplicației nu îl acceptă. Actualizați aplicația și încercați din nou.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Furnizorul de identitate nu a partajat o adresă de e-mail, necesară pentru crearea contului.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Furnizorul de identitate nu a verificat adresa dumneavoastră de e-mail. Verificați-o acolo și încercați din nou.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Niciun cont nu corespunde acestei conectări, iar acest server nu creează conturi automat. Întrebați administratorul.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Un cont folosește deja această adresă de e-mail, dar acest furnizor nu se poate conecta la el. Conectați-vă în alt mod sau întrebați administratorul.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Contul dumneavoastră așteaptă aprobarea unui administrator.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Acest cont este dezactivat. Contactați administratorul.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Acest server nu permite autentificarea unică din această aplicație. Cereți administratorului să adauge com.endurain.endurain:/auth/sso/callback la ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Alegeți o parolă nouă';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un administrator v-a setat parola. Alegeți una nouă pentru a finaliza conectarea.';
+
+  @override
+  String get newPassword => 'Parolă nouă';
+
+  @override
+  String get confirmNewPassword => 'Confirmați parola nouă';
+
+  @override
+  String get passwordsDoNotMatch => 'Parolele nu se potrivesc';
+
+  @override
+  String get changePassword => 'Schimbați parola';
+
+  @override
   String get logoutServerFailedWarning =>
       'Deconectarea de la server nu a reușit, dar v-ați deconectat local';
 

@@ -1,4 +1,3 @@
-import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/auth_session_store.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
@@ -6,12 +5,11 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/network/api_response.dart';
 import 'package:endurain/core/network/base_http_client.dart';
 
-/// Owns the shared POST-exchange-save path for PKCE session token exchanges.
+/// The two server calls that end a sign-in: the PKCE exchange of a sign-in
+/// session, and saving the tokens a `tokens` step carries.
 ///
-/// Both `AuthService` (local login + MFA) and `SsoService` (OAuth callback)
-/// POST to the same endpoint with a `code_verifier`, parse identical response
-/// fields, and persist tokens through [AuthSessionStore]. Only the error code
-/// and whether a username is persisted differ between the two flows.
+/// `SignInFlow` decides when each one runs; this class only talks to the
+/// server and the [AuthSessionStore].
 class PkceTokenExchanger {
   PkceTokenExchanger({
     required this._sessionStore,
@@ -39,60 +37,79 @@ class PkceTokenExchanger {
   static Future<void> _defaultProfileRetryDelay(int attempt) =>
       Future<void>.delayed(Duration(milliseconds: 200 * attempt));
 
-  /// Exchanges [sessionId] for bearer tokens using the PKCE [verifier].
+  /// Exchanges the sign-in session [sessionId] with the PKCE [verifier] and
+  /// returns the answer, a sign-in step body: `tokens`, or `mfa` for an SSO
+  /// session of an account with MFA.
   ///
-  /// [serverUrl] must be a valid base URL for the current server.
-  /// [username] is optional and only stored for local-login flows.
-  /// [failureCode] is surfaced as the [AppException.code] on non-success HTTP
-  /// responses, so callers can preserve flow-specific UI messaging.
-  Future<AuthResult> exchange({
+  /// [deviceId] is sent as `X-Device-Id` when known. [failureCode] is the
+  /// [AppException.code] of a non-`200` answer.
+  Future<Map<String, dynamic>> exchange({
     required String serverUrl,
     required String sessionId,
     required String verifier,
+    String? deviceId,
+    required AppErrorCode failureCode,
+  }) {
+    final url = Uri.parse(
+      '$serverUrl${_endpoints.sessionTokensEndpoint(sessionId)}',
+    );
+    return _http.postJsonObject(
+      url,
+      extraHeaders: {ApiConstants.deviceIdHeader: ?deviceId},
+      jsonBody: {'code_verifier': verifier},
+      failureCode: failureCode,
+    );
+  }
+
+  /// Saves the tokens of a mobile `tokens` step [body] as the session for
+  /// [serverUrl], after reading the account id from the profile.
+  ///
+  /// [username] is stored only for a password sign-in. Nothing is saved when
+  /// the body or the profile is unusable.
+  Future<void> saveTokens({
+    required String serverUrl,
+    required Map<String, dynamic> body,
     String? username,
     required AppErrorCode failureCode,
   }) async {
-    final url = Uri.parse(
-      '$serverUrl${_endpoints.idpSessionTokenExchangeEndpoint}/$sessionId/tokens',
-    );
-
     try {
-      final data = await _http.postJsonObject(
-        url,
-        jsonBody: {'code_verifier': verifier},
-        failureCode: failureCode,
-      );
-
-      final accessToken = ApiResponse.requiredString(data, 'access_token');
-      final refreshToken = ApiResponse.requiredString(data, 'refresh_token');
-      final returnedSessionId = ApiResponse.requiredString(data, 'session_id');
-      final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
+      final accessToken = ApiResponse.requiredString(body, 'access_token');
+      final refreshToken = ApiResponse.requiredString(body, 'refresh_token');
+      final sessionId = ApiResponse.requiredString(body, 'session_id');
+      final expiresIn = ApiResponse.requiredPositiveInt(body, 'expires_in');
       final profile = await _fetchProfile(
         serverUrl: serverUrl,
         accessToken: accessToken,
         failureCode: failureCode,
       );
-      final accountId = ApiResponse.requiredPositiveInt(
-        profile,
-        'id',
-      ).toString();
 
       await _sessionStore.saveSession(
         origin: serverUrl,
         accessToken: accessToken,
         refreshToken: refreshToken,
-        sessionId: returnedSessionId,
-        accountId: accountId,
+        sessionId: sessionId,
+        accountId: _accountIdOf(profile),
         username: username,
         expiresInSeconds: expiresIn,
       );
-
-      return AuthResult(success: true, mfaRequired: false);
     } on AppException {
       rethrow;
     } catch (e) {
       throw AppException(failureCode, cause: e);
     }
+  }
+
+  /// Reads the account id from the profile body.
+  ///
+  /// Endurain v0.21 identifies accounts by UUID strings; earlier servers used
+  /// positive integers. Both are accepted and returned as text, so the
+  /// connection profile id stays an opaque string either way.
+  static String _accountIdOf(Map<String, dynamic> profile) {
+    final id = profile['id'];
+    if (id is String) {
+      return ApiResponse.requiredString(profile, 'id');
+    }
+    return ApiResponse.requiredPositiveInt(profile, 'id').toString();
   }
 
   /// Fetches the authenticated user's profile to derive the stable server-side

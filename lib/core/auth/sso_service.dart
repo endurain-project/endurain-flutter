@@ -1,7 +1,7 @@
-import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/auth_session_store.dart';
-import 'package:endurain/core/auth/pkce_token_exchanger.dart';
+
 import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/auth/sign_in_flow.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
@@ -9,7 +9,6 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/network/base_http_client.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
-import 'package:endurain/core/utils/run_with_cleanup.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:http/http.dart' as http;
 
@@ -40,7 +39,9 @@ class _SsoPkceState {
 
 /// Service for SSO/OAuth authentication
 class SsoService {
-  static const callbackUrl = 'endurain://auth/sso/callback';
+  /// The app's SSO callback address: the default `ALLOWED_REDIRECT_URIS` of an
+  /// Endurain (v0.21+) server, in the reverse-DNS form RFC 8252 recommends.
+  static const callbackUrl = 'com.endurain.endurain:/auth/sso/callback';
 
   /// Parsed form of [callbackUrl], the single source of truth for the SSO
   /// deep-link contract. Use [matchesCallback] instead of hardcoding the
@@ -55,6 +56,38 @@ class SsoService {
       uri.host == _callbackUri.host &&
       uri.path == _callbackUri.path;
 
+  /// Whether the server's `allowed_redirect_uris` lists [callbackUrl], matched
+  /// as the server does: the scheme case-insensitively, the rest exactly.
+  ///
+  /// `null` (a server that does not publish the list) counts as allowed, so
+  /// the sign-in is tried and the server decides.
+  static bool isCallbackAllowed(List<String>? allowedRedirectUris) {
+    if (allowedRedirectUris == null) {
+      return true;
+    }
+    final separator = callbackUrl.indexOf(':');
+    final scheme = callbackUrl.substring(0, separator).toLowerCase();
+    final rest = callbackUrl.substring(separator);
+    return allowedRedirectUris.any((entry) {
+      final index = entry.indexOf(':');
+      return index > 0 &&
+          entry.substring(0, index).toLowerCase() == scheme &&
+          entry.substring(index) == rest;
+    });
+  }
+
+  /// The SSO failure codes the server documents for the callback's `error`
+  /// parameter. Anything else in the link is treated as a generic failure.
+  static const Set<String> knownCallbackErrors = {
+    'sso_failed',
+    'sso_email_missing',
+    'sso_email_unverified',
+    'sso_auto_create_disabled',
+    'sso_link_by_email_disabled',
+    'sso_approval_pending',
+    'sso_account_disabled',
+  };
+
   SsoService({
     SecureStorageService? storage,
     AuthSessionStore? sessionStore,
@@ -64,6 +97,7 @@ class SsoService {
     DateTime Function()? now,
     AppConfig config = AppConfig.defaults,
     ApiEndpoints? endpoints,
+    SignInFlow? signInFlow,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
     _sessionStore = sessionStore ?? AuthSessionStore(storage: resolvedStorage);
@@ -73,11 +107,14 @@ class SsoService {
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
     _now = now ?? DateTime.now;
     _endpoints = endpoints ?? ApiEndpoints(config);
-    _exchanger = PkceTokenExchanger(
-      sessionStore: _sessionStore,
-      http: _http,
-      endpoints: _endpoints,
-    );
+    _signIn =
+        signInFlow ??
+        SignInFlow(
+          sessionStore: _sessionStore,
+          http: _http,
+          storage: resolvedStorage,
+          endpoints: _endpoints,
+        );
   }
 
   late final AuthSessionStore _sessionStore;
@@ -85,7 +122,7 @@ class SsoService {
   late final BaseHttpClient _http;
   late final DateTime Function() _now;
   late final ApiEndpoints _endpoints;
-  late final PkceTokenExchanger _exchanger;
+  late final SignInFlow _signIn;
 
   // Pending SSO PKCE flow state; cleared on successful exchange, error, or
   // explicit cancellation via [clearPkce].
@@ -96,7 +133,10 @@ class SsoService {
     String? serverUrl,
   }) async {
     final url = await _urlResolver.resolve(serverUrl: serverUrl);
-    final apiUrl = Uri.parse('$url${_endpoints.idpListEndpoint}');
+    // A page (`{items, total, page, num_records, next}`); one page of the
+    // largest size covers every realistic number of providers.
+    final apiUrl = Uri.parse('$url${_endpoints.idpListEndpoint}')
+        .replace(queryParameters: {'num_records': '200'});
 
     try {
       final data = await _http.getJson(
@@ -104,13 +144,8 @@ class SsoService {
         failureCode: AppErrorCode.fetchProvidersFailed,
       );
 
-      // Handle both array and object responses
-      final List<dynamic> providers;
-      if (data is List) {
-        providers = data;
-      } else if (data is Map && data.containsKey('providers')) {
-        providers = data['providers'] as List<dynamic>;
-      } else {
+      final Object? providers = data is Map ? data['items'] : data;
+      if (providers is! List) {
         throw const AppException(AppErrorCode.unexpectedResponseFormat);
       }
 
@@ -191,28 +226,16 @@ class SsoService {
     final verifier = pending.verifier;
     // Clear state before the network call — one-time exchange.
     _pendingPkce = null;
-    return _withPkceCleanup(
-      () => _exchanger.exchange(
-        serverUrl: pending.serverUrl,
-        sessionId: sessionId,
-        verifier: verifier,
-        failureCode: AppErrorCode.tokenExchangeFailed,
-      ),
+    // The answer is `tokens`, or `mfa` for an account with MFA, which the
+    // shared [SignInFlow] keeps for `AuthService.verifyMfa`.
+    return _signIn.startExchange(
+      serverUrl: pending.serverUrl,
+      sessionId: sessionId,
+      verifier: verifier,
+      failureCode: AppErrorCode.tokenExchangeFailed,
       fallbackCode: AppErrorCode.ssoTokenExchangeError,
     );
   }
-
-  /// Runs [action], always clearing the pending PKCE flow on failure.
-  /// Re-throws [AppException]s unchanged; wraps any other error in an
-  /// [AppException] with [fallbackCode].
-  Future<T> _withPkceCleanup<T>(
-    Future<T> Function() action, {
-    required AppErrorCode fallbackCode,
-  }) => runWithCleanup(
-    action,
-    onCleanup: () => _pendingPkce = null,
-    fallbackCode: fallbackCode,
-  );
 
   /// Clears any pending PKCE flow (e.g. when the user cancels SSO).
   void clearPkce() {

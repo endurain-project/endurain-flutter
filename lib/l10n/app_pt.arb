@@ -352,6 +352,76 @@
   "@legacyDataDecline": {
     "description": "Botão que indica que as atividades pertencem a outra pessoa - Usado em: legacy_profile_adoption_dialog.dart"
   },
+  "errorPasswordChangeFailed": "Não foi possível alterar a palavra-passe",
+  "@errorPasswordChangeFailed": {
+    "description": "Erro quando a nova palavra-passe escolhida no início de sessão é recusada - Usado em: error_localizations.dart"
+  },
+  "errorPasswordChangeFailedWithDetails": "Não foi possível alterar a palavra-passe: {details}",
+  "@errorPasswordChangeFailedWithDetails": {
+    "description": "O mesmo erro com o motivo do servidor - Usado em: error_localizations.dart",
+    "placeholders": {
+      "details": {
+        "type": "String",
+        "example": "Password is too short"
+      }
+    }
+  },
+  "errorSignInStepUnsupported": "Este servidor pediu um passo de início de sessão que esta versão da aplicação não suporta. Atualize a aplicação e tente novamente.",
+  "@errorSignInStepUnsupported": {
+    "description": "Erro quando o servidor pede um passo de início de sessão que a aplicação não conhece - Usado em: error_localizations.dart"
+  },
+  "errorSsoEmailMissing": "O seu fornecedor de identidade não partilhou um endereço de email, necessário para criar a sua conta.",
+  "@errorSsoEmailMissing": {
+    "description": "Falha de SSO: o fornecedor de identidade não partilhou email - Usado em: error_localizations.dart"
+  },
+  "errorSsoEmailUnverified": "O seu fornecedor de identidade não verificou o seu endereço de email. Verifique-o lá e tente novamente.",
+  "@errorSsoEmailUnverified": {
+    "description": "Falha de SSO: o fornecedor de identidade não verificou o email - Usado em: error_localizations.dart"
+  },
+  "errorSsoAutoCreateDisabled": "Nenhuma conta corresponde a este início de sessão e este servidor não cria contas automaticamente. Pergunte ao seu administrador.",
+  "@errorSsoAutoCreateDisabled": {
+    "description": "Falha de SSO: nenhuma conta corresponde e o servidor não cria contas - Usado em: error_localizations.dart"
+  },
+  "errorSsoLinkByEmailDisabled": "Uma conta já usa este endereço de email, mas este fornecedor não consegue iniciar sessão nela. Inicie sessão de outra forma ou pergunte ao seu administrador.",
+  "@errorSsoLinkByEmailDisabled": {
+    "description": "Falha de SSO: uma conta tem o email mas o fornecedor não liga por email - Usado em: error_localizations.dart"
+  },
+  "errorSsoApprovalPending": "A sua conta aguarda a aprovação de um administrador.",
+  "@errorSsoApprovalPending": {
+    "description": "Falha de SSO: a conta aguarda aprovação - Usado em: error_localizations.dart"
+  },
+  "errorSsoAccountDisabled": "Esta conta está desativada. Contacte o seu administrador.",
+  "@errorSsoAccountDisabled": {
+    "description": "Falha de SSO: a conta está desativada - Usado em: error_localizations.dart"
+  },
+  "errorSsoRedirectNotAllowed": "Este servidor não permite o início de sessão único a partir desta aplicação. Peça ao seu administrador para adicionar com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.",
+  "@errorSsoRedirectNotAllowed": {
+    "description": "Erro antes do SSO quando o servidor não lista o endereço de retorno da aplicação; manter o endereço e o nome da variável - Usado em: error_localizations.dart"
+  },
+  "passwordChangeTitle": "Escolha uma nova palavra-passe",
+  "@passwordChangeTitle": {
+    "description": "Título do passo de início de sessão que pede uma nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "passwordChangeMessage": "Um administrador definiu a sua palavra-passe. Escolha uma nova para concluir o início de sessão.",
+  "@passwordChangeMessage": {
+    "description": "Explicação no passo da nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "newPassword": "Nova palavra-passe",
+  "@newPassword": {
+    "description": "Etiqueta do campo da nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "confirmNewPassword": "Confirmar nova palavra-passe",
+  "@confirmNewPassword": {
+    "description": "Etiqueta do campo que repete a nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "passwordsDoNotMatch": "As palavras-passe não coincidem",
+  "@passwordsDoNotMatch": {
+    "description": "Erro de validação quando as duas palavras-passe diferem - Usado em: login_screen.dart"
+  },
+  "changePassword": "Alterar palavra-passe",
+  "@changePassword": {
+    "description": "Botão que envia a nova palavra-passe - Usado em: login_screen.dart"
+  },
   "logoutServerFailedWarning": "Não foi possível sair do servidor, mas saiu localmente",
   "@logoutServerFailedWarning": {
     "description": "Aviso exibido quando o logout do servidor falha mas o logout local é bem-sucedido - Usado em: server_settings_screen.dart"

@@ -278,6 +278,66 @@ class AppLocalizationsCa extends AppLocalizations {
   String get legacyDataDecline => 'No són meves';
 
   @override
+  String get errorPasswordChangeFailed =>
+      'No s\'ha pogut canviar la contrasenya';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'No s\'ha pogut canviar la contrasenya: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Aquest servidor ha demanat un pas d\'inici de sessió que aquesta versió de l\'aplicació no admet. Actualitzeu l\'aplicació i torneu-ho a provar.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'El vostre proveïdor d\'identitat no ha compartit cap adreça electrònica, i cal per crear el vostre compte.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'El vostre proveïdor d\'identitat no ha verificat la vostra adreça electrònica. Verifiqueu-la allà i torneu-ho a provar.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Cap compte no coincideix amb aquest inici de sessió, i aquest servidor no crea comptes automàticament. Pregunteu a l\'administrador.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Un compte ja fa servir aquesta adreça electrònica, però aquest proveïdor no hi pot iniciar la sessió. Inicieu la sessió d\'una altra manera o pregunteu a l\'administrador.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'El vostre compte espera l\'aprovació d\'un administrador.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Aquest compte està desactivat. Poseu-vos en contacte amb l\'administrador.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Aquest servidor no permet l\'inici de sessió únic des d\'aquesta aplicació. Demaneu a l\'administrador que afegeixi com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Trieu una contrasenya nova';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un administrador ha definit la vostra contrasenya. Trieu-ne una de nova per acabar d\'iniciar la sessió.';
+
+  @override
+  String get newPassword => 'Contrasenya nova';
+
+  @override
+  String get confirmNewPassword => 'Confirmeu la contrasenya nova';
+
+  @override
+  String get passwordsDoNotMatch => 'Les contrasenyes no coincideixen';
+
+  @override
+  String get changePassword => 'Canvia la contrasenya';
+
+  @override
   String get logoutServerFailedWarning =>
       'No s\'ha pogut tancar la sessió al servidor, però s\'ha tancat localment';
 

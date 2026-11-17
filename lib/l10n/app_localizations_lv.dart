@@ -269,6 +269,65 @@ class AppLocalizationsLv extends AppLocalizations {
   String get legacyDataDecline => 'Nav manas';
 
   @override
+  String get errorPasswordChangeFailed => 'Paroli neizdevās nomainīt';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Paroli neizdevās nomainīt: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveris pieprasīja pierakstīšanās soli, ko šī lietotnes versija neatbalsta. Atjauniniet lietotni un mēģiniet vēlreiz.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Jūsu identitātes nodrošinātājs nekopīgoja e-pasta adresi, kas nepieciešama konta izveidei.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Jūsu identitātes nodrošinātājs nav apstiprinājis jūsu e-pasta adresi. Apstipriniet to tur un mēģiniet vēlreiz.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Neviens konts neatbilst šai pierakstīšanās reizei, un šis serveris kontus automātiski neveido. Jautājiet administratoram.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Šo e-pasta adresi jau izmanto kāds konts, bet šis nodrošinātājs nevar tajā pierakstīties. Pierakstieties citā veidā vai jautājiet administratoram.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Jūsu konts gaida administratora apstiprinājumu.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Šis konts ir atspējots. Sazinieties ar administratoru.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Šis serveris neatļauj vienoto pierakstīšanos no šīs lietotnes. Lūdziet administratoram pievienot com.endurain.endurain:/auth/sso/callback sarakstam ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Izvēlieties jaunu paroli';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administrators iestatīja jūsu paroli. Lai pabeigtu pierakstīšanos, izvēlieties jaunu.';
+
+  @override
+  String get newPassword => 'Jaunā parole';
+
+  @override
+  String get confirmNewPassword => 'Apstipriniet jauno paroli';
+
+  @override
+  String get passwordsDoNotMatch => 'Paroles nesakrīt';
+
+  @override
+  String get changePassword => 'Mainīt paroli';
+
+  @override
   String get logoutServerFailedWarning =>
       'Neizdevās atteikties no servera, bet atteikšanās veikta lokāli';
 

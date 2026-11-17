@@ -273,6 +273,65 @@ class AppLocalizationsFi extends AppLocalizations {
   String get legacyDataDecline => 'Eivät ole minun';
 
   @override
+  String get errorPasswordChangeFailed => 'Salasanaa ei voitu vaihtaa';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Salasanaa ei voitu vaihtaa: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Palvelin pyysi kirjautumisvaihetta, jota tämä sovellusversio ei tue. Päivitä sovellus ja yritä uudelleen.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Identiteetintarjoajasi ei jakanut sähköpostiosoitetta, jota tarvitaan tilin luomiseen.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Identiteetintarjoajasi ei ole vahvistanut sähköpostiosoitettasi. Vahvista se siellä ja yritä uudelleen.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Mikään tili ei vastaa tätä kirjautumista, eikä tämä palvelin luo tilejä automaattisesti. Kysy ylläpitäjältä.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Tämä sähköpostiosoite on jo käytössä toisella tilillä, mutta tämä tarjoaja ei voi kirjautua siihen. Kirjaudu muulla tavalla tai kysy ylläpitäjältä.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Tilisi odottaa ylläpitäjän hyväksyntää.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Tämä tili on poistettu käytöstä. Ota yhteyttä ylläpitäjään.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Tämä palvelin ei salli kertakirjautumista tästä sovelluksesta. Pyydä ylläpitäjää lisäämään com.endurain.endurain:/auth/sso/callback asetukseen ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Valitse uusi salasana';
+
+  @override
+  String get passwordChangeMessage =>
+      'Ylläpitäjä asetti salasanasi. Valitse uusi viimeistelläksesi kirjautumisen.';
+
+  @override
+  String get newPassword => 'Uusi salasana';
+
+  @override
+  String get confirmNewPassword => 'Vahvista uusi salasana';
+
+  @override
+  String get passwordsDoNotMatch => 'Salasanat eivät täsmää';
+
+  @override
+  String get changePassword => 'Vaihda salasana';
+
+  @override
   String get logoutServerFailedWarning =>
       'Palvelimelta ei voitu kirjautua ulos, mutta uloskirjautuminen tehtiin paikallisesti';
 

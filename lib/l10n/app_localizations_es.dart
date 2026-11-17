@@ -274,6 +274,65 @@ class AppLocalizationsEs extends AppLocalizations {
   String get legacyDataDecline => 'No son mías';
 
   @override
+  String get errorPasswordChangeFailed => 'No se pudo cambiar la contraseña';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'No se pudo cambiar la contraseña: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Este servidor pidió un paso de inicio de sesión que esta versión de la aplicación no admite. Actualiza la aplicación e inténtalo de nuevo.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Tu proveedor de identidad no compartió una dirección de correo, que es necesaria para crear tu cuenta.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Tu proveedor de identidad no ha verificado tu dirección de correo. Verifícala allí e inténtalo de nuevo.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ninguna cuenta coincide con este inicio de sesión y este servidor no crea cuentas automáticamente. Pregunta a tu administrador.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Una cuenta ya usa esta dirección de correo, pero este proveedor no puede iniciar sesión en ella. Inicia sesión de otra forma o pregunta a tu administrador.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Tu cuenta está esperando la aprobación de un administrador.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Esta cuenta está desactivada. Ponte en contacto con tu administrador.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Este servidor no permite el inicio de sesión único desde esta aplicación. Pide a tu administrador que añada com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Elige una contraseña nueva';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un administrador estableció tu contraseña. Elige una nueva para terminar de iniciar sesión.';
+
+  @override
+  String get newPassword => 'Contraseña nueva';
+
+  @override
+  String get confirmNewPassword => 'Confirma la contraseña nueva';
+
+  @override
+  String get passwordsDoNotMatch => 'Las contraseñas no coinciden';
+
+  @override
+  String get changePassword => 'Cambiar contraseña';
+
+  @override
   String get logoutServerFailedWarning =>
       'No se pudo cerrar sesión en el servidor, pero se cerró localmente';
 

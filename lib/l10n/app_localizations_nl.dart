@@ -270,6 +270,65 @@ class AppLocalizationsNl extends AppLocalizations {
   String get legacyDataDecline => 'Niet van mij';
 
   @override
+  String get errorPasswordChangeFailed => 'Kan het wachtwoord niet wijzigen';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Kan het wachtwoord niet wijzigen: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Deze server vroeg om een inlogstap die deze versie van de app niet ondersteunt. Werk de app bij en probeer het opnieuw.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Je identiteitsprovider heeft geen e-mailadres gedeeld, en dat is nodig om je account aan te maken.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Je identiteitsprovider heeft je e-mailadres niet geverifieerd. Verifieer het daar en probeer het opnieuw.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Geen enkel account past bij deze aanmelding en deze server maakt niet automatisch accounts aan. Vraag het je beheerder.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Een account gebruikt dit e-mailadres al, maar deze provider kan daarop niet inloggen. Log op een andere manier in of vraag het je beheerder.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Je account wacht op goedkeuring door een beheerder.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Dit account is uitgeschakeld. Neem contact op met je beheerder.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Deze server staat single sign-on vanuit deze app niet toe. Vraag je beheerder om com.endurain.endurain:/auth/sso/callback toe te voegen aan ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Kies een nieuw wachtwoord';
+
+  @override
+  String get passwordChangeMessage =>
+      'Een beheerder heeft je wachtwoord ingesteld. Kies een nieuw wachtwoord om het inloggen af te ronden.';
+
+  @override
+  String get newPassword => 'Nieuw wachtwoord';
+
+  @override
+  String get confirmNewPassword => 'Bevestig nieuw wachtwoord';
+
+  @override
+  String get passwordsDoNotMatch => 'De wachtwoorden komen niet overeen';
+
+  @override
+  String get changePassword => 'Wachtwoord wijzigen';
+
+  @override
   String get logoutServerFailedWarning =>
       'Kan niet afmelden bij de server, maar lokaal afgemeld';
 

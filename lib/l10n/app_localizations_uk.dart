@@ -270,6 +270,65 @@ class AppLocalizationsUk extends AppLocalizations {
   String get legacyDataDecline => 'Не мої';
 
   @override
+  String get errorPasswordChangeFailed => 'Не вдалося змінити пароль';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Не вдалося змінити пароль: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Сервер запросив крок входу, який ця версія застосунку не підтримує. Оновіть застосунок і спробуйте знову.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Ваш постачальник ідентичності не надав адресу електронної пошти, потрібну для створення облікового запису.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Ваш постачальник ідентичності не підтвердив вашу адресу електронної пошти. Підтвердьте її там і спробуйте знову.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Жоден обліковий запис не відповідає цьому входу, а цей сервер не створює облікові записи автоматично. Зверніться до адміністратора.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Цю адресу електронної пошти вже використовує обліковий запис, але цей постачальник не може в нього увійти. Увійдіть іншим способом або зверніться до адміністратора.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Ваш обліковий запис очікує схвалення адміністратора.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Цей обліковий запис вимкнено. Зверніться до адміністратора.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Цей сервер не дозволяє єдиний вхід із цього застосунку. Попросіть адміністратора додати com.endurain.endurain:/auth/sso/callback до ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get passwordChangeTitle => 'Виберіть новий пароль';
+
+  @override
+  String get passwordChangeMessage =>
+      'Адміністратор установив ваш пароль. Виберіть новий, щоб завершити вхід.';
+
+  @override
+  String get newPassword => 'Новий пароль';
+
+  @override
+  String get confirmNewPassword => 'Підтвердьте новий пароль';
+
+  @override
+  String get passwordsDoNotMatch => 'Паролі не збігаються';
+
+  @override
+  String get changePassword => 'Змінити пароль';
+
+  @override
   String get logoutServerFailedWarning =>
       'Не вдалося вийти із сервера, але вихід виконано локально';
 
