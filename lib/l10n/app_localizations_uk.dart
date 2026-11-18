@@ -252,6 +252,103 @@ class AppLocalizationsUk extends AppLocalizations {
   String get logoutConfirmMessage => 'Ви впевнені, що хочете вийти?';
 
   @override
+  String get legacyDataTitle => 'Активності до оновлення сервера';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'На цьому пристрої є активності, збережені для облікового запису на цьому сервері ще до його оновлення. Вони ваші, $username? Якщо так, ті, що ще очікують, буде завантажено до вашого облікового запису.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'На цьому пристрої є активності, збережені для облікового запису на цьому сервері ще до його оновлення. Вони належать обліковому запису, у який ви щойно увійшли? Якщо так, ті, що ще очікують, буде завантажено до нього.';
+
+  @override
+  String get legacyDataConfirm => 'Вони мої';
+
+  @override
+  String get legacyDataDecline => 'Не мої';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'На сервері виконується забагато ваших завантажень. Застосунок спробує знову пізніше.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Не вдалося змінити пароль';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Не вдалося змінити пароль: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Сервер запросив крок входу, який ця версія застосунку не підтримує. Оновіть застосунок і спробуйте знову.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Ваш постачальник ідентичності не надав адресу електронної пошти, потрібну для створення облікового запису.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Ваш постачальник ідентичності не підтвердив вашу адресу електронної пошти. Підтвердьте її там і спробуйте знову.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Жоден обліковий запис не відповідає цьому входу, а цей сервер не створює облікові записи автоматично. Зверніться до адміністратора.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Цю адресу електронної пошти вже використовує обліковий запис, але цей постачальник не може в нього увійти. Увійдіть іншим способом або зверніться до адміністратора.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Ваш обліковий запис очікує схвалення адміністратора.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Цей обліковий запис вимкнено. Зверніться до адміністратора.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Цей сервер не дозволяє єдиний вхід із цього застосунку. Попросіть адміністратора додати com.endurain.endurain:/auth/sso/callback до ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ваш адміністратор вимагає двоетапної перевірки. Налаштуйте її у вебзастосунку Endurain і спробуйте знову.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Файл активності завеликий для цього сервера';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Цей сервер не приймає такий тип файлу активності';
+
+  @override
+  String get errorTooManyRequests =>
+      'Забагато спроб. Зачекайте трохи й спробуйте знову.';
+
+  @override
+  String get passwordChangeTitle => 'Виберіть новий пароль';
+
+  @override
+  String get passwordChangeMessage =>
+      'Адміністратор установив ваш пароль. Виберіть новий, щоб завершити вхід.';
+
+  @override
+  String get newPassword => 'Новий пароль';
+
+  @override
+  String get confirmNewPassword => 'Підтвердьте новий пароль';
+
+  @override
+  String get passwordsDoNotMatch => 'Паролі не збігаються';
+
+  @override
+  String get changePassword => 'Змінити пароль';
+
+  @override
   String get logoutServerFailedWarning =>
       'Не вдалося вийти із сервера, але вихід виконано локально';
 

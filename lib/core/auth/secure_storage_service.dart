@@ -2,6 +2,7 @@ import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
+import 'package:endurain/core/utils/scoped_storage_key.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
@@ -59,6 +60,7 @@ class SecureStorageService {
   static const _sessionIdKey = 'session_id';
   static const _accessTokenExpiresAtKey = 'access_token_expires_at';
   static const _authSessionKey = 'auth_session_v2';
+  static const _deviceIdKeyPrefix = 'device_id';
 
   // Read a value. Returns null when the key is absent.
   // Throws [AppException] with [AppErrorCode.secureStorageReadFailed] when the
@@ -199,6 +201,17 @@ class SecureStorageService {
 
   Future<void> deleteAccessTokenExpiresAt() =>
       delete(key: _accessTokenExpiresAtKey);
+
+  /// The device id the server [origin] issued at an earlier sign-in, sent as
+  /// `X-Device-Id` so the server recognizes this app as a known device.
+  ///
+  /// Kept per origin, so one server's id never reaches another, and kept on
+  /// sign-out: it names the device, not the session, and is not a credential.
+  Future<String?> getDeviceId(String origin) =>
+      read(key: scopedStorageKey(_deviceIdKeyPrefix, origin));
+
+  Future<void> setDeviceId(String origin, String deviceId) =>
+      write(key: scopedStorageKey(_deviceIdKeyPrefix, origin), value: deviceId);
 
   Future<String?> getAuthSession() => read(key: _authSessionKey);
 

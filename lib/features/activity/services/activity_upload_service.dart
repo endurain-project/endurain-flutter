@@ -28,11 +28,16 @@ typedef ActivityFileUploader = Future<http.StreamedResponse> Function(
   String? expectedProfileId,
 });
 
-/// Fetches the ingestion job at [endpoint] and returns its decoded JSON.
+/// One read of a job: its decoded JSON and the server's `Retry-After`, the
+/// wait it asks for before the next read (absent once the job is finished).
+typedef IngestionJobRead = ({Map<String, dynamic> job, Duration? retryAfter});
+
+/// Reads the job at [endpoint] (`GET /jobs/{job_id}`).
 ///
-/// In production this wraps `ApiClient.getJsonObject` (token-refreshing,
-/// profile-scoped). Required to follow a `202 Accepted` upload to completion.
-typedef IngestionJobFetcher = Future<Map<String, dynamic>> Function(
+/// In production this wraps `ApiClient.getJsonObjectWithHeaders`
+/// (token-refreshing, profile-scoped). Required to follow a `202 Accepted`
+/// upload to completion.
+typedef IngestionJobFetcher = Future<IngestionJobRead> Function(
   String endpoint, {
   String? expectedOrigin,
   String? expectedProfileId,
@@ -44,17 +49,36 @@ typedef IngestionJobFetcher = Future<Map<String, dynamic>> Function(
 /// A job still unfinished after [maxPolls] checks is treated as a transient
 /// failure: the record stays retryable and the retry replays the upload with
 /// the same idempotency key, which the server de-duplicates.
+///
+/// Between checks it waits the `Retry-After` the server sent, bounded by
+/// [minWait] and [maxWait], or [defaultWait] when there was none.
 class IngestionPollPolicy {
   const IngestionPollPolicy({
     this.maxPolls = 30,
-    Future<void> Function(int poll)? delay,
+    this.defaultWait = const Duration(seconds: 2),
+    this.minWait = const Duration(seconds: 1),
+    this.maxWait = const Duration(seconds: 10),
+    Future<void> Function(int poll, Duration wait)? delay,
   }) : delay = delay ?? _defaultDelay;
 
   final int maxPolls;
-  final Future<void> Function(int poll) delay;
+  final Duration defaultWait;
+  final Duration minWait;
+  final Duration maxWait;
 
-  static Future<void> _defaultDelay(int poll) =>
-      Future.delayed(const Duration(seconds: 2));
+  /// Waits `wait` before check number `poll`; replaced in tests.
+  final Future<void> Function(int poll, Duration wait) delay;
+
+  static Future<void> _defaultDelay(int poll, Duration wait) =>
+      Future.delayed(wait);
+
+  /// The wait before the next check, from the server's [retryAfter].
+  Duration waitFor(Duration? retryAfter) {
+    final wait = retryAfter ?? defaultWait;
+    if (wait < minWait) return minWait;
+    if (wait > maxWait) return maxWait;
+    return wait;
+  }
 }
 
 /// Controls how many times [ActivityUploadService.performUploadAttempt]
@@ -83,10 +107,14 @@ class ActivityUploadConfig {
     required this.endpoint,
     required this.fieldName,
     this.ingestionJobPath = _defaultJobPath,
+    this.isJobPath = _defaultIsJobPath,
   });
 
   static String _defaultJobPath(String jobId) =>
-      '/api/v1/activities/ingestion-jobs/${Uri.encodeComponent(jobId)}';
+      ApiEndpoints.defaults.jobEndpoint(jobId);
+
+  static bool _defaultIsJobPath(String path) =>
+      ApiEndpoints.defaults.isJobPath(path);
 
   /// Build from [ApiEndpoints] so a custom `AppConfig.apiBasePath` is
   /// reflected in the upload endpoint path.
@@ -94,15 +122,20 @@ class ActivityUploadConfig {
     return ActivityUploadConfig(
       endpoint: endpoints.activityUploadEndpoint,
       fieldName: ApiConstants.activityUploadFieldName,
-      ingestionJobPath: endpoints.activityIngestionJobEndpoint,
+      ingestionJobPath: endpoints.jobEndpoint,
+      isJobPath: endpoints.isJobPath,
     );
   }
 
   final String endpoint;
   final String fieldName;
 
-  /// Builds the status path for an ingestion job id.
+  /// Builds the path of a job (`GET /jobs/{job_id}`) from its id.
   final String Function(String jobId) ingestionJobPath;
+
+  /// Whether a server-supplied `Content-Location` is a job path this client
+  /// may poll with its bearer token.
+  final bool Function(String path) isJobPath;
 
   String ingestionJobEndpoint(String jobId) => ingestionJobPath(jobId);
 
@@ -180,10 +213,11 @@ class ActivityUploadService {
     }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final jobId = await _readJobId(response);
-      if (jobId != null && _fetchIngestionJob != null) {
+      final job = await _readAcceptedJob(response, config);
+      if (job != null && _fetchIngestionJob != null) {
         await _awaitIngestion(
-          jobId,
+          job.endpoint,
+          firstWait: job.retryAfter,
           expectedOrigin: request.expectedOrigin,
           expectedProfileId: request.expectedProfileId,
         );
@@ -193,28 +227,110 @@ class ActivityUploadService {
     if (response.statusCode == 401) {
       throw const AppException(AppErrorCode.sessionExpired);
     }
+    final problem = await _readProblem(response);
+    if (response.statusCode == 409 && !_isKeyConflict(problem)) {
+      // The server's cap on open uploads (10 per user). Not worth an
+      // immediate retry, but the next drain uploads it once a job finishes.
+      throw const AppException(
+        AppErrorCode.activityUploadFailed,
+        details: uploadLimitDetails,
+      );
+    }
 
     throw AppException(
       AppErrorCode.activityUploadFailed,
-      details: 'HTTP ${response.statusCode}',
+      details: switch (response.statusCode) {
+        403 when problem.type.contains('mfa-enrolment-required') =>
+          mfaEnrolmentRequiredDetails,
+        413 => fileTooLargeDetails,
+        415 => unsupportedFileTypeDetails,
+        _ => 'HTTP ${response.statusCode}',
+      },
     );
   }
 
-  /// Reads the ingestion job id from a `202 Accepted` body.
+  /// [AppException.details] of an upload the server refused because an
+  /// administrator requires two-step verification the account has not set up.
+  static const String mfaEnrolmentRequiredDetails = 'mfa_enrolment_required';
+
+  /// [AppException.details] of a file over the server's size limit (`413`).
+  static const String fileTooLargeDetails = 'file_too_large';
+
+  /// [AppException.details] of a file type the server does not accept (`415`).
+  static const String unsupportedFileTypeDetails = 'unsupported_file_type';
+
+  /// [AppException.details] of an upload refused at the server's cap on open
+  /// uploads; such a record stays eligible for the next automatic retry.
+  static const String uploadLimitDetails = 'upload_limit';
+
+  /// Reads the RFC 9457 problem document of a refused upload; both fields are
+  /// empty when the body is missing or not a problem document.
+  static Future<({String type, String detail})> _readProblem(
+    http.StreamedResponse response,
+  ) async {
+    try {
+      final body = json.decode(await response.stream.bytesToString());
+      if (body is Map) {
+        return (
+          type: body['type'] is String ? body['type'] as String : '',
+          detail: body['detail'] is String ? body['detail'] as String : '',
+        );
+      }
+    } catch (_) {
+      // Not JSON: no problem to read.
+    }
+    return (type: '', detail: '');
+  }
+
+  /// Whether a `409` refused the `Idempotency-Key` itself (the same key sent
+  /// with a different file), which no retry can fix.
   ///
-  /// Returns `null` for any other response or a body without a string `id`
-  /// (servers that import inline), which callers treat as already complete.
-  static Future<String?> _readJobId(http.StreamedResponse response) async {
+  /// Both `409`s of the upload route carry `urn:endurain:error:conflict`; only
+  /// the problem `detail` tells them apart, so any other `409` is read as the
+  /// cap on open uploads.
+  static bool _isKeyConflict(({String type, String detail}) problem) =>
+      problem.detail.contains('Idempotency-Key');
+
+  /// Reads the job a `202 Accepted` names: the path to poll (the
+  /// `Content-Location` when it is a job path on this API, else built from the
+  /// body's `id`) and the first `Retry-After`.
+  ///
+  /// Returns `null` for any other response or one that names no job (servers
+  /// that import inline), which callers treat as already complete.
+  static Future<({String endpoint, Duration? retryAfter})?> _readAcceptedJob(
+    http.StreamedResponse response,
+    ActivityUploadConfig config,
+  ) async {
     if (response.statusCode != 202) {
       return null;
+    }
+    final retryAfter = parseRetryAfter(
+      response.headers[ApiConstants.retryAfterHeader],
+    );
+    final location = response.headers[ApiConstants.contentLocationHeader];
+    if (location != null && config.isJobPath(location)) {
+      await response.stream.drain<void>();
+      return (endpoint: location, retryAfter: retryAfter);
     }
     try {
       final body = json.decode(await response.stream.bytesToString());
       final id = body is Map ? body['id'] : null;
-      return id is String && id.isNotEmpty ? id : null;
+      if (id is String && id.isNotEmpty) {
+        return (
+          endpoint: config.ingestionJobEndpoint(id),
+          retryAfter: retryAfter,
+        );
+      }
     } catch (_) {
-      return null;
+      // No readable job: treated as finished, like an inline import.
     }
+    return null;
+  }
+
+  /// Parses a `Retry-After` given in seconds (the form Endurain sends).
+  static Duration? parseRetryAfter(String? value) {
+    final seconds = int.tryParse(value?.trim() ?? '');
+    return seconds == null || seconds < 0 ? null : Duration(seconds: seconds);
   }
 
   /// Polls the ingestion job until it finishes.
@@ -224,25 +340,28 @@ class ActivityUploadService {
   /// automatically), or with a [TimeoutException] cause when it is still
   /// running after the poll budget (transient, retried automatically).
   Future<void> _awaitIngestion(
-    String jobId, {
+    String endpoint, {
+    Duration? firstWait,
     String? expectedOrigin,
     String? expectedProfileId,
   }) async {
     final fetch = _fetchIngestionJob!;
-    final endpoint = _config!.ingestionJobEndpoint(jobId);
     final polls = _pollPolicy.maxPolls.clamp(1, 1 << 20);
+    var nextWait = firstWait;
 
     for (var poll = 0; poll < polls; poll++) {
-      if (poll > 0) {
-        await _pollPolicy.delay(poll);
-      }
+      // The server says when to read the job, also before the first read.
+      await _pollPolicy.delay(poll, _pollPolicy.waitFor(nextWait));
+      nextWait = null;
       final Map<String, dynamic> job;
       try {
-        job = await fetch(
+        final read = await fetch(
           endpoint,
           expectedOrigin: expectedOrigin,
           expectedProfileId: expectedProfileId,
         );
+        job = read.job;
+        nextWait = read.retryAfter;
       } on AppException catch (error) {
         // A transient status check failure must not abandon a job that may
         // still succeed; auth and permanent (4xx) failures end the attempt.
@@ -273,7 +392,7 @@ class ActivityUploadService {
 
     throw AppException(
       AppErrorCode.activityUploadFailed,
-      cause: TimeoutException('Ingestion job $jobId did not finish'),
+      cause: TimeoutException('Ingestion job $endpoint did not finish'),
     );
   }
 
@@ -290,17 +409,17 @@ class ActivityUploadService {
     return status != null && status >= 500;
   }
 
-  /// Classifies an `IngestionJobStatus`: `pending` and `processing` are still
-  /// running, `failed` is terminal failure, and `completed` is success unless
-  /// any file failed. An unknown status keeps polling so a status added by a
-  /// newer server cannot be mistaken for success.
+  /// Classifies a job status: `queued` and `running` are still running,
+  /// `failed` is terminal failure, and `succeeded` is success unless any file
+  /// failed. An unknown status keeps polling so a status added by a newer
+  /// server cannot be mistaken for success.
   static _JobOutcome _classifyJob(Map<String, dynamic> job) {
     final failedFiles = job['files_failed'];
     return switch (job['status']) {
       'failed' => _JobOutcome.failed,
-      'completed' when failedFiles is num && failedFiles > 0 =>
+      'succeeded' when failedFiles is num && failedFiles > 0 =>
         _JobOutcome.failed,
-      'completed' => _JobOutcome.succeeded,
+      'succeeded' => _JobOutcome.succeeded,
       _ => _JobOutcome.running,
     };
   }
@@ -482,7 +601,7 @@ class ActivityUploadService {
           updatedAt: clock().toUtc(),
           lastUploadAttemptAt: attemptedAt,
           lastUploadErrorCode: _safeUploadErrorCode(error),
-          autoRetryEligible: _isTransient(error),
+          autoRetryEligible: _isTransient(error) || _isUploadLimit(error),
         );
         await repository.updateIfPresent(failedRecord);
         rethrow;
@@ -527,6 +646,13 @@ class ActivityUploadService {
     }
     return false;
   }
+
+  /// Whether [error] is the server's cap on open uploads: retried at the next
+  /// drain, not at once.
+  static bool _isUploadLimit(Object error) =>
+      error is AppException &&
+      error.code == AppErrorCode.activityUploadFailed &&
+      error.details == uploadLimitDetails;
 
   /// Whether [error] is a known transient I/O/network failure.
   static bool _isTransientIoError(Object error) {

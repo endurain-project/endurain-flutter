@@ -44,6 +44,12 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       'no_activities_found' => l10n.errorActivityIngestionNoActivitiesFound,
       'processing_failed' => l10n.errorActivityIngestionProcessingFailed,
       'provider_unavailable' => l10n.errorActivityIngestionProviderUnavailable,
+      // Set by the upload service for a `409` at the server's cap on open
+      // uploads; the upload is retried later.
+      'upload_limit' => l10n.errorActivityUploadLimit,
+      'mfa_enrolment_required' => l10n.errorActivityMfaEnrolmentRequired,
+      'file_too_large' => l10n.errorActivityFileTooLarge,
+      'unsupported_file_type' => l10n.errorActivityUnsupportedFileType,
       _ => l10n.errorActivityUploadFailedWithDetails(details),
     },
     AppErrorCode.activityUploadNotConfigured =>
@@ -71,6 +77,13 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
       details == null
           ? l10n.errorLoginError
           : l10n.errorLoginErrorWithDetails(details),
+    // A rate-limited sign-in step: the server's own text is in its language,
+    // not the user's, so say it in the app's.
+    AppErrorCode.loginFailed ||
+    AppErrorCode.mfaVerificationFailed ||
+    AppErrorCode.passwordChangeFailed ||
+    AppErrorCode.tokenExchangeFailed when error.statusCode == 429 =>
+      l10n.errorTooManyRequests,
     AppErrorCode.loginFailed =>
       details == null
           ? l10n.errorLoginFailed
@@ -86,6 +99,10 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
           : l10n.errorMfaVerificationFailedWithDetails(details),
     AppErrorCode.noSessionIdReceived => l10n.errorNoSessionIdReceived,
     AppErrorCode.notAuthenticated => l10n.errorNotAuthenticated,
+    AppErrorCode.passwordChangeFailed =>
+      details == null
+          ? l10n.errorPasswordChangeFailed
+          : l10n.errorPasswordChangeFailedWithDetails(details),
     AppErrorCode.pkceVerifierMissingRestartLogin =>
       l10n.errorPkceVerifierMissingRestartLogin,
     AppErrorCode.requestTimeout => l10n.errorRequestTimeout,
@@ -95,7 +112,19 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
     AppErrorCode.secureStorageWriteFailed => l10n.errorSecureStorageWriteFailed,
     AppErrorCode.serverUrlNotConfigured => l10n.errorServerUrlNotConfigured,
     AppErrorCode.sessionExpired => l10n.errorSessionExpired,
-    AppErrorCode.ssoCallbackFailed => l10n.errorSsoCallbackFailed,
+    AppErrorCode.signInStepUnsupported => l10n.errorSignInStepUnsupported,
+    // Only the server's documented codes reach [details]; anything else in
+    // the deep link was dropped, since any app can fire it.
+    AppErrorCode.ssoCallbackFailed => switch (details) {
+      'sso_email_missing' => l10n.errorSsoEmailMissing,
+      'sso_email_unverified' => l10n.errorSsoEmailUnverified,
+      'sso_auto_create_disabled' => l10n.errorSsoAutoCreateDisabled,
+      'sso_link_by_email_disabled' => l10n.errorSsoLinkByEmailDisabled,
+      'sso_approval_pending' => l10n.errorSsoApprovalPending,
+      'sso_account_disabled' => l10n.errorSsoAccountDisabled,
+      _ => l10n.errorSsoCallbackFailed,
+    },
+    AppErrorCode.ssoRedirectNotAllowed => l10n.errorSsoRedirectNotAllowed,
     AppErrorCode.ssoTokenExchangeError =>
       details == null
           ? l10n.errorSsoTokenExchangeError

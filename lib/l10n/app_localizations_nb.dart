@@ -251,6 +251,103 @@ class AppLocalizationsNb extends AppLocalizations {
   String get logoutConfirmMessage => 'Er du sikker på at du vil logge ut?';
 
   @override
+  String get legacyDataTitle => 'Aktiviteter fra før serveroppdateringen';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Denne enheten har aktiviteter lagret for en konto på denne serveren fra før serveren ble oppdatert. Er de dine, $username? Hvis de er det, blir de som fortsatt venter lastet opp til kontoen din.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Denne enheten har aktiviteter lagret for en konto på denne serveren fra før serveren ble oppdatert. Tilhører de kontoen du nettopp logget inn med? Hvis de gjør det, blir de som fortsatt venter lastet opp til den.';
+
+  @override
+  String get legacyDataConfirm => 'De er mine';
+
+  @override
+  String get legacyDataDecline => 'Ikke mine';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serveren har for mange av opplastingene dine i gang. Appen prøver igjen senere.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Kunne ikke endre passordet';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Kunne ikke endre passordet: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveren ba om et påloggingstrinn denne versjonen av appen ikke støtter. Oppdater appen og prøv igjen.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Identitetsleverandøren din delte ikke en e-postadresse, som trengs for å opprette kontoen din.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Identitetsleverandøren din har ikke bekreftet e-postadressen din. Bekreft den der, og prøv igjen.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ingen konto samsvarer med denne påloggingen, og serveren oppretter ikke kontoer automatisk. Spør administratoren din.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'En konto bruker allerede denne e-postadressen, men denne leverandøren kan ikke logge inn på den. Logg inn på en annen måte, eller spør administratoren din.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Kontoen din venter på godkjenning fra en administrator.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Denne kontoen er deaktivert. Kontakt administratoren din.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Denne serveren tillater ikke enkel pålogging fra denne appen. Be administratoren din om å legge til com.endurain.endurain:/auth/sso/callback i ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Administratoren din krever tostegsbekreftelse. Sett den opp i Endurains nettapp, og prøv igjen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktivitetsfilen er for stor for denne serveren';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Denne serveren godtar ikke denne typen aktivitetsfil';
+
+  @override
+  String get errorTooManyRequests =>
+      'For mange forsøk. Vent litt og prøv igjen.';
+
+  @override
+  String get passwordChangeTitle => 'Velg et nytt passord';
+
+  @override
+  String get passwordChangeMessage =>
+      'En administrator har angitt passordet ditt. Velg et nytt for å fullføre påloggingen.';
+
+  @override
+  String get newPassword => 'Nytt passord';
+
+  @override
+  String get confirmNewPassword => 'Bekreft nytt passord';
+
+  @override
+  String get passwordsDoNotMatch => 'Passordene er ikke like';
+
+  @override
+  String get changePassword => 'Endre passord';
+
+  @override
   String get logoutServerFailedWarning =>
       'Kunne ikke logge ut fra serveren, men logget ut lokalt';
 

@@ -259,6 +259,105 @@ class AppLocalizationsCa extends AppLocalizations {
   String get logoutConfirmMessage => 'Segur que voleu tancar la sessió?';
 
   @override
+  String get legacyDataTitle =>
+      'Activitats d\'abans de l\'actualització del servidor';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Aquest dispositiu té activitats desades per a un compte d\'aquest servidor d\'abans que s\'actualitzés. Són vostres, $username? Si ho són, les que encara estan pendents es pujaran al vostre compte.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Aquest dispositiu té activitats desades per a un compte d\'aquest servidor d\'abans que s\'actualitzés. Pertanyen al compte amb què acabeu d\'iniciar la sessió? Si és així, les que encara estan pendents s\'hi pujaran.';
+
+  @override
+  String get legacyDataConfirm => 'Són meves';
+
+  @override
+  String get legacyDataDecline => 'No són meves';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'El servidor té massa pujades vostres en curs. L\'aplicació ho tornarà a provar més tard.';
+
+  @override
+  String get errorPasswordChangeFailed =>
+      'No s\'ha pogut canviar la contrasenya';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'No s\'ha pogut canviar la contrasenya: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Aquest servidor ha demanat un pas d\'inici de sessió que aquesta versió de l\'aplicació no admet. Actualitzeu l\'aplicació i torneu-ho a provar.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'El vostre proveïdor d\'identitat no ha compartit cap adreça electrònica, i cal per crear el vostre compte.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'El vostre proveïdor d\'identitat no ha verificat la vostra adreça electrònica. Verifiqueu-la allà i torneu-ho a provar.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Cap compte no coincideix amb aquest inici de sessió, i aquest servidor no crea comptes automàticament. Pregunteu a l\'administrador.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Un compte ja fa servir aquesta adreça electrònica, però aquest proveïdor no hi pot iniciar la sessió. Inicieu la sessió d\'una altra manera o pregunteu a l\'administrador.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'El vostre compte espera l\'aprovació d\'un administrador.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Aquest compte està desactivat. Poseu-vos en contacte amb l\'administrador.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Aquest servidor no permet l\'inici de sessió únic des d\'aquesta aplicació. Demaneu a l\'administrador que afegeixi com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'El vostre administrador exigeix la verificació en dos passos. Configureu-la a l\'aplicació web d\'Endurain i torneu-ho a provar.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'El fitxer de l\'activitat és massa gran per a aquest servidor';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Aquest servidor no accepta aquest tipus de fitxer d\'activitat';
+
+  @override
+  String get errorTooManyRequests =>
+      'Massa intents. Espereu un moment i torneu-ho a provar.';
+
+  @override
+  String get passwordChangeTitle => 'Trieu una contrasenya nova';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un administrador ha definit la vostra contrasenya. Trieu-ne una de nova per acabar d\'iniciar la sessió.';
+
+  @override
+  String get newPassword => 'Contrasenya nova';
+
+  @override
+  String get confirmNewPassword => 'Confirmeu la contrasenya nova';
+
+  @override
+  String get passwordsDoNotMatch => 'Les contrasenyes no coincideixen';
+
+  @override
+  String get changePassword => 'Canvia la contrasenya';
+
+  @override
   String get logoutServerFailedWarning =>
       'No s\'ha pogut tancar la sessió al servidor, però s\'ha tancat localment';
 

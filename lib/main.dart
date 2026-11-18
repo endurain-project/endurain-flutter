@@ -52,6 +52,16 @@ Future<void> main() async {
       await diagnostics.initialize();
       diagnostics.recordBreadcrumbSync(DiagnosticsEvents.appStarted);
 
+      // Before anything reaches the server: a v0.21 server refuses the tokens
+      // of a session stored before its upgrade, and the app then clears it.
+      // Remember which pre-v0.21 account it was so its local data can follow
+      // the account to its new id at the next sign-in. Never throws; bounded
+      // so a stalled keychain cannot keep the app from starting.
+      await services.legacyProfileAdoption.captureLegacyHint().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {},
+      );
+
       // Load the persisted language (BCP 47) before the first frame so the UI
       // starts in the user's chosen locale rather than flashing the system one.
       await services.localeController.load();

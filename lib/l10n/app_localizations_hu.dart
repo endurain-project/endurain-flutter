@@ -257,6 +257,104 @@ class AppLocalizationsHu extends AppLocalizations {
   String get logoutConfirmMessage => 'Biztosan ki szeretne jelentkezni?';
 
   @override
+  String get legacyDataTitle => 'A szerverfrissítés előtti tevékenységek';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Ezen az eszközön olyan tevékenységek vannak, amelyeket a szerver frissítése előtt mentettek egy ezen a szerveren lévő fiókhoz. Ezek az Önéi, $username? Ha igen, a még várakozók feltöltődnek az Ön fiókjába.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Ezen az eszközön olyan tevékenységek vannak, amelyeket a szerver frissítése előtt mentettek egy ezen a szerveren lévő fiókhoz. Ahhoz a fiókhoz tartoznak, amellyel most jelentkezett be? Ha igen, a még várakozók oda töltődnek fel.';
+
+  @override
+  String get legacyDataConfirm => 'Az enyéim';
+
+  @override
+  String get legacyDataDecline => 'Nem az enyéim';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'A szerveren túl sok feltöltése van folyamatban. Az alkalmazás később újra megpróbálja.';
+
+  @override
+  String get errorPasswordChangeFailed =>
+      'A jelszót nem sikerült megváltoztatni';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'A jelszót nem sikerült megváltoztatni: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'A szerver olyan bejelentkezési lépést kért, amelyet az alkalmazás ezen verziója nem támogat. Frissítse az alkalmazást, és próbálja újra.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Az identitásszolgáltató nem osztott meg e-mail-címet, amely a fiók létrehozásához szükséges.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Az identitásszolgáltató nem erősítette meg az e-mail-címét. Erősítse meg ott, majd próbálja újra.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Egyetlen fiók sem felel meg ennek a bejelentkezésnek, és a szerver nem hoz létre automatikusan fiókokat. Forduljon a rendszergazdához.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ezt az e-mail-címet már egy fiók használja, de ez a szolgáltató nem tud bejelentkezni abba. Jelentkezzen be másként, vagy forduljon a rendszergazdához.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'A fiókja rendszergazdai jóváhagyásra vár.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ez a fiók le van tiltva. Forduljon a rendszergazdához.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Ez a szerver nem engedélyezi az egyszeri bejelentkezést ebből az alkalmazásból. Kérje meg a rendszergazdát, hogy adja hozzá a(z) com.endurain.endurain:/auth/sso/callback címet a(z) ALLOWED_REDIRECT_URIS listához.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'A rendszergazda kétlépéses ellenőrzést ír elő. Állítsa be az Endurain webalkalmazásában, majd próbálja újra.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'A tevékenységfájl túl nagy ehhez a szerverhez';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ez a szerver nem fogadja el az ilyen típusú tevékenységfájlt';
+
+  @override
+  String get errorTooManyRequests =>
+      'Túl sok próbálkozás. Várjon egy kicsit, majd próbálja újra.';
+
+  @override
+  String get passwordChangeTitle => 'Válasszon új jelszót';
+
+  @override
+  String get passwordChangeMessage =>
+      'Egy rendszergazda beállította a jelszavát. A bejelentkezés befejezéséhez válasszon újat.';
+
+  @override
+  String get newPassword => 'Új jelszó';
+
+  @override
+  String get confirmNewPassword => 'Új jelszó megerősítése';
+
+  @override
+  String get passwordsDoNotMatch => 'A jelszavak nem egyeznek';
+
+  @override
+  String get changePassword => 'Jelszó módosítása';
+
+  @override
   String get logoutServerFailedWarning =>
       'Nem sikerült kijelentkezni a kiszolgálóból, de a helyi kijelentkezés megtörtént';
 

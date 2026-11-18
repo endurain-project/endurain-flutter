@@ -277,6 +277,64 @@ void main() {
       expect(find.text('Logged out'), findsNothing);
     });
   });
+
+  group('DialogUtils.showChoiceDialog', () {
+    testWidgets('uses the given cancel label and returns false for it', (
+      tester,
+    ) async {
+      late Future<bool?> result;
+      await tester.pumpWidget(
+        _DialogTestApp(
+          builder: (context) => ElevatedButton(
+            onPressed: () {
+              result = DialogUtils.showChoiceDialog(
+                context,
+                title: 'Whose?',
+                message: 'Pick one.',
+                confirmText: 'Mine',
+                cancelText: 'Not mine',
+              );
+            },
+            child: const Text('Show choice'),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Show choice'));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.cancel), findsNothing);
+      await tester.tap(find.text('Not mine'));
+      await tester.pumpAndSettle();
+
+      expect(await result, isFalse);
+    });
+
+    testWidgets('ignores a barrier tap when not barrier-dismissible', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _DialogTestApp(
+          builder: (context) => ElevatedButton(
+            onPressed: () => DialogUtils.showChoiceDialog(
+              context,
+              title: 'Whose?',
+              message: 'Pick one.',
+              confirmText: 'Mine',
+              barrierDismissible: false,
+            ),
+            child: const Text('Show choice'),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Show choice'));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(5, 5));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Whose?'), findsOneWidget);
+    });
+  });
 }
 
 class _DialogTestApp extends StatelessWidget {

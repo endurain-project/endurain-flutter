@@ -1,17 +1,19 @@
+import 'dart:convert';
+
 import 'package:endurain/core/auth/auth_session_store.dart';
-import 'package:endurain/core/auth/pkce_token_exchanger.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/auth/sign_in_flow.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
-import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/network/api_response.dart';
 import 'package:endurain/core/network/base_http_client.dart';
-import 'package:endurain/core/utils/pkce_utils.dart';
-import 'package:endurain/core/utils/run_with_cleanup.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:http/http.dart' as http;
+
+export 'package:endurain/core/auth/sign_in_flow.dart'
+    show AuthResult, SignInStep;
 
 class AuthService {
   AuthService({
@@ -22,6 +24,7 @@ class AuthService {
     http.Client? httpClient,
     AppConfig config = AppConfig.defaults,
     ApiEndpoints? endpoints,
+    SignInFlow? signInFlow,
   }) {
     final resolvedStorage = storage ?? SecureStorageService();
     _sessionStore =
@@ -32,150 +35,51 @@ class AuthService {
         ServerUrlResolver(storage: resolvedStorage, config: config);
     _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
     _endpoints = endpoints ?? ApiEndpoints(config);
-    _exchanger = PkceTokenExchanger(
-      sessionStore: _sessionStore,
-      http: _http,
-      endpoints: _endpoints,
-    );
+    _signIn =
+        signInFlow ??
+        SignInFlow(
+          sessionStore: _sessionStore,
+          http: _http,
+          storage: resolvedStorage,
+          endpoints: _endpoints,
+        );
   }
 
   late final AuthSessionStore _sessionStore;
   late final ServerUrlResolver _urlResolver;
   late final BaseHttpClient _http;
   late final ApiEndpoints _endpoints;
-  late final PkceTokenExchanger _exchanger;
-
-  // Store PKCE temporarily during auth flow
-  PkcePair? _pkce;
-  String? _pendingLoginOrigin;
+  late final SignInFlow _signIn;
 
   // Refreshes are single-flight per session revision. A replacement login may
   // refresh independently without joining a stale request from the old session.
   final Map<String, Future<bool>> _inFlightRefreshes = {};
 
-  /// Runs [action], always clearing the in-flight PKCE verifier on failure.
-  /// Re-throws [AppException]s unchanged; wraps any other error in an
-  /// [AppException] with [fallbackCode].
-  Future<T> _withPkceCleanup<T>(
-    Future<T> Function() action, {
-    required AppErrorCode fallbackCode,
-  }) => runWithCleanup(
-    action,
-    onCleanup: () {
-      _pkce = null;
-      _pendingLoginOrigin = null;
-    },
-    fallbackCode: fallbackCode,
-  );
-
-  /// Login with username and password using PKCE flow
-  /// Returns AuthResult with MFA status or session ID for token exchange
+  /// Starts a password sign-in (PKCE, mobile). The result says whether the
+  /// user is signed in or which step comes next ([verifyMfa],
+  /// [changePassword]).
   Future<AuthResult> login(
     String username,
     String password, {
     String? serverUrl,
   }) async {
     final url = await _urlResolver.resolve(serverUrl: serverUrl);
-    _pendingLoginOrigin = url;
-
-    // Generate PKCE parameters
-    _pkce = PkceUtils.generatePkce();
-
-    final apiUrl = Uri.parse(
-      '$url${_endpoints.tokenEndpoint}?code_challenge=${_pkce!.challenge}&code_challenge_method=S256',
-    );
-
-    return _withPkceCleanup(() async {
-      final data = await _http.postJsonObject(
-        apiUrl,
-        extraHeaders: {
-          ApiConstants.contentTypeHeader:
-              ApiConstants.contentTypeFormUrlEncoded,
-        },
-        rawBody: {'username': username, 'password': password},
-        failureCode: AppErrorCode.loginFailed,
-      );
-
-      // Check if MFA is required
-      if (data['mfa_required'] == true) {
-        // Store username for MFA verification
-        await _sessionStore.saveLoginUsername(username);
-
-        return AuthResult(
-          success: true,
-          mfaRequired: true,
-          username: data['username'] as String?,
-          message: data['message'] as String?,
-        );
-      }
-
-      // PKCE flow returns session_id for token exchange
-      final sessionId = ApiResponse.optionalString(data, 'session_id');
-
-      if (sessionId != null) {
-        // Exchange session for tokens
-        return _exchangeSessionForTokens(url, sessionId, username);
-      }
-
-      throw const AppException(AppErrorCode.noSessionIdReceived);
-    }, fallbackCode: AppErrorCode.loginError);
-  }
-
-  /// Verify MFA code after initial login using PKCE flow
-  Future<AuthResult> verifyMfa(String username, String mfaCode) async {
-    final serverUrl = _pendingLoginOrigin ?? await _urlResolver.resolve();
-
-    if (_pkce == null) {
-      throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
-    }
-
-    // MFA verification with PKCE uses query parameters
-    final url = Uri.parse(
-      '$serverUrl${_endpoints.mfaVerifyEndpoint}?code_challenge=${_pkce!.challenge}&code_challenge_method=S256',
-    );
-
-    return _withPkceCleanup(() async {
-      final data = await _http.postJsonObject(
-        url,
-        jsonBody: {'username': username, 'mfa_code': mfaCode},
-        failureCode: AppErrorCode.mfaVerificationFailed,
-      );
-
-      // PKCE flow returns session_id for token exchange
-      final sessionId = ApiResponse.optionalString(data, 'session_id');
-
-      if (sessionId != null) {
-        // Exchange session for tokens
-        return _exchangeSessionForTokens(serverUrl, sessionId, username);
-      }
-
-      throw const AppException(AppErrorCode.noSessionIdReceived);
-    }, fallbackCode: AppErrorCode.mfaVerificationError);
-  }
-
-  /// Exchange session ID for tokens using PKCE code verifier
-  Future<AuthResult> _exchangeSessionForTokens(
-    String serverUrl,
-    String sessionId,
-    String username,
-  ) async {
-    if (_pkce == null) {
-      throw const AppException(AppErrorCode.pkceVerifierMissingRestartLogin);
-    }
-
-    final verifier = _pkce!.verifier;
-    // Clear verifier before the network call — one-time exchange.
-    _pkce = null;
-    _pendingLoginOrigin = null;
-
-    return _exchanger.exchange(
-      serverUrl: serverUrl,
-      sessionId: sessionId,
-      verifier: verifier,
+    return _signIn.startPassword(
+      serverUrl: url,
       username: username,
-      failureCode: AppErrorCode.tokenExchangeFailed,
+      password: password,
     );
   }
+
+  /// Answers the pending MFA step, of a password or an SSO sign-in.
+  Future<AuthResult> verifyMfa(String mfaCode) => _signIn.verifyMfa(mfaCode);
+
+  /// Answers the pending password-change step with [newPassword].
+  Future<AuthResult> changePassword(String newPassword) =>
+      _signIn.changePassword(newPassword);
+
+  /// Abandons a sign-in waiting for [verifyMfa] or [changePassword].
+  void cancelSignIn() => _signIn.cancel();
 
   /// Refresh access token using refresh token.
   ///
@@ -209,11 +113,14 @@ class AuthService {
 
     final http.Response response;
     try {
+      // A mobile client sends its refresh token in the body; the
+      // `Authorization` header carries access tokens only.
       response = await _http.post(
         url,
-        extraHeaders: {
-          ApiConstants.authorizationHeader: 'Bearer $refreshToken',
+        extraHeaders: const {
+          ApiConstants.contentTypeHeader: ApiConstants.contentTypeJson,
         },
+        body: jsonEncode({'refresh_token': refreshToken}),
       );
     } catch (_) {
       // Transport-level failure (no connectivity, timeout, DNS). This is
@@ -252,7 +159,9 @@ class AuthService {
     }
 
     // The server explicitly rejected the refresh token (e.g. revoked, expired,
-    // rotated away): clear the session and force re-login.
+    // rotated away): every refusal is a final `401` with
+    // `urn:endurain:error:session-ended`. Clear the session and force
+    // re-login; do not retry.
     if (response.statusCode == 401 || response.statusCode == 403) {
       return _clearSessionAfterRefreshFailure(session);
     }
@@ -287,10 +196,13 @@ class AuthService {
         final url = Uri.parse('$serverUrl${_endpoints.logoutEndpoint}');
         final response = await _http.post(
           url,
-          extraHeaders: {
-            ApiConstants.authorizationHeader: 'Bearer ${session.refreshToken}',
+          extraHeaders: const {
+            ApiConstants.contentTypeHeader: ApiConstants.contentTypeJson,
           },
+          body: jsonEncode({'refresh_token': session.refreshToken}),
         );
+        // `200` with `{"idp_logout_url": …}`, also for a token the server
+        // already ended. The provider's own session is left as it is.
         serverLogoutSuccess = response.statusCode == 200;
       } catch (e) {
         // Server logout failed (network error, server down, token expired)
@@ -340,24 +252,4 @@ class AuthService {
     final refreshed = await refreshToken();
     return refreshed || await _sessionStore.readSession() != null;
   }
-}
-
-/// Authentication result model.
-///
-/// Carries only the flow-control outcome the login UI needs. Issued tokens are
-/// never returned here — they are persisted in secure storage by the session
-/// store during the PKCE exchange, so nothing downstream has to handle raw
-/// tokens.
-class AuthResult {
-  final bool success;
-  final bool mfaRequired;
-  final String? username;
-  final String? message;
-
-  AuthResult({
-    required this.success,
-    this.mfaRequired = false,
-    this.username,
-    this.message,
-  });
 }

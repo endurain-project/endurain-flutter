@@ -47,6 +47,22 @@ abstract class HealthImportStore {
     required String toProfileId,
   });
 
+  /// Returns the distinct profile ids that hold an import or a sync state.
+  Future<List<String>> listProfileIds();
+
+  /// Re-keys every import and the sync state of [fromProfileId] onto
+  /// [toProfileId].
+  ///
+  /// Used when an account changes its profile id (the integer-to-UUID switch
+  /// of Endurain v0.21) so the workouts already imported are not imported, and
+  /// uploaded, a second time. An import [toProfileId] already holds for the
+  /// same source is replaced by the moved one, as in [reassignImportProfile];
+  /// the later of the two sync timestamps is kept.
+  Future<void> reassignProfile({
+    required String fromProfileId,
+    required String toProfileId,
+  });
+
   /// Marks [sourceId] as imported, recording the [localActivityId] of the
   /// newly-created local activity record.
   ///

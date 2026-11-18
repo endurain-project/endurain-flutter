@@ -246,6 +246,103 @@ class AppLocalizationsTr extends AppLocalizations {
       'Oturumu kapatmak istediğinizden emin misiniz?';
 
   @override
+  String get legacyDataTitle => 'Sunucu güncellemesinden önceki etkinlikler';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Bu cihazda, bu sunucudaki bir hesap için sunucu güncellenmeden önce kaydedilmiş etkinlikler var. Bunlar sizin mi, $username? Öyleyse hâlâ bekleyenler hesabınıza yüklenecek.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Bu cihazda, bu sunucudaki bir hesap için sunucu güncellenmeden önce kaydedilmiş etkinlikler var. Bunlar az önce oturum açtığınız hesaba mı ait? Öyleyse hâlâ bekleyenler o hesaba yüklenecek.';
+
+  @override
+  String get legacyDataConfirm => 'Benim';
+
+  @override
+  String get legacyDataDecline => 'Benim değil';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Sunucuda devam eden çok fazla yüklemeniz var. Uygulama daha sonra yeniden deneyecek.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Parola değiştirilemedi';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Parola değiştirilemedi: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Bu sunucu, uygulamanın bu sürümünün desteklemediği bir oturum açma adımı istedi. Uygulamayı güncelleyip yeniden deneyin.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Kimlik sağlayıcınız, hesabınızı oluşturmak için gereken e-posta adresini paylaşmadı.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Kimlik sağlayıcınız e-posta adresinizi doğrulamadı. Orada doğrulayıp yeniden deneyin.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Bu oturum açmayla eşleşen bir hesap yok ve bu sunucu hesapları otomatik olarak oluşturmuyor. Yöneticinize danışın.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Bu e-posta adresini zaten bir hesap kullanıyor, ancak bu sağlayıcı o hesaba oturum açamıyor. Başka bir yolla oturum açın veya yöneticinize danışın.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Hesabınız bir yöneticinin onayını bekliyor.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Bu hesap devre dışı. Yöneticinizle iletişime geçin.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Bu sunucu bu uygulamadan çoklu oturum açmaya izin vermiyor. Yöneticinizden com.endurain.endurain:/auth/sso/callback adresini ALLOWED_REDIRECT_URIS listesine eklemesini isteyin.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Yöneticiniz iki adımlı doğrulama istiyor. Endurain web uygulamasında kurun ve yeniden deneyin.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Etkinlik dosyası bu sunucu için çok büyük';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Bu sunucu bu tür etkinlik dosyasını kabul etmiyor';
+
+  @override
+  String get errorTooManyRequests =>
+      'Çok fazla deneme. Biraz bekleyip yeniden deneyin.';
+
+  @override
+  String get passwordChangeTitle => 'Yeni bir parola seçin';
+
+  @override
+  String get passwordChangeMessage =>
+      'Bir yönetici parolanızı belirledi. Oturum açmayı tamamlamak için yeni bir parola seçin.';
+
+  @override
+  String get newPassword => 'Yeni parola';
+
+  @override
+  String get confirmNewPassword => 'Yeni parolayı onaylayın';
+
+  @override
+  String get passwordsDoNotMatch => 'Parolalar eşleşmiyor';
+
+  @override
+  String get changePassword => 'Parolayı değiştir';
+
+  @override
   String get logoutServerFailedWarning =>
       'Sunucudan oturum kapatılamadı, ancak yerel olarak kapatıldı';
 

@@ -252,6 +252,103 @@ class AppLocalizationsEt extends AppLocalizations {
   String get logoutConfirmMessage => 'Kas soovite kindlasti välja logida?';
 
   @override
+  String get legacyDataTitle => 'Tegevused enne serveri uuendamist';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need on teie omad, $username? Kui on, laaditakse veel ootel olevad teie kontole üles.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need kuuluvad kontole, millega just sisse logisite? Kui jah, laaditakse veel ootel olevad sinna üles.';
+
+  @override
+  String get legacyDataConfirm => 'Need on minu omad';
+
+  @override
+  String get legacyDataDecline => 'Pole minu omad';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serveris on liiga palju teie üleslaadimisi pooleli. Rakendus proovib hiljem uuesti.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Parooli ei saanud muuta';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Parooli ei saanud muuta: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Server küsis sisselogimise sammu, mida see rakenduse versioon ei toeta. Uuendage rakendust ja proovige uuesti.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Teie identiteedipakkuja ei jaganud e-posti aadressi, mis on konto loomiseks vajalik.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Teie identiteedipakkuja pole teie e-posti aadressi kinnitanud. Kinnitage see seal ja proovige uuesti.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ükski konto ei vasta sellele sisselogimisele ja see server ei loo kontosid automaatselt. Küsige oma administraatorilt.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Seda e-posti aadressi kasutab juba üks konto, kuid see pakkuja ei saa sellesse sisse logida. Logige sisse muul viisil või küsige oma administraatorilt.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Teie konto ootab administraatori kinnitust.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'See konto on keelatud. Võtke ühendust oma administraatoriga.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'See server ei luba sellest rakendusest ühekordset sisselogimist. Paluge administraatoril lisada com.endurain.endurain:/auth/sso/callback loendisse ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Teie administraator nõuab kaheastmelist kinnitust. Seadistage see Enduraini veebirakenduses ja proovige uuesti.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Tegevuse fail on sellele serverile liiga suur';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'See server ei võta seda tüüpi tegevuse faili vastu';
+
+  @override
+  String get errorTooManyRequests =>
+      'Liiga palju katseid. Oodake hetk ja proovige uuesti.';
+
+  @override
+  String get passwordChangeTitle => 'Valige uus parool';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administraator määras teie parooli. Sisselogimise lõpetamiseks valige uus.';
+
+  @override
+  String get newPassword => 'Uus parool';
+
+  @override
+  String get confirmNewPassword => 'Kinnitage uus parool';
+
+  @override
+  String get passwordsDoNotMatch => 'Paroolid ei ühti';
+
+  @override
+  String get changePassword => 'Muuda parooli';
+
+  @override
   String get logoutServerFailedWarning =>
       'Serverist väljalogimine ebaõnnestus, kuid väljalogimine tehti kohapeal';
 

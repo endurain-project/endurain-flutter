@@ -252,6 +252,103 @@ class AppLocalizationsNl extends AppLocalizations {
   String get logoutConfirmMessage => 'Weet je zeker dat je je wilt afmelden?';
 
   @override
+  String get legacyDataTitle => 'Activiteiten van vóór de serverupdate';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Zijn ze van jou, $username? Zo ja, dan worden de activiteiten die nog wachten naar je account geüpload.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Horen ze bij het account waarmee je net bent ingelogd? Zo ja, dan worden de activiteiten die nog wachten daarnaar geüpload.';
+
+  @override
+  String get legacyDataConfirm => 'Ze zijn van mij';
+
+  @override
+  String get legacyDataDecline => 'Niet van mij';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'De server heeft te veel uploads van je in behandeling. De app probeert het later opnieuw.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Kan het wachtwoord niet wijzigen';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Kan het wachtwoord niet wijzigen: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Deze server vroeg om een inlogstap die deze versie van de app niet ondersteunt. Werk de app bij en probeer het opnieuw.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Je identiteitsprovider heeft geen e-mailadres gedeeld, en dat is nodig om je account aan te maken.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Je identiteitsprovider heeft je e-mailadres niet geverifieerd. Verifieer het daar en probeer het opnieuw.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Geen enkel account past bij deze aanmelding en deze server maakt niet automatisch accounts aan. Vraag het je beheerder.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Een account gebruikt dit e-mailadres al, maar deze provider kan daarop niet inloggen. Log op een andere manier in of vraag het je beheerder.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Je account wacht op goedkeuring door een beheerder.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Dit account is uitgeschakeld. Neem contact op met je beheerder.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Deze server staat single sign-on vanuit deze app niet toe. Vraag je beheerder om com.endurain.endurain:/auth/sso/callback toe te voegen aan ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Je beheerder vereist verificatie in twee stappen. Stel die in via de Endurain-webapp en probeer het opnieuw.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Het activiteitsbestand is te groot voor deze server';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Deze server accepteert dit soort activiteitsbestand niet';
+
+  @override
+  String get errorTooManyRequests =>
+      'Te veel pogingen. Wacht even en probeer het opnieuw.';
+
+  @override
+  String get passwordChangeTitle => 'Kies een nieuw wachtwoord';
+
+  @override
+  String get passwordChangeMessage =>
+      'Een beheerder heeft je wachtwoord ingesteld. Kies een nieuw wachtwoord om het inloggen af te ronden.';
+
+  @override
+  String get newPassword => 'Nieuw wachtwoord';
+
+  @override
+  String get confirmNewPassword => 'Bevestig nieuw wachtwoord';
+
+  @override
+  String get passwordsDoNotMatch => 'De wachtwoorden komen niet overeen';
+
+  @override
+  String get changePassword => 'Wachtwoord wijzigen';
+
+  @override
   String get logoutServerFailedWarning =>
       'Kan niet afmelden bij de server, maar lokaal afgemeld';
 

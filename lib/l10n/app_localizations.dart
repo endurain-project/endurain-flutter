@@ -537,6 +537,162 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to logout?'**
   String get logoutConfirmMessage;
 
+  /// Title of the dialog after sign-in that asks whether activities saved before the server upgraded its account ids belong to the signed-in account - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Activities from before the server update'**
+  String get legacyDataTitle;
+
+  /// Body of that dialog after a password sign-in, naming the username that signed in - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This device has activities saved for an account on this server from before the server was updated. Are they yours, {username}? If they are, any still waiting will be uploaded to your account.'**
+  String legacyDataMessageWithUsername(String username);
+
+  /// Body of that dialog after an SSO sign-in, when no username is known - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.'**
+  String get legacyDataMessage;
+
+  /// Button that keeps the activities with the signed-in account - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'They\'re mine'**
+  String get legacyDataConfirm;
+
+  /// Button that says the activities belong to someone else - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not mine'**
+  String get legacyDataDecline;
+
+  /// Upload error when the server already has the maximum number of open uploads for the user; retried later - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The server has too many of your uploads in progress. The app will try again later.'**
+  String get errorActivityUploadLimit;
+
+  /// Error when the new password chosen at sign-in is refused - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the password'**
+  String get errorPasswordChangeFailed;
+
+  /// Same error with the server reason - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the password: {details}'**
+  String errorPasswordChangeFailedWithDetails(String details);
+
+  /// Error when the server asks for a sign-in step the app does not know - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server asked for a sign-in step this version of the app doesn\'t support. Update the app and try again.'**
+  String get errorSignInStepUnsupported;
+
+  /// SSO failure: the identity provider shared no email address - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity provider did not share an email address, which is needed to create your account.'**
+  String get errorSsoEmailMissing;
+
+  /// SSO failure: the identity provider has not verified the email address - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity provider has not verified your email address. Verify it there, then try again.'**
+  String get errorSsoEmailUnverified;
+
+  /// SSO failure: no matching account and the server does not create one - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No account matches this sign-in, and this server does not create accounts automatically. Ask your administrator.'**
+  String get errorSsoAutoCreateDisabled;
+
+  /// SSO failure: an account has the email but the provider does not link by email - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'An account already uses this email address, but this provider cannot sign in to it. Sign in another way, or ask your administrator.'**
+  String get errorSsoLinkByEmailDisabled;
+
+  /// SSO failure: the account awaits administrator approval - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is waiting for an administrator\'s approval.'**
+  String get errorSsoApprovalPending;
+
+  /// SSO failure: the account is deactivated - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This account is disabled. Contact your administrator.'**
+  String get errorSsoAccountDisabled;
+
+  /// Error before SSO when the server does not list the app callback address; keep the address and variable name verbatim - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server does not allow single sign-on from this app. Ask your administrator to add com.endurain.endurain:/auth/sso/callback to ALLOWED_REDIRECT_URIS.'**
+  String get errorSsoRedirectNotAllowed;
+
+  /// Upload error when the administrator requires two-step verification and the account has none - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your administrator requires two-step verification. Set it up in the Endurain web app, then try again.'**
+  String get errorActivityMfaEnrolmentRequired;
+
+  /// Upload error when the server refuses the file as too large - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The activity file is too large for this server'**
+  String get errorActivityFileTooLarge;
+
+  /// Upload error when the server refuses the file type - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server doesn\'t accept this kind of activity file'**
+  String get errorActivityUnsupportedFileType;
+
+  /// Error when the server rate-limits sign-in attempts - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a moment and try again.'**
+  String get errorTooManyRequests;
+
+  /// Title of the sign-in step that asks for a new password - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new password'**
+  String get passwordChangeTitle;
+
+  /// Explanation on the new-password sign-in step - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'An administrator set your password. Choose a new one to finish signing in.'**
+  String get passwordChangeMessage;
+
+  /// Label of the new password field - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPassword;
+
+  /// Label of the field that repeats the new password - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get confirmNewPassword;
+
+  /// Validation error when the two new passwords differ - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The passwords don\'t match'**
+  String get passwordsDoNotMatch;
+
+  /// Button that submits the new password - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get changePassword;
+
   /// Warning shown when server logout fails but local logout succeeds - Used in: server_settings_screen.dart
   ///
   /// In en, this message translates to:

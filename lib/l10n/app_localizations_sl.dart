@@ -252,6 +252,102 @@ class AppLocalizationsSl extends AppLocalizations {
   String get logoutConfirmMessage => 'Ali se res želite odjaviti?';
 
   @override
+  String get legacyDataTitle => 'Dejavnosti izpred posodobitve strežnika';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'V tej napravi so dejavnosti, shranjene za račun na tem strežniku izpred njegove posodobitve. Ali so vaše, $username? Če so, bodo tiste, ki še čakajo, naložene v vaš račun.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'V tej napravi so dejavnosti, shranjene za račun na tem strežniku izpred njegove posodobitve. Ali pripadajo računu, s katerim ste se pravkar prijavili? Če da, bodo tiste, ki še čakajo, naložene vanj.';
+
+  @override
+  String get legacyDataConfirm => 'So moje';
+
+  @override
+  String get legacyDataDecline => 'Niso moje';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Na strežniku poteka preveč vaših nalaganj. Aplikacija bo poskusila znova pozneje.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Gesla ni bilo mogoče spremeniti';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Gesla ni bilo mogoče spremeniti: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Strežnik je zahteval korak prijave, ki ga ta različica aplikacije ne podpira. Posodobite aplikacijo in poskusite znova.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Vaš ponudnik identitete ni delil e-poštnega naslova, ki je potreben za ustvarjanje računa.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Vaš ponudnik identitete ni potrdil vašega e-poštnega naslova. Potrdite ga tam in poskusite znova.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Tej prijavi ne ustreza noben račun, ta strežnik pa računov ne ustvarja samodejno. Vprašajte skrbnika.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ta e-poštni naslov že uporablja račun, vendar se ta ponudnik vanj ne more prijaviti. Prijavite se drugače ali vprašajte skrbnika.';
+
+  @override
+  String get errorSsoApprovalPending => 'Vaš račun čaka na odobritev skrbnika.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ta račun je onemogočen. Obrnite se na skrbnika.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Ta strežnik ne dovoljuje enotne prijave iz te aplikacije. Prosite skrbnika, naj doda com.endurain.endurain:/auth/sso/callback v ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Vaš skrbnik zahteva dvostopenjsko preverjanje. Nastavite ga v spletni aplikaciji Endurain in poskusite znova.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Datoteka dejavnosti je za ta strežnik prevelika';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ta strežnik te vrste datoteke dejavnosti ne sprejema';
+
+  @override
+  String get errorTooManyRequests =>
+      'Preveč poskusov. Počakajte trenutek in poskusite znova.';
+
+  @override
+  String get passwordChangeTitle => 'Izberite novo geslo';
+
+  @override
+  String get passwordChangeMessage =>
+      'Skrbnik vam je nastavil geslo. Za dokončanje prijave izberite novo.';
+
+  @override
+  String get newPassword => 'Novo geslo';
+
+  @override
+  String get confirmNewPassword => 'Potrdite novo geslo';
+
+  @override
+  String get passwordsDoNotMatch => 'Gesli se ne ujemata';
+
+  @override
+  String get changePassword => 'Spremeni geslo';
+
+  @override
   String get logoutServerFailedWarning =>
       'Odjava s strežnika ni uspela, vendar ste odjavljeni lokalno';
 

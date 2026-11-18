@@ -259,6 +259,105 @@ class AppLocalizationsEl extends AppLocalizations {
       'Είστε βέβαιοι ότι θέλετε να αποσυνδεθείτε;';
 
   @override
+  String get legacyDataTitle =>
+      'Δραστηριότητες από πριν από την ενημέρωση του διακομιστή';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Είναι δικές σας, $username; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν στον λογαριασμό σας.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Ανήκουν στον λογαριασμό με τον οποίο μόλις συνδεθήκατε; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν σε αυτόν.';
+
+  @override
+  String get legacyDataConfirm => 'Είναι δικές μου';
+
+  @override
+  String get legacyDataDecline => 'Δεν είναι δικές μου';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Ο διακομιστής έχει πάρα πολλές μεταφορτώσεις σας σε εξέλιξη. Η εφαρμογή θα προσπαθήσει ξανά αργότερα.';
+
+  @override
+  String get errorPasswordChangeFailed =>
+      'Δεν ήταν δυνατή η αλλαγή του κωδικού πρόσβασης';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η αλλαγή του κωδικού πρόσβασης: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Ο διακομιστής ζήτησε ένα βήμα σύνδεσης που δεν υποστηρίζει αυτή η έκδοση της εφαρμογής. Ενημερώστε την εφαρμογή και δοκιμάστε ξανά.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Ο πάροχος ταυτότητας δεν κοινοποίησε διεύθυνση email, η οποία χρειάζεται για τη δημιουργία του λογαριασμού σας.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Ο πάροχος ταυτότητας δεν έχει επαληθεύσει τη διεύθυνση email σας. Επαληθεύστε την εκεί και δοκιμάστε ξανά.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Κανένας λογαριασμός δεν αντιστοιχεί σε αυτή τη σύνδεση και ο διακομιστής δεν δημιουργεί λογαριασμούς αυτόματα. Ρωτήστε τον διαχειριστή σας.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ένας λογαριασμός χρησιμοποιεί ήδη αυτή τη διεύθυνση email, αλλά αυτός ο πάροχος δεν μπορεί να συνδεθεί σε αυτόν. Συνδεθείτε με άλλον τρόπο ή ρωτήστε τον διαχειριστή σας.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Ο λογαριασμός σας περιμένει έγκριση από διαχειριστή.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Αυτός ο λογαριασμός είναι απενεργοποιημένος. Επικοινωνήστε με τον διαχειριστή σας.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Αυτός ο διακομιστής δεν επιτρέπει ενιαία σύνδεση από αυτή την εφαρμογή. Ζητήστε από τον διαχειριστή σας να προσθέσει το com.endurain.endurain:/auth/sso/callback στο ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ο διαχειριστής σας απαιτεί επαλήθευση δύο βημάτων. Ρυθμίστε την στην εφαρμογή ιστού του Endurain και δοκιμάστε ξανά.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Το αρχείο δραστηριότητας είναι πολύ μεγάλο για αυτόν τον διακομιστή';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Αυτός ο διακομιστής δεν δέχεται αυτό το είδος αρχείου δραστηριότητας';
+
+  @override
+  String get errorTooManyRequests =>
+      'Πάρα πολλές προσπάθειες. Περιμένετε λίγο και δοκιμάστε ξανά.';
+
+  @override
+  String get passwordChangeTitle => 'Επιλέξτε νέο κωδικό πρόσβασης';
+
+  @override
+  String get passwordChangeMessage =>
+      'Ένας διαχειριστής όρισε τον κωδικό πρόσβασής σας. Επιλέξτε νέο για να ολοκληρώσετε τη σύνδεση.';
+
+  @override
+  String get newPassword => 'Νέος κωδικός πρόσβασης';
+
+  @override
+  String get confirmNewPassword => 'Επιβεβαίωση νέου κωδικού πρόσβασης';
+
+  @override
+  String get passwordsDoNotMatch => 'Οι κωδικοί πρόσβασης δεν ταιριάζουν';
+
+  @override
+  String get changePassword => 'Αλλαγή κωδικού πρόσβασης';
+
+  @override
   String get logoutServerFailedWarning =>
       'Δεν ήταν δυνατή η αποσύνδεση από τον διακομιστή, αλλά έγινε αποσύνδεση τοπικά';
 

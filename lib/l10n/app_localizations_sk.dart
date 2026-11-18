@@ -255,6 +255,102 @@ class AppLocalizationsSk extends AppLocalizations {
   String get logoutConfirmMessage => 'Naozaj sa chcete odhlásiť?';
 
   @override
+  String get legacyDataTitle => 'Aktivity spred aktualizácie servera';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Sú vaše, $username? Ak áno, tie, ktoré ešte čakajú, sa nahrajú do vášho účtu.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Patria k účtu, do ktorého ste sa práve prihlásili? Ak áno, tie, ktoré ešte čakajú, sa doň nahrajú.';
+
+  @override
+  String get legacyDataConfirm => 'Sú moje';
+
+  @override
+  String get legacyDataDecline => 'Nie sú moje';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Na serveri prebieha príliš veľa vašich nahrávaní. Aplikácia to skúsi znova neskôr.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Heslo sa nepodarilo zmeniť';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Heslo sa nepodarilo zmeniť: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Server požiadal o krok prihlásenia, ktorý táto verzia aplikácie nepodporuje. Aktualizujte aplikáciu a skúste to znova.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Váš poskytovateľ identity nezdieľal e-mailovú adresu, ktorá je potrebná na vytvorenie účtu.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Váš poskytovateľ identity neoveril vašu e-mailovú adresu. Overte ju tam a skúste to znova.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Tomuto prihláseniu nezodpovedá žiadny účet a tento server nevytvára účty automaticky. Obráťte sa na správcu.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Túto e-mailovú adresu už používa účet, ale tento poskytovateľ sa doň nemôže prihlásiť. Prihláste sa inak alebo sa obráťte na správcu.';
+
+  @override
+  String get errorSsoApprovalPending => 'Váš účet čaká na schválenie správcom.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Tento účet je zakázaný. Obráťte sa na správcu.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Tento server nepovoľuje jednotné prihlásenie z tejto aplikácie. Požiadajte správcu, aby pridal com.endurain.endurain:/auth/sso/callback do ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Váš správca vyžaduje dvojstupňové overenie. Nastavte ho vo webovej aplikácii Endurain a skúste to znova.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Súbor aktivity je pre tento server príliš veľký';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Tento server tento druh súboru aktivity neprijíma';
+
+  @override
+  String get errorTooManyRequests =>
+      'Príliš veľa pokusov. Chvíľu počkajte a skúste to znova.';
+
+  @override
+  String get passwordChangeTitle => 'Zvoľte nové heslo';
+
+  @override
+  String get passwordChangeMessage =>
+      'Správca vám nastavil heslo. Na dokončenie prihlásenia zvoľte nové.';
+
+  @override
+  String get newPassword => 'Nové heslo';
+
+  @override
+  String get confirmNewPassword => 'Potvrďte nové heslo';
+
+  @override
+  String get passwordsDoNotMatch => 'Heslá sa nezhodujú';
+
+  @override
+  String get changePassword => 'Zmeniť heslo';
+
+  @override
   String get logoutServerFailedWarning =>
       'Odhlásenie zo servera zlyhalo, ale odhlásenie prebehlo miestne';
 

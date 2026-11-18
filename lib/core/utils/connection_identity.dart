@@ -31,4 +31,19 @@ class ConnectionIdentity {
     required String origin,
     required String accountId,
   }) => '$origin$separator$accountId';
+
+  static final RegExp _legacyAccountId = RegExp(r'^[0-9]+$');
+
+  /// Whether [accountId] is an integer id assigned by an Endurain server
+  /// before v0.21, which switched every account id to a UUID.
+  static bool isLegacyAccountId(String accountId) =>
+      _legacyAccountId.hasMatch(accountId);
+
+  /// Whether [profileId] is the profile id of a pre-v0.21 (integer) account on
+  /// [origin], i.e. exactly `<origin>#<digits>`.
+  static bool isLegacyProfileIdFor(String profileId, {required String origin}) {
+    final prefix = '$origin$separator';
+    return profileId.startsWith(prefix) &&
+        isLegacyAccountId(profileId.substring(prefix.length));
+  }
 }

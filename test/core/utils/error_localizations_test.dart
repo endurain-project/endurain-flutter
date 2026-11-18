@@ -19,6 +19,51 @@ void main() {
       );
     });
 
+    test('says "too many attempts" for a rate-limited sign-in step', () {
+      for (final code in [
+        AppErrorCode.loginFailed,
+        AppErrorCode.mfaVerificationFailed,
+        AppErrorCode.passwordChangeFailed,
+        AppErrorCode.tokenExchangeFailed,
+      ]) {
+        expect(
+          localizedErrorMessage(
+            AppException(code, details: 'Demasiados pedidos', statusCode: 429),
+            l10n,
+          ),
+          l10n.errorTooManyRequests,
+        );
+      }
+      // Other statuses keep the server's reason.
+      expect(
+        localizedErrorMessage(
+          const AppException(
+            AppErrorCode.loginFailed,
+            details: 'Bad credentials',
+            statusCode: 401,
+          ),
+          l10n,
+        ),
+        l10n.errorLoginFailedWithDetails('Bad credentials'),
+      );
+    });
+
+    test('localizes the upload refusals the server documents', () {
+      String message(String details) => localizedErrorMessage(
+        AppException(AppErrorCode.activityUploadFailed, details: details),
+        l10n,
+      );
+      expect(
+        message('mfa_enrolment_required'),
+        l10n.errorActivityMfaEnrolmentRequired,
+      );
+      expect(message('file_too_large'), l10n.errorActivityFileTooLarge);
+      expect(
+        message('unsupported_file_type'),
+        l10n.errorActivityUnsupportedFileType,
+      );
+    });
+
     test('localizes app exceptions with server details', () {
       expect(
         localizedErrorMessage(

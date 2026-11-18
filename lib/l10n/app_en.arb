@@ -326,6 +326,122 @@
   "@logoutConfirmMessage": {
     "description": "Logout confirmation dialog message - Used in: server_settings_screen.dart"
   },
+  "legacyDataTitle": "Activities from before the server update",
+  "@legacyDataTitle": {
+    "description": "Title of the dialog after sign-in that asks whether activities saved before the server upgraded its account ids belong to the signed-in account - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataMessageWithUsername": "This device has activities saved for an account on this server from before the server was updated. Are they yours, {username}? If they are, any still waiting will be uploaded to your account.",
+  "@legacyDataMessageWithUsername": {
+    "description": "Body of that dialog after a password sign-in, naming the username that signed in - Used in: legacy_profile_adoption_dialog.dart",
+    "placeholders": {
+      "username": {
+        "type": "String",
+        "example": "alex"
+      }
+    }
+  },
+  "legacyDataMessage": "This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.",
+  "@legacyDataMessage": {
+    "description": "Body of that dialog after an SSO sign-in, when no username is known - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataConfirm": "They're mine",
+  "@legacyDataConfirm": {
+    "description": "Button that keeps the activities with the signed-in account - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataDecline": "Not mine",
+  "@legacyDataDecline": {
+    "description": "Button that says the activities belong to someone else - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "errorActivityUploadLimit": "The server has too many of your uploads in progress. The app will try again later.",
+  "@errorActivityUploadLimit": {
+    "description": "Upload error when the server already has the maximum number of open uploads for the user; retried later - Used in: error_localizations.dart"
+  },
+  "errorPasswordChangeFailed": "Could not change the password",
+  "@errorPasswordChangeFailed": {
+    "description": "Error when the new password chosen at sign-in is refused - Used in: error_localizations.dart"
+  },
+  "errorPasswordChangeFailedWithDetails": "Could not change the password: {details}",
+  "@errorPasswordChangeFailedWithDetails": {
+    "description": "Same error with the server reason - Used in: error_localizations.dart",
+    "placeholders": {
+      "details": {
+        "type": "String",
+        "example": "Password is too short"
+      }
+    }
+  },
+  "errorSignInStepUnsupported": "This server asked for a sign-in step this version of the app doesn't support. Update the app and try again.",
+  "@errorSignInStepUnsupported": {
+    "description": "Error when the server asks for a sign-in step the app does not know - Used in: error_localizations.dart"
+  },
+  "errorSsoEmailMissing": "Your identity provider did not share an email address, which is needed to create your account.",
+  "@errorSsoEmailMissing": {
+    "description": "SSO failure: the identity provider shared no email address - Used in: error_localizations.dart"
+  },
+  "errorSsoEmailUnverified": "Your identity provider has not verified your email address. Verify it there, then try again.",
+  "@errorSsoEmailUnverified": {
+    "description": "SSO failure: the identity provider has not verified the email address - Used in: error_localizations.dart"
+  },
+  "errorSsoAutoCreateDisabled": "No account matches this sign-in, and this server does not create accounts automatically. Ask your administrator.",
+  "@errorSsoAutoCreateDisabled": {
+    "description": "SSO failure: no matching account and the server does not create one - Used in: error_localizations.dart"
+  },
+  "errorSsoLinkByEmailDisabled": "An account already uses this email address, but this provider cannot sign in to it. Sign in another way, or ask your administrator.",
+  "@errorSsoLinkByEmailDisabled": {
+    "description": "SSO failure: an account has the email but the provider does not link by email - Used in: error_localizations.dart"
+  },
+  "errorSsoApprovalPending": "Your account is waiting for an administrator's approval.",
+  "@errorSsoApprovalPending": {
+    "description": "SSO failure: the account awaits administrator approval - Used in: error_localizations.dart"
+  },
+  "errorSsoAccountDisabled": "This account is disabled. Contact your administrator.",
+  "@errorSsoAccountDisabled": {
+    "description": "SSO failure: the account is deactivated - Used in: error_localizations.dart"
+  },
+  "errorSsoRedirectNotAllowed": "This server does not allow single sign-on from this app. Ask your administrator to add com.endurain.endurain:/auth/sso/callback to ALLOWED_REDIRECT_URIS.",
+  "@errorSsoRedirectNotAllowed": {
+    "description": "Error before SSO when the server does not list the app callback address; keep the address and variable name verbatim - Used in: error_localizations.dart"
+  },
+  "errorActivityMfaEnrolmentRequired": "Your administrator requires two-step verification. Set it up in the Endurain web app, then try again.",
+  "@errorActivityMfaEnrolmentRequired": {
+    "description": "Upload error when the administrator requires two-step verification and the account has none - Used in: error_localizations.dart"
+  },
+  "errorActivityFileTooLarge": "The activity file is too large for this server",
+  "@errorActivityFileTooLarge": {
+    "description": "Upload error when the server refuses the file as too large - Used in: error_localizations.dart"
+  },
+  "errorActivityUnsupportedFileType": "This server doesn't accept this kind of activity file",
+  "@errorActivityUnsupportedFileType": {
+    "description": "Upload error when the server refuses the file type - Used in: error_localizations.dart"
+  },
+  "errorTooManyRequests": "Too many attempts. Wait a moment and try again.",
+  "@errorTooManyRequests": {
+    "description": "Error when the server rate-limits sign-in attempts - Used in: error_localizations.dart"
+  },
+  "passwordChangeTitle": "Choose a new password",
+  "@passwordChangeTitle": {
+    "description": "Title of the sign-in step that asks for a new password - Used in: login_screen.dart"
+  },
+  "passwordChangeMessage": "An administrator set your password. Choose a new one to finish signing in.",
+  "@passwordChangeMessage": {
+    "description": "Explanation on the new-password sign-in step - Used in: login_screen.dart"
+  },
+  "newPassword": "New password",
+  "@newPassword": {
+    "description": "Label of the new password field - Used in: login_screen.dart"
+  },
+  "confirmNewPassword": "Confirm new password",
+  "@confirmNewPassword": {
+    "description": "Label of the field that repeats the new password - Used in: login_screen.dart"
+  },
+  "passwordsDoNotMatch": "The passwords don't match",
+  "@passwordsDoNotMatch": {
+    "description": "Validation error when the two new passwords differ - Used in: login_screen.dart"
+  },
+  "changePassword": "Change password",
+  "@changePassword": {
+    "description": "Button that submits the new password - Used in: login_screen.dart"
+  },
   "logoutServerFailedWarning": "Could not logout from server, but logged out locally",
   "@logoutServerFailedWarning": {
     "description": "Warning shown when server logout fails but local logout succeeds - Used in: server_settings_screen.dart"

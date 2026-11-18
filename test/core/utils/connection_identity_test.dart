@@ -51,4 +51,48 @@ void main() {
       expect(first, isNot(second));
     });
   });
+
+  group('ConnectionIdentity legacy ids', () {
+    test('an integer account id is a legacy one, a UUID is not', () {
+      expect(ConnectionIdentity.isLegacyAccountId('42'), isTrue);
+      expect(
+        ConnectionIdentity.isLegacyAccountId(
+          '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+        ),
+        isFalse,
+      );
+      expect(ConnectionIdentity.isLegacyAccountId(''), isFalse);
+      expect(ConnectionIdentity.isLegacyAccountId('-1'), isFalse);
+    });
+
+    test('a legacy profile id must belong to the given origin', () {
+      const origin = 'https://a.example';
+      expect(
+        ConnectionIdentity.isLegacyProfileIdFor(
+          'https://a.example#42',
+          origin: origin,
+        ),
+        isTrue,
+      );
+      expect(
+        ConnectionIdentity.isLegacyProfileIdFor(
+          'https://b.example#42',
+          origin: origin,
+        ),
+        isFalse,
+      );
+      expect(
+        ConnectionIdentity.isLegacyProfileIdFor(
+          'https://a.example#7c9e6679-7425-40de-944b-e07fc1f90ae7',
+          origin: origin,
+        ),
+        isFalse,
+      );
+      // A pre-origin-qualified raw id is not matched.
+      expect(
+        ConnectionIdentity.isLegacyProfileIdFor('42', origin: origin),
+        isFalse,
+      );
+    });
+  });
 }

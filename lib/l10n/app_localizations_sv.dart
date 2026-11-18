@@ -255,6 +255,103 @@ class AppLocalizationsSv extends AppLocalizations {
   String get logoutConfirmMessage => 'Är du säker på att du vill logga ut?';
 
   @override
+  String get legacyDataTitle => 'Aktiviteter från före serveruppdateringen';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Den här enheten har aktiviteter sparade för ett konto på den här servern från innan servern uppdaterades. Är de dina, $username? Om de är det laddas de som fortfarande väntar upp till ditt konto.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Den här enheten har aktiviteter sparade för ett konto på den här servern från innan servern uppdaterades. Hör de till kontot du just loggade in med? Om de gör det laddas de som fortfarande väntar upp till det.';
+
+  @override
+  String get legacyDataConfirm => 'De är mina';
+
+  @override
+  String get legacyDataDecline => 'Inte mina';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Servern har för många av dina uppladdningar pågående. Appen försöker igen senare.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Det gick inte att ändra lösenordet';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Det gick inte att ändra lösenordet: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Servern bad om ett inloggningssteg som den här versionen av appen inte stöder. Uppdatera appen och försök igen.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Din identitetsleverantör delade ingen e-postadress, vilket behövs för att skapa ditt konto.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Din identitetsleverantör har inte verifierat din e-postadress. Verifiera den där och försök igen.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Inget konto matchar den här inloggningen, och servern skapar inte konton automatiskt. Fråga din administratör.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ett konto använder redan den här e-postadressen, men den här leverantören kan inte logga in på det. Logga in på ett annat sätt eller fråga din administratör.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Ditt konto väntar på godkännande från en administratör.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Det här kontot är inaktiverat. Kontakta din administratör.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Den här servern tillåter inte enkel inloggning från den här appen. Be din administratör att lägga till com.endurain.endurain:/auth/sso/callback i ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Din administratör kräver tvåstegsverifiering. Ställ in den i Endurains webbapp och försök igen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktivitetsfilen är för stor för den här servern';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Den här servern godtar inte den här typen av aktivitetsfil';
+
+  @override
+  String get errorTooManyRequests =>
+      'För många försök. Vänta en stund och försök igen.';
+
+  @override
+  String get passwordChangeTitle => 'Välj ett nytt lösenord';
+
+  @override
+  String get passwordChangeMessage =>
+      'En administratör har angett ditt lösenord. Välj ett nytt för att slutföra inloggningen.';
+
+  @override
+  String get newPassword => 'Nytt lösenord';
+
+  @override
+  String get confirmNewPassword => 'Bekräfta nytt lösenord';
+
+  @override
+  String get passwordsDoNotMatch => 'Lösenorden matchar inte';
+
+  @override
+  String get changePassword => 'Ändra lösenord';
+
+  @override
   String get logoutServerFailedWarning =>
       'Det gick inte att logga ut från servern, men du loggades ut lokalt';
 

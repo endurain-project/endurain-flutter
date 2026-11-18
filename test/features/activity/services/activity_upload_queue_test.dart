@@ -288,6 +288,46 @@ void main() {
       expect(bound?.connectionProfileId, 'profile-active');
     });
 
+    test('reconciles the active profile before selecting records', () async {
+      final record = await _createRecord(
+        repository,
+        id: 'q_legacy',
+        status: LocalActivityUploadStatus.pending,
+        connectionOrigin: 'https://active.example',
+        connectionProfileId: 'https://active.example#42',
+      );
+      const profile = ConnectionProfile(
+        id: 'https://active.example#uuid',
+        origin: 'https://active.example',
+        kind: ConnectionKind.selfHosted,
+      );
+      final reconciled = <String>[];
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+        activeConnectionProfile: () async => profile,
+        reconcileProfile: (active) async {
+          reconciled.add(active.id);
+          await repository.rebindConnectionProfile(
+            origin: active.origin,
+            fromProfileId: 'https://active.example#42',
+            toProfileId: active.id,
+            updatedAt: DateTime.utc(2026, 11, 17),
+          );
+        },
+      );
+
+      await queue.drain();
+
+      expect(reconciled, [profile.id]);
+      expect(attemptedKeys, [record.id]);
+      expect(
+        (await repository.get(record.id))?.uploadStatus,
+        LocalActivityUploadStatus.uploaded,
+      );
+    });
+
     test('concurrent drain calls share a single run', () async {
       await _createRecord(
         repository,

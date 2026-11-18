@@ -18,6 +18,8 @@ import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
+import 'package:endurain/features/account_migration/repositories/legacy_profile_alias_repository.dart';
+import 'package:endurain/features/account_migration/services/legacy_profile_adoption_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
@@ -80,6 +82,9 @@ class AppServices {
     infra: _infra,
     auth: _auth,
     sensors: _sensors,
+    // Lazy like the sensors gate: the adoption service depends on the health
+    // module, which depends on this one.
+    reconcileProfile: (profile) => legacyProfileAdoption.reapply(profile),
   );
   late final HealthModule _health = HealthModule(
     infra: _infra,
@@ -180,6 +185,21 @@ class AppServices {
   /// Builds the concrete health-platform adapter for the current platform.
   HealthPlatformAdapter createHealthPlatformAdapter() =>
       _health.createPlatformAdapter();
+
+  // ── Account migration ──────────────────────────────────────────────────────
+
+  /// Moves the local data of a pre-v0.21 account (integer id) onto the UUID
+  /// profile id the same account has after the server upgrade. It spans the
+  /// activity and health features, so it is wired here.
+  late final LegacyProfileAdoptionService legacyProfileAdoption =
+      LegacyProfileAdoptionService(
+        readSession: _auth.session.readSession,
+        aliases: LegacyProfileAliasRepository(preferences: _infra.preferences),
+        localActivities: _activity.localActivities,
+        healthImports: _health.importRepository,
+        healthSettings: _health.syncSettings,
+        diagnostics: _infra.diagnostics,
+      );
 
   // ── External sensors (BLE) ───────────────────────────────────────────────
 

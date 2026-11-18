@@ -4,8 +4,10 @@ import 'package:async/async.dart';
 import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/app/modules/auth_module.dart';
 import 'package:endurain/app/modules/sensors_module.dart';
+import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
@@ -42,26 +44,40 @@ class ActivityModule {
     required AppInfrastructure infra,
     required AuthModule auth,
     required SensorsModule sensors,
+    Future<void> Function(ConnectionProfile profile)? reconcileProfile,
   }) : _infra = infra,
        _auth = auth,
-       _sensors = sensors;
+       _sensors = sensors,
+       _reconcileProfile = reconcileProfile;
 
   final AppInfrastructure _infra;
   final AuthModule _auth;
   final SensorsModule _sensors;
+
+  /// Moves records of an earlier profile id onto the active profile before
+  /// each upload drain. Supplied by the composition root, which owns the
+  /// cross-feature legacy-profile migration.
+  final Future<void> Function(ConnectionProfile profile)? _reconcileProfile;
 
   late final ActivityUploadService upload = ActivityUploadService(
     uploadFile: _auth.apiClient.uploadFile,
     config: ActivityUploadConfig.fromEndpoints(_infra.endpoints),
     retryPolicy: const ActivityUploadRetryPolicy(maxAttempts: 3),
     activeConnectionProfile: _auth.session.getConnectionProfile,
-    fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) =>
-        _auth.apiClient.getJsonObject(
-          endpoint,
-          failureCode: AppErrorCode.activityUploadFailed,
-          expectedOrigin: expectedOrigin,
-          expectedProfileId: expectedProfileId,
+    fetchIngestionJob: (endpoint, {expectedOrigin, expectedProfileId}) async {
+      final read = await _auth.apiClient.getJsonObjectWithHeaders(
+        endpoint,
+        failureCode: AppErrorCode.activityUploadFailed,
+        expectedOrigin: expectedOrigin,
+        expectedProfileId: expectedProfileId,
+      );
+      return (
+        job: read.body,
+        retryAfter: ActivityUploadService.parseRetryAfter(
+          read.headers[ApiConstants.retryAfterHeader],
         ),
+      );
+    },
   );
 
   late final LocalActivityGpxStorage gpxStorage = LocalActivityGpxStorage();
@@ -109,6 +125,7 @@ class ActivityModule {
     retentionSettingsRepository: retentionSettings,
     isUploadAuthorized: _auth.service.isAuthenticated,
     activeConnectionProfile: _auth.session.getConnectionProfile,
+    reconcileProfile: _reconcileProfile,
     diagnostics: _infra.diagnostics,
     connectivitySignal: _infra.connectivity.onOnlineChanged,
   );

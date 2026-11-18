@@ -256,6 +256,104 @@ class AppLocalizationsIt extends AppLocalizations {
   String get logoutConfirmMessage => 'Vuoi davvero uscire?';
 
   @override
+  String get legacyDataTitle =>
+      'Attività di prima dell\'aggiornamento del server';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Su questo dispositivo ci sono attività salvate per un account di questo server da prima del suo aggiornamento. Sono tue, $username? Se sì, quelle ancora in attesa verranno caricate sul tuo account.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Su questo dispositivo ci sono attività salvate per un account di questo server da prima del suo aggiornamento. Appartengono all\'account con cui hai appena effettuato l\'accesso? Se sì, quelle ancora in attesa verranno caricate lì.';
+
+  @override
+  String get legacyDataConfirm => 'Sono mie';
+
+  @override
+  String get legacyDataDecline => 'Non sono mie';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Il server ha troppi tuoi caricamenti in corso. L\'app riproverà più tardi.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Impossibile cambiare la password';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Impossibile cambiare la password: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Questo server ha richiesto un passaggio di accesso che questa versione dell\'app non supporta. Aggiorna l\'app e riprova.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Il tuo provider di identità non ha condiviso un indirizzo email, necessario per creare il tuo account.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Il tuo provider di identità non ha verificato il tuo indirizzo email. Verificalo lì e riprova.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Nessun account corrisponde a questo accesso e questo server non crea account automaticamente. Chiedi al tuo amministratore.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Un account usa già questo indirizzo email, ma questo provider non può accedervi. Accedi in un altro modo o chiedi al tuo amministratore.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Il tuo account è in attesa dell\'approvazione di un amministratore.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Questo account è disattivato. Contatta il tuo amministratore.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Questo server non consente l\'accesso singolo da questa app. Chiedi al tuo amministratore di aggiungere com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Il tuo amministratore richiede la verifica in due passaggi. Configurala nell\'app web di Endurain e riprova.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Il file dell\'attività è troppo grande per questo server';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Questo server non accetta questo tipo di file di attività';
+
+  @override
+  String get errorTooManyRequests =>
+      'Troppi tentativi. Attendi un momento e riprova.';
+
+  @override
+  String get passwordChangeTitle => 'Scegli una nuova password';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un amministratore ha impostato la tua password. Scegline una nuova per completare l\'accesso.';
+
+  @override
+  String get newPassword => 'Nuova password';
+
+  @override
+  String get confirmNewPassword => 'Conferma la nuova password';
+
+  @override
+  String get passwordsDoNotMatch => 'Le password non corrispondono';
+
+  @override
+  String get changePassword => 'Cambia password';
+
+  @override
   String get logoutServerFailedWarning =>
       'Impossibile uscire dal server, ma disconnessione locale effettuata';
 

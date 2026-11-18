@@ -155,6 +155,33 @@ class ApiClient {
     throw ApiResponse.failure(response, failureCode);
   }
 
+  /// Sends an authenticated `GET` and returns the decoded JSON object with the
+  /// response headers (lower-cased names), for reads whose headers matter,
+  /// such as the `Retry-After` of a job.
+  ///
+  /// Throws [AppException] with [failureCode] on a non-200 response.
+  Future<({Map<String, dynamic> body, Map<String, String> headers})>
+  getJsonObjectWithHeaders(
+    String endpoint, {
+    required AppErrorCode failureCode,
+    String? expectedOrigin,
+    String? expectedProfileId,
+  }) async {
+    final response = await _sendAuthorized(
+      'GET',
+      endpoint,
+      expectedOrigin: expectedOrigin,
+      expectedProfileId: expectedProfileId,
+    );
+    if (response.statusCode == 200) {
+      return (
+        body: ApiResponse.decodeJsonObject(response),
+        headers: response.headers,
+      );
+    }
+    throw ApiResponse.failure(response, failureCode);
+  }
+
   /// Sends an authenticated `GET` and returns the decoded JSON value (object or
   /// list).
   ///

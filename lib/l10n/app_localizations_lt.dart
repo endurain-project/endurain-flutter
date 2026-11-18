@@ -249,6 +249,104 @@ class AppLocalizationsLt extends AppLocalizations {
   String get logoutConfirmMessage => 'Ar tikrai norite atsijungti?';
 
   @override
+  String get legacyDataTitle =>
+      'Veiklos iš laikotarpio prieš serverio atnaujinimą';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos jūsų, $username? Jei taip, dar laukiančios bus įkeltos į jūsų paskyrą.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos priklauso paskyrai, prie kurios ką tik prisijungėte? Jei taip, dar laukiančios bus įkeltos į ją.';
+
+  @override
+  String get legacyDataConfirm => 'Jos mano';
+
+  @override
+  String get legacyDataDecline => 'Ne mano';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serveryje vykdoma per daug jūsų įkėlimų. Programa bandys dar kartą vėliau.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Nepavyko pakeisti slaptažodžio';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Nepavyko pakeisti slaptažodžio: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveris paprašė prisijungimo žingsnio, kurio ši programos versija nepalaiko. Atnaujinkite programą ir bandykite dar kartą.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Jūsų tapatybės teikėjas nepateikė el. pašto adreso, kurio reikia paskyrai sukurti.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Jūsų tapatybės teikėjas nepatvirtino jūsų el. pašto adreso. Patvirtinkite jį ten ir bandykite dar kartą.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Šį prisijungimą atitinkančios paskyros nėra, o šis serveris paskyrų automatiškai nekuria. Kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Šį el. pašto adresą jau naudoja paskyra, bet šis teikėjas negali prie jos prisijungti. Prisijunkite kitu būdu arba kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Jūsų paskyra laukia administratoriaus patvirtinimo.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ši paskyra išjungta. Kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Šis serveris neleidžia vieningo prisijungimo iš šios programos. Paprašykite administratoriaus įtraukti com.endurain.endurain:/auth/sso/callback į ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Jūsų administratorius reikalauja dviejų žingsnių patvirtinimo. Nustatykite jį „Endurain“ žiniatinklio programoje ir bandykite dar kartą.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Veiklos failas per didelis šiam serveriui';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Šis serveris nepriima tokio tipo veiklos failo';
+
+  @override
+  String get errorTooManyRequests =>
+      'Per daug bandymų. Šiek tiek palaukite ir bandykite dar kartą.';
+
+  @override
+  String get passwordChangeTitle => 'Pasirinkite naują slaptažodį';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administratorius nustatė jūsų slaptažodį. Norėdami baigti prisijungimą, pasirinkite naują.';
+
+  @override
+  String get newPassword => 'Naujas slaptažodis';
+
+  @override
+  String get confirmNewPassword => 'Patvirtinkite naują slaptažodį';
+
+  @override
+  String get passwordsDoNotMatch => 'Slaptažodžiai nesutampa';
+
+  @override
+  String get changePassword => 'Keisti slaptažodį';
+
+  @override
   String get logoutServerFailedWarning =>
       'Nepavyko atsijungti nuo serverio, bet atsijungta vietoje';
 

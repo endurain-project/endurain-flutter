@@ -67,6 +67,37 @@ class HealthSyncSettingsRepository {
     ]);
   }
 
+  /// Moves both settings of [fromProfileId] onto [toProfileId], used when an
+  /// account changes its profile id (the integer-to-UUID switch of Endurain
+  /// v0.21). A value [toProfileId] already has is kept.
+  Future<void> moveProfile({
+    required String fromProfileId,
+    required String toProfileId,
+  }) async {
+    if (fromProfileId == toProfileId) {
+      return;
+    }
+    final fromConnected = scopedStorageKey(_keyConnected, fromProfileId);
+    final connected = await _storage.read(key: fromConnected);
+    if (connected != null) {
+      final toConnected = scopedStorageKey(_keyConnected, toProfileId);
+      if (await _storage.read(key: toConnected) == null) {
+        await _storage.write(key: toConnected, value: connected);
+      }
+      await _storage.delete(key: fromConnected);
+    }
+
+    final fromAutoSync = _autoSyncKey(fromProfileId);
+    final autoSync = await _preferences.read(key: fromAutoSync);
+    if (autoSync != null) {
+      final toAutoSync = _autoSyncKey(toProfileId);
+      if (await _preferences.read(key: toAutoSync) == null) {
+        await _preferences.write(key: toAutoSync, value: autoSync);
+      }
+      await _preferences.delete(key: fromAutoSync);
+    }
+  }
+
   String _autoSyncKey(String profileId) {
     return scopedStorageKey(_keyAutoSyncOnResume, profileId);
   }

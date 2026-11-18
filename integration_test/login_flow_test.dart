@@ -121,21 +121,28 @@ Future<void> _pumpUntil(
 Future<void> _handleRequest(HttpRequest request) async {
   final path = request.uri.path;
   Object? body;
-  if (path.endsWith('/public/server_settings')) {
+  if (path.endsWith('/public/server-settings')) {
     body = {'sso_enabled': false, 'local_login_enabled': true};
   } else if (path.endsWith('/auth/login')) {
-    body = {'session_id': 'session-1'};
+    // A mobile password sign-in answers a session to exchange.
+    body = {
+      'next_step': 'exchange',
+      'session_id': 'session-1',
+      'device_id': null,
+    };
   } else if (path.endsWith('/session-1/tokens')) {
     body = {
+      'next_step': 'tokens',
       'access_token': 'access-token',
       'refresh_token': 'refresh-token',
       'session_id': 'session-1',
       'expires_in': 900,
     };
   } else if (path.endsWith('/profile')) {
-    body = {'id': 1};
+    body = {'id': '7c9e6679-7425-40de-944b-e07fc1f90ae7'};
   } else if (path.endsWith('/public/idp')) {
-    body = <Object>[];
+    // `GET /public/idp` answers a page.
+    body = {'items': <Object>[], 'total': 0, 'page': 1, 'num_records': 200};
   }
   if (body == null) {
     request.response.statusCode = HttpStatus.notFound;

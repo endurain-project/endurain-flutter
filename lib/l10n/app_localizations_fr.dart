@@ -256,6 +256,104 @@ class AppLocalizationsFr extends AppLocalizations {
   String get logoutConfirmMessage => 'Voulez-vous vraiment vous déconnecter ?';
 
   @override
+  String get legacyDataTitle => 'Activités d\'avant la mise à jour du serveur';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Cet appareil contient des activités enregistrées pour un compte de ce serveur avant sa mise à jour. Sont-elles à vous, $username ? Si oui, celles qui sont encore en attente seront envoyées sur votre compte.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Cet appareil contient des activités enregistrées pour un compte de ce serveur avant sa mise à jour. Appartiennent-elles au compte avec lequel vous venez de vous connecter ? Si oui, celles qui sont encore en attente y seront envoyées.';
+
+  @override
+  String get legacyDataConfirm => 'Elles sont à moi';
+
+  @override
+  String get legacyDataDecline => 'Pas à moi';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Le serveur a trop de vos envois en cours. L\'application réessaiera plus tard.';
+
+  @override
+  String get errorPasswordChangeFailed =>
+      'Impossible de changer le mot de passe';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Impossible de changer le mot de passe : $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Ce serveur demande une étape de connexion que cette version de l\'application ne prend pas en charge. Mettez l\'application à jour et réessayez.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Votre fournisseur d\'identité n\'a pas partagé d\'adresse e-mail, nécessaire pour créer votre compte.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Votre fournisseur d\'identité n\'a pas vérifié votre adresse e-mail. Vérifiez-la chez lui, puis réessayez.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Aucun compte ne correspond à cette connexion, et ce serveur ne crée pas de comptes automatiquement. Contactez votre administrateur.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Un compte utilise déjà cette adresse e-mail, mais ce fournisseur ne peut pas s\'y connecter. Connectez-vous autrement ou contactez votre administrateur.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Votre compte attend l\'approbation d\'un administrateur.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ce compte est désactivé. Contactez votre administrateur.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Ce serveur n\'autorise pas l\'authentification unique depuis cette application. Demandez à votre administrateur d\'ajouter com.endurain.endurain:/auth/sso/callback à ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Votre administrateur exige la vérification en deux étapes. Configurez-la dans l\'application web Endurain, puis réessayez.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Le fichier de l\'activité est trop volumineux pour ce serveur';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ce serveur n\'accepte pas ce type de fichier d\'activité';
+
+  @override
+  String get errorTooManyRequests =>
+      'Trop de tentatives. Patientez un instant, puis réessayez.';
+
+  @override
+  String get passwordChangeTitle => 'Choisissez un nouveau mot de passe';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un administrateur a défini votre mot de passe. Choisissez-en un nouveau pour terminer la connexion.';
+
+  @override
+  String get newPassword => 'Nouveau mot de passe';
+
+  @override
+  String get confirmNewPassword => 'Confirmer le nouveau mot de passe';
+
+  @override
+  String get passwordsDoNotMatch => 'Les mots de passe ne correspondent pas';
+
+  @override
+  String get changePassword => 'Changer le mot de passe';
+
+  @override
   String get logoutServerFailedWarning =>
       'Impossible de se déconnecter du serveur, mais déconnexion locale effectuée';
 

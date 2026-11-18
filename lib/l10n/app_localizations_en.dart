@@ -247,6 +247,103 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirmMessage => 'Are you sure you want to logout?';
 
   @override
+  String get legacyDataTitle => 'Activities from before the server update';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'This device has activities saved for an account on this server from before the server was updated. Are they yours, $username? If they are, any still waiting will be uploaded to your account.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.';
+
+  @override
+  String get legacyDataConfirm => 'They\'re mine';
+
+  @override
+  String get legacyDataDecline => 'Not mine';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'The server has too many of your uploads in progress. The app will try again later.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Could not change the password';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Could not change the password: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'This server asked for a sign-in step this version of the app doesn\'t support. Update the app and try again.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Your identity provider did not share an email address, which is needed to create your account.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Your identity provider has not verified your email address. Verify it there, then try again.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'No account matches this sign-in, and this server does not create accounts automatically. Ask your administrator.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'An account already uses this email address, but this provider cannot sign in to it. Sign in another way, or ask your administrator.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Your account is waiting for an administrator\'s approval.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'This account is disabled. Contact your administrator.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'This server does not allow single sign-on from this app. Ask your administrator to add com.endurain.endurain:/auth/sso/callback to ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Your administrator requires two-step verification. Set it up in the Endurain web app, then try again.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'The activity file is too large for this server';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'This server doesn\'t accept this kind of activity file';
+
+  @override
+  String get errorTooManyRequests =>
+      'Too many attempts. Wait a moment and try again.';
+
+  @override
+  String get passwordChangeTitle => 'Choose a new password';
+
+  @override
+  String get passwordChangeMessage =>
+      'An administrator set your password. Choose a new one to finish signing in.';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get confirmNewPassword => 'Confirm new password';
+
+  @override
+  String get passwordsDoNotMatch => 'The passwords don\'t match';
+
+  @override
+  String get changePassword => 'Change password';
+
+  @override
   String get logoutServerFailedWarning =>
       'Could not logout from server, but logged out locally';
 

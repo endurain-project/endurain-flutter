@@ -256,6 +256,105 @@ class AppLocalizationsPt extends AppLocalizations {
   String get logoutConfirmMessage => 'Tem certeza que deseja sair?';
 
   @override
+  String get legacyDataTitle =>
+      'Atividades de antes da atualização do servidor';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. São suas, $username? Se forem, as que ainda estão pendentes serão carregadas para a sua conta.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. Pertencem à conta com que acabou de iniciar sessão? Se sim, as que ainda estão pendentes serão carregadas para essa conta.';
+
+  @override
+  String get legacyDataConfirm => 'São minhas';
+
+  @override
+  String get legacyDataDecline => 'Não são minhas';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'O servidor tem demasiados carregamentos seus em curso. A aplicação volta a tentar mais tarde.';
+
+  @override
+  String get errorPasswordChangeFailed =>
+      'Não foi possível alterar a palavra-passe';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Não foi possível alterar a palavra-passe: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Este servidor pediu um passo de início de sessão que esta versão da aplicação não suporta. Atualize a aplicação e tente novamente.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'O seu fornecedor de identidade não partilhou um endereço de email, necessário para criar a sua conta.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'O seu fornecedor de identidade não verificou o seu endereço de email. Verifique-o lá e tente novamente.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Nenhuma conta corresponde a este início de sessão e este servidor não cria contas automaticamente. Pergunte ao seu administrador.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Uma conta já usa este endereço de email, mas este fornecedor não consegue iniciar sessão nela. Inicie sessão de outra forma ou pergunte ao seu administrador.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'A sua conta aguarda a aprovação de um administrador.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Esta conta está desativada. Contacte o seu administrador.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Este servidor não permite o início de sessão único a partir desta aplicação. Peça ao seu administrador para adicionar com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'O seu administrador exige a verificação em dois passos. Configure-a na aplicação web do Endurain e tente novamente.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'O ficheiro da atividade é demasiado grande para este servidor';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Este servidor não aceita este tipo de ficheiro de atividade';
+
+  @override
+  String get errorTooManyRequests =>
+      'Demasiadas tentativas. Aguarde um momento e tente novamente.';
+
+  @override
+  String get passwordChangeTitle => 'Escolha uma nova palavra-passe';
+
+  @override
+  String get passwordChangeMessage =>
+      'Um administrador definiu a sua palavra-passe. Escolha uma nova para concluir o início de sessão.';
+
+  @override
+  String get newPassword => 'Nova palavra-passe';
+
+  @override
+  String get confirmNewPassword => 'Confirmar nova palavra-passe';
+
+  @override
+  String get passwordsDoNotMatch => 'As palavras-passe não coincidem';
+
+  @override
+  String get changePassword => 'Alterar palavra-passe';
+
+  @override
   String get logoutServerFailedWarning =>
       'Não foi possível sair do servidor, mas saiu localmente';
 

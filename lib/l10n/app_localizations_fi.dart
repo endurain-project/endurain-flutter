@@ -254,6 +254,104 @@ class AppLocalizationsFi extends AppLocalizations {
   String get logoutConfirmMessage => 'Haluatko varmasti kirjautua ulos?';
 
   @override
+  String get legacyDataTitle =>
+      'Aktiviteetit ajalta ennen palvelimen päivitystä';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Tällä laitteella on aktiviteetteja, jotka on tallennettu tämän palvelimen tilille ennen palvelimen päivitystä. Ovatko ne sinun, $username? Jos ovat, vielä odottavat ladataan tilillesi.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Tällä laitteella on aktiviteetteja, jotka on tallennettu tämän palvelimen tilille ennen palvelimen päivitystä. Kuuluvatko ne tilille, jolla juuri kirjauduit sisään? Jos kuuluvat, vielä odottavat ladataan sille.';
+
+  @override
+  String get legacyDataConfirm => 'Ne ovat minun';
+
+  @override
+  String get legacyDataDecline => 'Eivät ole minun';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Palvelimella on liian monta latausta käynnissä. Sovellus yrittää myöhemmin uudelleen.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Salasanaa ei voitu vaihtaa';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Salasanaa ei voitu vaihtaa: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Palvelin pyysi kirjautumisvaihetta, jota tämä sovellusversio ei tue. Päivitä sovellus ja yritä uudelleen.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Identiteetintarjoajasi ei jakanut sähköpostiosoitetta, jota tarvitaan tilin luomiseen.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Identiteetintarjoajasi ei ole vahvistanut sähköpostiosoitettasi. Vahvista se siellä ja yritä uudelleen.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Mikään tili ei vastaa tätä kirjautumista, eikä tämä palvelin luo tilejä automaattisesti. Kysy ylläpitäjältä.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Tämä sähköpostiosoite on jo käytössä toisella tilillä, mutta tämä tarjoaja ei voi kirjautua siihen. Kirjaudu muulla tavalla tai kysy ylläpitäjältä.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Tilisi odottaa ylläpitäjän hyväksyntää.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Tämä tili on poistettu käytöstä. Ota yhteyttä ylläpitäjään.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Tämä palvelin ei salli kertakirjautumista tästä sovelluksesta. Pyydä ylläpitäjää lisäämään com.endurain.endurain:/auth/sso/callback asetukseen ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ylläpitäjäsi vaatii kaksivaiheisen vahvistuksen. Ota se käyttöön Endurainin verkkosovelluksessa ja yritä uudelleen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktiviteettitiedosto on liian suuri tälle palvelimelle';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Tämä palvelin ei hyväksy tämäntyyppistä aktiviteettitiedostoa';
+
+  @override
+  String get errorTooManyRequests =>
+      'Liian monta yritystä. Odota hetki ja yritä uudelleen.';
+
+  @override
+  String get passwordChangeTitle => 'Valitse uusi salasana';
+
+  @override
+  String get passwordChangeMessage =>
+      'Ylläpitäjä asetti salasanasi. Valitse uusi viimeistelläksesi kirjautumisen.';
+
+  @override
+  String get newPassword => 'Uusi salasana';
+
+  @override
+  String get confirmNewPassword => 'Vahvista uusi salasana';
+
+  @override
+  String get passwordsDoNotMatch => 'Salasanat eivät täsmää';
+
+  @override
+  String get changePassword => 'Vaihda salasana';
+
+  @override
   String get logoutServerFailedWarning =>
       'Palvelimelta ei voitu kirjautua ulos, mutta uloskirjautuminen tehtiin paikallisesti';
 

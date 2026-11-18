@@ -79,10 +79,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="endurain"
-                    android:host="auth"
-                    android:path="/sso/callback" />
+                <!-- SSO callback com.endurain.endurain:/auth/sso/callback. The
+                     address has no host, so Android ignores path attributes
+                     here; the app matches the full address itself. -->
+                <data android:scheme="com.endurain.endurain" />
             </intent-filter>
         </activity>
         <activity

@@ -42,6 +42,18 @@ class HealthImportRepository {
     ),
   );
 
+  Future<List<String>> listProfileIds() => _run(_store.listProfileIds);
+
+  Future<void> reassignProfile({
+    required String fromProfileId,
+    required String toProfileId,
+  }) => _run(
+    () => _store.reassignProfile(
+      fromProfileId: fromProfileId,
+      toProfileId: toProfileId,
+    ),
+  );
+
   Future<void> markImported({
     required String profileId,
     required String sourceId,

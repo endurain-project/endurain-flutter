@@ -253,6 +253,103 @@ class AppLocalizationsBg extends AppLocalizations {
   String get logoutConfirmMessage => 'Наистина ли искате да излезете?';
 
   @override
+  String get legacyDataTitle => 'Активности отпреди обновяването на сървъра';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Ваши ли са, $username? Ако са, чакащите ще бъдат качени във вашия акаунт.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Принадлежат ли на акаунта, с който току-що влязохте? Ако е така, чакащите ще бъдат качени в него.';
+
+  @override
+  String get legacyDataConfirm => 'Мои са';
+
+  @override
+  String get legacyDataDecline => 'Не са мои';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Сървърът има твърде много ваши качвания в процес. Приложението ще опита отново по-късно.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Паролата не можа да бъде сменена';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Паролата не можа да бъде сменена: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Сървърът поиска стъпка за вход, която тази версия на приложението не поддържа. Обновете приложението и опитайте отново.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Доставчикът на самоличност не сподели имейл адрес, който е нужен за създаване на акаунта ви.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Доставчикът на самоличност не е потвърдил имейл адреса ви. Потвърдете го там и опитайте отново.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Няма акаунт, който да съответства на този вход, а сървърът не създава акаунти автоматично. Попитайте администратора си.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Този имейл адрес вече се използва от акаунт, но този доставчик не може да влиза в него. Влезте по друг начин или попитайте администратора си.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Акаунтът ви чака одобрение от администратор.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Този акаунт е деактивиран. Свържете се с администратора си.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Този сървър не позволява единен вход от това приложение. Помолете администратора си да добави com.endurain.endurain:/auth/sso/callback към ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Администраторът ви изисква двустепенна проверка. Настройте я в уеб приложението на Endurain и опитайте отново.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Файлът с активността е твърде голям за този сървър';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Този сървър не приема този вид файл с активност';
+
+  @override
+  String get errorTooManyRequests =>
+      'Твърде много опити. Изчакайте малко и опитайте отново.';
+
+  @override
+  String get passwordChangeTitle => 'Изберете нова парола';
+
+  @override
+  String get passwordChangeMessage =>
+      'Администратор е задал паролата ви. Изберете нова, за да завършите влизането.';
+
+  @override
+  String get newPassword => 'Нова парола';
+
+  @override
+  String get confirmNewPassword => 'Потвърдете новата парола';
+
+  @override
+  String get passwordsDoNotMatch => 'Паролите не съвпадат';
+
+  @override
+  String get changePassword => 'Смяна на паролата';
+
+  @override
   String get logoutServerFailedWarning =>
       'Изходът от сървъра не бе успешен, но излязохте локално';
 
