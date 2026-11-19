@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/watch/models/watch_link_status.dart';
 import 'package:endurain/features/watch/models/watch_session_handoff.dart';
 import 'package:endurain/features/watch/models/watch_transport_event.dart';
+import 'package:endurain/features/watch/repositories/watch_ingestion_ledger.dart';
 import 'package:endurain/features/watch/services/watch_companion_service.dart';
 import 'package:endurain/features/watch/services/watch_session_ingestion_service.dart';
 import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 /// In-memory [WatchTransportAdapter] that records acknowledgements and lets a
@@ -29,6 +32,10 @@ class FakeWatchTransport implements WatchTransportAdapter {
   int drainCount = 0;
   bool disposed = false;
 
+  /// When set, each drain waits on it before answering, so a test can make a
+  /// request arrive while a drain is in flight.
+  Completer<void>? drainGate;
+
   @override
   Stream<WatchTransportEvent> get events => controller.stream;
 
@@ -38,10 +45,15 @@ class FakeWatchTransport implements WatchTransportAdapter {
   @override
   Future<List<WatchSessionHandoff>> drainPendingHandoffs() async {
     drainCount++;
+    final snapshot = handoffs;
+    final gate = drainGate;
+    if (gate != null) {
+      await gate.future;
+    }
     if (failDrain) {
       throw StateError('drain failed');
     }
-    return handoffs;
+    return snapshot;
   }
 
   @override
@@ -56,6 +68,25 @@ class FakeWatchTransport implements WatchTransportAdapter {
   }
 }
 
+class RecordingDiagnostics implements DiagnosticsRecorder {
+  final List<String> events = <String>[];
+
+  @override
+  void recordBreadcrumbSync(
+    String event, {
+    Map<String, Object?> details = const {},
+  }) {
+    events.add(event);
+  }
+
+  @override
+  void recordErrorSync(
+    Object error,
+    StackTrace stackTrace, {
+    String source = DiagnosticsSources.uncaught,
+  }) {}
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -65,22 +96,34 @@ void main() {
   WatchSessionHandoff buildHandoff({
     String sessionId = 'watch_session_1',
     bool isComplete = true,
+    List<Object?>? points,
   }) {
     return WatchSessionHandoff.fromJson({
       'version': WatchSessionHandoff.currentPayloadVersion,
       'source': 'wearOs',
-      'complete': isComplete,
       'session': {
         'localSessionId': sessionId,
         'activityType': 'run',
-        'status': 'completed',
+        'status': isComplete ? 'completed' : 'recording',
         'startedAt': '2026-06-03T09:00:00.000Z',
         'endedAt': '2026-06-03T09:00:05.000Z',
       },
-      'points': [
-        {'t': '2026-06-03T09:00:00.000Z', 'lat': 41.0, 'lon': -8.0, 'seg': 0},
-        {'t': '2026-06-03T09:00:05.000Z', 'lat': 41.001, 'lon': -8.0, 'seg': 0},
-      ],
+      'points':
+          points ??
+          [
+            {
+              't': '2026-06-03T09:00:00.000Z',
+              'lat': 41.0,
+              'lon': -8.0,
+              'seg': 0,
+            },
+            {
+              't': '2026-06-03T09:00:05.000Z',
+              'lat': 41.001,
+              'lon': -8.0,
+              'seg': 0,
+            },
+          ],
     });
   }
 
@@ -88,6 +131,7 @@ void main() {
     supportDirectory = await Directory.systemTemp.createTemp('watch_companion');
     ingestion = WatchSessionIngestionService(
       repository: createTestLocalActivityRepository(supportDirectory),
+      ledger: WatchIngestionLedger(preferences: FakePreferencesStore()),
     );
   });
 
@@ -128,10 +172,71 @@ void main() {
 
     final summary = await service.syncPendingSessions();
 
-    expect(summary.skipped, 1);
+    expect(summary.deferred, 1);
     expect(summary.ingested, 0);
     expect(transport.acknowledged, isEmpty);
     expect(uploadDrains, 0);
+    await service.dispose();
+  });
+
+  test('does not acknowledge sessions it cannot store yet', () async {
+    final transport = FakeWatchTransport(
+      handoffs: [
+        // Points this app version cannot read.
+        buildHandoff(
+          sessionId: 'unreadable',
+          points: const [
+            {'future_schema': true},
+          ],
+        ),
+        // An indoor workout: duration but no route.
+        buildHandoff(sessionId: 'indoor', points: const []),
+      ],
+    );
+    final service = WatchCompanionService(
+      transport: transport,
+      ingestionService: ingestion,
+    );
+
+    final summary = await service.syncPendingSessions();
+
+    expect(summary.deferred, 2);
+    expect(summary.skipped, 0);
+    expect(transport.acknowledged, isEmpty);
+    await service.dispose();
+  });
+
+  test('records no breadcrumbs when nothing is pending', () async {
+    final diagnostics = RecordingDiagnostics();
+    final service = WatchCompanionService(
+      transport: FakeWatchTransport(),
+      ingestionService: ingestion,
+      diagnostics: diagnostics,
+    );
+
+    await service.syncPendingSessions();
+
+    expect(diagnostics.events, isEmpty);
+    await service.dispose();
+  });
+
+  test('records sync breadcrumbs when sessions are pending', () async {
+    final diagnostics = RecordingDiagnostics();
+    final service = WatchCompanionService(
+      transport: FakeWatchTransport(handoffs: [buildHandoff()]),
+      ingestionService: ingestion,
+      diagnostics: diagnostics,
+    );
+
+    await service.syncPendingSessions();
+
+    expect(
+      diagnostics.events,
+      containsAllInOrder([
+        DiagnosticsEvents.watchSyncStarted,
+        DiagnosticsEvents.watchSyncFinished,
+      ]),
+    );
     await service.dispose();
   });
 
@@ -197,19 +302,53 @@ void main() {
     await service.dispose();
   });
 
-  test('concurrent syncs share one drain', () async {
+  test('concurrent syncs share one run with a single follow-up pass', () async {
     final transport = FakeWatchTransport(handoffs: [buildHandoff()]);
     final service = WatchCompanionService(
       transport: transport,
       ingestionService: ingestion,
     );
 
-    await Future.wait([
-      service.syncPendingSessions(),
-      service.syncPendingSessions(),
-    ]);
+    final first = service.syncPendingSessions();
+    final second = service.syncPendingSessions();
+    final third = service.syncPendingSessions();
+    expect(identical(first, second), isTrue);
+    expect(identical(first, third), isTrue);
 
-    expect(transport.drainCount, 1);
+    final summary = await first;
+
+    // The initial pass plus exactly one follow-up, however many requests
+    // arrived while it ran. The follow-up sees the same session as a
+    // duplicate, never a second activity.
+    expect(transport.drainCount, 2);
+    expect(summary.ingested, 1);
+    expect(summary.duplicates, 1);
+    await service.dispose();
+  });
+
+  test('a request during a drain schedules a follow-up pass', () async {
+    final gate = Completer<void>();
+    final transport = FakeWatchTransport()..drainGate = gate;
+    final service = WatchCompanionService(
+      transport: transport,
+      ingestionService: ingestion,
+    );
+
+    final first = service.syncPendingSessions();
+    await pumpEventQueue();
+    // The watch queues a session after the running pass read the list.
+    transport
+      ..handoffs = [buildHandoff()]
+      ..drainGate = null;
+    transport.controller.add(const WatchTransportEvent.handoffAvailable());
+    await pumpEventQueue();
+    gate.complete();
+
+    final summary = await first;
+
+    expect(transport.drainCount, 2);
+    expect(summary.ingested, 1);
+    expect(transport.acknowledged, ['watch_session_1']);
     await service.dispose();
   });
 

@@ -66,6 +66,8 @@ import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
 ///   so either module can be built first.
 /// - activity → health: the local-history controller's default health-import
 ///   cleanup is injected here (see [createLocalActivityHistoryController]).
+/// - watch → health: Health Sync skips workouts a companion-watch session
+///   already covers, through a lazy closure over [WatchModule.ledger].
 class AppServices {
   AppServices({this.config = AppConfig.defaults});
 
@@ -94,6 +96,9 @@ class AppServices {
     infra: _infra,
     auth: _auth,
     activity: _activity,
+    // Lazy: the watch module is only built when Health Sync first asks.
+    isRecordedElsewhere: (sourceId) =>
+        _watch.ledger.containsHealthWorkout(sourceId),
   );
   late final WatchModule _watch = WatchModule(
     infra: _infra,

@@ -4,9 +4,11 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/watch/models/watch_session_handoff.dart';
+import 'package:endurain/features/watch/repositories/watch_ingestion_ledger.dart';
 import 'package:endurain/features/watch/services/watch_session_ingestion_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
@@ -14,23 +16,25 @@ void main() {
 
   late Directory supportDirectory;
   late LocalActivityRepository repository;
+  late WatchIngestionLedger ledger;
   late WatchSessionIngestionService service;
 
   WatchSessionHandoff buildHandoff({
     String sessionId = 'watch_session_1',
     bool isComplete = true,
     WatchSource source = WatchSource.wearOs,
-    List<Map<String, Object?>>? points,
+    List<Object?>? points,
     Map<String, Object?> sessionOverrides = const {},
+    String? healthWorkoutId,
   }) {
     return WatchSessionHandoff.fromJson({
       'version': WatchSessionHandoff.currentPayloadVersion,
       'source': source.name,
-      'complete': isComplete,
+      'healthWorkoutId': ?healthWorkoutId,
       'session': {
         'localSessionId': sessionId,
         'activityType': 'run',
-        'status': 'completed',
+        'status': isComplete ? 'completed' : 'recording',
         'startedAt': '2026-06-03T09:00:00.000Z',
         'endedAt': '2026-06-03T09:00:10.000Z',
         'elapsedDurationSeconds': 10,
@@ -65,8 +69,10 @@ void main() {
   setUp(() async {
     supportDirectory = await Directory.systemTemp.createTemp('watch_ingest');
     repository = createTestLocalActivityRepository(supportDirectory);
+    ledger = WatchIngestionLedger(preferences: FakePreferencesStore());
     service = WatchSessionIngestionService(
       repository: repository,
+      ledger: ledger,
       now: () => DateTime.utc(2026, 6, 3, 10),
     );
   });
@@ -98,8 +104,40 @@ void main() {
       buildHandoff(sessionId: 'session/../1', source: WatchSource.appleWatch),
     );
 
-    expect(id, 'watch_appleWatch_session____1');
+    expect(id, 'watch_appleWatch_session_002f_002e_002e_002f1');
+    expect(RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(id), isTrue);
   });
+
+  test('keeps a UUID session id readable', () {
+    final id = WatchSessionIngestionService.localActivityIdFor(
+      buildHandoff(sessionId: '3f2a9c1e-7b4d-4e8a-9f00-1c2d3e4f5a6b'),
+    );
+
+    expect(id, 'watch_wearOs_3f2a9c1e-7b4d-4e8a-9f00-1c2d3e4f5a6b');
+  });
+
+  test('never maps two distinct session ids to the same id', () {
+    String idFor(String sessionId) =>
+        WatchSessionIngestionService.localActivityIdFor(
+          buildHandoff(sessionId: sessionId),
+        );
+
+    expect(idFor('a.b'), isNot(idFor('a_b')));
+    expect(idFor('a_b'), isNot(idFor('a_005fb')));
+    expect(idFor('a/b'), isNot(idFor('a.b')));
+  });
+
+  test(
+    'two sessions whose ids differ only in punctuation both ingest',
+    () async {
+      final first = await service.ingest(buildHandoff(sessionId: 'a.b'));
+      final second = await service.ingest(buildHandoff(sessionId: 'a_b'));
+
+      expect(first.outcome, WatchIngestionOutcome.ingested);
+      expect(second.outcome, WatchIngestionOutcome.ingested);
+      expect(await repository.count(), 2);
+    },
+  );
 
   test('re-ingesting the same session reports a duplicate', () async {
     final first = await service.ingest(buildHandoff());
@@ -118,11 +156,78 @@ void main() {
     expect(result.isAcknowledgeable, isFalse);
   });
 
-  test('reports an empty session without persisting it', () async {
-    final result = await service.ingest(buildHandoff(points: const []));
+  test('a re-delivered session stays a duplicate after the local record is '
+      'deleted', () async {
+    final first = await service.ingest(buildHandoff());
+    await repository.delete(first.localActivityId!);
+
+    final second = await service.ingest(buildHandoff());
+
+    expect(second.outcome, WatchIngestionOutcome.duplicate);
+    expect(second.isAcknowledgeable, isTrue);
+    expect(await repository.count(), 0);
+  });
+
+  test('backfills the ledger for a record stored without it', () async {
+    final first = await service.ingest(buildHandoff());
+    // A fresh ledger simulates a ledger write that never landed.
+    final freshLedger = WatchIngestionLedger(
+      preferences: FakePreferencesStore(),
+    );
+    final retry = WatchSessionIngestionService(
+      repository: repository,
+      ledger: freshLedger,
+    );
+
+    final second = await retry.ingest(buildHandoff());
+
+    expect(second.outcome, WatchIngestionOutcome.duplicate);
+    expect(await freshLedger.contains(first.localActivityId!), isTrue);
+  });
+
+  test('records the health workout id of an ingested session', () async {
+    await service.ingest(buildHandoff(healthWorkoutId: 'hk-workout-1'));
+
+    expect(await ledger.containsHealthWorkout('hk-workout-1'), isTrue);
+    expect(await ledger.containsHealthWorkout('hk-workout-2'), isFalse);
+  });
+
+  test('acknowledges a session that carried nothing at all', () async {
+    final result = await service.ingest(
+      buildHandoff(
+        points: const [],
+        sessionOverrides: const {
+          'endedAt': '2026-06-03T09:00:00.000Z',
+          'elapsedDurationSeconds': 0,
+        },
+      ),
+    );
 
     expect(result.outcome, WatchIngestionOutcome.empty);
     expect(result.isAcknowledgeable, isTrue);
+    expect(await repository.count(), 0);
+  });
+
+  test('keeps a session whose points are all unreadable queued', () async {
+    final result = await service.ingest(
+      buildHandoff(
+        points: const [
+          {'future_schema': true},
+          'not-a-map',
+        ],
+      ),
+    );
+
+    expect(result.outcome, WatchIngestionOutcome.unreadable);
+    expect(result.isAcknowledgeable, isFalse);
+    expect(await repository.count(), 0);
+  });
+
+  test('keeps an indoor session without a route queued', () async {
+    final result = await service.ingest(buildHandoff(points: const []));
+
+    expect(result.outcome, WatchIngestionOutcome.noRoute);
+    expect(result.isAcknowledgeable, isFalse);
     expect(await repository.count(), 0);
   });
 

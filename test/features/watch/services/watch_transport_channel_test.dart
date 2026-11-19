@@ -19,7 +19,6 @@ void main() {
   Map<String, Object?> handoffPayload(String sessionId) => {
     'version': WatchTransportChannelContract.payloadVersion,
     'source': 'wearOs',
-    'complete': true,
     'session': {
       'localSessionId': sessionId,
       'activityType': 'run',
@@ -109,10 +108,9 @@ void main() {
       final transport = MethodChannelWatchTransport();
 
       expect(await transport.events.toList(), isEmpty);
-      expect(
-        calls.map((call) => call.method),
-        [WatchTransportChannelContract.linkStatus],
-      );
+      expect(calls.map((call) => call.method), [
+        WatchTransportChannelContract.linkStatus,
+      ]);
     });
 
     test('stays inert when the native transport is absent', () async {
@@ -149,10 +147,9 @@ void main() {
       final transport = MethodChannelWatchTransport();
       final events = await transport.events.toList();
 
-      expect(
-        events.map((event) => event.type),
-        [WatchTransportEventType.handoffAvailable],
-      );
+      expect(events.map((event) => event.type), [
+        WatchTransportEventType.handoffAvailable,
+      ]);
     });
 
     test('cancels the native subscription on dispose', () async {
@@ -180,6 +177,26 @@ void main() {
 
       expect(cancelled, isTrue);
       await subscription.cancel();
+    });
+
+    test('does not re-activate the native stream after dispose', () async {
+      var probes = 0;
+      messenger.setMockMethodCallHandler(methodChannel, (call) async {
+        probes++;
+        return 'connected';
+      });
+
+      final transport = MethodChannelWatchTransport();
+      await transport.dispose();
+
+      final events = <WatchTransportEvent>[];
+      var done = false;
+      transport.events.listen(events.add, onDone: () => done = true);
+      await pumpEventQueue();
+
+      expect(probes, 0);
+      expect(events, isEmpty);
+      expect(done, isTrue);
     });
   });
 }

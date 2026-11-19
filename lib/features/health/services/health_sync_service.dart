@@ -40,9 +40,11 @@ class HealthSyncService {
     required this._diagnostics,
     required this._healthSyncEnabled,
     required Future<ConnectionProfile?> Function() activeConnectionProfile,
+    Future<bool> Function(String sourceId)? isRecordedElsewhere,
     DateTime Function()? now,
   }) : _importRepo = importRepository,
        _activeConnectionProfile = activeConnectionProfile,
+       _isRecordedElsewhere = isRecordedElsewhere ?? _neverRecordedElsewhere,
        _now = now ?? DateTime.now;
 
   final HealthPlatformAdapter _adapter;
@@ -54,7 +56,15 @@ class HealthSyncService {
   final DiagnosticsRecorder _diagnostics;
   final bool _healthSyncEnabled;
   final Future<ConnectionProfile?> Function() _activeConnectionProfile;
+
+  /// Whether another Endurain path already stored the health workout with
+  /// this source id (a session handed over by the companion watch, which also
+  /// saves its workout to the health platform). Such workouts are neither
+  /// offered nor imported, so the same session is not uploaded twice.
+  final Future<bool> Function(String sourceId) _isRecordedElsewhere;
   final DateTime Function() _now;
+
+  static Future<bool> _neverRecordedElsewhere(String _) async => false;
 
   final _DiscoveryCursor _cursor = _DiscoveryCursor();
   final SerialTaskQueue _queue = SerialTaskQueue();
@@ -272,7 +282,8 @@ class HealthSyncService {
         sourceId: workout.sourceId,
       );
       importedLocalId ??= await _adoptStrayImport(profile, workout.sourceId);
-      if (importedLocalId != null) {
+      if (importedLocalId != null ||
+          await _isRecordedElsewhere(workout.sourceId)) {
         // Discovery is read-only. A missing local record stays in Imported
         // history until the user explicitly restores it (or deletes it through
         // local history, which removes provenance as part of that workflow).
@@ -424,9 +435,10 @@ class HealthSyncService {
 
     for (final workout in toImport) {
       if (await _importRepo.isImported(
-        profileId: profile.id,
-        sourceId: workout.sourceId,
-      )) {
+            profileId: profile.id,
+            sourceId: workout.sourceId,
+          ) ||
+          await _isRecordedElsewhere(workout.sourceId)) {
         continue;
       }
       try {

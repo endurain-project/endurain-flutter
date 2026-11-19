@@ -22,19 +22,10 @@ class WatchTransportChannelContract {
   static const String methodChannelName = 'endurain/watch_transport/methods';
   static const String eventChannelName = 'endurain/watch_transport/events';
 
-  // Method names — session handoff (implemented).
+  // Method names.
   static const String linkStatus = 'linkStatus';
   static const String drainHandoffs = 'drainHandoffs';
   static const String acknowledgeHandoff = 'acknowledgeHandoff';
-
-  // Method names — live control/state mirroring. Reserved for the Wear OS and
-  // watchOS "remote + live stats" phases; declared here so both native sides
-  // agree on the names before either is written.
-  static const String sendControlStart = 'control.start';
-  static const String sendControlPause = 'control.pause';
-  static const String sendControlResume = 'control.resume';
-  static const String sendControlStop = 'control.stop';
-  static const String sendLiveStats = 'control.liveStats';
 
   // Method argument keys.
   static const String argVersion = 'version';
@@ -58,9 +49,6 @@ class WatchTransportChannelContract {
 
   /// The pending-handoff store could not be read.
   static const String errorStoreReadFailed = 'store_read_failed';
-
-  /// The watch could not be reached for a live control message.
-  static const String errorWatchUnreachable = 'watch_unreachable';
 }
 
 /// [WatchTransportAdapter] backed by platform channels.
@@ -88,9 +76,14 @@ class MethodChannelWatchTransport implements WatchTransportAdapter {
 
   StreamController<WatchTransportEvent>? _events;
   StreamSubscription<dynamic>? _nativeEvents;
+  bool _disposed = false;
 
   @override
   Stream<WatchTransportEvent> get events {
+    if (_disposed) {
+      // A disposed transport must not re-activate the native stream.
+      return const Stream<WatchTransportEvent>.empty();
+    }
     final existing = _events;
     if (existing != null) {
       return existing.stream;
@@ -223,6 +216,7 @@ class MethodChannelWatchTransport implements WatchTransportAdapter {
 
   @override
   Future<void> dispose() async {
+    _disposed = true;
     // Cancelling the native subscription deactivates the EventChannel on the
     // platform side; the broadcast controller is closed so late listeners get
     // a terminated stream instead of a silent one.

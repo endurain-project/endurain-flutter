@@ -13,15 +13,31 @@ class WatchSyncSummary {
     this.ingested = 0,
     this.duplicates = 0,
     this.skipped = 0,
+    this.deferred = 0,
     this.failed = 0,
   });
 
   final int ingested;
   final int duplicates;
+
+  /// Empty sessions, acknowledged and dropped.
   final int skipped;
+
+  /// Sessions left queued on the watch without being an error: still
+  /// incomplete, unreadable by this app version, or without a GPS route.
+  final int deferred;
+
   final int failed;
 
   bool get hasNewActivities => ingested > 0;
+
+  WatchSyncSummary operator +(WatchSyncSummary other) => WatchSyncSummary(
+    ingested: ingested + other.ingested,
+    duplicates: duplicates + other.duplicates,
+    skipped: skipped + other.skipped,
+    deferred: deferred + other.deferred,
+    failed: failed + other.failed,
+  );
 }
 
 /// App-lifetime coordinator that pulls finished sessions off a paired watch and
@@ -33,7 +49,9 @@ class WatchSyncSummary {
 /// takes it from there.
 ///
 /// [syncPendingSessions] is single-flight, so a link-status change, a push
-/// event, and an app-resume cannot start overlapping drains.
+/// event, and an app-resume cannot start overlapping drains. A request that
+/// arrives while a drain is running schedules one follow-up pass, so a handoff
+/// queued after the running pass read the list is still picked up.
 class WatchCompanionService {
   WatchCompanionService({
     required WatchTransportAdapter transport,
@@ -59,6 +77,7 @@ class WatchCompanionService {
 
   StreamSubscription<WatchTransportEvent>? _eventSubscription;
   Future<WatchSyncSummary>? _inFlightSync;
+  bool _followUpRequested = false;
   WatchLinkStatus _linkStatus = WatchLinkStatus.unsupported;
   bool _disposed = false;
 
@@ -77,10 +96,27 @@ class WatchCompanionService {
   ///
   /// Never throws: transport failures are reported as a breadcrumb and the
   /// handoffs stay queued for the next pass.
+  ///
+  /// A call made while a drain is running joins it, and also schedules one
+  /// more pass once it finishes; the returned summary covers both passes.
   Future<WatchSyncSummary> syncPendingSessions() {
-    return _inFlightSync ??= _runSync().whenComplete(() {
+    final inFlight = _inFlightSync;
+    if (inFlight != null) {
+      _followUpRequested = true;
+      return inFlight;
+    }
+    return _inFlightSync = _syncUntilSettled().whenComplete(() {
       _inFlightSync = null;
     });
+  }
+
+  Future<WatchSyncSummary> _syncUntilSettled() async {
+    var total = const WatchSyncSummary();
+    do {
+      _followUpRequested = false;
+      total = total + await _runSync();
+    } while (_followUpRequested && !_disposed);
+    return total;
   }
 
   Future<WatchSyncSummary> _runSync() async {
@@ -88,15 +124,22 @@ class WatchCompanionService {
       return const WatchSyncSummary();
     }
 
-    _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.watchSyncStarted);
     final handoffs = await _drainHandoffs();
-    if (handoffs == null) {
+    // Nothing pending (which includes every build and platform without a
+    // watch transport): stay silent so each app resume does not add empty
+    // breadcrumbs to diagnostics and crash reports.
+    if (handoffs == null || handoffs.isEmpty) {
       return const WatchSyncSummary();
     }
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.watchSyncStarted,
+      details: {'pending': handoffs.length},
+    );
 
     var ingested = 0;
     var duplicates = 0;
     var skipped = 0;
+    var deferred = 0;
     var failed = 0;
     for (final handoff in handoffs) {
       final result = await _ingestionService.ingest(handoff);
@@ -106,8 +149,11 @@ class WatchCompanionService {
         case WatchIngestionOutcome.duplicate:
           duplicates++;
         case WatchIngestionOutcome.empty:
-        case WatchIngestionOutcome.incomplete:
           skipped++;
+        case WatchIngestionOutcome.incomplete:
+        case WatchIngestionOutcome.unreadable:
+        case WatchIngestionOutcome.noRoute:
+          deferred++;
         case WatchIngestionOutcome.failed:
           failed++;
       }
@@ -126,6 +172,7 @@ class WatchCompanionService {
       ingested: ingested,
       duplicates: duplicates,
       skipped: skipped,
+      deferred: deferred,
       failed: failed,
     );
     _diagnostics.recordBreadcrumbSync(
@@ -134,6 +181,7 @@ class WatchCompanionService {
         'ingested': ingested,
         'duplicates': duplicates,
         'skipped': skipped,
+        'deferred': deferred,
         'failed': failed,
       },
     );

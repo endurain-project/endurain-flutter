@@ -36,7 +36,8 @@ class WatchSessionHandoff {
     required this.source,
     required this.session,
     required this.points,
-    required this.isComplete,
+    this.droppedPointCount = 0,
+    this.healthWorkoutId,
     this.payloadVersion = currentPayloadVersion,
   });
 
@@ -48,24 +49,42 @@ class WatchSessionHandoff {
   final ActiveActivitySession session;
   final List<RecordedActivityPoint> points;
 
-  /// Whether the watch considers the session finished. Incomplete handoffs are
-  /// never ingested: the watch keeps them queued and re-sends until it can send
-  /// a complete one, so a partially-transferred workout can never be persisted
-  /// as if it were the whole activity.
-  final bool isComplete;
+  /// How many point entries the payload carried that could not be parsed.
+  ///
+  /// Distinguishes "the watch sent no points" from "the watch sent points this
+  /// app version cannot read": only the first is safe to acknowledge when
+  /// [points] ends up empty.
+  final int droppedPointCount;
+
+  /// Identifier of the workout the watch also saved to the health platform
+  /// (the HealthKit `HKWorkout` UUID or the Health Connect record id), when it
+  /// saved one.
+  ///
+  /// Lets Health Sync skip that workout so the same session is not imported a
+  /// second time from the health platform.
+  final String? healthWorkoutId;
 
   final int payloadVersion;
 
   /// Stable identifier of the watch session, used for idempotent ingestion.
   String get sessionId => session.localSessionId;
 
+  /// Whether the watch considers the session finished. Incomplete handoffs are
+  /// never ingested: the watch keeps them queued and re-sends until it can send
+  /// a complete one, so a partially-transferred workout can never be persisted
+  /// as if it were the whole activity.
+  ///
+  /// Derived from the session status so the envelope has a single source of
+  /// truth for completion.
+  bool get isComplete => session.status == ActiveActivityStatus.completed;
+
   Map<String, Object?> toJson() {
     return {
       'version': payloadVersion,
       'source': source.toJson(),
-      'complete': isComplete,
       'session': session.toJson(),
       'points': [for (final point in points) point.toJson()],
+      if (healthWorkoutId != null) 'healthWorkoutId': healthWorkoutId,
     };
   }
 
@@ -73,8 +92,9 @@ class WatchSessionHandoff {
   ///
   /// Throws [FormatException] when the payload version is unsupported, the
   /// source is unknown, or the session envelope is malformed. Individual
-  /// malformed points are skipped rather than failing the whole session, so one
-  /// corrupt sample cannot cost the user a workout.
+  /// malformed points are skipped and counted in [droppedPointCount] rather
+  /// than failing the whole session, so one corrupt sample cannot cost the
+  /// user a workout.
   factory WatchSessionHandoff.fromJson(Map<dynamic, dynamic> json) {
     final version = json['version'];
     if (version is! int) {
@@ -91,31 +111,40 @@ class WatchSessionHandoff {
     if (session is! Map) {
       throw const FormatException('Missing watch handoff field: session');
     }
+    final healthWorkoutId = json['healthWorkoutId'];
 
+    final parsed = _parsePoints(json['points']);
     return WatchSessionHandoff(
       source: source,
       session: ActiveActivitySession.fromJson(session),
-      points: _parsePoints(json['points']),
-      isComplete: json['complete'] == true,
+      points: parsed.points,
+      droppedPointCount: parsed.dropped,
+      healthWorkoutId: healthWorkoutId is String && healthWorkoutId.isNotEmpty
+          ? healthWorkoutId
+          : null,
       payloadVersion: version,
     );
   }
 
-  static List<RecordedActivityPoint> _parsePoints(Object? value) {
+  static ({List<RecordedActivityPoint> points, int dropped}) _parsePoints(
+    Object? value,
+  ) {
     if (value is! List) {
-      return const <RecordedActivityPoint>[];
+      return (points: const <RecordedActivityPoint>[], dropped: 0);
     }
     final points = <RecordedActivityPoint>[];
+    var dropped = 0;
     for (final entry in value) {
       if (entry is! Map) {
+        dropped++;
         continue;
       }
       try {
         points.add(RecordedActivityPoint.fromJson(entry));
       } on FormatException {
-        continue;
+        dropped++;
       }
     }
-    return points;
+    return (points: points, dropped: dropped);
   }
 }

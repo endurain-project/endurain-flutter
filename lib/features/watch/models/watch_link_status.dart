@@ -24,7 +24,7 @@ enum WatchLinkStatus {
   /// The watch app is installed and reachable right now.
   connected;
 
-  /// Whether a live control message could plausibly be delivered right now.
+  /// Whether the watch can be reached right now, so a sync is worth running.
   bool get isReachable => this == WatchLinkStatus.connected;
 
   static WatchLinkStatus fromJson(Object? value) {

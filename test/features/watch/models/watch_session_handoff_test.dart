@@ -5,7 +5,6 @@ void main() {
   Map<String, Object?> validPayload() => {
     'version': WatchSessionHandoff.currentPayloadVersion,
     'source': 'appleWatch',
-    'complete': true,
     'session': {
       'localSessionId': 'watch_session_1',
       'activityType': 'run',
@@ -79,17 +78,37 @@ void main() {
       final handoff = WatchSessionHandoff.fromJson(payload);
 
       expect(handoff.points, hasLength(1));
+      expect(handoff.droppedPointCount, 3);
     });
 
-    test('treats a missing complete flag as incomplete', () {
-      final payload = validPayload()..remove('complete');
+    test('reports no dropped points for a clean payload', () {
+      expect(WatchSessionHandoff.fromJson(validPayload()).droppedPointCount, 0);
+    });
+
+    test('derives completion from the session status', () {
+      final payload = validPayload();
+      (payload['session']! as Map<String, Object?>)['status'] = 'recording';
 
       expect(WatchSessionHandoff.fromJson(payload).isComplete, isFalse);
+    });
+
+    test('reads the optional health workout id', () {
+      final withId = validPayload()..['healthWorkoutId'] = 'hk-1';
+      final blank = validPayload()..['healthWorkoutId'] = '';
+
+      expect(WatchSessionHandoff.fromJson(withId).healthWorkoutId, 'hk-1');
+      expect(WatchSessionHandoff.fromJson(blank).healthWorkoutId, isNull);
+      expect(
+        WatchSessionHandoff.fromJson(validPayload()).healthWorkoutId,
+        isNull,
+      );
     });
   });
 
   test('toJson round-trips through fromJson', () {
-    final original = WatchSessionHandoff.fromJson(validPayload());
+    final original = WatchSessionHandoff.fromJson(
+      validPayload()..['healthWorkoutId'] = 'hk-1',
+    );
 
     final restored = WatchSessionHandoff.fromJson(original.toJson());
 
@@ -97,5 +116,6 @@ void main() {
     expect(restored.sessionId, original.sessionId);
     expect(restored.isComplete, original.isComplete);
     expect(restored.points, hasLength(original.points.length));
+    expect(restored.healthWorkoutId, 'hk-1');
   });
 }
