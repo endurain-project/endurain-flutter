@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/core/models/auth_session.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
@@ -286,6 +286,46 @@ void main() {
       expect(bound?.uploadStatus, LocalActivityUploadStatus.uploaded);
       expect(bound?.connectionOrigin, 'https://active.example');
       expect(bound?.connectionProfileId, 'profile-active');
+    });
+
+    test('reconciles the active profile before selecting records', () async {
+      final record = await _createRecord(
+        repository,
+        id: 'q_legacy',
+        status: LocalActivityUploadStatus.pending,
+        connectionOrigin: 'https://active.example',
+        connectionProfileId: 'https://active.example#42',
+      );
+      const profile = ConnectionProfile(
+        id: 'https://active.example#uuid',
+        origin: 'https://active.example',
+        kind: ConnectionKind.selfHosted,
+      );
+      final reconciled = <String>[];
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+        activeConnectionProfile: () async => profile,
+        reconcileProfile: (active) async {
+          reconciled.add(active.id);
+          await repository.rebindConnectionProfile(
+            origin: active.origin,
+            fromProfileId: 'https://active.example#42',
+            toProfileId: active.id,
+            updatedAt: DateTime.utc(2026, 11, 17),
+          );
+        },
+      );
+
+      await queue.drain();
+
+      expect(reconciled, [profile.id]);
+      expect(attemptedKeys, [record.id]);
+      expect(
+        (await repository.get(record.id))?.uploadStatus,
+        LocalActivityUploadStatus.uploaded,
+      );
     });
 
     test('concurrent drain calls share a single run', () async {

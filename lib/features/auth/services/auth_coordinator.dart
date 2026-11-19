@@ -1,8 +1,8 @@
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
 
 /// Coordinates the auth-related services used by the login flow.
 ///
@@ -48,11 +48,19 @@ class AuthCoordinator {
     return _authService.login(username, password, serverUrl: serverUrl);
   }
 
-  Future<AuthResult> verifyMfa({
-    required String username,
-    required String mfaCode,
-  }) {
-    return _authService.verifyMfa(username, mfaCode);
+  /// Answers the pending MFA step of a password or an SSO sign-in.
+  Future<AuthResult> verifyMfa(String mfaCode) {
+    return _authService.verifyMfa(mfaCode);
+  }
+
+  /// Answers the pending password-change step.
+  Future<AuthResult> changePassword(String newPassword) {
+    return _authService.changePassword(newPassword);
+  }
+
+  /// Abandons a sign-in waiting for an MFA code or a new password.
+  void cancelSignIn() {
+    _authService.cancelSignIn();
   }
 
   void clearSsoPkce() {

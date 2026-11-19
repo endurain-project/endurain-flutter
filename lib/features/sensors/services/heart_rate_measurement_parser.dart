@@ -1,4 +1,5 @@
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/services/ble_payload.dart';
 
 /// Decodes the BLE Heart Rate Measurement characteristic (GATT `0x2A37`).
 ///
@@ -26,10 +27,8 @@ class HeartRateMeasurementParser {
     if (data.isEmpty) {
       return null;
     }
-    for (final byte in data) {
-      if (byte < 0 || byte > 0xFF) {
-        return null;
-      }
+    if (!isByteValuedPayload(data)) {
+      return null;
     }
 
     final flags = data[0];

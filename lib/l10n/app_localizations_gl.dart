@@ -39,6 +39,26 @@ class AppLocalizationsGl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'O formato do ficheiro non é compatible';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'O ficheiro está danado ou non se puido ler';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Non se atoparon actividades no ficheiro';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Algo saíu mal ao importar a actividade. Téntao de novo.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'O provedor de actividades non está dispoñible neste momento. Téntao de novo máis tarde.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'A subida de actividades aínda non está configurada';
 
@@ -149,6 +169,14 @@ class AppLocalizationsGl extends AppLocalizations {
       'O servidor non devolveu ningún identificador de sesión';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Perdeuse a túa sesión de inicio de sesión. Inicia sesión de novo.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Non se puido completar o inicio de sesión único. Téntao de novo.';
+
+  @override
   String get errorNotAuthenticated => 'Non iniciaches sesión';
 
   @override
@@ -227,6 +255,104 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Seguro que queres pechar a sesión?';
+
+  @override
+  String get legacyDataTitle =>
+      'Actividades de antes da actualización do servidor';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Este dispositivo ten actividades gardadas para unha conta deste servidor de antes de que se actualizase. Son túas, $username? Se o son, as que seguen pendentes subiranse á túa conta.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Este dispositivo ten actividades gardadas para unha conta deste servidor de antes de que se actualizase. Pertencen á conta coa que acabas de iniciar sesión? Se é así, as que seguen pendentes subiranse a ela.';
+
+  @override
+  String get legacyDataConfirm => 'Son miñas';
+
+  @override
+  String get legacyDataDecline => 'Non son miñas';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'O servidor ten demasiadas subidas túas en curso. A aplicación volverá tentalo máis tarde.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Non se puido cambiar o contrasinal';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Non se puido cambiar o contrasinal: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Este servidor pediu un paso de inicio de sesión que esta versión da aplicación non admite. Actualiza a aplicación e téntao de novo.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'O teu provedor de identidade non compartiu un enderezo de correo, que é necesario para crear a túa conta.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'O teu provedor de identidade non verificou o teu enderezo de correo. Verifícao alí e téntao de novo.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ningunha conta coincide con este inicio de sesión e este servidor non crea contas automaticamente. Pregunta ao teu administrador.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Unha conta xa usa este enderezo de correo, pero este provedor non pode iniciar sesión nela. Inicia sesión doutra forma ou pregunta ao teu administrador.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'A túa conta está á espera da aprobación dun administrador.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Esta conta está desactivada. Ponte en contacto co teu administrador.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Este servidor non permite o inicio de sesión único desde esta aplicación. Pídelle ao teu administrador que engada com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'O teu administrador esixe a verificación en dous pasos. Configúraa na aplicación web de Endurain e téntao de novo.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'O ficheiro da actividade é demasiado grande para este servidor';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Este servidor non acepta este tipo de ficheiro de actividade';
+
+  @override
+  String get errorTooManyRequests =>
+      'Demasiados intentos. Espera un momento e téntao de novo.';
+
+  @override
+  String get passwordChangeTitle => 'Escolle un contrasinal novo';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un administrador estableceu o teu contrasinal. Escolle un novo para rematar de iniciar sesión.';
+
+  @override
+  String get newPassword => 'Contrasinal novo';
+
+  @override
+  String get confirmNewPassword => 'Confirma o contrasinal novo';
+
+  @override
+  String get passwordsDoNotMatch => 'Os contrasinais non coinciden';
+
+  @override
+  String get changePassword => 'Cambiar o contrasinal';
 
   @override
   String get logoutServerFailedWarning =>
@@ -491,6 +617,38 @@ class AppLocalizationsGl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Garda os ficheiros de ruta completados no almacenamento privado da aplicación despois de subilos.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pausa automática';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pon en pausa automaticamente cando deixas de moverte';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pausar automaticamente';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pon en pausa a gravación cando deixas de moverte e retómaa en canto voltas a moverte.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Escolle canto tempo sen movemento esperar antes de pausar.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds segundos';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'En pausa automática';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Gravación en pausa';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Gravación retomada';
 
   @override
   String get activityHistoryEmpty =>
@@ -829,10 +987,6 @@ class AppLocalizationsGl extends AppLocalizations {
   String get healthAccessHeartRate => 'Frecuencia cardíaca';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Distancia, calorías e pasos do adestramento';
-
-  @override
   String get healthAccessAllowed => 'Permitido';
 
   @override
@@ -1165,9 +1319,78 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'O servidor intentou redirixir a unha conexión non segura. A solicitude bloqueouse para protexer as túas credenciais.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'O servidor redirixiu demasiadas veces. Comproba o enderezo do servidor.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Anuncios de voz';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Actualizacións de voz sobre distancia, tempo, ritmo ou velocidade';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Anunciar o progreso da actividade';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Di en voz alta a túa distancia, tempo, ritmo ou velocidade durante unha gravación';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Baixar outro audio mentres fala';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Reduce temporalmente o volume doutro audio durante cada anuncio';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Intervalo de anuncio por actividade';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distancia';
+
+  @override
+  String get audioAnnouncementsByTime => 'Tempo';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Cada $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Cada $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Diminuír intervalo';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Aumentar intervalo';
+
+  @override
+  String get audioAnnouncementsPreview => 'Escoitar exemplo';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'A mostra do anuncio non está dispoñible neste dispositivo';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Os cambios aplícanse á túa vindeira gravación.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distancia $distance. Tempo $duration. Volta: $lapMetric. Total: $overallMetric.';
+  }
 }

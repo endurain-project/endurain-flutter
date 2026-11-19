@@ -1,20 +1,22 @@
-import 'package:endurain/core/config/app_config.dart';
+import 'dart:convert';
+
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
+import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
 import 'package:endurain/features/auth/screens/login_screen.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/fake_app_links_service.dart';
 import '../../../helpers/fake_url_launcher_service.dart';
@@ -118,7 +120,7 @@ void main() {
           }
           if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
             return http.Response(
-              '{"mfa_required":true,"username":"joao","message":"MFA required"}',
+              '{"next_step":"mfa","mfa_challenge":"challenge-1"}',
               200,
             );
           }
@@ -149,6 +151,86 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.mfaCodeRequired), findsOneWidget);
+
+      controller.dispose();
+    });
+
+    testWidgets('shows the password-change step and checks the repeat', (
+      tester,
+    ) async {
+      final changes = <Object?>[];
+      final controller = _controller(
+        client: MockClient((request) async {
+          final path = request.url.path;
+          if (path == ApiEndpoints.defaults.serverSettingsEndpoint) {
+            return http.Response(
+              '{"sso_enabled":false,"local_login_enabled":true}',
+              200,
+            );
+          }
+          if (path == ApiEndpoints.defaults.tokenEndpoint) {
+            return http.Response(
+              '{"next_step":"password_change",'
+              '"password_change_challenge":"change-1"}',
+              200,
+            );
+          }
+          if (path == ApiEndpoints.defaults.passwordChangeEndpoint) {
+            changes.add(jsonDecode(request.body));
+            return http.Response('{"detail":"Password is too short"}', 422);
+          }
+          fail('Unexpected request to ${request.url}');
+        }),
+      );
+
+      await tester.pumpWidget(_loginScreen(controller: controller));
+      await tester.enterText(find.byType(TextFormField), 'example.test');
+      await tester.tap(find.text(l10n.next));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, l10n.username),
+        'joao',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, l10n.password),
+        'set-by-admin',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, l10n.login));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.passwordChangeTitle), findsOneWidget);
+      expect(find.text(l10n.passwordChangeMessage), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, l10n.newPassword),
+        'first try',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, l10n.confirmNewPassword),
+        'different',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, l10n.changePassword));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.passwordsDoNotMatch), findsOneWidget);
+      expect(changes, isEmpty);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, l10n.confirmNewPassword),
+        'first try',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, l10n.changePassword));
+      await tester.pumpAndSettle();
+
+      expect(changes, [
+        {'password_change_challenge': 'change-1', 'password': 'first try'},
+      ]);
+      expect(
+        find.text(
+          l10n.errorPasswordChangeFailedWithDetails('Password is too short'),
+        ),
+        findsOneWidget,
+      );
 
       controller.dispose();
     });

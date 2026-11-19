@@ -11,6 +11,11 @@
   "invalidUrl": "Įveskite galiojantį URL",
   "errorActivityUploadFailed": "Nepavyko įkelti veiklos",
   "errorActivityUploadFailedWithDetails": "Nepavyko įkelti veiklos: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Failo formatas nepalaikomas",
+  "errorActivityIngestionInvalidFile": "Failas sugadintas arba jo nepavyko perskaityti",
+  "errorActivityIngestionNoActivitiesFound": "Faile nerasta jokių veiklų",
+  "errorActivityIngestionProcessingFailed": "Importuojant veiklą įvyko klaida. Bandykite dar kartą.",
+  "errorActivityIngestionProviderUnavailable": "Veiklų teikėjas šiuo metu nepasiekiamas. Bandykite vėliau.",
   "errorActivityUploadNotConfigured": "Veiklų įkėlimas dar nesukonfigūruotas",
   "errorActivityGpxCleanupFailed": "Nepavyko ištrinti laikinojo veiklos failo",
   "errorActivityGpxFileWriteFailed": "Nepavyko paruošti veiklos įkėlimo failo",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA patvirtinimas nepavyko",
   "errorMfaVerificationFailedWithDetails": "MFA patvirtinimas nepavyko: {details}",
   "errorNoSessionIdReceived": "Iš serverio negautas seanso ID",
+  "errorMfaSessionMissing": "Jūsų prisijungimo sesija prarasta. Prisijunkite iš naujo.",
+  "errorSsoCallbackFailed": "Nepavyko užbaigti vieningo prisijungimo (SSO). Bandykite dar kartą.",
   "errorNotAuthenticated": "Nesate prisijungę",
   "errorPkceVerifierMissingRestartLogin": "Prisijungimo tikrintuvas nerastas. Pradėkite prisijungimą iš naujo.",
   "errorServerUrlNotConfigured": "Serverio URL nesukonfigūruotas",
@@ -54,6 +61,32 @@
   "logout": "Atsijungti",
   "logoutConfirmTitle": "Atsijungti",
   "logoutConfirmMessage": "Ar tikrai norite atsijungti?",
+  "legacyDataTitle": "Veiklos iš laikotarpio prieš serverio atnaujinimą",
+  "legacyDataMessageWithUsername": "Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos jūsų, {username}? Jei taip, dar laukiančios bus įkeltos į jūsų paskyrą.",
+  "legacyDataMessage": "Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos priklauso paskyrai, prie kurios ką tik prisijungėte? Jei taip, dar laukiančios bus įkeltos į ją.",
+  "legacyDataConfirm": "Jos mano",
+  "legacyDataDecline": "Ne mano",
+  "errorActivityUploadLimit": "Serveryje vykdoma per daug jūsų įkėlimų. Programa bandys dar kartą vėliau.",
+  "errorPasswordChangeFailed": "Nepavyko pakeisti slaptažodžio",
+  "errorPasswordChangeFailedWithDetails": "Nepavyko pakeisti slaptažodžio: {details}",
+  "errorSignInStepUnsupported": "Serveris paprašė prisijungimo žingsnio, kurio ši programos versija nepalaiko. Atnaujinkite programą ir bandykite dar kartą.",
+  "errorSsoEmailMissing": "Jūsų tapatybės teikėjas nepateikė el. pašto adreso, kurio reikia paskyrai sukurti.",
+  "errorSsoEmailUnverified": "Jūsų tapatybės teikėjas nepatvirtino jūsų el. pašto adreso. Patvirtinkite jį ten ir bandykite dar kartą.",
+  "errorSsoAutoCreateDisabled": "Šį prisijungimą atitinkančios paskyros nėra, o šis serveris paskyrų automatiškai nekuria. Kreipkitės į administratorių.",
+  "errorSsoLinkByEmailDisabled": "Šį el. pašto adresą jau naudoja paskyra, bet šis teikėjas negali prie jos prisijungti. Prisijunkite kitu būdu arba kreipkitės į administratorių.",
+  "errorSsoApprovalPending": "Jūsų paskyra laukia administratoriaus patvirtinimo.",
+  "errorSsoAccountDisabled": "Ši paskyra išjungta. Kreipkitės į administratorių.",
+  "errorSsoRedirectNotAllowed": "Šis serveris neleidžia vieningo prisijungimo iš šios programos. Paprašykite administratoriaus įtraukti com.endurain.endurain:/auth/sso/callback į ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Jūsų administratorius reikalauja dviejų žingsnių patvirtinimo. Nustatykite jį „Endurain“ žiniatinklio programoje ir bandykite dar kartą.",
+  "errorActivityFileTooLarge": "Veiklos failas per didelis šiam serveriui",
+  "errorActivityUnsupportedFileType": "Šis serveris nepriima tokio tipo veiklos failo",
+  "errorTooManyRequests": "Per daug bandymų. Šiek tiek palaukite ir bandykite dar kartą.",
+  "passwordChangeTitle": "Pasirinkite naują slaptažodį",
+  "passwordChangeMessage": "Administratorius nustatė jūsų slaptažodį. Norėdami baigti prisijungimą, pasirinkite naują.",
+  "newPassword": "Naujas slaptažodis",
+  "confirmNewPassword": "Patvirtinkite naują slaptažodį",
+  "passwordsDoNotMatch": "Slaptažodžiai nesutampa",
+  "changePassword": "Keisti slaptažodį",
   "logoutServerFailedWarning": "Nepavyko atsijungti nuo serverio, bet atsijungta vietoje",
   "ssoBrowserLaunchFailed": "Nepavyko atidaryti SSO prisijungimo sistemos naršyklėje",
   "ssoSignInWith": "Prisijungti naudojant {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Užbaigtos veiklos, įrašytos šiame įrenginyje",
   "activityRetainUploadedGpx": "Išsaugoti įkeltus GPX failus",
   "activityRetainUploadedGpxSubtitle": "Po įkėlimo užbaigtus maršrutų failus saugo privačioje programos saugykloje.",
+  "activityAutoPauseTitle": "Automatinė pauzė",
+  "activityAutoPauseSubtitle": "Automatiškai pristabdo, kai nustojate judėti",
+  "activityAutoPauseToggleLabel": "Automatiškai pristabdyti",
+  "activityAutoPauseToggleDescription": "Įrašymas automatiškai pristabdomas, kai nustojate judėti, ir tęsiamas, kai vėl pradedate judėti.",
+  "activityAutoPauseDelayHelperText": "Pasirinkite, kiek laiko be judėjimo laukti prieš pristabdant.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} sek.",
+  "activityAutoPausedIndicator": "Automatiškai pristabdyta",
+  "audioAnnouncementsAutoPaused": "Įrašymas pristabdytas",
+  "audioAnnouncementsAutoResumed": "Įrašymas atnaujintas",
   "activityHistoryEmpty": "Šiame įrenginyje nėra įrašytų užbaigtų veiklų.",
   "activityHistoryLoadFailed": "Nepavyko įkelti vietinių veiklų.",
   "activityHistoryRefresh": "Atnaujinti",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Treniruotės",
   "healthAccessWorkoutRoutes": "Treniruočių maršrutai",
   "healthAccessHeartRate": "Širdies ritmas",
-  "healthAccessWorkoutSummary": "Treniruotės atstumas, kalorijos ir žingsniai",
   "healthAccessAllowed": "Leidžiama",
   "healthAccessNeedsAttention": "Reikia dėmesio",
   "healthAccessManagedBySystem": "Tvarkomas sistemos nustatymuose",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serveris bandė nukreipti į nesaugų ryšį. Užklausa užblokuota siekiant apsaugoti jūsų prisijungimo duomenis.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serveris nukreipė per daug kartų. Patikrinkite serverio adresą.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Balso pranešimai",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Balso pranešimai apie atstumą, laiką, tempą arba greitį",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Skelbti veiklos eigą",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Įrašymo metu balsu praneša atstumą, laiką, tempą arba greitį",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Pritildyti kitą garsą kalbėjimo metu",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Laikinai sumažina kito garso garsumą kiekvieno pranešimo metu",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Pranešimo intervalas pagal veiklą",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Atstumas",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Laikas",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Kas {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Kas {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Sumažinti intervalą",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Padidinti intervalą",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Klausytis pavyzdžio",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Pranešimo pavyzdys šiame įrenginyje negalimas",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Pakeitimai bus taikomi kitam įrašui.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Atstumas {distance}. Laikas {duration}. Ratas: {lapMetric}. Iš viso: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

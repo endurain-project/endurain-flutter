@@ -1,22 +1,22 @@
-import 'package:endurain/features/activity/models/activity_recording_error.dart';
-
 import 'dart:async';
 import 'dart:io';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/location_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
-import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
+import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
@@ -25,12 +25,26 @@ import 'package:endurain/features/activity/services/activity_recording_service.d
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
+
+class _ThrowingPreferencesBackend implements AppPreferencesBackend {
+  @override
+  Future<void> delete(String key) => Future.error(StateError('unavailable'));
+
+  @override
+  Future<String?> read(String key) => Future.error(StateError('unavailable'));
+
+  @override
+  Future<void> write(String key, String value) =>
+      Future.error(StateError('unavailable'));
+}
 
 void main() {
   group('ActivityRecordingController', () {
@@ -47,6 +61,37 @@ void main() {
       expect(controller.state.status, ActivityRecordingStatus.recording);
       expect(controller.state.activityType, ActivityType.ride);
     });
+
+    test(
+      'starts recording when auto-pause preferences are unavailable',
+      () async {
+        final adapter = RecordingLocationPlatformAdapter();
+        final store = InMemoryActiveActivityStore();
+        final service = _recordingService(adapter: adapter, store: store)
+          ..configureAutoPause(
+            const MovementAutoPauseConfig(pauseDelay: Duration(seconds: 60)),
+          );
+        final controller = ActivityRecordingController(
+          recordingService: service,
+          autoPauseSettingsRepository: AutoPauseSettingsRepository(
+            preferences: AppPreferencesStore(
+              backend: _ThrowingPreferencesBackend(),
+            ),
+          ),
+        );
+        addTearDown(controller.dispose);
+
+        await controller.start(ActivityType.run);
+        await pumpEventQueue();
+
+        expect(controller.state.status, ActivityRecordingStatus.recording);
+        expect(store.session?.autoPauseEnabled, isTrue);
+        expect(
+          store.session?.autoPauseDelaySeconds,
+          AutoPauseSettingsRepository.defaultDelaySeconds,
+        );
+      },
+    );
 
     group('active recording recovery', () {
       test('returns false when no active session exists', () async {
@@ -129,7 +174,7 @@ void main() {
         },
       );
 
-      test('clears and returns false for an empty-point session', () async {
+      test('preserves a paused session before its first fix', () async {
         final store = InMemoryActiveActivityStore();
         store.session = _activeSession(ActiveActivityStatus.paused);
         final controller = _controllerWithActiveStore(store);
@@ -137,10 +182,76 @@ void main() {
 
         final recovered = await controller.recoverActiveRecording();
 
-        expect(recovered, isFalse);
-        expect(controller.state.status, ActivityRecordingStatus.idle);
-        expect(store.session, isNull);
+        expect(recovered, isTrue);
+        expect(controller.state.status, ActivityRecordingStatus.paused);
+        expect(store.session, isNotNull);
+        expect(store.clearCount, 0);
       });
+
+      test(
+        'requires an explicit stop before uploading a failed session',
+        () async {
+          final directory = await Directory.systemTemp.createTemp(
+            'endurain_recovery_consent_',
+          );
+          addTearDown(() => directory.deleteSync(recursive: true));
+          final repository = _repositoryFor(directory);
+          final store = InMemoryActiveActivityStore()
+            ..session = _activeSession(ActiveActivityStatus.failed).copyWith(
+              connectionOrigin: _profile.origin,
+              connectionProfileId: _profile.id,
+            );
+          await store.appendPoints([
+            _recordedPoint(segmentIndex: 0, latitude: 41.1),
+            _recordedPoint(segmentIndex: 0, latitude: 41.2),
+          ]);
+          var uploadCount = 0;
+          final controller = ActivityRecordingController(
+            recordingService: _recordingService(store: store),
+            localActivityRepository: repository,
+            isUploadAuthorized: () async => true,
+            uploadService: ActivityUploadService(
+              config: const ActivityUploadConfig(
+                endpoint: '/upload',
+                fieldName: 'file',
+              ),
+              uploadFile:
+                  (
+                    _,
+                    _,
+                    _, {
+                    idempotencyKey,
+                    expectedOrigin,
+                    expectedProfileId,
+                  }) async {
+                    uploadCount += 1;
+                    expect(expectedOrigin, _profile.origin);
+                    expect(expectedProfileId, _profile.id);
+                    return http.StreamedResponse(const Stream.empty(), 201);
+                  },
+            ),
+          );
+          addTearDown(controller.dispose);
+
+          expect(await controller.recoverActiveRecording(), isTrue);
+          await controller.start(ActivityType.walk);
+          await pumpEventQueue();
+
+          expect(controller.state.status, ActivityRecordingStatus.paused);
+          expect(controller.state.activityType, ActivityType.ride);
+          expect(store.session!.localSessionId, 'session_1');
+          expect(controller.uploadStatus, ActivityUploadStatus.idle);
+          expect(await repository.list(), isEmpty);
+          expect(uploadCount, 0);
+
+          await controller.stop();
+          await controller.uploadCompletedGpx();
+
+          expect(uploadCount, 1);
+          expect((await repository.list()).single.id, 'session_1');
+          expect(controller.state.status, ActivityRecordingStatus.completed);
+        },
+      );
 
       test('returns false for malformed active session metadata', () async {
         final tempDirectory = await Directory.systemTemp.createTemp(
@@ -279,6 +390,44 @@ void main() {
       );
       expect(breadcrumb.details['type'], 'StateError');
     });
+
+    test(
+      'retries failed finalization without replacing the recording',
+      () async {
+        final directory = await Directory.systemTemp.createTemp(
+          'endurain_retry_finalize_',
+        );
+        addTearDown(() => directory.deleteSync(recursive: true));
+        final repository = _repositoryFor(directory);
+        final store = InMemoryActiveActivityStore();
+        final adapter = RecordingLocationPlatformAdapter();
+        final builder = _RetryableGpxBuilder();
+        final controller = ActivityRecordingController(
+          recordingService: _recordingService(adapter: adapter, store: store),
+          gpxBuilder: builder,
+          localActivityRepository: repository,
+          localActivityIdProvider: () => 'same_session',
+          isUploadAuthorized: () async => false,
+        );
+        addTearDown(controller.dispose);
+        await controller.start(ActivityType.run);
+        adapter.addPosition(recordingPosition());
+        await pumpEventQueue();
+        await controller.stop();
+
+        expect(controller.state.status, ActivityRecordingStatus.failed);
+        expect(store.session?.localSessionId, 'same_session');
+        expect(await repository.list(), isEmpty);
+        builder.fail = false;
+        await controller.resume();
+        await pumpEventQueue();
+
+        expect(controller.state.status, ActivityRecordingStatus.completed);
+        expect(controller.state.localActivityId, 'same_session');
+        expect((await repository.list()).single.id, 'same_session');
+        expect(store.session, isNull);
+      },
+    );
 
     test('surfaces local save failures before upload starts', () async {
       final adapter = RecordingLocationPlatformAdapter();
@@ -806,6 +955,18 @@ class _ThrowingGpxBuilder extends ActivityGpxBuilder {
   }
 }
 
+class _RetryableGpxBuilder extends ActivityGpxBuilder {
+  bool fail = true;
+
+  @override
+  String build(ActivityRecordingState state, {String? trackName}) {
+    if (fail) {
+      throw StateError('GPX generation failed');
+    }
+    return super.build(state, trackName: trackName);
+  }
+}
+
 class _CapturingDiagnosticsRecorder implements DiagnosticsRecorder {
   final List<DiagnosticsBreadcrumb> breadcrumbs = [];
 
@@ -912,7 +1073,7 @@ class _DeleteGpxThrowingRepository extends LocalActivityRepository {
 
 class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
   _FakeRetentionSettings({required this.enabled})
-    : super(storage: SecureStorageService());
+    : super(preferences: FakePreferencesStore());
 
   final bool enabled;
 

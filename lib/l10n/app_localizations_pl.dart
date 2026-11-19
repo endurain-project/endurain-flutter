@@ -39,6 +39,26 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Format pliku nie jest obsługiwany';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Plik jest uszkodzony lub nie można go odczytać';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'W pliku nie znaleziono żadnych aktywności';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Podczas importowania aktywności wystąpił błąd. Spróbuj ponownie.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Dostawca aktywności jest obecnie niedostępny. Spróbuj ponownie później.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Przesyłanie aktywności nie jest jeszcze skonfigurowane';
 
@@ -149,6 +169,14 @@ class AppLocalizationsPl extends AppLocalizations {
       'Serwer nie zwrócił identyfikatora sesji';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Twoja sesja logowania została utracona. Zaloguj się ponownie.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Nie udało się ukończyć logowania jednokrotnego (SSO). Spróbuj ponownie.';
+
+  @override
   String get errorNotAuthenticated => 'Nie jesteś zalogowany';
 
   @override
@@ -226,6 +254,103 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Czy na pewno chcesz się wylogować?';
+
+  @override
+  String get legacyDataTitle => 'Aktywności sprzed aktualizacji serwera';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Na tym urządzeniu są aktywności zapisane dla konta na tym serwerze sprzed jego aktualizacji. Czy są Twoje, $username? Jeśli tak, te, które wciąż czekają, zostaną przesłane na Twoje konto.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Na tym urządzeniu są aktywności zapisane dla konta na tym serwerze sprzed jego aktualizacji. Czy należą do konta, na które właśnie się zalogowano? Jeśli tak, te, które wciąż czekają, zostaną na nie przesłane.';
+
+  @override
+  String get legacyDataConfirm => 'Są moje';
+
+  @override
+  String get legacyDataDecline => 'Nie są moje';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Na serwerze trwa zbyt wiele Twoich przesyłań. Aplikacja spróbuje ponownie później.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Nie udało się zmienić hasła';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Nie udało się zmienić hasła: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serwer zażądał kroku logowania, którego ta wersja aplikacji nie obsługuje. Zaktualizuj aplikację i spróbuj ponownie.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Twój dostawca tożsamości nie udostępnił adresu e-mail, który jest potrzebny do utworzenia konta.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Twój dostawca tożsamości nie zweryfikował Twojego adresu e-mail. Zweryfikuj go tam i spróbuj ponownie.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Żadne konto nie pasuje do tego logowania, a ten serwer nie tworzy kont automatycznie. Zapytaj administratora.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ten adres e-mail jest już używany przez konto, ale ten dostawca nie może się na nie zalogować. Zaloguj się w inny sposób lub zapytaj administratora.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Twoje konto czeka na zatwierdzenie przez administratora.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'To konto jest wyłączone. Skontaktuj się z administratorem.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Ten serwer nie zezwala na logowanie jednokrotne z tej aplikacji. Poproś administratora o dodanie com.endurain.endurain:/auth/sso/callback do ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Twój administrator wymaga weryfikacji dwuetapowej. Skonfiguruj ją w aplikacji webowej Endurain i spróbuj ponownie.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Plik aktywności jest za duży dla tego serwera';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ten serwer nie przyjmuje tego rodzaju pliku aktywności';
+
+  @override
+  String get errorTooManyRequests =>
+      'Zbyt wiele prób. Poczekaj chwilę i spróbuj ponownie.';
+
+  @override
+  String get passwordChangeTitle => 'Wybierz nowe hasło';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administrator ustawił Twoje hasło. Wybierz nowe, aby dokończyć logowanie.';
+
+  @override
+  String get newPassword => 'Nowe hasło';
+
+  @override
+  String get confirmNewPassword => 'Potwierdź nowe hasło';
+
+  @override
+  String get passwordsDoNotMatch => 'Hasła nie są zgodne';
+
+  @override
+  String get changePassword => 'Zmień hasło';
 
   @override
   String get logoutServerFailedWarning =>
@@ -492,6 +617,38 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Zapisuje ukończone pliki tras w prywatnej pamięci aplikacji po przesłaniu.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatyczna pauza';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatycznie wstrzymuje, gdy przestaniesz się poruszać';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Wstrzymuj automatycznie';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Nagrywanie jest automatycznie wstrzymywane, gdy przestaniesz się poruszać, i wznawiane, gdy znów zaczniesz się poruszać.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Wybierz, jak długo bez ruchu czekać przed wstrzymaniem.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatycznie wstrzymano';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Nagrywanie wstrzymane';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nagrywanie wznowione';
 
   @override
   String get activityHistoryEmpty =>
@@ -831,9 +988,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get healthAccessHeartRate => 'Tętno';
 
   @override
-  String get healthAccessWorkoutSummary => 'Dystans, kalorie i kroki treningu';
-
-  @override
   String get healthAccessAllowed => 'Dozwolone';
 
   @override
@@ -1165,9 +1319,78 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serwer próbował przekierować na niezabezpieczone połączenie. Żądanie zostało zablokowane, aby chronić Twoje dane logowania.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serwer przekierowywał zbyt wiele razy. Sprawdź adres serwera.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Komunikaty głosowe';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Głosowe aktualizacje dystansu, czasu, tempa lub prędkości';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Ogłaszaj postęp aktywności';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Odczytuje na głos dystans, czas, tempo lub prędkość podczas nagrywania';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Przycisz inne dźwięki podczas mówienia';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Tymczasowo zmniejsza głośność innych dźwięków podczas każdego komunikatu';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interwał komunikatów według aktywności';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Dystans';
+
+  @override
+  String get audioAnnouncementsByTime => 'Czas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Co $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Co $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Zmniejsz interwał';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Zwiększ interwał';
+
+  @override
+  String get audioAnnouncementsPreview => 'Odtwórz przykład';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Podgląd komunikatu jest niedostępny na tym urządzeniu';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Zmiany zostaną zastosowane przy następnym nagraniu.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Dystans $distance. Czas $duration. Okrążenie: $lapMetric. Łącznie: $overallMetric.';
+  }
 }

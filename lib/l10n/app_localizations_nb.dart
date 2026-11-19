@@ -39,6 +39,26 @@ class AppLocalizationsNb extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Filformatet støttes ikke';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Filen er ødelagt eller kunne ikke leses';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Fant ingen aktiviteter i filen';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Noe gikk galt under importen av aktiviteten. Prøv igjen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktivitetsleverandøren er ikke tilgjengelig akkurat nå. Prøv igjen senere.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Opplasting av aktiviteter er ikke konfigurert ennå';
 
@@ -147,6 +167,14 @@ class AppLocalizationsNb extends AppLocalizations {
       'Ingen økt-ID ble mottatt fra serveren';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Påloggingsøkten din gikk tapt. Logg inn på nytt.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Enkel pålogging (SSO) kunne ikke fullføres. Prøv igjen.';
+
+  @override
   String get errorNotAuthenticated => 'Du er ikke pålogget';
 
   @override
@@ -221,6 +249,103 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Er du sikker på at du vil logge ut?';
+
+  @override
+  String get legacyDataTitle => 'Aktiviteter fra før serveroppdateringen';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Denne enheten har aktiviteter lagret for en konto på denne serveren fra før serveren ble oppdatert. Er de dine, $username? Hvis de er det, blir de som fortsatt venter lastet opp til kontoen din.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Denne enheten har aktiviteter lagret for en konto på denne serveren fra før serveren ble oppdatert. Tilhører de kontoen du nettopp logget inn med? Hvis de gjør det, blir de som fortsatt venter lastet opp til den.';
+
+  @override
+  String get legacyDataConfirm => 'De er mine';
+
+  @override
+  String get legacyDataDecline => 'Ikke mine';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serveren har for mange av opplastingene dine i gang. Appen prøver igjen senere.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Kunne ikke endre passordet';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Kunne ikke endre passordet: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveren ba om et påloggingstrinn denne versjonen av appen ikke støtter. Oppdater appen og prøv igjen.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Identitetsleverandøren din delte ikke en e-postadresse, som trengs for å opprette kontoen din.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Identitetsleverandøren din har ikke bekreftet e-postadressen din. Bekreft den der, og prøv igjen.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ingen konto samsvarer med denne påloggingen, og serveren oppretter ikke kontoer automatisk. Spør administratoren din.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'En konto bruker allerede denne e-postadressen, men denne leverandøren kan ikke logge inn på den. Logg inn på en annen måte, eller spør administratoren din.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Kontoen din venter på godkjenning fra en administrator.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Denne kontoen er deaktivert. Kontakt administratoren din.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Denne serveren tillater ikke enkel pålogging fra denne appen. Be administratoren din om å legge til com.endurain.endurain:/auth/sso/callback i ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Administratoren din krever tostegsbekreftelse. Sett den opp i Endurains nettapp, og prøv igjen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktivitetsfilen er for stor for denne serveren';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Denne serveren godtar ikke denne typen aktivitetsfil';
+
+  @override
+  String get errorTooManyRequests =>
+      'For mange forsøk. Vent litt og prøv igjen.';
+
+  @override
+  String get passwordChangeTitle => 'Velg et nytt passord';
+
+  @override
+  String get passwordChangeMessage =>
+      'En administrator har angitt passordet ditt. Velg et nytt for å fullføre påloggingen.';
+
+  @override
+  String get newPassword => 'Nytt passord';
+
+  @override
+  String get confirmNewPassword => 'Bekreft nytt passord';
+
+  @override
+  String get passwordsDoNotMatch => 'Passordene er ikke like';
+
+  @override
+  String get changePassword => 'Endre passord';
 
   @override
   String get logoutServerFailedWarning =>
@@ -486,6 +611,38 @@ class AppLocalizationsNb extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Lagrer fullførte rutefiler i appens private lagring etter opplasting.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatisk pause';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Setter automatisk pause når du slutter å bevege deg';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Sett automatisk pause';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Setter opptaket på pause når du slutter å bevege deg, og gjenopptar det når du beveger deg igjen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Velg hvor lenge uten bevegelse det skal gå før pause.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisk pause';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Opptak satt på pause';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Opptak gjenopptatt';
 
   @override
   String get activityHistoryEmpty =>
@@ -822,10 +979,6 @@ class AppLocalizationsNb extends AppLocalizations {
   String get healthAccessHeartRate => 'Hjertefrekvens';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Treningsdistanse, kalorier og skritt';
-
-  @override
   String get healthAccessAllowed => 'Tillatt';
 
   @override
@@ -1152,9 +1305,77 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serveren prøvde å omdirigere til en usikker tilkobling. Forespørselen ble blokkert for å beskytte påloggingsinformasjonen din.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serveren omdirigerte for mange ganger. Sjekk serveradressen.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Lydmeldinger';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Talemeldinger om distanse, tid, tempo eller fart';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Annonser aktivitetsfremgang';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Sier distansen, tiden, tempoet eller farten din høyt under et opptak';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Demp annen lyd mens det snakkes';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Reduserer midlertidig volumet på annen lyd under hver melding';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Meldingsintervall per aktivitet';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distanse';
+
+  @override
+  String get audioAnnouncementsByTime => 'Tid';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Hvert $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Hvert $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Reduser intervall';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Øk intervall';
+
+  @override
+  String get audioAnnouncementsPreview => 'Spill av eksempel';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Forhåndsvisning av kunngjøring er ikke tilgjengelig på denne enheten';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Endringene gjelder fra neste opptak.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distanse $distance. Tid $duration. Runde: $lapMetric. Totalt: $overallMetric.';
+  }
 }

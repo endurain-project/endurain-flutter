@@ -45,6 +45,26 @@
       }
     }
   },
+  "errorActivityIngestionUnsupportedFormat": "O formato do ficheiro não é suportado",
+  "@errorActivityIngestionUnsupportedFormat": {
+    "description": "Envio falhou porque o formato do ficheiro não é suportado - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionInvalidFile": "O ficheiro está corrompido ou não foi possível lê-lo",
+  "@errorActivityIngestionInvalidFile": {
+    "description": "Envio falhou porque o ficheiro está corrompido ou ilegível - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionNoActivitiesFound": "Não foram encontradas atividades no ficheiro",
+  "@errorActivityIngestionNoActivitiesFound": {
+    "description": "Envio falhou porque o ficheiro não contém atividades - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionProcessingFailed": "Ocorreu um erro ao importar a atividade. Tente novamente.",
+  "@errorActivityIngestionProcessingFailed": {
+    "description": "Envio falhou porque o servidor não conseguiu importar a atividade - Usado em: error_localizations.dart"
+  },
+  "errorActivityIngestionProviderUnavailable": "O fornecedor de atividades não está disponível neste momento. Tente novamente mais tarde.",
+  "@errorActivityIngestionProviderUnavailable": {
+    "description": "Envio falhou porque o fornecedor de atividades não está disponível - Usado em: error_localizations.dart"
+  },
   "errorActivityUploadNotConfigured": "O envio de atividades ainda não está configurado",
   "@errorActivityUploadNotConfigured": {
     "description": "Envio de atividade bloqueado porque endpoint e campo multipart não estão configurados - Usado em: error_localizations.dart"
@@ -195,6 +215,14 @@
   "@errorNoSessionIdReceived": {
     "description": "Erro quando a autenticação é concluída sem ID de sessão - Usado em: error_localizations.dart"
   },
+  "errorMfaSessionMissing": "A sua sessão de início de sessão perdeu-se. Inicie sessão novamente.",
+  "@errorMfaSessionMissing": {
+    "description": "Erro quando o passo MFA não tem nome de utilizador de início de sessão pendente - Usado em: error_localizations.dart"
+  },
+  "errorSsoCallbackFailed": "Não foi possível concluir o início de sessão único. Tente novamente.",
+  "@errorSsoCallbackFailed": {
+    "description": "Erro genérico quando o callback do link de SSO reporta uma falha - Usado em: error_localizations.dart"
+  },
   "errorNotAuthenticated": "Não tem sessão iniciada",
   "@errorNotAuthenticated": {
     "description": "Erro quando um pedido autenticado não tem token - Usado em: error_localizations.dart"
@@ -297,6 +325,122 @@
   "logoutConfirmMessage": "Tem certeza que deseja sair?",
   "@logoutConfirmMessage": {
     "description": "Mensagem do diálogo de confirmação de logout - Usado em: server_settings_screen.dart"
+  },
+  "legacyDataTitle": "Atividades de antes da atualização do servidor",
+  "@legacyDataTitle": {
+    "description": "Título da caixa de diálogo após o início de sessão que pergunta se as atividades guardadas antes de o servidor mudar os ids das contas pertencem à conta com sessão iniciada - Usado em: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataMessageWithUsername": "Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. São suas, {username}? Se forem, as que ainda estão pendentes serão carregadas para a sua conta.",
+  "@legacyDataMessageWithUsername": {
+    "description": "Corpo dessa caixa de diálogo após um início de sessão com palavra-passe, com o nome de utilizador - Usado em: legacy_profile_adoption_dialog.dart",
+    "placeholders": {
+      "username": {
+        "type": "String",
+        "example": "alex"
+      }
+    }
+  },
+  "legacyDataMessage": "Este dispositivo tem atividades guardadas para uma conta deste servidor de antes de este ser atualizado. Pertencem à conta com que acabou de iniciar sessão? Se sim, as que ainda estão pendentes serão carregadas para essa conta.",
+  "@legacyDataMessage": {
+    "description": "Corpo dessa caixa de diálogo após um início de sessão SSO, sem nome de utilizador - Usado em: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataConfirm": "São minhas",
+  "@legacyDataConfirm": {
+    "description": "Botão que mantém as atividades com a conta com sessão iniciada - Usado em: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataDecline": "Não são minhas",
+  "@legacyDataDecline": {
+    "description": "Botão que indica que as atividades pertencem a outra pessoa - Usado em: legacy_profile_adoption_dialog.dart"
+  },
+  "errorActivityUploadLimit": "O servidor tem demasiados carregamentos seus em curso. A aplicação volta a tentar mais tarde.",
+  "@errorActivityUploadLimit": {
+    "description": "Erro de carregamento quando o servidor já tem o número máximo de carregamentos em curso do utilizador; repetido mais tarde - Usado em: error_localizations.dart"
+  },
+  "errorPasswordChangeFailed": "Não foi possível alterar a palavra-passe",
+  "@errorPasswordChangeFailed": {
+    "description": "Erro quando a nova palavra-passe escolhida no início de sessão é recusada - Usado em: error_localizations.dart"
+  },
+  "errorPasswordChangeFailedWithDetails": "Não foi possível alterar a palavra-passe: {details}",
+  "@errorPasswordChangeFailedWithDetails": {
+    "description": "O mesmo erro com o motivo do servidor - Usado em: error_localizations.dart",
+    "placeholders": {
+      "details": {
+        "type": "String",
+        "example": "Password is too short"
+      }
+    }
+  },
+  "errorSignInStepUnsupported": "Este servidor pediu um passo de início de sessão que esta versão da aplicação não suporta. Atualize a aplicação e tente novamente.",
+  "@errorSignInStepUnsupported": {
+    "description": "Erro quando o servidor pede um passo de início de sessão que a aplicação não conhece - Usado em: error_localizations.dart"
+  },
+  "errorSsoEmailMissing": "O seu fornecedor de identidade não partilhou um endereço de email, necessário para criar a sua conta.",
+  "@errorSsoEmailMissing": {
+    "description": "Falha de SSO: o fornecedor de identidade não partilhou email - Usado em: error_localizations.dart"
+  },
+  "errorSsoEmailUnverified": "O seu fornecedor de identidade não verificou o seu endereço de email. Verifique-o lá e tente novamente.",
+  "@errorSsoEmailUnverified": {
+    "description": "Falha de SSO: o fornecedor de identidade não verificou o email - Usado em: error_localizations.dart"
+  },
+  "errorSsoAutoCreateDisabled": "Nenhuma conta corresponde a este início de sessão e este servidor não cria contas automaticamente. Pergunte ao seu administrador.",
+  "@errorSsoAutoCreateDisabled": {
+    "description": "Falha de SSO: nenhuma conta corresponde e o servidor não cria contas - Usado em: error_localizations.dart"
+  },
+  "errorSsoLinkByEmailDisabled": "Uma conta já usa este endereço de email, mas este fornecedor não consegue iniciar sessão nela. Inicie sessão de outra forma ou pergunte ao seu administrador.",
+  "@errorSsoLinkByEmailDisabled": {
+    "description": "Falha de SSO: uma conta tem o email mas o fornecedor não liga por email - Usado em: error_localizations.dart"
+  },
+  "errorSsoApprovalPending": "A sua conta aguarda a aprovação de um administrador.",
+  "@errorSsoApprovalPending": {
+    "description": "Falha de SSO: a conta aguarda aprovação - Usado em: error_localizations.dart"
+  },
+  "errorSsoAccountDisabled": "Esta conta está desativada. Contacte o seu administrador.",
+  "@errorSsoAccountDisabled": {
+    "description": "Falha de SSO: a conta está desativada - Usado em: error_localizations.dart"
+  },
+  "errorSsoRedirectNotAllowed": "Este servidor não permite o início de sessão único a partir desta aplicação. Peça ao seu administrador para adicionar com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.",
+  "@errorSsoRedirectNotAllowed": {
+    "description": "Erro antes do SSO quando o servidor não lista o endereço de retorno da aplicação; manter o endereço e o nome da variável - Usado em: error_localizations.dart"
+  },
+  "errorActivityMfaEnrolmentRequired": "O seu administrador exige a verificação em dois passos. Configure-a na aplicação web do Endurain e tente novamente.",
+  "@errorActivityMfaEnrolmentRequired": {
+    "description": "Erro de carregamento quando o administrador exige verificação em dois passos e a conta não a tem - Usado em: error_localizations.dart"
+  },
+  "errorActivityFileTooLarge": "O ficheiro da atividade é demasiado grande para este servidor",
+  "@errorActivityFileTooLarge": {
+    "description": "Erro de carregamento quando o servidor recusa o ficheiro por ser demasiado grande - Usado em: error_localizations.dart"
+  },
+  "errorActivityUnsupportedFileType": "Este servidor não aceita este tipo de ficheiro de atividade",
+  "@errorActivityUnsupportedFileType": {
+    "description": "Erro de carregamento quando o servidor recusa o tipo de ficheiro - Usado em: error_localizations.dart"
+  },
+  "errorTooManyRequests": "Demasiadas tentativas. Aguarde um momento e tente novamente.",
+  "@errorTooManyRequests": {
+    "description": "Erro quando o servidor limita as tentativas de início de sessão - Usado em: error_localizations.dart"
+  },
+  "passwordChangeTitle": "Escolha uma nova palavra-passe",
+  "@passwordChangeTitle": {
+    "description": "Título do passo de início de sessão que pede uma nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "passwordChangeMessage": "Um administrador definiu a sua palavra-passe. Escolha uma nova para concluir o início de sessão.",
+  "@passwordChangeMessage": {
+    "description": "Explicação no passo da nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "newPassword": "Nova palavra-passe",
+  "@newPassword": {
+    "description": "Etiqueta do campo da nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "confirmNewPassword": "Confirmar nova palavra-passe",
+  "@confirmNewPassword": {
+    "description": "Etiqueta do campo que repete a nova palavra-passe - Usado em: login_screen.dart"
+  },
+  "passwordsDoNotMatch": "As palavras-passe não coincidem",
+  "@passwordsDoNotMatch": {
+    "description": "Erro de validação quando as duas palavras-passe diferem - Usado em: login_screen.dart"
+  },
+  "changePassword": "Alterar palavra-passe",
+  "@changePassword": {
+    "description": "Botão que envia a nova palavra-passe - Usado em: login_screen.dart"
   },
   "logoutServerFailedWarning": "Não foi possível sair do servidor, mas saiu localmente",
   "@logoutServerFailedWarning": {
@@ -605,6 +749,15 @@
   "@activityRetainUploadedGpxSubtitle": {
     "description": "Subtítulo que explica a retenção privada local de GPX - Usado em: settings_screen.dart"
   },
+  "activityAutoPauseTitle": "Pausa automática",
+  "activityAutoPauseSubtitle": "Coloca em pausa automaticamente quando pára de se mover",
+  "activityAutoPauseToggleLabel": "Pausar automaticamente",
+  "activityAutoPauseToggleDescription": "Coloca a gravação em pausa quando pára de se mover e retoma assim que voltar a mover-se.",
+  "activityAutoPauseDelayHelperText": "Escolha quanto tempo sem movimento esperar antes de pausar.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
+  "activityAutoPausedIndicator": "Em pausa automática",
+  "audioAnnouncementsAutoPaused": "Gravação em pausa",
+  "audioAnnouncementsAutoResumed": "Gravação retomada",
   "activityHistoryEmpty": "Não há atividades concluídas guardadas neste dispositivo.",
   "@activityHistoryEmpty": {
     "description": "Estado vazio do histórico local de atividades - Usado em: activity_history_screen.dart"
@@ -1049,10 +1202,6 @@
   "@healthAccessHeartRate": {
     "description": "Categoria de dados de saúde - Usado em: health_access_screen.dart"
   },
-  "healthAccessWorkoutSummary": "Distância, calorias e passos do treino",
-  "@healthAccessWorkoutSummary": {
-    "description": "Categorias de enriquecimento de treino do Health Connect exigidas pelo pacote de saúde - Usado em: health_access_screen.dart"
-  },
   "healthAccessAllowed": "Permitido",
   "@healthAccessAllowed": {
     "description": "Estado de permissão de dados de saúde no Android - Usado em: health_access_screen.dart"
@@ -1392,5 +1541,107 @@
   "errorTooManyRedirects": "O servidor redirecionou demasiadas vezes. Verifique o endereço do servidor.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Anúncios de voz",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Atualizações de voz sobre distância, tempo, ritmo ou velocidade",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Anunciar o progresso da atividade",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Diz em voz alta a sua distância, tempo, ritmo ou velocidade durante uma gravação",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Reduzir outro áudio durante a fala",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Reduz temporariamente o volume de outro áudio durante cada anúncio",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Intervalo de anúncio por atividade",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Distância",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Tempo",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "A cada {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "A cada {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Diminuir intervalo",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Aumentar intervalo",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Ouvir exemplo",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "A pré-visualização do anúncio não está disponível neste dispositivo",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "As alterações aplicam-se à sua próxima gravação.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Distância {distance}. Tempo {duration}. Volta: {lapMetric}. Total: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

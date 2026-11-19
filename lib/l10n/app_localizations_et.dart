@@ -39,6 +39,26 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Failivormingut ei toetata';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fail on rikutud või seda ei õnnestunud lugeda';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Failist ei leitud ühtegi tegevust';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Tegevuse importimisel läks midagi valesti. Proovi uuesti.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Tegevuste pakkuja ei ole praegu saadaval. Proovi hiljem uuesti.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Tegevuste üleslaadimine pole veel seadistatud';
 
@@ -146,6 +166,14 @@ class AppLocalizationsEt extends AppLocalizations {
   String get errorNoSessionIdReceived => 'Serverilt ei saadud seansi ID-d';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Teie sisselogimissessioon läks kaotsi. Palun logige uuesti sisse.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Ühekordset sisselogimist (SSO) ei õnnestunud lõpetada. Proovige uuesti.';
+
+  @override
   String get errorNotAuthenticated => 'Te pole sisse logitud';
 
   @override
@@ -222,6 +250,103 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Kas soovite kindlasti välja logida?';
+
+  @override
+  String get legacyDataTitle => 'Tegevused enne serveri uuendamist';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need on teie omad, $username? Kui on, laaditakse veel ootel olevad teie kontole üles.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need kuuluvad kontole, millega just sisse logisite? Kui jah, laaditakse veel ootel olevad sinna üles.';
+
+  @override
+  String get legacyDataConfirm => 'Need on minu omad';
+
+  @override
+  String get legacyDataDecline => 'Pole minu omad';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serveris on liiga palju teie üleslaadimisi pooleli. Rakendus proovib hiljem uuesti.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Parooli ei saanud muuta';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Parooli ei saanud muuta: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Server küsis sisselogimise sammu, mida see rakenduse versioon ei toeta. Uuendage rakendust ja proovige uuesti.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Teie identiteedipakkuja ei jaganud e-posti aadressi, mis on konto loomiseks vajalik.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Teie identiteedipakkuja pole teie e-posti aadressi kinnitanud. Kinnitage see seal ja proovige uuesti.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Ükski konto ei vasta sellele sisselogimisele ja see server ei loo kontosid automaatselt. Küsige oma administraatorilt.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Seda e-posti aadressi kasutab juba üks konto, kuid see pakkuja ei saa sellesse sisse logida. Logige sisse muul viisil või küsige oma administraatorilt.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Teie konto ootab administraatori kinnitust.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'See konto on keelatud. Võtke ühendust oma administraatoriga.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'See server ei luba sellest rakendusest ühekordset sisselogimist. Paluge administraatoril lisada com.endurain.endurain:/auth/sso/callback loendisse ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Teie administraator nõuab kaheastmelist kinnitust. Seadistage see Enduraini veebirakenduses ja proovige uuesti.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Tegevuse fail on sellele serverile liiga suur';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'See server ei võta seda tüüpi tegevuse faili vastu';
+
+  @override
+  String get errorTooManyRequests =>
+      'Liiga palju katseid. Oodake hetk ja proovige uuesti.';
+
+  @override
+  String get passwordChangeTitle => 'Valige uus parool';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administraator määras teie parooli. Sisselogimise lõpetamiseks valige uus.';
+
+  @override
+  String get newPassword => 'Uus parool';
+
+  @override
+  String get confirmNewPassword => 'Kinnitage uus parool';
+
+  @override
+  String get passwordsDoNotMatch => 'Paroolid ei ühti';
+
+  @override
+  String get changePassword => 'Muuda parooli';
 
   @override
   String get logoutServerFailedWarning =>
@@ -486,6 +611,38 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Salvestab lõpetatud marsruudifailid pärast üleslaadimist rakenduse privaatsesse mällu.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automaatne paus';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Peatab automaatselt, kui lõpetate liikumise';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automaatne peatamine';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Salvestus peatub automaatselt, kui lõpetate liikumise, ja jätkub, kui hakkate uuesti liikuma.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Valige, kui kaua ilma liikumiseta enne peatamist oodata.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekundit';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaatselt peatatud';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Salvestamine peatatud';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Salvestamine jätkatud';
 
   @override
   String get activityHistoryEmpty =>
@@ -822,10 +979,6 @@ class AppLocalizationsEt extends AppLocalizations {
   String get healthAccessHeartRate => 'Südame löögisagedus';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Treeningu vahemaa, kalorid ja sammud';
-
-  @override
   String get healthAccessAllowed => 'Lubatud';
 
   @override
@@ -1153,9 +1306,77 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Server püüdis suunata ümber ebaturvalisele ühendusele. Päring blokeeriti teie volituste kaitsmiseks.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Server suunas liiga mitu korda ümber. Kontrollige serveri aadressi.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Häälteated';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Häälteated vahemaa, aja, tempo või kiiruse kohta';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Teata tegevuse edenemisest';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Ütleb salvestamise ajal valjusti sinu vahemaa, aja, tempo või kiiruse';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Vaigista muu heli teatamise ajal';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Vähendab ajutiselt muu heli valjust iga teate ajal';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Teate intervall tegevuse kaupa';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Vahemaa';
+
+  @override
+  String get audioAnnouncementsByTime => 'Aeg';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Iga $value $unit järel';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Iga $minutes min järel';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Vähenda intervalli';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Suurenda intervalli';
+
+  @override
+  String get audioAnnouncementsPreview => 'Kuula näidet';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Teate näidis ei ole selles seadmes saadaval';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Muudatused rakenduvad järgmisel salvestusel.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Vahemaa $distance. Aeg $duration. Ring: $lapMetric. Kokku: $overallMetric.';
+  }
 }

@@ -39,6 +39,26 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Formatul fișierului nu este acceptat';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fișierul este corupt sau nu a putut fi citit';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Nu s-au găsit activități în fișier';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'A apărut o eroare la importarea activității. Încearcă din nou.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Furnizorul de activități nu este disponibil momentan. Încearcă din nou mai târziu.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Încărcarea activităților nu este încă configurată';
 
@@ -148,6 +168,14 @@ class AppLocalizationsRo extends AppLocalizations {
       'Nu s-a primit niciun ID de sesiune de la server';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Sesiunea dvs. de autentificare s-a pierdut. Autentificați-vă din nou.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Autentificarea unică (SSO) nu a putut fi finalizată. Încercați din nou.';
+
+  @override
   String get errorNotAuthenticated => 'Nu sunteți autentificat';
 
   @override
@@ -225,6 +253,104 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Sigur doriți să vă deconectați?';
+
+  @override
+  String get legacyDataTitle =>
+      'Activități de dinainte de actualizarea serverului';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Pe acest dispozitiv există activități salvate pentru un cont de pe acest server de dinainte de actualizarea lui. Sunt ale dumneavoastră, $username? Dacă da, cele care încă așteaptă vor fi încărcate în contul dumneavoastră.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Pe acest dispozitiv există activități salvate pentru un cont de pe acest server de dinainte de actualizarea lui. Aparțin contului cu care tocmai v-ați conectat? Dacă da, cele care încă așteaptă vor fi încărcate în el.';
+
+  @override
+  String get legacyDataConfirm => 'Sunt ale mele';
+
+  @override
+  String get legacyDataDecline => 'Nu sunt ale mele';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serverul are prea multe încărcări ale dumneavoastră în curs. Aplicația va încerca din nou mai târziu.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Parola nu a putut fi schimbată';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Parola nu a putut fi schimbată: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serverul a cerut un pas de conectare pe care această versiune a aplicației nu îl acceptă. Actualizați aplicația și încercați din nou.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Furnizorul de identitate nu a partajat o adresă de e-mail, necesară pentru crearea contului.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Furnizorul de identitate nu a verificat adresa dumneavoastră de e-mail. Verificați-o acolo și încercați din nou.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Niciun cont nu corespunde acestei conectări, iar acest server nu creează conturi automat. Întrebați administratorul.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Un cont folosește deja această adresă de e-mail, dar acest furnizor nu se poate conecta la el. Conectați-vă în alt mod sau întrebați administratorul.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Contul dumneavoastră așteaptă aprobarea unui administrator.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Acest cont este dezactivat. Contactați administratorul.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Acest server nu permite autentificarea unică din această aplicație. Cereți administratorului să adauge com.endurain.endurain:/auth/sso/callback la ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Administratorul dumneavoastră cere verificarea în doi pași. Configurați-o în aplicația web Endurain și încercați din nou.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Fișierul activității este prea mare pentru acest server';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Acest server nu acceptă acest tip de fișier de activitate';
+
+  @override
+  String get errorTooManyRequests =>
+      'Prea multe încercări. Așteptați puțin și încercați din nou.';
+
+  @override
+  String get passwordChangeTitle => 'Alegeți o parolă nouă';
+
+  @override
+  String get passwordChangeMessage =>
+      'Un administrator v-a setat parola. Alegeți una nouă pentru a finaliza conectarea.';
+
+  @override
+  String get newPassword => 'Parolă nouă';
+
+  @override
+  String get confirmNewPassword => 'Confirmați parola nouă';
+
+  @override
+  String get passwordsDoNotMatch => 'Parolele nu se potrivesc';
+
+  @override
+  String get changePassword => 'Schimbați parola';
 
   @override
   String get logoutServerFailedWarning =>
@@ -491,6 +617,38 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Salvează fișierele de traseu finalizate în stocarea privată a aplicației după încărcare.';
+
+  @override
+  String get activityAutoPauseTitle => 'Pauză automată';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pune automat pauză când te oprești din mișcare';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Pauză automată';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Înregistrarea este pusă automat pe pauză când te oprești din mișcare și reia imediat ce te miști din nou.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Alege cât timp fără mișcare se așteaptă înainte de pauză.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds secunde';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'În pauză automată';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Înregistrare întreruptă';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Înregistrare reluată';
 
   @override
   String get activityHistoryEmpty =>
@@ -830,10 +988,6 @@ class AppLocalizationsRo extends AppLocalizations {
   String get healthAccessHeartRate => 'Ritmul cardiac';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Distanță, calorii și pași din antrenament';
-
-  @override
   String get healthAccessAllowed => 'Permis';
 
   @override
@@ -1161,9 +1315,78 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serverul a încercat să redirecționeze către o conexiune nesigură. Solicitarea a fost blocată pentru a vă proteja datele de autentificare.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serverul a redirecționat de prea multe ori. Verificați adresa serverului.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Anunțuri vocale';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Actualizări vocale despre distanță, timp, ritm sau viteză';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Anunță progresul activității';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Rostește distanța, timpul, ritmul sau viteza în timpul unei înregistrări';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Reduce alte sunete în timpul vorbirii';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Reduce temporar volumul altor sunete în timpul fiecărui anunț';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interval de anunț în funcție de activitate';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Distanță';
+
+  @override
+  String get audioAnnouncementsByTime => 'Timp';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'La fiecare $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'La fiecare $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Micșorează intervalul';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Mărește intervalul';
+
+  @override
+  String get audioAnnouncementsPreview => 'Ascultă un exemplu';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Previzualizarea anunțului nu este disponibilă pe acest dispozitiv';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Modificările se aplică la următoarea înregistrare.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Distanță $distance. Timp $duration. Tură: $lapMetric. Total: $overallMetric.';
+  }
 }

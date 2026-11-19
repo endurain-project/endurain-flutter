@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:endurain/app.dart';
+import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/core/services/app_services.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -15,8 +15,8 @@ Future<void> main() async {
   // Holding the instance here also keeps the same diagnostics object available
   // to the root-zone error handler below, which runs outside the widget tree.
   final services = AppServices(
-    config: const AppConfig(
-      healthSyncEnabled: bool.fromEnvironment(
+    config: AppConfig(
+      healthSyncEnabled: const bool.fromEnvironment(
         'ENABLE_HEALTH_SYNC',
         defaultValue: true,
       ),
@@ -25,7 +25,18 @@ Future<void> main() async {
       // builds omit it, so no fork points its opt-in crash reports at the
       // Endurain-operated endpoint by default. An empty value means "no managed
       // default", which keeps remote reporting inactive.
-      crashReportingDsn: String.fromEnvironment('ENDURAIN_CRASH_REPORTING_DSN'),
+      crashReportingDsn: const String.fromEnvironment(
+        'ENDURAIN_CRASH_REPORTING_DSN',
+      ),
+      // Origin of the managed ("Endurain Cloud") service. No managed service
+      // exists yet, so every current build leaves this empty and treats every
+      // origin as a user-chosen self-hosted instance. Setting it must be paired
+      // with the OS-level pins in the Android network security config and the
+      // iOS Info.plist.
+      cloudBaseUrl: const String.fromEnvironment('ENDURAIN_CLOUD_BASE_URL'),
+      allowedTileServerHosts: AppConfig.parseTileServerHostAllowlist(
+        const String.fromEnvironment('ENDURAIN_ALLOWED_TILE_HOSTS'),
+      ),
     ),
   );
   final diagnostics = services.diagnostics;
@@ -41,6 +52,16 @@ Future<void> main() async {
       await diagnostics.initialize();
       diagnostics.recordBreadcrumbSync(DiagnosticsEvents.appStarted);
 
+      // Before anything reaches the server: a v0.21 server refuses the tokens
+      // of a session stored before its upgrade, and the app then clears it.
+      // Remember which pre-v0.21 account it was so its local data can follow
+      // the account to its new id at the next sign-in. Never throws; bounded
+      // so a stalled keychain cannot keep the app from starting.
+      await services.legacyProfileAdoption.captureLegacyHint().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {},
+      );
+
       // Load the persisted language (BCP 47) before the first frame so the UI
       // starts in the user's chosen locale rather than flashing the system one.
       await services.localeController.load();
@@ -49,10 +70,20 @@ Future<void> main() async {
       // switching to imperial.
       await services.measurementSystemController.load();
 
+      // Load the audio-announcement preference so a recording started before
+      // the settings screen is ever opened still uses the user's saved choice.
+      await services.audioAnnouncementSettingsController.load();
+
       // Start remote crash reporting only if the user previously opted in.
       // No-op (and no network) otherwise; the two diagnostics channels are
-      // independent.
-      await crashReporting.initializeIfEnabled();
+      // independent. Best-effort and bounded: a failure or stall here (it
+      // reads preferences and may start a network transport) must never keep
+      // the app from reaching `runApp`.
+      try {
+        await crashReporting.initializeIfEnabled().timeout(
+          const Duration(seconds: 5),
+        );
+      } catch (_) {}
 
       FlutterError.onError = (details) {
         FlutterError.presentError(details);
@@ -87,7 +118,7 @@ Future<void> main() async {
       // background so they are ready before the user starts recording. Touching
       // each coordinator also starts it listening for Bluetooth becoming ready.
       // Best-effort and self-guarded; a no-op when no sensor was ever paired.
-      unawaited(services.reconnectRememberedSensors());
+      unawaited(services.reconnectRememberedSensors(withRetries: true));
     },
     (error, stackTrace) {
       diagnostics.recordErrorSync(

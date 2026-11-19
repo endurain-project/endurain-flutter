@@ -30,7 +30,10 @@ class ActivityStatsDisplay extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatter = this.formatter ?? context.statsFormatter;
-    final stats = calculator.calculate(state.segments);
+    final stats = calculator.calculate(
+      state.segments,
+      activityType: state.activityType,
+    );
     final durationSeconds = stats.durationSeconds > state.elapsedDurationSeconds
         ? stats.durationSeconds
         : state.elapsedDurationSeconds;

@@ -15,9 +15,11 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import com.endurain.endurain.R
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
@@ -36,6 +38,8 @@ class ActivityRecorderService : Service() {
     private lateinit var store: ActiveActivityStore
     private var locationManager: LocationManager? = null
     private var locationListener: LocationListener? = null
+    private var collectingSessionId: String? = null
+    private var nextPointOffset = 0
 
     private var lastPointEpochMillis: Long? = null
     private var activeNotificationTitle: String? = null
@@ -45,9 +49,17 @@ class ActivityRecorderService : Service() {
     private var powerClient: CyclingPowerGattClient? = null
     private var cadenceClient: CadenceGattClient? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private var autoPauseDetector: MovementAutoPauseDetector? = null
+    private val announcementStateCache = AnnouncementStateCache()
+    private val announcementHandler = Handler(Looper.getMainLooper())
+    private val timeAnnouncementRunnable = Runnable {
+        announceTimeIfDue(System.currentTimeMillis())
+        scheduleNextTimeAnnouncement()
+    }
 
     override fun onCreate() {
         super.onCreate()
+        activeInstance = this
         store = ActiveActivityStore.of(applicationContext)
         locationManager =
             getSystemService(Context.LOCATION_SERVICE) as? LocationManager
@@ -60,12 +72,14 @@ class ActivityRecorderService : Service() {
             ACTION_RESUME -> handleResume()
             ACTION_PAUSE -> handlePause()
             ACTION_STOP -> handleStop()
+            ACTION_RECONNECT -> handleRestart(rebaseTime = false)
             else -> handleRestart()
         }
         return START_STICKY
     }
 
     private fun handleStart(intent: Intent) {
+        announcementStateCache.reset()
         val title = intent.getStringExtra(EXTRA_TITLE) ?: defaultTitle()
         val text = intent.getStringExtra(EXTRA_TEXT) ?: defaultText()
         activeNotificationTitle = title
@@ -110,11 +124,14 @@ class ActivityRecorderService : Service() {
     }
 
     private fun handlePause() {
+        AudioAnnouncer.stop()
+        flushAnnouncementState()
         stopCollection()
         // Keep the foreground notification so recording can resume cheaply.
     }
 
     private fun handleStop() {
+        AudioAnnouncer.stop()
         stopCollection()
         stopSensorCapture()
         resumedFromPause = false
@@ -122,11 +139,16 @@ class ActivityRecorderService : Service() {
         stopSelf()
     }
 
-    /** Sticky restart after process death: resume only if still recording. */
-    private fun handleRestart() {
+    /** Restores collection after process death when movement is still needed. */
+    private fun handleRestart(rebaseTime: Boolean = true) {
         val session = store.loadSession()
         if (session == null || !session.isActive) {
             stopSelf()
+            return
+        }
+        if (collectingSessionId == session.localSessionId &&
+            session.status == ActiveActivitySessionData.STATUS_RECORDING
+        ) {
             return
         }
         if (!hasAnyLocationPermission()) {
@@ -143,7 +165,18 @@ class ActivityRecorderService : Service() {
         )) {
             return
         }
-        if (session.status == ActiveActivitySessionData.STATUS_RECORDING) {
+        if (session.requiresLocationMonitoring) {
+            if (rebaseTime && session.status == ActiveActivitySessionData.STATUS_RECORDING) {
+                store.saveSession(
+                    SessionTiming.afterInterruption(
+                        session,
+                        store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
+                        System.currentTimeMillis(),
+                    ),
+                )
+            }
+            resumedFromPause = session.status == ActiveActivitySessionData.STATUS_RECORDING &&
+                store.lastPoint() != null
             beginCollection()
             startSensorCapture()
         }
@@ -199,7 +232,23 @@ class ActivityRecorderService : Service() {
             }
         }
         locationListener = listener
+        val session = store.loadSession()
         lastPointEpochMillis = store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis)
+        // Anchor stillness to this collection (re)start, not the last stored
+        // point: that point can predate a manual pause or provider restart,
+        // which would let the first slow fix auto-pause immediately.
+        autoPauseDetector = MovementAutoPauseDetector(
+            MovementAutoPauseConfig(
+                enabled = session?.autoPauseEnabled ?: false,
+                pauseDelayMillis = (session?.autoPauseDelaySeconds ?: 5) * 1000L,
+            ),
+        ).also { it.reset(System.currentTimeMillis()) }
+        val minUpdateDistanceMeters = if (session?.autoPauseEnabled == true) {
+            0f
+        } else {
+            MIN_UPDATE_DISTANCE_METERS
+        }
+        nextPointOffset = store.pointCount()
         var registeredProvider = false
         var permissionFailure = false
         for (provider in providers) {
@@ -207,7 +256,7 @@ class ActivityRecorderService : Service() {
                 manager.requestLocationUpdates(
                     provider,
                     MIN_UPDATE_INTERVAL_MS,
-                    MIN_UPDATE_DISTANCE_METERS,
+                    minUpdateDistanceMeters,
                     listener,
                     Looper.getMainLooper(),
                 )
@@ -230,7 +279,9 @@ class ActivityRecorderService : Service() {
             )
             return
         }
+        collectingSessionId = store.loadSession()?.localSessionId
         acquireWakeLock()
+        scheduleNextTimeAnnouncement()
     }
 
     /**
@@ -281,21 +332,35 @@ class ActivityRecorderService : Service() {
 
     /**
      * Persists [ActiveActivitySessionData.STATUS_FAILED] for any active session
-     * so Flutter sees a non-recoverable state on re-attach even if the failure
-     * event was dropped while Flutter was detached.
+    * so recovery requires explicit user action even if the failure event was
+    * dropped while Flutter was detached. Points and session ownership remain.
      */
     private fun persistFailure() {
         val session = store.loadSession() ?: return
         if (session.isActive) {
-            store.saveSession(session.copy(status = ActiveActivitySessionData.STATUS_FAILED))
+            val nowMillis = System.currentTimeMillis()
+            store.saveSession(
+                session.copy(
+                    status = ActiveActivitySessionData.STATUS_FAILED,
+                    pausedAt = IsoTime.format(Date(nowMillis)),
+                    elapsedDurationSeconds = SessionTiming.elapsedSeconds(session, nowMillis),
+                ),
+            )
         }
     }
 
     private fun stopCollection() {
+        collectingSessionId = null
         // Released first and unconditionally: the listener may already be null
         // (e.g. a start that never registered a provider), and the wake lock
         // must never outlive collection.
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
         releaseWakeLock()
+        // A manual pause reaches here and must stop monitoring movement
+        // entirely, so a manually paused recording can never auto-resume;
+        // `beginCollection` always rebuilds a fresh detector for the next
+        // active period.
+        autoPauseDetector = null
         val listener = locationListener ?: return
         try {
             locationManager?.removeUpdates(listener)
@@ -371,16 +436,41 @@ class ActivityRecorderService : Service() {
 
     private fun onLocationFix(location: Location) {
         val session = store.loadSession() ?: return
-        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+        when (session.status) {
+            ActiveActivitySessionData.STATUS_RECORDING -> onActiveLocationFix(session, location)
+            ActiveActivitySessionData.STATUS_PAUSED -> {
+                // A manual pause stops collection entirely (see `handlePause`/
+                // `stopCollection`), so only an auto-paused session can still
+                // be receiving fixes here. This also guards a stray in-flight
+                // fix delivered just as a manual pause took effect.
+                if (session.pausedAutomatically) {
+                    onAutoPausedLocationFix(session, location)
+                }
+            }
+            else -> Unit
+        }
+    }
+
+    private fun onActiveLocationFix(session: ActiveActivitySessionData, location: Location) {
+        val nowMillis = if (location.time > 0) location.time else System.currentTimeMillis()
+
+        // Feed the auto-pause detector before the accuracy/speed gates below,
+        // so stillness timing advances from wall-clock progress on every fix
+        // (including noisy ones the detector itself discounts as movement
+        // evidence), matching the Dart geolocator recorder.
+        val transition = autoPauseDetector?.onActivePoint(movementSample(location, nowMillis))
+            ?: MovementAutoPauseTransition.NONE
+        if (transition == MovementAutoPauseTransition.AUTO_PAUSE) {
+            transitionToAutoPaused(session, nowMillis)
             return
         }
+
         // Drop low-accuracy fixes (e.g. network-provider triangulation) before
         // they enter the track. Without this, ghost points far from the real
         // route are persisted and bridged into the recorded line.
         if (location.hasAccuracy() && location.accuracy > MAX_ACCURACY_METERS) {
             return
         }
-        val nowMillis = if (location.time > 0) location.time else System.currentTimeMillis()
         val previous = lastPointEpochMillis
         if (previous != null && nowMillis > previous && location.hasSpeed() &&
             location.speed > MAX_SPEED_METERS_PER_SECOND
@@ -388,15 +478,18 @@ class ActivityRecorderService : Service() {
             return
         }
         var segmentIndex = session.currentSegmentIndex
+        var isNewSegment = false
         if (resumedFromPause) {
             if (previous != null) {
                 segmentIndex += 1
+                isNewSegment = true
                 store.saveSession(session.copy(currentSegmentIndex = segmentIndex))
             }
             resumedFromPause = false
         } else if (previous != null && nowMillis - previous > MAX_TIME_GAP_MILLIS) {
             // Large time gap: start a new segment to avoid bridging a false line.
             segmentIndex += 1
+            isNewSegment = true
             store.saveSession(session.copy(currentSegmentIndex = segmentIndex))
         }
         lastPointEpochMillis = nowMillis
@@ -430,7 +523,244 @@ class ActivityRecorderService : Service() {
             stopSelf()
             return
         }
-        ActivityRecorderCoordinator.emitPointBatch(listOf(point))
+        ActivityRecorderCoordinator.emitPointBatch(
+            listOf(point),
+            session.localSessionId,
+            nextPointOffset,
+        )
+        nextPointOffset += 1
+        announceIfDue(nowMillis, location, isNewSegment)
+    }
+
+    /** Advances announcement progress and speaks threshold crossings. */
+    private fun announceIfDue(nowMillis: Long, location: Location, isNewSegment: Boolean) {
+        val announcementState = currentAnnouncementState() ?: return
+        if (!announcementState.enabled) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        val elapsedSeconds = SessionTiming.elapsedSeconds(session, nowMillis)
+        val result = AnnouncementScheduler.onFix(
+            state = announcementState,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            elapsedSeconds = elapsedSeconds,
+            isNewSegment = isNewSegment,
+        )
+        if (!cacheAnnouncementState(
+                result.state,
+                persistBeforeSpeech = result.announcements.isNotEmpty(),
+            )
+        ) {
+            return
+        }
+        for (text in result.announcements) {
+            AudioAnnouncer.speak(
+                applicationContext,
+                text,
+                announcementState.duckOtherAudio,
+                announcementState.languageTag,
+            )
+        }
+    }
+
+    /**
+     * Schedules one main-looper callback at the next elapsed-time threshold.
+     * One-shot scheduling avoids polling and serializes state with GPS fixes.
+     */
+    private fun scheduleNextTimeAnnouncement() {
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
+        val announcementState = currentAnnouncementState() ?: return
+        if (!announcementState.enabled || !announcementState.isTimeBased ||
+            announcementState.timeIntervalSeconds !in
+            MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS..MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS
+        ) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return
+        }
+        val elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            System.currentTimeMillis(),
+        )
+        val nextIndex = maxOf(1L, announcementState.lastAnnouncedTimeIndex.toLong() + 1L)
+        val nextThresholdSeconds =
+            nextIndex * announcementState.timeIntervalSeconds.toLong()
+        val remainingSeconds = nextThresholdSeconds - elapsedSeconds.toLong()
+        val delayMillis = maxOf(
+            TIME_ANNOUNCEMENT_RETRY_MILLIS,
+            remainingSeconds * 1000L,
+        )
+        announcementHandler.postDelayed(timeAnnouncementRunnable, delayMillis)
+    }
+
+    /** Advances a time-based schedule without waiting for another GPS fix. */
+    private fun announceTimeIfDue(referenceMillis: Long) {
+        val announcementState = currentAnnouncementState() ?: return
+        if (!announcementState.enabled || !announcementState.isTimeBased) {
+            return
+        }
+        val session = store.loadSession() ?: return
+        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
+            return
+        }
+        val result = AnnouncementScheduler.onElapsedTime(
+            state = announcementState,
+            elapsedSeconds = SessionTiming.elapsedSeconds(session, referenceMillis),
+        )
+        if (result.state == announcementState) {
+            return
+        }
+        if (!cacheAnnouncementState(
+                result.state,
+                persistBeforeSpeech = result.announcements.isNotEmpty(),
+            )
+        ) {
+            return
+        }
+        for (text in result.announcements) {
+            AudioAnnouncer.speak(
+                applicationContext,
+                text,
+                announcementState.duckOtherAudio,
+                announcementState.languageTag,
+            )
+        }
+    }
+
+    private fun currentAnnouncementState(): AnnouncementStateData? {
+        announcementStateCache.state?.let { return it }
+        val state = store.loadAnnouncementState() ?: return null
+        announcementStateCache.restore(state, SystemClock.elapsedRealtime())
+        return state
+    }
+
+    /**
+     * Keeps normal GPS progress in memory, checkpoints it periodically, and
+     * makes threshold progress durable before the corresponding speech.
+     */
+    private fun cacheAnnouncementState(
+        state: AnnouncementStateData,
+        persistBeforeSpeech: Boolean,
+    ): Boolean {
+        val previousState = announcementStateCache.state
+        announcementStateCache.update(state)
+        val uptimeMillis = SystemClock.elapsedRealtime()
+        val stateToPersist = announcementStateCache.stateToPersist(
+            uptimeMillis,
+            force = persistBeforeSpeech,
+        ) ?: return true
+        return try {
+            store.saveAnnouncementState(stateToPersist)
+            announcementStateCache.markPersisted(uptimeMillis)
+            true
+        } catch (_: Exception) {
+            if (persistBeforeSpeech && previousState != null) {
+                announcementStateCache.update(previousState)
+            }
+            !persistBeforeSpeech
+        }
+    }
+
+    private fun flushAnnouncementState() {
+        val uptimeMillis = SystemClock.elapsedRealtime()
+        val state = announcementStateCache.stateToPersist(
+            uptimeMillis,
+            force = true,
+        ) ?: return
+        try {
+            store.saveAnnouncementState(state)
+            announcementStateCache.markPersisted(uptimeMillis)
+        } catch (_: Exception) {
+            // Announcement progress must never make recording teardown fail.
+        }
+    }
+
+    /**
+     * Feeds a fix received while auto-paused. Collection keeps running (the
+     * location listener is never unregistered for an automatic pause) so
+     * movement can resume the recording without user interaction, but no
+     * point is persisted until hysteresis confirms movement has resumed.
+     */
+    private fun onAutoPausedLocationFix(session: ActiveActivitySessionData, location: Location) {
+        val detector = autoPauseDetector ?: return
+        val nowMillis = if (location.time > 0) location.time else System.currentTimeMillis()
+        val transition = detector.onAutoPausedPoint(movementSample(location, nowMillis))
+        if (transition != MovementAutoPauseTransition.AUTO_RESUME) {
+            return
+        }
+        val resumed = session.copy(
+            status = ActiveActivitySessionData.STATUS_RECORDING,
+            resumedAt = IsoTime.format(Date(nowMillis)),
+            pausedAt = null,
+            pausedAutomatically = false,
+        )
+        store.saveSession(resumed)
+        resumedFromPause = true
+        ActivityRecorderCoordinator.emitSession(
+            ActivityRecorderCoordinator.TYPE_AUTO_RESUMED,
+            resumed,
+        )
+        // Queue the state cue before this fix can enqueue a progress update.
+        speakTransitionCue(autoPaused = false)
+        // Persist this same triggering fix as the first point of the new
+        // segment, matching the manual resume flow (`resumedFromPause` forces
+        // a segment break above).
+        onActiveLocationFix(resumed, location)
+        scheduleNextTimeAnnouncement()
+    }
+
+    private fun transitionToAutoPaused(session: ActiveActivitySessionData, nowMillis: Long) {
+        // Back-date the pause to when movement last stopped so the stillness
+        // delay is not counted as recorded time.
+        val anchorMillis = IsoTime.toEpochMillis(session.resumedAt ?: session.startedAt)
+        val pausedAtMillis = (autoPauseDetector?.lastMovementAtMillis ?: nowMillis)
+            .coerceAtLeast(anchorMillis ?: Long.MIN_VALUE)
+            .coerceAtMost(nowMillis)
+        val paused = session.copy(
+            status = ActiveActivitySessionData.STATUS_PAUSED,
+            pausedAt = IsoTime.format(Date(pausedAtMillis)),
+            elapsedDurationSeconds = session.elapsedSecondsAt(pausedAtMillis),
+            pausedAutomatically = true,
+        )
+        store.saveSession(paused)
+        ActivityRecorderCoordinator.emitSession(
+            ActivityRecorderCoordinator.TYPE_AUTO_PAUSED,
+            paused,
+        )
+        // Cancel queued progress speech before announcing the state change.
+        AudioAnnouncer.stop()
+        speakTransitionCue(autoPaused = true)
+        flushAnnouncementState()
+        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
+        // Deliberately does not call `stopCollection()`: an automatic pause
+        // must keep monitoring location so movement can resume the recording
+        // without user interaction, unlike a manual pause which stops
+        // collection entirely (see `stopCollection`).
+    }
+
+    private fun speakTransitionCue(autoPaused: Boolean) {
+        val announcementState = currentAnnouncementState() ?: return
+        val message = announcementState.transitionMessage(autoPaused) ?: return
+        AudioAnnouncer.speak(
+            applicationContext,
+            message,
+            announcementState.duckOtherAudio,
+            announcementState.languageTag,
+        )
+    }
+
+    private fun movementSample(location: Location, nowMillis: Long): MovementSample {
+        return MovementSample(
+            timestampMillis = nowMillis,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            speedMetersPerSecond = if (location.hasSpeed()) location.speed.toDouble() else null,
+            horizontalAccuracyMeters =
+                if (location.hasAccuracy()) location.accuracy.toDouble() else null,
+        )
     }
 
     /**
@@ -626,19 +956,29 @@ class ActivityRecorderService : Service() {
     }
 
     override fun onDestroy() {
+        AudioAnnouncer.stop()
+        if (store.loadSession()?.isActive == true) {
+            flushAnnouncementState()
+        }
         stopCollection()
         stopSensorCapture()
         releaseWakeLock()
+        if (activeInstance === this) {
+            activeInstance = null
+        }
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
+        private var activeInstance: ActivityRecorderService? = null
+
         const val ACTION_START = "com.endurain.endurain.activity.action.START"
         const val ACTION_PAUSE = "com.endurain.endurain.activity.action.PAUSE"
         const val ACTION_RESUME = "com.endurain.endurain.activity.action.RESUME"
         const val ACTION_STOP = "com.endurain.endurain.activity.action.STOP"
+        private const val ACTION_RECONNECT = "com.endurain.endurain.activity.action.RECONNECT"
 
         const val EXTRA_TITLE = "title"
         const val EXTRA_TEXT = "text"
@@ -655,9 +995,55 @@ class ActivityRecorderService : Service() {
         private const val MAX_TIME_GAP_MILLIS = 30_000L
         private const val MAX_ACCURACY_METERS = 100f
         private const val MAX_SPEED_METERS_PER_SECOND = 90f
+        private const val MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 60
+        private const val MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 3600
+        private const val TIME_ANNOUNCEMENT_RETRY_MILLIS = 1000L
 
         private fun baseIntent(context: Context, action: String): Intent {
             return Intent(context, ActivityRecorderService::class.java).setAction(action)
+        }
+
+        fun recover(context: Context): ActiveActivitySessionData? {
+            val store = ActiveActivityStore.of(context)
+            val session = store.loadSession() ?: return null
+            if (session.status == ActiveActivitySessionData.STATUS_FAILED) {
+                val paused = session.copy(
+                    status = ActiveActivitySessionData.STATUS_PAUSED,
+                    pausedAt = IsoTime.nowUtc(),
+                    endedAt = null,
+                )
+                store.saveSession(paused)
+                activeInstance?.handlePause()
+                return paused
+            }
+            if (!session.requiresLocationMonitoring ||
+                activeInstance?.collectingSessionId == session.localSessionId
+            ) {
+                return session
+            }
+            val recovered = SessionTiming.afterInterruption(
+                session,
+                store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
+                System.currentTimeMillis(),
+            )
+            store.saveSession(recovered)
+            try {
+                ContextCompat.startForegroundService(
+                    context,
+                    baseIntent(context, ACTION_RECONNECT),
+                )
+            } catch (_: RuntimeException) {
+                val paused = recovered.copy(
+                    status = ActiveActivitySessionData.STATUS_PAUSED,
+                    pausedAt = IsoTime.nowUtc(),
+                )
+                store.saveSession(paused)
+                ActivityRecorderCoordinator.emitFailed(
+                    ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED,
+                )
+                return paused
+            }
+            return recovered
         }
 
         fun start(context: Context, title: String?, text: String?) {

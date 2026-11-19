@@ -68,6 +68,15 @@ void main() {
       expect(metric.formatPace(2.5), '6:40 min/km');
     });
 
+    test('derives pace from total time over distance', () {
+      // 5 km in 25 minutes is 5:00 min/km.
+      expect(metric.formatPaceOverDistance(5000, 1500), '5:00 min/km');
+      expect(metric.formatPaceOverDistance(null, 1500), '-');
+      expect(metric.formatPaceOverDistance(0, 1500), '-');
+      expect(metric.formatPaceOverDistance(5000, 0), '-');
+      expect(metric.formatPaceOverDistance(5000, -1), '-');
+    });
+
     test('formats elevation only when available', () {
       expect(metric.formatElevation(null), '-');
       expect(metric.formatElevation(123.4), '123 m');

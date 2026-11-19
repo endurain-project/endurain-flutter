@@ -11,6 +11,11 @@
   "invalidUrl": "Bitte gib eine gültige URL ein",
   "errorActivityUploadFailed": "Aktivität konnte nicht hochgeladen werden",
   "errorActivityUploadFailedWithDetails": "Aktivität konnte nicht hochgeladen werden: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Das Dateiformat wird nicht unterstützt",
+  "errorActivityIngestionInvalidFile": "Die Datei ist beschädigt oder konnte nicht gelesen werden",
+  "errorActivityIngestionNoActivitiesFound": "In der Datei wurden keine Aktivitäten gefunden",
+  "errorActivityIngestionProcessingFailed": "Beim Importieren der Aktivität ist ein Fehler aufgetreten. Bitte erneut versuchen.",
+  "errorActivityIngestionProviderUnavailable": "Der Aktivitätsanbieter ist derzeit nicht verfügbar. Bitte später erneut versuchen.",
   "errorActivityUploadNotConfigured": "Der Aktivitäts-Upload ist noch nicht konfiguriert",
   "errorActivityGpxCleanupFailed": "Die temporäre Aktivitätsdatei konnte nicht gelöscht werden",
   "errorActivityGpxFileWriteFailed": "Die Datei für den Aktivitäts-Upload konnte nicht vorbereitet werden",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-Überprüfung fehlgeschlagen",
   "errorMfaVerificationFailedWithDetails": "MFA-Überprüfung fehlgeschlagen: {details}",
   "errorNoSessionIdReceived": "Vom Server wurde keine Sitzungs-ID empfangen",
+  "errorMfaSessionMissing": "Deine Anmeldesitzung ist verloren gegangen. Bitte melde dich erneut an.",
+  "errorSsoCallbackFailed": "Die Anmeldung per Single Sign-on konnte nicht abgeschlossen werden. Bitte versuche es erneut.",
   "errorNotAuthenticated": "Du bist nicht angemeldet",
   "errorPkceVerifierMissingRestartLogin": "Der Anmelde-Verifier wurde nicht gefunden. Bitte starte die Anmeldung erneut.",
   "errorServerUrlNotConfigured": "Server-URL ist nicht konfiguriert",
@@ -54,6 +61,32 @@
   "logout": "Abmelden",
   "logoutConfirmTitle": "Abmelden",
   "logoutConfirmMessage": "Möchtest du dich wirklich abmelden?",
+  "legacyDataTitle": "Aktivitäten von vor dem Server-Update",
+  "legacyDataMessageWithUsername": "Auf diesem Gerät sind Aktivitäten für ein Konto auf diesem Server gespeichert, die vor dem Update des Servers aufgezeichnet wurden. Gehören sie dir, {username}? Wenn ja, werden die noch wartenden in dein Konto hochgeladen.",
+  "legacyDataMessage": "Auf diesem Gerät sind Aktivitäten für ein Konto auf diesem Server gespeichert, die vor dem Update des Servers aufgezeichnet wurden. Gehören sie zu dem Konto, mit dem du dich gerade angemeldet hast? Wenn ja, werden die noch wartenden dorthin hochgeladen.",
+  "legacyDataConfirm": "Sie gehören mir",
+  "legacyDataDecline": "Nicht meine",
+  "errorActivityUploadLimit": "Auf dem Server laufen zu viele deiner Uploads. Die App versucht es später erneut.",
+  "errorPasswordChangeFailed": "Das Passwort konnte nicht geändert werden",
+  "errorPasswordChangeFailedWithDetails": "Das Passwort konnte nicht geändert werden: {details}",
+  "errorSignInStepUnsupported": "Der Server verlangt einen Anmeldeschritt, den diese App-Version nicht unterstützt. Aktualisiere die App und versuche es erneut.",
+  "errorSsoEmailMissing": "Dein Identitätsanbieter hat keine E-Mail-Adresse übermittelt, die zum Anlegen deines Kontos nötig ist.",
+  "errorSsoEmailUnverified": "Dein Identitätsanbieter hat deine E-Mail-Adresse nicht bestätigt. Bestätige sie dort und versuche es erneut.",
+  "errorSsoAutoCreateDisabled": "Zu dieser Anmeldung passt kein Konto, und dieser Server legt Konten nicht automatisch an. Frag deinen Administrator.",
+  "errorSsoLinkByEmailDisabled": "Diese E-Mail-Adresse wird bereits von einem Konto verwendet, aber dieser Anbieter kann sich nicht daran anmelden. Melde dich anders an oder frag deinen Administrator.",
+  "errorSsoApprovalPending": "Dein Konto wartet auf die Freigabe durch einen Administrator.",
+  "errorSsoAccountDisabled": "Dieses Konto ist deaktiviert. Wende dich an deinen Administrator.",
+  "errorSsoRedirectNotAllowed": "Dieser Server erlaubt keine Single-Sign-on-Anmeldung aus dieser App. Bitte deinen Administrator, com.endurain.endurain:/auth/sso/callback zu ALLOWED_REDIRECT_URIS hinzuzufügen.",
+  "errorActivityMfaEnrolmentRequired": "Dein Administrator verlangt eine Zwei-Faktor-Bestätigung. Richte sie in der Endurain-Web-App ein und versuche es erneut.",
+  "errorActivityFileTooLarge": "Die Aktivitätsdatei ist für diesen Server zu groß",
+  "errorActivityUnsupportedFileType": "Dieser Server akzeptiert diese Art von Aktivitätsdatei nicht",
+  "errorTooManyRequests": "Zu viele Versuche. Warte einen Moment und versuche es erneut.",
+  "passwordChangeTitle": "Neues Passwort wählen",
+  "passwordChangeMessage": "Ein Administrator hat dein Passwort festgelegt. Wähle ein neues, um die Anmeldung abzuschließen.",
+  "newPassword": "Neues Passwort",
+  "confirmNewPassword": "Neues Passwort bestätigen",
+  "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
+  "changePassword": "Passwort ändern",
   "logoutServerFailedWarning": "Abmeldung vom Server nicht möglich, aber lokal abgemeldet",
   "ssoBrowserLaunchFailed": "SSO-Anmeldung konnte im Systembrowser nicht geöffnet werden",
   "ssoSignInWith": "Anmelden mit {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Abgeschlossene Aktivitäten auf diesem Gerät gespeichert",
   "activityRetainUploadedGpx": "Hochgeladene GPX-Dateien behalten",
   "activityRetainUploadedGpxSubtitle": "Speichert abgeschlossene Routendateien nach dem Upload im privaten App-Speicher.",
+  "activityAutoPauseTitle": "Automatische Pause",
+  "activityAutoPauseSubtitle": "Pausiert automatisch, wenn du dich nicht mehr bewegst",
+  "activityAutoPauseToggleLabel": "Automatisch pausieren",
+  "activityAutoPauseToggleDescription": "Pausiert die Aufzeichnung, wenn du dich nicht mehr bewegst, und setzt sie fort, sobald du dich wieder bewegst.",
+  "activityAutoPauseDelayHelperText": "Wähle, wie lange ohne Bewegung gewartet werden soll, bevor pausiert wird.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} Sekunden",
+  "activityAutoPausedIndicator": "Automatisch pausiert",
+  "audioAnnouncementsAutoPaused": "Aufzeichnung pausiert",
+  "audioAnnouncementsAutoResumed": "Aufzeichnung fortgesetzt",
   "activityHistoryEmpty": "Keine abgeschlossenen Aktivitäten auf diesem Gerät gespeichert.",
   "activityHistoryLoadFailed": "Lokale Aktivitäten konnten nicht geladen werden.",
   "activityHistoryRefresh": "Aktualisieren",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Trainingseinheiten",
   "healthAccessWorkoutRoutes": "Trainingsrouten",
   "healthAccessHeartRate": "Herzfrequenz",
-  "healthAccessWorkoutSummary": "Trainingsdistanz, Kalorien und Schritte",
   "healthAccessAllowed": "Erlaubt",
   "healthAccessNeedsAttention": "Braucht Aufmerksamkeit",
   "healthAccessManagedBySystem": "Wird in den Systemeinstellungen verwaltet",
@@ -441,5 +482,107 @@
   "errorTooManyRedirects": "Der Server hat zu oft umgeleitet. Prüfen Sie die Serveradresse.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Sprachansagen",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Sprachansagen zu Distanz, Zeit, Tempo oder Geschwindigkeit",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Trainingsfortschritt ansagen",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Sagt während einer Aufzeichnung Distanz, Zeit, Tempo oder Geschwindigkeit an",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Andere Audiowiedergabe während der Ansage leiser stellen",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Senkt vorübergehend die Lautstärke anderer Audiowiedergabe während jeder Ansage",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Ansageintervall nach Aktivität",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Distanz",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Zeit",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Alle {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Alle {minutes} Min.",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Intervall verringern",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Intervall erhöhen",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Beispiel anhören",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Die Beispielansage ist auf diesem Gerät nicht verfügbar",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Änderungen gelten ab deiner nächsten Aufzeichnung.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Distanz {distance}. Zeit {duration}. Runde: {lapMetric}. Gesamt: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

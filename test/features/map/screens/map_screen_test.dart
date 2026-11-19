@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:endurain/core/constants/map_constants.dart';
-import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
@@ -9,10 +7,11 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
-import 'package:endurain/features/map/screens/map_screen.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
+import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/map/screens/map_screen.dart';
+import 'package:endurain/features/map/widgets/location_marker.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
@@ -20,10 +19,10 @@ import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive_floating_action_button.dart';
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -305,10 +304,9 @@ void main() {
       platform.addPosition(testPosition(latitude: 41.11, longitude: -8.61));
       await tester.pump();
 
-      unawaited(activityController.pause());
-      await tester.pump();
-      unawaited(activityController.resume());
-      await tester.pump();
+      expect(activityController.state.points, hasLength(2));
+      await _completeRecorderCommand(tester, activityController.pause);
+      await _completeRecorderCommand(tester, activityController.resume);
 
       platform.addPosition(testPosition(latitude: 41.30, longitude: -8.80));
       await tester.pump();
@@ -571,9 +569,23 @@ Future<void> _pumpMapFrame(WidgetTester tester) async {
   await tester.pump();
 }
 
+Future<void> _completeRecorderCommand(
+  WidgetTester tester,
+  Future<void> Function() command,
+) async {
+  var completed = false;
+  final result = command().whenComplete(() => completed = true);
+  for (var frame = 0; frame < 20 && !completed; frame++) {
+    await tester.pump();
+    await tester.runAsync(() async {});
+  }
+  expect(completed, isTrue, reason: 'Recorder command did not complete.');
+  await result;
+  await tester.pump();
+}
+
 double _markerHeading(WidgetTester tester) {
   final markerLayer = tester.widget<MarkerLayer>(find.byType(MarkerLayer));
   final marker = markerLayer.markers.single;
-  final dynamic markerChild = marker.child;
-  return markerChild.heading as double;
+  return (marker.child as LocationMarker).heading;
 }

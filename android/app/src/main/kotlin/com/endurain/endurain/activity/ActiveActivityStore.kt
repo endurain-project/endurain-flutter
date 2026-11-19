@@ -28,6 +28,8 @@ class ActiveActivityStore private constructor(appContext: Context) {
     private val atomicSessionFile = AtomicFile(sessionFile)
     private val pointsFile = File(activeDir, POINTS_FILE)
     private val pointsLog = ActivePointsLog(pointsFile)
+    private val announcementFile = File(activeDir, ANNOUNCEMENT_FILE)
+    private val atomicAnnouncementFile = AtomicFile(announcementFile)
     private val lock = Any()
 
     fun saveSession(session: ActiveActivitySessionData) {
@@ -111,6 +113,43 @@ class ActiveActivityStore private constructor(appContext: Context) {
         }
     }
 
+    /**
+     * Persists the audio-announcement config + progress for the active
+     * recording. Lives inside the same active-recording directory as the
+     * session/points files, so [clear] removes it too and [hasRecoverableData]
+     * keeps working unchanged.
+     */
+    fun saveAnnouncementState(state: AnnouncementStateData) {
+        synchronized(lock) {
+            ensureDir()
+            var output: java.io.FileOutputStream? = null
+            try {
+                output = atomicAnnouncementFile.startWrite()
+                output.write(state.toJson().toString().toByteArray(Charsets.UTF_8))
+                output.fd.sync()
+                atomicAnnouncementFile.finishWrite(output)
+            } catch (error: Exception) {
+                output?.let { atomicAnnouncementFile.failWrite(it) }
+                throw error
+            }
+        }
+    }
+
+    /** Returns the persisted announcement state, or `null` when absent/corrupt. */
+    fun loadAnnouncementState(): AnnouncementStateData? {
+        synchronized(lock) {
+            return try {
+                atomicAnnouncementFile.openRead().bufferedReader().use { reader ->
+                    AnnouncementStateData.fromJson(JSONObject(reader.readText()))
+                }
+            } catch (_: FileNotFoundException) {
+                null
+            } catch (_: Exception) {
+                null
+            }
+        }
+    }
+
     private fun ensureDir() {
         if (!activeDir.exists()) {
             activeDir.mkdirs()
@@ -122,6 +161,7 @@ class ActiveActivityStore private constructor(appContext: Context) {
         const val ACTIVE_DIR = "active"
         const val SESSION_FILE = "session.json"
         const val POINTS_FILE = "points.jsonl"
+        const val ANNOUNCEMENT_FILE = "announcement.json"
 
         @Volatile
         private var instance: ActiveActivityStore? = null

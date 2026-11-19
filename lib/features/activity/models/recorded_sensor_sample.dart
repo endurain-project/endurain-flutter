@@ -27,4 +27,34 @@ class RecordedSensorSample {
   final RecordedSensorKind kind;
   final DateTime timestamp;
   final int value;
+
+  Map<String, Object> toJson() => {
+    'schemaVersion': 1,
+    'kind': kind.name,
+    't': timestamp.toUtc().toIso8601String(),
+    'value': value,
+  };
+
+  factory RecordedSensorSample.fromJson(Map<Object?, Object?> json) {
+    final kind = RecordedSensorKind.values
+        .where((kind) => kind.name == json['kind'])
+        .firstOrNull;
+    final rawTimestamp = json['t'];
+    final timestamp = rawTimestamp is String
+        ? DateTime.tryParse(rawTimestamp)
+        : null;
+    final value = json['value'];
+    if (json['schemaVersion'] != 1 ||
+        kind == null ||
+        timestamp == null ||
+        value is! int ||
+        value < 0) {
+      throw const FormatException('Invalid recorded sensor sample.');
+    }
+    return RecordedSensorSample(
+      kind: kind,
+      timestamp: timestamp.toUtc(),
+      value: value,
+    );
+  }
 }

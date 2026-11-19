@@ -1,3 +1,5 @@
+import 'package:endurain/features/sensors/services/ble_payload.dart';
+
 /// Decodes the BLE RSC Measurement characteristic (GATT `0x2A53`, Running Speed
 /// and Cadence).
 ///
@@ -18,10 +20,8 @@ class RunningSpeedCadenceMeasurementParser {
     if (data.length < 4) {
       return null;
     }
-    for (final byte in data) {
-      if (byte < 0 || byte > 0xFF) {
-        return null;
-      }
+    if (!isByteValuedPayload(data)) {
+      return null;
     }
     return data[3];
   }

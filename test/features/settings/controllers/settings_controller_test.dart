@@ -1,7 +1,7 @@
-import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
-import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
@@ -178,7 +178,7 @@ void main() {
 }
 
 class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
-  _FakeRetentionSettings() : super(storage: SecureStorageService());
+  _FakeRetentionSettings() : super(preferences: FakePreferencesStore());
 
   bool retainUploadedGpx = true;
 
@@ -192,7 +192,7 @@ class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
 }
 
 class _ThrowingRetentionSettings extends ActivityRetentionSettingsRepository {
-  _ThrowingRetentionSettings() : super(storage: SecureStorageService());
+  _ThrowingRetentionSettings() : super(preferences: FakePreferencesStore());
 
   @override
   Future<bool> isRetainUploadedGpxEnabled() async {

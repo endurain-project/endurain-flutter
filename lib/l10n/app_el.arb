@@ -11,6 +11,11 @@
   "invalidUrl": "Εισαγάγετε έγκυρο URL",
   "errorActivityUploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της δραστηριότητας",
   "errorActivityUploadFailedWithDetails": "Δεν ήταν δυνατή η μεταφόρτωση της δραστηριότητας: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Η μορφή του αρχείου δεν υποστηρίζεται",
+  "errorActivityIngestionInvalidFile": "Το αρχείο είναι κατεστραμμένο ή δεν ήταν δυνατή η ανάγνωσή του",
+  "errorActivityIngestionNoActivitiesFound": "Δεν βρέθηκαν δραστηριότητες στο αρχείο",
+  "errorActivityIngestionProcessingFailed": "Παρουσιάστηκε σφάλμα κατά την εισαγωγή της δραστηριότητας. Δοκιμάστε ξανά.",
+  "errorActivityIngestionProviderUnavailable": "Ο πάροχος δραστηριοτήτων δεν είναι διαθέσιμος αυτή τη στιγμή. Δοκιμάστε ξανά αργότερα.",
   "errorActivityUploadNotConfigured": "Η μεταφόρτωση δραστηριοτήτων δεν έχει ρυθμιστεί ακόμη",
   "errorActivityGpxCleanupFailed": "Δεν ήταν δυνατή η διαγραφή του προσωρινού αρχείου δραστηριότητας",
   "errorActivityGpxFileWriteFailed": "Δεν ήταν δυνατή η προετοιμασία του αρχείου μεταφόρτωσης της δραστηριότητας",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "Η επαλήθευση MFA απέτυχε",
   "errorMfaVerificationFailedWithDetails": "Η επαλήθευση MFA απέτυχε: {details}",
   "errorNoSessionIdReceived": "Δεν ελήφθη αναγνωριστικό συνεδρίας από τον διακομιστή",
+  "errorMfaSessionMissing": "Η συνεδρία σύνδεσής σας χάθηκε. Συνδεθείτε ξανά.",
+  "errorSsoCallbackFailed": "Η ενιαία σύνδεση (SSO) δεν ολοκληρώθηκε. Δοκιμάστε ξανά.",
   "errorNotAuthenticated": "Δεν έχετε συνδεθεί",
   "errorPkceVerifierMissingRestartLogin": "Ο επαληθευτής σύνδεσης δεν βρέθηκε. Ξεκινήστε ξανά τη σύνδεση.",
   "errorServerUrlNotConfigured": "Το URL του διακομιστή δεν έχει ρυθμιστεί",
@@ -54,6 +61,32 @@
   "logout": "Αποσύνδεση",
   "logoutConfirmTitle": "Αποσύνδεση",
   "logoutConfirmMessage": "Είστε βέβαιοι ότι θέλετε να αποσυνδεθείτε;",
+  "legacyDataTitle": "Δραστηριότητες από πριν από την ενημέρωση του διακομιστή",
+  "legacyDataMessageWithUsername": "Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Είναι δικές σας, {username}; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν στον λογαριασμό σας.",
+  "legacyDataMessage": "Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Ανήκουν στον λογαριασμό με τον οποίο μόλις συνδεθήκατε; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν σε αυτόν.",
+  "legacyDataConfirm": "Είναι δικές μου",
+  "legacyDataDecline": "Δεν είναι δικές μου",
+  "errorActivityUploadLimit": "Ο διακομιστής έχει πάρα πολλές μεταφορτώσεις σας σε εξέλιξη. Η εφαρμογή θα προσπαθήσει ξανά αργότερα.",
+  "errorPasswordChangeFailed": "Δεν ήταν δυνατή η αλλαγή του κωδικού πρόσβασης",
+  "errorPasswordChangeFailedWithDetails": "Δεν ήταν δυνατή η αλλαγή του κωδικού πρόσβασης: {details}",
+  "errorSignInStepUnsupported": "Ο διακομιστής ζήτησε ένα βήμα σύνδεσης που δεν υποστηρίζει αυτή η έκδοση της εφαρμογής. Ενημερώστε την εφαρμογή και δοκιμάστε ξανά.",
+  "errorSsoEmailMissing": "Ο πάροχος ταυτότητας δεν κοινοποίησε διεύθυνση email, η οποία χρειάζεται για τη δημιουργία του λογαριασμού σας.",
+  "errorSsoEmailUnverified": "Ο πάροχος ταυτότητας δεν έχει επαληθεύσει τη διεύθυνση email σας. Επαληθεύστε την εκεί και δοκιμάστε ξανά.",
+  "errorSsoAutoCreateDisabled": "Κανένας λογαριασμός δεν αντιστοιχεί σε αυτή τη σύνδεση και ο διακομιστής δεν δημιουργεί λογαριασμούς αυτόματα. Ρωτήστε τον διαχειριστή σας.",
+  "errorSsoLinkByEmailDisabled": "Ένας λογαριασμός χρησιμοποιεί ήδη αυτή τη διεύθυνση email, αλλά αυτός ο πάροχος δεν μπορεί να συνδεθεί σε αυτόν. Συνδεθείτε με άλλον τρόπο ή ρωτήστε τον διαχειριστή σας.",
+  "errorSsoApprovalPending": "Ο λογαριασμός σας περιμένει έγκριση από διαχειριστή.",
+  "errorSsoAccountDisabled": "Αυτός ο λογαριασμός είναι απενεργοποιημένος. Επικοινωνήστε με τον διαχειριστή σας.",
+  "errorSsoRedirectNotAllowed": "Αυτός ο διακομιστής δεν επιτρέπει ενιαία σύνδεση από αυτή την εφαρμογή. Ζητήστε από τον διαχειριστή σας να προσθέσει το com.endurain.endurain:/auth/sso/callback στο ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Ο διαχειριστής σας απαιτεί επαλήθευση δύο βημάτων. Ρυθμίστε την στην εφαρμογή ιστού του Endurain και δοκιμάστε ξανά.",
+  "errorActivityFileTooLarge": "Το αρχείο δραστηριότητας είναι πολύ μεγάλο για αυτόν τον διακομιστή",
+  "errorActivityUnsupportedFileType": "Αυτός ο διακομιστής δεν δέχεται αυτό το είδος αρχείου δραστηριότητας",
+  "errorTooManyRequests": "Πάρα πολλές προσπάθειες. Περιμένετε λίγο και δοκιμάστε ξανά.",
+  "passwordChangeTitle": "Επιλέξτε νέο κωδικό πρόσβασης",
+  "passwordChangeMessage": "Ένας διαχειριστής όρισε τον κωδικό πρόσβασής σας. Επιλέξτε νέο για να ολοκληρώσετε τη σύνδεση.",
+  "newPassword": "Νέος κωδικός πρόσβασης",
+  "confirmNewPassword": "Επιβεβαίωση νέου κωδικού πρόσβασης",
+  "passwordsDoNotMatch": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
+  "changePassword": "Αλλαγή κωδικού πρόσβασης",
   "logoutServerFailedWarning": "Δεν ήταν δυνατή η αποσύνδεση από τον διακομιστή, αλλά έγινε αποσύνδεση τοπικά",
   "ssoBrowserLaunchFailed": "Δεν ήταν δυνατό το άνοιγμα της σύνδεσης SSO στο πρόγραμμα περιήγησης συστήματος",
   "ssoSignInWith": "Σύνδεση με {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Ολοκληρωμένες δραστηριότητες αποθηκευμένες σε αυτήν τη συσκευή",
   "activityRetainUploadedGpx": "Διατήρηση μεταφορτωμένων αρχείων GPX",
   "activityRetainUploadedGpxSubtitle": "Αποθηκεύει τα ολοκληρωμένα αρχεία διαδρομής στον ιδιωτικό χώρο αποθήκευσης της εφαρμογής μετά τη μεταφόρτωση.",
+  "activityAutoPauseTitle": "Αυτόματη παύση",
+  "activityAutoPauseSubtitle": "Παύση αυτόματα όταν σταματήσετε να κινείστε",
+  "activityAutoPauseToggleLabel": "Αυτόματη παύση",
+  "activityAutoPauseToggleDescription": "Η καταγραφή τίθεται σε παύση αυτόματα όταν σταματήσετε να κινείστε και συνεχίζεται μόλις ξανακινηθείτε.",
+  "activityAutoPauseDelayHelperText": "Επιλέξτε πόσο χρόνο χωρίς κίνηση θα περιμένει πριν από την παύση.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} δευτερόλεπτα",
+  "activityAutoPausedIndicator": "Αυτόματη παύση",
+  "audioAnnouncementsAutoPaused": "Η καταγραφή τέθηκε σε παύση",
+  "audioAnnouncementsAutoResumed": "Η καταγραφή συνεχίστηκε",
   "activityHistoryEmpty": "Δεν υπάρχουν ολοκληρωμένες δραστηριότητες αποθηκευμένες σε αυτήν τη συσκευή.",
   "activityHistoryLoadFailed": "Δεν ήταν δυνατή η φόρτωση των τοπικών δραστηριοτήτων.",
   "activityHistoryRefresh": "Ανανέωση",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Προπονήσεις",
   "healthAccessWorkoutRoutes": "Διαδρομές προπόνησης",
   "healthAccessHeartRate": "Καρδιακός ρυθμός",
-  "healthAccessWorkoutSummary": "Απόσταση, θερμίδες και βήματα προπόνησης",
   "healthAccessAllowed": "Επιτρέπεται",
   "healthAccessNeedsAttention": "Χρειάζεται προσοχή",
   "healthAccessManagedBySystem": "Διαχειρίζεται στις ρυθμίσεις συστήματος",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Ο διακομιστής προσπάθησε να ανακατευθύνει σε μη ασφαλή σύνδεση. Το αίτημα αποκλείστηκε για την προστασία των διαπιστευτηρίων σας.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Ο διακομιστής έκανε υπερβολικά πολλές ανακατευθύνσεις. Ελέγξτε τη διεύθυνση του διακομιστή.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Φωνητικές ανακοινώσεις",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Φωνητικές ενημερώσεις για απόσταση, χρόνο, ρυθμό ή ταχύτητα",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Ανακοίνωση προόδου δραστηριότητας",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Εκφωνεί την απόσταση, τον χρόνο, τον ρυθμό ή την ταχύτητά σας κατά την εγγραφή",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Χαμήλωμα άλλου ήχου κατά την ομιλία",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Μειώνει προσωρινά την ένταση άλλου ήχου κατά τη διάρκεια κάθε ανακοίνωσης",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Διάστημα ανακοίνωσης ανά δραστηριότητα",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Απόσταση",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Χρόνος",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Κάθε {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Κάθε {minutes} λεπτά",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Μείωση διαστήματος",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Αύξηση διαστήματος",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Ακρόαση δείγματος",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Το δείγμα ανακοίνωσης δεν είναι διαθέσιμο σε αυτή τη συσκευή",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Οι αλλαγές ισχύουν από την επόμενη καταγραφή σας.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Απόσταση {distance}. Χρόνος {duration}. Γύρος: {lapMetric}. Συνολικά: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

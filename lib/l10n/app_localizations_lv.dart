@@ -39,6 +39,26 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Faila formāts netiek atbalstīts';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Fails ir bojāts vai to nevarēja nolasīt';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Failā netika atrastas aktivitātes';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Importējot aktivitāti, radās kļūda. Mēģiniet vēlreiz.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktivitāšu sniedzējs pašlaik nav pieejams. Mēģiniet vēlāk.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Aktivitāšu augšupielāde vēl nav konfigurēta';
 
@@ -145,6 +165,14 @@ class AppLocalizationsLv extends AppLocalizations {
   String get errorNoSessionIdReceived => 'No servera netika saņemts sesijas ID';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Jūsu pieteikšanās sesija tika zaudēta. Lūdzu, piesakieties vēlreiz.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Vienotās pierakstīšanās (SSO) process netika pabeigts. Lūdzu, mēģiniet vēlreiz.';
+
+  @override
   String get errorNotAuthenticated => 'Jūs neesat pieteicies';
 
   @override
@@ -220,6 +248,104 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Vai tiešām vēlaties atteikties?';
+
+  @override
+  String get legacyDataTitle =>
+      'Aktivitātes no laika pirms servera atjaunināšanas';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Šajā ierīcē ir aktivitātes, kas saglabātas šī servera kontam pirms servera atjaunināšanas. Vai tās ir jūsu, $username? Ja jā, vēl gaidošās tiks augšupielādētas jūsu kontā.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Šajā ierīcē ir aktivitātes, kas saglabātas šī servera kontam pirms servera atjaunināšanas. Vai tās pieder kontam, kurā tikko pierakstījāties? Ja jā, vēl gaidošās tiks augšupielādētas tajā.';
+
+  @override
+  String get legacyDataConfirm => 'Tās ir manas';
+
+  @override
+  String get legacyDataDecline => 'Nav manas';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serverī notiek pārāk daudz jūsu augšupielāžu. Lietotne mēģinās vēlreiz vēlāk.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Paroli neizdevās nomainīt';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Paroli neizdevās nomainīt: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveris pieprasīja pierakstīšanās soli, ko šī lietotnes versija neatbalsta. Atjauniniet lietotni un mēģiniet vēlreiz.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Jūsu identitātes nodrošinātājs nekopīgoja e-pasta adresi, kas nepieciešama konta izveidei.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Jūsu identitātes nodrošinātājs nav apstiprinājis jūsu e-pasta adresi. Apstipriniet to tur un mēģiniet vēlreiz.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Neviens konts neatbilst šai pierakstīšanās reizei, un šis serveris kontus automātiski neveido. Jautājiet administratoram.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Šo e-pasta adresi jau izmanto kāds konts, bet šis nodrošinātājs nevar tajā pierakstīties. Pierakstieties citā veidā vai jautājiet administratoram.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Jūsu konts gaida administratora apstiprinājumu.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Šis konts ir atspējots. Sazinieties ar administratoru.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Šis serveris neatļauj vienoto pierakstīšanos no šīs lietotnes. Lūdziet administratoram pievienot com.endurain.endurain:/auth/sso/callback sarakstam ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Jūsu administrators pieprasa divpakāpju verifikāciju. Iestatiet to Endurain tīmekļa lietotnē un mēģiniet vēlreiz.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktivitātes fails ir pārāk liels šim serverim';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Šis serveris nepieņem šāda veida aktivitātes failu';
+
+  @override
+  String get errorTooManyRequests =>
+      'Pārāk daudz mēģinājumu. Uzgaidiet brīdi un mēģiniet vēlreiz.';
+
+  @override
+  String get passwordChangeTitle => 'Izvēlieties jaunu paroli';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administrators iestatīja jūsu paroli. Lai pabeigtu pierakstīšanos, izvēlieties jaunu.';
+
+  @override
+  String get newPassword => 'Jaunā parole';
+
+  @override
+  String get confirmNewPassword => 'Apstipriniet jauno paroli';
+
+  @override
+  String get passwordsDoNotMatch => 'Paroles nesakrīt';
+
+  @override
+  String get changePassword => 'Mainīt paroli';
 
   @override
   String get logoutServerFailedWarning =>
@@ -485,6 +611,38 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Pēc augšupielādes saglabā pabeigtos maršrutu failus lietotnes privātajā krātuvē.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automātiska pauze';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automātiski aptur, kad pārstājat kustēties';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automātiski pauzēt';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Ierakstīšana automātiski tiek apturēta, kad pārstājat kustēties, un atsākta, tiklīdz atkal sākat kustēties.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Izvēlieties, cik ilgi bez kustības gaidīt pirms pauzes.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekundes';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automātiski pauzēts';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Ierakstīšana pauzēta';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Ierakstīšana atsākta';
 
   @override
   String get activityHistoryEmpty =>
@@ -822,10 +980,6 @@ class AppLocalizationsLv extends AppLocalizations {
   String get healthAccessHeartRate => 'Sirdsdarbība';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Treniņa distance, kalorijas un soļi';
-
-  @override
   String get healthAccessAllowed => 'Atļauts';
 
   @override
@@ -1152,9 +1306,78 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serveris mēģināja novirzīt uz nedrošu savienojumu. Pieprasījums tika bloķēts, lai aizsargātu jūsu akreditācijas datus.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serveris novirzīja pārāk daudz reižu. Pārbaudiet servera adresi.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Balss paziņojumi';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Balss atjauninājumi par attālumu, laiku, tempu vai ātrumu';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Paziņot aktivitātes progresu';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Ieraksta laikā balsī paziņo attālumu, laiku, tempu vai ātrumu';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Klusināt citu skaņu runāšanas laikā';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Īslaicīgi samazina citas skaņas skaļumu katra paziņojuma laikā';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Paziņojuma intervāls pēc aktivitātes';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Attālums';
+
+  @override
+  String get audioAnnouncementsByTime => 'Laiks';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Ik pēc $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Ik pēc $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Samazināt intervālu';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Palielināt intervālu';
+
+  @override
+  String get audioAnnouncementsPreview => 'Klausīties paraugu';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Paziņojuma paraugs šajā ierīcē nav pieejams';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Izmaiņas tiks piemērotas nākamajā ierakstā.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Attālums $distance. Laiks $duration. Aplis: $lapMetric. Kopā: $overallMetric.';
+  }
 }

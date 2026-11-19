@@ -11,6 +11,11 @@
   "invalidUrl": "Ievadiet derīgu URL",
   "errorActivityUploadFailed": "Neizdevās augšupielādēt aktivitāti",
   "errorActivityUploadFailedWithDetails": "Neizdevās augšupielādēt aktivitāti: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Faila formāts netiek atbalstīts",
+  "errorActivityIngestionInvalidFile": "Fails ir bojāts vai to nevarēja nolasīt",
+  "errorActivityIngestionNoActivitiesFound": "Failā netika atrastas aktivitātes",
+  "errorActivityIngestionProcessingFailed": "Importējot aktivitāti, radās kļūda. Mēģiniet vēlreiz.",
+  "errorActivityIngestionProviderUnavailable": "Aktivitāšu sniedzējs pašlaik nav pieejams. Mēģiniet vēlāk.",
   "errorActivityUploadNotConfigured": "Aktivitāšu augšupielāde vēl nav konfigurēta",
   "errorActivityGpxCleanupFailed": "Neizdevās izdzēst pagaidu aktivitātes failu",
   "errorActivityGpxFileWriteFailed": "Neizdevās sagatavot aktivitātes augšupielādes failu",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA pārbaude neizdevās",
   "errorMfaVerificationFailedWithDetails": "MFA pārbaude neizdevās: {details}",
   "errorNoSessionIdReceived": "No servera netika saņemts sesijas ID",
+  "errorMfaSessionMissing": "Jūsu pieteikšanās sesija tika zaudēta. Lūdzu, piesakieties vēlreiz.",
+  "errorSsoCallbackFailed": "Vienotās pierakstīšanās (SSO) process netika pabeigts. Lūdzu, mēģiniet vēlreiz.",
   "errorNotAuthenticated": "Jūs neesat pieteicies",
   "errorPkceVerifierMissingRestartLogin": "Pieteikšanās verificētājs netika atrasts. Sāciet pieteikšanos no jauna.",
   "errorServerUrlNotConfigured": "Servera URL nav konfigurēts",
@@ -54,6 +61,32 @@
   "logout": "Atteikties",
   "logoutConfirmTitle": "Atteikties",
   "logoutConfirmMessage": "Vai tiešām vēlaties atteikties?",
+  "legacyDataTitle": "Aktivitātes no laika pirms servera atjaunināšanas",
+  "legacyDataMessageWithUsername": "Šajā ierīcē ir aktivitātes, kas saglabātas šī servera kontam pirms servera atjaunināšanas. Vai tās ir jūsu, {username}? Ja jā, vēl gaidošās tiks augšupielādētas jūsu kontā.",
+  "legacyDataMessage": "Šajā ierīcē ir aktivitātes, kas saglabātas šī servera kontam pirms servera atjaunināšanas. Vai tās pieder kontam, kurā tikko pierakstījāties? Ja jā, vēl gaidošās tiks augšupielādētas tajā.",
+  "legacyDataConfirm": "Tās ir manas",
+  "legacyDataDecline": "Nav manas",
+  "errorActivityUploadLimit": "Serverī notiek pārāk daudz jūsu augšupielāžu. Lietotne mēģinās vēlreiz vēlāk.",
+  "errorPasswordChangeFailed": "Paroli neizdevās nomainīt",
+  "errorPasswordChangeFailedWithDetails": "Paroli neizdevās nomainīt: {details}",
+  "errorSignInStepUnsupported": "Serveris pieprasīja pierakstīšanās soli, ko šī lietotnes versija neatbalsta. Atjauniniet lietotni un mēģiniet vēlreiz.",
+  "errorSsoEmailMissing": "Jūsu identitātes nodrošinātājs nekopīgoja e-pasta adresi, kas nepieciešama konta izveidei.",
+  "errorSsoEmailUnverified": "Jūsu identitātes nodrošinātājs nav apstiprinājis jūsu e-pasta adresi. Apstipriniet to tur un mēģiniet vēlreiz.",
+  "errorSsoAutoCreateDisabled": "Neviens konts neatbilst šai pierakstīšanās reizei, un šis serveris kontus automātiski neveido. Jautājiet administratoram.",
+  "errorSsoLinkByEmailDisabled": "Šo e-pasta adresi jau izmanto kāds konts, bet šis nodrošinātājs nevar tajā pierakstīties. Pierakstieties citā veidā vai jautājiet administratoram.",
+  "errorSsoApprovalPending": "Jūsu konts gaida administratora apstiprinājumu.",
+  "errorSsoAccountDisabled": "Šis konts ir atspējots. Sazinieties ar administratoru.",
+  "errorSsoRedirectNotAllowed": "Šis serveris neatļauj vienoto pierakstīšanos no šīs lietotnes. Lūdziet administratoram pievienot com.endurain.endurain:/auth/sso/callback sarakstam ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Jūsu administrators pieprasa divpakāpju verifikāciju. Iestatiet to Endurain tīmekļa lietotnē un mēģiniet vēlreiz.",
+  "errorActivityFileTooLarge": "Aktivitātes fails ir pārāk liels šim serverim",
+  "errorActivityUnsupportedFileType": "Šis serveris nepieņem šāda veida aktivitātes failu",
+  "errorTooManyRequests": "Pārāk daudz mēģinājumu. Uzgaidiet brīdi un mēģiniet vēlreiz.",
+  "passwordChangeTitle": "Izvēlieties jaunu paroli",
+  "passwordChangeMessage": "Administrators iestatīja jūsu paroli. Lai pabeigtu pierakstīšanos, izvēlieties jaunu.",
+  "newPassword": "Jaunā parole",
+  "confirmNewPassword": "Apstipriniet jauno paroli",
+  "passwordsDoNotMatch": "Paroles nesakrīt",
+  "changePassword": "Mainīt paroli",
   "logoutServerFailedWarning": "Neizdevās atteikties no servera, bet atteikšanās veikta lokāli",
   "ssoBrowserLaunchFailed": "Neizdevās atvērt SSO pieteikšanos sistēmas pārlūkā",
   "ssoSignInWith": "Pieteikties ar {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Šajā ierīcē saglabātās pabeigtās aktivitātes",
   "activityRetainUploadedGpx": "Saglabāt augšupielādētos GPX failus",
   "activityRetainUploadedGpxSubtitle": "Pēc augšupielādes saglabā pabeigtos maršrutu failus lietotnes privātajā krātuvē.",
+  "activityAutoPauseTitle": "Automātiska pauze",
+  "activityAutoPauseSubtitle": "Automātiski aptur, kad pārstājat kustēties",
+  "activityAutoPauseToggleLabel": "Automātiski pauzēt",
+  "activityAutoPauseToggleDescription": "Ierakstīšana automātiski tiek apturēta, kad pārstājat kustēties, un atsākta, tiklīdz atkal sākat kustēties.",
+  "activityAutoPauseDelayHelperText": "Izvēlieties, cik ilgi bez kustības gaidīt pirms pauzes.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} sekundes",
+  "activityAutoPausedIndicator": "Automātiski pauzēts",
+  "audioAnnouncementsAutoPaused": "Ierakstīšana pauzēta",
+  "audioAnnouncementsAutoResumed": "Ierakstīšana atsākta",
   "activityHistoryEmpty": "Šajā ierīcē nav saglabātu pabeigtu aktivitāšu.",
   "activityHistoryLoadFailed": "Neizdevās ielādēt lokālās aktivitātes.",
   "activityHistoryRefresh": "Atsvaidzināt",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Treniņi",
   "healthAccessWorkoutRoutes": "Treniņu maršruti",
   "healthAccessHeartRate": "Sirdsdarbība",
-  "healthAccessWorkoutSummary": "Treniņa distance, kalorijas un soļi",
   "healthAccessAllowed": "Atļauts",
   "healthAccessNeedsAttention": "Nepieciešama uzmanība",
   "healthAccessManagedBySystem": "Pārvalda sistēmas iestatījumos",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serveris mēģināja novirzīt uz nedrošu savienojumu. Pieprasījums tika bloķēts, lai aizsargātu jūsu akreditācijas datus.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serveris novirzīja pārāk daudz reižu. Pārbaudiet servera adresi.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Balss paziņojumi",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Balss atjauninājumi par attālumu, laiku, tempu vai ātrumu",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Paziņot aktivitātes progresu",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Ieraksta laikā balsī paziņo attālumu, laiku, tempu vai ātrumu",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Klusināt citu skaņu runāšanas laikā",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Īslaicīgi samazina citas skaņas skaļumu katra paziņojuma laikā",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Paziņojuma intervāls pēc aktivitātes",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Attālums",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Laiks",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Ik pēc {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Ik pēc {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Samazināt intervālu",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Palielināt intervālu",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Klausīties paraugu",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Paziņojuma paraugs šajā ierīcē nav pieejams",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Izmaiņas tiks piemērotas nākamajā ierakstā.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Attālums {distance}. Laiks {duration}. Aplis: {lapMetric}. Kopā: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

@@ -39,6 +39,26 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Het bestandsformaat wordt niet ondersteund';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Het bestand is beschadigd of kon niet worden gelezen';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Er zijn geen activiteiten gevonden in het bestand';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Er is iets misgegaan bij het importeren van de activiteit. Probeer het opnieuw.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'De activiteitenprovider is momenteel niet beschikbaar. Probeer het later opnieuw.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Het uploaden van activiteiten is nog niet geconfigureerd';
 
@@ -147,6 +167,14 @@ class AppLocalizationsNl extends AppLocalizations {
       'Er is geen sessie-ID van de server ontvangen';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Je inlogsessie is verloren gegaan. Meld je opnieuw aan.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Eenmalige aanmelding (SSO) kon niet worden voltooid. Probeer het opnieuw.';
+
+  @override
   String get errorNotAuthenticated => 'Je bent niet aangemeld';
 
   @override
@@ -222,6 +250,103 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Weet je zeker dat je je wilt afmelden?';
+
+  @override
+  String get legacyDataTitle => 'Activiteiten van vóór de serverupdate';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Zijn ze van jou, $username? Zo ja, dan worden de activiteiten die nog wachten naar je account geüpload.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Horen ze bij het account waarmee je net bent ingelogd? Zo ja, dan worden de activiteiten die nog wachten daarnaar geüpload.';
+
+  @override
+  String get legacyDataConfirm => 'Ze zijn van mij';
+
+  @override
+  String get legacyDataDecline => 'Niet van mij';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'De server heeft te veel uploads van je in behandeling. De app probeert het later opnieuw.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Kan het wachtwoord niet wijzigen';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Kan het wachtwoord niet wijzigen: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Deze server vroeg om een inlogstap die deze versie van de app niet ondersteunt. Werk de app bij en probeer het opnieuw.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Je identiteitsprovider heeft geen e-mailadres gedeeld, en dat is nodig om je account aan te maken.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Je identiteitsprovider heeft je e-mailadres niet geverifieerd. Verifieer het daar en probeer het opnieuw.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Geen enkel account past bij deze aanmelding en deze server maakt niet automatisch accounts aan. Vraag het je beheerder.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Een account gebruikt dit e-mailadres al, maar deze provider kan daarop niet inloggen. Log op een andere manier in of vraag het je beheerder.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Je account wacht op goedkeuring door een beheerder.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Dit account is uitgeschakeld. Neem contact op met je beheerder.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Deze server staat single sign-on vanuit deze app niet toe. Vraag je beheerder om com.endurain.endurain:/auth/sso/callback toe te voegen aan ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Je beheerder vereist verificatie in twee stappen. Stel die in via de Endurain-webapp en probeer het opnieuw.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Het activiteitsbestand is te groot voor deze server';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Deze server accepteert dit soort activiteitsbestand niet';
+
+  @override
+  String get errorTooManyRequests =>
+      'Te veel pogingen. Wacht even en probeer het opnieuw.';
+
+  @override
+  String get passwordChangeTitle => 'Kies een nieuw wachtwoord';
+
+  @override
+  String get passwordChangeMessage =>
+      'Een beheerder heeft je wachtwoord ingesteld. Kies een nieuw wachtwoord om het inloggen af te ronden.';
+
+  @override
+  String get newPassword => 'Nieuw wachtwoord';
+
+  @override
+  String get confirmNewPassword => 'Bevestig nieuw wachtwoord';
+
+  @override
+  String get passwordsDoNotMatch => 'De wachtwoorden komen niet overeen';
+
+  @override
+  String get changePassword => 'Wachtwoord wijzigen';
 
   @override
   String get logoutServerFailedWarning =>
@@ -487,6 +612,38 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Bewaart voltooide routebestanden na het uploaden in de privéopslag van de app.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatisch pauzeren';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Pauzeert automatisch wanneer je stopt met bewegen';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatisch pauzeren';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Pauzeert de opname wanneer je stopt met bewegen en hervat zodra je weer beweegt.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Kies hoe lang zonder beweging gewacht moet worden voordat er wordt gepauzeerd.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds seconden';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatisch gepauzeerd';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Opname gepauzeerd';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Opname hervat';
 
   @override
   String get activityHistoryEmpty =>
@@ -825,10 +982,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get healthAccessHeartRate => 'Hartslag';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Trainingsafstand, calorieën en stappen';
-
-  @override
   String get healthAccessAllowed => 'Toegestaan';
 
   @override
@@ -1162,4 +1315,74 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get errorTooManyRedirects =>
       'De server heeft te vaak doorverwezen. Controleer het serveradres.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Audiomeldingen';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Gesproken updates over afstand, tijd, tempo of snelheid';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Voortgang van activiteit aankondigen';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Spreekt tijdens een opname je afstand, tijd, tempo of snelheid uit';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Ander geluid dempen tijdens het spreken';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Verlaagt tijdelijk het volume van ander geluid tijdens elke melding';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Meldingsinterval per activiteit';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Afstand';
+
+  @override
+  String get audioAnnouncementsByTime => 'Tijd';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Elke $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Elke $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Interval verkleinen';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Interval vergroten';
+
+  @override
+  String get audioAnnouncementsPreview => 'Voorbeeld afspelen';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Een voorbeeld van de melding is niet beschikbaar op dit apparaat';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Wijzigingen gelden vanaf je volgende opname.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Afstand $distance. Tijd $duration. Ronde: $lapMetric. Totaal: $overallMetric.';
+  }
 }

@@ -45,6 +45,26 @@
       }
     }
   },
+  "errorActivityIngestionUnsupportedFormat": "The file format isn't supported",
+  "@errorActivityIngestionUnsupportedFormat": {
+    "description": "Upload failed because the file format is unsupported - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionInvalidFile": "The file is corrupt or couldn't be read",
+  "@errorActivityIngestionInvalidFile": {
+    "description": "Upload failed because the file is corrupt or unreadable - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionNoActivitiesFound": "No activities were found in the file",
+  "@errorActivityIngestionNoActivitiesFound": {
+    "description": "Upload failed because the file contains no activities - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionProcessingFailed": "Something went wrong while importing the activity. Try again.",
+  "@errorActivityIngestionProcessingFailed": {
+    "description": "Upload failed because the server could not import the activity - Used in: error_localizations.dart"
+  },
+  "errorActivityIngestionProviderUnavailable": "The activity provider is unavailable right now. Try again later.",
+  "@errorActivityIngestionProviderUnavailable": {
+    "description": "Upload failed because the activity provider is unavailable - Used in: error_localizations.dart"
+  },
   "errorActivityUploadNotConfigured": "Activity upload is not configured yet",
   "@errorActivityUploadNotConfigured": {
     "description": "Activity upload blocked because endpoint and multipart field are not configured - Used in: error_localizations.dart"
@@ -195,6 +215,14 @@
   "@errorNoSessionIdReceived": {
     "description": "Error when auth succeeds without session ID - Used in: error_localizations.dart"
   },
+  "errorMfaSessionMissing": "Your sign-in session was lost. Please sign in again.",
+  "@errorMfaSessionMissing": {
+    "description": "Error when the MFA step has no pending login username - Used in: error_localizations.dart"
+  },
+  "errorSsoCallbackFailed": "Single sign-on could not be completed. Please try again.",
+  "@errorSsoCallbackFailed": {
+    "description": "Generic error when the SSO deep-link callback reports a failure - Used in: error_localizations.dart"
+  },
   "errorNotAuthenticated": "You are not signed in",
   "@errorNotAuthenticated": {
     "description": "Error when an authenticated request has no token - Used in: error_localizations.dart"
@@ -297,6 +325,122 @@
   "logoutConfirmMessage": "Are you sure you want to logout?",
   "@logoutConfirmMessage": {
     "description": "Logout confirmation dialog message - Used in: server_settings_screen.dart"
+  },
+  "legacyDataTitle": "Activities from before the server update",
+  "@legacyDataTitle": {
+    "description": "Title of the dialog after sign-in that asks whether activities saved before the server upgraded its account ids belong to the signed-in account - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataMessageWithUsername": "This device has activities saved for an account on this server from before the server was updated. Are they yours, {username}? If they are, any still waiting will be uploaded to your account.",
+  "@legacyDataMessageWithUsername": {
+    "description": "Body of that dialog after a password sign-in, naming the username that signed in - Used in: legacy_profile_adoption_dialog.dart",
+    "placeholders": {
+      "username": {
+        "type": "String",
+        "example": "alex"
+      }
+    }
+  },
+  "legacyDataMessage": "This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.",
+  "@legacyDataMessage": {
+    "description": "Body of that dialog after an SSO sign-in, when no username is known - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataConfirm": "They're mine",
+  "@legacyDataConfirm": {
+    "description": "Button that keeps the activities with the signed-in account - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "legacyDataDecline": "Not mine",
+  "@legacyDataDecline": {
+    "description": "Button that says the activities belong to someone else - Used in: legacy_profile_adoption_dialog.dart"
+  },
+  "errorActivityUploadLimit": "The server has too many of your uploads in progress. The app will try again later.",
+  "@errorActivityUploadLimit": {
+    "description": "Upload error when the server already has the maximum number of open uploads for the user; retried later - Used in: error_localizations.dart"
+  },
+  "errorPasswordChangeFailed": "Could not change the password",
+  "@errorPasswordChangeFailed": {
+    "description": "Error when the new password chosen at sign-in is refused - Used in: error_localizations.dart"
+  },
+  "errorPasswordChangeFailedWithDetails": "Could not change the password: {details}",
+  "@errorPasswordChangeFailedWithDetails": {
+    "description": "Same error with the server reason - Used in: error_localizations.dart",
+    "placeholders": {
+      "details": {
+        "type": "String",
+        "example": "Password is too short"
+      }
+    }
+  },
+  "errorSignInStepUnsupported": "This server asked for a sign-in step this version of the app doesn't support. Update the app and try again.",
+  "@errorSignInStepUnsupported": {
+    "description": "Error when the server asks for a sign-in step the app does not know - Used in: error_localizations.dart"
+  },
+  "errorSsoEmailMissing": "Your identity provider did not share an email address, which is needed to create your account.",
+  "@errorSsoEmailMissing": {
+    "description": "SSO failure: the identity provider shared no email address - Used in: error_localizations.dart"
+  },
+  "errorSsoEmailUnverified": "Your identity provider has not verified your email address. Verify it there, then try again.",
+  "@errorSsoEmailUnverified": {
+    "description": "SSO failure: the identity provider has not verified the email address - Used in: error_localizations.dart"
+  },
+  "errorSsoAutoCreateDisabled": "No account matches this sign-in, and this server does not create accounts automatically. Ask your administrator.",
+  "@errorSsoAutoCreateDisabled": {
+    "description": "SSO failure: no matching account and the server does not create one - Used in: error_localizations.dart"
+  },
+  "errorSsoLinkByEmailDisabled": "An account already uses this email address, but this provider cannot sign in to it. Sign in another way, or ask your administrator.",
+  "@errorSsoLinkByEmailDisabled": {
+    "description": "SSO failure: an account has the email but the provider does not link by email - Used in: error_localizations.dart"
+  },
+  "errorSsoApprovalPending": "Your account is waiting for an administrator's approval.",
+  "@errorSsoApprovalPending": {
+    "description": "SSO failure: the account awaits administrator approval - Used in: error_localizations.dart"
+  },
+  "errorSsoAccountDisabled": "This account is disabled. Contact your administrator.",
+  "@errorSsoAccountDisabled": {
+    "description": "SSO failure: the account is deactivated - Used in: error_localizations.dart"
+  },
+  "errorSsoRedirectNotAllowed": "This server does not allow single sign-on from this app. Ask your administrator to add com.endurain.endurain:/auth/sso/callback to ALLOWED_REDIRECT_URIS.",
+  "@errorSsoRedirectNotAllowed": {
+    "description": "Error before SSO when the server does not list the app callback address; keep the address and variable name verbatim - Used in: error_localizations.dart"
+  },
+  "errorActivityMfaEnrolmentRequired": "Your administrator requires two-step verification. Set it up in the Endurain web app, then try again.",
+  "@errorActivityMfaEnrolmentRequired": {
+    "description": "Upload error when the administrator requires two-step verification and the account has none - Used in: error_localizations.dart"
+  },
+  "errorActivityFileTooLarge": "The activity file is too large for this server",
+  "@errorActivityFileTooLarge": {
+    "description": "Upload error when the server refuses the file as too large - Used in: error_localizations.dart"
+  },
+  "errorActivityUnsupportedFileType": "This server doesn't accept this kind of activity file",
+  "@errorActivityUnsupportedFileType": {
+    "description": "Upload error when the server refuses the file type - Used in: error_localizations.dart"
+  },
+  "errorTooManyRequests": "Too many attempts. Wait a moment and try again.",
+  "@errorTooManyRequests": {
+    "description": "Error when the server rate-limits sign-in attempts - Used in: error_localizations.dart"
+  },
+  "passwordChangeTitle": "Choose a new password",
+  "@passwordChangeTitle": {
+    "description": "Title of the sign-in step that asks for a new password - Used in: login_screen.dart"
+  },
+  "passwordChangeMessage": "An administrator set your password. Choose a new one to finish signing in.",
+  "@passwordChangeMessage": {
+    "description": "Explanation on the new-password sign-in step - Used in: login_screen.dart"
+  },
+  "newPassword": "New password",
+  "@newPassword": {
+    "description": "Label of the new password field - Used in: login_screen.dart"
+  },
+  "confirmNewPassword": "Confirm new password",
+  "@confirmNewPassword": {
+    "description": "Label of the field that repeats the new password - Used in: login_screen.dart"
+  },
+  "passwordsDoNotMatch": "The passwords don't match",
+  "@passwordsDoNotMatch": {
+    "description": "Validation error when the two new passwords differ - Used in: login_screen.dart"
+  },
+  "changePassword": "Change password",
+  "@changePassword": {
+    "description": "Button that submits the new password - Used in: login_screen.dart"
   },
   "logoutServerFailedWarning": "Could not logout from server, but logged out locally",
   "@logoutServerFailedWarning": {
@@ -628,6 +772,48 @@
   "activityRetainUploadedGpxSubtitle": "Stores completed route files in private app storage after upload.",
   "@activityRetainUploadedGpxSubtitle": {
     "description": "Settings switch subtitle explaining private local GPX retention - Used in: settings_screen.dart"
+  },
+  "activityAutoPauseTitle": "Auto-pause",
+  "@activityAutoPauseTitle": {
+    "description": "Auto-pause settings screen title and settings navigation label - Used in: auto_pause_settings_screen.dart, settings_screen.dart"
+  },
+  "activityAutoPauseSubtitle": "Pause automatically when you stop moving",
+  "@activityAutoPauseSubtitle": {
+    "description": "Settings subtitle for auto-pause navigation - Used in: settings_screen.dart"
+  },
+  "activityAutoPauseToggleLabel": "Automatically pause",
+  "@activityAutoPauseToggleLabel": {
+    "description": "Auto-pause switch label - Used in: auto_pause_settings_screen.dart"
+  },
+  "activityAutoPauseToggleDescription": "Pauses recording when you stop moving, and resumes once you start moving again.",
+  "@activityAutoPauseToggleDescription": {
+    "description": "Auto-pause switch subtitle explaining the behavior - Used in: auto_pause_settings_screen.dart"
+  },
+  "activityAutoPauseDelayHelperText": "Choose how long to wait without movement before pausing.",
+  "@activityAutoPauseDelayHelperText": {
+    "description": "Helper text above the auto-pause delay options - Used in: auto_pause_settings_screen.dart"
+  },
+  "activityAutoPauseDelayOptionLabel": "{seconds} seconds",
+  "@activityAutoPauseDelayOptionLabel": {
+    "description": "Auto-pause delay option label - Used in: auto_pause_settings_screen.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "activityAutoPausedIndicator": "Auto-paused",
+  "@activityAutoPausedIndicator": {
+    "description": "Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart"
+  },
+  "audioAnnouncementsAutoPaused": "Recording paused",
+  "@audioAnnouncementsAutoPaused": {
+    "description": "Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart"
+  },
+  "audioAnnouncementsAutoResumed": "Recording resumed",
+  "@audioAnnouncementsAutoResumed": {
+    "description": "Spoken cue when recording automatically resumes - Used in: audio_announcement_config.dart"
   },
   "activityHistoryEmpty": "No completed activities saved on this device.",
   "@activityHistoryEmpty": {
@@ -1094,10 +1280,6 @@
   "@healthAccessHeartRate": {
     "description": "Health data category - Used in: health_access_screen.dart"
   },
-  "healthAccessWorkoutSummary": "Workout distance, calories, and steps",
-  "@healthAccessWorkoutSummary": {
-    "description": "Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart"
-  },
   "healthAccessAllowed": "Allowed",
   "@healthAccessAllowed": {
     "description": "Android health data permission status - Used in: health_access_screen.dart"
@@ -1552,5 +1734,107 @@
   "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Audio Announcements",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Voice updates on distance, time, and pace or speed",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Announce activity progress",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Speaks your distance, time, and pace or speed during a recording",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Lower other audio while speaking",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Temporarily reduces other audio volume during each announcement",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Announcement interval by activity",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Distance",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Time",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Every {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Every {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Decrease interval",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Increase interval",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Play sample",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Announcement preview is not available on this device",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Changes apply to your next recording.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Distance {distance}. Time {duration}. Lap: {lapMetric}. Overall: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

@@ -207,6 +207,36 @@ abstract class AppLocalizations {
   /// **'Could not upload activity: {details}'**
   String errorActivityUploadFailedWithDetails(String details);
 
+  /// Upload failed because the file format is unsupported - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The file format isn\'t supported'**
+  String get errorActivityIngestionUnsupportedFormat;
+
+  /// Upload failed because the file is corrupt or unreadable - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The file is corrupt or couldn\'t be read'**
+  String get errorActivityIngestionInvalidFile;
+
+  /// Upload failed because the file contains no activities - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No activities were found in the file'**
+  String get errorActivityIngestionNoActivitiesFound;
+
+  /// Upload failed because the server could not import the activity - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while importing the activity. Try again.'**
+  String get errorActivityIngestionProcessingFailed;
+
+  /// Upload failed because the activity provider is unavailable - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The activity provider is unavailable right now. Try again later.'**
+  String get errorActivityIngestionProviderUnavailable;
+
   /// Activity upload blocked because endpoint and multipart field are not configured - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
@@ -369,6 +399,18 @@ abstract class AppLocalizations {
   /// **'No session ID was received from the server'**
   String get errorNoSessionIdReceived;
 
+  /// Error when the MFA step has no pending login username - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in session was lost. Please sign in again.'**
+  String get errorMfaSessionMissing;
+
+  /// Generic error when the SSO deep-link callback reports a failure - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Single sign-on could not be completed. Please try again.'**
+  String get errorSsoCallbackFailed;
+
   /// Error when an authenticated request has no token - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
@@ -494,6 +536,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to logout?'**
   String get logoutConfirmMessage;
+
+  /// Title of the dialog after sign-in that asks whether activities saved before the server upgraded its account ids belong to the signed-in account - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Activities from before the server update'**
+  String get legacyDataTitle;
+
+  /// Body of that dialog after a password sign-in, naming the username that signed in - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This device has activities saved for an account on this server from before the server was updated. Are they yours, {username}? If they are, any still waiting will be uploaded to your account.'**
+  String legacyDataMessageWithUsername(String username);
+
+  /// Body of that dialog after an SSO sign-in, when no username is known - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This device has activities saved for an account on this server from before the server was updated. Do they belong to the account you just signed in to? If they do, any still waiting will be uploaded to it.'**
+  String get legacyDataMessage;
+
+  /// Button that keeps the activities with the signed-in account - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'They\'re mine'**
+  String get legacyDataConfirm;
+
+  /// Button that says the activities belong to someone else - Used in: legacy_profile_adoption_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not mine'**
+  String get legacyDataDecline;
+
+  /// Upload error when the server already has the maximum number of open uploads for the user; retried later - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The server has too many of your uploads in progress. The app will try again later.'**
+  String get errorActivityUploadLimit;
+
+  /// Error when the new password chosen at sign-in is refused - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the password'**
+  String get errorPasswordChangeFailed;
+
+  /// Same error with the server reason - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the password: {details}'**
+  String errorPasswordChangeFailedWithDetails(String details);
+
+  /// Error when the server asks for a sign-in step the app does not know - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server asked for a sign-in step this version of the app doesn\'t support. Update the app and try again.'**
+  String get errorSignInStepUnsupported;
+
+  /// SSO failure: the identity provider shared no email address - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity provider did not share an email address, which is needed to create your account.'**
+  String get errorSsoEmailMissing;
+
+  /// SSO failure: the identity provider has not verified the email address - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity provider has not verified your email address. Verify it there, then try again.'**
+  String get errorSsoEmailUnverified;
+
+  /// SSO failure: no matching account and the server does not create one - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'No account matches this sign-in, and this server does not create accounts automatically. Ask your administrator.'**
+  String get errorSsoAutoCreateDisabled;
+
+  /// SSO failure: an account has the email but the provider does not link by email - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'An account already uses this email address, but this provider cannot sign in to it. Sign in another way, or ask your administrator.'**
+  String get errorSsoLinkByEmailDisabled;
+
+  /// SSO failure: the account awaits administrator approval - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is waiting for an administrator\'s approval.'**
+  String get errorSsoApprovalPending;
+
+  /// SSO failure: the account is deactivated - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This account is disabled. Contact your administrator.'**
+  String get errorSsoAccountDisabled;
+
+  /// Error before SSO when the server does not list the app callback address; keep the address and variable name verbatim - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server does not allow single sign-on from this app. Ask your administrator to add com.endurain.endurain:/auth/sso/callback to ALLOWED_REDIRECT_URIS.'**
+  String get errorSsoRedirectNotAllowed;
+
+  /// Upload error when the administrator requires two-step verification and the account has none - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Your administrator requires two-step verification. Set it up in the Endurain web app, then try again.'**
+  String get errorActivityMfaEnrolmentRequired;
+
+  /// Upload error when the server refuses the file as too large - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The activity file is too large for this server'**
+  String get errorActivityFileTooLarge;
+
+  /// Upload error when the server refuses the file type - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'This server doesn\'t accept this kind of activity file'**
+  String get errorActivityUnsupportedFileType;
+
+  /// Error when the server rate-limits sign-in attempts - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a moment and try again.'**
+  String get errorTooManyRequests;
+
+  /// Title of the sign-in step that asks for a new password - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new password'**
+  String get passwordChangeTitle;
+
+  /// Explanation on the new-password sign-in step - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'An administrator set your password. Choose a new one to finish signing in.'**
+  String get passwordChangeMessage;
+
+  /// Label of the new password field - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPassword;
+
+  /// Label of the field that repeats the new password - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get confirmNewPassword;
+
+  /// Validation error when the two new passwords differ - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'The passwords don\'t match'**
+  String get passwordsDoNotMatch;
+
+  /// Button that submits the new password - Used in: login_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get changePassword;
 
   /// Warning shown when server logout fails but local logout succeeds - Used in: server_settings_screen.dart
   ///
@@ -980,6 +1178,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stores completed route files in private app storage after upload.'**
   String get activityRetainUploadedGpxSubtitle;
+
+  /// Auto-pause settings screen title and settings navigation label - Used in: auto_pause_settings_screen.dart, settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-pause'**
+  String get activityAutoPauseTitle;
+
+  /// Settings subtitle for auto-pause navigation - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pause automatically when you stop moving'**
+  String get activityAutoPauseSubtitle;
+
+  /// Auto-pause switch label - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically pause'**
+  String get activityAutoPauseToggleLabel;
+
+  /// Auto-pause switch subtitle explaining the behavior - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Pauses recording when you stop moving, and resumes once you start moving again.'**
+  String get activityAutoPauseToggleDescription;
+
+  /// Helper text above the auto-pause delay options - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how long to wait without movement before pausing.'**
+  String get activityAutoPauseDelayHelperText;
+
+  /// Auto-pause delay option label - Used in: auto_pause_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds'**
+  String activityAutoPauseDelayOptionLabel(int seconds);
+
+  /// Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-paused'**
+  String get activityAutoPausedIndicator;
+
+  /// Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording paused'**
+  String get audioAnnouncementsAutoPaused;
+
+  /// Spoken cue when recording automatically resumes - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording resumed'**
+  String get audioAnnouncementsAutoResumed;
 
   /// Empty state for local activity history - Used in: activity_history_screen.dart
   ///
@@ -1587,12 +1839,6 @@ abstract class AppLocalizations {
   /// **'Heart rate'**
   String get healthAccessHeartRate;
 
-  /// Android Health Connect workout enrichment categories required by the health package - Used in: health_access_screen.dart
-  ///
-  /// In en, this message translates to:
-  /// **'Workout distance, calories, and steps'**
-  String get healthAccessWorkoutSummary;
-
   /// Android health data permission status - Used in: health_access_screen.dart
   ///
   /// In en, this message translates to:
@@ -2144,6 +2390,113 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The server redirected too many times. Check the server address.'**
   String get errorTooManyRedirects;
+
+  /// Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Announcements'**
+  String get audioAnnouncementsTitle;
+
+  /// Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Voice updates on distance, time, and pace or speed'**
+  String get audioAnnouncementsSubtitle;
+
+  /// Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Announce activity progress'**
+  String get audioAnnouncementsMasterSwitch;
+
+  /// Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Speaks your distance, time, and pace or speed during a recording'**
+  String get audioAnnouncementsMasterSwitchSubtitle;
+
+  /// Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Lower other audio while speaking'**
+  String get audioAnnouncementsDuckSwitch;
+
+  /// Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Temporarily reduces other audio volume during each announcement'**
+  String get audioAnnouncementsDuckSwitchSubtitle;
+
+  /// Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement interval by activity'**
+  String get audioAnnouncementsIntervalsHeader;
+
+  /// Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get audioAnnouncementsByDistance;
+
+  /// Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get audioAnnouncementsByTime;
+
+  /// Subtitle showing the configured distance interval, e.g. "Every 1.0 km" - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Every {value} {unit}'**
+  String audioAnnouncementsIntervalDistance(String value, String unit);
+
+  /// Subtitle showing the configured time interval in minutes, e.g. "Every 5 min" - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Every {minutes} min'**
+  String audioAnnouncementsIntervalTime(String minutes);
+
+  /// Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease interval'**
+  String get audioAnnouncementsDecreaseInterval;
+
+  /// Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Increase interval'**
+  String get audioAnnouncementsIncreaseInterval;
+
+  /// Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Play sample'**
+  String get audioAnnouncementsPreview;
+
+  /// Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement preview is not available on this device'**
+  String get audioAnnouncementsPreviewUnavailable;
+
+  /// Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Changes apply to your next recording.'**
+  String get audioAnnouncementsAppliesNextRecording;
+
+  /// Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Distance {distance}. Time {duration}. Lap: {lapMetric}. Overall: {overallMetric}.'**
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  );
 }
 
 class _AppLocalizationsDelegate

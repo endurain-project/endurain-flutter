@@ -1,18 +1,15 @@
 import 'dart:io';
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
 import 'package:endurain/core/utils/connection_identity.dart';
 import 'package:endurain/features/health/repositories/sqflite_health_import_store.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   const profileA = 'profile-a';
   const profileB = 'profile-b';
 
-  setUpAll(() {
-    sqfliteFfiInit();
-  });
+  setUpAll(sqfliteFfiInit);
 
   SqfliteHealthImportStore makeStore({DateTime Function()? now}) =>
       SqfliteHealthImportStore(
@@ -360,5 +357,112 @@ void main() {
       expect(names, contains('profile_id'));
       expect(names, isNot(contains('origin')));
     });
+  });
+
+  group('profile re-keying', () {
+    test('listProfileIds covers imports and sync state', () async {
+      final store = makeStore();
+      await store.markImported(
+        profileId: 'rekey-1-a',
+        sourceId: 'uuid-1',
+        localActivityId: 'local-a',
+      );
+      await store.setLastSyncAt('rekey-1-b', DateTime.utc(2026, 1, 1));
+
+      // The in-memory database is shared across this file's tests.
+      expect(
+        await store.listProfileIds(),
+        containsAll(<String>['rekey-1-a', 'rekey-1-b']),
+      );
+    });
+
+    test('reassignProfile moves every import and the sync state', () async {
+      final store = makeStore();
+      await store.markImported(
+        profileId: 'rekey-2-a',
+        sourceId: 'uuid-1',
+        localActivityId: 'local-1',
+      );
+      await store.markImported(
+        profileId: 'rekey-2-a',
+        sourceId: 'uuid-2',
+        localActivityId: 'local-2',
+      );
+      final syncedAt = DateTime.utc(2026, 3, 1, 12);
+      await store.setLastSyncAt('rekey-2-a', syncedAt);
+
+      await store.reassignProfile(
+        fromProfileId: 'rekey-2-a',
+        toProfileId: 'rekey-2-b',
+      );
+
+      expect(
+        await store.localActivityIdFor(
+          profileId: 'rekey-2-b',
+          sourceId: 'uuid-1',
+        ),
+        'local-1',
+      );
+      expect(
+        await store.localActivityIdFor(
+          profileId: 'rekey-2-b',
+          sourceId: 'uuid-2',
+        ),
+        'local-2',
+      );
+      expect(
+        await store.isImported(profileId: 'rekey-2-a', sourceId: 'uuid-1'),
+        isFalse,
+      );
+      expect(await store.lastSyncAt('rekey-2-b'), syncedAt);
+      expect(await store.lastSyncAt('rekey-2-a'), isNull);
+    });
+
+    test(
+      'reassignProfile replaces a conflicting target row and keeps the later '
+      'sync time',
+      () async {
+        final store = makeStore();
+        await store.markImported(
+          profileId: 'rekey-3-a',
+          sourceId: 'uuid-1',
+          localActivityId: 'original',
+        );
+        await store.markImported(
+          profileId: 'rekey-3-b',
+          sourceId: 'uuid-1',
+          localActivityId: 'reimported',
+        );
+        await store.markImported(
+          profileId: 'rekey-3-b',
+          sourceId: 'uuid-9',
+          localActivityId: 'only-b',
+        );
+        await store.setLastSyncAt('rekey-3-a', DateTime.utc(2026, 1, 1));
+        final later = DateTime.utc(2026, 2, 1);
+        await store.setLastSyncAt('rekey-3-b', later);
+
+        await store.reassignProfile(
+          fromProfileId: 'rekey-3-a',
+          toProfileId: 'rekey-3-b',
+        );
+
+        expect(
+          await store.localActivityIdFor(
+            profileId: 'rekey-3-b',
+            sourceId: 'uuid-1',
+          ),
+          'original',
+        );
+        expect(
+          await store.localActivityIdFor(
+            profileId: 'rekey-3-b',
+            sourceId: 'uuid-9',
+          ),
+          'only-b',
+        );
+        expect(await store.lastSyncAt('rekey-3-b'), later);
+      },
+    );
   });
 }

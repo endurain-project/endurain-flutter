@@ -11,6 +11,11 @@
   "invalidUrl": "Sisestage kehtiv URL",
   "errorActivityUploadFailed": "Tegevust ei õnnestunud üles laadida",
   "errorActivityUploadFailedWithDetails": "Tegevust ei õnnestunud üles laadida: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Failivormingut ei toetata",
+  "errorActivityIngestionInvalidFile": "Fail on rikutud või seda ei õnnestunud lugeda",
+  "errorActivityIngestionNoActivitiesFound": "Failist ei leitud ühtegi tegevust",
+  "errorActivityIngestionProcessingFailed": "Tegevuse importimisel läks midagi valesti. Proovi uuesti.",
+  "errorActivityIngestionProviderUnavailable": "Tegevuste pakkuja ei ole praegu saadaval. Proovi hiljem uuesti.",
   "errorActivityUploadNotConfigured": "Tegevuste üleslaadimine pole veel seadistatud",
   "errorActivityGpxCleanupFailed": "Ajutist tegevusfaili ei õnnestunud kustutada",
   "errorActivityGpxFileWriteFailed": "Tegevuse üleslaadimisfaili ei õnnestunud ette valmistada",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA kinnitamine ebaõnnestus",
   "errorMfaVerificationFailedWithDetails": "MFA kinnitamine ebaõnnestus: {details}",
   "errorNoSessionIdReceived": "Serverilt ei saadud seansi ID-d",
+  "errorMfaSessionMissing": "Teie sisselogimissessioon läks kaotsi. Palun logige uuesti sisse.",
+  "errorSsoCallbackFailed": "Ühekordset sisselogimist (SSO) ei õnnestunud lõpetada. Proovige uuesti.",
   "errorNotAuthenticated": "Te pole sisse logitud",
   "errorPkceVerifierMissingRestartLogin": "Sisselogimise kinnitajat ei leitud. Alustage sisselogimist uuesti.",
   "errorServerUrlNotConfigured": "Serveri URL pole seadistatud",
@@ -54,6 +61,32 @@
   "logout": "Logi välja",
   "logoutConfirmTitle": "Logi välja",
   "logoutConfirmMessage": "Kas soovite kindlasti välja logida?",
+  "legacyDataTitle": "Tegevused enne serveri uuendamist",
+  "legacyDataMessageWithUsername": "Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need on teie omad, {username}? Kui on, laaditakse veel ootel olevad teie kontole üles.",
+  "legacyDataMessage": "Selles seadmes on tegevusi, mis on salvestatud selle serveri kontole enne serveri uuendamist. Kas need kuuluvad kontole, millega just sisse logisite? Kui jah, laaditakse veel ootel olevad sinna üles.",
+  "legacyDataConfirm": "Need on minu omad",
+  "legacyDataDecline": "Pole minu omad",
+  "errorActivityUploadLimit": "Serveris on liiga palju teie üleslaadimisi pooleli. Rakendus proovib hiljem uuesti.",
+  "errorPasswordChangeFailed": "Parooli ei saanud muuta",
+  "errorPasswordChangeFailedWithDetails": "Parooli ei saanud muuta: {details}",
+  "errorSignInStepUnsupported": "Server küsis sisselogimise sammu, mida see rakenduse versioon ei toeta. Uuendage rakendust ja proovige uuesti.",
+  "errorSsoEmailMissing": "Teie identiteedipakkuja ei jaganud e-posti aadressi, mis on konto loomiseks vajalik.",
+  "errorSsoEmailUnverified": "Teie identiteedipakkuja pole teie e-posti aadressi kinnitanud. Kinnitage see seal ja proovige uuesti.",
+  "errorSsoAutoCreateDisabled": "Ükski konto ei vasta sellele sisselogimisele ja see server ei loo kontosid automaatselt. Küsige oma administraatorilt.",
+  "errorSsoLinkByEmailDisabled": "Seda e-posti aadressi kasutab juba üks konto, kuid see pakkuja ei saa sellesse sisse logida. Logige sisse muul viisil või küsige oma administraatorilt.",
+  "errorSsoApprovalPending": "Teie konto ootab administraatori kinnitust.",
+  "errorSsoAccountDisabled": "See konto on keelatud. Võtke ühendust oma administraatoriga.",
+  "errorSsoRedirectNotAllowed": "See server ei luba sellest rakendusest ühekordset sisselogimist. Paluge administraatoril lisada com.endurain.endurain:/auth/sso/callback loendisse ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Teie administraator nõuab kaheastmelist kinnitust. Seadistage see Enduraini veebirakenduses ja proovige uuesti.",
+  "errorActivityFileTooLarge": "Tegevuse fail on sellele serverile liiga suur",
+  "errorActivityUnsupportedFileType": "See server ei võta seda tüüpi tegevuse faili vastu",
+  "errorTooManyRequests": "Liiga palju katseid. Oodake hetk ja proovige uuesti.",
+  "passwordChangeTitle": "Valige uus parool",
+  "passwordChangeMessage": "Administraator määras teie parooli. Sisselogimise lõpetamiseks valige uus.",
+  "newPassword": "Uus parool",
+  "confirmNewPassword": "Kinnitage uus parool",
+  "passwordsDoNotMatch": "Paroolid ei ühti",
+  "changePassword": "Muuda parooli",
   "logoutServerFailedWarning": "Serverist väljalogimine ebaõnnestus, kuid väljalogimine tehti kohapeal",
   "ssoBrowserLaunchFailed": "SSO-sisselogimist ei õnnestunud süsteemibrauseris avada",
   "ssoSignInWith": "Logi sisse teenusega {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Sellesse seadmesse salvestatud lõpetatud tegevused",
   "activityRetainUploadedGpx": "Säilita üleslaaditud GPX-failid",
   "activityRetainUploadedGpxSubtitle": "Salvestab lõpetatud marsruudifailid pärast üleslaadimist rakenduse privaatsesse mällu.",
+  "activityAutoPauseTitle": "Automaatne paus",
+  "activityAutoPauseSubtitle": "Peatab automaatselt, kui lõpetate liikumise",
+  "activityAutoPauseToggleLabel": "Automaatne peatamine",
+  "activityAutoPauseToggleDescription": "Salvestus peatub automaatselt, kui lõpetate liikumise, ja jätkub, kui hakkate uuesti liikuma.",
+  "activityAutoPauseDelayHelperText": "Valige, kui kaua ilma liikumiseta enne peatamist oodata.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} sekundit",
+  "activityAutoPausedIndicator": "Automaatselt peatatud",
+  "audioAnnouncementsAutoPaused": "Salvestamine peatatud",
+  "audioAnnouncementsAutoResumed": "Salvestamine jätkatud",
   "activityHistoryEmpty": "Sellesse seadmesse pole salvestatud ühtegi lõpetatud tegevust.",
   "activityHistoryLoadFailed": "Kohalikke tegevusi ei õnnestunud laadida.",
   "activityHistoryRefresh": "Värskenda",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Treeningud",
   "healthAccessWorkoutRoutes": "Treeningu marsruudid",
   "healthAccessHeartRate": "Südame löögisagedus",
-  "healthAccessWorkoutSummary": "Treeningu vahemaa, kalorid ja sammud",
   "healthAccessAllowed": "Lubatud",
   "healthAccessNeedsAttention": "Vajab tähelepanu",
   "healthAccessManagedBySystem": "Hallatakse süsteemiseadetes",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Server püüdis suunata ümber ebaturvalisele ühendusele. Päring blokeeriti teie volituste kaitsmiseks.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Server suunas liiga mitu korda ümber. Kontrollige serveri aadressi.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Häälteated",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Häälteated vahemaa, aja, tempo või kiiruse kohta",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Teata tegevuse edenemisest",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Ütleb salvestamise ajal valjusti sinu vahemaa, aja, tempo või kiiruse",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Vaigista muu heli teatamise ajal",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Vähendab ajutiselt muu heli valjust iga teate ajal",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Teate intervall tegevuse kaupa",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Vahemaa",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Aeg",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Iga {value} {unit} järel",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Iga {minutes} min järel",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Vähenda intervalli",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Suurenda intervalli",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Kuula näidet",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Teate näidis ei ole selles seadmes saadaval",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Muudatused rakenduvad järgmisel salvestusel.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Vahemaa {distance}. Aeg {duration}. Ring: {lapMetric}. Kokku: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

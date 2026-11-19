@@ -1,5 +1,5 @@
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
@@ -127,10 +127,7 @@ class WatchSessionIngestionService {
       // coordinates or device identifiers.
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.watchSessionIngested,
-        details: {
-          'source': handoff.source.name,
-          'points': state.points.length,
-        },
+        details: {'source': handoff.source.name, 'points': state.points.length},
       );
       return WatchIngestionResult(
         WatchIngestionOutcome.ingested,

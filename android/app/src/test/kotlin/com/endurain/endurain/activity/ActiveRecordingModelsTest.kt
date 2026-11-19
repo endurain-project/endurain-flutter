@@ -38,6 +38,9 @@ class ActiveRecordingModelsTest {
             endedAt = "2026-07-15T10:20:00.000Z",
             elapsedDurationSeconds = 600,
             currentSegmentIndex = 3,
+            autoPauseEnabled = true,
+            autoPauseDelaySeconds = 15,
+            pausedAutomatically = true,
         )
 
         val decoded = ActiveActivitySessionData.fromJson(session.toJson())
@@ -174,6 +177,120 @@ class ActiveRecordingModelsTest {
         assertFalse(
             sessionWith(ActiveActivitySessionData.STATUS_FAILED).isActive,
         )
+    }
+
+    @Test
+    fun sessionRequiresLocationMonitoringWhileRecordingOrAutomaticallyPaused() {
+        fun sessionWith(status: String, pausedAutomatically: Boolean = false) =
+            ActiveActivitySessionData(
+                localSessionId = "activity_1",
+                activityType = "run",
+                status = status,
+                startedAt = "2026-07-15T10:00:00.000Z",
+                pausedAutomatically = pausedAutomatically,
+            )
+
+        assertTrue(
+            sessionWith(ActiveActivitySessionData.STATUS_RECORDING)
+                .requiresLocationMonitoring,
+        )
+        assertTrue(
+            sessionWith(
+                ActiveActivitySessionData.STATUS_PAUSED,
+                pausedAutomatically = true,
+            ).requiresLocationMonitoring,
+        )
+        assertFalse(
+            sessionWith(ActiveActivitySessionData.STATUS_PAUSED)
+                .requiresLocationMonitoring,
+        )
+        assertFalse(
+            sessionWith(
+                ActiveActivitySessionData.STATUS_COMPLETED,
+                pausedAutomatically = true,
+            ).requiresLocationMonitoring,
+        )
+    }
+
+    @Test
+    fun sessionTimingKeepsPausedElapsedTimeFrozen() {
+        val session = baseSession().copy(
+            status = ActiveActivitySessionData.STATUS_PAUSED,
+            resumedAt = "2026-07-15T10:05:00.000Z",
+            elapsedDurationSeconds = 300,
+        )
+
+        val elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            IsoTime.toEpochMillis("2026-07-15T11:00:00.000Z")!!,
+        )
+
+        assertEquals(300, elapsedSeconds)
+    }
+
+    @Test
+    fun sessionTimingAddsOnlyTheCurrentResumedSegment() {
+        val session = baseSession().copy(
+            resumedAt = "2026-07-15T10:10:00.000Z",
+            elapsedDurationSeconds = 300,
+        )
+
+        val elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            IsoTime.toEpochMillis("2026-07-15T10:12:00.000Z")!!,
+        )
+
+        assertEquals(420, elapsedSeconds)
+    }
+
+    @Test
+    fun interruptedRecoveryKeepsIdentityAndExcludesUnrecordedTime() {
+        val session = baseSession().copy(
+            connectionOrigin = "https://example.test",
+            connectionProfileId = "profile_1",
+            heartRateDeviceId = "AA:BB",
+            resumedAt = "2026-07-15T10:10:00.000Z",
+            elapsedDurationSeconds = 300,
+            currentSegmentIndex = 3,
+        )
+        val nowMillis = IsoTime.toEpochMillis("2026-07-15T10:20:00.000Z")!!
+        val recovered = SessionTiming.afterInterruption(
+            session,
+            IsoTime.toEpochMillis("2026-07-15T10:12:00.000Z"),
+            nowMillis,
+        )
+
+        assertEquals(session.copy(
+            resumedAt = "2026-07-15T10:20:00.000Z",
+            elapsedDurationSeconds = 420,
+        ), recovered)
+        assertEquals(430, SessionTiming.elapsedSeconds(recovered, nowMillis + 10_000))
+    }
+
+    @Test
+    fun interruptedRecoveryWithoutPointsDoesNotInventElapsedTime() {
+        val recovered = SessionTiming.afterInterruption(
+            baseSession(),
+            null,
+            IsoTime.toEpochMillis("2026-07-15T11:00:00.000Z")!!,
+        )
+
+        assertEquals(0, recovered.elapsedDurationSeconds)
+        assertEquals(ActiveActivitySessionData.STATUS_RECORDING, recovered.status)
+    }
+
+    @Test
+    fun recoveryDoesNotResumePausedFailedOrCompletedSessions() {
+        val nowMillis = IsoTime.toEpochMillis("2026-07-15T11:00:00.000Z")!!
+        for (status in listOf(
+            ActiveActivitySessionData.STATUS_PAUSED,
+            ActiveActivitySessionData.STATUS_FAILED,
+            ActiveActivitySessionData.STATUS_COMPLETED,
+        )) {
+            val session = baseSession().copy(status = status, elapsedDurationSeconds = 120)
+            assertEquals(session, SessionTiming.afterInterruption(session, null, nowMillis))
+            assertEquals(120, SessionTiming.elapsedSeconds(session, nowMillis))
+        }
     }
 
     // ── RecordedActivityPointData ──────────────────────────────────────────

@@ -1,5 +1,5 @@
-import 'package:endurain/features/health/repositories/health_import_store.dart';
 import 'package:endurain/features/health/models/health_imported_workout.dart';
+import 'package:endurain/features/health/repositories/health_import_store.dart';
 
 /// In-memory [HealthImportStore] for tests.
 class FakeHealthImportStore implements HealthImportStore {
@@ -64,6 +64,30 @@ class FakeHealthImportStore implements HealthImportStore {
     _imported.add('$profileId::$sourceId');
     _localIds['$profileId::$sourceId'] = localActivityId;
     _importedAt['$profileId::$sourceId'] = DateTime.now().toUtc();
+  }
+
+  @override
+  Future<List<String>> listProfileIds() async =>
+      {for (final key in _localIds.keys) key.substring(0, key.indexOf('::'))}
+          .toList();
+
+  @override
+  Future<void> reassignProfile({
+    required String fromProfileId,
+    required String toProfileId,
+  }) async {
+    final prefix = '$fromProfileId::';
+    final sourceIds = [
+      for (final key in _localIds.keys.toList())
+        if (key.startsWith(prefix)) key.substring(prefix.length),
+    ];
+    for (final sourceId in sourceIds) {
+      await reassignImportProfile(
+        sourceId: sourceId,
+        fromProfileId: fromProfileId,
+        toProfileId: toProfileId,
+      );
+    }
   }
 
   @override

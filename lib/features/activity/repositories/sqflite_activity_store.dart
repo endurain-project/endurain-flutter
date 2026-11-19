@@ -1,6 +1,6 @@
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
+import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/sqlite_migration_runner.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -330,6 +330,65 @@ class SqfliteActivityStore implements LocalActivityStore {
       'connection_profile_id': profileId,
       'updated_at': updatedAt.toUtcIso8601(),
     }, where: 'connection_origin IS NULL AND connection_profile_id IS NULL');
+  }
+
+  @override
+  Future<int> bindRecordToProfile({
+    required String id,
+    required String origin,
+    required String profileId,
+    required DateTime updatedAt,
+  }) async {
+    final db = await _open();
+    return db.update(
+      _tableActivity,
+      {
+        'connection_origin': origin,
+        'connection_profile_id': profileId,
+        'updated_at': updatedAt.toUtcIso8601(),
+      },
+      where:
+          'id = ? AND connection_origin IS NULL '
+          'AND connection_profile_id IS NULL',
+      whereArgs: [id],
+    );
+  }
+
+  @override
+  Future<List<String>> listConnectionProfileIds({
+    required String origin,
+  }) async {
+    final db = await _open();
+    final rows = await db.query(
+      _tableActivity,
+      distinct: true,
+      columns: ['connection_profile_id'],
+      where: 'connection_origin = ? AND connection_profile_id IS NOT NULL',
+      whereArgs: [origin],
+    );
+    return [for (final row in rows) row['connection_profile_id']! as String];
+  }
+
+  @override
+  Future<int> rebindConnectionProfile({
+    required String origin,
+    required String fromProfileId,
+    required String toProfileId,
+    required DateTime updatedAt,
+  }) async {
+    if (fromProfileId == toProfileId) {
+      return 0;
+    }
+    final db = await _open();
+    return db.update(
+      _tableActivity,
+      {
+        'connection_profile_id': toProfileId,
+        'updated_at': updatedAt.toUtcIso8601(),
+      },
+      where: 'connection_origin = ? AND connection_profile_id = ?',
+      whereArgs: [origin, fromProfileId],
+    );
   }
 
   @override

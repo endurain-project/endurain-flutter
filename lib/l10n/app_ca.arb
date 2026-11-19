@@ -11,6 +11,11 @@
   "invalidUrl": "Introduïu un URL vàlid",
   "errorActivityUploadFailed": "No s'ha pogut penjar l'activitat",
   "errorActivityUploadFailedWithDetails": "No s'ha pogut penjar l'activitat: {details}",
+  "errorActivityIngestionUnsupportedFormat": "El format del fitxer no és compatible",
+  "errorActivityIngestionInvalidFile": "El fitxer està malmès o no s'ha pogut llegir",
+  "errorActivityIngestionNoActivitiesFound": "No s'ha trobat cap activitat al fitxer",
+  "errorActivityIngestionProcessingFailed": "Alguna cosa ha anat malament en importar l'activitat. Torna-ho a provar.",
+  "errorActivityIngestionProviderUnavailable": "El proveïdor d'activitats no està disponible ara mateix. Torna-ho a provar més tard.",
   "errorActivityUploadNotConfigured": "La pujada d'activitats encara no està configurada",
   "errorActivityGpxCleanupFailed": "No s'ha pogut suprimir el fitxer temporal de l'activitat",
   "errorActivityGpxFileWriteFailed": "No s'ha pogut preparar el fitxer per penjar l'activitat",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "Ha fallat la verificació MFA",
   "errorMfaVerificationFailedWithDetails": "Ha fallat la verificació MFA: {details}",
   "errorNoSessionIdReceived": "El servidor no ha retornat cap identificador de sessió",
+  "errorMfaSessionMissing": "S'ha perdut la sessió d'inici de sessió. Torna a iniciar la sessió.",
+  "errorSsoCallbackFailed": "No s'ha pogut completar l'inici de sessió únic. Torna-ho a provar.",
   "errorNotAuthenticated": "No heu iniciat la sessió",
   "errorPkceVerifierMissingRestartLogin": "No s'ha trobat el verificador d'inici de sessió. Torneu a començar l'inici de sessió.",
   "errorServerUrlNotConfigured": "L'URL del servidor no està configurat",
@@ -54,6 +61,32 @@
   "logout": "Tanca la sessió",
   "logoutConfirmTitle": "Tanca la sessió",
   "logoutConfirmMessage": "Segur que voleu tancar la sessió?",
+  "legacyDataTitle": "Activitats d'abans de l'actualització del servidor",
+  "legacyDataMessageWithUsername": "Aquest dispositiu té activitats desades per a un compte d'aquest servidor d'abans que s'actualitzés. Són vostres, {username}? Si ho són, les que encara estan pendents es pujaran al vostre compte.",
+  "legacyDataMessage": "Aquest dispositiu té activitats desades per a un compte d'aquest servidor d'abans que s'actualitzés. Pertanyen al compte amb què acabeu d'iniciar la sessió? Si és així, les que encara estan pendents s'hi pujaran.",
+  "legacyDataConfirm": "Són meves",
+  "legacyDataDecline": "No són meves",
+  "errorActivityUploadLimit": "El servidor té massa pujades vostres en curs. L'aplicació ho tornarà a provar més tard.",
+  "errorPasswordChangeFailed": "No s'ha pogut canviar la contrasenya",
+  "errorPasswordChangeFailedWithDetails": "No s'ha pogut canviar la contrasenya: {details}",
+  "errorSignInStepUnsupported": "Aquest servidor ha demanat un pas d'inici de sessió que aquesta versió de l'aplicació no admet. Actualitzeu l'aplicació i torneu-ho a provar.",
+  "errorSsoEmailMissing": "El vostre proveïdor d'identitat no ha compartit cap adreça electrònica, i cal per crear el vostre compte.",
+  "errorSsoEmailUnverified": "El vostre proveïdor d'identitat no ha verificat la vostra adreça electrònica. Verifiqueu-la allà i torneu-ho a provar.",
+  "errorSsoAutoCreateDisabled": "Cap compte no coincideix amb aquest inici de sessió, i aquest servidor no crea comptes automàticament. Pregunteu a l'administrador.",
+  "errorSsoLinkByEmailDisabled": "Un compte ja fa servir aquesta adreça electrònica, però aquest proveïdor no hi pot iniciar la sessió. Inicieu la sessió d'una altra manera o pregunteu a l'administrador.",
+  "errorSsoApprovalPending": "El vostre compte espera l'aprovació d'un administrador.",
+  "errorSsoAccountDisabled": "Aquest compte està desactivat. Poseu-vos en contacte amb l'administrador.",
+  "errorSsoRedirectNotAllowed": "Aquest servidor no permet l'inici de sessió únic des d'aquesta aplicació. Demaneu a l'administrador que afegeixi com.endurain.endurain:/auth/sso/callback a ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "El vostre administrador exigeix la verificació en dos passos. Configureu-la a l'aplicació web d'Endurain i torneu-ho a provar.",
+  "errorActivityFileTooLarge": "El fitxer de l'activitat és massa gran per a aquest servidor",
+  "errorActivityUnsupportedFileType": "Aquest servidor no accepta aquest tipus de fitxer d'activitat",
+  "errorTooManyRequests": "Massa intents. Espereu un moment i torneu-ho a provar.",
+  "passwordChangeTitle": "Trieu una contrasenya nova",
+  "passwordChangeMessage": "Un administrador ha definit la vostra contrasenya. Trieu-ne una de nova per acabar d'iniciar la sessió.",
+  "newPassword": "Contrasenya nova",
+  "confirmNewPassword": "Confirmeu la contrasenya nova",
+  "passwordsDoNotMatch": "Les contrasenyes no coincideixen",
+  "changePassword": "Canvia la contrasenya",
   "logoutServerFailedWarning": "No s'ha pogut tancar la sessió al servidor, però s'ha tancat localment",
   "ssoBrowserLaunchFailed": "No s'ha pogut obrir l'inici de sessió SSO al navegador del sistema",
   "ssoSignInWith": "Inicia la sessió amb {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Activitats completades desades en aquest dispositiu",
   "activityRetainUploadedGpx": "Conserva els fitxers GPX penjats",
   "activityRetainUploadedGpxSubtitle": "Desa els fitxers de ruta completats a l'emmagatzematge privat de l'aplicació després de penjar-los.",
+  "activityAutoPauseTitle": "Pausa automàtica",
+  "activityAutoPauseSubtitle": "Fa una pausa automàticament quan deixes de moure't",
+  "activityAutoPauseToggleLabel": "Pausa automàticament",
+  "activityAutoPauseToggleDescription": "Posa en pausa l'enregistrament quan deixes de moure't i el reprèn quan tornes a moure't.",
+  "activityAutoPauseDelayHelperText": "Tria quant de temps sense moviment cal esperar abans de pausar.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} segons",
+  "activityAutoPausedIndicator": "En pausa automàtica",
+  "audioAnnouncementsAutoPaused": "Enregistrament en pausa",
+  "audioAnnouncementsAutoResumed": "Enregistrament reprès",
   "activityHistoryEmpty": "No hi ha activitats completades desades en aquest dispositiu.",
   "activityHistoryLoadFailed": "No s'han pogut carregar les activitats locals.",
   "activityHistoryRefresh": "Actualitza",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Entrenaments",
   "healthAccessWorkoutRoutes": "Rutes d'entrenament",
   "healthAccessHeartRate": "Freqüència cardíaca",
-  "healthAccessWorkoutSummary": "Distància, calories i passos dels entrenaments",
   "healthAccessAllowed": "Permès",
   "healthAccessNeedsAttention": "Necessita atenció",
   "healthAccessManagedBySystem": "Gestionat a la configuració del sistema",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "El servidor ha intentat redirigir a una connexió no segura. La sol·licitud s'ha bloquejat per protegir les teves credencials.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "El servidor ha redirigit massa vegades. Comprova l'adreça del servidor.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Anuncis de veu",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Actualitzacions de veu sobre distància, temps, ritme o velocitat",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Anuncia el progrés de l'activitat",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Diu en veu alta la distància, el temps, el ritme o la velocitat durant un enregistrament",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Redueix altres àudios mentre parla",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Redueix temporalment el volum d'altres àudios durant cada anunci",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Interval d'anunci per activitat",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Distància",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Temps",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Cada {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Cada {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Redueix l'interval",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Augmenta l'interval",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Escoltar exemple",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "L'escolta prèvia dels anuncis no està disponible en aquest dispositiu",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Els canvis s'apliquen al vostre proper enregistrament.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Distància {distance}. Temps {duration}. Volta: {lapMetric}. Global: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

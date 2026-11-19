@@ -39,6 +39,26 @@ class AppLocalizationsBg extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Форматът на файла не се поддържа';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Файлът е повреден или не може да бъде прочетен';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Във файла не са намерени дейности';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Нещо се обърка при импортирането на дейността. Опитайте отново.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Доставчикът на дейности в момента не е достъпен. Опитайте отново по-късно.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Качването на дейности още не е конфигурирано';
 
@@ -147,6 +167,14 @@ class AppLocalizationsBg extends AppLocalizations {
       'Не е получен идентификатор на сесия от сървъра';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Сесията ви за вход беше загубена. Моля, влезте отново.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Единният вход (SSO) не можа да бъде завършен. Моля, опитайте отново.';
+
+  @override
   String get errorNotAuthenticated => 'Не сте влезли';
 
   @override
@@ -223,6 +251,103 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Наистина ли искате да излезете?';
+
+  @override
+  String get legacyDataTitle => 'Активности отпреди обновяването на сървъра';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Ваши ли са, $username? Ако са, чакащите ще бъдат качени във вашия акаунт.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Принадлежат ли на акаунта, с който току-що влязохте? Ако е така, чакащите ще бъдат качени в него.';
+
+  @override
+  String get legacyDataConfirm => 'Мои са';
+
+  @override
+  String get legacyDataDecline => 'Не са мои';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Сървърът има твърде много ваши качвания в процес. Приложението ще опита отново по-късно.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Паролата не можа да бъде сменена';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Паролата не можа да бъде сменена: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Сървърът поиска стъпка за вход, която тази версия на приложението не поддържа. Обновете приложението и опитайте отново.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Доставчикът на самоличност не сподели имейл адрес, който е нужен за създаване на акаунта ви.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Доставчикът на самоличност не е потвърдил имейл адреса ви. Потвърдете го там и опитайте отново.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Няма акаунт, който да съответства на този вход, а сървърът не създава акаунти автоматично. Попитайте администратора си.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Този имейл адрес вече се използва от акаунт, но този доставчик не може да влиза в него. Влезте по друг начин или попитайте администратора си.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Акаунтът ви чака одобрение от администратор.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Този акаунт е деактивиран. Свържете се с администратора си.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Този сървър не позволява единен вход от това приложение. Помолете администратора си да добави com.endurain.endurain:/auth/sso/callback към ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Администраторът ви изисква двустепенна проверка. Настройте я в уеб приложението на Endurain и опитайте отново.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Файлът с активността е твърде голям за този сървър';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Този сървър не приема този вид файл с активност';
+
+  @override
+  String get errorTooManyRequests =>
+      'Твърде много опити. Изчакайте малко и опитайте отново.';
+
+  @override
+  String get passwordChangeTitle => 'Изберете нова парола';
+
+  @override
+  String get passwordChangeMessage =>
+      'Администратор е задал паролата ви. Изберете нова, за да завършите влизането.';
+
+  @override
+  String get newPassword => 'Нова парола';
+
+  @override
+  String get confirmNewPassword => 'Потвърдете новата парола';
+
+  @override
+  String get passwordsDoNotMatch => 'Паролите не съвпадат';
+
+  @override
+  String get changePassword => 'Смяна на паролата';
 
   @override
   String get logoutServerFailedWarning =>
@@ -489,6 +614,38 @@ class AppLocalizationsBg extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Записва завършените файлове с маршрути в частното хранилище на приложението след качване.';
+
+  @override
+  String get activityAutoPauseTitle => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Пауза автоматично, когато спрете да се движите';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Автоматична пауза';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Записът се поставя на пауза автоматично, когато спрете да се движите, и се възобновява, щом отново започнете да се движите.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Изберете колко дълго да чака без движение, преди да постави записа на пауза.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds секунди';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Автоматична пауза';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Записът е поставен на пауза';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Записът е възобновен';
 
   @override
   String get activityHistoryEmpty =>
@@ -826,10 +983,6 @@ class AppLocalizationsBg extends AppLocalizations {
   String get healthAccessHeartRate => 'Сърдечна честота';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Разстояние, калории и стъпки от тренировки';
-
-  @override
   String get healthAccessAllowed => 'Разрешено';
 
   @override
@@ -1162,9 +1315,79 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Сървърът се опита да пренасочи към незащитена връзка. Заявката беше блокирана, за да защити данните ви за вход.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Сървърът пренасочи твърде много пъти. Проверете адреса на сървъра.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Аудио известия';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Гласови известия за разстояние, време, темпо или скорост';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Обявявай напредъка на тренировката';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Изговаря разстоянието, времето, темпото или скоростта по време на запис';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Намалявай друг звук по време на говорене';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Временно намалява силата на друг звук по време на всяко известие';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Интервал на известяване по вид дейност';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Разстояние';
+
+  @override
+  String get audioAnnouncementsByTime => 'Време';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'На всеки $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'На всеки $minutes мин';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Намали интервала';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Увеличи интервала';
+
+  @override
+  String get audioAnnouncementsPreview => 'Прослушване';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Прослушването на съобщения не е налично на това устройство';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Промените важат за следващия ви запис.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Разстояние $distance. Време $duration. Обиколка: $lapMetric. Общо: $overallMetric.';
+  }
 }

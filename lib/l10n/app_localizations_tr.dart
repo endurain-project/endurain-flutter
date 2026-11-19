@@ -39,6 +39,25 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Dosya biçimi desteklenmiyor';
+
+  @override
+  String get errorActivityIngestionInvalidFile => 'Dosya bozuk veya okunamadı';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Dosyada hiç etkinlik bulunamadı';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Etkinlik içe aktarılırken bir sorun oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Etkinlik sağlayıcısı şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Etkinlik yükleme henüz yapılandırılmadı';
 
@@ -141,6 +160,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get errorNoSessionIdReceived => 'Sunucudan oturum kimliği alınmadı';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Oturum açma oturumunuz kayboldu. Lütfen tekrar oturum açın.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Çoklu oturum açma (SSO) tamamlanamadı. Lütfen tekrar deneyin.';
+
+  @override
   String get errorNotAuthenticated => 'Oturum açmadınız';
 
   @override
@@ -217,6 +244,103 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get logoutConfirmMessage =>
       'Oturumu kapatmak istediğinizden emin misiniz?';
+
+  @override
+  String get legacyDataTitle => 'Sunucu güncellemesinden önceki etkinlikler';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Bu cihazda, bu sunucudaki bir hesap için sunucu güncellenmeden önce kaydedilmiş etkinlikler var. Bunlar sizin mi, $username? Öyleyse hâlâ bekleyenler hesabınıza yüklenecek.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Bu cihazda, bu sunucudaki bir hesap için sunucu güncellenmeden önce kaydedilmiş etkinlikler var. Bunlar az önce oturum açtığınız hesaba mı ait? Öyleyse hâlâ bekleyenler o hesaba yüklenecek.';
+
+  @override
+  String get legacyDataConfirm => 'Benim';
+
+  @override
+  String get legacyDataDecline => 'Benim değil';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Sunucuda devam eden çok fazla yüklemeniz var. Uygulama daha sonra yeniden deneyecek.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Parola değiştirilemedi';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Parola değiştirilemedi: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Bu sunucu, uygulamanın bu sürümünün desteklemediği bir oturum açma adımı istedi. Uygulamayı güncelleyip yeniden deneyin.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Kimlik sağlayıcınız, hesabınızı oluşturmak için gereken e-posta adresini paylaşmadı.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Kimlik sağlayıcınız e-posta adresinizi doğrulamadı. Orada doğrulayıp yeniden deneyin.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Bu oturum açmayla eşleşen bir hesap yok ve bu sunucu hesapları otomatik olarak oluşturmuyor. Yöneticinize danışın.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Bu e-posta adresini zaten bir hesap kullanıyor, ancak bu sağlayıcı o hesaba oturum açamıyor. Başka bir yolla oturum açın veya yöneticinize danışın.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Hesabınız bir yöneticinin onayını bekliyor.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Bu hesap devre dışı. Yöneticinizle iletişime geçin.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Bu sunucu bu uygulamadan çoklu oturum açmaya izin vermiyor. Yöneticinizden com.endurain.endurain:/auth/sso/callback adresini ALLOWED_REDIRECT_URIS listesine eklemesini isteyin.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Yöneticiniz iki adımlı doğrulama istiyor. Endurain web uygulamasında kurun ve yeniden deneyin.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Etkinlik dosyası bu sunucu için çok büyük';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Bu sunucu bu tür etkinlik dosyasını kabul etmiyor';
+
+  @override
+  String get errorTooManyRequests =>
+      'Çok fazla deneme. Biraz bekleyip yeniden deneyin.';
+
+  @override
+  String get passwordChangeTitle => 'Yeni bir parola seçin';
+
+  @override
+  String get passwordChangeMessage =>
+      'Bir yönetici parolanızı belirledi. Oturum açmayı tamamlamak için yeni bir parola seçin.';
+
+  @override
+  String get newPassword => 'Yeni parola';
+
+  @override
+  String get confirmNewPassword => 'Yeni parolayı onaylayın';
+
+  @override
+  String get passwordsDoNotMatch => 'Parolalar eşleşmiyor';
+
+  @override
+  String get changePassword => 'Parolayı değiştir';
 
   @override
   String get logoutServerFailedWarning =>
@@ -480,6 +604,38 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Tamamlanan rota dosyalarını yükledikten sonra uygulamanın özel deposunda saklar.';
+
+  @override
+  String get activityAutoPauseTitle => 'Otomatik duraklatma';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Hareket etmeyi bıraktığınızda otomatik olarak duraklatır';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Otomatik duraklat';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Hareket etmeyi bıraktığınızda kayıt otomatik olarak duraklatılır ve tekrar hareket etmeye başladığınızda devam eder.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Duraklatmadan önce hareketsiz geçecek süreyi seçin.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds saniye';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Otomatik duraklatıldı';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Kayıt duraklatıldı';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Kayıt sürdürüldü';
 
   @override
   String get activityHistoryEmpty =>
@@ -816,10 +972,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get healthAccessHeartRate => 'Kalp atış hızı';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Antrenman mesafesi, kaloriler ve adımlar';
-
-  @override
   String get healthAccessAllowed => 'İzin verildi';
 
   @override
@@ -1146,9 +1298,77 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Sunucu güvenli olmayan bir bağlantıya yönlendirmeye çalıştı. Kimlik bilgilerinizi korumak için istek engellendi.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Sunucu çok fazla kez yönlendirme yaptı. Sunucu adresini kontrol edin.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Sesli Duyurular';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Mesafe, süre, tempo veya hız hakkında sesli güncellemeler';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Aktivite ilerlemesini duyur';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Kayıt sırasında mesafenizi, sürenizi, temponuzu veya hızınızı sesli olarak söyler';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Konuşurken diğer sesi kıs';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Her duyuru sırasında diğer ses seviyesini geçici olarak azaltır';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Aktiviteye göre duyuru aralığı';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Mesafe';
+
+  @override
+  String get audioAnnouncementsByTime => 'Süre';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Her $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Her $minutes dk';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Aralığı azalt';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Aralığı artır';
+
+  @override
+  String get audioAnnouncementsPreview => 'Örneği dinle';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Anons önizlemesi bu cihazda kullanılamıyor';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Değişiklikler bir sonraki kaydınızda geçerli olur.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Mesafe $distance. Süre $duration. Tur: $lapMetric. Genel: $overallMetric.';
+  }
 }

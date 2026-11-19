@@ -45,32 +45,23 @@ void main() {
     );
   });
 
-  test('Android network security config allows self-hosted cleartext but pins '
-      'the managed cloud origin to HTTPS', () {
+  test('Android network security config allows self-hosted cleartext', () {
     final config = File(
       'android/app/src/main/res/xml/network_security_config.xml',
     ).readAsStringSync();
 
     // Self-hosted instances are user-provided hosts that may use plain HTTP.
     expect(config, contains('<base-config cleartextTrafficPermitted="true"'));
-
-    // The managed cloud origin is pinned to HTTPS at the OS layer.
-    expect(
-      config,
-      contains('<domain-config cleartextTrafficPermitted="false"'),
-    );
   });
 
-  test('managed cloud origin is pinned to HTTPS on both Android and iOS', () {
-    // Defense-in-depth parity guard for the future managed ("Endurain Cloud")
-    // service. The managed origin must be reachable over HTTPS only, enforced
-    // at the OS layer on BOTH platforms in addition to the Dart transport layer
-    // (AppConfig.cloudBaseUrl / ServerUrlResolver). Self-hosted origins stay
-    // HTTP-capable via the Android base-config / iOS arbitrary-loads allowance.
-    //
-    // The pinned host is derived from each platform file rather than hardcoded
-    // here, so replacing the placeholder with the real domain on only one
-    // platform (and forgetting the other) fails this test.
+  test('OS-level managed-origin pinning matches the build configuration', () {
+    // A build that targets the managed ("Endurain Cloud") service must pin that
+    // origin to HTTPS at the OS layer on BOTH platforms, in addition to the
+    // Dart transport check (AppConfig.cloudBaseUrl / ServerUrlResolver). With
+    // no managed origin configured, neither platform may pin a host: a pinned
+    // placeholder reads as enforcement while enforcing nothing.
+    final managedOrigin = _configuredManagedOrigin();
+
     final androidConfig = File(
       'android/app/src/main/res/xml/network_security_config.xml',
     ).readAsStringSync();
@@ -85,29 +76,46 @@ void main() {
       r'<key>NSExceptionDomains</key>\s*<dict>\s*<key>([^<]+)</key>',
     ).firstMatch(iosPlist)?.group(1)?.trim();
 
+    if (managedOrigin == null) {
+      expect(
+        androidHost,
+        isNull,
+        reason:
+            'No ENDURAIN_CLOUD_BASE_URL is configured for this build, so '
+            'network_security_config.xml must not pin a managed host.',
+      );
+      expect(
+        iosHost,
+        isNull,
+        reason:
+            'No ENDURAIN_CLOUD_BASE_URL is configured for this build, so '
+            'Info.plist must not declare an NSExceptionDomains entry.',
+      );
+      return;
+    }
+
+    final expectedHost = Uri.tryParse(managedOrigin)?.host ?? '';
     expect(
-      androidHost,
-      isNotNull,
+      expectedHost,
+      isNotEmpty,
       reason:
-          'Android must pin a managed host to HTTPS via a '
-          'cleartextTrafficPermitted="false" domain-config.',
-    );
-    expect(androidHost, isNotEmpty);
-    expect(
-      iosHost,
-      isNotNull,
-      reason:
-          'iOS must pin a managed host to HTTPS via an NSExceptionDomains '
-          'entry.',
+          'ENDURAIN_CLOUD_BASE_URL must be an absolute origin URL, '
+          'e.g. https://app.example.com.',
     );
 
-    // Parity: the identical managed origin must be pinned on both platforms.
+    expect(
+      androidHost,
+      expectedHost,
+      reason:
+          'network_security_config.xml must pin the configured managed host '
+          'to HTTPS via a cleartextTrafficPermitted="false" domain-config.',
+    );
     expect(
       iosHost,
-      androidHost,
+      expectedHost,
       reason:
-          'The managed cloud host pinned to HTTPS must be identical on '
-          'Android and iOS. Keep the two OS transport configs in sync.',
+          'Info.plist must pin the configured managed host to HTTPS via an '
+          'NSExceptionDomains entry. Keep both OS transport configs in sync.',
     );
 
     // iOS must actually forbid insecure loads and require modern TLS for the
@@ -155,4 +163,11 @@ void main() {
       expect(rules, isNot(contains('path="app_support"')));
     }
   });
+}
+
+/// The managed ("Endurain Cloud") origin this build targets, or `null` when it
+/// targets self-hosted instances only.
+String? _configuredManagedOrigin() {
+  const origin = String.fromEnvironment('ENDURAIN_CLOUD_BASE_URL');
+  return origin.isEmpty ? null : origin;
 }

@@ -40,6 +40,26 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Η μορφή του αρχείου δεν υποστηρίζεται';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Το αρχείο είναι κατεστραμμένο ή δεν ήταν δυνατή η ανάγνωσή του';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Δεν βρέθηκαν δραστηριότητες στο αρχείο';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Παρουσιάστηκε σφάλμα κατά την εισαγωγή της δραστηριότητας. Δοκιμάστε ξανά.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Ο πάροχος δραστηριοτήτων δεν είναι διαθέσιμος αυτή τη στιγμή. Δοκιμάστε ξανά αργότερα.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Η μεταφόρτωση δραστηριοτήτων δεν έχει ρυθμιστεί ακόμη';
 
@@ -152,6 +172,14 @@ class AppLocalizationsEl extends AppLocalizations {
       'Δεν ελήφθη αναγνωριστικό συνεδρίας από τον διακομιστή';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Η συνεδρία σύνδεσής σας χάθηκε. Συνδεθείτε ξανά.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Η ενιαία σύνδεση (SSO) δεν ολοκληρώθηκε. Δοκιμάστε ξανά.';
+
+  @override
   String get errorNotAuthenticated => 'Δεν έχετε συνδεθεί';
 
   @override
@@ -229,6 +257,105 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get logoutConfirmMessage =>
       'Είστε βέβαιοι ότι θέλετε να αποσυνδεθείτε;';
+
+  @override
+  String get legacyDataTitle =>
+      'Δραστηριότητες από πριν από την ενημέρωση του διακομιστή';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Είναι δικές σας, $username; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν στον λογαριασμό σας.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Αυτή η συσκευή έχει δραστηριότητες αποθηκευμένες για έναν λογαριασμό σε αυτόν τον διακομιστή από πριν από την ενημέρωσή του. Ανήκουν στον λογαριασμό με τον οποίο μόλις συνδεθήκατε; Αν ναι, όσες εκκρεμούν ακόμη θα μεταφορτωθούν σε αυτόν.';
+
+  @override
+  String get legacyDataConfirm => 'Είναι δικές μου';
+
+  @override
+  String get legacyDataDecline => 'Δεν είναι δικές μου';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Ο διακομιστής έχει πάρα πολλές μεταφορτώσεις σας σε εξέλιξη. Η εφαρμογή θα προσπαθήσει ξανά αργότερα.';
+
+  @override
+  String get errorPasswordChangeFailed =>
+      'Δεν ήταν δυνατή η αλλαγή του κωδικού πρόσβασης';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Δεν ήταν δυνατή η αλλαγή του κωδικού πρόσβασης: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Ο διακομιστής ζήτησε ένα βήμα σύνδεσης που δεν υποστηρίζει αυτή η έκδοση της εφαρμογής. Ενημερώστε την εφαρμογή και δοκιμάστε ξανά.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Ο πάροχος ταυτότητας δεν κοινοποίησε διεύθυνση email, η οποία χρειάζεται για τη δημιουργία του λογαριασμού σας.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Ο πάροχος ταυτότητας δεν έχει επαληθεύσει τη διεύθυνση email σας. Επαληθεύστε την εκεί και δοκιμάστε ξανά.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Κανένας λογαριασμός δεν αντιστοιχεί σε αυτή τη σύνδεση και ο διακομιστής δεν δημιουργεί λογαριασμούς αυτόματα. Ρωτήστε τον διαχειριστή σας.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ένας λογαριασμός χρησιμοποιεί ήδη αυτή τη διεύθυνση email, αλλά αυτός ο πάροχος δεν μπορεί να συνδεθεί σε αυτόν. Συνδεθείτε με άλλον τρόπο ή ρωτήστε τον διαχειριστή σας.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Ο λογαριασμός σας περιμένει έγκριση από διαχειριστή.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Αυτός ο λογαριασμός είναι απενεργοποιημένος. Επικοινωνήστε με τον διαχειριστή σας.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Αυτός ο διακομιστής δεν επιτρέπει ενιαία σύνδεση από αυτή την εφαρμογή. Ζητήστε από τον διαχειριστή σας να προσθέσει το com.endurain.endurain:/auth/sso/callback στο ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ο διαχειριστής σας απαιτεί επαλήθευση δύο βημάτων. Ρυθμίστε την στην εφαρμογή ιστού του Endurain και δοκιμάστε ξανά.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Το αρχείο δραστηριότητας είναι πολύ μεγάλο για αυτόν τον διακομιστή';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Αυτός ο διακομιστής δεν δέχεται αυτό το είδος αρχείου δραστηριότητας';
+
+  @override
+  String get errorTooManyRequests =>
+      'Πάρα πολλές προσπάθειες. Περιμένετε λίγο και δοκιμάστε ξανά.';
+
+  @override
+  String get passwordChangeTitle => 'Επιλέξτε νέο κωδικό πρόσβασης';
+
+  @override
+  String get passwordChangeMessage =>
+      'Ένας διαχειριστής όρισε τον κωδικό πρόσβασής σας. Επιλέξτε νέο για να ολοκληρώσετε τη σύνδεση.';
+
+  @override
+  String get newPassword => 'Νέος κωδικός πρόσβασης';
+
+  @override
+  String get confirmNewPassword => 'Επιβεβαίωση νέου κωδικού πρόσβασης';
+
+  @override
+  String get passwordsDoNotMatch => 'Οι κωδικοί πρόσβασης δεν ταιριάζουν';
+
+  @override
+  String get changePassword => 'Αλλαγή κωδικού πρόσβασης';
 
   @override
   String get logoutServerFailedWarning =>
@@ -496,6 +623,38 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Αποθηκεύει τα ολοκληρωμένα αρχεία διαδρομής στον ιδιωτικό χώρο αποθήκευσης της εφαρμογής μετά τη μεταφόρτωση.';
+
+  @override
+  String get activityAutoPauseTitle => 'Αυτόματη παύση';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Παύση αυτόματα όταν σταματήσετε να κινείστε';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Αυτόματη παύση';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Η καταγραφή τίθεται σε παύση αυτόματα όταν σταματήσετε να κινείστε και συνεχίζεται μόλις ξανακινηθείτε.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Επιλέξτε πόσο χρόνο χωρίς κίνηση θα περιμένει πριν από την παύση.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds δευτερόλεπτα';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Αυτόματη παύση';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Η καταγραφή τέθηκε σε παύση';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Η καταγραφή συνεχίστηκε';
 
   @override
   String get activityHistoryEmpty =>
@@ -836,10 +995,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get healthAccessHeartRate => 'Καρδιακός ρυθμός';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Απόσταση, θερμίδες και βήματα προπόνησης';
-
-  @override
   String get healthAccessAllowed => 'Επιτρέπεται';
 
   @override
@@ -1169,9 +1324,79 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Ο διακομιστής προσπάθησε να ανακατευθύνει σε μη ασφαλή σύνδεση. Το αίτημα αποκλείστηκε για την προστασία των διαπιστευτηρίων σας.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Ο διακομιστής έκανε υπερβολικά πολλές ανακατευθύνσεις. Ελέγξτε τη διεύθυνση του διακομιστή.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Φωνητικές ανακοινώσεις';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Φωνητικές ενημερώσεις για απόσταση, χρόνο, ρυθμό ή ταχύτητα';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Ανακοίνωση προόδου δραστηριότητας';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Εκφωνεί την απόσταση, τον χρόνο, τον ρυθμό ή την ταχύτητά σας κατά την εγγραφή';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Χαμήλωμα άλλου ήχου κατά την ομιλία';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Μειώνει προσωρινά την ένταση άλλου ήχου κατά τη διάρκεια κάθε ανακοίνωσης';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Διάστημα ανακοίνωσης ανά δραστηριότητα';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Απόσταση';
+
+  @override
+  String get audioAnnouncementsByTime => 'Χρόνος';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Κάθε $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Κάθε $minutes λεπτά';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Μείωση διαστήματος';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Αύξηση διαστήματος';
+
+  @override
+  String get audioAnnouncementsPreview => 'Ακρόαση δείγματος';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Το δείγμα ανακοίνωσης δεν είναι διαθέσιμο σε αυτή τη συσκευή';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Οι αλλαγές ισχύουν από την επόμενη καταγραφή σας.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Απόσταση $distance. Χρόνος $duration. Γύρος: $lapMetric. Συνολικά: $overallMetric.';
+  }
 }

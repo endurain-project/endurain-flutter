@@ -39,6 +39,26 @@ class AppLocalizationsSl extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Oblika datoteke ni podprta';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Datoteka je poškodovana ali je ni bilo mogoče prebrati';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'V datoteki ni bilo najdenih aktivnosti';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Pri uvozu aktivnosti je prišlo do napake. Poskusite znova.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Ponudnik aktivnosti trenutno ni na voljo. Poskusite znova pozneje.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Nalaganje aktivnosti še ni nastavljeno';
 
@@ -147,6 +167,14 @@ class AppLocalizationsSl extends AppLocalizations {
   String get errorNoSessionIdReceived => 'Strežnik ni vrnil ID-ja seje';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Vaša prijavna seja je bila izgubljena. Prijavite se znova.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Enotne prijave (SSO) ni bilo mogoče dokončati. Poskusite znova.';
+
+  @override
   String get errorNotAuthenticated => 'Niste prijavljeni';
 
   @override
@@ -222,6 +250,102 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Ali se res želite odjaviti?';
+
+  @override
+  String get legacyDataTitle => 'Dejavnosti izpred posodobitve strežnika';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'V tej napravi so dejavnosti, shranjene za račun na tem strežniku izpred njegove posodobitve. Ali so vaše, $username? Če so, bodo tiste, ki še čakajo, naložene v vaš račun.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'V tej napravi so dejavnosti, shranjene za račun na tem strežniku izpred njegove posodobitve. Ali pripadajo računu, s katerim ste se pravkar prijavili? Če da, bodo tiste, ki še čakajo, naložene vanj.';
+
+  @override
+  String get legacyDataConfirm => 'So moje';
+
+  @override
+  String get legacyDataDecline => 'Niso moje';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Na strežniku poteka preveč vaših nalaganj. Aplikacija bo poskusila znova pozneje.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Gesla ni bilo mogoče spremeniti';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Gesla ni bilo mogoče spremeniti: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Strežnik je zahteval korak prijave, ki ga ta različica aplikacije ne podpira. Posodobite aplikacijo in poskusite znova.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Vaš ponudnik identitete ni delil e-poštnega naslova, ki je potreben za ustvarjanje računa.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Vaš ponudnik identitete ni potrdil vašega e-poštnega naslova. Potrdite ga tam in poskusite znova.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Tej prijavi ne ustreza noben račun, ta strežnik pa računov ne ustvarja samodejno. Vprašajte skrbnika.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ta e-poštni naslov že uporablja račun, vendar se ta ponudnik vanj ne more prijaviti. Prijavite se drugače ali vprašajte skrbnika.';
+
+  @override
+  String get errorSsoApprovalPending => 'Vaš račun čaka na odobritev skrbnika.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ta račun je onemogočen. Obrnite se na skrbnika.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Ta strežnik ne dovoljuje enotne prijave iz te aplikacije. Prosite skrbnika, naj doda com.endurain.endurain:/auth/sso/callback v ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Vaš skrbnik zahteva dvostopenjsko preverjanje. Nastavite ga v spletni aplikaciji Endurain in poskusite znova.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Datoteka dejavnosti je za ta strežnik prevelika';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ta strežnik te vrste datoteke dejavnosti ne sprejema';
+
+  @override
+  String get errorTooManyRequests =>
+      'Preveč poskusov. Počakajte trenutek in poskusite znova.';
+
+  @override
+  String get passwordChangeTitle => 'Izberite novo geslo';
+
+  @override
+  String get passwordChangeMessage =>
+      'Skrbnik vam je nastavil geslo. Za dokončanje prijave izberite novo.';
+
+  @override
+  String get newPassword => 'Novo geslo';
+
+  @override
+  String get confirmNewPassword => 'Potrdite novo geslo';
+
+  @override
+  String get passwordsDoNotMatch => 'Gesli se ne ujemata';
+
+  @override
+  String get changePassword => 'Spremeni geslo';
 
   @override
   String get logoutServerFailedWarning =>
@@ -487,6 +611,38 @@ class AppLocalizationsSl extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Po nalaganju shrani dokončane datoteke poti v zasebno shrambo aplikacije.';
+
+  @override
+  String get activityAutoPauseTitle => 'Samodejni premor';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Samodejno prekine, ko se prenehate premikati';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Samodejno prekini';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Snemanje se samodejno prekine, ko se prenehate premikati, in nadaljuje, ko se znova začnete premikati.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Izberite, kako dolgo brez gibanja počakati pred premorom.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekund';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Samodejno prekinjeno';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Snemanje začasno ustavljeno';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Snemanje nadaljevano';
 
   @override
   String get activityHistoryEmpty =>
@@ -824,9 +980,6 @@ class AppLocalizationsSl extends AppLocalizations {
   String get healthAccessHeartRate => 'Srčni utrip';
 
   @override
-  String get healthAccessWorkoutSummary => 'Razdalja, kalorije in koraki vadbe';
-
-  @override
   String get healthAccessAllowed => 'Dovoljeno';
 
   @override
@@ -1158,9 +1311,77 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Strežnik je poskušal preusmeriti na nezavarovano povezavo. Zahteva je bila blokirana za zaščito vaših poverilnic.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Strežnik je preusmeril preveč krat. Preverite naslov strežnika.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Zvočna obvestila';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Govorne posodobitve o razdalji, času, tempu ali hitrosti';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Naznani napredek dejavnosti';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Med snemanjem naglas pove razdaljo, čas, tempo ali hitrost';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Utišaj drug zvok med govorjenjem';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Začasno zniža glasnost drugega zvoka med vsakim obvestilom';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interval obvestil glede na dejavnost';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Razdalja';
+
+  @override
+  String get audioAnnouncementsByTime => 'Čas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Vsakih $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Vsakih $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Zmanjšaj interval';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Povečaj interval';
+
+  @override
+  String get audioAnnouncementsPreview => 'Predvajaj vzorec';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Predogled napovedi v tej napravi ni na voljo';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Spremembe bodo veljale pri naslednjem snemanju.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Razdalja $distance. Čas $duration. Krog: $lapMetric. Skupaj: $overallMetric.';
+  }
 }

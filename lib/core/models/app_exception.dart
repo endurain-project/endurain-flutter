@@ -27,9 +27,14 @@ enum AppErrorCode {
   loginError,
   loginFailed,
   mfaVerificationError,
+  mfaSessionMissing,
   mfaVerificationFailed,
   noSessionIdReceived,
   notAuthenticated,
+
+  /// The new password was refused at sign-in, usually by the password policy
+  /// (the server's problem detail says why). The challenge stays valid.
+  passwordChangeFailed,
   pkceVerifierMissingRestartLogin,
   requestTimeout,
   secureStorageDeleteFailed,
@@ -37,6 +42,22 @@ enum AppErrorCode {
   secureStorageWriteFailed,
   serverUrlNotConfigured,
   sessionExpired,
+
+  /// The server answered a sign-in `next_step` this app version does not
+  /// know. The sign-in is abandoned and the user is told to update the app.
+  signInStepUnsupported,
+
+  /// The SSO deep-link callback reported a failure. The server-supplied text is
+  /// deliberately discarded: the link is attacker-controllable.
+  ///
+  /// [AppException.details] carries one of the server's documented SSO failure
+  /// codes (`sso_email_missing`, …) when the link named one, so the message
+  /// can say why without showing attacker-supplied text.
+  ssoCallbackFailed,
+
+  /// The server's `allowed_redirect_uris` does not list this app's SSO
+  /// callback, so the provider sign-in could not return to the app.
+  ssoRedirectNotAllowed,
   ssoTokenExchangeError,
   tokenExchangeFailed,
 
@@ -65,11 +86,14 @@ AppErrorCode? appErrorCodeByName(Object? value) =>
     value is String ? _appErrorCodesByName[value] : null;
 
 class AppException implements Exception {
-  const AppException(this.code, {this.details, this.cause});
+  const AppException(this.code, {this.details, this.cause, this.statusCode});
 
   final AppErrorCode code;
   final String? details;
   final Object? cause;
+
+  /// HTTP status of the failed response, when the failure came from one.
+  final int? statusCode;
 
   @override
   String toString() {

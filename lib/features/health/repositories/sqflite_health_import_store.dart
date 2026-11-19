@@ -1,7 +1,7 @@
-import 'package:endurain/features/health/repositories/health_import_store.dart';
-import 'package:endurain/features/health/models/health_imported_workout.dart';
 import 'package:endurain/core/utils/private_storage_paths.dart';
 import 'package:endurain/core/utils/sqlite_migration_runner.dart';
+import 'package:endurain/features/health/models/health_imported_workout.dart';
+import 'package:endurain/features/health/repositories/health_import_store.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// SQLite-backed [HealthImportStore] implemented with sqflite.
@@ -267,6 +267,69 @@ class SqfliteHealthImportStore implements HealthImportStore {
         where: 'profile_id = ? AND source_id = ?',
         whereArgs: [fromProfileId, sourceId],
       );
+    });
+  }
+
+  @override
+  Future<List<String>> listProfileIds() async {
+    final db = await _open();
+    final rows = await db.rawQuery(
+      'SELECT profile_id FROM $_tableImported '
+      'UNION SELECT profile_id FROM $_tableSync',
+    );
+    return [for (final row in rows) row['profile_id']! as String];
+  }
+
+  @override
+  Future<void> reassignProfile({
+    required String fromProfileId,
+    required String toProfileId,
+  }) async {
+    if (fromProfileId == toProfileId) {
+      return;
+    }
+    final db = await _open();
+    await db.transaction((txn) async {
+      // Drop the target's rows for the sources being moved, so the re-key can
+      // never hit the (profile_id, source_id) primary key.
+      await txn.delete(
+        _tableImported,
+        where:
+            'profile_id = ? AND source_id IN '
+            '(SELECT source_id FROM $_tableImported WHERE profile_id = ?)',
+        whereArgs: [toProfileId, fromProfileId],
+      );
+      await txn.update(
+        _tableImported,
+        {'profile_id': toProfileId},
+        where: 'profile_id = ?',
+        whereArgs: [fromProfileId],
+      );
+
+      // Merged in Dart rather than with an UPSERT, which needs SQLite 3.24+
+      // (unavailable on Android API 26–27).
+      final syncRows = await txn.query(
+        _tableSync,
+        where: 'profile_id IN (?, ?)',
+        whereArgs: [fromProfileId, toProfileId],
+      );
+      final timestamps = [
+        for (final row in syncRows)
+          if (DateTime.tryParse(row['last_sync_at']! as String) case final at?)
+            at.toUtc(),
+      ];
+      await txn.delete(
+        _tableSync,
+        where: 'profile_id IN (?, ?)',
+        whereArgs: [fromProfileId, toProfileId],
+      );
+      if (timestamps.isNotEmpty) {
+        final latest = timestamps.reduce((a, b) => a.isAfter(b) ? a : b);
+        await txn.insert(_tableSync, {
+          'profile_id': toProfileId,
+          'last_sync_at': latest.toIso8601String(),
+        });
+      }
     });
   }
 

@@ -79,10 +79,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="endurain"
-                    android:host="auth"
-                    android:path="/sso/callback" />
+                <!-- SSO callback com.endurain.endurain:/auth/sso/callback. The
+                     address has no host, so Android ignores path attributes
+                     here; the app matches the full address itself. -->
+                <data android:scheme="com.endurain.endurain" />
             </intent-filter>
         </activity>
         <activity
@@ -130,6 +130,12 @@
         <!-- Required so Health Connect can discover this app as compatible. -->
         <intent>
             <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        </intent>
+        <!-- Required on Android 11+ (API 30+) package visibility so
+             TextToSpeech can find an installed speech engine for spoken
+             activity announcements; see AudioAnnouncer.kt. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
     </queries>
 </manifest>

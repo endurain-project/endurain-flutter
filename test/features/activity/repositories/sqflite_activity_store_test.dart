@@ -7,9 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
-  setUpAll(() {
-    sqfliteFfiInit();
-  });
+  setUpAll(sqfliteFfiInit);
 
   SqfliteActivityStore makeStore() => SqfliteActivityStore(
     databaseFactory: databaseFactoryFfi,
@@ -595,6 +593,63 @@ void main() {
       expect(fresh?.elevationGainMeters, 88.0);
       await store.close();
     });
+  });
+
+  group('connection profile re-keying', () {
+    const origin = 'https://a.example';
+    const legacy = '$origin#42';
+    const current = '$origin#7c9e6679-7425-40de-944b-e07fc1f90ae7';
+
+    LocalActivityRecord bound(String id, String? origin, String? profileId) =>
+        _record(id: id)
+            .copyWith(connectionOrigin: origin, connectionProfileId: profileId);
+
+    test(
+      'listConnectionProfileIds lists the distinct ids of one origin',
+      () async {
+        final store = makeStore();
+        await store.upsert(bound('a', origin, legacy));
+        await store.upsert(bound('b', origin, legacy));
+        await store.upsert(bound('c', origin, current));
+        await store.upsert(
+          bound('d', 'https://b.example', 'https://b.example#1'),
+        );
+        await store.upsert(bound('e', null, null));
+
+        expect((await store.listConnectionProfileIds(origin: origin)).toSet(), {
+          legacy,
+          current,
+        });
+        await store.close();
+      },
+    );
+
+    test(
+      'rebindConnectionProfile moves only that origin and profile',
+      () async {
+        final store = makeStore();
+        await store.upsert(
+          bound('a', origin, legacy).copyWith(idempotencyKey: 'key-a'),
+        );
+        await store.upsert(bound('b', 'https://b.example', legacy));
+        final at = DateTime.utc(2026, 11, 17, 9);
+
+        final moved = await store.rebindConnectionProfile(
+          origin: origin,
+          fromProfileId: legacy,
+          toProfileId: current,
+          updatedAt: at,
+        );
+
+        expect(moved, 1);
+        final a = (await store.get('a'))!;
+        expect(a.connectionProfileId, current);
+        expect(a.idempotencyKey, 'key-a');
+        expect(a.updatedAt, at);
+        expect((await store.get('b'))!.connectionProfileId, legacy);
+        await store.close();
+      },
+    );
   });
 }
 

@@ -1,22 +1,22 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:endurain/l10n/app_localizations.dart';
-import 'package:endurain/core/services/app_scope.dart';
-import 'package:endurain/core/services/platform/app_links_service.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
-import 'package:endurain/core/services/server_settings_service.dart';
-import 'package:endurain/core/services/platform/url_launcher_service.dart';
-import 'package:endurain/core/models/identity_provider.dart';
-import 'package:endurain/core/utils/validators.dart';
-import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/server_settings_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/models/identity_provider.dart';
+import 'package:endurain/core/services/platform/app_links_service.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
+import 'package:endurain/features/auth/services/auth_coordinator.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
@@ -56,6 +56,8 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _mfaCodeController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   String _serverScheme = 'https';
 
   @override
@@ -172,6 +174,13 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     await _controller.submitMfa(_mfaCodeController.text);
   }
 
+  Future<void> _handlePasswordChange() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    await _controller.submitPasswordChange(_newPasswordController.text);
+  }
+
   void _showError(Object message) {
     if (mounted) {
       DialogUtils.showErrorDialog(context, message);
@@ -187,11 +196,17 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     _controller.backFromMfa();
   }
 
+  void _goBackFromPasswordChange() {
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
+    _controller.backFromPasswordChange();
+  }
+
   /// Leading app-bar control for the current step:
   /// - back to the server step from the login/SSO step,
   /// - dismiss to the app from the first step when a guest session can return.
   Widget? _buildLeading() {
-    if (_controller.showMfaInput) {
+    if (_controller.showMfaInput || _controller.showPasswordChange) {
       return null;
     }
     if (_controller.isStep2) {
@@ -207,11 +222,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   /// Checks for local asset first, then tries URL, with fallback icon
   Widget _buildSsoIcon(IdentityProvider idp) {
     if (idp.icon == null || idp.icon!.isEmpty) {
-      return const AdaptiveIcon(
-        materialIcon: Icons.person_outline,
-        cupertinoIcon: CupertinoIcons.person_circle,
-        size: 24,
-      );
+      return _buildUploadedOrDefaultIcon(idp);
     }
 
     // List of available local assets
@@ -239,16 +250,27 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       );
     }
 
-    // Try to load from URL
+    return _buildUploadedOrDefaultIcon(idp);
+  }
+
+  /// The icon an administrator uploaded for [idp], or the default person icon.
+  /// Endurain v0.21 serves an uploaded icon from its own public route; the
+  /// `icon` field holds only a built-in key.
+  Widget _buildUploadedOrDefaultIcon(IdentityProvider idp) {
+    const fallback = AdaptiveIcon(
+      materialIcon: Icons.person_outline,
+      cupertinoIcon: CupertinoIcons.person_circle,
+      size: 24,
+    );
+    final url = _controller.uploadedIconUrl(idp);
+    if (url == null) {
+      return fallback;
+    }
     return Image.network(
-      idp.icon!,
+      url.toString(),
       width: 24,
       height: 24,
-      errorBuilder: (context, error, stackTrace) => const AdaptiveIcon(
-        materialIcon: Icons.person_outline,
-        cupertinoIcon: CupertinoIcons.person_circle,
-        size: 24,
-      ),
+      errorBuilder: (context, error, stackTrace) => fallback,
     );
   }
 
@@ -258,6 +280,8 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     _usernameController.dispose();
     _passwordController.dispose();
     _mfaCodeController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -266,7 +290,11 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     final l10n = AppLocalizations.of(context)!;
 
     return AdaptiveScaffold(
-      title: _controller.showMfaInput ? l10n.mfaTitle : l10n.loginTitle,
+      title: _controller.showMfaInput
+          ? l10n.mfaTitle
+          : _controller.showPasswordChange
+          ? l10n.passwordChangeTitle
+          : l10n.loginTitle,
       leading: _buildLeading(),
       body: _controller.isLoading
           ? const Center(child: AdaptiveLoadingIndicator())
@@ -290,6 +318,8 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
                     const SizedBox(height: 40),
                     if (_controller.showMfaInput)
                       ..._buildMfaFields(l10n)
+                    else if (_controller.showPasswordChange)
+                      ..._buildPasswordChangeFields(l10n)
                     else if (_controller.isStep2)
                       ..._buildLoginFields(l10n)
                     else
@@ -424,13 +454,74 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     ];
   }
 
+  List<Widget> _buildPasswordChangeFields(AppLocalizations l10n) {
+    return [
+      Text(l10n.passwordChangeMessage),
+      const SizedBox(height: UIConstants.paddingStandard),
+      AdaptiveTextFormField(
+        label: l10n.newPassword,
+        controller: _newPasswordController,
+        obscureText: _controller.obscurePassword,
+        textInputAction: TextInputAction.next,
+        autofillHints: const [AutofillHints.newPassword],
+        autocorrect: false,
+        enableSuggestions: false,
+        prefixIcon: const AdaptiveIcon(
+          materialIcon: Icons.lock,
+          cupertinoIcon: CupertinoIcons.lock,
+        ),
+        validator: (value) =>
+            Validators.validateRequired(value, l10n, l10n.newPassword),
+      ),
+      const SizedBox(height: UIConstants.paddingStandard),
+      AdaptiveTextFormField(
+        label: l10n.confirmNewPassword,
+        controller: _confirmPasswordController,
+        obscureText: _controller.obscurePassword,
+        textInputAction: TextInputAction.done,
+        autofillHints: const [AutofillHints.newPassword],
+        autocorrect: false,
+        enableSuggestions: false,
+        prefixIcon: const AdaptiveIcon(
+          materialIcon: Icons.lock,
+          cupertinoIcon: CupertinoIcons.lock,
+        ),
+        validator: (value) => value == _newPasswordController.text
+            ? null
+            : l10n.passwordsDoNotMatch,
+        onFieldSubmitted: (_) => _handlePasswordChange(),
+      ),
+      AdaptiveSwitchListTile(
+        title: l10n.showPassword,
+        value: !_controller.obscurePassword,
+        onChanged: _controller.setPasswordVisible,
+      ),
+      const SizedBox(height: UIConstants.paddingLarge),
+      AdaptiveButton(
+        label: l10n.changePassword,
+        onPressed: _handlePasswordChange,
+        expand: true,
+      ),
+      const SizedBox(height: UIConstants.paddingStandard),
+      AdaptiveButton(
+        label: l10n.back,
+        onPressed: _goBackFromPasswordChange,
+        variant: AdaptiveButtonVariant.secondary,
+        expand: true,
+      ),
+    ];
+  }
+
   List<Widget> _buildMfaFields(AppLocalizations l10n) {
     return [
       AdaptiveTextFormField(
         label: l10n.mfaCode,
         placeholder: l10n.mfaCodeHint,
         controller: _mfaCodeController,
-        keyboardType: TextInputType.number,
+        // A backup code is not only digits.
+        keyboardType: _controller.mfaAcceptsBackupCodes
+            ? TextInputType.visiblePassword
+            : TextInputType.number,
         textInputAction: TextInputAction.done,
         autofillHints: const [AutofillHints.oneTimeCode],
         prefixIcon: const AdaptiveIcon(

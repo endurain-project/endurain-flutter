@@ -1,7 +1,10 @@
-import 'package:endurain/core/services/location_settings_builder.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
+import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 
 /// Typed, language-free recorder failure reasons.
 ///
@@ -24,6 +27,18 @@ enum ActivityRecorderEventType {
   stopped,
   failed,
   recoverableStateChanged,
+
+  /// The recorder paused the recording on its own (movement/auto-pause
+  /// detector), not in response to an explicit [ActivityLocationRecorder.pause]
+  /// call. Distinct from [paused] so a listener can tell manual and automatic
+  /// pauses apart — the requirement that a manual pause never auto-resumes
+  /// depends on this distinction.
+  autoPaused,
+
+  /// The recorder resumed the recording on its own (movement/auto-pause
+  /// detector observed enough consecutive movement), not in response to an
+  /// explicit [ActivityLocationRecorder.resume] call.
+  autoResumed,
 }
 
 /// An event emitted by an [ActivityLocationRecorder].
@@ -37,20 +52,35 @@ class ActivityRecorderEvent {
     this.session,
     this.points = const <RecordedActivityPoint>[],
     this.failureReason,
+    this.localSessionId,
+    this.pointOffset,
   });
 
   const ActivityRecorderEvent.started(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.started, session: session);
 
   const ActivityRecorderEvent.pointBatchAvailable(
-    List<RecordedActivityPoint> points,
-  ) : this(type: ActivityRecorderEventType.pointBatchAvailable, points: points);
+    List<RecordedActivityPoint> points, {
+    required String localSessionId,
+    required int pointOffset,
+  }) : this(
+         type: ActivityRecorderEventType.pointBatchAvailable,
+         points: points,
+         localSessionId: localSessionId,
+         pointOffset: pointOffset,
+       );
 
   const ActivityRecorderEvent.paused(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.paused, session: session);
 
   const ActivityRecorderEvent.resumed(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.resumed, session: session);
+
+  const ActivityRecorderEvent.autoPaused(ActiveActivitySession session)
+    : this(type: ActivityRecorderEventType.autoPaused, session: session);
+
+  const ActivityRecorderEvent.autoResumed(ActiveActivitySession session)
+    : this(type: ActivityRecorderEventType.autoResumed, session: session);
 
   const ActivityRecorderEvent.stopped(ActiveActivitySession session)
     : this(type: ActivityRecorderEventType.stopped, session: session);
@@ -69,6 +99,8 @@ class ActivityRecorderEvent {
   final ActiveActivitySession? session;
   final List<RecordedActivityPoint> points;
   final ActivityRecorderFailureReason? failureReason;
+  final String? localSessionId;
+  final int? pointOffset;
 }
 
 /// Request used to start a new recording through an [ActivityLocationRecorder].
@@ -80,9 +112,11 @@ class ActivityRecorderStartRequest {
     this.connectionOrigin,
     this.connectionProfileId,
     this.backgroundConfig,
+    this.audioAnnouncementConfig,
     this.heartRateDeviceId,
     this.powerDeviceId,
     this.cadenceDeviceId,
+    this.autoPauseConfig = const MovementAutoPauseConfig(),
   });
 
   final String localSessionId;
@@ -91,6 +125,11 @@ class ActivityRecorderStartRequest {
   final String? connectionOrigin;
   final String? connectionProfileId;
   final BackgroundLocationConfig? backgroundConfig;
+
+  /// Localized, immutable spoken-announcement configuration. `null` disables
+  /// announcements for this recording (recorders that do not support them
+  /// simply ignore it).
+  final AudioAnnouncementConfig? audioAnnouncementConfig;
 
   /// BLE device id of the paired heart-rate sensor to capture from during the
   /// recording, or `null` when none is paired. Recorders that support native
@@ -106,6 +145,11 @@ class ActivityRecorderStartRequest {
   /// recording, or `null` when none is paired. Recorders that support native
   /// cadence capture connect to this device; others ignore it.
   final String? cadenceDeviceId;
+
+  /// Auto-pause configuration snapshotted at recording start (see
+  /// `AutoPauseSettingsRepository`). Recorders that support auto-pause use
+  /// this to drive their movement detector; others ignore it.
+  final MovementAutoPauseConfig autoPauseConfig;
 }
 
 /// Abstraction over the platform mechanism that collects and persists location
@@ -123,6 +167,13 @@ abstract class ActivityLocationRecorder {
   Future<void> start(ActivityRecorderStartRequest request);
 
   /// Pauses collection while keeping the active session recoverable.
+  ///
+  /// This is always a manual pause (i.e. an explicit user action bridged
+  /// through `ActivityRecordingService.pause`); implementations must stop
+  /// monitoring location entirely so a manual pause can never auto-resume.
+  /// Automatic pauses are signaled instead via
+  /// [ActivityRecorderEventType.autoPaused]/[ActivityRecorderEventType.autoResumed]
+  /// events, which keep monitoring alive.
   Future<void> pause();
 
   /// Resumes collection, starting a new track segment.
@@ -137,9 +188,23 @@ abstract class ActivityLocationRecorder {
   /// Returns persisted points from [sinceOffset] for incremental syncing.
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0});
 
-  /// Returns a recoverable active session if one exists, otherwise `null`.
+  /// Reconnects to the existing session without pausing a live recorder.
+  /// Returns `recording` only when collection is running or being restarted,
+  /// `paused` when explicit user action is needed, or `null` when absent.
+  /// Does not complete, discard, or replace an interrupted recording.
   Future<ActiveActivitySession?> recoverActiveSession();
 
   /// Releases resources held by the recorder.
   Future<void> dispose();
+}
+
+abstract class ActivitySensorRecorder {
+  Future<void> appendSensorSample({
+    required String localSessionId,
+    required RecordedSensorSample sample,
+  });
+
+  Future<List<RecordedSensorSample>> drainSensorSamples({
+    required String localSessionId,
+  });
 }

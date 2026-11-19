@@ -5,7 +5,6 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import kotlin.math.max
 
 /**
  * Hosts the method/event channels that bridge the Dart
@@ -52,6 +51,7 @@ class ActivityRecorderChannel(context: Context) :
             METHOD_DISCARD -> handleDiscard(result)
             METHOD_DRAIN -> handleDrain(call, result)
             METHOD_RECOVER -> handleRecover(result)
+            METHOD_SPEAK_PREVIEW -> handleSpeakPreview(call, result)
             else -> result.notImplemented()
         }
     }
@@ -82,11 +82,21 @@ class ActivityRecorderChannel(context: Context) :
         val startedAt = call.argument<String>("startedAt") ?: IsoTime.nowUtc()
         val connectionOrigin = call.argument<String>("connectionOrigin")
         val connectionProfileId = call.argument<String>("connectionProfileId")
-        val heartRateDeviceId = call.argument<String>("hrDeviceId")
-        val powerDeviceId = call.argument<String>("powerDeviceId")
-        val cadenceDeviceId = call.argument<String>("cadenceDeviceId")
+        val heartRateDeviceId =
+            BluetoothAddressUtil.normalize(call.argument<String>("hrDeviceId"))
+        val powerDeviceId =
+            BluetoothAddressUtil.normalize(call.argument<String>("powerDeviceId"))
+        val cadenceDeviceId =
+            BluetoothAddressUtil.normalize(call.argument<String>("cadenceDeviceId"))
         val title = call.argument<String>("notificationTitle")
         val text = call.argument<String>("notificationText")
+        // `Boolean`/`Int` arguments arrive as their boxed Kotlin types from the
+        // method channel; default conservatively (disabled) if omitted by an
+        // older Dart build.
+        val autoPauseEnabled = call.argument<Boolean>("autoPauseEnabled") ?: false
+        val autoPauseDelaySeconds = call.argument<Int>("autoPauseDelaySeconds") ?: 5
+        @Suppress("UNCHECKED_CAST")
+        val audioAnnouncements = call.argument<Map<String, Any?>>("audioAnnouncements")
 
         val session = ActiveActivitySessionData(
             localSessionId = localSessionId,
@@ -99,8 +109,13 @@ class ActivityRecorderChannel(context: Context) :
             powerDeviceId = powerDeviceId,
             cadenceDeviceId = cadenceDeviceId,
             currentSegmentIndex = 0,
+            autoPauseEnabled = autoPauseEnabled,
+            autoPauseDelaySeconds = autoPauseDelaySeconds,
         )
         store.saveSession(session)
+        AnnouncementStateData.fromStartArguments(audioAnnouncements)?.let {
+            store.saveAnnouncementState(it)
+        }
         try {
             ActivityRecorderService.start(appContext, title, text)
         } catch (_: RuntimeException) {
@@ -133,7 +148,8 @@ class ActivityRecorderChannel(context: Context) :
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_PAUSED,
             pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
+            pausedAutomatically = false,
         )
         store.saveSession(updated)
         ActivityRecorderService.pause(appContext)
@@ -155,6 +171,7 @@ class ActivityRecorderChannel(context: Context) :
             status = ActiveActivitySessionData.STATUS_RECORDING,
             resumedAt = IsoTime.format(java.util.Date(nowMillis)),
             pausedAt = null,
+            pausedAutomatically = false,
         )
         store.saveSession(updated)
         ActivityRecorderService.resume(appContext)
@@ -176,7 +193,7 @@ class ActivityRecorderChannel(context: Context) :
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_COMPLETED,
             endedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, nowMillis),
+            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
         )
         // Mark the session completed before tearing the service down. The
         // collection guard in onLocationFix drops any in-flight fix once the
@@ -205,42 +222,11 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     private fun handleRecover(result: MethodChannel.Result) {
-        val session = store.loadSession()
-        if (session == null || session.status != ActiveActivitySessionData.STATUS_RECORDING) {
-            result.success(session?.toMap())
-            return
+        try {
+            result.success(ActivityRecorderService.recover(appContext)?.toMap())
+        } catch (_: Exception) {
+            result.error(ERROR_STORE, "Unable to recover recording", null)
         }
-        val nowMillis = System.currentTimeMillis()
-        val recoveryMillis = store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis)
-            ?: nowMillis
-        val paused = session.copy(
-            status = ActiveActivitySessionData.STATUS_PAUSED,
-            pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = elapsedSeconds(session, recoveryMillis),
-        )
-        // Persist the pause before stopping collection so any in-flight fix is
-        // rejected by the service's recording-state guard.
-        store.saveSession(paused)
-        ActivityRecorderService.pause(appContext)
-        result.success(paused.toMap())
-    }
-
-    /**
-     * Accumulated elapsed seconds, mirroring the Dart geolocator recorder:
-     * paused sessions keep their stored value; otherwise add the current
-     * segment's running time from `resumedAt ?? startedAt`.
-     */
-    private fun elapsedSeconds(
-        session: ActiveActivitySessionData,
-        referenceMillis: Long,
-    ): Int {
-        if (session.status == ActiveActivitySessionData.STATUS_PAUSED) {
-            return session.elapsedDurationSeconds
-        }
-        val anchor = IsoTime.toEpochMillis(session.resumedAt ?: session.startedAt)
-            ?: return session.elapsedDurationSeconds
-        val segmentSeconds = ((referenceMillis - anchor) / 1000L).toInt()
-        return session.elapsedDurationSeconds + max(0, segmentSeconds)
     }
 
     private fun isSupportedVersion(call: MethodCall): Boolean {
@@ -248,8 +234,34 @@ class ActivityRecorderChannel(context: Context) :
         return version == PAYLOAD_VERSION
     }
 
+    /**
+     * Speaks one sample announcement so the user can verify the device has a
+     * working speech engine, at an audible volume, in the expected language.
+     * Deliberately independent of the recorder lifecycle: it never touches the
+     * durable store, so a preview cannot disturb an in-progress recording.
+     */
+    private fun handleSpeakPreview(call: MethodCall, result: MethodChannel.Result) {
+        if (!isSupportedVersion(call)) {
+            result.error(ERROR_VERSION, "Unsupported payload version", null)
+            return
+        }
+        @Suppress("UNCHECKED_CAST")
+        val arguments = call.argument<Map<String, Any?>>("audioAnnouncements")
+        val state = AnnouncementStateData.fromStartArguments(arguments)
+        if (state == null) {
+            result.error(ERROR_ARGS, "Missing audioAnnouncements", null)
+            return
+        }
+        AudioAnnouncer.speak(
+            appContext,
+            AnnouncementSpeechBuilder.buildPreview(state),
+            state.duckOtherAudio,
+            state.languageTag,
+        )
+        result.success(null)
+    }
     companion object {
-        const val PAYLOAD_VERSION = 1
+        const val PAYLOAD_VERSION = 2
 
         const val METHOD_CHANNEL = "endurain/activity_recorder/methods"
         const val EVENT_CHANNEL = "endurain/activity_recorder/events"
@@ -261,10 +273,12 @@ class ActivityRecorderChannel(context: Context) :
         const val METHOD_DISCARD = "discard"
         const val METHOD_DRAIN = "drain"
         const val METHOD_RECOVER = "recover"
+        const val METHOD_SPEAK_PREVIEW = "speakAnnouncementPreview"
 
         private const val ERROR_ARGS = "invalid_arguments"
         private const val ERROR_STATE = "invalid_state"
         private const val ERROR_SERVICE = "service_start_failed"
+        private const val ERROR_STORE = "store_read_failed"
         private const val ERROR_VERSION = "unsupported_version"
     }
 }

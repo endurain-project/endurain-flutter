@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:endurain/core/config/app_config.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AppConfig', () {
@@ -56,6 +56,43 @@ void main() {
       test('returns false for hosts not in the allowlist', () {
         const config = AppConfig(allowedTileServerHosts: {'tiles.example.com'});
         expect(config.isTileServerHostAllowed('other.host.test'), isFalse);
+      });
+    });
+
+    group('parseTileServerHostAllowlist', () {
+      test('returns null for an empty or blank value', () {
+        expect(AppConfig.parseTileServerHostAllowlist(''), isNull);
+        expect(AppConfig.parseTileServerHostAllowlist('  '), isNull);
+        expect(AppConfig.parseTileServerHostAllowlist(',,'), isNull);
+      });
+
+      test('splits, trims, and lowercases hosts', () {
+        expect(
+          AppConfig.parseTileServerHostAllowlist(
+            ' Tiles.Example.com , maps.example.com ',
+          ),
+          {'tiles.example.com', 'maps.example.com'},
+        );
+      });
+
+      test('drops empty entries and de-duplicates', () {
+        expect(
+          AppConfig.parseTileServerHostAllowlist(
+            'tiles.example.com,,TILES.EXAMPLE.COM,',
+          ),
+          {'tiles.example.com'},
+        );
+      });
+
+      test('parsed hosts match the normalized host from a URL', () {
+        final config = AppConfig(
+          allowedTileServerHosts: AppConfig.parseTileServerHostAllowlist(
+            'Tiles.Example.com',
+          ),
+        );
+        final host = Uri.parse('https://TILES.example.com/{z}/{x}/{y}.png')
+            .host;
+        expect(config.isTileServerHostAllowed(host), isTrue);
       });
     });
 

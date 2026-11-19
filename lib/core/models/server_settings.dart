@@ -16,9 +16,9 @@ class ServerSettings {
     this.tileserverUrl,
     this.tileserverAttribution,
     this.mapBackgroundColor,
-    required this.passwordType,
     required this.passwordLengthRegularUsers,
     required this.passwordLengthAdminUsers,
+    this.allowedRedirectUris,
   });
 
   final String units;
@@ -34,9 +34,12 @@ class ServerSettings {
   final String? tileserverUrl;
   final String? tileserverAttribution;
   final String? mapBackgroundColor;
-  final String passwordType;
   final int passwordLengthRegularUsers;
   final int passwordLengthAdminUsers;
+
+  /// The exact addresses an SSO sign-in may return to (`ALLOWED_REDIRECT_URIS`),
+  /// or `null` when the server does not publish them.
+  final List<String>? allowedRedirectUris;
 
   factory ServerSettings.fromJson(Map<String, dynamic> json) {
     return ServerSettings(
@@ -54,11 +57,14 @@ class ServerSettings {
       tileserverUrl: jsonString(json['tileserver_url']),
       tileserverAttribution: jsonString(json['tileserver_attribution']),
       mapBackgroundColor: jsonString(json['map_background_color']),
-      passwordType: jsonString(json['password_type']) ?? 'strict',
       passwordLengthRegularUsers:
           jsonInt(json['password_length_regular_users']) ?? 8,
       passwordLengthAdminUsers:
           jsonInt(json['password_length_admin_users']) ?? 12,
+      allowedRedirectUris: switch (json['allowed_redirect_uris']) {
+        final List<Object?> uris => uris.whereType<String>().toList(),
+        _ => null,
+      },
     );
   }
 
@@ -77,9 +83,9 @@ class ServerSettings {
       'tileserver_url': tileserverUrl,
       'tileserver_attribution': tileserverAttribution,
       'map_background_color': mapBackgroundColor,
-      'password_type': passwordType,
       'password_length_regular_users': passwordLengthRegularUsers,
       'password_length_admin_users': passwordLengthAdminUsers,
+      'allowed_redirect_uris': allowedRedirectUris,
     };
   }
 }

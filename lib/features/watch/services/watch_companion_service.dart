@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/watch/models/watch_link_status.dart';
 import 'package:endurain/features/watch/models/watch_session_handoff.dart';
 import 'package:endurain/features/watch/models/watch_transport_event.dart';

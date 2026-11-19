@@ -11,6 +11,11 @@
   "invalidUrl": "Introduceți un URL valid",
   "errorActivityUploadFailed": "Nu s-a putut încărca activitatea",
   "errorActivityUploadFailedWithDetails": "Nu s-a putut încărca activitatea: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Formatul fișierului nu este acceptat",
+  "errorActivityIngestionInvalidFile": "Fișierul este corupt sau nu a putut fi citit",
+  "errorActivityIngestionNoActivitiesFound": "Nu s-au găsit activități în fișier",
+  "errorActivityIngestionProcessingFailed": "A apărut o eroare la importarea activității. Încearcă din nou.",
+  "errorActivityIngestionProviderUnavailable": "Furnizorul de activități nu este disponibil momentan. Încearcă din nou mai târziu.",
   "errorActivityUploadNotConfigured": "Încărcarea activităților nu este încă configurată",
   "errorActivityGpxCleanupFailed": "Nu s-a putut șterge fișierul temporar al activității",
   "errorActivityGpxFileWriteFailed": "Nu s-a putut pregăti fișierul pentru încărcarea activității",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "Verificarea MFA a eșuat",
   "errorMfaVerificationFailedWithDetails": "Verificarea MFA a eșuat: {details}",
   "errorNoSessionIdReceived": "Nu s-a primit niciun ID de sesiune de la server",
+  "errorMfaSessionMissing": "Sesiunea dvs. de autentificare s-a pierdut. Autentificați-vă din nou.",
+  "errorSsoCallbackFailed": "Autentificarea unică (SSO) nu a putut fi finalizată. Încercați din nou.",
   "errorNotAuthenticated": "Nu sunteți autentificat",
   "errorPkceVerifierMissingRestartLogin": "Verificatorul de autentificare nu a fost găsit. Reîncepeți autentificarea.",
   "errorServerUrlNotConfigured": "URL-ul serverului nu este configurat",
@@ -54,6 +61,32 @@
   "logout": "Deconectare",
   "logoutConfirmTitle": "Deconectare",
   "logoutConfirmMessage": "Sigur doriți să vă deconectați?",
+  "legacyDataTitle": "Activități de dinainte de actualizarea serverului",
+  "legacyDataMessageWithUsername": "Pe acest dispozitiv există activități salvate pentru un cont de pe acest server de dinainte de actualizarea lui. Sunt ale dumneavoastră, {username}? Dacă da, cele care încă așteaptă vor fi încărcate în contul dumneavoastră.",
+  "legacyDataMessage": "Pe acest dispozitiv există activități salvate pentru un cont de pe acest server de dinainte de actualizarea lui. Aparțin contului cu care tocmai v-ați conectat? Dacă da, cele care încă așteaptă vor fi încărcate în el.",
+  "legacyDataConfirm": "Sunt ale mele",
+  "legacyDataDecline": "Nu sunt ale mele",
+  "errorActivityUploadLimit": "Serverul are prea multe încărcări ale dumneavoastră în curs. Aplicația va încerca din nou mai târziu.",
+  "errorPasswordChangeFailed": "Parola nu a putut fi schimbată",
+  "errorPasswordChangeFailedWithDetails": "Parola nu a putut fi schimbată: {details}",
+  "errorSignInStepUnsupported": "Serverul a cerut un pas de conectare pe care această versiune a aplicației nu îl acceptă. Actualizați aplicația și încercați din nou.",
+  "errorSsoEmailMissing": "Furnizorul de identitate nu a partajat o adresă de e-mail, necesară pentru crearea contului.",
+  "errorSsoEmailUnverified": "Furnizorul de identitate nu a verificat adresa dumneavoastră de e-mail. Verificați-o acolo și încercați din nou.",
+  "errorSsoAutoCreateDisabled": "Niciun cont nu corespunde acestei conectări, iar acest server nu creează conturi automat. Întrebați administratorul.",
+  "errorSsoLinkByEmailDisabled": "Un cont folosește deja această adresă de e-mail, dar acest furnizor nu se poate conecta la el. Conectați-vă în alt mod sau întrebați administratorul.",
+  "errorSsoApprovalPending": "Contul dumneavoastră așteaptă aprobarea unui administrator.",
+  "errorSsoAccountDisabled": "Acest cont este dezactivat. Contactați administratorul.",
+  "errorSsoRedirectNotAllowed": "Acest server nu permite autentificarea unică din această aplicație. Cereți administratorului să adauge com.endurain.endurain:/auth/sso/callback la ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Administratorul dumneavoastră cere verificarea în doi pași. Configurați-o în aplicația web Endurain și încercați din nou.",
+  "errorActivityFileTooLarge": "Fișierul activității este prea mare pentru acest server",
+  "errorActivityUnsupportedFileType": "Acest server nu acceptă acest tip de fișier de activitate",
+  "errorTooManyRequests": "Prea multe încercări. Așteptați puțin și încercați din nou.",
+  "passwordChangeTitle": "Alegeți o parolă nouă",
+  "passwordChangeMessage": "Un administrator v-a setat parola. Alegeți una nouă pentru a finaliza conectarea.",
+  "newPassword": "Parolă nouă",
+  "confirmNewPassword": "Confirmați parola nouă",
+  "passwordsDoNotMatch": "Parolele nu se potrivesc",
+  "changePassword": "Schimbați parola",
   "logoutServerFailedWarning": "Deconectarea de la server nu a reușit, dar v-ați deconectat local",
   "ssoBrowserLaunchFailed": "Autentificarea SSO nu a putut fi deschisă în browserul de sistem",
   "ssoSignInWith": "Autentificare cu {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Activități finalizate salvate pe acest dispozitiv",
   "activityRetainUploadedGpx": "Păstrează fișierele GPX încărcate",
   "activityRetainUploadedGpxSubtitle": "Salvează fișierele de traseu finalizate în stocarea privată a aplicației după încărcare.",
+  "activityAutoPauseTitle": "Pauză automată",
+  "activityAutoPauseSubtitle": "Pune automat pauză când te oprești din mișcare",
+  "activityAutoPauseToggleLabel": "Pauză automată",
+  "activityAutoPauseToggleDescription": "Înregistrarea este pusă automat pe pauză când te oprești din mișcare și reia imediat ce te miști din nou.",
+  "activityAutoPauseDelayHelperText": "Alege cât timp fără mișcare se așteaptă înainte de pauză.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} secunde",
+  "activityAutoPausedIndicator": "În pauză automată",
+  "audioAnnouncementsAutoPaused": "Înregistrare întreruptă",
+  "audioAnnouncementsAutoResumed": "Înregistrare reluată",
   "activityHistoryEmpty": "Nicio activitate finalizată salvată pe acest dispozitiv.",
   "activityHistoryLoadFailed": "Activitățile locale nu au putut fi încărcate.",
   "activityHistoryRefresh": "Reîmprospătează",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Antrenamente",
   "healthAccessWorkoutRoutes": "Trasee de antrenament",
   "healthAccessHeartRate": "Ritmul cardiac",
-  "healthAccessWorkoutSummary": "Distanță, calorii și pași din antrenament",
   "healthAccessAllowed": "Permis",
   "healthAccessNeedsAttention": "Necesită atenție",
   "healthAccessManagedBySystem": "Gestionat în setările sistemului",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serverul a încercat să redirecționeze către o conexiune nesigură. Solicitarea a fost blocată pentru a vă proteja datele de autentificare.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serverul a redirecționat de prea multe ori. Verificați adresa serverului.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Anunțuri vocale",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Actualizări vocale despre distanță, timp, ritm sau viteză",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Anunță progresul activității",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Rostește distanța, timpul, ritmul sau viteza în timpul unei înregistrări",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Reduce alte sunete în timpul vorbirii",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Reduce temporar volumul altor sunete în timpul fiecărui anunț",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Interval de anunț în funcție de activitate",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Distanță",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Timp",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "La fiecare {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "La fiecare {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Micșorează intervalul",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Mărește intervalul",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Ascultă un exemplu",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Previzualizarea anunțului nu este disponibilă pe acest dispozitiv",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Modificările se aplică la următoarea înregistrare.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Distanță {distance}. Timp {duration}. Tură: {lapMetric}. Total: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

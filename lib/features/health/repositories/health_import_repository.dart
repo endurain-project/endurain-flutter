@@ -1,6 +1,6 @@
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/features/health/repositories/health_import_store.dart';
 import 'package:endurain/features/health/models/health_imported_workout.dart';
+import 'package:endurain/features/health/repositories/health_import_store.dart';
 import 'package:endurain/features/health/repositories/sqflite_health_import_store.dart';
 
 /// Facade over [HealthImportStore] that services depend on.
@@ -37,6 +37,18 @@ class HealthImportRepository {
   }) => _run(
     () => _store.reassignImportProfile(
       sourceId: sourceId,
+      fromProfileId: fromProfileId,
+      toProfileId: toProfileId,
+    ),
+  );
+
+  Future<List<String>> listProfileIds() => _run(_store.listProfileIds);
+
+  Future<void> reassignProfile({
+    required String fromProfileId,
+    required String toProfileId,
+  }) => _run(
+    () => _store.reassignProfile(
       fromProfileId: fromProfileId,
       toProfileId: toProfileId,
     ),

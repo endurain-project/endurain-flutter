@@ -2,9 +2,9 @@ import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/theme/app_theme_tokens.dart';
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Non-interactive preview map that draws a completed activity's [route] from
 /// its stored GPX, framed to the track bounds. Interaction is disabled so the

@@ -39,6 +39,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat => '不支持该文件格式';
+
+  @override
+  String get errorActivityIngestionInvalidFile => '文件已损坏或无法读取';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound => '文件中未找到任何活动';
+
+  @override
+  String get errorActivityIngestionProcessingFailed => '导入活动时出错，请重试。';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable => '活动提供方当前不可用，请稍后重试。';
+
+  @override
   String get errorActivityUploadNotConfigured => '尚未配置活动上传';
 
   @override
@@ -134,6 +149,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorNoSessionIdReceived => '未从服务器收到会话 ID';
 
   @override
+  String get errorMfaSessionMissing => '您的登录会话已丢失。请重新登录。';
+
+  @override
+  String get errorSsoCallbackFailed => '无法完成单点登录。请重试。';
+
+  @override
   String get errorNotAuthenticated => '您尚未登录';
 
   @override
@@ -201,6 +222,92 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => '确定要退出登录吗？';
+
+  @override
+  String get legacyDataTitle => '服务器更新前的活动';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return '此设备上保存有服务器更新前属于此服务器上某个账户的活动。它们是你的吗，$username？如果是，仍在等待的活动将上传到你的账户。';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      '此设备上保存有服务器更新前属于此服务器上某个账户的活动。它们属于你刚刚登录的账户吗？如果是，仍在等待的活动将上传到该账户。';
+
+  @override
+  String get legacyDataConfirm => '是我的';
+
+  @override
+  String get legacyDataDecline => '不是我的';
+
+  @override
+  String get errorActivityUploadLimit => '服务器上你正在进行的上传过多。应用稍后会重试。';
+
+  @override
+  String get errorPasswordChangeFailed => '无法更改密码';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return '无法更改密码：$details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported => '此服务器要求的登录步骤不受此版本应用支持。请更新应用后重试。';
+
+  @override
+  String get errorSsoEmailMissing => '你的身份提供方未共享电子邮件地址，而创建账户需要该地址。';
+
+  @override
+  String get errorSsoEmailUnverified => '你的身份提供方尚未验证你的电子邮件地址。请在那里验证后重试。';
+
+  @override
+  String get errorSsoAutoCreateDisabled => '没有与此次登录匹配的账户，且此服务器不会自动创建账户。请联系管理员。';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      '已有账户使用此电子邮件地址，但此身份提供方无法登录该账户。请改用其他方式登录，或联系管理员。';
+
+  @override
+  String get errorSsoApprovalPending => '你的账户正在等待管理员批准。';
+
+  @override
+  String get errorSsoAccountDisabled => '此账户已停用。请联系管理员。';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      '此服务器不允许从此应用进行单点登录。请让管理员将 com.endurain.endurain:/auth/sso/callback 添加到 ALLOWED_REDIRECT_URIS。';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      '你的管理员要求启用两步验证。请在 Endurain 网页应用中设置，然后重试。';
+
+  @override
+  String get errorActivityFileTooLarge => '活动文件对此服务器来说太大';
+
+  @override
+  String get errorActivityUnsupportedFileType => '此服务器不接受这种类型的活动文件';
+
+  @override
+  String get errorTooManyRequests => '尝试次数过多。请稍候再试。';
+
+  @override
+  String get passwordChangeTitle => '选择新密码';
+
+  @override
+  String get passwordChangeMessage => '管理员为你设置了密码。请选择新密码以完成登录。';
+
+  @override
+  String get newPassword => '新密码';
+
+  @override
+  String get confirmNewPassword => '确认新密码';
+
+  @override
+  String get passwordsDoNotMatch => '两次输入的密码不一致';
+
+  @override
+  String get changePassword => '更改密码';
 
   @override
   String get logoutServerFailedWarning => '无法从服务器退出登录，但已在本地退出';
@@ -450,6 +557,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get activityRetainUploadedGpxSubtitle => '上传后将已完成的路线文件存储在应用的私有存储中。';
+
+  @override
+  String get activityAutoPauseTitle => '自动暂停';
+
+  @override
+  String get activityAutoPauseSubtitle => '停止移动时自动暂停';
+
+  @override
+  String get activityAutoPauseToggleLabel => '自动暂停';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      '当您停止移动时自动暂停记录,一旦您重新开始移动即恢复。';
+
+  @override
+  String get activityAutoPauseDelayHelperText => '选择在暂停前等待多长时间没有移动。';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => '自动暂停中';
+
+  @override
+  String get audioAnnouncementsAutoPaused => '记录已暂停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '记录已恢复';
 
   @override
   String get activityHistoryEmpty => '此设备上未保存已完成的活动。';
@@ -775,9 +912,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get healthAccessHeartRate => '心率';
 
   @override
-  String get healthAccessWorkoutSummary => '锻炼距离、热量和步数';
-
-  @override
   String get healthAccessAllowed => '允许';
 
   @override
@@ -1092,11 +1226,73 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      '服务器试图重定向到不安全的连接。为保护您的凭据，该请求已被拦截。';
 
   @override
-  String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+  String get errorTooManyRedirects => '服务器重定向次数过多。请检查服务器地址。';
+
+  @override
+  String get audioAnnouncementsTitle => '语音播报';
+
+  @override
+  String get audioAnnouncementsSubtitle => '播报距离、时间以及配速或速度的语音更新';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => '播报活动进度';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      '在记录过程中语音播报您的距离、时间以及配速或速度';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => '播报时降低其他音频音量';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle => '在每次播报期间暂时降低其他音频的音量';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader => '按活动类型设置的播报间隔';
+
+  @override
+  String get audioAnnouncementsByDistance => '距离';
+
+  @override
+  String get audioAnnouncementsByTime => '时间';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return '每 $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return '每 $minutes 分钟';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => '减小间隔';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => '增大间隔';
+
+  @override
+  String get audioAnnouncementsPreview => '播放示例';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable => '此设备不支持播报试听';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording => '更改将在下次记录时生效。';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return '距离$distance。时间$duration。本圈：$lapMetric。全程：$overallMetric。';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1131,6 +1327,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String errorActivityUploadFailedWithDetails(String details) {
     return '無法上傳活動：$details';
   }
+
+  @override
+  String get errorActivityIngestionUnsupportedFormat => '不支援此檔案格式';
+
+  @override
+  String get errorActivityIngestionInvalidFile => '檔案已損毀或無法讀取';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound => '檔案中找不到任何活動';
+
+  @override
+  String get errorActivityIngestionProcessingFailed => '匯入活動時發生錯誤，請重試。';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable => '活動提供者目前無法使用，請稍後再試。';
 
   @override
   String get errorActivityUploadNotConfigured => '尚未設定活動上傳';
@@ -1228,6 +1439,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get errorNoSessionIdReceived => '未從伺服器收到工作階段 ID';
 
   @override
+  String get errorMfaSessionMissing => '您的登入工作階段已遺失。請重新登入。';
+
+  @override
+  String get errorSsoCallbackFailed => '無法完成單一登入。請重試。';
+
+  @override
   String get errorNotAuthenticated => '您尚未登入';
 
   @override
@@ -1295,6 +1512,92 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get logoutConfirmMessage => '確定要登出嗎？';
+
+  @override
+  String get legacyDataTitle => '伺服器更新前的活動';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return '此裝置上儲存了伺服器更新前屬於此伺服器上某個帳號的活動。這些是你的嗎，$username？如果是，仍在等待的活動將上傳到你的帳號。';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      '此裝置上儲存了伺服器更新前屬於此伺服器上某個帳號的活動。這些屬於你剛剛登入的帳號嗎？如果是，仍在等待的活動將上傳到該帳號。';
+
+  @override
+  String get legacyDataConfirm => '是我的';
+
+  @override
+  String get legacyDataDecline => '不是我的';
+
+  @override
+  String get errorActivityUploadLimit => '伺服器上你正在進行的上傳過多。應用程式稍後會重試。';
+
+  @override
+  String get errorPasswordChangeFailed => '無法變更密碼';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return '無法變更密碼：$details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported => '此伺服器要求的登入步驟不受此版本應用程式支援。請更新應用程式後重試。';
+
+  @override
+  String get errorSsoEmailMissing => '你的身分提供者未分享電子郵件地址，而建立帳號需要該地址。';
+
+  @override
+  String get errorSsoEmailUnverified => '你的身分提供者尚未驗證你的電子郵件地址。請在那裡驗證後重試。';
+
+  @override
+  String get errorSsoAutoCreateDisabled => '沒有與此次登入相符的帳號，且此伺服器不會自動建立帳號。請聯絡管理員。';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      '已有帳號使用此電子郵件地址，但此身分提供者無法登入該帳號。請改用其他方式登入，或聯絡管理員。';
+
+  @override
+  String get errorSsoApprovalPending => '你的帳號正在等待管理員核准。';
+
+  @override
+  String get errorSsoAccountDisabled => '此帳號已停用。請聯絡管理員。';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      '此伺服器不允許從此應用程式進行單一登入。請管理員將 com.endurain.endurain:/auth/sso/callback 加入 ALLOWED_REDIRECT_URIS。';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      '你的管理員要求啟用兩步驟驗證。請在 Endurain 網頁應用程式中設定，然後重試。';
+
+  @override
+  String get errorActivityFileTooLarge => '活動檔案對此伺服器來說太大';
+
+  @override
+  String get errorActivityUnsupportedFileType => '此伺服器不接受這種類型的活動檔案';
+
+  @override
+  String get errorTooManyRequests => '嘗試次數過多。請稍候再試。';
+
+  @override
+  String get passwordChangeTitle => '選擇新密碼';
+
+  @override
+  String get passwordChangeMessage => '管理員為你設定了密碼。請選擇新密碼以完成登入。';
+
+  @override
+  String get newPassword => '新密碼';
+
+  @override
+  String get confirmNewPassword => '確認新密碼';
+
+  @override
+  String get passwordsDoNotMatch => '兩次輸入的密碼不一致';
+
+  @override
+  String get changePassword => '變更密碼';
 
   @override
   String get logoutServerFailedWarning => '無法從伺服器登出，但已在本機登出';
@@ -1545,6 +1848,36 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       '上傳後將已完成的路線檔案儲存在應用程式的私人儲存空間中。';
+
+  @override
+  String get activityAutoPauseTitle => '自動暫停';
+
+  @override
+  String get activityAutoPauseSubtitle => '停止移動時自動暫停';
+
+  @override
+  String get activityAutoPauseToggleLabel => '自動暫停';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      '當您停止移動時自動暫停記錄,一旦您重新開始移動即恢復。';
+
+  @override
+  String get activityAutoPauseDelayHelperText => '選擇在暫停前等待多長時間沒有移動。';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => '自動暫停中';
+
+  @override
+  String get audioAnnouncementsAutoPaused => '記錄已暫停';
+
+  @override
+  String get audioAnnouncementsAutoResumed => '記錄已恢復';
 
   @override
   String get activityHistoryEmpty => '此裝置上未儲存已完成的活動。';
@@ -1870,9 +2203,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get healthAccessHeartRate => '心率';
 
   @override
-  String get healthAccessWorkoutSummary => '運動距離、熱量與步數';
-
-  @override
   String get healthAccessAllowed => '允許';
 
   @override
@@ -2171,25 +2501,87 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get unitsTitle => 'Units';
+  String get unitsTitle => '單位';
 
   @override
-  String get unitsSubtitle => 'Distance, speed, and elevation units';
+  String get unitsSubtitle => '距離、速度與海拔單位';
 
   @override
-  String get unitsSystemDefault => 'Follow device region';
+  String get unitsSystemDefault => '依裝置地區設定';
 
   @override
-  String get unitsMetric => 'Metric (km)';
+  String get unitsMetric => '公制（公里）';
 
   @override
-  String get unitsImperial => 'Imperial (mi)';
+  String get unitsImperial => '英制（英里）';
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      '伺服器嘗試重新導向至不安全的連線。為保護您的憑證，此請求已被封鎖。';
 
   @override
-  String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+  String get errorTooManyRedirects => '伺服器重新導向次數過多。請檢查伺服器位址。';
+
+  @override
+  String get audioAnnouncementsTitle => '語音播報';
+
+  @override
+  String get audioAnnouncementsSubtitle => '播報距離、時間以及配速或速度的語音更新';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => '播報活動進度';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      '在記錄過程中語音播報您的距離、時間以及配速或速度';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => '播報時降低其他音訊音量';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle => '在每次播報期間暫時降低其他音訊的音量';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader => '按活動類型設定的播報間隔';
+
+  @override
+  String get audioAnnouncementsByDistance => '距離';
+
+  @override
+  String get audioAnnouncementsByTime => '時間';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return '每 $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return '每 $minutes 分鐘';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => '減小間隔';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => '增大間隔';
+
+  @override
+  String get audioAnnouncementsPreview => '播放範例';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable => '此裝置不支援播報試聽';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording => '變更將於下次記錄時生效。';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return '距離$distance。時間$duration。本圈：$lapMetric。全程：$overallMetric。';
+  }
 }

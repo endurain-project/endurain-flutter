@@ -1,14 +1,15 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
-import 'package:go_router/go_router.dart';
-import 'package:endurain/core/navigation/app_router.dart';
-import 'package:endurain/core/services/app_scope.dart';
-import 'package:endurain/core/services/app_services.dart';
-import 'package:endurain/core/services/auth_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
+import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/app/app_services.dart';
+import 'package:endurain/app/navigation/app_router.dart';
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/features/account_migration/widgets/legacy_profile_adoption_dialog.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 class App extends StatefulWidget {
   const App({
@@ -118,7 +119,13 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     }
   }
 
-  void _onLoginSuccess() {
+  Future<void> _onLoginSuccess(BuildContext context) async {
+    // Before the session is marked authenticated (which leaves the login
+    // route): move local data recorded under this account's pre-v0.21 integer
+    // id, asking the user when the account cannot be matched for certain.
+    await _services.legacyProfileAdoption.resolveAfterSignIn(
+      confirm: (candidate) => confirmLegacyProfileAdoption(context, candidate),
+    );
     _sessionController.markAuthenticated();
     // Activities recorded in guest mode have no connection yet. Draining now
     // binds that offline backlog to the newly-connected account and uploads it.

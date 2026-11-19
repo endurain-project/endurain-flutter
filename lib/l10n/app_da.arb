@@ -11,6 +11,11 @@
   "invalidUrl": "Indtast en gyldig URL",
   "errorActivityUploadFailed": "Aktiviteten kunne ikke uploades",
   "errorActivityUploadFailedWithDetails": "Aktiviteten kunne ikke uploades: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Filformatet understøttes ikke",
+  "errorActivityIngestionInvalidFile": "Filen er beskadiget eller kunne ikke læses",
+  "errorActivityIngestionNoActivitiesFound": "Der blev ikke fundet nogen aktiviteter i filen",
+  "errorActivityIngestionProcessingFailed": "Noget gik galt under importen af aktiviteten. Prøv igen.",
+  "errorActivityIngestionProviderUnavailable": "Aktivitetsudbyderen er ikke tilgængelig lige nu. Prøv igen senere.",
   "errorActivityUploadNotConfigured": "Upload af aktiviteter er endnu ikke konfigureret",
   "errorActivityGpxCleanupFailed": "Den midlertidige aktivitetsfil kunne ikke slettes",
   "errorActivityGpxFileWriteFailed": "Filen til upload af aktiviteten kunne ikke forberedes",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-bekræftelse mislykkedes",
   "errorMfaVerificationFailedWithDetails": "MFA-bekræftelse mislykkedes: {details}",
   "errorNoSessionIdReceived": "Der blev ikke modtaget noget sessions-id fra serveren",
+  "errorMfaSessionMissing": "Din login-session gik tabt. Log ind igen.",
+  "errorSsoCallbackFailed": "Single sign-on kunne ikke gennemføres. Prøv igen.",
   "errorNotAuthenticated": "Du er ikke logget ind",
   "errorPkceVerifierMissingRestartLogin": "Loginverifikatoren blev ikke fundet. Start login forfra.",
   "errorServerUrlNotConfigured": "Server-URL er ikke konfigureret",
@@ -54,6 +61,32 @@
   "logout": "Log ud",
   "logoutConfirmTitle": "Log ud",
   "logoutConfirmMessage": "Er du sikker på, at du vil logge ud?",
+  "legacyDataTitle": "Aktiviteter fra før serveropdateringen",
+  "legacyDataMessageWithUsername": "Denne enhed har aktiviteter gemt for en konto på denne server fra før serveren blev opdateret. Er de dine, {username}? Hvis de er, bliver dem, der stadig venter, uploadet til din konto.",
+  "legacyDataMessage": "Denne enhed har aktiviteter gemt for en konto på denne server fra før serveren blev opdateret. Tilhører de den konto, du lige har logget ind med? Hvis de gør, bliver dem, der stadig venter, uploadet til den.",
+  "legacyDataConfirm": "De er mine",
+  "legacyDataDecline": "Ikke mine",
+  "errorActivityUploadLimit": "Serveren har for mange af dine uploads i gang. Appen prøver igen senere.",
+  "errorPasswordChangeFailed": "Adgangskoden kunne ikke ændres",
+  "errorPasswordChangeFailedWithDetails": "Adgangskoden kunne ikke ændres: {details}",
+  "errorSignInStepUnsupported": "Serveren bad om et login-trin, som denne version af appen ikke understøtter. Opdater appen, og prøv igen.",
+  "errorSsoEmailMissing": "Din identitetsudbyder delte ikke en e-mailadresse, som er nødvendig for at oprette din konto.",
+  "errorSsoEmailUnverified": "Din identitetsudbyder har ikke bekræftet din e-mailadresse. Bekræft den der, og prøv igen.",
+  "errorSsoAutoCreateDisabled": "Ingen konto matcher dette login, og serveren opretter ikke konti automatisk. Spørg din administrator.",
+  "errorSsoLinkByEmailDisabled": "En konto bruger allerede denne e-mailadresse, men denne udbyder kan ikke logge ind på den. Log ind på en anden måde, eller spørg din administrator.",
+  "errorSsoApprovalPending": "Din konto venter på godkendelse fra en administrator.",
+  "errorSsoAccountDisabled": "Denne konto er deaktiveret. Kontakt din administrator.",
+  "errorSsoRedirectNotAllowed": "Denne server tillader ikke single sign-on fra denne app. Bed din administrator om at tilføje com.endurain.endurain:/auth/sso/callback til ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Din administrator kræver totrinsbekræftelse. Opsæt det i Endurains webapp, og prøv igen.",
+  "errorActivityFileTooLarge": "Aktivitetsfilen er for stor til denne server",
+  "errorActivityUnsupportedFileType": "Denne server accepterer ikke denne type aktivitetsfil",
+  "errorTooManyRequests": "For mange forsøg. Vent lidt, og prøv igen.",
+  "passwordChangeTitle": "Vælg en ny adgangskode",
+  "passwordChangeMessage": "En administrator har angivet din adgangskode. Vælg en ny for at afslutte login.",
+  "newPassword": "Ny adgangskode",
+  "confirmNewPassword": "Bekræft ny adgangskode",
+  "passwordsDoNotMatch": "Adgangskoderne er ikke ens",
+  "changePassword": "Skift adgangskode",
   "logoutServerFailedWarning": "Kunne ikke logge ud fra serveren, men loggede ud lokalt",
   "ssoBrowserLaunchFailed": "SSO-login kunne ikke åbnes i systembrowseren",
   "ssoSignInWith": "Log ind med {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Gennemførte aktiviteter gemt på denne enhed",
   "activityRetainUploadedGpx": "Behold uploadede GPX-filer",
   "activityRetainUploadedGpxSubtitle": "Gemmer gennemførte rutefiler i appens private lagring efter upload.",
+  "activityAutoPauseTitle": "Automatisk pause",
+  "activityAutoPauseSubtitle": "Sætter automatisk pause, når du holder op med at bevæge dig",
+  "activityAutoPauseToggleLabel": "Sæt automatisk pause",
+  "activityAutoPauseToggleDescription": "Sætter optagelsen på pause, når du holder op med at bevæge dig, og genoptager den, når du bevæger dig igen.",
+  "activityAutoPauseDelayHelperText": "Vælg, hvor længe der skal gå uden bevægelse, før der sættes pause.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} sekunder",
+  "activityAutoPausedIndicator": "Automatisk pause",
+  "audioAnnouncementsAutoPaused": "Optagelse sat på pause",
+  "audioAnnouncementsAutoResumed": "Optagelse genoptaget",
   "activityHistoryEmpty": "Ingen gennemførte aktiviteter gemt på denne enhed.",
   "activityHistoryLoadFailed": "Lokale aktiviteter kunne ikke indlæses.",
   "activityHistoryRefresh": "Opdater",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Træning",
   "healthAccessWorkoutRoutes": "Træningsruter",
   "healthAccessHeartRate": "Puls",
-  "healthAccessWorkoutSummary": "Træningsdistance, kalorier og skridt",
   "healthAccessAllowed": "Tilladt",
   "healthAccessNeedsAttention": "Har brug for opmærksomhed",
   "healthAccessManagedBySystem": "Administreret i systemindstillinger",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Serveren forsøgte at omdirigere til en usikker forbindelse. Anmodningen blev blokeret for at beskytte dine loginoplysninger.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Serveren omdirigerede for mange gange. Tjek serveradressen.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Lydmeddelelser",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Talebeskeder om distance, tid, tempo eller hastighed",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Meddel aktivitetens fremgang",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Siger din distance, tid, tempo eller hastighed højt under en optagelse",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Dæmp anden lyd, mens der tales",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Sænker midlertidigt lydstyrken for anden lyd under hver meddelelse",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Meddelelsesinterval efter aktivitet",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Distance",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Tid",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Hvert {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Hvert {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Reducer interval",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Øg interval",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Afspil eksempel",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Eksempel på annoncering er ikke tilgængeligt på denne enhed",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Ændringer træder i kraft ved din næste optagelse.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Distance {distance}. Tid {duration}. Omgang: {lapMetric}. Samlet: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

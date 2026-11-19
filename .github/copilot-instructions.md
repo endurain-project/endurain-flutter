@@ -1,8 +1,8 @@
 # Copilot Instructions for Endurain mobile app
 
 ## Tech Stack
-- **Flutter**: 3.47+ (stable channel; CI pins 3.47.1)
-- **Dart**: 3.12+
+- **Flutter**: 3.50+ (stable channel; CI pins 3.50.0)
+- **Dart**: 3.14.0+
 - **Platforms**: Android, iOS
 - **State Management**: `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and exposed via `AppScope`; obtain services with `AppScope.servicesOf(context)`
 - **Map Provider**: OpenStreetMap (flutter_map + latlong2)
@@ -133,12 +133,12 @@ Rules:
 The authoritative list is `pubspec.yaml`; keep this section in sync when adding load-bearing dependencies:
 - `cupertino_icons: ^1.0.8`
 - `flutter_lints: ^6.0.0`
-- `flutter_secure_storage: ^11.0.0`
+- `flutter_secure_storage: ^11.1.0`
 - `geolocator: ^14.0.3`
-- `flutter_map: ^8.3.1`
+- `flutter_map: ^8.3.2`
 - `latlong2: ^0.10.1`
-- `go_router: ^17.3.0`
-- `sqflite: ^2.4.0`
+- `go_router: ^18.0.1`
+- `sqflite: ^2.4.4`
 - `health: ^13.3.1`
 
 ## Best Practices
@@ -168,7 +168,7 @@ The authoritative list is `pubspec.yaml`; keep this section in sync when adding 
 
 ### Navigation
 Top-level, auth-guarded routing uses `go_router` in
-`lib/core/navigation/app_router.dart`: the router redirects between the splash,
+`lib/app/navigation/app_router.dart`: the router redirects between the splash,
 login, and home destinations based on `AuthSessionController` state. Add new
 top-level destinations there. Use `Navigator.push` for sub-navigation within a
 destination:

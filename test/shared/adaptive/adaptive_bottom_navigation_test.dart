@@ -1,7 +1,7 @@
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   setUp(() {

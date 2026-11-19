@@ -70,6 +70,33 @@ class LocalActivityRepository {
     updatedAt: updatedAt,
   );
 
+  Future<int> bindRecordToProfile({
+    required String id,
+    required String origin,
+    required String profileId,
+    required DateTime updatedAt,
+  }) => _store.bindRecordToProfile(
+    id: id,
+    origin: origin,
+    profileId: profileId,
+    updatedAt: updatedAt,
+  );
+
+  Future<List<String>> listConnectionProfileIds({required String origin}) =>
+      _store.listConnectionProfileIds(origin: origin);
+
+  Future<int> rebindConnectionProfile({
+    required String origin,
+    required String fromProfileId,
+    required String toProfileId,
+    required DateTime updatedAt,
+  }) => _store.rebindConnectionProfile(
+    origin: origin,
+    fromProfileId: fromProfileId,
+    toProfileId: toProfileId,
+    updatedAt: updatedAt,
+  );
+
   Future<void> delete(String id) async {
     final record = await _store.get(id);
     if (record == null) {

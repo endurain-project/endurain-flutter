@@ -39,6 +39,26 @@ class AppLocalizationsSk extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Formát súboru nie je podporovaný';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Súbor je poškodený alebo sa nedá prečítať';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'V súbore sa nenašli žiadne aktivity';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Pri importe aktivity sa vyskytla chyba. Skúste to znova.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Poskytovateľ aktivít momentálne nie je dostupný. Skúste to neskôr.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Nahrávanie aktivít ešte nie je nastavené';
 
@@ -148,6 +168,14 @@ class AppLocalizationsSk extends AppLocalizations {
       'Zo servera nebolo prijaté žiadne ID relácie';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Vaša prihlasovacia relácia sa stratila. Prihláste sa znova.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Jednotné prihlásenie (SSO) sa nepodarilo dokončiť. Skúste to znova.';
+
+  @override
   String get errorNotAuthenticated => 'Nie ste prihlásení';
 
   @override
@@ -225,6 +253,102 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Naozaj sa chcete odhlásiť?';
+
+  @override
+  String get legacyDataTitle => 'Aktivity spred aktualizácie servera';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Sú vaše, $username? Ak áno, tie, ktoré ešte čakajú, sa nahrajú do vášho účtu.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Patria k účtu, do ktorého ste sa práve prihlásili? Ak áno, tie, ktoré ešte čakajú, sa doň nahrajú.';
+
+  @override
+  String get legacyDataConfirm => 'Sú moje';
+
+  @override
+  String get legacyDataDecline => 'Nie sú moje';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Na serveri prebieha príliš veľa vašich nahrávaní. Aplikácia to skúsi znova neskôr.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Heslo sa nepodarilo zmeniť';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Heslo sa nepodarilo zmeniť: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Server požiadal o krok prihlásenia, ktorý táto verzia aplikácie nepodporuje. Aktualizujte aplikáciu a skúste to znova.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Váš poskytovateľ identity nezdieľal e-mailovú adresu, ktorá je potrebná na vytvorenie účtu.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Váš poskytovateľ identity neoveril vašu e-mailovú adresu. Overte ju tam a skúste to znova.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Tomuto prihláseniu nezodpovedá žiadny účet a tento server nevytvára účty automaticky. Obráťte sa na správcu.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Túto e-mailovú adresu už používa účet, ale tento poskytovateľ sa doň nemôže prihlásiť. Prihláste sa inak alebo sa obráťte na správcu.';
+
+  @override
+  String get errorSsoApprovalPending => 'Váš účet čaká na schválenie správcom.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Tento účet je zakázaný. Obráťte sa na správcu.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Tento server nepovoľuje jednotné prihlásenie z tejto aplikácie. Požiadajte správcu, aby pridal com.endurain.endurain:/auth/sso/callback do ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Váš správca vyžaduje dvojstupňové overenie. Nastavte ho vo webovej aplikácii Endurain a skúste to znova.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Súbor aktivity je pre tento server príliš veľký';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Tento server tento druh súboru aktivity neprijíma';
+
+  @override
+  String get errorTooManyRequests =>
+      'Príliš veľa pokusov. Chvíľu počkajte a skúste to znova.';
+
+  @override
+  String get passwordChangeTitle => 'Zvoľte nové heslo';
+
+  @override
+  String get passwordChangeMessage =>
+      'Správca vám nastavil heslo. Na dokončenie prihlásenia zvoľte nové.';
+
+  @override
+  String get newPassword => 'Nové heslo';
+
+  @override
+  String get confirmNewPassword => 'Potvrďte nové heslo';
+
+  @override
+  String get passwordsDoNotMatch => 'Heslá sa nezhodujú';
+
+  @override
+  String get changePassword => 'Zmeniť heslo';
 
   @override
   String get logoutServerFailedWarning =>
@@ -489,6 +613,38 @@ class AppLocalizationsSk extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Po nahraní ukladá dokončené súbory trás do súkromného úložiska aplikácie.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatická pauza';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automaticky pozastaví, keď sa prestanete pohybovať';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automaticky pozastaviť';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Nahrávanie sa automaticky pozastaví, keď sa prestanete pohybovať, a obnoví sa, keď sa znova začnete pohybovať.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Vyberte, ako dlho čakať bez pohybu pred pozastavením.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekúnd';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaticky pozastavené';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Nahrávanie pozastavené';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Nahrávanie obnovené';
 
   @override
   String get activityHistoryEmpty =>
@@ -829,10 +985,6 @@ class AppLocalizationsSk extends AppLocalizations {
   String get healthAccessHeartRate => 'Srdcová frekvencia';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Vzdialenosť, kalórie a kroky tréningu';
-
-  @override
   String get healthAccessAllowed => 'Povolené';
 
   @override
@@ -1163,9 +1315,78 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Server sa pokúsil presmerovať na nezabezpečené pripojenie. Požiadavka bola zablokovaná na ochranu vašich prihlasovacích údajov.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Server presmeroval príliš veľakrát. Skontrolujte adresu servera.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Hlasové oznámenia';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Hlasové aktualizácie vzdialenosti, času, tempa alebo rýchlosti';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Oznamovať priebeh aktivity';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Počas nahrávania nahlas oznamuje vzdialenosť, čas, tempo alebo rýchlosť';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Stlmiť iný zvuk počas rozprávania';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Dočasne zníži hlasitosť iného zvuku počas každého oznámenia';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Interval oznámení podľa aktivity';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Vzdialenosť';
+
+  @override
+  String get audioAnnouncementsByTime => 'Čas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Každých $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Každých $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Zmenšiť interval';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Zväčšiť interval';
+
+  @override
+  String get audioAnnouncementsPreview => 'Prehrať ukážku';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Ukážka hlásenia nie je na tomto zariadení dostupná';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Zmeny sa prejavia pri ďalšom zázname.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Vzdialenosť $distance. Čas $duration. Okruh: $lapMetric. Celkovo: $overallMetric.';
+  }
 }

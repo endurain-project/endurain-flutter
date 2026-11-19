@@ -2,8 +2,123 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v0.11.0+20] - 2026-11-17
+
+This release requires Endurain server v0.21 or newer, and older app versions cannot sign in to a v0.21 server. If your server sets `ALLOWED_REDIRECT_URIS`, it must include `com.endurain.endurain:/auth/sso/callback` for single sign-on to work.
+
+### Security
+
+- Crash reports sent to Sentry now drop request data, user information, extras and breadcrumbs, and redact event messages and tags, keeping only device, OS, app and runtime context.
+- Error text from an SSO sign-in callback is no longer shown to the user, since any app can trigger that deep link. A generic localized error is shown instead, or a specific one when the link carries one of the server's documented failure codes.
+- The refresh token is sent in the request body instead of the `Authorization` header, as Endurain v0.21 requires.
+- Secure storage is configured with explicit hardened options: Keychain items are available after first unlock and stay on the device, and a transient Android Keystore failure no longer silently erases the stored server and session.
+
+### Fixed
+
+- Remembered heart rate sensors now reconnect reliably on Android. Native Bluetooth addresses are normalized so they match the stored device IDs, and cold starts and returning to the foreground retry the reconnect instead of trying once (#38).
+- The configured server URL now survives a secure storage failure or reset thanks to a non-secret mirror. Falling back to the mirror is recorded in diagnostics.
+- A missing multi-factor session now shows its own error instead of an unrelated one.
+- Activity uploads no longer poll a finished job until they give up and retry, and the app now waits the interval the server asks for between checks.
+- Failed uploads and sign-in steps now say why: the file is too large or of an unsupported type, an administrator requires two-step verification the account has not set up, or there were too many sign-in attempts.
+
+### Changed
+
+- Compatibility with Endurain server v0.21: sign-in follows the server's steps (including a second factor after single sign-on), uses the new token exchange route and PKCE form fields, accepts UUID account and provider ids, reads the paged provider list and the renamed public settings route, loads uploaded provider icons, and stores and sends the device id so a sign-in from this app is not reported as a new device each time. Uploads follow the new `/jobs/{id}` API, and an upload refused because the server already has 10 in progress is retried later.
+- The single sign-on callback is now `com.endurain.endurain:/auth/sso/callback` on Android and iOS, and the app checks the server allows it before opening the browser. Links to the old `endurain://` address no longer open the app.
+- Android release builds no longer need the temporary ProGuard rules. `shared_preferences_android` is now required at 2.5.2 or newer, which ships its own consumer rules.
+- Internal restructuring: the app wiring and navigation moved to `lib/app/`, the core services were split into `auth`, `network`, `diagnostics` and `location` packages, and the recording service and map screen were broken into smaller focused components. There are no user-visible changes.
+- Stricter lint rules (`avoid_dynamic_calls`, `directives_ordering`, `unnecessary_lambdas`) and sorted imports.
+- Updated localized error and health access strings.
+- Updated dependencies and raised the minimum to Flutter 3.50.0 (Dart 3.14.0); the CI builder image and workflows use it. Android builds now use Gradle 9.9.1, Android Gradle Plugin 9.5.1 and Kotlin 2.4.21, and the Flutter build image uses Java 25.
+
+### Added
+
+- Activities and health imports saved before the server moved to Endurain v0.21 follow their account to its new id. They are moved silently when the username matches, and the user is asked when it cannot be matched, so queued uploads still go out and no health workout is imported twice.
+- A "choose a new password" step at sign-in, for accounts whose password an administrator set.
+- Live heart rate from HealthKit during iOS recordings (iOS 26+). Sources such as AirPods Pro 3 now fill heart rate on recorded points; readings from a connected Bluetooth sensor still take priority (#23).
+- On-device login flow smoke tests (`integration_test/`), run in CI on an Android emulator and an iOS simulator, plus Dependabot configuration.
+- Unit tests for the recording clock, permission gate and sensor session.
+
+## [v0.10.2+19] - 2026-10-21
+
+### Fixed
+
+- Wrong max speed and pace spikes (#11). GPS fixes that imply a speed the activity cannot reach (for example 80 km/h while running), including a poor first fix after a pause, are now dropped before the GPX is uploaded and before on-device stats are computed. Max speed is also taken from a short median window so a single glitch can no longer set it.
+- Android release builds getting stuck on a blank splash screen at launch, and language, units, audio and sensor settings failing to load. R8 minification renamed the Kotlin classes that `shared_preferences_android` 2.5 (introduced with v0.10.0) looks up by name over JNI, so every preferences read failed (flutter/flutter#194649). ProGuard rules now keep those classes (temporary, until `shared_preferences_android` 2.5.2 ships its own), a failing or stalled crash-reporting start can no longer prevent the app from starting, and launch no longer waits on the network to confirm a stored session: the session is restored immediately and verified in the background.
+- The app no longer hangs on the splash screen when secure storage cannot be read at launch. It starts in guest mode and restores the signed-in session when the storage becomes readable again. Signing in recovers from an unusable store (for example an invalidated Android Keystore key), logout still clears local data when the stored session cannot be read, and queued activity uploads retry instead of failing (#27).
+
+### Changed
+
+- Stronger elevation smoothing (9-sample median, 21-sample moving average) for the elevation gain shown on the device, matching the updated Endurain server so both report the same value (#17).
+
+## [v0.10.1+18] - 2026-10-20
+
+### Fixed
+
+- Added vertical padding to iOS list tiles with subtitles so wrapped subtitle text no longer touches the top and bottom edges (for example in Audio Announcements settings).
+
+## [v0.10.0+17] - 2026-10-20
+
+### Added
+
+- Auto-pause and auto-resume for recordings. Recording pauses automatically when you stop moving and resumes when you start again, with a configurable delay and optional audio announcements (localized).
+
+### Changed
+
+- Compatibility with Endurain v0.20.0: uploads now wait for the server to finish importing the activity before marking it as uploaded, so failed imports are no longer reported as successful. Import errors are shown as localized messages.
+- Updated dependencies, including `sentry` 10.1.0 and `universal_ble` 3.1.0.
+
+## [v0.9.2+16] - 2026-10-07
+
+### Fixed
+
+- Reconnect to active native recordings after reopening the app without pausing them or creating a replacement activity. Restart interrupted collection within the same session and keep explicit pauses unchanged.
+- Preserve recordings before their first GPS fix and after recorder failures. Failed recordings require an explicit stop before saving or uploading, and remain available for resume or discard.
+- Replay persisted and live GPS points once using session-scoped offsets, retain connection ownership, and support retrying local finalization without replacing the recording.
+- Preserve captured iOS heart-rate, power, and cadence readings across recording relaunches using a session-scoped durable sensor log.
+- Reject unsuccessful iOS recording-state writes instead of acknowledging failed start, pause, resume, or stop transitions.
+
+### Changed
+
+- Show Resume and Stop controls for recoverable failed recordings, and allow the stop confirmation (save or discard) to open for them.
+- Updated `cupertino_icons` to 2.0.0, refreshed locked dependencies, and bumped `actions/upload-artifact` to v7.0.2 in the Android APK workflow.
+- Added Robolectric-based Android native recorder tests, expanded iOS recorder tests, and documented the active recording recovery contract and manual relaunch QA in the README.
+
+## [v0.9.1+15] - 2026-09-11
+
+### Fixed
+
+- Corrected distance announcement interval options and snapping so 0.5 is available instead of 0.6.
+- Prevented an audio announcement preview crash when no `ScaffoldMessenger` is available.
+- Aligned Flutter and Dart versions to Flutter 3.47.3 and Dart 3.13.3 across the app, Docker builder, and CI workflows.
+
+## [v0.9.0+14] - 2026-09-04
+
+### Added
+
+- Added configurable activity auto-pause and auto-resume with movement detection, resume hysteresis, and process-recovery support.
+- Added localized, on-device audio announcements for distance or elapsed-time milestones during foreground and background activity recording, including distance, duration, lap plus overall pace or speed, and automatic pause or resume cues.
+- Added audio announcement settings with a master switch, per-activity enablement and distance/time intervals, metric/imperial defaults, optional audio ducking, and an audible per-activity preview.
+- Added durable milestone tracking and privacy-safe native failure logging so delayed updates and recorder restarts do not replay stale milestones, while speech failures cannot interrupt activity recording.
+- Added a contributor license agreement, pull request attestation, and required-status workflow for relicensing rights over accepted external contributions.
+
+## [v0.8.2+13] - 2026-08-30
+
+### Fixed
+
+- Unified the duration shown in completion, history, and activity details, and calculated running pace from total time over distance.
+- Kept the HealthKit connection marker device-local so restored preferences cannot be mistaken for authorization on another device.
+
+### Changed
+
+- Moved the "keep uploaded GPX files" and health auto-sync settings out of the platform keychain into the regular preference store. These two preferences reset to their defaults once on upgrade.
+- Updated `go_router` to 18.0.0, `material_ui` to 1.1.0, `cupertino_ui` to 1.0.1, and `androidx.core:core-ktx` to 1.19.0.
+
+### Security
+
+- Added build-time managed-cloud HTTPS policy and tile-server host allowlist configuration, with Android and iOS transport-policy parity checks.
 
 ## [v0.8.1+12] - 2026-08-26
 

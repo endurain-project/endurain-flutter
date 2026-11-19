@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:endurain/core/services/crash_reporter.dart';
+import 'package:endurain/core/diagnostics/crash_reporter.dart';
 import 'package:endurain/core/utils/diagnostics_redaction.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:sentry/sentry.dart';
 
 /// [CrashReporter] backed by the pure-Dart Sentry SDK.
@@ -49,7 +50,7 @@ class SentryCrashReporter implements CrashReporter {
         // Belt-and-suspenders: we forward only our own errors and scrub them,
         // but make sure the SDK never enriches events with PII on its own.
         options.sendDefaultPii = false;
-        options.beforeSend = _scrubEvent;
+        options.beforeSend = scrubEvent;
         // Drop SDK-generated breadcrumbs entirely; the local diagnostics
         // recorder is the breadcrumb trail, and remote reporting is limited to
         // scrubbed error events by design.
@@ -95,18 +96,37 @@ class SentryCrashReporter implements CrashReporter {
     }
   }
 
-  /// Redacts sensitive substrings from every exception value before the event
-  /// is sent, using the same rules as the local diagnostics recorder.
-  FutureOr<SentryEvent?> _scrubEvent(SentryEvent event, Hint hint) {
-    final exceptions = event.exceptions;
-    if (exceptions != null) {
-      for (final exception in exceptions) {
-        final value = exception.value;
-        if (value != null) {
-          exception.value = redactDiagnosticText(value, maxLength: 800);
-        }
-      }
+  /// Redacts sensitive substrings from every free-text field of the event
+  /// before it is sent, using the same rules as the local diagnostics recorder.
+  ///
+  /// Request data, user, extras and non-allow-listed contexts are dropped
+  /// outright; the remaining strings are redacted.
+  @visibleForTesting
+  FutureOr<SentryEvent?> scrubEvent(SentryEvent event, Hint hint) {
+    String? redact(String? value) =>
+        value == null ? null : redactDiagnosticText(value, maxLength: 800);
+
+    for (final exception in event.exceptions ?? const <SentryException>[]) {
+      exception.value = redact(exception.value);
     }
+    final message = event.message;
+    if (message != null) {
+      message.formatted = redact(message.formatted) ?? '';
+      message.template = redact(message.template);
+      message.params = null;
+    }
+    event.request = null;
+    event.user = null;
+    // ignore: deprecated_member_use
+    event.extra = null;
+    event.breadcrumbs = null;
+    event.contexts.removeWhere((key, _) => !_allowedContexts.contains(key));
+    event.tags = {
+      for (final entry in (event.tags ?? const <String, String>{}).entries)
+        entry.key: redactDiagnosticText(entry.value, maxLength: 200),
+    };
     return event;
   }
+
+  static const _allowedContexts = {'device', 'os', 'app', 'runtimes'};
 }

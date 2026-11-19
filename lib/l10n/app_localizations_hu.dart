@@ -40,6 +40,26 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'A fájlformátum nem támogatott';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'A fájl sérült, vagy nem olvasható';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'A fájlban nem található tevékenység';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Hiba történt a tevékenység importálása közben. Próbáld újra.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'A tevékenységszolgáltató jelenleg nem érhető el. Próbáld újra később.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'A tevékenységek feltöltése még nincs beállítva';
 
@@ -150,6 +170,14 @@ class AppLocalizationsHu extends AppLocalizations {
       'Nem érkezett munkamenet-azonosító a kiszolgálótól';
 
   @override
+  String get errorMfaSessionMissing =>
+      'A bejelentkezési munkamenet elveszett. Jelentkezzen be újra.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Az egyszeri bejelentkezést (SSO) nem sikerült befejezni. Kérjük, próbálja újra.';
+
+  @override
   String get errorNotAuthenticated => 'Nincs bejelentkezve';
 
   @override
@@ -227,6 +255,104 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Biztosan ki szeretne jelentkezni?';
+
+  @override
+  String get legacyDataTitle => 'A szerverfrissítés előtti tevékenységek';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Ezen az eszközön olyan tevékenységek vannak, amelyeket a szerver frissítése előtt mentettek egy ezen a szerveren lévő fiókhoz. Ezek az Önéi, $username? Ha igen, a még várakozók feltöltődnek az Ön fiókjába.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Ezen az eszközön olyan tevékenységek vannak, amelyeket a szerver frissítése előtt mentettek egy ezen a szerveren lévő fiókhoz. Ahhoz a fiókhoz tartoznak, amellyel most jelentkezett be? Ha igen, a még várakozók oda töltődnek fel.';
+
+  @override
+  String get legacyDataConfirm => 'Az enyéim';
+
+  @override
+  String get legacyDataDecline => 'Nem az enyéim';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'A szerveren túl sok feltöltése van folyamatban. Az alkalmazás később újra megpróbálja.';
+
+  @override
+  String get errorPasswordChangeFailed =>
+      'A jelszót nem sikerült megváltoztatni';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'A jelszót nem sikerült megváltoztatni: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'A szerver olyan bejelentkezési lépést kért, amelyet az alkalmazás ezen verziója nem támogat. Frissítse az alkalmazást, és próbálja újra.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Az identitásszolgáltató nem osztott meg e-mail-címet, amely a fiók létrehozásához szükséges.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Az identitásszolgáltató nem erősítette meg az e-mail-címét. Erősítse meg ott, majd próbálja újra.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Egyetlen fiók sem felel meg ennek a bejelentkezésnek, és a szerver nem hoz létre automatikusan fiókokat. Forduljon a rendszergazdához.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Ezt az e-mail-címet már egy fiók használja, de ez a szolgáltató nem tud bejelentkezni abba. Jelentkezzen be másként, vagy forduljon a rendszergazdához.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'A fiókja rendszergazdai jóváhagyásra vár.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ez a fiók le van tiltva. Forduljon a rendszergazdához.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Ez a szerver nem engedélyezi az egyszeri bejelentkezést ebből az alkalmazásból. Kérje meg a rendszergazdát, hogy adja hozzá a(z) com.endurain.endurain:/auth/sso/callback címet a(z) ALLOWED_REDIRECT_URIS listához.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'A rendszergazda kétlépéses ellenőrzést ír elő. Állítsa be az Endurain webalkalmazásában, majd próbálja újra.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'A tevékenységfájl túl nagy ehhez a szerverhez';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Ez a szerver nem fogadja el az ilyen típusú tevékenységfájlt';
+
+  @override
+  String get errorTooManyRequests =>
+      'Túl sok próbálkozás. Várjon egy kicsit, majd próbálja újra.';
+
+  @override
+  String get passwordChangeTitle => 'Válasszon új jelszót';
+
+  @override
+  String get passwordChangeMessage =>
+      'Egy rendszergazda beállította a jelszavát. A bejelentkezés befejezéséhez válasszon újat.';
+
+  @override
+  String get newPassword => 'Új jelszó';
+
+  @override
+  String get confirmNewPassword => 'Új jelszó megerősítése';
+
+  @override
+  String get passwordsDoNotMatch => 'A jelszavak nem egyeznek';
+
+  @override
+  String get changePassword => 'Jelszó módosítása';
 
   @override
   String get logoutServerFailedWarning =>
@@ -492,6 +618,38 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'A befejezett útvonalfájlokat a feltöltés után az alkalmazás privát tárhelyén tárolja.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatikus szüneteltetés';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatikusan szünetelteti, ha megállsz';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatikus szüneteltetés';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'A rögzítés automatikusan szünetel, ha megállsz, és folytatódik, amint újra mozogni kezdesz.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Válaszd ki, mennyi ideig várjon mozgás nélkül szüneteltetés előtt.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds másodperc';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatikusan szüneteltetve';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Rögzítés szüneteltetve';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Rögzítés folytatva';
 
   @override
   String get activityHistoryEmpty =>
@@ -829,9 +987,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String get healthAccessHeartRate => 'Pulzusszám';
 
   @override
-  String get healthAccessWorkoutSummary => 'Edzéstáv, kalóriák és lépések';
-
-  @override
   String get healthAccessAllowed => 'Engedélyezett';
 
   @override
@@ -1161,9 +1316,78 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'A kiszolgáló nem biztonságos kapcsolatra próbált átirányítani. A kérést letiltottuk a hitelesítő adatai védelme érdekében.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'A kiszolgáló túl sokszor irányított át. Ellenőrizze a kiszolgáló címét.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Hangos bejelentések';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Hangos frissítések a távolságról, időről, tempóról vagy sebességről';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Tevékenység haladásának bejelentése';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Felolvassa a távolságot, időt, tempót vagy sebességet felvétel közben';
+
+  @override
+  String get audioAnnouncementsDuckSwitch => 'Más hang halkítása beszéd közben';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Ideiglenesen halkítja a többi hangot minden bejelentés alatt';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Bejelentési időköz tevékenységenként';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Távolság';
+
+  @override
+  String get audioAnnouncementsByTime => 'Idő';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Minden $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Minden $minutes perc';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Időköz csökkentése';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Időköz növelése';
+
+  @override
+  String get audioAnnouncementsPreview => 'Minta lejátszása';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'A bemondás mintája nem érhető el ezen az eszközön';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'A módosítások a következő rögzítéstől lépnek életbe.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Távolság $distance. Idő $duration. Kör: $lapMetric. Összesen: $overallMetric.';
+  }
 }

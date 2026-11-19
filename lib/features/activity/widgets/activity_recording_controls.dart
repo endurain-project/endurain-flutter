@@ -1,19 +1,19 @@
 import 'dart:math' as math;
 
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
-import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/widgets/activity_completion_summary.dart';
 import 'package:endurain/features/activity/widgets/activity_stats_display.dart';
 import 'package:endurain/features/activity/widgets/activity_type_picker.dart';
 import 'package:endurain/features/activity/widgets/activity_upload_status_panel.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ActivityRecordingControls extends StatelessWidget {
@@ -138,6 +138,18 @@ class ActivityRecordingControls extends StatelessWidget {
                         ActivityCompletionSummary(state: state)
                       else
                         ActivityStatsDisplay(state: state),
+                      if (state.status == ActivityRecordingStatus.paused &&
+                          state.isAutoPaused) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.activityAutoPausedIndicator,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                       if (state.isActive ||
                           state.status == ActivityRecordingStatus.stopping ||
                           state.status == ActivityRecordingStatus.completed)
@@ -208,6 +220,7 @@ class ActivityRecordingControls extends StatelessWidget {
           ),
         ];
       case ActivityRecordingStatus.paused:
+      case ActivityRecordingStatus.failed when state.canRecover:
         return [
           _controlButton(
             label: l10n.activityResume,
@@ -251,7 +264,8 @@ class ActivityRecordingControls extends StatelessWidget {
   }
 
   String? _recordingErrorMessage(AppLocalizations l10n) {
-    if (state.status != ActivityRecordingStatus.failed) {
+    if (state.status != ActivityRecordingStatus.failed &&
+        state.lastError == null) {
       return null;
     }
     return state.lastError?.localizedMessage(l10n) ??
@@ -354,6 +368,7 @@ class _StartActivityIconButton extends StatelessWidget {
                   ? CupertinoColors.inactiveGray
                   : CupertinoColors.white,
               size: 26,
+              semanticLabel: label,
             ),
           )
         : FilledButton(
@@ -375,18 +390,17 @@ class _StartActivityIconButton extends StatelessWidget {
               Icons.play_arrow,
               color: Theme.of(context).colorScheme.onPrimary,
               size: 28,
+              semanticLabel: label,
             ),
           );
 
     return Tooltip(
       message: label,
-      child: Semantics(
-        button: true,
-        label: label,
-        child: SizedBox.square(
-          dimension: ActivityRecordingControls._idleControlHeight,
-          child: button,
-        ),
+      // The icon's semanticLabel names the button itself; wrapping it in a
+      // separate Semantics node would leave the real button unlabeled.
+      child: SizedBox.square(
+        dimension: ActivityRecordingControls._idleControlHeight,
+        child: button,
       ),
     );
   }

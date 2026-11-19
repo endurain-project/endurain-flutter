@@ -31,7 +31,7 @@
 			<string>com.endurain.auth</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>endurain</string>
+				<string>com.endurain.endurain</string>
 			</array>
 		</dict>
 	</array>
@@ -39,29 +39,22 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Arbitrary loads stay on because self-hosted instances are user-provided
+	     hosts that may use plain HTTP. A managed ("Endurain Cloud") host, once
+	     one exists, gets an NSExceptionDomains entry here with
+	     NSExceptionAllowsInsecureHTTPLoads=false and a TLSv1.2 minimum — see
+	     android/app/src/main/res/xml/network_security_config.xml. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>app.endurain.example</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<false/>
-				<key>NSExceptionMinimumTLSVersion</key>
-				<string>TLSv1.2</string>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-			</dict>
-		</dict>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Endurain connects to Bluetooth heart rate monitors and other sensors to record your live data during activities.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Endurain reads your workout history from HealthKit to let you import activities and keep your training log in sync.</string>
+	<string>Endurain reads your heart rate from Health during a recording (for example from AirPods Pro 3) and your workout history to import activities and keep your training log in sync.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Endurain uses HealthKit to import your workout history and keep your training log up to date.</string>
+	<string>Endurain starts a temporary workout session during a recording to receive live heart rate. It is never saved to Health. Workout history is also used to import activities.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app uses location to show your position on the map and record activities, including while the app is in the background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -91,10 +84,22 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- App Review justification for each mode:
+	     - location: GPS track capture continues while an activity is recorded
+	       with the screen off (see CoreLocationActivityRecorder.swift).
+	     - bluetooth-central: keeps a paired heart-rate/power/cadence sensor
+	       connected for the duration of that same recording.
+	     - audio: plays spoken distance/time/pace milestone announcements
+	       through AVSpeechSynthesizer while the recording is backgrounded
+	       (see AudioAnnouncer.swift). The audio session is activated only
+	       around an utterance and deactivated with
+	       notifyOthersOnDeactivation once the queue drains, so the app never
+	       holds the session while silent. -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
 		<string>bluetooth-central</string>
+		<string>audio</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

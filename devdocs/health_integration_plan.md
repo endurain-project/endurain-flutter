@@ -89,7 +89,7 @@ parallel system. We reuse, unchanged:
 - `LocalActivityRepository` — persists a GPX file + a `LocalActivityRecord`
   (sqflite) with `uploadStatus = pending`.
 - `ActivityUploadService` — multipart GPX upload to
-  `POST /api/v1/activities/create/upload`, with the `Idempotency-Key` header.
+  `POST /api/v1/activities/upload`, with the `Idempotency-Key` header.
 - `ActivityUploadQueue` — app-lifetime, connectivity-/resume-triggered,
   single-flight drainer that retries pending/failed uploads.
 
@@ -611,7 +611,7 @@ and `endurain-scalable-mobile.instructions.md`):
 ### Phase K — Composition root wiring ✅
 
 **Step K1 — Platform adapter factory in `AppServices`.**
-- File: `lib/core/services/app_services.dart`.
+- File: `lib/app/app_services.dart`.
 - Add `HealthPlatformAdapter createHealthPlatformAdapter()` that returns
   `HealthPackagePlatformAdapter` on `defaultTargetPlatform == android || iOS` and
   `UnsupportedHealthPlatformAdapter` otherwise — exactly mirroring

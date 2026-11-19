@@ -1,9 +1,8 @@
-import 'package:endurain/features/activity/models/activity_recording_error.dart';
-
 import 'dart:async';
 
-import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
@@ -155,15 +154,17 @@ void main() {
         expect(service.state.status, ActivityRecordingStatus.paused);
       });
 
-      test('clears and returns false for an empty-point session', () async {
+      test('preserves a paused session before its first point', () async {
         store.session = storedSession(ActiveActivityStatus.paused);
         final service = buildService();
         addTearDown(service.dispose);
 
         final recovered = await service.recoverActiveSession();
 
-        expect(recovered, isFalse);
-        expect(store.session, isNull);
+        expect(recovered, isTrue);
+        expect(service.state.status, ActivityRecordingStatus.paused);
+        expect(store.session, isNotNull);
+        expect(store.clearCount, 0);
       });
 
       test('recovers a completed session for durable finalization', () async {

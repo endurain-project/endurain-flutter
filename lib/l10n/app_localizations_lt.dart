@@ -39,6 +39,26 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Failo formatas nepalaikomas';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Failas sugadintas arba jo nepavyko perskaityti';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Faile nerasta jokių veiklų';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Importuojant veiklą įvyko klaida. Bandykite dar kartą.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Veiklų teikėjas šiuo metu nepasiekiamas. Bandykite vėliau.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Veiklų įkėlimas dar nesukonfigūruotas';
 
@@ -144,6 +164,14 @@ class AppLocalizationsLt extends AppLocalizations {
   String get errorNoSessionIdReceived => 'Iš serverio negautas seanso ID';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Jūsų prisijungimo sesija prarasta. Prisijunkite iš naujo.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Nepavyko užbaigti vieningo prisijungimo (SSO). Bandykite dar kartą.';
+
+  @override
   String get errorNotAuthenticated => 'Nesate prisijungę';
 
   @override
@@ -219,6 +247,104 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Ar tikrai norite atsijungti?';
+
+  @override
+  String get legacyDataTitle =>
+      'Veiklos iš laikotarpio prieš serverio atnaujinimą';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos jūsų, $username? Jei taip, dar laukiančios bus įkeltos į jūsų paskyrą.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Šiame įrenginyje yra veiklų, išsaugotų šio serverio paskyrai prieš jį atnaujinant. Ar jos priklauso paskyrai, prie kurios ką tik prisijungėte? Jei taip, dar laukiančios bus įkeltos į ją.';
+
+  @override
+  String get legacyDataConfirm => 'Jos mano';
+
+  @override
+  String get legacyDataDecline => 'Ne mano';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Serveryje vykdoma per daug jūsų įkėlimų. Programa bandys dar kartą vėliau.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Nepavyko pakeisti slaptažodžio';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Nepavyko pakeisti slaptažodžio: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Serveris paprašė prisijungimo žingsnio, kurio ši programos versija nepalaiko. Atnaujinkite programą ir bandykite dar kartą.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Jūsų tapatybės teikėjas nepateikė el. pašto adreso, kurio reikia paskyrai sukurti.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Jūsų tapatybės teikėjas nepatvirtino jūsų el. pašto adreso. Patvirtinkite jį ten ir bandykite dar kartą.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Šį prisijungimą atitinkančios paskyros nėra, o šis serveris paskyrų automatiškai nekuria. Kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Šį el. pašto adresą jau naudoja paskyra, bet šis teikėjas negali prie jos prisijungti. Prisijunkite kitu būdu arba kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Jūsų paskyra laukia administratoriaus patvirtinimo.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Ši paskyra išjungta. Kreipkitės į administratorių.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Šis serveris neleidžia vieningo prisijungimo iš šios programos. Paprašykite administratoriaus įtraukti com.endurain.endurain:/auth/sso/callback į ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Jūsų administratorius reikalauja dviejų žingsnių patvirtinimo. Nustatykite jį „Endurain“ žiniatinklio programoje ir bandykite dar kartą.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Veiklos failas per didelis šiam serveriui';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Šis serveris nepriima tokio tipo veiklos failo';
+
+  @override
+  String get errorTooManyRequests =>
+      'Per daug bandymų. Šiek tiek palaukite ir bandykite dar kartą.';
+
+  @override
+  String get passwordChangeTitle => 'Pasirinkite naują slaptažodį';
+
+  @override
+  String get passwordChangeMessage =>
+      'Administratorius nustatė jūsų slaptažodį. Norėdami baigti prisijungimą, pasirinkite naują.';
+
+  @override
+  String get newPassword => 'Naujas slaptažodis';
+
+  @override
+  String get confirmNewPassword => 'Patvirtinkite naują slaptažodį';
+
+  @override
+  String get passwordsDoNotMatch => 'Slaptažodžiai nesutampa';
+
+  @override
+  String get changePassword => 'Keisti slaptažodį';
 
   @override
   String get logoutServerFailedWarning =>
@@ -482,6 +608,38 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Po įkėlimo užbaigtus maršrutų failus saugo privačioje programos saugykloje.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automatinė pauzė';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Automatiškai pristabdo, kai nustojate judėti';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Automatiškai pristabdyti';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Įrašymas automatiškai pristabdomas, kai nustojate judėti, ir tęsiamas, kai vėl pradedate judėti.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Pasirinkite, kiek laiko be judėjimo laukti prieš pristabdant.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sek.';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automatiškai pristabdyta';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Įrašymas pristabdytas';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Įrašymas atnaujintas';
 
   @override
   String get activityHistoryEmpty =>
@@ -817,10 +975,6 @@ class AppLocalizationsLt extends AppLocalizations {
   String get healthAccessHeartRate => 'Širdies ritmas';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Treniruotės atstumas, kalorijos ir žingsniai';
-
-  @override
   String get healthAccessAllowed => 'Leidžiama';
 
   @override
@@ -1148,9 +1302,78 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Serveris bandė nukreipti į nesaugų ryšį. Užklausa užblokuota siekiant apsaugoti jūsų prisijungimo duomenis.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Serveris nukreipė per daug kartų. Patikrinkite serverio adresą.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Balso pranešimai';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Balso pranešimai apie atstumą, laiką, tempą arba greitį';
+
+  @override
+  String get audioAnnouncementsMasterSwitch => 'Skelbti veiklos eigą';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Įrašymo metu balsu praneša atstumą, laiką, tempą arba greitį';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Pritildyti kitą garsą kalbėjimo metu';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Laikinai sumažina kito garso garsumą kiekvieno pranešimo metu';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader =>
+      'Pranešimo intervalas pagal veiklą';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Atstumas';
+
+  @override
+  String get audioAnnouncementsByTime => 'Laikas';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Kas $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Kas $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Sumažinti intervalą';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Padidinti intervalą';
+
+  @override
+  String get audioAnnouncementsPreview => 'Klausytis pavyzdžio';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Pranešimo pavyzdys šiame įrenginyje negalimas';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Pakeitimai bus taikomi kitam įrašui.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Atstumas $distance. Laikas $duration. Ratas: $lapMetric. Iš viso: $overallMetric.';
+  }
 }

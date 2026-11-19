@@ -1,0 +1,37 @@
+name: Contributor License Agreement
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Verify contributor agreement
+    runs-on: ubuntu-latest
+    steps:
+      # Run the validator from the trusted base ref so a pull request cannot
+      # alter the check that determines whether it is eligible to merge.
+      - name: Check out trusted base ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+
+      - name: Verify agreement acceptance
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          required='- [x] I have read and agree to the Contributor License Agreement.'
+          if [[ "$PR_BODY" != *"$required"* ]]; then
+            echo 'The Contributor License Agreement checkbox must be checked.'
+            echo 'Read CONTRIBUTOR_LICENSE_AGREEMENT.md and update the PR body.'
+            exit 1
+          fi

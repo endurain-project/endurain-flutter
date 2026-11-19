@@ -11,6 +11,11 @@
   "invalidUrl": "Въведете валиден URL адрес",
   "errorActivityUploadFailed": "Дейността не можа да бъде качена",
   "errorActivityUploadFailedWithDetails": "Дейността не можа да бъде качена: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Форматът на файла не се поддържа",
+  "errorActivityIngestionInvalidFile": "Файлът е повреден или не може да бъде прочетен",
+  "errorActivityIngestionNoActivitiesFound": "Във файла не са намерени дейности",
+  "errorActivityIngestionProcessingFailed": "Нещо се обърка при импортирането на дейността. Опитайте отново.",
+  "errorActivityIngestionProviderUnavailable": "Доставчикът на дейности в момента не е достъпен. Опитайте отново по-късно.",
   "errorActivityUploadNotConfigured": "Качването на дейности още не е конфигурирано",
   "errorActivityGpxCleanupFailed": "Временният файл на дейността не можа да бъде изтрит",
   "errorActivityGpxFileWriteFailed": "Файлът за качване на дейността не можа да бъде подготвен",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "Неуспешно потвърждаване на MFA",
   "errorMfaVerificationFailedWithDetails": "Неуспешно потвърждаване на MFA: {details}",
   "errorNoSessionIdReceived": "Не е получен идентификатор на сесия от сървъра",
+  "errorMfaSessionMissing": "Сесията ви за вход беше загубена. Моля, влезте отново.",
+  "errorSsoCallbackFailed": "Единният вход (SSO) не можа да бъде завършен. Моля, опитайте отново.",
   "errorNotAuthenticated": "Не сте влезли",
   "errorPkceVerifierMissingRestartLogin": "Верификаторът за вход не бе намерен. Започнете входа отначало.",
   "errorServerUrlNotConfigured": "URL адресът на сървъра не е конфигуриран",
@@ -54,6 +61,32 @@
   "logout": "Изход",
   "logoutConfirmTitle": "Изход",
   "logoutConfirmMessage": "Наистина ли искате да излезете?",
+  "legacyDataTitle": "Активности отпреди обновяването на сървъра",
+  "legacyDataMessageWithUsername": "На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Ваши ли са, {username}? Ако са, чакащите ще бъдат качени във вашия акаунт.",
+  "legacyDataMessage": "На това устройство има активности, запазени за акаунт в този сървър отпреди обновяването му. Принадлежат ли на акаунта, с който току-що влязохте? Ако е така, чакащите ще бъдат качени в него.",
+  "legacyDataConfirm": "Мои са",
+  "legacyDataDecline": "Не са мои",
+  "errorActivityUploadLimit": "Сървърът има твърде много ваши качвания в процес. Приложението ще опита отново по-късно.",
+  "errorPasswordChangeFailed": "Паролата не можа да бъде сменена",
+  "errorPasswordChangeFailedWithDetails": "Паролата не можа да бъде сменена: {details}",
+  "errorSignInStepUnsupported": "Сървърът поиска стъпка за вход, която тази версия на приложението не поддържа. Обновете приложението и опитайте отново.",
+  "errorSsoEmailMissing": "Доставчикът на самоличност не сподели имейл адрес, който е нужен за създаване на акаунта ви.",
+  "errorSsoEmailUnverified": "Доставчикът на самоличност не е потвърдил имейл адреса ви. Потвърдете го там и опитайте отново.",
+  "errorSsoAutoCreateDisabled": "Няма акаунт, който да съответства на този вход, а сървърът не създава акаунти автоматично. Попитайте администратора си.",
+  "errorSsoLinkByEmailDisabled": "Този имейл адрес вече се използва от акаунт, но този доставчик не може да влиза в него. Влезте по друг начин или попитайте администратора си.",
+  "errorSsoApprovalPending": "Акаунтът ви чака одобрение от администратор.",
+  "errorSsoAccountDisabled": "Този акаунт е деактивиран. Свържете се с администратора си.",
+  "errorSsoRedirectNotAllowed": "Този сървър не позволява единен вход от това приложение. Помолете администратора си да добави com.endurain.endurain:/auth/sso/callback към ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Администраторът ви изисква двустепенна проверка. Настройте я в уеб приложението на Endurain и опитайте отново.",
+  "errorActivityFileTooLarge": "Файлът с активността е твърде голям за този сървър",
+  "errorActivityUnsupportedFileType": "Този сървър не приема този вид файл с активност",
+  "errorTooManyRequests": "Твърде много опити. Изчакайте малко и опитайте отново.",
+  "passwordChangeTitle": "Изберете нова парола",
+  "passwordChangeMessage": "Администратор е задал паролата ви. Изберете нова, за да завършите влизането.",
+  "newPassword": "Нова парола",
+  "confirmNewPassword": "Потвърдете новата парола",
+  "passwordsDoNotMatch": "Паролите не съвпадат",
+  "changePassword": "Смяна на паролата",
   "logoutServerFailedWarning": "Изходът от сървъра не бе успешен, но излязохте локално",
   "ssoBrowserLaunchFailed": "Входът чрез SSO не можа да бъде отворен в системния браузър",
   "ssoSignInWith": "Вход чрез {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Завършени дейности, записани на това устройство",
   "activityRetainUploadedGpx": "Запазвай качените GPX файлове",
   "activityRetainUploadedGpxSubtitle": "Записва завършените файлове с маршрути в частното хранилище на приложението след качване.",
+  "activityAutoPauseTitle": "Автоматична пауза",
+  "activityAutoPauseSubtitle": "Пауза автоматично, когато спрете да се движите",
+  "activityAutoPauseToggleLabel": "Автоматична пауза",
+  "activityAutoPauseToggleDescription": "Записът се поставя на пауза автоматично, когато спрете да се движите, и се възобновява, щом отново започнете да се движите.",
+  "activityAutoPauseDelayHelperText": "Изберете колко дълго да чака без движение, преди да постави записа на пауза.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} секунди",
+  "activityAutoPausedIndicator": "Автоматична пауза",
+  "audioAnnouncementsAutoPaused": "Записът е поставен на пауза",
+  "audioAnnouncementsAutoResumed": "Записът е възобновен",
   "activityHistoryEmpty": "Няма завършени дейности, записани на това устройство.",
   "activityHistoryLoadFailed": "Локалните дейности не можаха да бъдат заредени.",
   "activityHistoryRefresh": "Опресни",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Тренировки",
   "healthAccessWorkoutRoutes": "Тренировъчни маршрути",
   "healthAccessHeartRate": "Сърдечна честота",
-  "healthAccessWorkoutSummary": "Разстояние, калории и стъпки от тренировки",
   "healthAccessAllowed": "Разрешено",
   "healthAccessNeedsAttention": "Нуждае се от внимание",
   "healthAccessManagedBySystem": "Управлява се в системните настройки",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Сървърът се опита да пренасочи към незащитена връзка. Заявката беше блокирана, за да защити данните ви за вход.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Сървърът пренасочи твърде много пъти. Проверете адреса на сървъра.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Аудио известия",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Гласови известия за разстояние, време, темпо или скорост",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Обявявай напредъка на тренировката",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Изговаря разстоянието, времето, темпото или скоростта по време на запис",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Намалявай друг звук по време на говорене",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Временно намалява силата на друг звук по време на всяко известие",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Интервал на известяване по вид дейност",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Разстояние",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Време",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "На всеки {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "На всеки {minutes} мин",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Намали интервала",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Увеличи интервала",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Прослушване",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Прослушването на съобщения не е налично на това устройство",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Промените важат за следващия ви запис.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Разстояние {distance}. Време {duration}. Обиколка: {lapMetric}. Общо: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

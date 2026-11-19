@@ -39,6 +39,26 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
+  String get errorActivityIngestionUnsupportedFormat =>
+      'Tiedostomuotoa ei tueta';
+
+  @override
+  String get errorActivityIngestionInvalidFile =>
+      'Tiedosto on vioittunut tai sitä ei voitu lukea';
+
+  @override
+  String get errorActivityIngestionNoActivitiesFound =>
+      'Tiedostosta ei löytynyt aktiviteetteja';
+
+  @override
+  String get errorActivityIngestionProcessingFailed =>
+      'Aktiviteetin tuonnissa tapahtui virhe. Yritä uudelleen.';
+
+  @override
+  String get errorActivityIngestionProviderUnavailable =>
+      'Aktiviteettien tarjoaja ei ole tällä hetkellä saatavilla. Yritä myöhemmin uudelleen.';
+
+  @override
   String get errorActivityUploadNotConfigured =>
       'Aktiviteettien lataamista ei ole vielä määritetty';
 
@@ -147,6 +167,14 @@ class AppLocalizationsFi extends AppLocalizations {
       'Palvelimelta ei saatu istuntotunnusta';
 
   @override
+  String get errorMfaSessionMissing =>
+      'Kirjautumisistuntosi katosi. Kirjaudu sisään uudelleen.';
+
+  @override
+  String get errorSsoCallbackFailed =>
+      'Kertakirjautumista (SSO) ei voitu suorittaa loppuun. Yritä uudelleen.';
+
+  @override
   String get errorNotAuthenticated => 'Et ole kirjautunut sisään';
 
   @override
@@ -224,6 +252,104 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Haluatko varmasti kirjautua ulos?';
+
+  @override
+  String get legacyDataTitle =>
+      'Aktiviteetit ajalta ennen palvelimen päivitystä';
+
+  @override
+  String legacyDataMessageWithUsername(String username) {
+    return 'Tällä laitteella on aktiviteetteja, jotka on tallennettu tämän palvelimen tilille ennen palvelimen päivitystä. Ovatko ne sinun, $username? Jos ovat, vielä odottavat ladataan tilillesi.';
+  }
+
+  @override
+  String get legacyDataMessage =>
+      'Tällä laitteella on aktiviteetteja, jotka on tallennettu tämän palvelimen tilille ennen palvelimen päivitystä. Kuuluvatko ne tilille, jolla juuri kirjauduit sisään? Jos kuuluvat, vielä odottavat ladataan sille.';
+
+  @override
+  String get legacyDataConfirm => 'Ne ovat minun';
+
+  @override
+  String get legacyDataDecline => 'Eivät ole minun';
+
+  @override
+  String get errorActivityUploadLimit =>
+      'Palvelimella on liian monta latausta käynnissä. Sovellus yrittää myöhemmin uudelleen.';
+
+  @override
+  String get errorPasswordChangeFailed => 'Salasanaa ei voitu vaihtaa';
+
+  @override
+  String errorPasswordChangeFailedWithDetails(String details) {
+    return 'Salasanaa ei voitu vaihtaa: $details';
+  }
+
+  @override
+  String get errorSignInStepUnsupported =>
+      'Palvelin pyysi kirjautumisvaihetta, jota tämä sovellusversio ei tue. Päivitä sovellus ja yritä uudelleen.';
+
+  @override
+  String get errorSsoEmailMissing =>
+      'Identiteetintarjoajasi ei jakanut sähköpostiosoitetta, jota tarvitaan tilin luomiseen.';
+
+  @override
+  String get errorSsoEmailUnverified =>
+      'Identiteetintarjoajasi ei ole vahvistanut sähköpostiosoitettasi. Vahvista se siellä ja yritä uudelleen.';
+
+  @override
+  String get errorSsoAutoCreateDisabled =>
+      'Mikään tili ei vastaa tätä kirjautumista, eikä tämä palvelin luo tilejä automaattisesti. Kysy ylläpitäjältä.';
+
+  @override
+  String get errorSsoLinkByEmailDisabled =>
+      'Tämä sähköpostiosoite on jo käytössä toisella tilillä, mutta tämä tarjoaja ei voi kirjautua siihen. Kirjaudu muulla tavalla tai kysy ylläpitäjältä.';
+
+  @override
+  String get errorSsoApprovalPending =>
+      'Tilisi odottaa ylläpitäjän hyväksyntää.';
+
+  @override
+  String get errorSsoAccountDisabled =>
+      'Tämä tili on poistettu käytöstä. Ota yhteyttä ylläpitäjään.';
+
+  @override
+  String get errorSsoRedirectNotAllowed =>
+      'Tämä palvelin ei salli kertakirjautumista tästä sovelluksesta. Pyydä ylläpitäjää lisäämään com.endurain.endurain:/auth/sso/callback asetukseen ALLOWED_REDIRECT_URIS.';
+
+  @override
+  String get errorActivityMfaEnrolmentRequired =>
+      'Ylläpitäjäsi vaatii kaksivaiheisen vahvistuksen. Ota se käyttöön Endurainin verkkosovelluksessa ja yritä uudelleen.';
+
+  @override
+  String get errorActivityFileTooLarge =>
+      'Aktiviteettitiedosto on liian suuri tälle palvelimelle';
+
+  @override
+  String get errorActivityUnsupportedFileType =>
+      'Tämä palvelin ei hyväksy tämäntyyppistä aktiviteettitiedostoa';
+
+  @override
+  String get errorTooManyRequests =>
+      'Liian monta yritystä. Odota hetki ja yritä uudelleen.';
+
+  @override
+  String get passwordChangeTitle => 'Valitse uusi salasana';
+
+  @override
+  String get passwordChangeMessage =>
+      'Ylläpitäjä asetti salasanasi. Valitse uusi viimeistelläksesi kirjautumisen.';
+
+  @override
+  String get newPassword => 'Uusi salasana';
+
+  @override
+  String get confirmNewPassword => 'Vahvista uusi salasana';
+
+  @override
+  String get passwordsDoNotMatch => 'Salasanat eivät täsmää';
+
+  @override
+  String get changePassword => 'Vaihda salasana';
 
   @override
   String get logoutServerFailedWarning =>
@@ -490,6 +616,38 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get activityRetainUploadedGpxSubtitle =>
       'Tallentaa valmiit reittitiedostot sovelluksen yksityiseen tallennustilaan latauksen jälkeen.';
+
+  @override
+  String get activityAutoPauseTitle => 'Automaattinen tauko';
+
+  @override
+  String get activityAutoPauseSubtitle =>
+      'Keskeyttää automaattisesti, kun lopetat liikkumisen';
+
+  @override
+  String get activityAutoPauseToggleLabel => 'Keskeytä automaattisesti';
+
+  @override
+  String get activityAutoPauseToggleDescription =>
+      'Tallennus keskeytyy automaattisesti, kun lopetat liikkumisen, ja jatkuu, kun aloitat liikkumisen uudelleen.';
+
+  @override
+  String get activityAutoPauseDelayHelperText =>
+      'Valitse, kuinka kauan ilman liikettä odotetaan ennen keskeytystä.';
+
+  @override
+  String activityAutoPauseDelayOptionLabel(int seconds) {
+    return '$seconds sekuntia';
+  }
+
+  @override
+  String get activityAutoPausedIndicator => 'Automaattisesti keskeytetty';
+
+  @override
+  String get audioAnnouncementsAutoPaused => 'Tallennus keskeytetty';
+
+  @override
+  String get audioAnnouncementsAutoResumed => 'Tallennusta jatkettu';
 
   @override
   String get activityHistoryEmpty =>
@@ -826,10 +984,6 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthAccessHeartRate => 'Syke';
 
   @override
-  String get healthAccessWorkoutSummary =>
-      'Harjoituksen matka, kalorit ja askeleet';
-
-  @override
   String get healthAccessAllowed => 'Sallittu';
 
   @override
@@ -1157,9 +1311,78 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.';
+      'Palvelin yritti ohjata suojaamattomaan yhteyteen. Pyyntö estettiin tunnistetietojesi suojaamiseksi.';
 
   @override
   String get errorTooManyRedirects =>
-      'The server redirected too many times. Check the server address.';
+      'Palvelin ohjasi liian monta kertaa. Tarkista palvelimen osoite.';
+
+  @override
+  String get audioAnnouncementsTitle => 'Ääni-ilmoitukset';
+
+  @override
+  String get audioAnnouncementsSubtitle =>
+      'Ääni-ilmoitukset matkasta, ajasta, vauhdista tai nopeudesta';
+
+  @override
+  String get audioAnnouncementsMasterSwitch =>
+      'Ilmoita harjoituksen edistyminen';
+
+  @override
+  String get audioAnnouncementsMasterSwitchSubtitle =>
+      'Kertoo ääneen matkasi, aikasi, vauhtisi tai nopeutesi tallennuksen aikana';
+
+  @override
+  String get audioAnnouncementsDuckSwitch =>
+      'Vaimenna muu ääni puhumisen ajaksi';
+
+  @override
+  String get audioAnnouncementsDuckSwitchSubtitle =>
+      'Vähentää tilapäisesti muun äänen voimakkuutta jokaisen ilmoituksen aikana';
+
+  @override
+  String get audioAnnouncementsIntervalsHeader => 'Ilmoitusväli lajin mukaan';
+
+  @override
+  String get audioAnnouncementsByDistance => 'Matka';
+
+  @override
+  String get audioAnnouncementsByTime => 'Aika';
+
+  @override
+  String audioAnnouncementsIntervalDistance(String value, String unit) {
+    return 'Joka $value $unit';
+  }
+
+  @override
+  String audioAnnouncementsIntervalTime(String minutes) {
+    return 'Joka $minutes min';
+  }
+
+  @override
+  String get audioAnnouncementsDecreaseInterval => 'Pienennä väliä';
+
+  @override
+  String get audioAnnouncementsIncreaseInterval => 'Kasvata väliä';
+
+  @override
+  String get audioAnnouncementsPreview => 'Kuuntele esimerkki';
+
+  @override
+  String get audioAnnouncementsPreviewUnavailable =>
+      'Ilmoituksen esikuuntelu ei ole käytettävissä tässä laitteessa';
+
+  @override
+  String get audioAnnouncementsAppliesNextRecording =>
+      'Muutokset tulevat voimaan seuraavassa tallennuksessa.';
+
+  @override
+  String audioAnnouncementsSpokenMessage(
+    String distance,
+    String duration,
+    String lapMetric,
+    String overallMetric,
+  ) {
+    return 'Matka $distance. Aika $duration. Kierros: $lapMetric. Yhteensä: $overallMetric.';
+  }
 }

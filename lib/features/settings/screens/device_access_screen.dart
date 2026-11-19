@@ -1,5 +1,6 @@
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/core/services/app_scope.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
@@ -7,9 +8,8 @@ import 'package:endurain/features/health/screens/health_access_screen.dart';
 import 'package:endurain/features/settings/controllers/device_access_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DeviceAccessScreen extends StatefulWidget {
   const DeviceAccessScreen({

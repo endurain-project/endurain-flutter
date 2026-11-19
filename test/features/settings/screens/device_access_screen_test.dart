@@ -1,5 +1,5 @@
+import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/services/platform/location_platform_adapter.dart';
-import 'package:endurain/core/services/location_service.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/settings/controllers/device_access_controller.dart';
@@ -9,8 +9,8 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../../health/fakes/fake_health_sync_service.dart';
 import '../../../helpers/widget_test_app.dart';
+import '../../health/fakes/fake_health_sync_service.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();

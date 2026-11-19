@@ -12,9 +12,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../../helpers/fake_share_service.dart';
-
 import '../../../helpers/device_locale.dart';
+import '../../../helpers/fake_share_service.dart';
 
 final _l10n = AppLocalizationsEn();
 

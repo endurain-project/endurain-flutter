@@ -72,12 +72,15 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Local activity history and details screens for completed recordings saved on the device, with incremental pagination
 - Activity route preview map on the details screen, drawn from the retained GPX file on OpenStreetMap tiles (shown while the GPX is still stored on the device)
 - Manual GPX export/share from the activity details screen via the OS share sheet
+- Optional spoken progress announcements at distance or elapsed-time milestones, configured per activity type in **Settings > Audio Announcements**. Speech is produced entirely on-device (Android `TextToSpeech`, iOS `AVSpeechSynthesizer`) with no network access, announces distance, elapsed time, and lap plus overall pace or speed, and can duck other audio while speaking. Announcements keep playing while the recording is backgrounded: on Android the foreground-service recorder speaks them, while on iOS they use the audio background mode and the audio session is activated only around an utterance
 
 ✅ **Settings**
 - Server configuration management
 - Map tile server customization
 - Persisted language selection with a system-default option
 - Local activity history entry point and uploaded-GPX retention preference
+- Audio announcement preferences: master switch, audio ducking, and a per-activity-type distance or time interval
+- Per-activity audio announcement preview that speaks one sample milestone, so a missing or muted device speech engine is detectable before starting an activity
 - Device access overview for location and health-data permissions
 - Bluetooth heart-rate sensor pairing and connection status (Sensors screen)
 - Health sync settings and optional automatic import on app resume
@@ -128,7 +131,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 ## Tech Stack
 
-- **Framework:** Flutter 3.47+ (Dart 3.13+)
+- **Framework:** Flutter 3.50+ (Dart 3.14+)
 - **Platforms:** iOS, Android
 - **State Management:** Focused `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and obtained via `AppScope`
 - **Navigation:** `go_router` for top-level, auth-guarded routing that redirects off the session state and is ready for deep links
@@ -154,12 +157,11 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 
 ### Prerequisites
 
-- Flutter SDK 3.47.1 or higher
-- Dart SDK 3.13.0 or higher
+- Flutter SDK 3.50.0 or higher
+- Dart SDK 3.14.0 or higher
 - Xcode (for iOS development)
 - Android Studio (for Android development)
 - A running Endurain server instance
-- GitHub access to the private `endurain-project/endurain-flutter` repository
 
 ### Installation
 
@@ -290,9 +292,9 @@ iOS `.ips` crash reports remain separate system-generated native crash reports. 
 
 ## Manual QA Checklists
 
-### Android: Active Recording — Location Provider Loss
+### Android: Active Recording - Location Provider Loss
 
-Native Kotlin unit coverage is not available for the `onProviderDisabled` path. Use these steps to validate the behavior manually on a physical or emulated Android device.
+Use these steps to validate provider changes on a physical or emulated Android device, in addition to the native service lifecycle tests.
 
 **Prerequisites:** A running Endurain server, a connected Android device with GPS and network location enabled, and developer options active.
 
@@ -304,12 +306,23 @@ Native Kotlin unit coverage is not available for the `onProviderDisabled` path. 
 6. Return to the app.
 
 **Expected results:**
-- The recording shows a non-recoverable failed state (not an active or paused state).
-- No "resume recording" option is offered.
-- After fully restarting the app (force-stop and reopen), no phantom active session is restored from the saved session file.
-- The local activity history shows the completed (or failed) entry with the points collected before providers were disabled.
+- The recording reports a failure and retains the collected points.
+- Resume and Stop remain available. Resume cannot start collection while permission or location services are unavailable.
+- Reopening restores the same session as paused when collection failed. It does not create a completed history entry or upload the interrupted track.
+- Stop opens the existing confirmation dialog, with save and discard choices.
 
-**Recovery path:** Re-enable location providers, then start a new recording as normal.
+**Recovery path:** Re-enable location providers, then resume the existing recording.
+
+### Active Recording Relaunch
+
+1. Start a recording, collect several fixes, then remove the app from recents.
+2. Reopen it. A still-running native recorder must remain recording without a new segment or a reset timer. If collection was terminated, it must restart the same session and create a new segment on the next fix.
+3. Repeat with an explicitly paused recording. It must stay paused.
+4. Repeat before the first GPS fix. The session must not be discarded.
+5. Revoke location permission, reopen, and verify the track is retained without an upload. Restore permission and resume, or explicitly stop and save or discard.
+6. Stop and save normally. Verify exactly one local activity with the original session ID and connection ownership, and no duplicated points around reconnection.
+
+iOS force-quit suppresses background location relaunch until the user opens the app again. Android force-stop and manufacturer battery restrictions can also stop collection. The app preserves the session and restarts when permitted; it cannot reconstruct missing GPS points. Time spent without collection is excluded on restart, using the last persisted fix as the available checkpoint.
 
 ## Development Workflow
 
@@ -330,17 +343,19 @@ flutter test
 CI runs formatting, Dart analysis, the Dart test suite with a coverage
 threshold, the Kotlin unit tests, and a debug Android build.
 
-**iOS is not verified by CI**, because building it and running its XCTest suite
-both require a macOS runner that this project does not have. If your change
-touches `ios/**`, verify it locally before opening a pull request:
+A separate iOS workflow builds the app for the simulator and runs the native
+XCTests in `ios/RunnerTests` on a macOS runner. Pull requests only run it when
+they change `ios/**`, `pubspec.yaml`, `pubspec.lock`, the workflow or its
+shared actions; pushes to `main` always run it. It takes about 15 minutes, so
+for quicker feedback while changing `ios/**`, build locally first:
 
 ```bash
 # Compiles the Swift sources and the Xcode project configuration
 flutter build ios --simulator --debug
 ```
 
-Run the native iOS tests in `ios/RunnerTests` from Xcode when changing
-`ios/Runner/Activity/**` — they never run automatically.
+CI does not sign the app or run it on a device, so check device-only behaviour
+(HealthKit, background location, entitlements) on a real iPhone.
 
 Collect coverage and check a minimum line coverage threshold:
 
@@ -351,8 +366,8 @@ dart run tool/check_coverage.dart \
   --min-file-line-coverage 60 \
   --exclude "lib/l10n/app_localizations*.dart" \
   --exclude "lib/core/theme/app_theme_tokens.dart" \
-  --exclude "lib/core/navigation/app_routes.dart" \
-  --exclude "lib/shared/widgets/app_bottom_nav.dart" \
+  --exclude "lib/app/navigation/app_routes.dart" \
+  --exclude "lib/app/widgets/app_bottom_nav.dart" \
   --exclude "lib/core/services/platform/*.dart" \
   --exclude "lib/features/health/services/health_package_platform_adapter.dart" \
   --exclude "lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart"
@@ -499,6 +514,16 @@ Activity metadata lives in a SQLite database (`activity.db`, schema v9) under th
 
 Each `local_activity` row contains: `id`, `activity_type`, `started_at`, `ended_at`, `elapsed_duration_seconds`, `distance_meters`, `average_speed_meters_per_second`, `max_speed_meters_per_second`, `elevation_gain_meters`, `point_count`, `gpx_file_name`, `upload_status`, `idempotency_key`, `connection_origin`, `connection_profile_id`, `auto_retry_eligible`, `gpx_cleanup_pending`, `created_at`, `updated_at`, `uploaded_at`, `last_upload_attempt_at`, and `last_upload_error_code`. GPX files live on disk under `gpx/` — only the metadata is stored in the database. Health-imported activities are additionally tracked for provenance and de-duplication in a separate `health_import.db` (schema v3).
 
+### Active Recording Recovery Contract
+
+The native recorder owns collection and the private active-session log. Flutter recovery attaches without pausing a live recorder. A stopped recorder restarts only sessions marked `recording`; explicitly paused and failed sessions stay paused until user action. Only a session marked completed or stopping by an explicit Stop is finalized on recovery, preserving interrupted save/upload retries.
+
+Point events carry the local session ID and an offset into the valid persisted-point log. Flutter subscribes before recovery, buffers events during the initial drain, skips replayed offsets, and drains a missing range before accepting later batches. Events from another session are ignored. Channel payload version 2 is shipped together on Dart, Android, and iOS; the durable session and database schemas are unchanged.
+
+On iOS, Dart-owned BLE readings are durably appended to `sensors.jsonl` in the same private active-session directory before being exposed as live values. The log is scoped to the recording ID, restored before rebuilding GPS points, and removed with the recording. Pause, stop, and discard wait for accepted sensor writes; write or read failures retain a recoverable error state instead of reporting success. This preserves readings captured before process termination, but cannot reconstruct measurements never delivered while the app was terminated. Older recordings without a sensor log remain recoverable.
+
+Native tests exercise timing and collection independently of a real GPS receiver. Android uses test-only Robolectric with resources enabled; host-test packaging explicitly depends on Flutter asset generation for the same variant. Run `cd android && ./gradlew :app:testDebugUnitTest` and the iOS `RunnerTests` scheme in addition to `flutter test`.
+
 ### Schema migrations
 
 Schema changes are applied through an ordered, append-only migration map keyed by target version. Fresh installs (`onCreate`) and upgrades (`onUpgrade`) run the same migration steps, so the schema is produced by exactly one code path. To evolve the schema, append a new migration and bump the schema version — shipped migrations are never edited.
@@ -522,8 +547,9 @@ Contributions are welcomed! This mobile app is part of the main Endurain project
 
 1. Check the [Contributing Guidelines](CONTRIBUTING.md)
 2. Open an issue to discuss changes before submitting a PR
-3. Follow the existing code style and architecture patterns
-4. Test on multiple platforms when possible
+3. Accept the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.md) in the pull request checklist before the PR can be merged
+4. Follow the existing code style and architecture patterns
+5. Test on multiple platforms when possible
 
 ### Development Guidelines
 
@@ -535,7 +561,18 @@ Contributions are welcomed! This mobile app is part of the main Endurain project
 
 ## License
 
-This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU Affero General Public License v3.0
+(AGPL-3.0-only). See [LICENSE](LICENSE) for the full terms. AGPLv3 is a strong
+copyleft license: anyone distributing modified versions, or operating modified
+network-server software, must make the corresponding source available under
+AGPLv3 terms. The mobile app itself is distributed software; the related
+Endurain server has its own licensing and source-availability obligations.
+
+Accepted external contributions are also subject to the
+[Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.md), which gives
+the Project Owner the additional right to relicense those contributions in
+future releases. The Project Owner will preserve the rights already granted to
+the public for releases made under AGPLv3.
 
 ## Trademark Notice
 

@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import Dispatch
 
 /// CoreLocation-backed recorder that persists points to the native active store
 /// before notifying Flutter.
@@ -15,13 +16,20 @@ import CoreLocation
 /// where the foreground service takes over the BLE connection because a
 /// backgrounded Dart isolate cannot hold one reliably — iOS keeps the
 /// `universal_ble` connection alive through the `bluetooth-central` background
-/// mode. `ActivityRecordingService` therefore streams readings in and stamps
-/// them onto points itself, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
-/// are never sent to this recorder. Points written here leave the sensor fields
-/// nil by design; do not add a second CoreBluetooth connection here without
-/// first removing the Dart-side one, or the two will fight over the same
-/// peripheral's notifications.
-final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
+/// mode. `ActivityRecordingService` persists readings in the native sensor log
+/// and stamps them onto points when draining, and `hrDeviceId`/`powerDeviceId`/`cadenceDeviceId`
+/// are never sent to this recorder. Points written here leave power and
+/// cadence nil by design; do not add a second CoreBluetooth connection here
+/// without first removing the Dart-side one, or the two will fight over the
+/// same peripheral's notifications.
+///
+/// Heart rate is the exception: on iOS 26+ `HealthKitHeartRateMonitor` fills
+/// it from HealthKit (e.g. AirPods Pro 3), and a BLE reading stamped by Dart
+/// still takes priority.
+@MainActor
+final class CoreLocationActivityRecorder:
+    NSObject,
+    @preconcurrency CLLocationManagerDelegate {
     /// Minimum movement (meters) between delivered fixes.
     private static let distanceFilterMeters: CLLocationDistance = 3
 
@@ -29,17 +37,46 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     private static let maxTimeGapMillis: Int64 = 30_000
     private static let maxAccuracyMeters: CLLocationAccuracy = 100
     private static let maxSpeedMetersPerSecond: CLLocationSpeed = 90
+    private static let minTimeAnnouncementIntervalSeconds = 60
+    private static let maxTimeAnnouncementIntervalSeconds = 3600
 
     private let store: ActiveActivityStore
-    private let manager = CLLocationManager()
+    private let manager: CLLocationManager
+    private let announcementStateCache = AnnouncementStateCache()
+    private let heartRateMonitor: HealthKitHeartRateMonitor
 
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
+    private var autoPauseDetector: MovementAutoPauseDetector?
+    private var nextPointOffset = 0
+    private var timeAnnouncementTimer: DispatchSourceTimer?
 
-    init(store: ActiveActivityStore) {
+    init(
+        store: ActiveActivityStore,
+        manager: CLLocationManager = CLLocationManager(),
+        heartRateMonitor: HealthKitHeartRateMonitor? = nil
+    ) {
         self.store = store
+        self.manager = manager
+        self.heartRateMonitor = heartRateMonitor ?? HealthKitHeartRateMonitor()
         super.init()
+        // HealthKit readings join the sensor log so Dart matches the nearest
+        // reading to each point and can show it live while standing still.
+        self.heartRateMonitor.onSample = { [weak self] bpm, date in
+            guard let self,
+                  let sessionId = self.store.loadSession()?.localSessionId else {
+                return
+            }
+            try? self.store.appendSensorSample(
+                RecordedSensorSampleData(
+                    kind: "heartRate",
+                    timestamp: IsoTime.format(date),
+                    value: bpm
+                ),
+                localSessionId: sessionId
+            )
+        }
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.distanceFilter = CoreLocationActivityRecorder.distanceFilterMeters
@@ -52,6 +89,9 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
     /// Returns false and emits a typed failure when location use is denied.
     @discardableResult
     func startCollection() -> Bool {
+        if isCollecting {
+            return true
+        }
         let status = currentAuthorizationStatus()
         switch status {
         case .denied, .restricted:
@@ -84,10 +124,27 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             manager.showsBackgroundLocationIndicator = true
         }
 
+        restoreAnnouncementState()
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
+        let session = store.loadSession()
+        manager.distanceFilter = session?.autoPauseEnabled == true
+            ? kCLDistanceFilterNone
+            : CoreLocationActivityRecorder.distanceFilterMeters
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        autoPauseDetector = MovementAutoPauseDetector(config: MovementAutoPauseConfig(
+            enabled: session?.autoPauseEnabled ?? false,
+            pauseDelayMillis: Int64((session?.autoPauseDelaySeconds ?? 5)) * 1000
+        ))
+        // Anchor stillness to this collection (re)start, not the last stored
+        // point: that point can predate a manual pause, which would let the
+        // first slow fix auto-pause immediately.
+        autoPauseDetector?.reset(movementAtMillis: nowMillis)
+        nextPointOffset = store.pointCount()
         manager.startUpdatingLocation()
         startTerminationRecovery()
+        heartRateMonitor.start(activityType: session?.activityType ?? "other")
         isCollecting = true
+        scheduleNextTimeAnnouncement()
         return true
     }
 
@@ -124,18 +181,169 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         }
         guard
             let session = store.loadSession(),
-            session.status == ActiveActivitySessionData.statusRecording
+            session.requiresLocationMonitoring
         else {
             return false
         }
-        return startCollection()
+        return recoverActiveSession()?.requiresLocationMonitoring == true
+            && isCollecting
+    }
+
+    func recoverActiveSession() -> ActiveActivitySessionData? {
+        guard let session = store.loadSession() else {
+            return nil
+        }
+        if session.status == ActiveActivitySessionData.statusFailed {
+            let paused = session.copyWith(
+                status: ActiveActivitySessionData.statusPaused,
+                pausedAt: .some(IsoTime.nowUtc()),
+                endedAt: .some(nil)
+            )
+            guard store.saveSession(paused) else {
+                return session
+            }
+            stopCollection()
+            return paused
+        }
+        guard session.requiresLocationMonitoring, !isCollecting else {
+            return session
+        }
+        let recovered = SessionTiming.afterInterruption(
+            session,
+            lastPointMillis: IsoTime.toEpochMillis(store.lastPoint()?.timestamp),
+            nowMillis: Int64(Date().timeIntervalSince1970 * 1000)
+        )
+        guard store.saveSession(recovered) else {
+            return session.copyWith(status: ActiveActivitySessionData.statusFailed)
+        }
+        resumedFromPause = recovered.status == ActiveActivitySessionData.statusRecording
+            && store.lastPoint() != nil
+        if !startCollection() {
+            let paused = recovered.copyWith(
+                status: ActiveActivitySessionData.statusPaused,
+                pausedAt: .some(IsoTime.nowUtc())
+            )
+            store.saveSession(paused)
+            return paused
+        }
+        return recovered
     }
 
     func stopCollection() {
+        flushAnnouncementState()
+        stopTimeAnnouncementTimer()
         manager.stopUpdatingLocation()
         manager.stopMonitoringSignificantLocationChanges()
         manager.allowsBackgroundLocationUpdates = false
+        heartRateMonitor.stop()
+        AudioAnnouncer.shared.stop()
         isCollecting = false
+        // A manual pause reaches here and must stop monitoring movement
+        // entirely, so a manually paused recording can never auto-resume;
+        // `startCollection` always rebuilds a fresh detector for the next
+        // active period.
+        autoPauseDetector = nil
+    }
+
+    func stopAfterPersistenceFailure() {
+        stopCollection()
+        persistFailure()
+        ActivityRecorderCoordinator.shared.emitFailed(
+            ActivityRecorderCoordinator.reasonPersistenceFailed
+        )
+    }
+
+    /// Schedules one main-queue callback at the next elapsed-time threshold.
+    /// One-shot scheduling avoids polling and serializes state with GPS fixes.
+    private func scheduleNextTimeAnnouncement() {
+        stopTimeAnnouncementTimer()
+        guard isCollecting,
+              let announcementState = currentAnnouncementState(),
+              announcementState.enabled,
+              announcementState.isTimeBased,
+              announcementState.timeIntervalSeconds >= Self.minTimeAnnouncementIntervalSeconds,
+              announcementState.timeIntervalSeconds <= Self.maxTimeAnnouncementIntervalSeconds,
+              announcementState.lastAnnouncedTimeIndex >= 0,
+              announcementState.lastAnnouncedTimeIndex < Int.max,
+              let session = store.loadSession(),
+              session.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let elapsedSeconds = SessionTiming.elapsedSeconds(
+            session,
+            referenceMillis: nowMillis
+        )
+        let nextIndex = max(1, Int64(announcementState.lastAnnouncedTimeIndex) + 1)
+        let thresholdResult = nextIndex.multipliedReportingOverflow(
+            by: Int64(announcementState.timeIntervalSeconds)
+        )
+        guard !thresholdResult.overflow else {
+            return
+        }
+        let remainingResult = thresholdResult.partialValue.subtractingReportingOverflow(
+            Int64(elapsedSeconds)
+        )
+        guard !remainingResult.overflow else {
+            return
+        }
+        let remainingSeconds = remainingResult.partialValue
+        let delaySeconds = max(1, remainingSeconds)
+
+        let timer = DispatchSource.makeTimerSource(queue: .main)
+        timer.schedule(deadline: .now() + .seconds(Int(delaySeconds)))
+        timer.setEventHandler { [weak self] in
+            guard let self else {
+                return
+            }
+            self.stopTimeAnnouncementTimer()
+            self.announceTimeIfDue()
+            self.scheduleNextTimeAnnouncement()
+        }
+        timeAnnouncementTimer = timer
+        timer.resume()
+    }
+
+    private func stopTimeAnnouncementTimer() {
+        timeAnnouncementTimer?.setEventHandler {}
+        timeAnnouncementTimer?.cancel()
+        timeAnnouncementTimer = nil
+    }
+
+    /// Advances a time-based schedule without waiting for another GPS fix.
+    private func announceTimeIfDue() {
+        guard isCollecting,
+              let announcementState = currentAnnouncementState(),
+              announcementState.enabled,
+              announcementState.isTimeBased,
+              let session = store.loadSession(),
+              session.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let result = AnnouncementScheduler.onElapsedTime(
+            state: announcementState,
+            elapsedSeconds: SessionTiming.elapsedSeconds(
+                session,
+                referenceMillis: nowMillis
+            )
+        )
+        guard result.state != announcementState else {
+            return
+        }
+        guard cacheAnnouncementState(
+            result.state,
+            persistBeforeSpeech: !result.announcements.isEmpty
+        ) else {
+            return
+        }
+        for text in result.announcements {
+            AudioAnnouncer.shared.speak(
+                text,
+                duck: announcementState.duckOtherAudio,
+                languageTag: announcementState.languageTag
+            )
+        }
     }
 
     /// Marks that collection is resuming from a pause so the next fix opens a
@@ -153,74 +361,316 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         guard isCollecting, !locations.isEmpty else {
             return
         }
-        guard
-            let session = store.loadSession(),
-            session.status == ActiveActivitySessionData.statusRecording
+        for location in locations {
+            guard isCollecting else {
+                // A failure earlier in this batch already stopped collection.
+                return
+            }
+            handleLocationFix(location)
+        }
+    }
+
+    private func handleLocationFix(_ location: CLLocation) {
+        guard let session = store.loadSession() else {
+            return
+        }
+        if session.status == ActiveActivitySessionData.statusRecording {
+            handleActiveLocationFix(session, location)
+        } else if session.status == ActiveActivitySessionData.statusPaused,
+            session.pausedAutomatically {
+            // A manual pause stops Core Location entirely (see
+            // `stopCollection`), so only an auto-paused session can still be
+            // receiving fixes here.
+            handleAutoPausedLocationFix(session, location)
+        }
+    }
+
+    private func handleActiveLocationFix(
+        _ session: ActiveActivitySessionData,
+        _ location: CLLocation
+    ) {
+        let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
+        let effectiveMillis = rawMillis > 0
+            ? rawMillis
+            : Int64(Date().timeIntervalSince1970 * 1000)
+
+        // Feed the auto-pause detector before the accuracy/speed gates below,
+        // so stillness timing advances from wall-clock progress on every fix
+        // (including noisy ones the detector itself discounts as movement
+        // evidence), matching the Android/Dart recorders.
+        let sample = movementSample(location, millis: effectiveMillis)
+        let transition: MovementAutoPauseTransition
+        if let detector = autoPauseDetector {
+            transition = detector.onActivePoint(sample)
+        } else {
+            transition = .none
+        }
+        if case .autoPause = transition {
+            transitionToAutoPaused(session, nowMillis: effectiveMillis)
+            return
+        }
+
+        guard location.horizontalAccuracy < 0 ||
+            location.horizontalAccuracy <= CoreLocationActivityRecorder.maxAccuracyMeters
         else {
+            return
+        }
+        if let previous = lastPointEpochMillis,
+            effectiveMillis > previous,
+            location.speed >= 0,
+            location.speed > CoreLocationActivityRecorder.maxSpeedMetersPerSecond {
             return
         }
 
         var segmentIndex = session.currentSegmentIndex
-        var segmentChanged = false
-        var produced: [RecordedActivityPointData] = []
-
-        for location in locations {
-            guard location.horizontalAccuracy < 0 ||
-                location.horizontalAccuracy <= CoreLocationActivityRecorder.maxAccuracyMeters
-            else {
-                continue
-            }
-            let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
-            let effectiveMillis = rawMillis > 0
-                ? rawMillis
-                : Int64(Date().timeIntervalSince1970 * 1000)
-            if let previous = lastPointEpochMillis,
-                effectiveMillis > previous,
-                location.speed >= 0,
-                location.speed > CoreLocationActivityRecorder.maxSpeedMetersPerSecond {
-                continue
-            }
-
-            if resumedFromPause {
-                if lastPointEpochMillis != nil {
-                    segmentIndex += 1
-                    segmentChanged = true
-                }
-                resumedFromPause = false
-            } else if let previous = lastPointEpochMillis,
-                effectiveMillis - previous > CoreLocationActivityRecorder.maxTimeGapMillis {
+        var isNewSegment = false
+        if resumedFromPause {
+            if lastPointEpochMillis != nil {
                 segmentIndex += 1
-                segmentChanged = true
+                isNewSegment = true
             }
-
-            lastPointEpochMillis = effectiveMillis
-            produced.append(makePoint(location, millis: effectiveMillis, segmentIndex: segmentIndex))
+            resumedFromPause = false
+        } else if let previous = lastPointEpochMillis,
+            effectiveMillis - previous > CoreLocationActivityRecorder.maxTimeGapMillis {
+            segmentIndex += 1
+            isNewSegment = true
         }
+        lastPointEpochMillis = effectiveMillis
 
-        if produced.isEmpty {
-            return
-        }
+        let point = makePoint(location, millis: effectiveMillis, segmentIndex: segmentIndex)
 
-        // Persist the advanced segment index before the point batch so session
+        // Persist the advanced segment index before the point so session
         // metadata is never behind the stored points across a crash/restart
-        // boundary. A crash between the two only leaves the session one segment
-        // ahead of an unwritten point, which recovery continues cleanly.
-        if segmentChanged {
-            store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex))
+        // boundary. A crash between the two only leaves the session one
+        // segment ahead of an unwritten point, which recovery continues
+        // cleanly.
+        if isNewSegment {
+            guard store.saveSession(session.copyWith(currentSegmentIndex: segmentIndex)) else {
+                stopCollection()
+                return
+            }
         }
 
         do {
-            try store.appendPoints(produced)
+            try store.appendPoints([point])
         } catch {
-            stopCollection()
-            persistFailure()
-            ActivityRecorderCoordinator.shared.emitFailed(
-                ActivityRecorderCoordinator.reasonPersistenceFailed
-            )
+            stopAfterPersistenceFailure()
             return
         }
 
-        ActivityRecorderCoordinator.shared.emitPointBatch(produced)
+        ActivityRecorderCoordinator.shared.emitPointBatch(
+            [point],
+            localSessionId: session.localSessionId,
+            pointOffset: nextPointOffset
+        )
+        nextPointOffset += 1
+        announceForBatch([point], isNewSegmentFlags: [isNewSegment], session: session)
+    }
+
+    /// Feeds a fix received while auto-paused. Core Location keeps running
+    /// (never stopped for an automatic pause) so movement can resume the
+    /// recording without user interaction, but no point is persisted until
+    /// hysteresis confirms movement has resumed.
+    private func handleAutoPausedLocationFix(
+        _ session: ActiveActivitySessionData,
+        _ location: CLLocation
+    ) {
+        guard let detector = autoPauseDetector else {
+            return
+        }
+        let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
+        let effectiveMillis = rawMillis > 0
+            ? rawMillis
+            : Int64(Date().timeIntervalSince1970 * 1000)
+        let transition = detector.onAutoPausedPoint(movementSample(location, millis: effectiveMillis))
+        guard case .autoResume = transition else {
+            return
+        }
+        let resumed = session.copyWith(
+            status: ActiveActivitySessionData.statusRecording,
+            resumedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(effectiveMillis) / 1000))),
+            pausedAt: .some(nil),
+            pausedAutomatically: false
+        )
+        guard store.saveSession(resumed) else {
+            stopAfterPersistenceFailure()
+            return
+        }
+        resumedFromPause = true
+        ActivityRecorderCoordinator.shared.emitSession(
+            type: ActivityRecorderCoordinator.eventAutoResumed,
+            session: resumed
+        )
+        // Queue the state cue before this fix can enqueue a progress update.
+        speakTransitionCue(autoPaused: false)
+        // Persist this same triggering fix as the first point of the new
+        // segment, matching the manual resume flow (`resumedFromPause` forces
+        // a segment break above).
+        handleActiveLocationFix(resumed, location)
+        scheduleNextTimeAnnouncement()
+    }
+
+    private func transitionToAutoPaused(_ session: ActiveActivitySessionData, nowMillis: Int64) {
+        // Back-date the pause to when movement last stopped so the stillness
+        // delay is not counted as recorded time.
+        let anchorMillis = IsoTime.toEpochMillis(session.resumedAt ?? session.startedAt)
+        var pausedAtMillis = min(autoPauseDetector?.lastMovementAtMillis ?? nowMillis, nowMillis)
+        if let anchorMillis = anchorMillis {
+            pausedAtMillis = max(pausedAtMillis, min(anchorMillis, nowMillis))
+        }
+        let paused = session.copyWith(
+            status: ActiveActivitySessionData.statusPaused,
+            pausedAt: .some(IsoTime.format(Date(timeIntervalSince1970: Double(pausedAtMillis) / 1000))),
+            elapsedDurationSeconds: session.elapsedSecondsAt(pausedAtMillis),
+            pausedAutomatically: true
+        )
+        guard store.saveSession(paused) else {
+            stopAfterPersistenceFailure()
+            return
+        }
+        ActivityRecorderCoordinator.shared.emitSession(
+            type: ActivityRecorderCoordinator.eventAutoPaused,
+            session: paused
+        )
+        // Cancel queued progress speech before announcing the state change.
+        AudioAnnouncer.shared.stop()
+        speakTransitionCue(autoPaused: true)
+        flushAnnouncementState()
+        stopTimeAnnouncementTimer()
+        // Deliberately does not call `stopCollection()`: an automatic pause
+        // must keep monitoring location so movement can resume the recording
+        // without user interaction, unlike a manual pause which stops
+        // collection entirely (see `stopCollection`).
+    }
+
+    private func speakTransitionCue(autoPaused: Bool) {
+        guard
+            let announcementState = currentAnnouncementState(),
+            let message = announcementState.transitionMessage(autoPaused: autoPaused)
+        else {
+            return
+        }
+        AudioAnnouncer.shared.speak(
+            message,
+            duck: announcementState.duckOtherAudio,
+            languageTag: announcementState.languageTag
+        )
+    }
+
+    private func movementSample(_ location: CLLocation, millis: Int64) -> MovementSample {
+        return MovementSample(
+            timestampMillis: millis,
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            speedMetersPerSecond: location.speed >= 0 ? location.speed : nil,
+            horizontalAccuracyMeters: location.horizontalAccuracy >= 0
+                ? location.horizontalAccuracy
+                : nil
+        )
+    }
+
+    /// Advances announcement progress for the batch and speaks crossings.
+    private func announceForBatch(
+        _ points: [RecordedActivityPointData],
+        isNewSegmentFlags: [Bool],
+        session: ActiveActivitySessionData
+    ) {
+        guard
+            var announcementState = currentAnnouncementState(),
+            announcementState.enabled
+        else {
+            return
+        }
+        var announcements: [String] = []
+        for (index, point) in points.enumerated() {
+            guard let millis = IsoTime.toEpochMillis(point.timestamp) else {
+                continue
+            }
+            let elapsedSeconds = SessionTiming.elapsedSeconds(session, referenceMillis: millis)
+            let result = AnnouncementScheduler.onFix(
+                state: announcementState,
+                latitude: point.latitude,
+                longitude: point.longitude,
+                elapsedSeconds: elapsedSeconds,
+                isNewSegment: isNewSegmentFlags[index]
+            )
+            announcementState = result.state
+            announcements.append(contentsOf: result.announcements)
+        }
+        guard cacheAnnouncementState(
+            announcementState,
+            persistBeforeSpeech: !announcements.isEmpty
+        ) else {
+            return
+        }
+        for text in announcements {
+            AudioAnnouncer.shared.speak(
+                text,
+                duck: announcementState.duckOtherAudio,
+                languageTag: announcementState.languageTag
+            )
+        }
+    }
+
+    private func restoreAnnouncementState() {
+        announcementStateCache.reset()
+        guard let state = store.loadAnnouncementState() else {
+            return
+        }
+        announcementStateCache.restore(
+            state,
+            uptime: ProcessInfo.processInfo.systemUptime
+        )
+    }
+
+    private func currentAnnouncementState() -> AnnouncementStateData? {
+        if let state = announcementStateCache.state {
+            return state
+        }
+        guard let state = store.loadAnnouncementState() else {
+            return nil
+        }
+        announcementStateCache.restore(
+            state,
+            uptime: ProcessInfo.processInfo.systemUptime
+        )
+        return state
+    }
+
+    /// Keeps normal GPS progress in memory, checkpoints it periodically, and
+    /// makes threshold progress durable before the corresponding speech.
+    private func cacheAnnouncementState(
+        _ state: AnnouncementStateData,
+        persistBeforeSpeech: Bool
+    ) -> Bool {
+        let previousState = announcementStateCache.state
+        announcementStateCache.update(state)
+        let uptime = ProcessInfo.processInfo.systemUptime
+        guard let stateToPersist = announcementStateCache.stateToPersist(
+            uptime: uptime,
+            force: persistBeforeSpeech
+        ) else {
+            return true
+        }
+        guard store.saveAnnouncementState(stateToPersist) else {
+            if persistBeforeSpeech, let previousState {
+                announcementStateCache.update(previousState)
+            }
+            return !persistBeforeSpeech
+        }
+        announcementStateCache.markPersisted(uptime: uptime)
+        return true
+    }
+
+    private func flushAnnouncementState() {
+        let uptime = ProcessInfo.processInfo.systemUptime
+        guard let state = announcementStateCache.stateToPersist(
+            uptime: uptime,
+            force: true
+        ), store.saveAnnouncementState(state) else {
+            return
+        }
+        announcementStateCache.markPersisted(uptime: uptime)
     }
 
     func locationManager(
@@ -265,14 +715,18 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
 
     // MARK: - Helpers
 
-    /// Persists `statusFailed` for any active session so Flutter sees a
-    /// non-recoverable state on re-attach even if the failure event was dropped
-    /// while Flutter was suspended.
+    /// Persists `statusFailed` so recovery requires explicit user action even
+    /// if the failure event was dropped while Flutter was suspended.
     private func persistFailure() {
         guard let session = store.loadSession(), session.isActive else {
             return
         }
-        store.saveSession(session.copyWith(status: ActiveActivitySessionData.statusFailed))
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        store.saveSession(session.copyWith(
+            status: ActiveActivitySessionData.statusFailed,
+            pausedAt: .some(IsoTime.nowUtc()),
+            elapsedDurationSeconds: SessionTiming.elapsedSeconds(session, referenceMillis: nowMillis)
+        ))
     }
 
     private func currentAuthorizationStatus() -> CLAuthorizationStatus {
@@ -287,7 +741,8 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
         millis: Int64,
         segmentIndex: Int
     ) -> RecordedActivityPointData {
-        let timestamp = IsoTime.format(Date(timeIntervalSince1970: Double(millis) / 1000))
+        let date = Date(timeIntervalSince1970: Double(millis) / 1000)
+        let timestamp = IsoTime.format(date)
 
         var headingAccuracy: Double?
         if #available(iOS 13.4, *), location.courseAccuracy >= 0 {
@@ -312,9 +767,9 @@ final class CoreLocationActivityRecorder: NSObject, CLLocationManagerDelegate {
             speedAccuracyMetersPerSecond: location.speedAccuracy >= 0
                 ? location.speedAccuracy
                 : nil,
-            // Sensor values are stamped by the Dart layer on this platform
+            // Power and cadence are stamped by the Dart layer on this platform
             // (see the type doc), so they are intentionally nil here.
-            heartRateBpm: nil,
+            heartRateBpm: heartRateMonitor.heartRateBpm(at: date),
             powerWatts: nil,
             cadenceRpm: nil
         )

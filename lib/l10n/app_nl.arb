@@ -11,6 +11,11 @@
   "invalidUrl": "Voer een geldige URL in",
   "errorActivityUploadFailed": "Kan activiteit niet uploaden",
   "errorActivityUploadFailedWithDetails": "Kan activiteit niet uploaden: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Het bestandsformaat wordt niet ondersteund",
+  "errorActivityIngestionInvalidFile": "Het bestand is beschadigd of kon niet worden gelezen",
+  "errorActivityIngestionNoActivitiesFound": "Er zijn geen activiteiten gevonden in het bestand",
+  "errorActivityIngestionProcessingFailed": "Er is iets misgegaan bij het importeren van de activiteit. Probeer het opnieuw.",
+  "errorActivityIngestionProviderUnavailable": "De activiteitenprovider is momenteel niet beschikbaar. Probeer het later opnieuw.",
   "errorActivityUploadNotConfigured": "Het uploaden van activiteiten is nog niet geconfigureerd",
   "errorActivityGpxCleanupFailed": "Kan het tijdelijke activiteitsbestand niet verwijderen",
   "errorActivityGpxFileWriteFailed": "Kan het bestand voor het uploaden van de activiteit niet voorbereiden",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "MFA-verificatie mislukt",
   "errorMfaVerificationFailedWithDetails": "MFA-verificatie mislukt: {details}",
   "errorNoSessionIdReceived": "Er is geen sessie-ID van de server ontvangen",
+  "errorMfaSessionMissing": "Je inlogsessie is verloren gegaan. Meld je opnieuw aan.",
+  "errorSsoCallbackFailed": "Eenmalige aanmelding (SSO) kon niet worden voltooid. Probeer het opnieuw.",
   "errorNotAuthenticated": "Je bent niet aangemeld",
   "errorPkceVerifierMissingRestartLogin": "De aanmeldverifier is niet gevonden. Start het aanmelden opnieuw.",
   "errorServerUrlNotConfigured": "Server-URL is niet geconfigureerd",
@@ -54,6 +61,32 @@
   "logout": "Afmelden",
   "logoutConfirmTitle": "Afmelden",
   "logoutConfirmMessage": "Weet je zeker dat je je wilt afmelden?",
+  "legacyDataTitle": "Activiteiten van vóór de serverupdate",
+  "legacyDataMessageWithUsername": "Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Zijn ze van jou, {username}? Zo ja, dan worden de activiteiten die nog wachten naar je account geüpload.",
+  "legacyDataMessage": "Op dit apparaat staan activiteiten die zijn opgeslagen voor een account op deze server van vóór de update van de server. Horen ze bij het account waarmee je net bent ingelogd? Zo ja, dan worden de activiteiten die nog wachten daarnaar geüpload.",
+  "legacyDataConfirm": "Ze zijn van mij",
+  "legacyDataDecline": "Niet van mij",
+  "errorActivityUploadLimit": "De server heeft te veel uploads van je in behandeling. De app probeert het later opnieuw.",
+  "errorPasswordChangeFailed": "Kan het wachtwoord niet wijzigen",
+  "errorPasswordChangeFailedWithDetails": "Kan het wachtwoord niet wijzigen: {details}",
+  "errorSignInStepUnsupported": "Deze server vroeg om een inlogstap die deze versie van de app niet ondersteunt. Werk de app bij en probeer het opnieuw.",
+  "errorSsoEmailMissing": "Je identiteitsprovider heeft geen e-mailadres gedeeld, en dat is nodig om je account aan te maken.",
+  "errorSsoEmailUnverified": "Je identiteitsprovider heeft je e-mailadres niet geverifieerd. Verifieer het daar en probeer het opnieuw.",
+  "errorSsoAutoCreateDisabled": "Geen enkel account past bij deze aanmelding en deze server maakt niet automatisch accounts aan. Vraag het je beheerder.",
+  "errorSsoLinkByEmailDisabled": "Een account gebruikt dit e-mailadres al, maar deze provider kan daarop niet inloggen. Log op een andere manier in of vraag het je beheerder.",
+  "errorSsoApprovalPending": "Je account wacht op goedkeuring door een beheerder.",
+  "errorSsoAccountDisabled": "Dit account is uitgeschakeld. Neem contact op met je beheerder.",
+  "errorSsoRedirectNotAllowed": "Deze server staat single sign-on vanuit deze app niet toe. Vraag je beheerder om com.endurain.endurain:/auth/sso/callback toe te voegen aan ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Je beheerder vereist verificatie in twee stappen. Stel die in via de Endurain-webapp en probeer het opnieuw.",
+  "errorActivityFileTooLarge": "Het activiteitsbestand is te groot voor deze server",
+  "errorActivityUnsupportedFileType": "Deze server accepteert dit soort activiteitsbestand niet",
+  "errorTooManyRequests": "Te veel pogingen. Wacht even en probeer het opnieuw.",
+  "passwordChangeTitle": "Kies een nieuw wachtwoord",
+  "passwordChangeMessage": "Een beheerder heeft je wachtwoord ingesteld. Kies een nieuw wachtwoord om het inloggen af te ronden.",
+  "newPassword": "Nieuw wachtwoord",
+  "confirmNewPassword": "Bevestig nieuw wachtwoord",
+  "passwordsDoNotMatch": "De wachtwoorden komen niet overeen",
+  "changePassword": "Wachtwoord wijzigen",
   "logoutServerFailedWarning": "Kan niet afmelden bij de server, maar lokaal afgemeld",
   "ssoBrowserLaunchFailed": "Kan SSO-aanmelding niet openen in de systeembrowser",
   "ssoSignInWith": "Aanmelden met {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Voltooide activiteiten opgeslagen op dit apparaat",
   "activityRetainUploadedGpx": "Geüploade GPX-bestanden bewaren",
   "activityRetainUploadedGpxSubtitle": "Bewaart voltooide routebestanden na het uploaden in de privéopslag van de app.",
+  "activityAutoPauseTitle": "Automatisch pauzeren",
+  "activityAutoPauseSubtitle": "Pauzeert automatisch wanneer je stopt met bewegen",
+  "activityAutoPauseToggleLabel": "Automatisch pauzeren",
+  "activityAutoPauseToggleDescription": "Pauzeert de opname wanneer je stopt met bewegen en hervat zodra je weer beweegt.",
+  "activityAutoPauseDelayHelperText": "Kies hoe lang zonder beweging gewacht moet worden voordat er wordt gepauzeerd.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} seconden",
+  "activityAutoPausedIndicator": "Automatisch gepauzeerd",
+  "audioAnnouncementsAutoPaused": "Opname gepauzeerd",
+  "audioAnnouncementsAutoResumed": "Opname hervat",
   "activityHistoryEmpty": "Geen voltooide activiteiten opgeslagen op dit apparaat.",
   "activityHistoryLoadFailed": "Kan lokale activiteiten niet laden.",
   "activityHistoryRefresh": "Vernieuwen",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Trainingen",
   "healthAccessWorkoutRoutes": "Trainingsroutes",
   "healthAccessHeartRate": "Hartslag",
-  "healthAccessWorkoutSummary": "Trainingsafstand, calorieën en stappen",
   "healthAccessAllowed": "Toegestaan",
   "healthAccessNeedsAttention": "Heeft aandacht nodig",
   "healthAccessManagedBySystem": "Beheerd in systeeminstellingen",
@@ -441,5 +482,107 @@
   "errorTooManyRedirects": "De server heeft te vaak doorverwezen. Controleer het serveradres.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Audiomeldingen",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Gesproken updates over afstand, tijd, tempo of snelheid",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Voortgang van activiteit aankondigen",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Spreekt tijdens een opname je afstand, tijd, tempo of snelheid uit",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Ander geluid dempen tijdens het spreken",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Verlaagt tijdelijk het volume van ander geluid tijdens elke melding",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Meldingsinterval per activiteit",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Afstand",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Tijd",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Elke {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Elke {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Interval verkleinen",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Interval vergroten",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Voorbeeld afspelen",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Een voorbeeld van de melding is niet beschikbaar op dit apparaat",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Wijzigingen gelden vanaf je volgende opname.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Afstand {distance}. Tijd {duration}. Ronde: {lapMetric}. Totaal: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

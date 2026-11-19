@@ -1,7 +1,7 @@
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
-import 'package:flutter/foundation.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
+import 'package:flutter/foundation.dart';
 
 /// Outcome of the tile-server host policy check for a candidate URL.
 ///

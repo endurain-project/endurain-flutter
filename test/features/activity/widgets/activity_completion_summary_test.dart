@@ -1,12 +1,12 @@
+import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/widgets/activity_completion_summary.dart';
-import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/device_locale.dart';
 import '../../../helpers/elevation_profile.dart';
@@ -48,17 +48,17 @@ void main() {
 
       expect(find.text(l10n.activityHistorySummary), findsOneWidget);
       expect(find.text(l10n.activityTypeRide), findsOneWidget);
-      expect(find.text('0:29'), findsOneWidget);
-      expect(find.text('323 m'), findsOneWidget);
+      expect(find.text('1:09'), findsOneWidget);
+      expect(find.text('768 m'), findsOneWidget);
       expect(find.text(l10n.activityHistoryAverageSpeed), findsOneWidget);
       expect(find.text(l10n.activityStatMaxSpeed), findsOneWidget);
       // The backend includes the first point's zero velocity in the average.
-      expect(find.text('38.7 km/h'), findsOneWidget);
+      expect(find.text('39.5 km/h'), findsOneWidget);
       expect(find.text('40.1 km/h'), findsOneWidget);
       expect(find.text(l10n.activityStatElevationGain), findsOneWidget);
       expect(find.text('100 m'), findsOneWidget);
       expect(find.text(l10n.activityHistoryPointCount), findsOneWidget);
-      expect(find.text('30'), findsOneWidget);
+      expect(find.text('70'), findsOneWidget);
     });
 
     testWidgets('shows pace instead of average speed for a run', (

@@ -11,6 +11,11 @@
   "invalidUrl": "Zadajte platnú adresu URL",
   "errorActivityUploadFailed": "Aktivitu sa nepodarilo nahrať",
   "errorActivityUploadFailedWithDetails": "Aktivitu sa nepodarilo nahrať: {details}",
+  "errorActivityIngestionUnsupportedFormat": "Formát súboru nie je podporovaný",
+  "errorActivityIngestionInvalidFile": "Súbor je poškodený alebo sa nedá prečítať",
+  "errorActivityIngestionNoActivitiesFound": "V súbore sa nenašli žiadne aktivity",
+  "errorActivityIngestionProcessingFailed": "Pri importe aktivity sa vyskytla chyba. Skúste to znova.",
+  "errorActivityIngestionProviderUnavailable": "Poskytovateľ aktivít momentálne nie je dostupný. Skúste to neskôr.",
   "errorActivityUploadNotConfigured": "Nahrávanie aktivít ešte nie je nastavené",
   "errorActivityGpxCleanupFailed": "Dočasný súbor aktivity sa nepodarilo odstrániť",
   "errorActivityGpxFileWriteFailed": "Súbor na nahranie aktivity sa nepodarilo pripraviť",
@@ -33,6 +38,8 @@
   "errorMfaVerificationFailed": "Overenie MFA zlyhalo",
   "errorMfaVerificationFailedWithDetails": "Overenie MFA zlyhalo: {details}",
   "errorNoSessionIdReceived": "Zo servera nebolo prijaté žiadne ID relácie",
+  "errorMfaSessionMissing": "Vaša prihlasovacia relácia sa stratila. Prihláste sa znova.",
+  "errorSsoCallbackFailed": "Jednotné prihlásenie (SSO) sa nepodarilo dokončiť. Skúste to znova.",
   "errorNotAuthenticated": "Nie ste prihlásení",
   "errorPkceVerifierMissingRestartLogin": "Overovateľ prihlásenia sa nenašiel. Začnite prihlásenie znova.",
   "errorServerUrlNotConfigured": "Adresa URL servera nie je nastavená",
@@ -54,6 +61,32 @@
   "logout": "Odhlásiť sa",
   "logoutConfirmTitle": "Odhlásiť sa",
   "logoutConfirmMessage": "Naozaj sa chcete odhlásiť?",
+  "legacyDataTitle": "Aktivity spred aktualizácie servera",
+  "legacyDataMessageWithUsername": "V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Sú vaše, {username}? Ak áno, tie, ktoré ešte čakajú, sa nahrajú do vášho účtu.",
+  "legacyDataMessage": "V tomto zariadení sú aktivity uložené pre účet na tomto serveri spred jeho aktualizácie. Patria k účtu, do ktorého ste sa práve prihlásili? Ak áno, tie, ktoré ešte čakajú, sa doň nahrajú.",
+  "legacyDataConfirm": "Sú moje",
+  "legacyDataDecline": "Nie sú moje",
+  "errorActivityUploadLimit": "Na serveri prebieha príliš veľa vašich nahrávaní. Aplikácia to skúsi znova neskôr.",
+  "errorPasswordChangeFailed": "Heslo sa nepodarilo zmeniť",
+  "errorPasswordChangeFailedWithDetails": "Heslo sa nepodarilo zmeniť: {details}",
+  "errorSignInStepUnsupported": "Server požiadal o krok prihlásenia, ktorý táto verzia aplikácie nepodporuje. Aktualizujte aplikáciu a skúste to znova.",
+  "errorSsoEmailMissing": "Váš poskytovateľ identity nezdieľal e-mailovú adresu, ktorá je potrebná na vytvorenie účtu.",
+  "errorSsoEmailUnverified": "Váš poskytovateľ identity neoveril vašu e-mailovú adresu. Overte ju tam a skúste to znova.",
+  "errorSsoAutoCreateDisabled": "Tomuto prihláseniu nezodpovedá žiadny účet a tento server nevytvára účty automaticky. Obráťte sa na správcu.",
+  "errorSsoLinkByEmailDisabled": "Túto e-mailovú adresu už používa účet, ale tento poskytovateľ sa doň nemôže prihlásiť. Prihláste sa inak alebo sa obráťte na správcu.",
+  "errorSsoApprovalPending": "Váš účet čaká na schválenie správcom.",
+  "errorSsoAccountDisabled": "Tento účet je zakázaný. Obráťte sa na správcu.",
+  "errorSsoRedirectNotAllowed": "Tento server nepovoľuje jednotné prihlásenie z tejto aplikácie. Požiadajte správcu, aby pridal com.endurain.endurain:/auth/sso/callback do ALLOWED_REDIRECT_URIS.",
+  "errorActivityMfaEnrolmentRequired": "Váš správca vyžaduje dvojstupňové overenie. Nastavte ho vo webovej aplikácii Endurain a skúste to znova.",
+  "errorActivityFileTooLarge": "Súbor aktivity je pre tento server príliš veľký",
+  "errorActivityUnsupportedFileType": "Tento server tento druh súboru aktivity neprijíma",
+  "errorTooManyRequests": "Príliš veľa pokusov. Chvíľu počkajte a skúste to znova.",
+  "passwordChangeTitle": "Zvoľte nové heslo",
+  "passwordChangeMessage": "Správca vám nastavil heslo. Na dokončenie prihlásenia zvoľte nové.",
+  "newPassword": "Nové heslo",
+  "confirmNewPassword": "Potvrďte nové heslo",
+  "passwordsDoNotMatch": "Heslá sa nezhodujú",
+  "changePassword": "Zmeniť heslo",
   "logoutServerFailedWarning": "Odhlásenie zo servera zlyhalo, ale odhlásenie prebehlo miestne",
   "ssoBrowserLaunchFailed": "Prihlásenie cez SSO sa nepodarilo otvoriť v systémovom prehliadači",
   "ssoSignInWith": "Prihlásiť sa cez {provider}",
@@ -127,6 +160,15 @@
   "activityHistorySettingsSubtitle": "Dokončené aktivity uložené v tomto zariadení",
   "activityRetainUploadedGpx": "Ponechať nahraté súbory GPX",
   "activityRetainUploadedGpxSubtitle": "Po nahraní ukladá dokončené súbory trás do súkromného úložiska aplikácie.",
+  "activityAutoPauseTitle": "Automatická pauza",
+  "activityAutoPauseSubtitle": "Automaticky pozastaví, keď sa prestanete pohybovať",
+  "activityAutoPauseToggleLabel": "Automaticky pozastaviť",
+  "activityAutoPauseToggleDescription": "Nahrávanie sa automaticky pozastaví, keď sa prestanete pohybovať, a obnoví sa, keď sa znova začnete pohybovať.",
+  "activityAutoPauseDelayHelperText": "Vyberte, ako dlho čakať bez pohybu pred pozastavením.",
+  "activityAutoPauseDelayOptionLabel": "{seconds} sekúnd",
+  "activityAutoPausedIndicator": "Automaticky pozastavené",
+  "audioAnnouncementsAutoPaused": "Nahrávanie pozastavené",
+  "audioAnnouncementsAutoResumed": "Nahrávanie obnovené",
   "activityHistoryEmpty": "V tomto zariadení nie sú uložené žiadne dokončené aktivity.",
   "activityHistoryLoadFailed": "Miestne aktivity sa nepodarilo načítať.",
   "activityHistoryRefresh": "Obnoviť",
@@ -248,7 +290,6 @@
   "healthAccessWorkouts": "Tréningy",
   "healthAccessWorkoutRoutes": "Tréningové trasy",
   "healthAccessHeartRate": "Srdcová frekvencia",
-  "healthAccessWorkoutSummary": "Vzdialenosť, kalórie a kroky tréningu",
   "healthAccessAllowed": "Povolené",
   "healthAccessNeedsAttention": "Vyžaduje pozornosť",
   "healthAccessManagedBySystem": "Spravované v systémových nastaveniach",
@@ -434,12 +475,114 @@
   "@unitsImperial": {
     "description": "Imperial units option - Used in: units_settings_screen.dart"
   },
-  "errorInsecureRedirectRejected": "The server tried to redirect to an insecure connection. The request was blocked to protect your credentials.",
+  "errorInsecureRedirectRejected": "Server sa pokúsil presmerovať na nezabezpečené pripojenie. Požiadavka bola zablokovaná na ochranu vašich prihlasovacích údajov.",
   "@errorInsecureRedirectRejected": {
     "description": "Shown when a server redirect would downgrade HTTPS to HTTP - Used in: error_localizations.dart"
   },
-  "errorTooManyRedirects": "The server redirected too many times. Check the server address.",
+  "errorTooManyRedirects": "Server presmeroval príliš veľakrát. Skontrolujte adresu servera.",
   "@errorTooManyRedirects": {
     "description": "Shown when a request exceeds the redirect limit - Used in: error_localizations.dart"
+  },
+  "audioAnnouncementsTitle": "Hlasové oznámenia",
+  "@audioAnnouncementsTitle": {
+    "description": "Settings entry title and screen title for spoken progress announcements - Used in: settings_screen.dart, audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSubtitle": "Hlasové aktualizácie vzdialenosti, času, tempa alebo rýchlosti",
+  "@audioAnnouncementsSubtitle": {
+    "description": "Settings entry subtitle for spoken progress announcements - Used in: settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitch": "Oznamovať priebeh aktivity",
+  "@audioAnnouncementsMasterSwitch": {
+    "description": "Master on/off switch label for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsMasterSwitchSubtitle": "Počas nahrávania nahlas oznamuje vzdialenosť, čas, tempo alebo rýchlosť",
+  "@audioAnnouncementsMasterSwitchSubtitle": {
+    "description": "Master on/off switch subtitle for spoken progress announcements - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitch": "Stlmiť iný zvuk počas rozprávania",
+  "@audioAnnouncementsDuckSwitch": {
+    "description": "Switch label to duck other audio (music, podcasts) during an announcement - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsDuckSwitchSubtitle": "Dočasne zníži hlasitosť iného zvuku počas každého oznámenia",
+  "@audioAnnouncementsDuckSwitchSubtitle": {
+    "description": "Switch subtitle explaining audio ducking - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalsHeader": "Interval oznámení podľa aktivity",
+  "@audioAnnouncementsIntervalsHeader": {
+    "description": "Section header above the per-activity-type interval list - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByDistance": "Vzdialenosť",
+  "@audioAnnouncementsByDistance": {
+    "description": "Segmented control option to announce by distance interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsByTime": "Čas",
+  "@audioAnnouncementsByTime": {
+    "description": "Segmented control option to announce by time interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIntervalDistance": "Každých {value} {unit}",
+  "@audioAnnouncementsIntervalDistance": {
+    "description": "Subtitle showing the configured distance interval, e.g. \"Every 1.0 km\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1.0"
+      },
+      "unit": {
+        "type": "String",
+        "example": "km"
+      }
+    }
+  },
+  "audioAnnouncementsIntervalTime": "Každých {minutes} min",
+  "@audioAnnouncementsIntervalTime": {
+    "description": "Subtitle showing the configured time interval in minutes, e.g. \"Every 5 min\" - Used in: audio_announcement_settings_screen.dart",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "audioAnnouncementsDecreaseInterval": "Zmenšiť interval",
+  "@audioAnnouncementsDecreaseInterval": {
+    "description": "Accessibility label for the button that lowers the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsIncreaseInterval": "Zväčšiť interval",
+  "@audioAnnouncementsIncreaseInterval": {
+    "description": "Accessibility label for the button that raises the announcement interval - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreview": "Prehrať ukážku",
+  "@audioAnnouncementsPreview": {
+    "description": "Button that speaks one sample announcement so the user can confirm the device speech engine works - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsPreviewUnavailable": "Ukážka hlásenia nie je na tomto zariadení dostupná",
+  "@audioAnnouncementsPreviewUnavailable": {
+    "description": "Shown when the platform rejected the sample announcement request - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsAppliesNextRecording": "Zmeny sa prejavia pri ďalšom zázname.",
+  "@audioAnnouncementsAppliesNextRecording": {
+    "description": "Footer clarifying that announcement settings take effect at the next recording start, not during an active recording - Used in: audio_announcement_settings_screen.dart"
+  },
+  "audioAnnouncementsSpokenMessage": "Vzdialenosť {distance}. Čas {duration}. Okruh: {lapMetric}. Celkovo: {overallMetric}.",
+  "@audioAnnouncementsSpokenMessage": {
+    "description": "Spoken sentence template read aloud by the native recorder at each announcement threshold; {distance}/{duration}/{lapMetric}/{overallMetric} are replaced with already-formatted, localized fragments before speech - Used in: audio_announcement_config.dart",
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "1.0 km"
+      },
+      "duration": {
+        "type": "String",
+        "example": "23:45"
+      },
+      "lapMetric": {
+        "type": "String",
+        "example": "Pace 5:15 min/km"
+      },
+      "overallMetric": {
+        "type": "String",
+        "example": "Pace 5:30 min/km"
+      }
+    }
   }
 }

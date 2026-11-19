@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/auth/sso_service.dart';
+import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart';
 import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/sso_service.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -36,16 +38,23 @@ class LoginController extends SafeNotifier {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _showMfaInput = false;
   bool _isStep2 = false;
-  String? _mfaUsername;
+
+  /// The step a sign-in waits on (MFA or a new password), or `null` while the
+  /// user is entering credentials.
+  SignInStep? _pendingStep;
+  List<String> _mfaMethods = const [];
   List<IdentityProvider> _availableIdPs = const [];
   ServerSettings? _serverSettings;
   String _serverUrl = '';
 
   bool get isLoading => _isLoading;
   bool get obscurePassword => _obscurePassword;
-  bool get showMfaInput => _showMfaInput;
+  bool get showMfaInput => _pendingStep == SignInStep.mfa;
+  bool get showPasswordChange => _pendingStep == SignInStep.passwordChange;
+
+  /// Whether the MFA step accepts a backup code, which is not only digits.
+  bool get mfaAcceptsBackupCodes => _mfaMethods.contains('backup_code');
   bool get isStep2 => _isStep2;
   List<IdentityProvider> get availableIdPs => List.unmodifiable(_availableIdPs);
   ServerSettings? get serverSettings => _serverSettings;
@@ -84,10 +93,8 @@ class LoginController extends SafeNotifier {
     );
   }
 
-  Future<IdentityProvider?> submitServerUrl(String serverUrl) async {
-    _setLoading(true);
-
-    try {
+  Future<IdentityProvider?> submitServerUrl(String serverUrl) {
+    return _guarded<IdentityProvider?>(() async {
       final url = serverUrl.trim();
       _serverUrl = url;
       final settings = await _authCoordinator.getServerSettings(url);
@@ -119,42 +126,35 @@ class LoginController extends SafeNotifier {
         return providers.first;
       }
       return null;
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-      return null;
-    }
+    });
   }
 
   Future<String?> beginSsoLogin(
     IdentityProvider provider, {
     required String serverUrl,
-  }) async {
-    _setLoading(true);
-
-    try {
+  }) {
+    return _guarded<String?>(() async {
       _serverUrl = serverUrl.trim();
+      // Refuse before the browser opens: a callback the server does not list
+      // would end on the server's error page, out of the app's reach.
+      if (!SsoService.isCallbackAllowed(_serverSettings?.allowedRedirectUris)) {
+        throw const AppException(AppErrorCode.ssoRedirectNotAllowed);
+      }
       final oauthUrl = await _authCoordinator.initiateSsoLogin(
         provider,
         serverUrl: _serverUrl,
       );
       _setLoading(false);
       return oauthUrl;
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-      return null;
-    }
+    });
   }
 
   Future<void> submitLogin({
     required String serverUrl,
     required String username,
     required String password,
-  }) async {
-    _setLoading(true);
-
-    try {
+  }) {
+    return _guarded(() async {
       _serverUrl = serverUrl.trim();
       final result = await _authCoordinator.login(
         username: username.trim(),
@@ -162,40 +162,24 @@ class LoginController extends SafeNotifier {
         serverUrl: _serverUrl,
       );
 
-      if (result.mfaRequired) {
-        _showMfaInput = true;
-        _mfaUsername = result.username;
-        _setLoading(false);
-      } else {
-        await _commitServerSettings();
-        _onLoginSuccess?.call();
-      }
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-    }
+      await _applyResult(result);
+    });
   }
 
-  Future<void> submitMfa(String mfaCode) async {
-    final username = _mfaUsername;
-    if (username == null || username.isEmpty) {
-      _notifyError(const AppException(AppErrorCode.noSessionIdReceived));
-      return;
-    }
+  /// Answers the MFA step of a password or an SSO sign-in.
+  Future<void> submitMfa(String mfaCode) {
+    return _guarded(() async {
+      final result = await _authCoordinator.verifyMfa(mfaCode.trim());
+      await _applyResult(result);
+    });
+  }
 
-    _setLoading(true);
-
-    try {
-      await _authCoordinator.verifyMfa(
-        username: username,
-        mfaCode: mfaCode.trim(),
-      );
-      await _commitServerSettings();
-      _onLoginSuccess?.call();
-    } catch (error) {
-      _setLoading(false);
-      _notifyError(error);
-    }
+  /// Answers the password-change step with [newPassword].
+  Future<void> submitPasswordChange(String newPassword) {
+    return _guarded(() async {
+      final result = await _authCoordinator.changePassword(newPassword);
+      await _applyResult(result);
+    });
   }
 
   void backToServerStep() {
@@ -205,9 +189,33 @@ class LoginController extends SafeNotifier {
     notify();
   }
 
-  void backFromMfa() {
-    _showMfaInput = false;
+  /// Leaves the MFA step, abandoning the sign-in.
+  void backFromMfa() => _cancelPendingStep();
+
+  /// Leaves the password-change step, abandoning the sign-in.
+  void backFromPasswordChange() => _cancelPendingStep();
+
+  void _cancelPendingStep() {
+    _authCoordinator.cancelSignIn();
+    _pendingStep = null;
+    _mfaMethods = const [];
     notify();
+  }
+
+  /// The address of the icon an administrator uploaded for [provider], or
+  /// `null` when it has none or the server address is unusable.
+  Uri? uploadedIconUrl(IdentityProvider provider) {
+    if (!provider.iconUploaded) {
+      return null;
+    }
+    try {
+      final origin = ServerUrlResolver.normalize(_serverUrl, config: _config);
+      return Uri.parse(
+        '$origin${ApiEndpoints(_config).idpIconEndpoint(provider.slug)}',
+      );
+    } on AppException {
+      return null;
+    }
   }
 
   void setPasswordVisible(bool visible) {
@@ -226,12 +234,21 @@ class LoginController extends SafeNotifier {
 
     final sessionId = uri.queryParameters['session_id'];
     final error =
-        uri.queryParameters['message'] ?? uri.queryParameters['error'];
+        uri.queryParameters['error'] ?? uri.queryParameters['message'];
 
     if (error != null && error.isNotEmpty) {
+      // Any app can fire this deep link, so never surface its text to the
+      // user: only a documented failure code selects a specific message.
       clearSsoPkce();
       _setLoading(false);
-      _notifyError(error);
+      _notifyError(
+        AppException(
+          AppErrorCode.ssoCallbackFailed,
+          details: SsoService.knownCallbackErrors.contains(error)
+              ? error
+              : null,
+        ),
+      );
       return;
     }
 
@@ -245,12 +262,63 @@ class LoginController extends SafeNotifier {
     _setLoading(true);
 
     try {
-      await _authCoordinator.exchangeSsoSessionForTokens(sessionId);
-      await _commitServerSettings();
-      _onLoginSuccess?.call();
+      // `tokens`, or the MFA step for an account with MFA.
+      final result = await _authCoordinator.exchangeSsoSessionForTokens(
+        sessionId,
+      );
+      await _applyResult(result);
     } catch (error) {
+      _resetIfSignInEnded(error);
       _setLoading(false);
       _notifyError(error);
+    }
+  }
+
+  /// Moves the UI to the step [result] names, or finishes the sign-in.
+  Future<void> _applyResult(AuthResult result) async {
+    switch (result.step) {
+      case SignInStep.signedIn:
+        _pendingStep = null;
+        _mfaMethods = const [];
+        await _commitServerSettings();
+        _onLoginSuccess?.call();
+      case SignInStep.mfa:
+        _pendingStep = SignInStep.mfa;
+        _mfaMethods = result.mfaMethods;
+        _setLoading(false);
+      case SignInStep.passwordChange:
+        _pendingStep = SignInStep.passwordChange;
+        _setLoading(false);
+    }
+  }
+
+  /// Returns to the credentials when [error] ended the pending sign-in (a
+  /// dead challenge, an unknown step, a lost verifier), so the user starts
+  /// over instead of retrying a step that no longer exists.
+  void _resetIfSignInEnded(Object error) {
+    if (error is AppException &&
+        const {
+          AppErrorCode.mfaSessionMissing,
+          AppErrorCode.signInStepUnsupported,
+          AppErrorCode.pkceVerifierMissingRestartLogin,
+        }.contains(error.code)) {
+      _pendingStep = null;
+      _mfaMethods = const [];
+    }
+  }
+
+  /// Runs [action] with the loading flag raised. On failure the flag is lowered
+  /// and the error reported; on success [action] owns lowering the flag, since
+  /// some flows stay busy (e.g. while navigating away after sign-in).
+  Future<T?> _guarded<T>(Future<T> Function() action) async {
+    _setLoading(true);
+    try {
+      return await action();
+    } catch (error) {
+      _resetIfSignInEnded(error);
+      _setLoading(false);
+      _notifyError(error);
+      return null;
     }
   }
 

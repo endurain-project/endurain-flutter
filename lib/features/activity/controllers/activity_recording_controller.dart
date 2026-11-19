@@ -1,25 +1,28 @@
-import 'dart:async';
-
 // Recording type relationships (controller -> service -> recorder):
 // the durable session model survives app restarts; the ephemeral state model
 // drives the live UI.
 
+import 'dart:async';
+
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/core/services/diagnostics_service.dart';
-import 'package:endurain/core/services/location_settings_builder.dart';
 import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
-import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/activity_upload_state.dart';
+import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
+import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
 class ActivityRecordingController extends SafeNotifier {
@@ -30,6 +33,7 @@ class ActivityRecordingController extends SafeNotifier {
     LocalActivityRepository? localActivityRepository,
     LocalActivitySummaryBuilder? localActivitySummaryBuilder,
     this._retentionSettingsRepository,
+    this._autoPauseSettingsRepository,
     Future<bool> Function()? isUploadAuthorized,
     Future<ConnectionProfile?> Function()? activeConnectionProfile,
     DiagnosticsRecorder? diagnostics,
@@ -47,9 +51,7 @@ class ActivityRecordingController extends SafeNotifier {
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
        _now = now ?? DateTime.now {
-    _stateSubscription = _recordingService.stateStream.listen((state) {
-      _setState(state);
-    });
+    _stateSubscription = _recordingService.stateStream.listen(_setState);
   }
 
   static Future<bool> _alwaysAuthorized() async => true;
@@ -61,6 +63,7 @@ class ActivityRecordingController extends SafeNotifier {
   final LocalActivityRepository _localActivityRepository;
   final LocalActivitySummaryBuilder _localActivitySummaryBuilder;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
+  final AutoPauseSettingsRepository? _autoPauseSettingsRepository;
   final Future<bool> Function() _isUploadAuthorized;
   final Future<ConnectionProfile?> Function() _activeConnectionProfile;
   final DiagnosticsRecorder _diagnostics;
@@ -99,6 +102,12 @@ class ActivityRecordingController extends SafeNotifier {
     _recordingService.configureBackgroundTracking(config);
   }
 
+  /// Supplies the localized spoken-announcement configuration used for the
+  /// next recording start. See `ActivityRecordingService.configureAudioAnnouncements`.
+  void configureAudioAnnouncements(AudioAnnouncementConfig config) {
+    _recordingService.configureAudioAnnouncements(config);
+  }
+
   void selectActivityType(ActivityType type) {
     if (_state.isActive || _state.status == ActivityRecordingStatus.stopping) {
       return;
@@ -124,6 +133,23 @@ class ActivityRecordingController extends SafeNotifier {
     selectActivityType(type);
     final localActivityId = _localActivityIdProvider();
     final profile = await _activeConnectionProfile();
+    final autoPauseRepository = _autoPauseSettingsRepository;
+    if (autoPauseRepository != null) {
+      try {
+        _recordingService.configureAutoPause(
+          await autoPauseRepository.getConfig(),
+        );
+      } catch (_) {
+        _recordingService.configureAutoPause(
+          const MovementAutoPauseConfig(
+            enabled: AutoPauseSettingsRepository.defaultEnabled,
+            pauseDelay: Duration(
+              seconds: AutoPauseSettingsRepository.defaultDelaySeconds,
+            ),
+          ),
+        );
+      }
+    }
     await _recordingService.start(
       activityType: _selectedActivityType,
       backgroundConfig: _backgroundConfig,
@@ -131,7 +157,12 @@ class ActivityRecordingController extends SafeNotifier {
       connectionOrigin: profile?.origin,
       connectionProfileId: profile?.id,
     );
+    _selectedActivityType =
+        _recordingService.state.activityType ?? _selectedActivityType;
     _setState(_recordingService.state);
+    if (_recordingService.state.status == ActivityRecordingStatus.completed) {
+      await _finalizeCompletedState(_recordingService.state);
+    }
   }
 
   /// Attempts to restore a recoverable active recording left behind by a
@@ -169,8 +200,16 @@ class ActivityRecordingController extends SafeNotifier {
   }
 
   Future<void> resume() async {
+    if (_state.canRecover &&
+        _recordingService.state.status == ActivityRecordingStatus.completed) {
+      await _finalizeCompletedState(_recordingService.state);
+      return;
+    }
     await _recordingService.resume();
     _setState(_recordingService.state);
+    if (_recordingService.state.status == ActivityRecordingStatus.completed) {
+      await _finalizeCompletedState(_recordingService.state);
+    }
   }
 
   Future<void> stop() async {
@@ -198,7 +237,10 @@ class ActivityRecordingController extends SafeNotifier {
       return;
     }
     await _recordingService.acknowledgeFinalized();
-    _setState(completedState.copyWith(localActivityId: localRecord.id));
+    _setState(
+      completedState.copyWith(localActivityId: localRecord.id),
+      isDurablyFinalized: true,
+    );
     if (await _isUploadAuthorized()) {
       unawaited(uploadCompletedGpx());
     }
@@ -385,16 +427,14 @@ class ActivityRecordingController extends SafeNotifier {
 
   /// Updates the recorded state and notifies listeners.
   ///
-  /// **Invariant — localSaveFailed is terminal:**
-  /// Once the state has transitioned to `failed` with error key
-  /// `localSaveFailed`, no caller may silently move it back to `stopping` or
-  /// `completed`. The GPX data is lost and recovery from that state is
-  /// undefined; forcing those transitions would show misleading UI (e.g. a
-  /// "completed" banner with no persisted activity). The guard below enforces
-  /// this boundary. Any new caller that needs to override this must explicitly
-  /// handle the save-failed path rather than relying on status transitions.
-  void _setState(ActivityRecordingState state) {
-    if (_state.status == ActivityRecordingStatus.failed &&
+  /// Failed finalization remains visible until an explicit retry has committed
+  /// the activity durably. Recorder events alone cannot claim save success.
+  void _setState(
+    ActivityRecordingState state, {
+    bool isDurablyFinalized = false,
+  }) {
+    if (!isDurablyFinalized &&
+        _state.status == ActivityRecordingStatus.failed &&
         (_state.lastError == ActivityRecordingError.localSaveFailed ||
             _state.lastError == ActivityRecordingError.gpxGenerationFailed) &&
         (state.status == ActivityRecordingStatus.stopping ||

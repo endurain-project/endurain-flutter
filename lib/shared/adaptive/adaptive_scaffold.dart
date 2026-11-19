@@ -1,7 +1,7 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AdaptiveScaffold extends StatelessWidget {
   const AdaptiveScaffold({

@@ -1,16 +1,16 @@
-import 'package:endurain/features/activity/models/activity_recording_error.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/map_constants.dart';
-import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/activity/models/activity_recording_state.dart';
-import 'package:endurain/features/activity/models/activity_upload_state.dart';
-import 'package:endurain/features/activity/models/activity_type.dart';
-import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/features/activity/models/activity_recording_error.dart';
+import 'package:endurain/features/activity/models/activity_recording_state.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/activity_upload_state.dart';
+import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   group('ActivityRecordingControls', () {
@@ -19,6 +19,37 @@ void main() {
     });
 
     tearDown(PlatformUtils.debugResetOverrides);
+
+    testWidgets('offers recovery controls after an interrupted recording', (
+      tester,
+    ) async {
+      var resumed = false;
+      var stopped = false;
+      final l10n = AppLocalizationsEn();
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityRecordingControls(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.failed,
+              startedAt: DateTime.utc(2026, 9, 11),
+              lastError: ActivityRecordingError.locationStreamFailed,
+            ),
+            selectedActivityType: ActivityType.run,
+            onActivityTypeChanged: (_) {},
+            onStart: (_) => fail('Must not start a replacement recording'),
+            onPause: null,
+            onResume: () => resumed = true,
+            onStop: () => stopped = true,
+          ),
+        ),
+      );
+
+      expect(find.byTooltip(l10n.activityStart), findsNothing);
+      await tester.tap(find.byTooltip(l10n.activityResume));
+      await tester.tap(find.byTooltip(l10n.activityStop));
+      expect(resumed, isTrue);
+      expect(stopped, isTrue);
+    });
 
     testWidgets('shows start action when idle', (tester) async {
       ActivityType? startedType;
@@ -231,6 +262,57 @@ void main() {
 
       expect(find.text(AppLocalizationsEn().activityResume), findsOneWidget);
       expect(find.text(AppLocalizationsEn().activityStop), findsOneWidget);
+    });
+
+    testWidgets('shows the auto-paused indicator while auto-paused', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityRecordingControls(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.paused,
+              isAutoPaused: true,
+            ),
+            selectedActivityType: ActivityType.run,
+            onActivityTypeChanged: null,
+            onStart: null,
+            onPause: null,
+            onResume: () {},
+            onStop: () {},
+          ),
+        ),
+      );
+
+      expect(
+        find.text(AppLocalizationsEn().activityAutoPausedIndicator),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('hides the auto-paused indicator for a manual pause', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: ActivityRecordingControls(
+            state: ActivityRecordingState(
+              status: ActivityRecordingStatus.paused,
+            ),
+            selectedActivityType: ActivityType.run,
+            onActivityTypeChanged: null,
+            onStart: null,
+            onPause: null,
+            onResume: () {},
+            onStop: () {},
+          ),
+        ),
+      );
+
+      expect(
+        find.text(AppLocalizationsEn().activityAutoPausedIndicator),
+        findsNothing,
+      );
     });
 
     testWidgets('disables unsafe actions while stopping', (tester) async {

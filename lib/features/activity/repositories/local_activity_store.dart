@@ -41,4 +41,29 @@ abstract interface class LocalActivityStore {
     required String profileId,
     required DateTime updatedAt,
   });
+
+  /// Assigns [origin]/[profileId] to the single record [id] when it has no
+  /// connection yet, stamping [updatedAt]. Returns the number of records bound
+  /// (0 when the record is missing or already bound).
+  Future<int> bindRecordToProfile({
+    required String id,
+    required String origin,
+    required String profileId,
+    required DateTime updatedAt,
+  });
+
+  /// Returns the distinct connection profile ids of the records bound to
+  /// [origin].
+  Future<List<String>> listConnectionProfileIds({required String origin});
+
+  /// Moves every record bound to [origin]/[fromProfileId] onto [toProfileId],
+  /// stamping [updatedAt]. Record ids and idempotency keys are kept, so an
+  /// upload retried afterwards still de-duplicates on the server. Returns the
+  /// number of records moved.
+  Future<int> rebindConnectionProfile({
+    required String origin,
+    required String fromProfileId,
+    required String toProfileId,
+    required DateTime updatedAt,
+  });
 }
