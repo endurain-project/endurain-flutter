@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -324,6 +325,35 @@ void main() {
       await service.setEnabled(false);
 
       expect(tempDirectory.listSync(), isEmpty);
+    });
+
+    test('an error stays on disk while an older breadcrumb write lands', () async {
+      final service = createService();
+      await service.initialize();
+      await service.setEnabled(true);
+      final report = File('${tempDirectory.path}/endurain_diagnostics.json');
+
+      // The breadcrumb starts an async write that snapshots the report without
+      // the error; the error is then written synchronously mid-flight.
+      service
+        ..recordBreadcrumbSync('before.error')
+        ..recordErrorSync(StateError('boom'), StackTrace.empty);
+
+      var flushed = false;
+      unawaited(service.flush().then((_) => flushed = true));
+      while (!flushed) {
+        final payload =
+            jsonDecode(report.readAsStringSync()) as Map<String, dynamic>;
+        expect(payload['errors'], isNotEmpty);
+        await Future<void>.delayed(Duration.zero);
+      }
+      final payload =
+          jsonDecode(report.readAsStringSync()) as Map<String, dynamic>;
+      expect(payload['errors'], hasLength(1));
+      expect(
+        (payload['breadcrumbs'] as List).map((b) => (b as Map)['event']),
+        contains('before.error'),
+      );
     });
 
     test('folds consecutive lifecycle changes into one breadcrumb', () async {

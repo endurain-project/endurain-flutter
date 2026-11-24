@@ -568,6 +568,48 @@ void main() {
     );
 
     test(
+      'a rejected refresh of a replaced session does not report a clear',
+      () async {
+        final storage = SecureStorageService();
+        final store = AuthSessionStore(storage: storage);
+        await _seedSession(storage, origin: 'https://a.example');
+        final diagnostics = RecordingDiagnostics();
+        final requestStarted = Completer<void>();
+        final response = Completer<http.Response>();
+        final service = AuthService(
+          storage: storage,
+          sessionStore: store,
+          diagnostics: diagnostics,
+          httpClient: MockClient((request) async {
+            requestStarted.complete();
+            return response.future;
+          }),
+        );
+
+        final refresh = service.refreshToken();
+        await requestStarted.future;
+        await _seedSession(
+          storage,
+          store: store,
+          origin: 'https://b.example',
+          accountId: '43',
+        );
+        response.complete(http.Response('{"detail":"Session ended"}', 401));
+
+        expect(await refresh, isFalse);
+        expect(diagnostics.single(DiagnosticsEvents.authRefreshFailed), {
+          'reason': 'rejected',
+          'status': 401,
+        });
+        expect(
+          diagnostics.events,
+          isNot(contains(DiagnosticsEvents.authSessionCleared)),
+        );
+        expect((await store.readSession())?.origin, 'https://b.example');
+      },
+    );
+
+    test(
       'a transient refresh failure keeps the session and says why',
       () async {
         final storage = SecureStorageService();

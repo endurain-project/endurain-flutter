@@ -334,6 +334,10 @@ class DiagnosticsService implements DiagnosticsStore {
   bool _dirty = false;
   Future<void>? _activeFlush;
 
+  // Bumped by every [_writeSync], so an async write can tell that a newer
+  // report was published after it took its snapshot (see [_writeAsync]).
+  int _syncWriteGeneration = 0;
+
   @override
   Future<void> initialize() async {
     if (_initialized) {
@@ -649,6 +653,7 @@ class DiagnosticsService implements DiagnosticsStore {
       return;
     }
     _lastUpdatedAt = _now();
+    _syncWriteGeneration++;
     try {
       _stagingFile(file, _syncStagingSuffix)
         ..writeAsStringSync(_encodePayload(_currentPayload()), flush: true)
@@ -682,11 +687,20 @@ class DiagnosticsService implements DiagnosticsStore {
       return;
     }
     _lastUpdatedAt = _now();
+    final generation = _syncWriteGeneration;
     final content = _encodePayload(_currentPayload());
     try {
       final staging = _stagingFile(file, _asyncStagingSuffix);
       await staging.writeAsString(content, flush: true);
-      await staging.rename(file.path);
+      // A sync write (an error) during the await above published a newer
+      // report; this snapshot predates it, so drop it. The sync write marked
+      // the flush loop dirty, so the next pass writes the current state. The
+      // check and the rename run with no await between them, so no sync write
+      // can land in between; the rename is a metadata change, cheap to block on.
+      if (generation != _syncWriteGeneration) {
+        return;
+      }
+      staging.renameSync(file.path);
     } catch (_) {
       // Best-effort: diagnostics must never surface I/O errors to the app.
     }

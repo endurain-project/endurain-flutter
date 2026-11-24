@@ -195,11 +195,14 @@ class AuthService {
     AuthSession session, {
     required String reason,
   }) async {
-    _diagnostics.recordBreadcrumbSync(
-      DiagnosticsEvents.authSessionCleared,
-      details: {'reason': reason},
-    );
-    await _sessionStore.clearIfProfileCurrent(session);
+    // Recorded only once the store confirms it: a session another sign-in
+    // replaced meanwhile is left alone, and a failed clear throws.
+    if (await _sessionStore.clearIfProfileCurrent(session)) {
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.authSessionCleared,
+        details: {'reason': reason},
+      );
+    }
     return false;
   }
 
@@ -280,11 +283,12 @@ class AuthService {
     }
 
     if (session.refreshToken.isEmpty) {
-      _diagnostics.recordBreadcrumbSync(
-        DiagnosticsEvents.authSessionCleared,
-        details: const {'reason': 'no_refresh_token'},
-      );
-      await _sessionStore.clearIfCurrent(session);
+      if (await _sessionStore.clearIfCurrent(session)) {
+        _diagnostics.recordBreadcrumbSync(
+          DiagnosticsEvents.authSessionCleared,
+          details: const {'reason': 'no_refresh_token'},
+        );
+      }
       return false;
     }
 
