@@ -88,7 +88,7 @@ dependencies:
   # pure-Dart package resolves to the latest and captures the same Dart/Flutter
   # errors the local diagnostics recorder already hooks. Native-crash capture
   # can be added later by swapping the injected CrashReporter adapter.
-  sentry: ^10.1.0
+  sentry: ^10.6.0
 
   # System browser OAuth/SSO flow with deep-link callback
   app_links: ^7.2.1
