@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [v0.12.0+22] - 2026-11-24
 
-This release adds an Apple Watch app. Wear OS support is planned. On Android the app checks for a watch bridge, finds none, and does nothing further.
+This release adds watch apps for Apple Watch and Wear OS. Each records outdoor workouts on the watch and hands them to Endurain on the phone, which uploads them like any other activity.
 
 ### Added
 
@@ -14,12 +14,16 @@ This release adds an Apple Watch app. Wear OS support is planned. On Android the
   - The finished workout is sent to the iPhone in the background, even if the phone is out of range when the workout ends. Endurain stores it as a local activity and uploads it like a workout recorded on the phone.
   - A workout interrupted by a crash or a forced quit is resumed when the app relaunches. If watchOS ended it, the app finishes and sends what was recorded instead.
   - The watch app is English-only for now.
-- Phone-side support for companion watch apps. A watch app hands finished workouts to the phone over a platform channel (`endurain/watch_transport`). On iPhone it is served by a WatchConnectivity bridge, which keeps each received workout in a durable inbox until it has been stored.
+- A Wear OS app (Wear OS 3 or newer), built with Health Services and Compose for Wear OS. It records outdoor runs, rides, walks and hikes with GPS, heart rate and distance, and shows the workout as an ongoing activity on the watch face. Pausing starts a new track segment.
+  - The finished workout is sent to the phone over the Wearable Data Layer, which delivers it whenever the devices connect, even if Endurain is not running.
+  - A workout interrupted by a killed process is picked up again when the app relaunches. If Health Services ended it, the app finishes and sends what was recorded instead.
+  - The Wear OS app is English-only for now. It is a separate build (`android/wear`) published under the same Play listing.
+- Phone-side support for companion watch apps. A watch app hands finished workouts to the phone over a platform channel (`endurain/watch_transport`). It is served by a WatchConnectivity bridge on iPhone and a Wearable Data Layer bridge on Android. Each keeps every received workout in a durable inbox until it has been stored.
 - A watch session is confirmed back to the watch only once the phone has stored it. These sessions stay queued on the watch instead:
   - sessions that are not finished yet;
   - sessions whose points this app version cannot read;
   - workouts with a duration but no GPS route, such as one recorded with location turned off. The server does not accept a GPX without track points yet.
-  - A workout the phone received but never confirmed is dropped from the watch after 30 days. The phone keeps its own copy.
+  - A workout the phone never confirmed is dropped from the watch after a while, since the phone keeps its own copy: after 30 days on Apple Watch once delivered, and after 90 days on Wear OS.
 - Duplicate protection for watch workouts:
   - The app remembers the last 1,000 sessions it received. A session the watch sends again is not uploaded twice, even if its local copy was deleted.
   - Health Sync never offers or imports a workout the Endurain watch app saved to Health, even when it reaches Health before the watch's own transfer arrives. It also skips any HealthKit or Health Connect workout that a received watch session already covers.
@@ -32,6 +36,7 @@ This release adds an Apple Watch app. Wear OS support is planned. On Android the
 
 ### Changed
 
+- The Android app now includes Google Play Services' Wearable Data Layer (`play-services-wearable`) for the Wear OS link. Builds that must stay free of Google Play Services, such as F-Droid builds, can leave it out with `--android-project-arg=endurain.wearable=false`; the watch link then reports "unsupported" and nothing else changes.
 - Updated dependencies: `health` 14.0.0, `sentry` 10.6.0 and `flutter_svg` 2.5.0, plus their transitive updates.
 - Android builds now use Gradle 9.9.2 and Android Gradle Plugin 9.5.2.
 - The CI builder image and workflows use Flutter 3.50.1, on a refreshed Java 25 base image.

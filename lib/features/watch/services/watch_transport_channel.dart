@@ -53,11 +53,13 @@ class WatchTransportChannelContract {
 
 /// [WatchTransportAdapter] backed by platform channels.
 ///
-/// On iOS the native side is `ios/Runner/Watch/WatchTransportChannel.swift`,
-/// backed by WatchConnectivity. Where no native transport exists yet (Android
-/// until the Wear OS bridge ships), every call raises
-/// [MissingPluginException]; that is translated into the "unsupported" result
-/// so the seam is inert rather than error-producing.
+/// The native sides are `ios/Runner/Watch/WatchTransportChannel.swift`
+/// (WatchConnectivity) and
+/// `android/app/src/main/kotlin/com/endurain/endurain/watch/WatchTransportChannel.kt`
+/// (the Wearable Data Layer, or an "unsupported" stub in builds without
+/// Google Play Services). Where no native handler is registered (the test
+/// host, other platforms), every call raises [MissingPluginException]; that
+/// is translated into the "unsupported" result so the seam stays inert.
 class MethodChannelWatchTransport implements WatchTransportAdapter {
   MethodChannelWatchTransport({
     MethodChannel? methodChannel,

@@ -51,6 +51,15 @@ if (isReleaseBuild && configuredReleaseStoreFile?.isFile != true) {
     )
 }
 
+// Wear OS link. The Wearable Data Layer is part of Google Play Services, so
+// builds that must stay free of it (F-Droid, source builds) pass
+// -Pendurain.wearable=false (with Flutter:
+// `flutter build apk --android-project-arg=endurain.wearable=false`). The
+// watch link then reports "unsupported" and nothing else changes.
+val watchLinkEnabled =
+    providers.gradleProperty("endurain.wearable").map { it.toBoolean() }.getOrElse(true)
+val watchLinkSourceDir = if (watchLinkEnabled) "src/watchLinkPlay" else "src/watchLinkNone"
+
 android {
     namespace = "com.endurain.endurain"
     compileSdk = 37
@@ -93,6 +102,14 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
+    sourceSets {
+        getByName("main") {
+            // Protocol and stores shared with the Wear OS app (android/wear).
+            kotlin.srcDir("../watch_shared/kotlin")
+            kotlin.srcDir("$watchLinkSourceDir/kotlin")
+        }
+    }
 }
 
 flutter {
@@ -101,6 +118,9 @@ flutter {
 
 androidComponents {
     onVariants(selector().all()) { variant ->
+        if (watchLinkEnabled) {
+            variant.sources.manifests.addStaticManifestFile("$watchLinkSourceDir/AndroidManifest.xml")
+        }
         val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
         tasks.matching {
             it.name == "package${variantName}UnitTestForUnitTest"
@@ -115,6 +135,10 @@ dependencies {
     // helpers. Kept as an explicit dependency since plugin transitive deps are
     // not exposed to the app compile classpath.
     implementation("androidx.core:core-ktx:1.19.1")
+
+    if (watchLinkEnabled) {
+        implementation("com.google.android.gms:play-services-wearable:20.0.1")
+    }
 
     // JVM unit tests for the native activity-recorder models. `org.json` is
     // pulled in as a real implementation because the android.jar on the

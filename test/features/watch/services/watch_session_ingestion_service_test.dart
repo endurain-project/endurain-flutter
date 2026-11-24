@@ -144,6 +144,43 @@ void main() {
     expect(gpx, contains('<gpxtpx:hr>151</gpxtpx:hr>'));
   });
 
+  test('ingests the envelope the Wear OS app sends', () async {
+    // What android/watch_shared/.../WatchHandoffBuilder.kt writes (org.json
+    // output, key order aside); WatchHandoffBuilderTest checks the Kotlin
+    // side of the same shape. Change both together.
+    const fromWatch = '''
+{"version":1,"source":"wearOs",
+ "session":{"schemaVersion":3,"localSessionId":"5d0c6b1e-8f3a-4b7c-9e2d-1a4f6c8b0e3d",
+  "activityType":"hike","status":"completed","startedAt":"2027-01-15T08:00:00.000Z",
+  "endedAt":"2027-01-15T08:01:30.000Z","elapsedDurationSeconds":60,
+  "currentSegmentIndex":1,"autoPauseEnabled":false,"autoPauseDelaySeconds":5,
+  "pausedAutomatically":false},
+ "points":[
+  {"t":"2027-01-15T08:00:10.000Z","lat":38.7,"lon":-9.1,"seg":0,"ele":12.5,
+   "hAcc":4.0,"vAcc":3.0,"head":90.0,"hr":151},
+  {"t":"2027-01-15T08:01:10.000Z","lat":38.701,"lon":-9.1,"seg":1,"hAcc":5.0}
+ ]}
+''';
+    final handoff = WatchSessionHandoff.fromJson(
+      jsonDecode(fromWatch) as Map<String, dynamic>,
+    );
+
+    final result = await service.ingest(handoff);
+
+    expect(result.outcome, WatchIngestionOutcome.ingested);
+    expect(handoff.source, WatchSource.wearOs);
+    expect(handoff.healthWorkoutId, isNull);
+    expect(
+      result.localActivityId,
+      'watch_wearOs_5d0c6b1e-8f3a-4b7c-9e2d-1a4f6c8b0e3d',
+    );
+    final stored = await repository.get(result.localActivityId!);
+    expect(stored!.activityType, ActivityType.hike);
+    expect(stored.pointCount, 2);
+    final gpx = await repository.readGpxContents(stored);
+    expect('<trkseg>'.allMatches(gpx), hasLength(2));
+  });
+
   test('derives a deterministic id from the source and session id', () {
     final id = WatchSessionIngestionService.localActivityIdFor(
       buildHandoff(sessionId: 'session/../1', source: WatchSource.appleWatch),

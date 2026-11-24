@@ -122,6 +122,19 @@ jobs:
         shell: bash
         run: cd android && ./gradlew :app:testDebugUnitTest --console=plain
 
+      # The default build links to the Wear OS app through Google Play
+      # Services; F-Droid and source builds turn that off. Keep the stub that
+      # replaces it compiling.
+      - name: Compile without Google Play Services
+        shell: bash
+        run: cd android && ./gradlew :app:compileDebugKotlin -Pendurain.wearable=false --console=plain
+
+      # The Wear OS app is a standalone Gradle build (android/wear), so the
+      # Flutter build never compiles it.
+      - name: Build, test and lint the Wear OS app
+        shell: bash
+        run: cd android && ./gradlew -p wear assembleDebug testDebugUnitTest lintDebug --console=plain
+
   android-build:
     name: Android build
     runs-on: ubuntu-latest
