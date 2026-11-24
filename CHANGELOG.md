@@ -4,15 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [v0.12.0+22] - 2026-11-24
 
-### Changed
+This release prepares the app for companion watch apps on Apple Watch and Wear OS. The watch apps themselves are not part of it yet, so without one nothing changes for users: the app checks for a watch bridge, finds none, and does nothing further.
 
-- Updated dependencies: `health` 14.0.0, `sentry` 10.6.0 and `flutter_svg` 2.5.0, plus their transitive updates. Android builds now use Gradle 9.9.2 and Android Gradle Plugin 9.5.2, and the CI builder image and workflows use Flutter 3.50.1 on a refreshed Java 25 base image.
+### Added
+
+- Phone-side support for companion watch apps. A native watch app can hand finished workouts to the phone over a new platform channel (`endurain/watch_transport`), and the app stores them as local activities and uploads them through the existing upload queue, like a workout recorded on the phone.
+- A watch session is confirmed back to the watch only once the phone has stored it. These sessions stay queued on the watch instead:
+  - sessions that are not finished yet;
+  - sessions whose points this app version cannot read;
+  - workouts with a duration but no GPS route, such as indoor sessions. The server does not accept a GPX without track points yet.
+- Duplicate protection for watch workouts:
+  - The app remembers the last 1,000 sessions it received. A session the watch sends again is not uploaded twice, even if its local copy was deleted.
+  - Health Sync no longer offers or imports a HealthKit or Health Connect workout that a watch session already covers.
+- Watch sync runs when the app starts, when it returns to the foreground, and when the watch signals new sessions. Only one sync runs at a time, with one extra pass for sessions that arrive during a sync.
+- Local diagnostics breadcrumbs for watch syncs that have pending sessions, and for sessions left on the watch. Builds without a watch record none.
 
 ### Fixed
 
-- A passing health-platform read error (rate limit, Health Connect busy, or the iPhone locked) no longer resets Health Sync's connection. With `health` 14 these errors are now reported instead of returning no workouts; only lasting errors still ask the user to reconnect.
+- A temporary health-platform read error no longer disconnects Health Sync. That covers a rate limit, Health Connect being busy, and a locked iPhone. Since `health` 14 these errors are raised instead of returning an empty list of workouts. Only lasting errors still ask the user to reconnect.
+
+### Changed
+
+- Updated dependencies: `health` 14.0.0, `sentry` 10.6.0 and `flutter_svg` 2.5.0, plus their transitive updates.
+- Android builds now use Gradle 9.9.2 and Android Gradle Plugin 9.5.2.
+- The CI builder image and workflows use Flutter 3.50.1, on a refreshed Java 25 base image.
 
 ## [v0.11.1+21] - 2026-11-24
 
