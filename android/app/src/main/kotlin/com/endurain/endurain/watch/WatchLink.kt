@@ -9,8 +9,8 @@ import java.io.File
  *
  * Two implementations exist, picked at build time by the `endurain.wearable`
  * Gradle property (see `android/app/build.gradle.kts`): the Wearable Data
- * Layer one (`src/watchLinkPlay`, Google Play Services) and an inert one
- * (`src/watchLinkNone`) for builds that must not ship Play Services.
+ * Layer one (`src/watchLinkPlay`, play-services-wearable) and an inert one
+ * (`src/watchLinkNone`) for builds published without the Wear OS link.
  *
  * Every method may block; call them off the main thread.
  */

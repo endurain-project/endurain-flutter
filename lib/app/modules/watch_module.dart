@@ -50,7 +50,7 @@ class WatchModule {
   ///
   /// Android and iOS use the platform-channel transport, served by the
   /// WatchConnectivity bridge on iOS and the Wearable Data Layer bridge on
-  /// Android. An Android build without Google Play Services
+  /// Android. An Android build without the Wear OS link
   /// (`-Pendurain.wearable=false`) answers "unsupported", which keeps it inert.
   /// Every other target (desktop, web) gets the inert fallback.
   ///

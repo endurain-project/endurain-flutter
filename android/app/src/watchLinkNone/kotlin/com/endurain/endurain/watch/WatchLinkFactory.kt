@@ -4,8 +4,9 @@ import android.content.Context
 import com.endurain.endurain.watchlink.HandoffFileStore
 
 /**
- * Build without Google Play Services (`-Pendurain.wearable=false`): there is
- * no Wear OS link, so the Dart side sees "unsupported" and stays inert.
+ * Build without the Wear OS link (`-Pendurain.wearable=false`, which leaves
+ * out play-services-wearable): the Dart side sees "unsupported" and stays
+ * inert.
  */
 object WatchLinkFactory {
     fun create(context: Context): WatchLink = UnsupportedWatchLink

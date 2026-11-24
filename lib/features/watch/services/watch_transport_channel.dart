@@ -56,8 +56,8 @@ class WatchTransportChannelContract {
 /// The native sides are `ios/Runner/Watch/WatchTransportChannel.swift`
 /// (WatchConnectivity) and
 /// `android/app/src/main/kotlin/com/endurain/endurain/watch/WatchTransportChannel.kt`
-/// (the Wearable Data Layer, or an "unsupported" stub in builds without
-/// Google Play Services). Where no native handler is registered (the test
+/// (the Wearable Data Layer, or an "unsupported" stub in builds without the
+/// Wear OS link). Where no native handler is registered (the test
 /// host, other platforms), every call raises [MissingPluginException]; that
 /// is translated into the "unsupported" result so the seam stays inert.
 class MethodChannelWatchTransport implements WatchTransportAdapter {

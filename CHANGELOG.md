@@ -36,7 +36,7 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
 
 ### Changed
 
-- The Android app now includes Google Play Services' Wearable Data Layer (`play-services-wearable`) for the Wear OS link. Builds that must stay free of Google Play Services, such as F-Droid builds, can leave it out with `--android-project-arg=endurain.wearable=false`; the watch link then reports "unsupported" and nothing else changes.
+- The Android app now includes Google Play Services' Wearable Data Layer (`play-services-wearable`) for the Wear OS link. Releases also ship `app-release-no-wear-os.apk`, built with `--android-project-arg=endurain.wearable=false`, which leaves it out; there the watch link reports "unsupported" and nothing else changes. Both APKs still contain `play-services-location`, which `geolocator` already brought in.
 - Updated dependencies: `health` 14.0.0, `sentry` 10.6.0 and `flutter_svg` 2.5.0, plus their transitive updates.
 - Android builds now use Gradle 9.9.2 and Android Gradle Plugin 9.5.2.
 - The CI builder image and workflows use Flutter 3.50.1, on a refreshed Java 25 base image.

@@ -517,16 +517,21 @@ cd android
   server does not accept a GPX without track points yet. Workouts the phone
   never confirms are dropped from the watch after 90 days.
 
-#### Builds without Google Play Services
+#### Builds without the Wear OS link
 
-The Wearable Data Layer is part of Google Play Services. The phone app
-includes it by default; builds that must stay free of it (F-Droid, source
-builds) turn it off with a Gradle property. The watch link then reports
-"unsupported" and the rest of the app is unchanged:
+The Wearable Data Layer comes from Google Play Services
+(`play-services-wearable`). The phone app includes it by default; a Gradle
+property leaves it out, and the watch link then reports "unsupported" while
+the rest of the app is unchanged:
 
 ```bash
 flutter build apk --release --android-project-arg=endurain.wearable=false
 ```
+
+The release workflow publishes both: `app-release.apk` (with the Wear OS
+link) and `app-release-no-wear-os.apk` (without it), and checks that only the
+first contains `play-services-wearable`. Neither APK is free of Google Play
+Services yet: `geolocator_android` brings `play-services-location` in both.
 
 ## Project Structure
 
