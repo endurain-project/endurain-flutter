@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/auth_session_store.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/recording_diagnostics.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +19,93 @@ void main() {
   });
 
   group('AuthSessionController', () {
+    test('records each mode change with its reason', () async {
+      final diagnostics = RecordingDiagnostics();
+      final service = _FakeAuthService(authenticated: true);
+      final controller = AuthSessionController(
+        authService: service,
+        diagnostics: diagnostics,
+      );
+
+      await controller.initialize();
+      await Future<void>.delayed(Duration.zero);
+      controller.continueAsGuest();
+      controller.markAuthenticated();
+
+      expect(diagnostics.events, [
+        DiagnosticsEvents.sessionModeChanged,
+        DiagnosticsEvents.sessionModeChanged,
+        DiagnosticsEvents.sessionModeChanged,
+      ]);
+      expect(diagnostics.details, [
+        {
+          'from': 'loading',
+          'to': 'authenticated',
+          'reason': 'launch_stored_session',
+        },
+        {'from': 'authenticated', 'to': 'guest', 'reason': 'signed_out'},
+        {'from': 'guest', 'to': 'authenticated', 'reason': 'signed_in'},
+      ]);
+      controller.dispose();
+    });
+
+    test('records an unreadable launch and an expired session', () async {
+      final diagnostics = RecordingDiagnostics();
+      final controller = AuthSessionController(
+        authService: _FakeAuthService(throws: true),
+        diagnostics: diagnostics,
+      );
+      await controller.initialize();
+
+      expect(diagnostics.details.single, {
+        'from': 'loading',
+        'to': 'guest',
+        'reason': 'launch_session_unreadable',
+        'type': 'AppException',
+        'code': 'secureStorageReadFailed',
+      });
+
+      final expiring = RecordingDiagnostics();
+      final expired = AuthSessionController(
+        authService: _FakeAuthService(
+          authenticated: true,
+          rejectOnConfirm: true,
+        ),
+        diagnostics: expiring,
+      );
+      await expired.initialize();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(expiring.details.last, {
+        'from': 'authenticated',
+        'to': 'guest',
+        'reason': 'session_ended',
+      });
+      controller.dispose();
+      expired.dispose();
+    });
+
+    test('records a revalidation that could not run', () async {
+      final diagnostics = RecordingDiagnostics();
+      final service = _FakeAuthService(authenticated: true);
+      final controller = AuthSessionController(
+        authService: service,
+        diagnostics: diagnostics,
+      );
+      await controller.initialize();
+      await Future<void>.delayed(Duration.zero);
+
+      service.throws = true;
+      await controller.revalidate();
+
+      expect(controller.isAuthenticated, isTrue);
+      expect(diagnostics.single(DiagnosticsEvents.sessionRevalidateFailed), {
+        'type': 'AppException',
+        'code': 'secureStorageReadFailed',
+      });
+      controller.dispose();
+    });
+
     test(
       'starts in guest mode when the stored session is unreadable',
       () async {

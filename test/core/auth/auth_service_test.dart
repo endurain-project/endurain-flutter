@@ -7,6 +7,7 @@ import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/utils/pkce_utils.dart';
@@ -14,6 +15,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+
+import '../../helpers/recording_diagnostics.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -536,6 +539,103 @@ void main() {
         throwsA(_hasCode(AppErrorCode.mfaSessionMissing)),
       );
     });
+
+    test(
+      'a rejected refresh records the failure and the cleared session',
+      () async {
+        final storage = SecureStorageService();
+        await _seedSession(storage);
+        final diagnostics = RecordingDiagnostics();
+        final service = AuthService(
+          storage: storage,
+          diagnostics: diagnostics,
+          httpClient: MockClient((request) async {
+            return http.Response('{"detail":"Session ended"}', 401);
+          }),
+        );
+
+        expect(await service.refreshToken(), isFalse);
+
+        expect(diagnostics.events, [
+          DiagnosticsEvents.httpRequestFailed,
+          DiagnosticsEvents.authRefreshFailed,
+          DiagnosticsEvents.authSessionCleared,
+        ]);
+        expect(diagnostics.details[1], {'reason': 'rejected', 'status': 401});
+        expect(diagnostics.details[2], {'reason': 'refresh_rejected'});
+        expect(diagnostics.details[0]['endpoint'], '/api/v1/auth/refresh');
+      },
+    );
+
+    test(
+      'a rejected refresh of a replaced session does not report a clear',
+      () async {
+        final storage = SecureStorageService();
+        final store = AuthSessionStore(storage: storage);
+        await _seedSession(storage, origin: 'https://a.example');
+        final diagnostics = RecordingDiagnostics();
+        final requestStarted = Completer<void>();
+        final response = Completer<http.Response>();
+        final service = AuthService(
+          storage: storage,
+          sessionStore: store,
+          diagnostics: diagnostics,
+          httpClient: MockClient((request) async {
+            requestStarted.complete();
+            return response.future;
+          }),
+        );
+
+        final refresh = service.refreshToken();
+        await requestStarted.future;
+        await _seedSession(
+          storage,
+          store: store,
+          origin: 'https://b.example',
+          accountId: '43',
+        );
+        response.complete(http.Response('{"detail":"Session ended"}', 401));
+
+        expect(await refresh, isFalse);
+        expect(diagnostics.single(DiagnosticsEvents.authRefreshFailed), {
+          'reason': 'rejected',
+          'status': 401,
+        });
+        expect(
+          diagnostics.events,
+          isNot(contains(DiagnosticsEvents.authSessionCleared)),
+        );
+        expect((await store.readSession())?.origin, 'https://b.example');
+      },
+    );
+
+    test(
+      'a transient refresh failure keeps the session and says why',
+      () async {
+        final storage = SecureStorageService();
+        await _seedSession(storage);
+        final diagnostics = RecordingDiagnostics();
+        final service = AuthService(
+          storage: storage,
+          diagnostics: diagnostics,
+          httpClient: MockClient((request) async {
+            return http.Response('unavailable', 503);
+          }),
+        );
+
+        expect(await service.refreshToken(), isFalse);
+
+        expect(diagnostics.single(DiagnosticsEvents.authRefreshFailed), {
+          'reason': 'server_error',
+          'status': 503,
+        });
+        expect(
+          diagnostics.events,
+          isNot(contains(DiagnosticsEvents.authSessionCleared)),
+        );
+        expect(await _readSession(storage), isNotNull);
+      },
+    );
 
     test('refreshToken stores rotated tokens on success', () async {
       final storage = SecureStorageService();

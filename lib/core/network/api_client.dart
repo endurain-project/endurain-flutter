@@ -6,10 +6,12 @@ import 'package:endurain/core/auth/auth_session_store.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/network/api_response.dart';
 import 'package:endurain/core/network/base_http_client.dart';
+import 'package:endurain/core/network/http_diagnostics.dart';
 import 'package:endurain/core/services/platform/multipart_upload_adapter.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:http/http.dart' as http;
@@ -39,7 +41,8 @@ class ApiClient {
     MultipartUploadAdapter? uploadAdapter,
     Duration? uploadTimeout,
     AppConfig config = AppConfig.defaults,
-  }) {
+    DiagnosticsRecorder? diagnostics,
+  }) : _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder() {
     final resolvedStore =
         sessionStore ??
         AuthSessionStore(
@@ -50,7 +53,7 @@ class ApiClient {
     _authService =
         authService ??
         AuthService(sessionStore: resolvedStore, storage: storage);
-    _baseClient = baseClient ?? BaseHttpClient();
+    _baseClient = baseClient ?? BaseHttpClient(diagnostics: _diagnostics);
     _uploadTimeout = uploadTimeout ?? ApiConstants.defaultUploadTimeout;
     _uploadAdapter = uploadAdapter ?? HttpMultipartUploadAdapter();
     _config = config;
@@ -62,13 +65,59 @@ class ApiClient {
   late final MultipartUploadAdapter _uploadAdapter;
   late final Duration _uploadTimeout;
   late final AppConfig _config;
+  final DiagnosticsRecorder _diagnostics;
 
   /// Upload a file with multipart/form-data
   ///
   /// When [idempotencyKey] is provided it is sent as the
   /// [ApiConstants.idempotencyKeyHeader] so a server that honors it can
   /// de-duplicate retried uploads of the same activity.
+  ///
+  /// A final `4xx`/`5xx` answer or a transport error is recorded to
+  /// diagnostics, as `BaseHttpClient` does for the JSON verbs.
   Future<http.StreamedResponse> uploadFile(
+    String endpoint,
+    String filePath,
+    String fieldName, {
+    String? idempotencyKey,
+    String? expectedOrigin,
+    String? expectedProfileId,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    // Only the path matters: the template drops the host.
+    final url = Uri.parse(endpoint);
+    try {
+      final response = await _uploadFile(
+        endpoint,
+        filePath,
+        fieldName,
+        idempotencyKey: idempotencyKey,
+        expectedOrigin: expectedOrigin,
+        expectedProfileId: expectedProfileId,
+      );
+      if (response.statusCode >= 400) {
+        recordHttpFailure(
+          _diagnostics,
+          method: 'POST',
+          url: url,
+          elapsed: stopwatch.elapsed,
+          status: response.statusCode,
+        );
+      }
+      return response;
+    } catch (error) {
+      recordHttpFailure(
+        _diagnostics,
+        method: 'POST',
+        url: url,
+        elapsed: stopwatch.elapsed,
+        error: error,
+      );
+      rethrow;
+    }
+  }
+
+  Future<http.StreamedResponse> _uploadFile(
     String endpoint,
     String filePath,
     String fieldName, {

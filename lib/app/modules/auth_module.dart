@@ -18,6 +18,12 @@ class AuthModule {
   final AppInfrastructure _infra;
 
   /// The durable, serialized auth session (tokens, origin, profile).
+  /// One HTTP client for every auth, SSO and settings call, so each failed
+  /// request is recorded to diagnostics.
+  late final BaseHttpClient http = BaseHttpClient(
+    diagnostics: _infra.diagnostics,
+  );
+
   late final AuthSessionStore session = AuthSessionStore(
     storage: _infra.secureStorage,
     config: _infra.config,
@@ -29,7 +35,7 @@ class AuthModule {
   /// state.
   late final SignInFlow signInFlow = SignInFlow(
     sessionStore: session,
-    http: BaseHttpClient(),
+    http: http,
     storage: _infra.secureStorage,
     endpoints: _infra.endpoints,
   );
@@ -41,6 +47,8 @@ class AuthModule {
     config: _infra.config,
     endpoints: _infra.endpoints,
     signInFlow: signInFlow,
+    baseClient: http,
+    diagnostics: _infra.diagnostics,
   );
 
   /// SSO/OAuth (PKCE) login against the server's identity providers.
@@ -50,6 +58,7 @@ class AuthModule {
     config: _infra.config,
     endpoints: _infra.endpoints,
     signInFlow: signInFlow,
+    baseClient: http,
   );
 
   /// Public server-settings discovery (local-login/SSO availability).
@@ -57,6 +66,7 @@ class AuthModule {
     storage: _infra.secureStorage,
     config: _infra.config,
     endpoints: _infra.endpoints,
+    baseClient: http,
   );
 
   /// Authenticated, token-refreshing multipart API client.
@@ -65,5 +75,7 @@ class AuthModule {
     sessionStore: session,
     authService: service,
     config: _infra.config,
+    baseClient: http,
+    diagnostics: _infra.diagnostics,
   );
 }

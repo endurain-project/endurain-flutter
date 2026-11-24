@@ -35,6 +35,11 @@
 			</array>
 		</dict>
 	</array>
+	<!-- app_links owns incoming links. Left on, Flutter would also hand the
+	     SSO callback to the router, whose redirect replaces the login screen
+	     before the callback is handled. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>

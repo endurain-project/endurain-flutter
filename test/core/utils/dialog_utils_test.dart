@@ -1,3 +1,5 @@
+import 'package:endurain/core/diagnostics/diagnostics_scope.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
@@ -6,6 +8,8 @@ import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../helpers/recording_diagnostics.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();
@@ -17,6 +21,54 @@ void main() {
   tearDown(PlatformUtils.debugResetOverrides);
 
   group('DialogUtils', () {
+    testWidgets('records every error it shows, never the message text', (
+      tester,
+    ) async {
+      final diagnostics = RecordingDiagnostics();
+      await tester.pumpWidget(
+        DiagnosticsScope(
+          recorder: diagnostics,
+          child: _DialogTestApp(
+            builder: (context) => Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () => DialogUtils.showErrorDialog(
+                    context,
+                    const AppException(
+                      AppErrorCode.sessionExpired,
+                      statusCode: 401,
+                    ),
+                  ),
+                  child: const Text('Typed'),
+                ),
+                ElevatedButton(
+                  onPressed: () =>
+                      DialogUtils.showErrorDialog(context, 'server said x'),
+                  child: const Text('Text'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Typed'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.ok));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Text'));
+      await tester.pumpAndSettle();
+
+      expect(diagnostics.events, [
+        DiagnosticsEvents.uiErrorShown,
+        DiagnosticsEvents.uiErrorShown,
+      ]);
+      expect(diagnostics.details, [
+        {'type': 'AppException', 'code': 'sessionExpired', 'status': 401},
+        {'type': 'String'},
+      ]);
+    });
+
     testWidgets('shows localized material error dialogs', (tester) async {
       await tester.pumpWidget(
         _DialogTestApp(

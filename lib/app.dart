@@ -4,6 +4,7 @@ import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/navigation/app_router.dart';
 import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_scope.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/account_migration/widgets/legacy_profile_adoption_dialog.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
@@ -46,6 +47,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         widget.sessionController ??
         AuthSessionController(
           authService: widget.authService ?? _services.auth,
+          diagnostics: _services.diagnostics,
         );
     // The router redirects declaratively off the session state; no manual
     // listener/setState is needed here (see `app_router.dart`).
@@ -53,6 +55,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       session: _sessionController,
       onLoginSuccess: _onLoginSuccess,
       onLogout: _onLogout,
+      diagnostics: _services.diagnostics,
     );
     // Bootstrap the initial session only for controllers we own; an injected
     // controller (in tests) is set up by whoever supplied it.
@@ -110,7 +113,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     } catch (error) {
       _services.diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthAutoSyncFailed,
-        details: {'type': error.runtimeType.toString()},
+        details: diagnosticErrorDetails(error),
       );
     }
   }
@@ -140,15 +143,18 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       services: _services,
       // Rebuild the localized app tree when the user changes languages, and the
       // whole tree when the unit preference changes so every stat re-renders.
-      child: ListenableBuilder(
-        listenable: Listenable.merge([
-          _services.localeController,
-          _services.measurementSystemController,
-        ]),
-        builder: (context, _) => AdaptiveApp.router(
-          title: 'Endurain',
-          routerConfig: _router,
-          locale: _services.localeController.locale,
+      child: DiagnosticsScope(
+        recorder: _services.diagnostics,
+        child: ListenableBuilder(
+          listenable: Listenable.merge([
+            _services.localeController,
+            _services.measurementSystemController,
+          ]),
+          builder: (context, _) => AdaptiveApp.router(
+            title: 'Endurain',
+            routerConfig: _router,
+            locale: _services.localeController.locale,
+          ),
         ),
       ),
     );

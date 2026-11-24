@@ -1,4 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:endurain/core/diagnostics/diagnostics_scope.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -7,11 +9,21 @@ import 'package:material_ui/material_ui.dart';
 /// Utility class for showing platform-adaptive dialogs
 class DialogUtils {
   /// Show an error dialog with platform-adaptive UI
+  ///
+  /// Records a breadcrumb for every error the user is shown, so a report
+  /// always explains a failure the user saw. A ready-made message (a [String])
+  /// is recorded by type only, since its text may come from a server.
   static Future<void> showErrorDialog(
     BuildContext context,
     Object message, {
     String? title,
   }) async {
+    DiagnosticsScope.of(context).recordBreadcrumbSync(
+      DiagnosticsEvents.uiErrorShown,
+      details: message is String
+          ? const {'type': 'String'}
+          : diagnosticErrorDetails(message),
+    );
     final l10n = AppLocalizations.of(context)!;
     final errorTitle = title ?? l10n.error;
     final errorMessage = localizedErrorMessage(message, l10n);

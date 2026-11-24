@@ -134,7 +134,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     } catch (e) {
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthRequestAuthorizationError,
-        details: {'type': e.runtimeType.toString()},
+        details: diagnosticErrorDetails(e),
       );
       throw const AppException(AppErrorCode.healthPermissionDenied);
     }

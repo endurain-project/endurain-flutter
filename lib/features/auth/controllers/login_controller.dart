@@ -110,7 +110,7 @@ class LoginController extends SafeNotifier {
           providers = const [];
           _diagnostics.recordBreadcrumbSync(
             DiagnosticsEvents.ssoProvidersFetchFailed,
-            details: {'error': error.runtimeType.toString()},
+            details: diagnosticErrorDetails(error),
           );
         }
       }
@@ -138,12 +138,16 @@ class LoginController extends SafeNotifier {
       // Refuse before the browser opens: a callback the server does not list
       // would end on the server's error page, out of the app's reach.
       if (!SsoService.isCallbackAllowed(_serverSettings?.allowedRedirectUris)) {
+        _diagnostics.recordBreadcrumbSync(
+          DiagnosticsEvents.ssoRedirectNotAllowed,
+        );
         throw const AppException(AppErrorCode.ssoRedirectNotAllowed);
       }
       final oauthUrl = await _authCoordinator.initiateSsoLogin(
         provider,
         serverUrl: _serverUrl,
       );
+      _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.ssoLoginStarted);
       _setLoading(false);
       return oauthUrl;
     });
@@ -227,8 +231,17 @@ class LoginController extends SafeNotifier {
     _authCoordinator.clearSsoPkce();
   }
 
+  /// Abandons an SSO sign-in whose browser could not be opened.
+  void ssoBrowserLaunchFailed() {
+    _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.ssoBrowserLaunchFailed);
+    clearSsoPkce();
+  }
+
+  // Breadcrumbs below never carry the link's text: any app can fire it, and
+  // the session id is a credential. Only documented error codes are kept.
   Future<void> _handleSsoCallbackUri(Uri uri) async {
     if (!SsoService.matchesCallback(uri)) {
+      _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.ssoCallbackIgnored);
       return;
     }
 
@@ -239,26 +252,32 @@ class LoginController extends SafeNotifier {
     if (error != null && error.isNotEmpty) {
       // Any app can fire this deep link, so never surface its text to the
       // user: only a documented failure code selects a specific message.
+      final knownError = SsoService.knownCallbackErrors.contains(error)
+          ? error
+          : null;
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.ssoCallbackError,
+        details: {'code': knownError ?? 'unknown'},
+      );
       clearSsoPkce();
       _setLoading(false);
       _notifyError(
-        AppException(
-          AppErrorCode.ssoCallbackFailed,
-          details: SsoService.knownCallbackErrors.contains(error)
-              ? error
-              : null,
-        ),
+        AppException(AppErrorCode.ssoCallbackFailed, details: knownError),
       );
       return;
     }
 
     if (sessionId == null || sessionId.isEmpty) {
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.ssoCallbackMissingSession,
+      );
       clearSsoPkce();
       _setLoading(false);
       _notifyError(const AppException(AppErrorCode.noSessionIdReceived));
       return;
     }
 
+    _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.ssoCallbackReceived);
     _setLoading(true);
 
     try {
@@ -266,8 +285,16 @@ class LoginController extends SafeNotifier {
       final result = await _authCoordinator.exchangeSsoSessionForTokens(
         sessionId,
       );
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.ssoExchangeSucceeded,
+        details: {'step': result.step.name},
+      );
       await _applyResult(result);
     } catch (error) {
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.ssoExchangeFailed,
+        details: diagnosticErrorDetails(error),
+      );
       _resetIfSignInEnded(error);
       _setLoading(false);
       _notifyError(error);

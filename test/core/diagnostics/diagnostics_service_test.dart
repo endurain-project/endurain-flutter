@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -270,6 +272,178 @@ void main() {
 
       expect(report, isNotNull);
       expect(report!.errors.single.type, 'StateError');
+    });
+
+    test('writes leave the report whole and no staging files', () async {
+      final first = createService();
+      await first.initialize();
+      await first.setEnabled(true);
+      first.recordBreadcrumbSync('async.event');
+      await first.flush();
+      first.recordErrorSync(StateError('boom'), StackTrace.empty);
+
+      final names = tempDirectory
+          .listSync()
+          .map((entity) => entity.uri.pathSegments.last)
+          .toList();
+      expect(names, ['endurain_diagnostics.json']);
+    });
+
+    test(
+      'a write killed before its rename keeps the opt-in on restart',
+      () async {
+        final first = createService();
+        await first.initialize();
+        await first.setEnabled(true);
+        first.recordBreadcrumbSync('before.kill');
+        await first.flush();
+
+        // What a process killed mid-write leaves: a truncated staging file
+        // beside the last complete report.
+        File('${tempDirectory.path}/endurain_diagnostics.json.async.tmp')
+            .writeAsStringSync('{"schemaVersion": 1, "enab');
+
+        final second = createService();
+        await second.initialize();
+
+        expect(second.isEnabled, isTrue);
+        final report = await second.readReport();
+        expect(
+          report!.breadcrumbs.map((breadcrumb) => breadcrumb.event),
+          contains('before.kill'),
+        );
+      },
+    );
+
+    test('disabling also removes leftover staging files', () async {
+      final service = createService();
+      await service.initialize();
+      await service.setEnabled(true);
+      File('${tempDirectory.path}/endurain_diagnostics.json.sync.tmp')
+          .writeAsStringSync('partial');
+
+      await service.setEnabled(false);
+
+      expect(tempDirectory.listSync(), isEmpty);
+    });
+
+    test('an error stays on disk while an older breadcrumb write lands', () async {
+      final service = createService();
+      await service.initialize();
+      await service.setEnabled(true);
+      final report = File('${tempDirectory.path}/endurain_diagnostics.json');
+
+      // The breadcrumb starts an async write that snapshots the report without
+      // the error; the error is then written synchronously mid-flight.
+      service
+        ..recordBreadcrumbSync('before.error')
+        ..recordErrorSync(StateError('boom'), StackTrace.empty);
+
+      var flushed = false;
+      unawaited(service.flush().then((_) => flushed = true));
+      while (!flushed) {
+        final payload =
+            jsonDecode(report.readAsStringSync()) as Map<String, dynamic>;
+        expect(payload['errors'], isNotEmpty);
+        await Future<void>.delayed(Duration.zero);
+      }
+      final payload =
+          jsonDecode(report.readAsStringSync()) as Map<String, dynamic>;
+      expect(payload['errors'], hasLength(1));
+      expect(
+        (payload['breadcrumbs'] as List).map((b) => (b as Map)['event']),
+        contains('before.error'),
+      );
+    });
+
+    test('folds consecutive lifecycle changes into one breadcrumb', () async {
+      final service = createService();
+      await service.initialize();
+      await service.setEnabled(true);
+
+      for (final state in ['inactive', 'hidden', 'paused']) {
+        service.recordBreadcrumbSync(
+          DiagnosticsEvents.appLifecycleChanged,
+          details: {'state': state},
+        );
+      }
+      service.recordBreadcrumbSync('between');
+      service.recordBreadcrumbSync(
+        DiagnosticsEvents.appLifecycleChanged,
+        details: {'state': 'resumed'},
+      );
+
+      final breadcrumbs = (await service.readReport())!.breadcrumbs;
+      expect(breadcrumbs.map((b) => b.event), [
+        DiagnosticsEvents.appLifecycleChanged,
+        'between',
+        DiagnosticsEvents.appLifecycleChanged,
+      ]);
+      expect(breadcrumbs.first.details['state'], 'paused');
+      expect(breadcrumbs.first.details['trail'], 'inactive>hidden>paused');
+      expect(breadcrumbs.first.details['lastAt'], isNotNull);
+      expect(breadcrumbs.last.details, {'state': 'resumed'});
+    });
+
+    test('caps a long lifecycle trail', () async {
+      final service = createService();
+      await service.initialize();
+      await service.setEnabled(true);
+
+      for (var i = 0; i < 40; i++) {
+        service.recordBreadcrumbSync(
+          DiagnosticsEvents.appLifecycleChanged,
+          details: {'state': i.isEven ? 'paused' : 'resumed'},
+        );
+      }
+
+      final report = (await service.readReport())!;
+      final trail = report.breadcrumbs.single.details['trail']! as String;
+      expect(trail.split('>'), hasLength(16));
+      expect(trail, startsWith('…>'));
+    });
+
+    test('writes the launch context into the report header', () async {
+      final first = createService();
+      await first.initialize();
+      await first.setEnabled(true);
+      first
+        ..setContext({
+          'appVersion': '1.2.3+4',
+          'osVersion': 'path /Users/person/secret',
+        })
+        ..recordBreadcrumbSync('event');
+      await first.flush();
+
+      final second = createService();
+      await second.initialize();
+      final report = (await second.readReport())!;
+
+      expect(report.context['appVersion'], '1.2.3+4');
+      expect(report.context['osVersion'], isNot(contains('/Users/person')));
+      expect(report.schemaVersion, 2);
+    });
+
+    test('error details carry the code, status and cause type only', () {
+      expect(
+        diagnosticErrorDetails(
+          const AppException(
+            AppErrorCode.tokenExchangeFailed,
+            details: 'server text',
+            statusCode: 401,
+            cause: FormatException('secret'),
+          ),
+        ),
+        {
+          'type': 'AppException',
+          'code': 'tokenExchangeFailed',
+          'status': 401,
+          'cause': 'FormatException',
+        },
+      );
+      expect(diagnosticErrorDetails(StateError('boom')), {
+        'type': 'StateError',
+      });
     });
 
     test('flush is a safe no-op while disabled', () async {

@@ -170,10 +170,10 @@ class LocalActivityHistoryController extends SafeNotifier {
         now: _now,
       );
       await _refreshRecord(id);
-    } catch (_) {
+    } catch (error) {
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.activityUploadRetryFailed,
-        details: {'id': id},
+        details: {'id': id, ...diagnosticErrorDetails(error)},
       );
       await _refreshRecord(id);
       rethrow;
