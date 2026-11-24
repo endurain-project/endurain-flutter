@@ -226,7 +226,7 @@ class HealthSyncController extends SafeNotifier {
       );
       _update(
         _state.copyWith(
-          authStatus: e.code == AppErrorCode.healthReadFailed
+          authStatus: e.code == AppErrorCode.healthReadFailed && !e.isTransient
               ? HealthAuthorizationStatus.notDetermined
               : _state.authStatus,
           isLoadingWorkouts: false,

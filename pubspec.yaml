@@ -112,7 +112,7 @@ dependencies:
   go_router: ^18.0.1
 
   # Health platform sync: HealthKit (iOS) + Health Connect (Android).
-  health: ^13.3.1
+  health: ^14.0.0
 
   # BLE access for external sensors (heart-rate straps, etc.).
   # universal_ble is BSD-3-Clause (FOSS, F-Droid compatible, no Google Play

@@ -188,6 +188,19 @@ void main() {
       final settings = makeSyncSettings();
       expect(await settings.isConnected(profile.id), isFalse);
     });
+
+    test('keeps the connection when a read fails transiently', () async {
+      final settings = makeSyncSettings();
+      await settings.setConnected(profile.id, true);
+      adapter.readWorkoutsError = const AppException(
+        AppErrorCode.healthReadFailed,
+        isTransient: true,
+      );
+
+      await expectLater(service.listImportable(), throwsA(isA<AppException>()));
+
+      expect(await settings.isConnected(profile.id), isTrue);
+    });
   });
 
   // ── currentAuthorizationStatus (iOS read-grant resolution) ─────────────────

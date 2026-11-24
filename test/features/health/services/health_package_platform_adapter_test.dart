@@ -1,3 +1,4 @@
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
@@ -5,7 +6,7 @@ import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/services/health_package_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
 
@@ -541,6 +542,55 @@ void main() {
       );
     });
   });
+
+  group('read failures', () {
+    final start = DateTime.utc(2025, 6, 1);
+    final end = DateTime.utc(2025, 6, 2);
+
+    Future<AppException> readFailure(Object error) async {
+      final adapter = HealthPackagePlatformAdapter(
+        health: _FakeHealth(hasPermissionsResult: true, readError: error),
+        targetPlatform: () => TargetPlatform.android,
+      );
+      try {
+        await adapter.readWorkouts(start: start, end: end);
+      } on AppException catch (e) {
+        return e;
+      }
+      fail('readWorkouts did not throw');
+    }
+
+    test('flags a retryable platform error as transient', () async {
+      final error = await readFailure(
+        HealthPlatformException(
+          HealthDataType.WORKOUT,
+          PlatformException(code: 'UNAVAILABLE'),
+        ),
+      );
+
+      expect(error.code, AppErrorCode.healthReadFailed);
+      expect(error.isTransient, isTrue);
+    });
+
+    test('does not flag a lasting platform error as transient', () async {
+      final error = await readFailure(
+        HealthPlatformException(
+          HealthDataType.WORKOUT,
+          PlatformException(code: 'PERMISSION_DENIED'),
+        ),
+      );
+
+      expect(error.code, AppErrorCode.healthReadFailed);
+      expect(error.isTransient, isFalse);
+    });
+
+    test('does not flag an unclassified error as transient', () async {
+      final error = await readFailure(StateError('boom'));
+
+      expect(error.code, AppErrorCode.healthReadFailed);
+      expect(error.isTransient, isFalse);
+    });
+  });
 }
 
 class _FakeHealth extends Health {
@@ -551,9 +601,13 @@ class _FakeHealth extends Health {
     this.historyAvailable = false,
     this.historyAuthorized = false,
     this.requestHistoryResult = false,
+    this.readError,
   });
 
   final bool? hasPermissionsResult;
+
+  /// Thrown by every data read when set.
+  final Object? readError;
   final bool requestAuthorizationResult;
   final Map<HealthDataType, List<HealthDataPoint>> dataByType;
   final bool historyAvailable;
@@ -619,7 +673,12 @@ class _FakeHealth extends Health {
     required DateTime startTime,
     required DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter = const [],
+    int? limit,
   }) async {
+    final error = readError;
+    if (error != null) {
+      throw error;
+    }
     if (types.contains(HealthDataType.WORKOUT)) {
       lastWorkoutReadStart = startTime;
     }

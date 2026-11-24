@@ -121,8 +121,8 @@ dependencies {
     // unit-test classpath only ships non-functional stubs; the Android Gradle
     // Plugin orders it ahead of that stub jar for `testDebugUnitTest`.
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.json:json:20240303")
-    testImplementation("org.robolectric:robolectric:4.18")
+    testImplementation("org.json:json:20260814")
+    testImplementation("org.robolectric:robolectric:4.18.1")
 }
 
 kotlin {

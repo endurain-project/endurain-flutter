@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+### Changed
+
+- Updated dependencies: `health` 14.0.0, `sentry` 10.6.0 and `flutter_svg` 2.5.0, plus their transitive updates. Android builds now use Gradle 9.9.2 and Android Gradle Plugin 9.5.2, and the CI builder image and workflows use Flutter 3.50.1 on a refreshed Java 25 base image.
+
+### Fixed
+
+- A passing health-platform read error (rate limit, Health Connect busy, or the iPhone locked) no longer resets Health Sync's connection. With `health` 14 these errors are now reported instead of returning no workouts; only lasting errors still ask the user to reconnect.
+
 ## [v0.11.1+21] - 2026-11-24
 
 ### Fixed

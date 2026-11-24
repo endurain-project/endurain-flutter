@@ -284,9 +284,18 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(AppErrorCode.healthReadFailed, cause: e);
+      throw _readFailed(e);
     }
   }
+
+  /// Maps a read failure to [AppErrorCode.healthReadFailed], flagging the ones
+  /// the plugin reports as retryable (rate limit, Health Connect busy, iOS
+  /// device locked) as transient so they are not taken for lost access.
+  static AppException _readFailed(Object error) => AppException(
+    AppErrorCode.healthReadFailed,
+    cause: error,
+    isTransient: error is HealthException && error.isRetryable,
+  );
 
   /// Resolves the widest start Endurain can actually read for [requestedStart].
   ///
@@ -380,7 +389,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
         );
       }
     } catch (error) {
-      throw AppException(AppErrorCode.healthReadFailed, cause: error);
+      throw _readFailed(error);
     }
     return result;
   }

@@ -328,8 +328,10 @@ class HealthSyncService {
     } on AppException catch (error) {
       // HealthKit does not reveal read authorization status. If a persisted
       // connection can no longer read, require the user to reconnect so the
-      // next explicit action can request authorization again.
-      if (error.code == AppErrorCode.healthReadFailed) {
+      // next explicit action can request authorization again. A transient
+      // failure (rate limit, Health Connect busy, device locked) says nothing
+      // about access, so the connection is kept.
+      if (error.code == AppErrorCode.healthReadFailed && !error.isTransient) {
         await _syncSettings.setConnected(profile.id, false);
       }
       rethrow;

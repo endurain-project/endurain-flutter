@@ -11,14 +11,14 @@
 
 # Pinned base. The digest is the multi-arch manifest digest for the tag in the
 # trailing comment.
-FROM eclipse-temurin:25-jdk-jammy@sha256:5ba254809ef542504d40d47271c7d6c4f240fe40ca1386259806d431f13b6b4f
+FROM eclipse-temurin:25-jdk-jammy@sha256:43d6f1775a0660b561c1c42edfdf8538a89672a040961acb3730c3ccc53c53de
 # eclipse-temurin:25-jdk-jammy
 
 # --- Toolchain versions (override via --build-arg to upgrade) ---------------
 # Flutter SDK. The SHA256 is published by the Flutter release storage bucket.
-ARG FLUTTER_VERSION=3.50.0
-ARG FLUTTER_ARCHIVE=flutter_linux_3.50.0-stable.tar.xz
-ARG FLUTTER_SHA256=6ea2d806fd57269ae783e6788e2a81fc26eaad782f1e0d0ff38623bb765ff9f5
+ARG FLUTTER_VERSION=3.50.1
+ARG FLUTTER_ARCHIVE=flutter_linux_3.50.1-stable.tar.xz
+ARG FLUTTER_SHA256=4ad17fc8462fbcef2ba19ff4a78c0a16b7147fde1add8578e267ea62cdb92678
 ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/releases/stable/linux
 
 # Android SDK. The command-line tools SHA256 is published directly on the
