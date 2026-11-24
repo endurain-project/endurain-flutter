@@ -89,7 +89,7 @@ class HealthSyncController extends SafeNotifier {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthLoadStatusFailed,
-        details: {'code': e.code.name},
+        details: diagnosticErrorDetails(e),
       );
       _update(_state.copyWith(isCheckingStatus: false, error: e));
     }
@@ -112,7 +112,7 @@ class HealthSyncController extends SafeNotifier {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthAutoSyncSettingFailed,
-        details: {'code': e.code.name},
+        details: diagnosticErrorDetails(e),
       );
       _update(_state.copyWith(isUpdatingAutoSync: false, error: e));
     }
@@ -150,7 +150,7 @@ class HealthSyncController extends SafeNotifier {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthRequestAccessFailed,
-        details: {'code': e.code.name},
+        details: diagnosticErrorDetails(e),
       );
       _update(_state.copyWith(isCheckingStatus: false, error: e));
     }
@@ -170,7 +170,7 @@ class HealthSyncController extends SafeNotifier {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthInstallProviderFailed,
-        details: {'code': e.code.name},
+        details: diagnosticErrorDetails(e),
       );
       _update(_state.copyWith(isCheckingStatus: false, error: e));
     }
@@ -190,7 +190,7 @@ class HealthSyncController extends SafeNotifier {
       final appError = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthDisconnectFailed,
-        details: {'code': appError.code.name},
+        details: diagnosticErrorDetails(appError),
       );
       _update(_state.copyWith(error: appError));
     }
@@ -222,7 +222,7 @@ class HealthSyncController extends SafeNotifier {
     } on AppException catch (e) {
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthLoadImportableFailed,
-        details: {'code': e.code.name},
+        details: diagnosticErrorDetails(e),
       );
       _update(
         _state.copyWith(
@@ -364,7 +364,7 @@ class HealthSyncController extends SafeNotifier {
       final e = _asAppException(error);
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthImportSelectedFailed,
-        details: {'code': e.code.name},
+        details: diagnosticErrorDetails(e),
       );
       _update(_state.copyWith(isImporting: false, error: e));
     }

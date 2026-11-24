@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
 
     if (!launched && mounted) {
       final l10n = AppLocalizations.of(context)!;
-      _controller.clearSsoPkce();
+      _controller.ssoBrowserLaunchFailed();
       _showError(l10n.ssoBrowserLaunchFailed);
     }
   }

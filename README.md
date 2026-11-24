@@ -144,7 +144,7 @@ See [Local Activity Storage Design](#local-activity-storage-design) below for th
 - **SSO/OAuth:** `app_links` for deep-link callbacks, `url_launcher` for the system browser OAuth flow, and `flutter_svg` for provider icons
 - **Health Data:** `health` for Apple HealthKit and Android Health Connect workout import
 - **External Sensors:** `universal_ble` for Bluetooth Low Energy heart-rate monitors, cycling power meters, and cadence sensors (BSD-3-Clause, no Google Play Services)
-- **App Metadata:** `package_info_plus`
+- **App Metadata:** `package_info_plus` for the app version, and `device_info_plus` for the OS version and device model in the local diagnostics report
 - **Local App Files:** `path_provider` for private app-support diagnostics and retained activity GPX storage
 - **Preferences:** `shared_preferences` for non-secret display and language settings
 - **Security:** `crypto` for PKCE challenge generation
@@ -255,36 +255,40 @@ automatically.
 
 ## SSO/OAuth Callback
 
-SSO providers must redirect back to the app with this callback URL:
+The app signs in with SSO using PKCE, and the server sends the browser back to the app at this callback URL (Android and iOS):
 
 ```text
-endurain://auth/sso/callback
+com.endurain.endurain:/auth/sso/callback
 ```
 
-The callback currently expects a `session_id` query parameter, for example:
+This is the reverse-DNS custom scheme form that RFC 8252 recommends, and it is the default `ALLOWED_REDIRECT_URIS` of an Endurain v0.21+ server. If your server overrides `ALLOWED_REDIRECT_URIS`, the list must include this exact URL. The app reads the server's allowed list before opening the browser and shows an error instead of starting a sign-in the server would reject.
+
+A successful sign-in returns a `session_id` query parameter, which the app exchanges for tokens with its PKCE verifier:
 
 ```text
-endurain://auth/sso/callback?session_id=...
+com.endurain.endurain:/auth/sso/callback?session_id=...
 ```
 
-Register this callback URL in the Endurain server or identity provider configuration used for mobile SSO.
+A failed sign-in returns an `error` parameter instead (for example `sso_email_unverified`). The app shows a specific message only for the failure codes the server documents and a generic one for anything else.
 
-For production deployments that control a public domain, verified HTTPS callbacks are the preferred mobile best practice. Android App Links and iOS Universal Links let the operating system verify that the domain is allowed to open the Endurain app, reducing custom-scheme hijacking and misrouting risk. PKCE still protects the current custom-scheme flow, but verified links provide a stronger OS-level ownership check.
+The old `endurain://auth/sso/callback` address is no longer registered, so links to it do not open the app.
 
-Using verified callbacks requires both app and server/domain configuration:
+Incoming links are handled by `app_links`, so Flutter's built-in deep linking is turned off (`flutter_deeplinking_enabled` in `AndroidManifest.xml`, `FlutterDeepLinkingEnabled` in `Info.plist`). Leave it off: when it is on, the router also receives the callback, sends it to home, and closes the login screen before the sign-in finishes.
+
+For production deployments that control a public domain, verified HTTPS callbacks are a stronger option. Android App Links and iOS Universal Links let the operating system verify that the domain is allowed to open the Endurain app, which reduces the risk of another app claiming the custom scheme. PKCE already protects the custom-scheme flow, but verified links add an OS-level ownership check. The app does not support an HTTPS callback yet. Adding one needs both app and server/domain configuration:
 
 - Configure the mobile app to accept the HTTPS callback path with Android `android:autoVerify="true"` App Links and iOS Associated Domains.
 - Serve Android Digital Asset Links from `https://<your-domain>/.well-known/assetlinks.json`.
 - Serve the Apple App Site Association file from `https://<your-domain>/.well-known/apple-app-site-association`.
 - Add the HTTPS callback URL to the Endurain server and identity-provider allowed redirect/callback URL configuration.
 
-Keeping both callback styles during migration is recommended: continue to support `endurain://auth/sso/callback` for existing deployments while adding a verified HTTPS callback for domains that can publish the required `.well-known` files.
-
 ## Local Diagnostics
 
 The app keeps a local diagnostics report to help investigate field issues when a tethered Flutter or Xcode console is not available. Open **Settings > Diagnostics** after relaunching the app to review recent events, captured Flutter/Dart errors, and the raw privacy-filtered report.
 
-Diagnostics are stored only in the app's private support directory and are never uploaded automatically. The report keeps high-level lifecycle context such as app startup, activity recording start/pause/resume/stop, failure reasons, point-count milestones, and catchable Flutter/Dart errors. It intentionally avoids raw GPS coordinates and sanitizes token-like values, home/container paths, and coordinate-looking strings before saving.
+Diagnostics are stored only in the app's private support directory and are never uploaded automatically. The report starts with a header naming the app version, build mode, platform, OS version, and device model. It then keeps up to 150 high-level breadcrumbs: app startup and lifecycle (consecutive changes are folded into one entry), screen changes and router redirects, session changes with their reason, token refreshes that failed, failed HTTP requests, single sign-on steps, errors shown to the user, activity recording start/pause/resume/stop, uploads, health sync, point-count milestones, and catchable Flutter/Dart errors.
+
+The report is built to be safe to share. It never records GPS coordinates, the device's name or identifiers, server addresses, or message text from the server. An HTTP request is recorded by endpoint template only (`/api/v1/auth/sessions/:id/tokens`), a route outside the app's own as `unmatched`, and an error by its type, code, and HTTP status. Token-like values, home/container paths, and coordinate-looking strings are also scrubbed before saving. The report is written atomically, so closing the app mid-write cannot corrupt it or turn collection off.
 
 Separately, **opt-in remote crash reporting** can forward captured Flutter/Dart errors to Endurain's managed diagnostics service. It is off by default and fully independent of local diagnostics — the user may enable neither, either, or both. Reporting uses the Sentry protocol and always targets the managed Endurain diagnostics endpoint (`diagnostics.endurain.com`); there is no user-configurable DSN. The same privacy redaction applied to local diagnostics scrubs error payloads before they leave the device, and nothing is transmitted until the user opts in and the managed endpoint is configured in the build.
 

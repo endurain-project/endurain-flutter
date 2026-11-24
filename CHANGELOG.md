@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+## [v0.11.1+21] - 2026-11-24
+
+### Fixed
+
+- Single sign-on now finishes signing in. Flutter's built-in deep linking also handed the SSO callback to the app's router, which sent it to the home screen and closed the login screen before the sign-in could complete. The app now leaves incoming links to `app_links` alone, on Android and iOS.
+- Local diagnostics no longer turn themselves off after the app is closed and opened again. Closing the app could interrupt a write of the report, leaving a file the next launch could not read, and the opt-in is stored in that file. The report is now written atomically, so an interrupted write keeps the previous one.
+
+### Added
+
+- A header in the local diagnostics report with the app version, build mode, platform, OS version, and device model, read with `device_info_plus`. The device's name and identifiers are never read into the report.
+- More local diagnostics breadcrumbs: each step of a single sign-on, screen changes and router redirects, tab changes, session changes with their reason (signed in, signed out, session ended, unreadable storage), failed token refreshes, failed HTTP requests by endpoint template and status, and every error shown to the user. Failure breadcrumbs now include the error code, HTTP status, and cause instead of only the error type.
+
+### Changed
+
+- The local diagnostics report keeps 150 breadcrumbs instead of 40, and up to 10 errors instead of 8. Consecutive lifecycle changes are folded into one breadcrumb, so a trip to the background no longer pushes out six older entries.
+- The diagnostics report format is now version 2, which adds the header.
+- Auth, SSO, server settings and API requests share one HTTP client.
+- The README documents the `com.endurain.endurain:/auth/sso/callback` address and the diagnostics report's contents.
+
 ## [v0.11.0+20] - 2026-11-17
 
 This release requires Endurain server v0.21 or newer, and older app versions cannot sign in to a v0.21 server. If your server sets `ALLOWED_REDIRECT_URIS`, it must include `com.endurain.endurain:/auth/sso/callback` for single sign-on to work.

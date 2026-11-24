@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:endurain/app.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/services/platform/device_info_service.dart';
+import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -50,7 +53,16 @@ Future<void> main() async {
       WidgetsFlutterBinding.ensureInitialized();
 
       await diagnostics.initialize();
-      diagnostics.recordBreadcrumbSync(DiagnosticsEvents.appStarted);
+      final launchContext = await _diagnosticsContext(
+        services.packageInfo,
+        services.deviceInfo,
+      );
+      diagnostics
+        ..setContext(launchContext)
+        ..recordBreadcrumbSync(
+          DiagnosticsEvents.appStarted,
+          details: {'version': launchContext['appVersion']},
+        );
 
       // Before anything reaches the server: a v0.21 server refuses the tokens
       // of a session stored before its upgrade, and the app then clears it.
@@ -137,3 +149,39 @@ Future<void> main() async {
   );
   await appRunner;
 }
+
+/// The report header for this launch: which build, on which device and OS.
+/// Both lookups run at once and are bounded and best-effort, so a slow
+/// platform channel cannot delay startup by more than [_contextTimeout].
+Future<Map<String, Object?>> _diagnosticsContext(
+  PackageInfoService packageInfo,
+  DeviceInfoService deviceInfo,
+) async {
+  final (version, device) = await (
+    packageInfo
+        .fromPlatform()
+        .then<String?>((info) => '${info.version}+${info.buildNumber}')
+        .timeout(_contextTimeout)
+        .catchError((Object _) => null),
+    deviceInfo
+        .diagnosticsSummary()
+        .timeout(_contextTimeout)
+        .catchError((Object _) => const <String, Object?>{}),
+  ).wait;
+  return {
+    'appVersion': version ?? 'unknown',
+    'buildMode': kReleaseMode
+        ? 'release'
+        : kProfileMode
+        ? 'profile'
+        : 'debug',
+    'platform': Platform.operatingSystem,
+    // Dart's own OS string, kept only when the device lookup failed: on
+    // Android it is a kernel version, not the Android release.
+    'osVersion': Platform.operatingSystemVersion,
+    ...device,
+    'launchedAt': DateTime.now().toUtc().toIso8601String(),
+  };
+}
+
+const Duration _contextTimeout = Duration(seconds: 2);

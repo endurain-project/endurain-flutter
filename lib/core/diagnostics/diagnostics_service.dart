@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/diagnostics_redaction.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:flutter/foundation.dart';
@@ -45,6 +46,22 @@ abstract class DiagnosticsStore implements DiagnosticsRecorder {
   Future<void> flush();
 }
 
+/// The breadcrumb details that identify [error] without its message: its type,
+/// and for an [AppException] its code, HTTP status, and the type of its cause.
+///
+/// Messages are left out because they can carry server text or user data; the
+/// code and status are what a report reader needs to tell failures apart.
+Map<String, Object?> diagnosticErrorDetails(Object error) {
+  return {
+    'type': error.runtimeType.toString(),
+    if (error is AppException) ...{
+      'code': error.code.name,
+      'status': ?error.statusCode,
+      if (error.cause != null) 'cause': error.cause.runtimeType.toString(),
+    },
+  };
+}
+
 class DiagnosticsReport {
   const DiagnosticsReport({
     required this.rawText,
@@ -53,6 +70,7 @@ class DiagnosticsReport {
     required this.lastUpdatedAt,
     required this.breadcrumbs,
     required this.errors,
+    this.context = const {},
   });
 
   final String rawText;
@@ -62,12 +80,17 @@ class DiagnosticsReport {
   final List<DiagnosticsBreadcrumb> breadcrumbs;
   final List<DiagnosticsErrorEntry> errors;
 
+  /// The app and device the report was last written from (version, platform,
+  /// OS), so a report can be read without asking which build produced it.
+  final Map<String, Object?> context;
+
   bool get isEmpty => breadcrumbs.isEmpty && errors.isEmpty;
 
   factory DiagnosticsReport.fromPayload(Map<String, Object?> payload) {
     final rawText = const JsonEncoder.withIndent('  ').convert(payload);
     final breadcrumbs = payload['breadcrumbs'];
     final errors = payload['errors'];
+    final context = payload['context'];
 
     return DiagnosticsReport(
       rawText: rawText,
@@ -86,6 +109,13 @@ class DiagnosticsReport {
                 .map(DiagnosticsErrorEntry.fromJson)
                 .toList(growable: false)
           : const [],
+      context: context is Map<dynamic, dynamic>
+          ? Map<String, Object?>.fromEntries(
+              context.entries.map(
+                (entry) => MapEntry(entry.key.toString(), entry.value),
+              ),
+            )
+          : const {},
     );
   }
 }
@@ -245,6 +275,25 @@ class DiagnosticsEvents {
   static const String healthImportSelectedFailed =
       'health.import_selected_failed';
   static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
+  static const String ssoRedirectNotAllowed = 'sso.redirect_not_allowed';
+  static const String ssoLoginStarted = 'sso.login_started';
+  static const String ssoBrowserLaunchFailed = 'sso.browser_launch_failed';
+  static const String ssoCallbackIgnored = 'sso.callback_ignored';
+  static const String ssoCallbackReceived = 'sso.callback_received';
+  static const String ssoCallbackError = 'sso.callback_error';
+  static const String ssoCallbackMissingSession =
+      'sso.callback_missing_session';
+  static const String ssoExchangeSucceeded = 'sso.exchange_succeeded';
+  static const String ssoExchangeFailed = 'sso.exchange_failed';
+  static const String navigationChanged = 'nav.changed';
+  static const String navigationRedirected = 'nav.redirected';
+  static const String navigationTabChanged = 'nav.tab_changed';
+  static const String uiErrorShown = 'ui.error_shown';
+  static const String sessionModeChanged = 'session.mode_changed';
+  static const String sessionRevalidateFailed = 'session.revalidate_failed';
+  static const String authRefreshFailed = 'auth.refresh_failed';
+  static const String authSessionCleared = 'auth.session_cleared';
+  static const String httpRequestFailed = 'http.request_failed';
   static const String legacyProfileAdopted = 'account.legacy_profile_adopted';
   static const String legacyProfileDeclined = 'account.legacy_profile_declined';
   static const String legacyProfileMigrationFailed =
@@ -255,8 +304,8 @@ class DiagnosticsService implements DiagnosticsStore {
   DiagnosticsService({
     Future<Directory> Function()? supportDirectoryProvider,
     DateTime Function()? now,
-    this.maxBreadcrumbs = 40,
-    this.maxErrors = 8,
+    this.maxBreadcrumbs = 150,
+    this.maxErrors = 10,
   }) : _supportDirectoryProvider =
            supportDirectoryProvider ?? getApplicationSupportDirectory,
        _now = now ?? DateTime.now;
@@ -276,6 +325,7 @@ class DiagnosticsService implements DiagnosticsStore {
   final List<Object?> _breadcrumbs = <Object?>[];
   final List<Object?> _errors = <Object?>[];
   DateTime? _lastUpdatedAt;
+  Map<String, Object?> _context = const {};
 
   // Coalesced async-flush state. A burst of breadcrumbs collapses into a single
   // async write instead of one synchronous fsync per event (which janked the
@@ -306,6 +356,13 @@ class DiagnosticsService implements DiagnosticsStore {
   @override
   bool get isEnabled => _enabled;
 
+  /// Sets the report header describing this launch (app version, platform,
+  /// OS). Values are sanitized like breadcrumb details. It is written with the
+  /// next breadcrumb, so it never creates a report on its own.
+  void setContext(Map<String, Object?> context) {
+    _context = _sanitizeDetails(context);
+  }
+
   @override
   Future<void> setEnabled(bool enabled) async {
     await initialize();
@@ -331,13 +388,7 @@ class DiagnosticsService implements DiagnosticsStore {
       _errors.clear();
       _dirty = false;
       _lastUpdatedAt = null;
-      if (file.existsSync()) {
-        try {
-          file.deleteSync();
-        } catch (_) {
-          // Best-effort: deletion failure must not surface to the app.
-        }
-      }
+      _deleteReportFiles(file);
     }
   }
 
@@ -350,14 +401,62 @@ class DiagnosticsService implements DiagnosticsStore {
       return;
     }
 
-    _breadcrumbs.add({
-      'at': _now().toUtcIso8601(),
+    final at = _now().toUtcIso8601();
+    final sanitizedDetails = details.isEmpty
+        ? const <String, Object?>{}
+        : _sanitizeDetails(details);
+    if (event == DiagnosticsEvents.appLifecycleChanged &&
+        _mergeLifecycle(at, sanitizedDetails)) {
+      _scheduleFlush();
+      return;
+    }
+    _breadcrumbs.add(<String, Object?>{
+      'at': at,
       'event': _sanitize(event),
-      if (details.isNotEmpty) 'details': _sanitizeDetails(details),
+      if (sanitizedDetails.isNotEmpty) 'details': sanitizedDetails,
     });
     _trimInPlace(_breadcrumbs, maxBreadcrumbs);
     _scheduleFlush();
   }
+
+  /// Folds a lifecycle change into the previous breadcrumb when that one is a
+  /// lifecycle change too, so one trip to the background is one entry
+  /// (`inactive>hidden>paused>hidden>inactive>resumed`) instead of six that
+  /// push older, more useful breadcrumbs out of the buffer.
+  bool _mergeLifecycle(String at, Map<String, Object?> details) {
+    if (_breadcrumbs.isEmpty) {
+      return false;
+    }
+    final last = _breadcrumbs.last;
+    if (last is! Map ||
+        last['event'] != DiagnosticsEvents.appLifecycleChanged) {
+      return false;
+    }
+    final state = details['state'];
+    if (state is! String) {
+      return false;
+    }
+    final lastDetails = last['details'];
+    final previous = lastDetails is Map
+        ? (lastDetails['trail'] ?? lastDetails['state'])
+        : null;
+    final trail = [
+      if (previous is String) ...previous.split(_lifecycleTrailSeparator),
+      state,
+    ];
+    final kept = trail.length > _maxLifecycleTrail
+        ? ['…', ...trail.sublist(trail.length - _maxLifecycleTrail + 1)]
+        : trail;
+    last['details'] = {
+      'state': state,
+      'trail': kept.join(_lifecycleTrailSeparator),
+      'lastAt': at,
+    };
+    return true;
+  }
+
+  static const String _lifecycleTrailSeparator = '>';
+  static const int _maxLifecycleTrail = 16;
 
   @override
   void recordFlutterErrorSync(FlutterErrorDetails details) {
@@ -425,11 +524,24 @@ class DiagnosticsService implements DiagnosticsStore {
     if (_enabled) {
       // Keep collection enabled but drop the captured breadcrumbs and errors.
       _writeSync();
-    } else if (file.existsSync()) {
+    } else {
+      _deleteReportFiles(file);
+    }
+  }
+
+  /// Deletes the report and any staging file a killed write left behind.
+  void _deleteReportFiles(File file) {
+    for (final target in [
+      file,
+      _stagingFile(file, _syncStagingSuffix),
+      _stagingFile(file, _asyncStagingSuffix),
+    ]) {
       try {
-        file.deleteSync();
+        if (target.existsSync()) {
+          target.deleteSync();
+        }
       } catch (_) {
-        // Best-effort.
+        // Best-effort: deletion failure must not surface to the app.
       }
     }
   }
@@ -483,6 +595,16 @@ class DiagnosticsService implements DiagnosticsStore {
       ..addAll(_listFromPayload(payload, 'errors'));
     final last = payload['lastUpdatedAt'];
     _lastUpdatedAt = last is String ? DateTime.tryParse(last)?.toUtc() : null;
+    // Kept until this launch calls [setContext], so a report read before then
+    // still says which build wrote it.
+    final context = payload['context'];
+    _context = context is Map
+        ? Map<String, Object?>.fromEntries(
+            context.entries.map(
+              (entry) => MapEntry(entry.key.toString(), entry.value),
+            ),
+          )
+        : const {};
   }
 
   bool get _hasContent => _breadcrumbs.isNotEmpty || _errors.isNotEmpty;
@@ -490,9 +612,10 @@ class DiagnosticsService implements DiagnosticsStore {
   /// Builds the on-disk payload from the current in-memory state.
   Map<String, Object?> _currentPayload() {
     return {
-      'schemaVersion': 1,
+      'schemaVersion': 2,
       'app': 'Endurain',
       if (_enabled) 'enabled': true,
+      if (_context.isNotEmpty) 'context': _context,
       if (_lastUpdatedAt != null)
         'lastUpdatedAt': _lastUpdatedAt!.toUtcIso8601(),
       'breadcrumbs': List<Object?>.from(_breadcrumbs),
@@ -502,6 +625,19 @@ class DiagnosticsService implements DiagnosticsStore {
 
   String _encodePayload(Map<String, Object?> payload) =>
       const JsonEncoder.withIndent('  ').convert(payload);
+
+  // Every write goes to a staging file that is then renamed over the report.
+  // Writing the report in place truncates it first, so a process killed
+  // mid-write (as when the app is swiped away right after the `detached`
+  // breadcrumb) left an empty or partial file; the next launch could not parse
+  // it and came back with collection off, since the opt-in lives in the same
+  // file. A rename either fully happens or not at all, so the last complete
+  // report survives. The sync and async paths stage to separate files because
+  // a sync write can run while an async one is part-way through.
+  static const String _syncStagingSuffix = '.sync.tmp';
+  static const String _asyncStagingSuffix = '.async.tmp';
+
+  File _stagingFile(File file, String suffix) => File('${file.path}$suffix');
 
   /// Writes the current state synchronously (fsync).
   ///
@@ -514,7 +650,9 @@ class DiagnosticsService implements DiagnosticsStore {
     }
     _lastUpdatedAt = _now();
     try {
-      file.writeAsStringSync(_encodePayload(_currentPayload()), flush: true);
+      _stagingFile(file, _syncStagingSuffix)
+        ..writeAsStringSync(_encodePayload(_currentPayload()), flush: true)
+        ..renameSync(file.path);
     } catch (_) {
       // Best-effort: diagnostics must never surface I/O errors to the app.
     }
@@ -546,7 +684,9 @@ class DiagnosticsService implements DiagnosticsStore {
     _lastUpdatedAt = _now();
     final content = _encodePayload(_currentPayload());
     try {
-      await file.writeAsString(content);
+      final staging = _stagingFile(file, _asyncStagingSuffix);
+      await staging.writeAsString(content, flush: true);
+      await staging.rename(file.path);
     } catch (_) {
       // Best-effort: diagnostics must never surface I/O errors to the app.
     }

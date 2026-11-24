@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// The high-level session state that drives top-level routing.
@@ -24,9 +25,13 @@ enum SessionMode {
 }
 
 class AuthSessionController extends SafeNotifier {
-  AuthSessionController({required this._authService});
+  AuthSessionController({
+    required this._authService,
+    DiagnosticsRecorder? diagnostics,
+  }) : _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
   final AuthService _authService;
+  final DiagnosticsRecorder _diagnostics;
 
   /// Upper bound for the launch session read so a stalled secure-storage call
   /// can never pin the app on the splash.
@@ -51,18 +56,25 @@ class AuthSessionController extends SafeNotifier {
     notify();
 
     try {
-      _mode = await _authService.hasStoredSession().timeout(_initializeTimeout)
-          ? SessionMode.authenticated
-          : SessionMode.guest;
+      final stored = await _authService.hasStoredSession().timeout(
+        _initializeTimeout,
+      );
       _sessionUnreadable = false;
-    } catch (_) {
+      _setMode(
+        stored ? SessionMode.authenticated : SessionMode.guest,
+        reason: stored ? 'launch_stored_session' : 'launch_no_session',
+      );
+    } catch (error) {
       // Secure storage unavailable, or the read stalled past
       // [_initializeTimeout]: start usable in guest mode instead of hanging on
       // the splash, and retry when the app resumes.
-      _mode = SessionMode.guest;
       _sessionUnreadable = true;
+      _setMode(
+        SessionMode.guest,
+        reason: 'launch_session_unreadable',
+        error: error,
+      );
     }
-    notify();
     // Confirm a restored session with the server off the launch path. A
     // definitive rejection drops to guest; a transient failure keeps the session.
     if (_mode == SessionMode.authenticated) {
@@ -72,14 +84,14 @@ class AuthSessionController extends SafeNotifier {
 
   void markAuthenticated() {
     _sessionUnreadable = false;
-    _setMode(SessionMode.authenticated);
+    _setMode(SessionMode.authenticated, reason: 'signed_in');
   }
 
   /// Drops to local-only "guest" mode (used on launch, after signing out, and
   /// when a server session expires). Activities keep recording locally and
   /// uploads resume once the user signs in again.
   void continueAsGuest() {
-    _setMode(SessionMode.guest);
+    _setMode(SessionMode.guest, reason: 'signed_out');
   }
 
   /// Re-checks the active session when the app resumes from background.
@@ -100,23 +112,38 @@ class AuthSessionController extends SafeNotifier {
     final bool stillAuthenticated;
     try {
       stillAuthenticated = await _authService.isAuthenticated();
-    } catch (_) {
+    } catch (error) {
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.sessionRevalidateFailed,
+        details: diagnosticErrorDetails(error),
+      );
       return;
     }
     _sessionUnreadable = false;
     if (retryingUnreadable) {
       if (stillAuthenticated) {
-        _setMode(SessionMode.authenticated);
+        _setMode(SessionMode.authenticated, reason: 'session_readable_again');
       }
     } else if (!stillAuthenticated) {
-      _setMode(SessionMode.guest);
+      _setMode(SessionMode.guest, reason: 'session_ended');
     }
   }
 
-  void _setMode(SessionMode mode) {
+  /// Moves to [mode] and records why, so a report shows each sign-in, sign-out
+  /// and expiry that moved the app between guest and authenticated.
+  void _setMode(SessionMode mode, {required String reason, Object? error}) {
     if (_mode == mode) {
       return;
     }
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.sessionModeChanged,
+      details: {
+        'from': _mode.name,
+        'to': mode.name,
+        'reason': reason,
+        if (error != null) ...diagnosticErrorDetails(error),
+      },
+    );
     _mode = mode;
     notify();
   }

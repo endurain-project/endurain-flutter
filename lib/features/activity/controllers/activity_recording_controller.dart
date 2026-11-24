@@ -311,7 +311,7 @@ class ActivityRecordingController extends SafeNotifier {
       // that can lose a just-finished workout) without leaking GPS data.
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.activityGpxGenerationFailed,
-        details: {'type': error.runtimeType.toString()},
+        details: diagnosticErrorDetails(error),
       );
       _completedGpx = null;
       _setState(
