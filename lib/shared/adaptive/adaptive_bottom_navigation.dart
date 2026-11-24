@@ -20,9 +20,16 @@ class AdaptiveTab {
 }
 
 class AdaptiveBottomNavigation extends StatefulWidget {
-  const AdaptiveBottomNavigation({super.key, required this.tabs});
+  const AdaptiveBottomNavigation({
+    super.key,
+    required this.tabs,
+    this.onTabChanged,
+  });
 
   final List<AdaptiveTab> tabs;
+
+  /// Called with the [AdaptiveTab.routeName] of a newly selected tab.
+  final ValueChanged<String>? onTabChanged;
 
   @override
   State<AdaptiveBottomNavigation> createState() =>
@@ -32,12 +39,24 @@ class AdaptiveBottomNavigation extends StatefulWidget {
 class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
   int _currentIndex = 0;
 
+  void _select(int index) {
+    if (index == _currentIndex) {
+      return;
+    }
+    setState(() {
+      _currentIndex = index;
+    });
+    widget.onTabChanged?.call(widget.tabs[index].routeName);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (PlatformUtils.isApplePlatform) {
       return CupertinoTabScaffold(
         tabBar: CupertinoTabBar(
           height: UIConstants.tabBarHeight,
+          // The scaffold switches tabs itself and then calls this.
+          onTap: _select,
           items: [
             for (final tab in widget.tabs)
               BottomNavigationBarItem(
@@ -70,11 +89,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _select,
         items: [
           for (final tab in widget.tabs)
             BottomNavigationBarItem(

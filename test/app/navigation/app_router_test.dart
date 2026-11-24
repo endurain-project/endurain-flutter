@@ -5,6 +5,7 @@ import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/navigation/app_router.dart';
 import 'package:endurain/app/navigation/app_routes.dart';
 import 'package:endurain/core/auth/auth_service.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
@@ -12,6 +13,8 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+
+import '../../helpers/recording_diagnostics.dart';
 
 void main() {
   setUp(() {
@@ -80,6 +83,67 @@ void main() {
         );
       });
     });
+  });
+
+  test('labels only the app\'s own routes', () {
+    expect(diagnosticRouteLabel(AppRoutes.login), AppRoutes.login);
+    expect(diagnosticRouteLabel('/auth/sso/callback'), 'unmatched');
+  });
+
+  testWidgets('records route changes and redirects by route name', (
+    tester,
+  ) async {
+    final services = AppServices();
+    final diagnostics = RecordingDiagnostics();
+    final session = AuthSessionController(
+      authService: AuthService(storage: services.secureStorage),
+    );
+    addTearDown(session.dispose);
+    session.continueAsGuest();
+    final router = buildAppRouter(
+      session: session,
+      onLoginSuccess: (_) async {},
+      onLogout: session.continueAsGuest,
+      diagnostics: diagnostics,
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      AppScope(
+        services: services,
+        child: AdaptiveApp.router(title: 'Test', routerConfig: router),
+      ),
+    );
+    await tester.pump();
+
+    unawaited(router.push(AppRoutes.login));
+    await tester.pump();
+    await tester.pump();
+    // What Flutter's own deep linking did with the SSO callback.
+    router.go('/auth/sso/callback?session_id=secret-1');
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      diagnostics.details.where(
+        (d) => d['to'] == AppRoutes.login && d['from'] == AppRoutes.home,
+      ),
+      isNotEmpty,
+    );
+    final redirect =
+        diagnostics.details[diagnostics.events.lastIndexOf(
+          DiagnosticsEvents.navigationRedirected,
+        )];
+    expect(redirect, {
+      'from': 'unmatched',
+      'to': AppRoutes.home,
+      'mode': 'guest',
+    });
+    expect(diagnostics.details.last, {
+      'from': AppRoutes.login,
+      'to': AppRoutes.home,
+    });
+    expect(diagnostics.details.toString(), isNot(contains('secret-1')));
   });
 
   testWidgets('updates Settings when logout enters guest mode', (tester) async {

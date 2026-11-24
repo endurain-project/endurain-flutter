@@ -1,5 +1,6 @@
 import 'package:endurain/app/navigation/app_routes.dart';
 import 'package:endurain/app/widgets/app_bottom_nav.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -20,16 +21,35 @@ import 'package:go_router/go_router.dart';
 /// them inside [resolveRedirect]. When the bottom-navigation tabs need their
 /// own URLs or deep links, promote [AppRoutes.home] to a `StatefulShellRoute`
 /// whose branches map to the existing tabs — the redirect guard stays the same.
+///
+/// Every change of the visible route and every redirect is recorded to
+/// [diagnostics] by route name only (see [diagnosticRouteLabel]).
 GoRouter buildAppRouter({
   required AuthSessionController session,
   required Future<void> Function(BuildContext context) onLoginSuccess,
   required VoidCallback onLogout,
+  DiagnosticsRecorder diagnostics = const NoopDiagnosticsRecorder(),
 }) {
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: AppRoutes.loading,
     refreshListenable: session,
-    redirect: (context, state) =>
-        resolveRedirect(mode: session.mode, location: state.matchedLocation),
+    redirect: (context, state) {
+      final target = resolveRedirect(
+        mode: session.mode,
+        location: state.matchedLocation,
+      );
+      if (target != null) {
+        diagnostics.recordBreadcrumbSync(
+          DiagnosticsEvents.navigationRedirected,
+          details: {
+            'from': diagnosticRouteLabel(state.uri.path),
+            'to': diagnosticRouteLabel(target),
+            'mode': session.mode.name,
+          },
+        );
+      }
+      return target;
+    },
     routes: [
       GoRoute(
         path: AppRoutes.loading,
@@ -69,7 +89,43 @@ GoRouter buildAppRouter({
       ),
     ],
   );
+  _recordRouteChanges(router, diagnostics);
+  return router;
 }
+
+/// Records each change of the top-most route, including pushed ones.
+void _recordRouteChanges(GoRouter router, DiagnosticsRecorder diagnostics) {
+  String? current;
+  router.routerDelegate.addListener(() {
+    final configuration = router.routerDelegate.currentConfiguration;
+    final location = configuration.isError
+        ? 'error'
+        : configuration.isEmpty
+        ? ''
+        : diagnosticRouteLabel(configuration.last.matchedLocation);
+    if (location == current) {
+      return;
+    }
+    diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.navigationChanged,
+      details: {'from': ?current, 'to': location},
+    );
+    current = location;
+  });
+}
+
+/// [path] when it is one of the app's own routes, otherwise `unmatched`, so a
+/// link opened from outside never puts its path (which may carry ids or
+/// tokens) in a report.
+@visibleForTesting
+String diagnosticRouteLabel(String path) =>
+    _knownRoutes.contains(path) ? path : 'unmatched';
+
+const Set<String> _knownRoutes = {
+  AppRoutes.loading,
+  AppRoutes.login,
+  AppRoutes.home,
+};
 
 /// Resolves the destination for [location] given the current session [mode].
 ///

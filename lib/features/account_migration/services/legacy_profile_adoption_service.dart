@@ -311,7 +311,7 @@ class LegacyProfileAdoptionService {
   void _recordFailure(String step, Object error) {
     _diagnostics.recordBreadcrumbSync(
       DiagnosticsEvents.legacyProfileMigrationFailed,
-      details: {'step': step, 'type': error.runtimeType.toString()},
+      details: {'step': step, ...diagnosticErrorDetails(error)},
     );
   }
 }

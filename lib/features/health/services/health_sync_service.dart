@@ -449,7 +449,7 @@ class HealthSyncService {
         failed++;
         _diagnostics.recordBreadcrumbSync(
           DiagnosticsEvents.healthImportWorkoutFailed,
-          details: {'type': error.runtimeType.toString()},
+          details: diagnosticErrorDetails(error),
         );
       }
     }

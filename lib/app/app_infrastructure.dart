@@ -6,6 +6,7 @@ import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/network/connectivity_service.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
+import 'package:endurain/core/services/platform/device_info_service.dart';
 import 'package:endurain/core/services/platform/device_measurement_system_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/platform/sentry_crash_reporter.dart';
@@ -57,6 +58,9 @@ class AppInfrastructure {
   final ShareService share = ShareService();
 
   final PackageInfoService packageInfo = const PackageInfoService();
+
+  /// Device facts (OS version, model) for the diagnostics report header.
+  late final DeviceInfoService deviceInfo = DeviceInfoService();
 
   /// App-wide selected language, persisted as a BCP 47 tag. A `null` locale
   /// follows the system. Owned here so the root `App` can rebuild the localized

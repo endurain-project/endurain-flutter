@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.11.0+20
+version: 0.11.1+21
 
 environment:
   sdk: ^3.14.0
@@ -57,6 +57,12 @@ dependencies:
 
   # Package info for app version
   package_info_plus: ^10.2.1
+
+  # OS version and device model for the local diagnostics report header.
+  # BSD-3-Clause, no Google Play Services, no extra Android permissions. Only
+  # an allowlist of fields is read (see DeviceInfoService); never the device
+  # name or identifiers.
+  device_info_plus: ^13.3.0
 
   # Local app-support storage for privacy-safe diagnostics
   path_provider: ^2.1.6

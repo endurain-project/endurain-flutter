@@ -9,6 +9,7 @@ import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/map_constants.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart' as core;
 import 'package:endurain/core/network/base_http_client.dart';
@@ -22,6 +23,7 @@ import 'package:http/testing.dart';
 
 import '../../../helpers/fake_app_links_service.dart';
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/recording_diagnostics.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -507,6 +509,81 @@ void main() {
 
       expect(errors, hasLength(1));
       expect(controller.isLoading, isFalse);
+      controller.dispose();
+      await appLinks.close();
+    });
+
+    test('records SSO breadcrumbs without the link contents', () async {
+      final appLinks = FakeAppLinksService();
+      final diagnostics = RecordingDiagnostics();
+      final requestedPaths = <String>[];
+      final controller = LoginController(
+        authCoordinator: _repository(
+          storage: SecureStorageService(),
+          client: MockClient((request) async {
+            requestedPaths.add(request.url.path);
+            return http.Response('{"detail":"server-secret-detail"}', 400);
+          }),
+        ),
+        appLinksService: appLinks,
+        diagnostics: diagnostics,
+      );
+      controller.startSsoCallbackListener(
+        onLoginSuccess: () => fail('Login should not complete.'),
+        onError: (_) {},
+      );
+
+      await controller.beginSsoLogin(
+        const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
+      );
+      appLinks
+        ..add(Uri.parse('com.endurain.endurain:/elsewhere'))
+        ..add(
+          Uri.parse(
+            'com.endurain.endurain:/auth/sso/callback?error=injected-text',
+          ),
+        )
+        ..add(Uri.parse('com.endurain.endurain:/auth/sso/callback'));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      // Both failures above drop the PKCE state, so start a fresh flow: the
+      // last callback must reach the server's token exchange, not fail on the
+      // local "restart sign-in" guard.
+      await controller.beginSsoLogin(
+        const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
+      );
+      appLinks.add(
+        Uri.parse(
+          'com.endurain.endurain:/auth/sso/callback?session_id=secret-1',
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(
+        requestedPaths,
+        contains(ApiEndpoints.defaults.sessionTokensEndpoint('secret-1')),
+      );
+      expect(diagnostics.events, [
+        DiagnosticsEvents.ssoLoginStarted,
+        DiagnosticsEvents.ssoCallbackIgnored,
+        DiagnosticsEvents.ssoCallbackError,
+        DiagnosticsEvents.ssoCallbackMissingSession,
+        DiagnosticsEvents.ssoLoginStarted,
+        DiagnosticsEvents.ssoCallbackReceived,
+        DiagnosticsEvents.ssoExchangeFailed,
+      ]);
+      expect(diagnostics.details[2], {'code': 'unknown'});
+      expect(diagnostics.details.last, {
+        'type': 'AppException',
+        'code': AppErrorCode.tokenExchangeFailed.name,
+        'status': 400,
+      });
+      final recorded = diagnostics.details.toString();
+      expect(recorded, isNot(contains('secret-1')));
+      expect(recorded, isNot(contains('injected-text')));
+      expect(recorded, isNot(contains('server-secret-detail')));
       controller.dispose();
       await appLinks.close();
     });

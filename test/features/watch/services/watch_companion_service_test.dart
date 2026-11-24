@@ -12,6 +12,7 @@ import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/recording_diagnostics.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 /// In-memory [WatchTransportAdapter] that records acknowledgements and lets a
@@ -66,25 +67,6 @@ class FakeWatchTransport implements WatchTransportAdapter {
     disposed = true;
     await controller.close();
   }
-}
-
-class RecordingDiagnostics implements DiagnosticsRecorder {
-  final List<String> events = <String>[];
-
-  @override
-  void recordBreadcrumbSync(
-    String event, {
-    Map<String, Object?> details = const {},
-  }) {
-    events.add(event);
-  }
-
-  @override
-  void recordErrorSync(
-    Object error,
-    StackTrace stackTrace, {
-    String source = DiagnosticsSources.uncaught,
-  }) {}
 }
 
 void main() {

@@ -6,6 +6,7 @@ import 'package:endurain/core/auth/sign_in_flow.dart';
 import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/network/api_response.dart';
 import 'package:endurain/core/network/base_http_client.dart';
@@ -25,7 +26,8 @@ class AuthService {
     AppConfig config = AppConfig.defaults,
     ApiEndpoints? endpoints,
     SignInFlow? signInFlow,
-  }) {
+    DiagnosticsRecorder? diagnostics,
+  }) : _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder() {
     final resolvedStorage = storage ?? SecureStorageService();
     _sessionStore =
         sessionStore ??
@@ -33,7 +35,9 @@ class AuthService {
     _urlResolver =
         urlResolver ??
         ServerUrlResolver(storage: resolvedStorage, config: config);
-    _http = baseClient ?? BaseHttpClient(httpClient: httpClient);
+    _http =
+        baseClient ??
+        BaseHttpClient(httpClient: httpClient, diagnostics: _diagnostics);
     _endpoints = endpoints ?? ApiEndpoints(config);
     _signIn =
         signInFlow ??
@@ -50,6 +54,7 @@ class AuthService {
   late final BaseHttpClient _http;
   late final ApiEndpoints _endpoints;
   late final SignInFlow _signIn;
+  final DiagnosticsRecorder _diagnostics;
 
   // Refreshes are single-flight per session revision. A replacement login may
   // refresh independently without joining a stale request from the old session.
@@ -122,11 +127,12 @@ class AuthService {
         },
         body: jsonEncode({'refresh_token': refreshToken}),
       );
-    } catch (_) {
+    } catch (error) {
       // Transport-level failure (no connectivity, timeout, DNS). This is
       // transient: the refresh token is almost certainly still valid, so keep
       // the session and let the next attempt retry rather than logging the
       // user out on a flaky network.
+      _recordRefreshFailure('transport', error: error);
       return false;
     }
 
@@ -144,17 +150,26 @@ class AuthService {
         );
         final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
 
-        return await _sessionStore.replaceSessionIfCurrent(
+        final replaced = await _sessionStore.replaceSessionIfCurrent(
           expected: session,
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
           sessionId: returnedSessionId,
           expiresInSeconds: expiresIn,
         );
-      } catch (_) {
+        if (!replaced) {
+          // Another sign-in or sign-out replaced the session mid-refresh.
+          _recordRefreshFailure('session_superseded');
+        }
+        return replaced;
+      } catch (error) {
         // 200 with a malformed body is a definitive contract failure, not a
         // transient blip: the stored tokens cannot be trusted. Clear them.
-        return _clearSessionAfterRefreshFailure(session);
+        _recordRefreshFailure('malformed_response', error: error);
+        return _clearSessionAfterRefreshFailure(
+          session,
+          reason: 'refresh_malformed_response',
+        );
       }
     }
 
@@ -163,17 +178,43 @@ class AuthService {
     // `urn:endurain:error:session-ended`. Clear the session and force
     // re-login; do not retry.
     if (response.statusCode == 401 || response.statusCode == 403) {
-      return _clearSessionAfterRefreshFailure(session);
+      _recordRefreshFailure('rejected', status: response.statusCode);
+      return _clearSessionAfterRefreshFailure(
+        session,
+        reason: 'refresh_rejected',
+      );
     }
 
     // Other non-success statuses (5xx, 429, 408, ...) are transient: keep the
     // session so a temporary server problem does not log the user out.
+    _recordRefreshFailure('server_error', status: response.statusCode);
     return false;
   }
 
-  Future<bool> _clearSessionAfterRefreshFailure(AuthSession session) async {
-    await _sessionStore.clearIfProfileCurrent(session);
+  Future<bool> _clearSessionAfterRefreshFailure(
+    AuthSession session, {
+    required String reason,
+  }) async {
+    // Recorded only once the store confirms it: a session another sign-in
+    // replaced meanwhile is left alone, and a failed clear throws.
+    if (await _sessionStore.clearIfProfileCurrent(session)) {
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.authSessionCleared,
+        details: {'reason': reason},
+      );
+    }
     return false;
+  }
+
+  void _recordRefreshFailure(String reason, {Object? error, int? status}) {
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.authRefreshFailed,
+      details: {
+        'reason': reason,
+        'status': ?status,
+        if (error != null) ...diagnosticErrorDetails(error),
+      },
+    );
   }
 
   /// Logout and clear all tokens
@@ -242,7 +283,12 @@ class AuthService {
     }
 
     if (session.refreshToken.isEmpty) {
-      await _sessionStore.clearIfCurrent(session);
+      if (await _sessionStore.clearIfCurrent(session)) {
+        _diagnostics.recordBreadcrumbSync(
+          DiagnosticsEvents.authSessionCleared,
+          details: const {'reason': 'no_refresh_token'},
+        );
+      }
       return false;
     }
 

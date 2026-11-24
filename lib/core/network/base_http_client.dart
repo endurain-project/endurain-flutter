@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/network/api_response.dart';
+import 'package:endurain/core/network/http_diagnostics.dart';
 import 'package:endurain/core/network/redirect_policy_client.dart';
 import 'package:http/http.dart' as http;
 
@@ -24,13 +26,22 @@ import 'package:http/http.dart' as http;
 /// carry the bearer token to a different origin or downgrade to plain HTTP.
 ///
 /// Bearer-token refresh and injection belong in `ApiClient`, not here.
+///
+/// Every failed request (a `4xx`/`5xx` answer, a timeout, or a transport
+/// error) is recorded to [DiagnosticsRecorder] by endpoint template only
+/// (see `diagnosticEndpoint`).
 class BaseHttpClient {
-  BaseHttpClient({http.Client? httpClient, Duration? timeout})
-    : _client = RedirectPolicyClient(httpClient ?? http.Client()),
-      _timeout = timeout ?? ApiConstants.defaultRequestTimeout;
+  BaseHttpClient({
+    http.Client? httpClient,
+    Duration? timeout,
+    DiagnosticsRecorder? diagnostics,
+  }) : _client = RedirectPolicyClient(httpClient ?? http.Client()),
+       _timeout = timeout ?? ApiConstants.defaultRequestTimeout,
+       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
   final http.Client _client;
   final Duration _timeout;
+  final DiagnosticsRecorder _diagnostics;
 
   static const Map<String, String> _defaultHeaders = {
     ApiConstants.clientTypeHeader: ApiConstants.clientTypeValue,
@@ -82,10 +93,37 @@ class BaseHttpClient {
       default:
         throw AppException(AppErrorCode.unsupportedHttpMethod, details: method);
     }
-    return request.timeout(
-      _timeout,
-      onTimeout: () => throw const AppException(AppErrorCode.requestTimeout),
-    );
+    final stopwatch = Stopwatch()..start();
+    return request
+        .timeout(
+          _timeout,
+          onTimeout: () =>
+              throw const AppException(AppErrorCode.requestTimeout),
+        )
+        .then(
+          (response) {
+            if (response.statusCode >= 400) {
+              recordHttpFailure(
+                _diagnostics,
+                method: method,
+                url: url,
+                elapsed: stopwatch.elapsed,
+                status: response.statusCode,
+              );
+            }
+            return response;
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            recordHttpFailure(
+              _diagnostics,
+              method: method,
+              url: url,
+              elapsed: stopwatch.elapsed,
+              error: error,
+            );
+            return Future<http.Response>.error(error, stackTrace);
+          },
+        );
   }
 
   // ---------------------------------------------------------------------------

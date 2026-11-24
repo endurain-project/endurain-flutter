@@ -16,6 +16,7 @@ import 'package:endurain/core/network/api_client.dart';
 import 'package:endurain/core/network/connectivity_service.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
+import 'package:endurain/core/services/platform/device_info_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
@@ -120,6 +121,7 @@ class AppServices {
   UrlLauncherService get urlLauncher => _infra.urlLauncher;
   ShareService get share => _infra.share;
   PackageInfoService get packageInfo => _infra.packageInfo;
+  DeviceInfoService get deviceInfo => _infra.deviceInfo;
 
   // ── Auth ─────────────────────────────────────────────────────────────────
 
