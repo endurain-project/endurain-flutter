@@ -53,9 +53,11 @@ class WatchTransportChannelContract {
 
 /// [WatchTransportAdapter] backed by platform channels.
 ///
-/// Until the native Wear OS / watchOS transports ship, every call raises
+/// On iOS the native side is `ios/Runner/Watch/WatchTransportChannel.swift`,
+/// backed by WatchConnectivity. Where no native transport exists yet (Android
+/// until the Wear OS bridge ships), every call raises
 /// [MissingPluginException]; that is translated into the "unsupported" result
-/// so the seam is inert rather than error-producing on current builds.
+/// so the seam is inert rather than error-producing.
 class MethodChannelWatchTransport implements WatchTransportAdapter {
   MethodChannelWatchTransport({
     MethodChannel? methodChannel,

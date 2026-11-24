@@ -1,3 +1,4 @@
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
@@ -9,6 +10,8 @@ import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
+
+import '../../../helpers/recording_diagnostics.dart';
 
 // These tests verify the adapter contract using the
 // UnsupportedHealthPlatformAdapter and the HealthWorkoutType mapping logic.
@@ -272,6 +275,63 @@ void main() {
 
       expect(workouts.single.route, isEmpty);
       expect(adapter.routeConsentDeniedCount, 1);
+    });
+  });
+
+  group('HealthPackagePlatformAdapter companion watch workouts', () {
+    final start = DateTime.utc(2026, 7, 1, 9);
+    final end = DateTime.utc(2026, 7, 1, 10);
+
+    test('skips workouts saved by the Endurain watch app', () async {
+      final diagnostics = RecordingDiagnostics();
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [
+            _workoutPoint(
+              start: start,
+              end: end,
+              uuid: 'from-watch',
+              sourceId: 'com.endurain.endurain.watchkitapp',
+            ),
+            _workoutPoint(start: start, end: end, uuid: 'from-elsewhere'),
+          ],
+        },
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        diagnostics: diagnostics,
+        targetPlatform: () => TargetPlatform.iOS,
+      );
+
+      final workouts = await adapter.readWorkouts(start: start, end: end);
+
+      expect(workouts.map((w) => w.sourceId), ['from-elsewhere']);
+      expect(
+        diagnostics.single(DiagnosticsEvents.healthReadWorkouts),
+        containsPair('companion_watch_skipped', 1),
+      );
+    });
+
+    test('returns nothing when every workout came from the watch', () async {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [
+            _workoutPoint(
+              start: start,
+              end: end,
+              sourceId: 'com.endurain.endurain.watchkitapp',
+            ),
+          ],
+        },
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.iOS,
+      );
+
+      expect(await adapter.readWorkouts(start: start, end: end), isEmpty);
     });
   });
 
@@ -689,9 +749,11 @@ class _FakeHealth extends Health {
 HealthDataPoint _workoutPoint({
   required DateTime start,
   required DateTime end,
+  String uuid = 'workout-1',
+  String sourceId = 'source',
 }) {
   return HealthDataPoint(
-    uuid: 'workout-1',
+    uuid: uuid,
     value: WorkoutHealthValue(
       workoutActivityType: HealthWorkoutActivityType.RUNNING,
     ),
@@ -701,7 +763,7 @@ HealthDataPoint _workoutPoint({
     dateTo: end,
     sourcePlatform: HealthPlatformType.googleHealthConnect,
     sourceDeviceId: 'device',
-    sourceId: 'source',
+    sourceId: sourceId,
     sourceName: 'source',
   );
 }

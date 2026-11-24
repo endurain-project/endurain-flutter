@@ -10,6 +10,9 @@ import UIKit
   /// Strong reference for device-region settings queried by Flutter.
   private var deviceSettingsChannel: FlutterMethodChannel?
 
+  /// Strong reference so the companion watch transport keeps its handlers.
+  private var watchTransportChannel: WatchTransportChannel?
+
   /// Whether iOS relaunched the process to deliver a location event.
   ///
   /// Set before the Flutter engine finishes initializing, and consumed in
@@ -26,6 +29,9 @@ import UIKit
     // recording is active. Without this the process would start, do nothing,
     // and the remainder of the activity would be lost.
     launchedForLocationEvent = launchOptions?[.location] != nil
+    // Activated before the engine so sessions the watch queued while the app
+    // was closed land in the durable inbox as soon as they are delivered.
+    WatchConnectivityBridge.shared.activate()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -74,6 +80,13 @@ import UIKit
         }
       }
       deviceSettingsChannel = channel
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(
+      forPlugin: "EndurainWatchTransportChannel"
+    ) {
+      let channel = WatchTransportChannel()
+      channel.register(with: registrar.messenger())
+      watchTransportChannel = channel
     }
     if let registrar = engineBridge.pluginRegistry.registrar(
       forPlugin: "EndurainActivityRecorderChannel"

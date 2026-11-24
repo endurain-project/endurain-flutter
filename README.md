@@ -354,8 +354,10 @@ shared actions; pushes to `main` always run it. It takes about 15 minutes, so
 for quicker feedback while changing `ios/**`, build locally first:
 
 ```bash
-# Compiles the Swift sources and the Xcode project configuration
-flutter build ios --simulator --debug
+# Compiles the Swift sources, the embedded Apple Watch app and the Xcode
+# project configuration. Because of the watch app, a simulator build needs a
+# simulator id (see `flutter devices`).
+flutter build ios --simulator --debug -d <simulator-id>
 ```
 
 CI does not sign the app or run it on a device, so check device-only behaviour
@@ -409,6 +411,32 @@ flutter build ipa --release \
 Upload `build/ios/ipa/Endurain.ipa` with Transporter or Xcode Organizer. Before
 each upload, increment the Flutter build number in `pubspec.yaml`; App Store
 Connect requires a unique, increasing build number.
+
+### Apple Watch app
+
+The iOS app embeds a watchOS companion app (`ios/EndurainWatch`, SwiftUI,
+watchOS 10 or newer). It records outdoor runs, rides, walks and hikes with an
+`HKWorkoutSession`, saves each workout and its route to Health, and hands the
+finished session to the iPhone over WatchConnectivity. The iPhone keeps it in
+a durable inbox (`ios/Runner/Watch`) until Endurain has stored it as a local
+activity, which then uploads like any other; only then is the watch told to
+delete its copy. Code shared by both apps (the transfer protocol, the handoff
+envelope and the file stores) lives in `ios/Shared/Watch`.
+
+- The watch app's bundle identifier is `com.endurain.endurain.watchkitapp`,
+  with the HealthKit capability. Register it for the development team before
+  the first signed build or upload.
+- It takes its version and build number from `pubspec.yaml`, like the iPhone
+  app, so `flutter build ipa` ships both together.
+- To run it, open `ios/Runner.xcworkspace` in Xcode and run the
+  `EndurainWatch` scheme on a paired watch or a watchOS simulator paired with
+  an iPhone simulator.
+- Workouts without a GPS route (location denied, or no fix) stay queued on
+  both devices, because the server does not accept a GPX without track points
+  yet. Delivered workouts the phone never confirms are dropped from the watch
+  after 30 days; the phone keeps its copy.
+- Health Sync skips every workout the watch app saved to Health, so a watch
+  workout is never imported twice.
 
 ### Android
 

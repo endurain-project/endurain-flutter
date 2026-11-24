@@ -6,18 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [v0.12.0+22] - 2026-11-24
 
-This release prepares the app for companion watch apps on Apple Watch and Wear OS. The watch apps themselves are not part of it yet, so without one nothing changes for users: the app checks for a watch bridge, finds none, and does nothing further.
+This release adds an Apple Watch app. Wear OS support is planned. On Android the app checks for a watch bridge, finds none, and does nothing further.
 
 ### Added
 
-- Phone-side support for companion watch apps. A native watch app can hand finished workouts to the phone over a new platform channel (`endurain/watch_transport`), and the app stores them as local activities and uploads them through the existing upload queue, like a workout recorded on the phone.
+- An Apple Watch app (watchOS 10 or newer), installed with the iPhone app. It records outdoor runs, rides, walks and hikes with GPS, heart rate and distance, and saves each workout and its route to Health. Pausing starts a new track segment.
+  - The finished workout is sent to the iPhone in the background, even if the phone is out of range when the workout ends. Endurain stores it as a local activity and uploads it like a workout recorded on the phone.
+  - A workout interrupted by a crash or a forced quit is resumed when the app relaunches. If watchOS ended it, the app finishes and sends what was recorded instead.
+  - The watch app is English-only for now.
+- Phone-side support for companion watch apps. A watch app hands finished workouts to the phone over a platform channel (`endurain/watch_transport`). On iPhone it is served by a WatchConnectivity bridge, which keeps each received workout in a durable inbox until it has been stored.
 - A watch session is confirmed back to the watch only once the phone has stored it. These sessions stay queued on the watch instead:
   - sessions that are not finished yet;
   - sessions whose points this app version cannot read;
-  - workouts with a duration but no GPS route, such as indoor sessions. The server does not accept a GPX without track points yet.
+  - workouts with a duration but no GPS route, such as one recorded with location turned off. The server does not accept a GPX without track points yet.
+  - A workout the phone received but never confirmed is dropped from the watch after 30 days. The phone keeps its own copy.
 - Duplicate protection for watch workouts:
   - The app remembers the last 1,000 sessions it received. A session the watch sends again is not uploaded twice, even if its local copy was deleted.
-  - Health Sync no longer offers or imports a HealthKit or Health Connect workout that a watch session already covers.
+  - Health Sync never offers or imports a workout the Endurain watch app saved to Health, even when it reaches Health before the watch's own transfer arrives. It also skips any HealthKit or Health Connect workout that a received watch session already covers.
 - Watch sync runs when the app starts, when it returns to the foreground, and when the watch signals new sessions. Only one sync runs at a time, with one extra pass for sessions that arrive during a sync.
 - Local diagnostics breadcrumbs for watch syncs that have pending sessions, and for sessions left on the watch. Builds without a watch record none.
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -97,6 +98,50 @@ void main() {
     // Two segments: the point in segment 1 must not be joined to segment 0.
     expect('<trkseg>'.allMatches(gpx), hasLength(2));
     expect(gpx, contains('<gpxtpx:hr>120</gpxtpx:hr>'));
+  });
+
+  test('ingests the envelope the Apple Watch app sends', () async {
+    // Byte-for-byte what ios/Shared/Watch/WatchHandoffBuilder.swift writes
+    // (key order aside); WatchHandoffBuilderTests checks the Swift side of
+    // the same shape. Change both together.
+    const fromWatch = '''
+{"version":1,"source":"appleWatch","healthWorkoutId":"6F1C2B9E-2D4A-4C3B-9E1F-0A7B5C3D2E10",
+ "session":{"schemaVersion":3,"localSessionId":"0B8E6C1A-5F2D-4E7B-8A9C-3D1E2F4A5B6C",
+  "activityType":"ride","status":"completed","startedAt":"2027-01-15T08:00:00.000Z",
+  "endedAt":"2027-01-15T08:01:30.000Z","elapsedDurationSeconds":60,
+  "currentSegmentIndex":1,"autoPauseEnabled":false,"autoPauseDelaySeconds":5,
+  "pausedAutomatically":false},
+ "points":[
+  {"t":"2027-01-15T08:00:10.000Z","lat":38.7,"lon":-9.1,"seg":0,"ele":12.5,
+   "hAcc":4,"vAcc":3,"head":90,"spd":3.2,"spdAcc":0.5,"hr":151},
+  {"t":"2027-01-15T08:01:10.000Z","lat":38.701,"lon":-9.1,"seg":1,"hAcc":5}
+ ]}
+''';
+    final handoff = WatchSessionHandoff.fromJson(
+      jsonDecode(fromWatch) as Map<String, dynamic>,
+    );
+
+    final result = await service.ingest(handoff);
+
+    expect(result.outcome, WatchIngestionOutcome.ingested);
+    expect(handoff.droppedPointCount, 0);
+    expect(
+      result.localActivityId,
+      'watch_appleWatch_0B8E6C1A-5F2D-4E7B-8A9C-3D1E2F4A5B6C',
+    );
+    final stored = await repository.get(result.localActivityId!);
+    expect(stored!.activityType, ActivityType.ride);
+    expect(stored.elapsedDurationSeconds, 60);
+    expect(stored.pointCount, 2);
+    expect(
+      await ledger.containsHealthWorkout(
+        '6F1C2B9E-2D4A-4C3B-9E1F-0A7B5C3D2E10',
+      ),
+      isTrue,
+    );
+    final gpx = await repository.readGpxContents(stored);
+    expect('<trkseg>'.allMatches(gpx), hasLength(2));
+    expect(gpx, contains('<gpxtpx:hr>151</gpxtpx:hr>'));
   });
 
   test('derives a deterministic id from the source and session id', () {

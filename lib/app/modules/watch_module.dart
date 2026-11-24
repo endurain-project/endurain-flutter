@@ -48,8 +48,9 @@ class WatchModule {
 
   /// Builds the watch transport for the current platform.
   ///
-  /// Android and iOS use the platform-channel transport, which degrades to
-  /// "unsupported" while the native Wear OS / watchOS bridges are not present.
+  /// Android and iOS use the platform-channel transport. iOS serves it from
+  /// the WatchConnectivity bridge; on Android it degrades to "unsupported"
+  /// until the native Wear OS bridge is present.
   /// Every other target (desktop, web) gets the inert fallback.
   ///
   /// `flutter test` reports [TargetPlatform.android] by default, so tests get
