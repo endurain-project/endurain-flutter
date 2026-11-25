@@ -4,24 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
-
-- An optional countdown before a recording starts, to put the phone away or get into the saddle first ([#47](https://github.com/endurain-project/endurain-flutter/issues/47)). Turn it on under Settings → Start countdown and pick 3, 5, 10, 15 or 30 seconds. It is off by default.
-  - The countdown screen shows the seconds left, with buttons to start now, add 10 seconds or cancel.
-  - The last three seconds are spoken, followed by "Recording started" once recording begins. The voice can be turned off, and it uses the language and ducking settings of audio announcements.
-  - Location updates run during the countdown and are thrown away, so GPS has a fix for the first point. They also keep the app running in the background, so the countdown does not stall:
-    - On iPhone, this covers a locked screen.
-    - On Android, it runs in the recorder's foreground service, which also covers switching to another app. The recording then starts inside that same service, so it starts on time even with another app in front.
-  - Location permission is settled before the countdown starts, so a permission prompt never appears after the phone is put away.
-- A start countdown on the Apple Watch and Wear OS apps, set on the watch itself: Off, 3, 5 or 10 seconds. It is off by default.
-  - The watch taps the wrist for the last three seconds and once more when recording starts. The countdown screen has Start now and Cancel buttons.
-  - The workout session is prepared during the countdown (`HKWorkoutSession.prepare()` on Apple Watch, `prepareExerciseAsync` on Wear OS). This keeps the app running with the wrist lowered and warms up GPS and heart rate. Nothing is recorded or saved until the countdown ends, and cancelling leaves nothing behind.
-
 ## [v0.12.0+22] - 2026-11-24
 
-This release adds watch apps for Apple Watch and Wear OS. Each records outdoor workouts on the watch and hands them to Endurain on the phone, which uploads them like any other activity.
+This release adds watch apps for Apple Watch and Wear OS. Each records outdoor workouts on the watch and hands them to Endurain on the phone, which uploads them like any other activity. It also adds an optional countdown before a recording starts, on the phone and on both watches.
 
 ### Added
 
@@ -44,6 +29,16 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
   - Health Sync never offers or imports a workout the Endurain watch app saved to Health, even when it reaches Health before the watch's own transfer arrives. It also skips any HealthKit or Health Connect workout that a received watch session already covers.
 - Watch sync runs when the app starts, when it returns to the foreground, and when the watch signals new sessions. Only one sync runs at a time, with one extra pass for sessions that arrive during a sync.
 - Local diagnostics breadcrumbs for watch syncs that have pending sessions, and for sessions left on the watch. Builds without a watch record none.
+- An optional countdown before a recording starts, to put the phone away or get into the saddle first ([#47](https://github.com/endurain-project/endurain-flutter/issues/47)). Turn it on under Settings → Start countdown and pick 3, 5, 10, 15 or 30 seconds. It is off by default.
+  - The countdown screen shows the seconds left, with buttons to start now, add 10 seconds or cancel.
+  - The last three seconds are spoken, followed by "Recording started" once recording begins. The voice can be turned off, and it uses the language and ducking settings of audio announcements.
+  - Location updates run during the countdown and are thrown away, so GPS has a fix for the first point. They also keep the app running in the background, so the countdown does not stall:
+    - On iPhone, this covers a locked screen.
+    - On Android, it runs in the recorder's foreground service, which also covers switching to another app. The recording then starts inside that same service, so it starts on time even with another app in front.
+  - Location permission is settled before the countdown starts, so a permission prompt never appears after the phone is put away.
+- A start countdown on the Apple Watch and Wear OS apps, set on the watch itself: Off, 3, 5 or 10 seconds. It is off by default.
+  - The watch taps the wrist for the last three seconds and once more when recording starts. The countdown screen has Start now and Cancel buttons.
+  - The workout session is prepared during the countdown (`HKWorkoutSession.prepare()` on Apple Watch, `prepareExerciseAsync` on Wear OS). This keeps the app running with the wrist lowered and warms up GPS and heart rate. Nothing is recorded or saved until the countdown ends, and cancelling leaves nothing behind.
 
 ### Fixed
 
