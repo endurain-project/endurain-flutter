@@ -7,12 +7,17 @@ import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
+import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
+import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
+import 'package:endurain/features/activity/services/start_countdown.dart';
+import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
+import 'package:endurain/features/activity/widgets/start_countdown_dialog.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -34,6 +39,9 @@ class MapScreen extends StatefulWidget {
     this.sensorControllers,
     this.locationService,
     this.mapSettings,
+    this.startCountdownSettings,
+    this.startCountdownPlatform,
+    this.countdownClock,
   });
 
   final MapStateController? controller;
@@ -41,6 +49,13 @@ class MapScreen extends StatefulWidget {
   final Map<SensorMeasurementKind, MapSensorController>? sensorControllers;
   final LocationService? locationService;
   final MapSettingsRepository? mapSettings;
+
+  /// Test overrides for the start countdown; otherwise from [AppScope].
+  final StartCountdownSettingsRepository? startCountdownSettings;
+  final StartCountdownPlatformAdapter? startCountdownPlatform;
+
+  /// Clock for the start countdown (tests pass the fake test clock).
+  final DateTime Function()? countdownClock;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -58,7 +73,10 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   LatLng? _lastFollowedLocation;
   bool _centeredInitialLocation = false;
   bool _isStopConfirmationOpen = false;
-  bool _isBackgroundPermissionFlowOpen = false;
+
+  /// Set for the whole start flow (permission dialogs, countdown, start), from
+  /// before its first await, so a second tap cannot start a second flow.
+  bool _isStartFlowRunning = false;
 
   @override
   void initState() {
@@ -198,10 +216,18 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   }
 
   Future<void> _startActivity(ActivityType type) async {
-    if (_isBackgroundPermissionFlowOpen) {
+    if (_isStartFlowRunning) {
       return;
     }
+    _isStartFlowRunning = true;
+    try {
+      await _runStartFlow(type);
+    } finally {
+      _isStartFlowRunning = false;
+    }
+  }
 
+  Future<void> _runStartFlow(ActivityType type) async {
     final l10n = AppLocalizations.of(context)!;
     final backgroundTrackingReady = await _activityController
         .isBackgroundTrackingReady();
@@ -210,14 +236,12 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     }
 
     if (!backgroundTrackingReady) {
-      _isBackgroundPermissionFlowOpen = true;
       final shouldContinue = await DialogUtils.showConfirmDialog(
         context,
         title: l10n.activityBackgroundPermissionTitle,
         message: l10n.activityBackgroundPermissionMessage,
         confirmText: l10n.activityBackgroundPermissionContinue,
       );
-      _isBackgroundPermissionFlowOpen = false;
       if (!mounted || !shouldContinue) {
         return;
       }
@@ -228,14 +252,12 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
         return;
       }
       if (!permissionReady) {
-        _isBackgroundPermissionFlowOpen = true;
         final openSettings = await DialogUtils.showConfirmDialog(
           context,
           title: l10n.activityBackgroundPermissionSettingsTitle,
           message: l10n.activityBackgroundPermissionSettingsMessage,
           confirmText: l10n.activityOpenSettings,
         );
-        _isBackgroundPermissionFlowOpen = false;
         if (mounted && openSettings) {
           await _activityController.openLocationSettings();
         }
@@ -243,19 +265,114 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
       }
     }
 
-    _activityController.configureAudioAnnouncements(
-      AudioAnnouncementConfig.build(
-        l10n: l10n,
-        settings: AppScope.servicesOf(
-          context,
-          listen: false,
-        ).audioAnnouncementSettingsController.settings,
-        activityType: type,
-        measurementSystem: context.measurementSystem,
-        languageTag: context.numberFormatLocale,
-      ),
+    final services = AppScope.servicesOf(context, listen: false);
+    final announcements = AudioAnnouncementConfig.build(
+      l10n: l10n,
+      settings: services.audioAnnouncementSettingsController.settings,
+      activityType: type,
+      measurementSystem: context.measurementSystem,
+      languageTag: context.numberFormatLocale,
     );
-    await _activityController.start(type);
+    final countdown =
+        await (widget.startCountdownSettings ??
+                services.activityStartCountdownSettings)
+            .getConfig();
+    if (!mounted) {
+      return;
+    }
+
+    final countdownPlatform =
+        widget.startCountdownPlatform ??
+        services.activityStartCountdownPlatform;
+    var countedDown = false;
+    if (countdown.enabled) {
+      final outcome = await _runStartCountdown(
+        type: type,
+        config: countdown,
+        announcements: announcements,
+        platform: countdownPlatform,
+      );
+      if (outcome == null) {
+        // Skipped: location is not ready, so start right away and let the
+        // recording report the problem as usual.
+      } else if (outcome == StartCountdownOutcome.cancel || !mounted) {
+        await _safely(countdownPlatform.endWarmUp);
+        return;
+      } else {
+        countedDown = true;
+      }
+    }
+
+    _activityController.configureAudioAnnouncements(announcements);
+    try {
+      await _activityController.start(type);
+    } finally {
+      // Ended only after the recorder has started, so the app stays awake
+      // (and GPS warm) right up to the first point. On Android the recording
+      // has taken over the warm-up's service by now, so this leaves it alone.
+      if (countedDown) {
+        await _safely(countdownPlatform.endWarmUp);
+      }
+    }
+    if (countedDown &&
+        countdown.voiceEnabled &&
+        _activityController.state.status == ActivityRecordingStatus.recording) {
+      await _safely(
+        () => countdownPlatform.speakCue(
+          l10n.audioAnnouncementsRecordingStarted,
+          duckOtherAudio: announcements.duckOtherAudio,
+          languageTag: announcements.languageTag,
+        ),
+      );
+    }
+  }
+
+  /// Shows the start countdown. Returns null when it was skipped because
+  /// location is not ready, otherwise how it ended.
+  Future<StartCountdownOutcome?> _runStartCountdown({
+    required ActivityType type,
+    required StartCountdownConfig config,
+    required AudioAnnouncementConfig announcements,
+    required StartCountdownPlatformAdapter platform,
+  }) async {
+    // Settle any location prompt now, while the phone is still in hand.
+    final locationReady = await _activityController.isLocationReady();
+    if (!mounted) {
+      // The user left the screen: do not start anything.
+      return StartCountdownOutcome.cancel;
+    }
+    if (!locationReady) {
+      return null;
+    }
+    await _safely(platform.beginWarmUp);
+    if (!mounted) {
+      return StartCountdownOutcome.cancel;
+    }
+    return showStartCountdownDialog(
+      context,
+      seconds: config.seconds,
+      activityType: type,
+      now: widget.countdownClock,
+      onCue: config.voiceEnabled
+          ? (secondsLeft) => unawaited(
+              _safely(
+                () => platform.speakCue(
+                  '$secondsLeft',
+                  duckOtherAudio: announcements.duckOtherAudio,
+                  languageTag: announcements.languageTag,
+                ),
+              ),
+            )
+          : null,
+    );
+  }
+
+  /// Runs a best-effort native countdown call: a missing speech engine or
+  /// warm-up must never block starting a recording.
+  Future<void> _safely(Future<void> Function() call) async {
+    try {
+      await call();
+    } catch (_) {}
   }
 
   Future<void> _deleteCompletedActivity() async {

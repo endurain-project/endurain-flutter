@@ -756,6 +756,76 @@
   "activityAutoPauseDelayHelperText": "Escolha quanto tempo sem movimento esperar antes de pausar.",
   "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
   "activityAutoPausedIndicator": "Em pausa automática",
+  "startCountdownSettingsTitle": "Contagem decrescente",
+  "@startCountdownSettingsTitle": {
+    "description": "Título do ecrã de definições da contagem decrescente e etiqueta de navegação nas definições - Usado em: start_countdown_settings_screen.dart, settings_screen.dart"
+  },
+  "startCountdownSettingsSubtitle": "Contagem decrescente antes de começar a gravar",
+  "@startCountdownSettingsSubtitle": {
+    "description": "Subtítulo nas definições para a navegação da contagem decrescente - Usado em: settings_screen.dart"
+  },
+  "startCountdownToggleLabel": "Contagem antes de começar",
+  "@startCountdownToggleLabel": {
+    "description": "Etiqueta do interruptor da contagem decrescente - Usado em: start_countdown_settings_screen.dart"
+  },
+  "startCountdownToggleDescription": "Dá-lhe tempo para guardar o telemóvel antes de a gravação começar.",
+  "@startCountdownToggleDescription": {
+    "description": "Subtítulo do interruptor da contagem decrescente que explica o comportamento - Usado em: start_countdown_settings_screen.dart"
+  },
+  "startCountdownDurationHelperText": "Escolha quanto tempo dura a contagem decrescente.",
+  "@startCountdownDurationHelperText": {
+    "description": "Texto de ajuda acima das opções de duração da contagem - Usado em: start_countdown_settings_screen.dart"
+  },
+  "startCountdownDurationOptionLabel": "{seconds} segundos",
+  "@startCountdownDurationOptionLabel": {
+    "description": "Etiqueta da opção de duração da contagem - Usado em: start_countdown_settings_screen.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "startCountdownVoiceLabel": "Dizer a contagem em voz alta",
+  "@startCountdownVoiceLabel": {
+    "description": "Etiqueta do interruptor para dizer a contagem em voz alta - Usado em: start_countdown_settings_screen.dart"
+  },
+  "startCountdownVoiceDescription": "Lê em voz alta os últimos segundos e avisa quando a gravação começou.",
+  "@startCountdownVoiceDescription": {
+    "description": "Subtítulo do interruptor da contagem falada - Usado em: start_countdown_settings_screen.dart"
+  },
+  "activityStartCountdownTitle": "A gravação começa em",
+  "@activityStartCountdownTitle": {
+    "description": "Texto acima do número grande da contagem mostrado antes de a gravação começar - Usado em: start_countdown_dialog.dart"
+  },
+  "activityStartCountdownRemaining": "Segundos restantes: {seconds}",
+  "@activityStartCountdownRemaining": {
+    "description": "Etiqueta do leitor de ecrã para o número da contagem - Usado em: start_countdown_dialog.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "activityStartCountdownStartNow": "Começar já",
+  "@activityStartCountdownStartNow": {
+    "description": "Botão que salta o resto da contagem e começa a gravar - Usado em: start_countdown_dialog.dart"
+  },
+  "activityStartCountdownAddSeconds": "+{seconds} s",
+  "@activityStartCountdownAddSeconds": {
+    "description": "Botão que acrescenta tempo à contagem - Usado em: start_countdown_dialog.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "audioAnnouncementsRecordingStarted": "Gravação iniciada",
+  "@audioAnnouncementsRecordingStarted": {
+    "description": "Aviso falado quando a gravação começa após a contagem - Usado em: map_screen.dart"
+  },
   "audioAnnouncementsAutoPaused": "Gravação em pausa",
   "audioAnnouncementsAutoResumed": "Gravação retomada",
   "activityHistoryEmpty": "Não há atividades concluídas guardadas neste dispositivo.",

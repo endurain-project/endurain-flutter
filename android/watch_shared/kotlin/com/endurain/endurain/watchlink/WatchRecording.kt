@@ -180,6 +180,9 @@ class WatchRecordingStore(val directory: File) {
         pointsFile.appendText(lines)
     }
 
+    /** Whether an unfinished recording is on disk, without reading its points. */
+    fun hasRecording(): Boolean = recordingFile.isFile
+
     /** The unfinished recording and its points, or null when there is none. */
     fun load(): Pair<WatchRecording, List<WatchRecordedPoint>>? {
         val recording =

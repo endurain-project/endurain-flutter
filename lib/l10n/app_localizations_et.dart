@@ -639,6 +639,55 @@ class AppLocalizationsEt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaatselt peatatud';
 
   @override
+  String get startCountdownSettingsTitle => 'Alguse loendus';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Loenda enne salvestamise algust';
+
+  @override
+  String get startCountdownToggleLabel => 'Loenda enne alustamist';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Annab aega telefon ära panna enne, kui salvestamine algab.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Vali, kui kaua loendus kestab.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sekundit';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Loe loendus ette';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Loeb viimased sekundid ette ja teatab, kui salvestamine on alanud.';
+
+  @override
+  String get activityStartCountdownTitle => 'Salvestamise alguseni';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Sekundeid jäänud: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Alusta kohe';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Salvestamine alustatud';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Salvestamine peatatud';
 
   @override

@@ -16,6 +16,7 @@ final class ActivityRecorderChannel:
     @preconcurrency FlutterStreamHandler {
     private let store: ActiveActivityStore
     private let recorder: CoreLocationActivityRecorder
+    private let startWarmUp = StartCountdownWarmUp()
 
     private var methodChannel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
@@ -96,6 +97,14 @@ final class ActivityRecorderChannel:
             handleRecover(result: result)
         case ActivityRecorderChannel.methodSpeakPreview:
             handleSpeakPreview(call, result: result)
+        case ActivityRecorderChannel.methodSpeakCue:
+            handleSpeakCue(call, result: result)
+        case ActivityRecorderChannel.methodBeginStartWarmUp:
+            startWarmUp.begin()
+            result(nil)
+        case ActivityRecorderChannel.methodEndStartWarmUp:
+            startWarmUp.end()
+            result(nil)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -409,6 +418,36 @@ final class ActivityRecorderChannel:
         result(nil)
     }
 
+    /// Speaks one short start-countdown cue. Like the preview, it never
+    /// touches the durable store.
+    private func handleSpeakCue(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? [String: Any]
+        if !isSupportedVersion(arguments) {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorVersion,
+                message: "Unsupported payload version",
+                details: nil
+            ))
+            return
+        }
+        guard
+            let text = arguments?["text"] as? String,
+            !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            let languageTag = arguments?["languageTag"] as? String,
+            !languageTag.isEmpty
+        else {
+            result(FlutterError(
+                code: ActivityRecorderChannel.errorArgs,
+                message: "Missing text or languageTag",
+                details: nil
+            ))
+            return
+        }
+        let duck = arguments?["duckOtherAudio"] as? Bool ?? true
+        AudioAnnouncer.shared.speak(text, duck: duck, languageTag: languageTag)
+        result(nil)
+    }
+
     static let payloadVersion = 2
 
     static let methodChannelName = "endurain/activity_recorder/methods"
@@ -424,6 +463,9 @@ final class ActivityRecorderChannel:
     static let methodDrainSensorSamples = "drainSensorSamples"
     static let methodRecover = "recover"
     static let methodSpeakPreview = "speakAnnouncementPreview"
+    static let methodSpeakCue = "speakCue"
+    static let methodBeginStartWarmUp = "beginStartWarmUp"
+    static let methodEndStartWarmUp = "endStartWarmUp"
 
     static let errorArgs = "invalid_arguments"
     static let errorState = "invalid_state"

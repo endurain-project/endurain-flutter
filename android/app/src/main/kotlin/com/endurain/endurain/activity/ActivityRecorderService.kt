@@ -39,6 +39,13 @@ class ActivityRecorderService : Service() {
     private var locationManager: LocationManager? = null
     private var locationListener: LocationListener? = null
     private var collectingSessionId: String? = null
+
+    /**
+     * Location listener of the start-countdown warm-up; its fixes are dropped.
+     * Non-null while the service only keeps the app alive for a countdown.
+     */
+    private var warmUpListener: LocationListener? = null
+    private var isWarmingUp = false
     private var nextPointOffset = 0
 
     private var lastPointEpochMillis: Long? = null
@@ -69,6 +76,7 @@ class ActivityRecorderService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> handleStart(intent)
+            ACTION_WARM_UP -> handleWarmUp()
             ACTION_RESUME -> handleResume()
             ACTION_PAUSE -> handlePause()
             ACTION_STOP -> handleStop()
@@ -79,9 +87,15 @@ class ActivityRecorderService : Service() {
     }
 
     private fun handleStart(intent: Intent) {
+        startRecording(intent.getStringExtra(EXTRA_TITLE), intent.getStringExtra(EXTRA_TEXT))
+    }
+
+    private fun startRecording(requestedTitle: String?, requestedText: String?) {
+        stopWarmUpLocationUpdates()
+        isWarmingUp = false
         announcementStateCache.reset()
-        val title = intent.getStringExtra(EXTRA_TITLE) ?: defaultTitle()
-        val text = intent.getStringExtra(EXTRA_TEXT) ?: defaultText()
+        val title = requestedTitle ?: defaultTitle()
+        val text = requestedText ?: defaultText()
         activeNotificationTitle = title
         activeNotificationText = text
         resumedFromPause = false
@@ -98,6 +112,100 @@ class ActivityRecorderService : Service() {
         }
         beginCollection()
         startSensorCapture()
+    }
+
+    /**
+     * Keeps the app alive during the start countdown.
+     *
+     * On newer Android versions an app the user switched away from can be
+     * frozen within seconds, which would stall the countdown. A foreground
+     * service prevents that. It is started while the app is still in the
+     * foreground, so it gets location access now; when the countdown ends the
+     * recording starts inside this same service (see [start]) instead of
+     * starting a new one from the background, which Android would refuse or
+     * grant without location. GPS runs meanwhile, so the first point is
+     * accurate, but every fix is dropped and nothing is stored.
+     */
+    private fun handleWarmUp() {
+        if (collectingSessionId != null || store.loadSession()?.isActive == true) {
+            // A recording already owns this service.
+            return
+        }
+        if (!hasAnyLocationPermission()) {
+            stopSelf()
+            return
+        }
+        try {
+            // Declares `connectedDevice` whenever it is permitted, before the
+            // session says whether a sensor is bound: the recording that starts
+            // from this service may then keep or drop the type, but never has
+            // to add one while the app is in the background.
+            startForegroundCompat(
+                defaultTitle(),
+                getString(R.string.activity_recording_notification_starting),
+                connectedDevice = hasPermission(Manifest.permission.BLUETOOTH_CONNECT) ||
+                    hasPermission(Manifest.permission.BLUETOOTH_SCAN),
+            )
+        } catch (_: RuntimeException) {
+            stopSelf()
+            return
+        }
+        isWarmingUp = true
+        startWarmUpLocationUpdates()
+    }
+
+    /** Ends the warm-up when no recording started from it. */
+    private fun finishWarmUp() {
+        if (!isWarmingUp) {
+            return
+        }
+        isWarmingUp = false
+        stopWarmUpLocationUpdates()
+        stopForegroundCompat()
+        stopSelf()
+    }
+
+    private fun startWarmUpLocationUpdates() {
+        val manager = locationManager ?: return
+        val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+        val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+        val listener = object : LocationListener {
+            // Dropped on purpose: nothing is recorded before the countdown ends.
+            override fun onLocationChanged(location: Location) {}
+
+            override fun onProviderEnabled(provider: String) {}
+
+            override fun onProviderDisabled(provider: String) {}
+
+            @Deprecated("Deprecated in Android API 29")
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+        }
+        for (provider in selectProviders(manager, hasFine, hasCoarse)) {
+            try {
+                manager.requestLocationUpdates(
+                    provider,
+                    MIN_UPDATE_INTERVAL_MS,
+                    0f,
+                    listener,
+                    Looper.getMainLooper(),
+                )
+                warmUpListener = listener
+            } catch (_: SecurityException) {
+                // The foreground service alone still keeps the countdown alive.
+            } catch (_: IllegalArgumentException) {
+                // Provider disappeared between discovery and subscription.
+            }
+        }
+    }
+
+    private fun stopWarmUpLocationUpdates() {
+        val listener = warmUpListener ?: return
+        warmUpListener = null
+        try {
+            locationManager?.removeUpdates(listener)
+        } catch (_: Exception) {
+            // Best effort; nothing to recover here.
+        }
     }
 
     private fun handleResume() {
@@ -861,13 +969,17 @@ class ActivityRecorderService : Service() {
             hasPermission(Manifest.permission.BLUETOOTH_SCAN)
     }
 
-    private fun startForegroundCompat(title: String, text: String) {
+    private fun startForegroundCompat(
+        title: String,
+        text: String,
+        connectedDevice: Boolean = canDeclareConnectedDeviceType(store.loadSession()),
+    ) {
         val notification = buildNotification(title, text)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // `location` is always required; `connectedDevice` is added only
             // when it is both needed and permitted (see the doc above).
             var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
-            if (canDeclareConnectedDeviceType(store.loadSession())) {
+            if (connectedDevice) {
                 types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
             }
             startForeground(NOTIFICATION_ID, notification, types)
@@ -961,6 +1073,8 @@ class ActivityRecorderService : Service() {
             flushAnnouncementState()
         }
         stopCollection()
+        stopWarmUpLocationUpdates()
+        isWarmingUp = false
         stopSensorCapture()
         releaseWakeLock()
         if (activeInstance === this) {
@@ -978,6 +1092,7 @@ class ActivityRecorderService : Service() {
         const val ACTION_PAUSE = "com.endurain.endurain.activity.action.PAUSE"
         const val ACTION_RESUME = "com.endurain.endurain.activity.action.RESUME"
         const val ACTION_STOP = "com.endurain.endurain.activity.action.STOP"
+        const val ACTION_WARM_UP = "com.endurain.endurain.activity.action.WARM_UP"
         private const val ACTION_RECONNECT = "com.endurain.endurain.activity.action.RECONNECT"
 
         const val EXTRA_TITLE = "title"
@@ -1047,10 +1162,29 @@ class ActivityRecorderService : Service() {
         }
 
         fun start(context: Context, title: String?, text: String?) {
+            val warm = activeInstance
+            if (warm != null && warm.isWarmingUp) {
+                // The countdown's service is already in the foreground with
+                // location access: start recording in it, even if the app is
+                // in the background by now. Posted so the channel reports the
+                // start before the first point, as with a normal start.
+                Handler(Looper.getMainLooper()).post { warm.startRecording(title, text) }
+                return
+            }
             val intent = baseIntent(context, ACTION_START)
             title?.let { intent.putExtra(EXTRA_TITLE, it) }
             text?.let { intent.putExtra(EXTRA_TEXT, it) }
             ContextCompat.startForegroundService(context, intent)
+        }
+
+        /** Starts the start-countdown warm-up; see [handleWarmUp]. */
+        fun beginWarmUp(context: Context) {
+            ContextCompat.startForegroundService(context, baseIntent(context, ACTION_WARM_UP))
+        }
+
+        /** Ends the warm-up, unless a recording started from it. */
+        fun endWarmUp() {
+            activeInstance?.finishWarmUp()
         }
 
         fun pause(context: Context) {

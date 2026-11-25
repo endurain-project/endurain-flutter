@@ -81,6 +81,88 @@ class ActivityRecorderServiceTest {
         shadowOf(Looper.getMainLooper()).idle()
     }
 
+    private fun warmUp(controller: ServiceController<ActivityRecorderService>) {
+        controller.get().onStartCommand(Intent(application, ActivityRecorderService::class.java).apply {
+            action = ActivityRecorderService.ACTION_WARM_UP
+        }, 0, 1)
+    }
+
+    @Test
+    fun warmUpRunsInTheForegroundAndDropsEveryFix() {
+        val controller = service()
+        warmUp(controller)
+
+        assertNotNull(shadowOf(controller.get()).lastForegroundNotification)
+        fix(41.1)
+
+        assertNull(store.loadSession())
+        assertEquals(0, store.pointCount())
+        assertFalse(shadowOf(controller.get()).isStoppedBySelf)
+    }
+
+    @Test
+    fun recordingStartsInsideTheWarmUpServiceWithoutStartingAnotherOne() {
+        val controller = service()
+        warmUp(controller)
+        fix(41.0)
+
+        store.saveSession(session())
+        ActivityRecorderService.start(application, null, null)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // No new service start: Android would refuse it, or grant it no
+        // location, if the user had switched apps by now.
+        assertNull(shadowOf(application).nextStartedService)
+        fix(41.1)
+        assertEquals(1, store.pointCount())
+
+        // Ending the warm-up afterwards leaves the recording running.
+        ActivityRecorderService.endWarmUp()
+        assertFalse(shadowOf(controller.get()).isStoppedBySelf)
+        fix(41.2, System.currentTimeMillis() + 1_000)
+        assertEquals(2, store.pointCount())
+    }
+
+    @Test
+    fun endingTheWarmUpWithoutARecordingStopsTheService() {
+        val controller = service()
+        warmUp(controller)
+
+        ActivityRecorderService.endWarmUp()
+
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+        assertTrue(shadowOf(controller.get()).isForegroundStopped)
+        assertNull(store.loadSession())
+    }
+
+    @Test
+    fun warmUpIsIgnoredWhileARecordingOwnsTheService() {
+        store.saveSession(session())
+        val controller = service()
+        controller.get().onStartCommand(Intent(application, ActivityRecorderService::class.java).apply {
+            action = ActivityRecorderService.ACTION_START
+        }, 0, 1)
+
+        warmUp(controller)
+        ActivityRecorderService.endWarmUp()
+        fix(41.1)
+
+        assertFalse(shadowOf(controller.get()).isStoppedBySelf)
+        assertEquals(1, store.pointCount())
+    }
+
+    @Test
+    fun startWithoutAWarmUpStartsTheServiceAsBefore() {
+        store.saveSession(session())
+
+        ActivityRecorderService.start(application, null, null)
+
+        assertEquals(
+            ActivityRecorderService.ACTION_START,
+            shadowOf(application).nextStartedService?.action,
+        )
+    }
+
     @Test
     fun liveRecoveryAndTaskRemovalKeepTheSameRecordingRunning() {
         val original = session()

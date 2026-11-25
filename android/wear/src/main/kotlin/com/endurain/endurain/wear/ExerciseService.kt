@@ -19,13 +19,29 @@ import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.Status
 
 /**
- * Foreground service that keeps the process alive while a workout records,
- * and shows it as an ongoing activity on the watch face.
+ * Foreground service that keeps the process alive while a workout records (or
+ * counts down to its start), and shows it as an ongoing activity on the watch
+ * face.
  */
 class ExerciseService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent == null && !(application as EndurainWearApplication).recorder.hasSavedRecording()) {
+            // Restarted after the process died, with no workout on disk: it was
+            // a countdown, which only lived in memory. Nothing is recording, so
+            // show nothing instead of "Recording a workout".
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        val title =
+            getString(
+                if (intent?.getBooleanExtra(EXTRA_COUNTING_DOWN, false) == true) {
+                    R.string.notification_starting
+                } else {
+                    R.string.notification_recording
+                },
+            )
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW),
@@ -40,7 +56,7 @@ class ExerciseService : Service() {
         val notification =
             NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_workout)
-                .setContentTitle(getString(R.string.notification_recording))
+                .setContentTitle(title)
                 .setCategory(NotificationCompat.CATEGORY_WORKOUT)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
@@ -48,7 +64,7 @@ class ExerciseService : Service() {
         OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notification)
             .setStaticIcon(R.drawable.ic_workout)
             .setTouchIntent(openApp)
-            .setStatus(Status.Builder().addTemplate(getString(R.string.notification_recording)).build())
+            .setStatus(Status.Builder().addTemplate(title).build())
             .build()
             .apply(applicationContext)
 
@@ -85,9 +101,14 @@ class ExerciseService : Service() {
         private const val TAG = "EndurainWear"
         private const val CHANNEL_ID = "workout"
         private const val NOTIFICATION_ID = 1
+        private const val EXTRA_COUNTING_DOWN = "countingDown"
 
-        fun start(context: Context) {
-            ContextCompat.startForegroundService(context, Intent(context, ExerciseService::class.java))
+        fun start(
+            context: Context,
+            countingDown: Boolean = false,
+        ) {
+            val intent = Intent(context, ExerciseService::class.java).putExtra(EXTRA_COUNTING_DOWN, countingDown)
+            ContextCompat.startForegroundService(context, intent)
         }
 
         fun stop(context: Context) {

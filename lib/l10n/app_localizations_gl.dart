@@ -645,6 +645,55 @@ class AppLocalizationsGl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'En pausa automática';
 
   @override
+  String get startCountdownSettingsTitle => 'Conta atrás de inicio';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Conta atrás antes de comezar a gravar';
+
+  @override
+  String get startCountdownToggleLabel => 'Conta atrás antes de comezar';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Dáche tempo para gardar o teléfono antes de que comece a gravación.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Escolle canto dura a conta atrás.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds segundos';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Ler a conta atrás en voz alta';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Le en voz alta os últimos segundos e avisa cando comezou a gravación.';
+
+  @override
+  String get activityStartCountdownTitle => 'A gravación comeza en';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Segundos restantes: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Comezar agora';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Gravación iniciada';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Gravación en pausa';
 
   @override

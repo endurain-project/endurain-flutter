@@ -651,6 +651,55 @@ class AppLocalizationsEl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Αυτόματη παύση';
 
   @override
+  String get startCountdownSettingsTitle => 'Αντίστροφη μέτρηση έναρξης';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Αντίστροφη μέτρηση πριν από την καταγραφή';
+
+  @override
+  String get startCountdownToggleLabel => 'Αντίστροφη μέτρηση πριν την έναρξη';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Σας δίνει χρόνο να βάλετε το τηλέφωνο στην άκρη πριν ξεκινήσει η καταγραφή.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Επιλέξτε πόσο διαρκεί η αντίστροφη μέτρηση.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds δευτερόλεπτα';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Εκφώνηση αντίστροφης μέτρησης';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Εκφωνεί τα τελευταία δευτερόλεπτα και ανακοινώνει πότε ξεκίνησε η καταγραφή.';
+
+  @override
+  String get activityStartCountdownTitle => 'Η καταγραφή ξεκινά σε';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Δευτερόλεπτα που απομένουν: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Έναρξη τώρα';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds δ';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Η καταγραφή ξεκίνησε';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Η καταγραφή τέθηκε σε παύση';
 
   @override

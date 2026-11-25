@@ -583,6 +583,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityAutoPausedIndicator => '自动暂停中';
 
   @override
+  String get startCountdownSettingsTitle => '开始倒计时';
+
+  @override
+  String get startCountdownSettingsSubtitle => '开始记录前倒计时';
+
+  @override
+  String get startCountdownToggleLabel => '开始前倒计时';
+
+  @override
+  String get startCountdownToggleDescription => '让你在记录开始前有时间收好手机。';
+
+  @override
+  String get startCountdownDurationHelperText => '选择倒计时的时长。';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => '语音播报倒计时';
+
+  @override
+  String get startCountdownVoiceDescription => '播报最后几秒，并在记录开始时提示。';
+
+  @override
+  String get activityStartCountdownTitle => '距离开始记录';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return '剩余秒数：$seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => '立即开始';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds 秒';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => '记录已开始';
+
+  @override
   String get audioAnnouncementsAutoPaused => '记录已暂停';
 
   @override
@@ -1872,6 +1917,51 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityAutoPausedIndicator => '自動暫停中';
+
+  @override
+  String get startCountdownSettingsTitle => '開始倒數';
+
+  @override
+  String get startCountdownSettingsSubtitle => '開始記錄前倒數';
+
+  @override
+  String get startCountdownToggleLabel => '開始前倒數';
+
+  @override
+  String get startCountdownToggleDescription => '讓你在記錄開始前有時間收好手機。';
+
+  @override
+  String get startCountdownDurationHelperText => '選擇倒數的時長。';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => '語音播報倒數';
+
+  @override
+  String get startCountdownVoiceDescription => '播報最後幾秒，並在記錄開始時提示。';
+
+  @override
+  String get activityStartCountdownTitle => '距離開始記錄';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return '剩餘秒數：$seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => '立即開始';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds 秒';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => '記錄已開始';
 
   @override
   String get audioAnnouncementsAutoPaused => '記錄已暫停';

@@ -645,6 +645,63 @@ class AppLocalizationsRo extends AppLocalizations {
   String get activityAutoPausedIndicator => 'În pauză automată';
 
   @override
+  String get startCountdownSettingsTitle => 'Numărătoare inversă la start';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Numărătoare inversă înainte de înregistrare';
+
+  @override
+  String get startCountdownToggleLabel =>
+      'Numărătoare inversă înainte de start';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Îți lasă timp să pui telefonul deoparte înainte să înceapă înregistrarea.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Alege cât durează numărătoarea inversă.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds de secunde',
+      few: '$seconds secunde',
+      one: '$seconds secundă',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Rostește numărătoarea inversă';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Rostește ultimele secunde și anunță când a început înregistrarea.';
+
+  @override
+  String get activityStartCountdownTitle => 'Înregistrarea începe în';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Secunde rămase: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Pornește acum';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Înregistrare pornită';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Înregistrare întreruptă';
 
   @override

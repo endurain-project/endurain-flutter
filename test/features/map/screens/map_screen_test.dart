@@ -4,9 +4,11 @@ import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -408,6 +410,213 @@ void main() {
       await platform.close();
     });
 
+    testWidgets('counts down before recording when the countdown is on', (
+      tester,
+    ) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+      final countdownPlatform = _RecordingCountdownPlatform();
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            controller: mapController,
+            activityController: activityController,
+            startCountdownSettings: await _countdownSettings(seconds: 3),
+            startCountdownPlatform: countdownPlatform,
+            countdownClock: tester.binding.clock.now,
+          ),
+        ),
+      );
+      await _pumpMapFrame(tester);
+
+      await tester.tap(find.byTooltip(l10n.activityStart));
+      await _pumpUntil(
+        tester,
+        () => find
+            .byKey(const ValueKey('startCountdownRemaining'))
+            .evaluate()
+            .isNotEmpty,
+      );
+
+      expect(activityController.state.status, ActivityRecordingStatus.idle);
+      expect(countdownPlatform.warmUpsStarted, 1);
+      expect(countdownPlatform.cues, ['3']);
+
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      await _pumpUntil(
+        tester,
+        () =>
+            activityController.state.status ==
+                ActivityRecordingStatus.recording &&
+            countdownPlatform.cues.length == 4,
+      );
+
+      expect(countdownPlatform.cues, [
+        '3',
+        '2',
+        '1',
+        l10n.audioAnnouncementsRecordingStarted,
+      ]);
+      expect(countdownPlatform.warmUpsEnded, 1);
+      // Let the countdown route finish fading out.
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(
+        find.byKey(const ValueKey('startCountdownRemaining')),
+        findsNothing,
+      );
+
+      await _completeRecorderCommand(tester, activityController.discard);
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
+    testWidgets(
+      'a second tap during the start flow opens no second countdown',
+      (tester) async {
+        final platform = FakeLocationPlatformAdapter(
+          currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+        );
+        final mapController = await _mapController(platform);
+        final activityController = _activityController(platform);
+        final countdownPlatform = _RecordingCountdownPlatform();
+
+        await tester.pumpWidget(
+          _MapTestApp(
+            child: MapScreen(
+              controller: mapController,
+              activityController: activityController,
+              startCountdownSettings: await _countdownSettings(seconds: 10),
+              startCountdownPlatform: countdownPlatform,
+              countdownClock: tester.binding.clock.now,
+            ),
+          ),
+        );
+        await _pumpMapFrame(tester);
+
+        // Both taps land before the first one has finished its awaits.
+        await tester.tap(find.byTooltip(l10n.activityStart));
+        await tester.tap(find.byTooltip(l10n.activityStart));
+        await _pumpUntil(
+          tester,
+          () => find
+              .byKey(const ValueKey('startCountdownCancel'))
+              .evaluate()
+              .isNotEmpty,
+        );
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(find.byKey(const ValueKey('startCountdownRemaining')), findsOne);
+        expect(countdownPlatform.warmUpsStarted, 1);
+
+        await tester.tap(find.byKey(const ValueKey('startCountdownCancel')));
+        await tester.pumpAndSettle();
+        expect(activityController.state.status, ActivityRecordingStatus.idle);
+
+        activityController.dispose();
+        mapController.dispose();
+        await platform.close();
+      },
+    );
+
+    testWidgets('cancelling the countdown does not record', (tester) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+      final countdownPlatform = _RecordingCountdownPlatform();
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            controller: mapController,
+            activityController: activityController,
+            startCountdownSettings: await _countdownSettings(seconds: 10),
+            startCountdownPlatform: countdownPlatform,
+            countdownClock: tester.binding.clock.now,
+          ),
+        ),
+      );
+      await _pumpMapFrame(tester);
+
+      await tester.tap(find.byTooltip(l10n.activityStart));
+      await _pumpUntil(
+        tester,
+        () => find
+            .byKey(const ValueKey('startCountdownCancel'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      await tester.tap(find.byKey(const ValueKey('startCountdownCancel')));
+      await tester.pumpAndSettle();
+
+      expect(activityController.state.status, ActivityRecordingStatus.idle);
+      expect(countdownPlatform.warmUpsStarted, 1);
+      expect(countdownPlatform.warmUpsEnded, 1);
+      expect(countdownPlatform.cues, isEmpty);
+      expect(
+        find.byKey(const ValueKey('startCountdownRemaining')),
+        findsNothing,
+      );
+
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
+    testWidgets('skips the countdown when location is not permitted', (
+      tester,
+    ) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+        permission: LocationPermission.deniedForever,
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+      final countdownPlatform = _RecordingCountdownPlatform();
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            controller: mapController,
+            activityController: activityController,
+            startCountdownSettings: await _countdownSettings(seconds: 10),
+            startCountdownPlatform: countdownPlatform,
+            countdownClock: tester.binding.clock.now,
+          ),
+        ),
+      );
+      await _pumpMapFrame(tester);
+
+      await tester.tap(find.byTooltip(l10n.activityStart));
+      await _pumpUntil(
+        tester,
+        () => activityController.state.lastError != null,
+      );
+
+      // Straight to the usual permission error, without a countdown.
+      expect(
+        find.byKey(const ValueKey('startCountdownRemaining')),
+        findsNothing,
+      );
+      expect(countdownPlatform.warmUpsStarted, 0);
+      expect(
+        activityController.state.status,
+        isNot(ActivityRecordingStatus.recording),
+      );
+
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
     testWidgets(
       'bottom-aligns the activity overlay with the iOS location button',
       (tester) async {
@@ -509,6 +718,47 @@ void main() {
       },
     );
   });
+}
+
+Future<StartCountdownSettingsRepository> _countdownSettings({
+  required int seconds,
+}) async {
+  final repository = StartCountdownSettingsRepository(
+    preferences: FakePreferencesStore(),
+  );
+  await repository.setEnabled(true);
+  await repository.setSeconds(seconds);
+  return repository;
+}
+
+class _RecordingCountdownPlatform implements StartCountdownPlatformAdapter {
+  final List<String> cues = [];
+  int warmUpsStarted = 0;
+  int warmUpsEnded = 0;
+
+  @override
+  Future<void> speakCue(
+    String text, {
+    required bool duckOtherAudio,
+    required String languageTag,
+  }) async {
+    cues.add(text);
+  }
+
+  @override
+  Future<void> beginWarmUp() async => warmUpsStarted++;
+
+  @override
+  Future<void> endWarmUp() async => warmUpsEnded++;
+}
+
+/// Pumps frames, letting real async work run, until [condition] holds.
+Future<void> _pumpUntil(WidgetTester tester, bool Function() condition) async {
+  for (var frame = 0; frame < 40 && !condition(); frame++) {
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.runAsync(() async {});
+  }
+  expect(condition(), isTrue, reason: 'Condition never held.');
 }
 
 Future<MapStateController> _mapController(

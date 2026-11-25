@@ -24,6 +24,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -61,6 +65,7 @@ private fun EndurainWearScreen(
 ) {
     val state by recorder.state.collectAsStateWithLifecycle()
     val waiting by phoneLink.waitingCount.collectAsStateWithLifecycle()
+    val countdownSeconds by recorder.countdownSeconds.collectAsStateWithLifecycle()
     val error = state.errorMessage
     when {
         error != null -> MessageScreen(stringResource(error)) { recorder.dismissError() }
@@ -70,7 +75,16 @@ private fun EndurainWearScreen(
                     StartScreen(
                         enabled = phase == WorkoutPhase.Idle,
                         waitingCount = waiting,
+                        countdownSeconds = countdownSeconds,
                         onStart = recorder::start,
+                        onCycleCountdown = recorder::cycleCountdown,
+                    )
+                is WorkoutPhase.CountingDown ->
+                    CountdownScreen(
+                        state = state,
+                        endsAtMillis = phase.endsAtMillis,
+                        onCancel = recorder::cancelCountdown,
+                        onStartNow = recorder::skipCountdown,
                     )
                 is WorkoutPhase.Active, WorkoutPhase.Ending ->
                     ActiveScreen(
@@ -96,7 +110,9 @@ private fun requiredPermissions(): Array<String> =
 private fun StartScreen(
     enabled: Boolean,
     waitingCount: Int,
+    countdownSeconds: Int,
     onStart: (WatchActivityType) -> Unit,
+    onCycleCountdown: () -> Unit,
 ) {
     var pendingType by remember { mutableStateOf<WatchActivityType?>(null) }
     var permissionsDenied by remember { mutableStateOf(false) }
@@ -129,12 +145,77 @@ private fun StartScreen(
                     )
                 }
             }
+            item {
+                val value =
+                    if (countdownSeconds == 0) {
+                        stringResource(R.string.countdown_off)
+                    } else {
+                        stringResource(R.string.countdown_seconds, countdownSeconds)
+                    }
+                Button(
+                    onClick = onCycleCountdown,
+                    enabled = enabled,
+                    colors = ButtonDefaults.filledTonalButtonColors(),
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.countdown_setting, value)) },
+                )
+            }
             if (permissionsDenied) {
                 item { FootnoteText(stringResource(R.string.permissions_needed)) }
             }
             if (waitingCount > 0) {
                 item { FootnoteText(stringResource(R.string.waiting_for_phone, waitingCount)) }
             }
+        }
+    }
+}
+
+@Composable
+private fun CountdownScreen(
+    state: WorkoutUiState,
+    endsAtMillis: Long,
+    onCancel: () -> Unit,
+    onStartNow: () -> Unit,
+) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(endsAtMillis) {
+        while (true) {
+            now = System.currentTimeMillis()
+            delay(200)
+        }
+    }
+    val remaining = StartCountdown.remainingSeconds(endsAtMillis, now)
+    val remainingDescription = stringResource(R.string.countdown_seconds_left, remaining)
+    ScreenScaffold {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            state.activityType?.let {
+                Text(stringResource(it.label), style = MaterialTheme.typography.labelMedium)
+            }
+            Text(stringResource(R.string.countdown_starts_in), style = MaterialTheme.typography.labelSmall)
+            Text(
+                "$remaining",
+                style = MaterialTheme.typography.displayLarge,
+                modifier =
+                    Modifier.semantics {
+                        contentDescription = remainingDescription
+                        liveRegion = LiveRegionMode.Polite
+                    },
+            )
+            Button(
+                onClick = onStartNow,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.countdown_start_now)) },
+            )
+            Button(
+                onClick = onCancel,
+                colors = ButtonDefaults.filledTonalButtonColors(),
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.cancel)) },
+            )
         }
     }
 }

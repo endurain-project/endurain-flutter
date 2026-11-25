@@ -632,6 +632,54 @@ class AppLocalizationsTr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Otomatik duraklatıldı';
 
   @override
+  String get startCountdownSettingsTitle => 'Başlangıç geri sayımı';
+
+  @override
+  String get startCountdownSettingsSubtitle => 'Kayıt başlamadan önce geri say';
+
+  @override
+  String get startCountdownToggleLabel => 'Başlamadan önce geri say';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Kayıt başlamadan önce telefonunu kaldırman için zaman tanır.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Geri sayımın ne kadar süreceğini seç.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds saniye';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Geri sayımı sesli oku';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Son saniyeleri sesli okur ve kayıt başladığında haber verir.';
+
+  @override
+  String get activityStartCountdownTitle => 'Kaydın başlamasına';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Kalan saniye: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Şimdi başlat';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds sn';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Kayıt başladı';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Kayıt duraklatıldı';
 
   @override

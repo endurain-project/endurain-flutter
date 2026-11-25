@@ -641,6 +641,63 @@ class AppLocalizationsCs extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatická pauza';
 
   @override
+  String get startCountdownSettingsTitle => 'Odpočet před startem';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Odpočítávat před zahájením nahrávání';
+
+  @override
+  String get startCountdownToggleLabel => 'Odpočítávat před startem';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Dá vám čas schovat telefon, než začne nahrávání.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Zvolte, jak dlouho odpočet trvá.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds sekund',
+      many: '$seconds sekundy',
+      few: '$seconds sekundy',
+      one: '$seconds sekunda',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Odpočet nahlas';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Přečte nahlas poslední sekundy a oznámí, kdy nahrávání začalo.';
+
+  @override
+  String get activityStartCountdownTitle => 'Nahrávání začne za';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Zbývá sekund: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Spustit hned';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Nahrávání zahájeno';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Nahrávání pozastaveno';
 
   @override

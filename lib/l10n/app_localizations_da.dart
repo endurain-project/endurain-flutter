@@ -640,6 +640,55 @@ class AppLocalizationsDa extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatisk pause';
 
   @override
+  String get startCountdownSettingsTitle => 'Nedtælling før start';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Tæl ned, før optagelsen starter';
+
+  @override
+  String get startCountdownToggleLabel => 'Tæl ned før start';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Giver dig tid til at lægge telefonen væk, før optagelsen begynder.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Vælg, hvor længe nedtællingen varer.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Læs nedtællingen op';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Læser de sidste sekunder op og siger, når optagelsen er startet.';
+
+  @override
+  String get activityStartCountdownTitle => 'Optagelsen starter om';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Sekunder tilbage: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Start nu';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Optagelse startet';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Optagelse sat på pause';
 
   @override

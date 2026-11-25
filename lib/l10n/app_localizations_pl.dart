@@ -645,6 +645,55 @@ class AppLocalizationsPl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatycznie wstrzymano';
 
   @override
+  String get startCountdownSettingsTitle => 'Odliczanie przed startem';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Odliczaj przed rozpoczęciem nagrywania';
+
+  @override
+  String get startCountdownToggleLabel => 'Włącz odliczanie przed startem';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Daje czas na schowanie telefonu przed rozpoczęciem nagrywania.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Wybierz, jak długo trwa odliczanie.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Odczytuj odliczanie na głos';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Odczytuje na głos ostatnie sekundy i informuje, gdy nagrywanie się rozpoczęło.';
+
+  @override
+  String get activityStartCountdownTitle => 'Nagrywanie rozpocznie się za';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Pozostało sekund: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Rozpocznij teraz';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Nagrywanie rozpoczęte';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Nagrywanie wstrzymane';
 
   @override

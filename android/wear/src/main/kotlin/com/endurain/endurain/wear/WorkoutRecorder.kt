@@ -2,7 +2,11 @@ package com.endurain.endurain.wear
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.health.services.client.ExerciseClient
@@ -10,6 +14,7 @@ import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.DeltaDataType
 import androidx.health.services.client.data.ExerciseConfig
 import androidx.health.services.client.data.ExerciseLapSummary
 import androidx.health.services.client.data.ExerciseState
@@ -18,6 +23,7 @@ import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
 import androidx.health.services.client.data.LocationAccuracy
 import androidx.health.services.client.data.LocationData
+import androidx.health.services.client.data.WarmUpConfig
 import com.endurain.endurain.watchlink.WatchActivityType
 import com.endurain.endurain.watchlink.WatchHandoffBuilder
 import com.endurain.endurain.watchlink.WatchRecordedPoint
@@ -25,7 +31,9 @@ import com.endurain.endurain.watchlink.WatchRecording
 import com.endurain.endurain.watchlink.WatchRecordingStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,6 +50,12 @@ sealed interface WorkoutPhase {
     data object Idle : WorkoutPhase
 
     data object Starting : WorkoutPhase
+
+    /**
+     * Counting down to the start. The exercise is prepared (sensors warming
+     * up, [ExerciseService] keeping the app alive) but nothing records yet.
+     */
+    data class CountingDown(val endsAtMillis: Long) : WorkoutPhase
 
     data class Active(val paused: Boolean) : WorkoutPhase
 
@@ -88,6 +102,24 @@ class WorkoutRecorder(
     private val mutableState = MutableStateFlow(WorkoutUiState())
     val state: StateFlow<WorkoutUiState> = mutableState.asStateFlow()
 
+    private val countdownSettings = StartCountdownSettings(appContext)
+    private val mutableCountdownSeconds = MutableStateFlow(countdownSettings.seconds)
+
+    /** Seconds counted down before a workout starts, saved on the watch. */
+    val countdownSeconds: StateFlow<Int> = mutableCountdownSeconds.asStateFlow()
+
+    private val vibrator: Vibrator? by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            appContext.getSystemService(VibratorManager::class.java)?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            appContext.getSystemService(Vibrator::class.java)
+        }
+    }
+
+    private var pendingStart: Pair<WatchActivityType, ExerciseConfig>? = null
+    private var countdownJob: Job? = null
+
     private var recording: WatchRecording? = null
     private val points = mutableListOf<WatchRecordedPoint>()
     private val unsavedPoints = mutableListOf<WatchRecordedPoint>()
@@ -119,20 +151,127 @@ class WorkoutRecorder(
                         .setIsGpsEnabled(DataType.LOCATION in dataTypes)
                         .build()
 
-                val newRecording = WatchRecording(UUID.randomUUID().toString(), type, System.currentTimeMillis())
-                store.begin(newRecording)
-                attach(newRecording, emptyList())
-                registerCallback()
-                exerciseClient.startExerciseAsync(config).await()
-                ExerciseService.start(appContext)
-                mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = false)) }
+                val seconds = countdownSeconds.value
+                if (seconds > 0) {
+                    beginCountdown(type, exerciseType, dataTypes, config, seconds)
+                    return@launch
+                }
+                beginExercise(type, config)
             } catch (error: Exception) {
-                Log.w(TAG, "Could not start a workout", error)
-                store.clear()
-                detach()
-                fail(R.string.start_failed)
+                failStart(error)
             }
         }
+    }
+
+    /** Whether a workout is saved on disk (recording, or waiting to be finished). */
+    fun hasSavedRecording(): Boolean = store.hasRecording()
+
+    /** Cycles the countdown through [StartCountdown.OPTIONS]. */
+    fun cycleCountdown() {
+        val next = StartCountdown.next(countdownSeconds.value)
+        countdownSettings.seconds = next
+        mutableCountdownSeconds.value = next
+    }
+
+    /** Starts the workout now instead of waiting for the countdown. */
+    fun skipCountdown() {
+        if (mutableState.value.phase !is WorkoutPhase.CountingDown) return
+        countdownJob?.cancel()
+        countdownJob = null
+        scope.launch { finishCountdown() }
+    }
+
+    /** Stops the countdown without recording anything. */
+    fun cancelCountdown() {
+        if (mutableState.value.phase !is WorkoutPhase.CountingDown) return
+        countdownJob?.cancel()
+        countdownJob = null
+        pendingStart = null
+        mutableState.update { WorkoutUiState() }
+        ExerciseService.stop(appContext)
+        // Ends the prepared exercise so the sensors stop warming up.
+        scope.launch { runCatching { exerciseClient.endExerciseAsync().await() } }
+    }
+
+    // MARK: - Countdown
+
+    private suspend fun beginCountdown(
+        type: WatchActivityType,
+        exerciseType: ExerciseType,
+        dataTypes: Set<DataType<*, *>>,
+        config: ExerciseConfig,
+        seconds: Int,
+    ) {
+        val warmUpTypes = dataTypes.filterIsInstance<DeltaDataType<*, *>>().toSet()
+        try {
+            exerciseClient.prepareExerciseAsync(WarmUpConfig(exerciseType, warmUpTypes)).await()
+        } catch (error: Exception) {
+            // Only the warm-up is lost: the countdown and the workout still run.
+            Log.w(TAG, "Could not prepare the exercise", error)
+        }
+        // Keeps the app alive while the wrist is down during the countdown.
+        ExerciseService.start(appContext, countingDown = true)
+        pendingStart = type to config
+        val endsAt = System.currentTimeMillis() + seconds * 1000L
+        mutableState.update {
+            it.copy(phase = WorkoutPhase.CountingDown(endsAt), activityType = type)
+        }
+        countdownJob = scope.launch { runCountdown(endsAt) }
+    }
+
+    private suspend fun runCountdown(endsAtMillis: Long) {
+        var lastCue: Int? = null
+        while (true) {
+            val seconds = StartCountdown.remainingSeconds(endsAtMillis, System.currentTimeMillis())
+            if (seconds <= 0) break
+            if (seconds <= StartCountdown.CUE_SECONDS && seconds != lastCue) {
+                lastCue = seconds
+                vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+            }
+            delay(COUNTDOWN_TICK_MILLIS)
+        }
+        countdownJob = null
+        finishCountdown()
+    }
+
+    private suspend fun finishCountdown() {
+        if (mutableState.value.phase !is WorkoutPhase.CountingDown) return
+        val (type, config) = pendingStart ?: return
+        pendingStart = null
+        mutableState.update { it.copy(phase = WorkoutPhase.Starting) }
+        try {
+            beginExercise(type, config)
+            vibrate(VibrationEffect.createOneShot(START_VIBRATION_MILLIS, VibrationEffect.DEFAULT_AMPLITUDE))
+        } catch (error: Exception) {
+            failStart(error)
+        }
+    }
+
+    private fun vibrate(effect: VibrationEffect) {
+        runCatching { vibrator?.vibrate(effect) }
+    }
+
+    // MARK: - Starting
+
+    private suspend fun beginExercise(
+        type: WatchActivityType,
+        config: ExerciseConfig,
+    ) {
+        val newRecording = WatchRecording(UUID.randomUUID().toString(), type, System.currentTimeMillis())
+        store.begin(newRecording)
+        attach(newRecording, emptyList())
+        registerCallback()
+        exerciseClient.startExerciseAsync(config).await()
+        ExerciseService.start(appContext)
+        mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = false)) }
+    }
+
+    private fun failStart(error: Exception) {
+        Log.w(TAG, "Could not start a workout", error)
+        ExerciseService.stop(appContext)
+        store.clear()
+        detach()
+        fail(R.string.start_failed)
     }
 
     fun pause() {
@@ -390,6 +529,8 @@ class WorkoutRecorder(
     companion object {
         private const val TAG = "EndurainWear"
         private const val POINT_FLUSH_THRESHOLD = 10
+        private const val COUNTDOWN_TICK_MILLIS = 200L
+        private const val START_VIBRATION_MILLIS = 400L
 
         fun exerciseType(type: WatchActivityType): ExerciseType =
             when (type) {

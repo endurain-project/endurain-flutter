@@ -639,6 +639,54 @@ class AppLocalizationsUk extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Автоматично призупинено';
 
   @override
+  String get startCountdownSettingsTitle => 'Зворотний відлік перед стартом';
+
+  @override
+  String get startCountdownSettingsSubtitle => 'Відлік перед початком запису';
+
+  @override
+  String get startCountdownToggleLabel => 'Відлік перед стартом';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Дає час сховати телефон, перш ніж почнеться запис.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Виберіть, скільки триває зворотний відлік.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds с';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Озвучувати відлік';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Озвучує останні секунди й повідомляє, коли запис почався.';
+
+  @override
+  String get activityStartCountdownTitle => 'Запис почнеться через';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Залишилося секунд: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Почати зараз';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds с';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Запис розпочато';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Запис призупинено';
 
   @override

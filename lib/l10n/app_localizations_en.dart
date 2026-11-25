@@ -633,6 +633,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Auto-paused';
 
   @override
+  String get startCountdownSettingsTitle => 'Start countdown';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Count down before recording starts';
+
+  @override
+  String get startCountdownToggleLabel => 'Count down before starting';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Gives you time to put your phone away before recording begins.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Choose how long the countdown lasts.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds seconds';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Speak the countdown';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Reads out the last seconds and says when recording has started.';
+
+  @override
+  String get activityStartCountdownTitle => 'Recording starts in';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Seconds left: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Start now';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Recording started';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Recording paused';
 
   @override

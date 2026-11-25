@@ -643,6 +643,55 @@ class AppLocalizationsSv extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatiskt pausad';
 
   @override
+  String get startCountdownSettingsTitle => 'Nedräkning före start';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Räkna ned innan inspelningen startar';
+
+  @override
+  String get startCountdownToggleLabel => 'Räkna ned före start';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Ger dig tid att lägga undan telefonen innan inspelningen börjar.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Välj hur länge nedräkningen pågår.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sekunder';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Läs upp nedräkningen';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Läser upp de sista sekunderna och säger till när inspelningen har startat.';
+
+  @override
+  String get activityStartCountdownTitle => 'Inspelningen startar om';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Sekunder kvar: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Starta nu';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Inspelning startad';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Inspelning pausad';
 
   @override
