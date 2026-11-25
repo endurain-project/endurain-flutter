@@ -1,9 +1,10 @@
 import java.util.Properties
 
-// Keep the plugin versions in sync with android/settings.gradle.kts.
+// Keep the plugin versions in sync with android/settings.gradle.kts. Kotlin is
+// built into AGP 9, so unlike the Flutter phone build (whose Gradle plugin still
+// needs the legacy variant API) this build needs no kotlin-android plugin.
 plugins {
     id("com.android.application") version "9.5.2"
-    id("org.jetbrains.kotlin.android") version "2.4.21"
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.21"
 }
 
@@ -87,7 +88,7 @@ android {
     sourceSets {
         getByName("main") {
             // Protocol and stores shared with the phone app.
-            kotlin.srcDir("../watch_shared/kotlin")
+            kotlin.directories.add("../watch_shared/kotlin")
         }
     }
 }

@@ -524,8 +524,9 @@ cd android
 - It has the same application id as the phone app
   (`com.endurain.endurain`), which the Data Layer requires, and must be
   signed with the same key; release builds read the same `key.properties`
-  or `ANDROID_KEYSTORE_*` variables. Upload its release build to the Wear OS
-  form factor of the same Play listing.
+  or `ANDROID_KEYSTORE_*` variables. Upload its release build to a Wear OS
+  track of the same Play listing; Play rejects a watch bundle on a phone
+  track.
 - Its version name follows `pubspec.yaml`; its version code is the Flutter
   build number plus 1,000,000, because Play requires a distinct version code
   for each APK in a release. `-Pendurain.buildName=<name>` and

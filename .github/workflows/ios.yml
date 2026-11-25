@@ -78,9 +78,11 @@ jobs:
       # fake server; the Android counterpart is integration.yml.
       - name: Run integration tests
         shell: bash
-        # The suite takes about a minute; a hung launch must fail fast rather
-        # than run into the job timeout and be cancelled without a result.
-        timeout-minutes: 12
+        # The suite itself takes under a minute, but the step also erases and
+        # boots the simulator (~2 min) and rebuilds the app with its embedded
+        # watch app (~4.5 min), so it needs about 9 minutes. A hung launch
+        # must still fail well before the job timeout.
+        timeout-minutes: 20
         run: |
           set -euo pipefail
           # xcodebuild test leaves the simulator in a used state (and can shut
@@ -88,5 +90,7 @@ jobs:
           xcrun simctl shutdown "$SIMULATOR_UDID" || true
           xcrun simctl erase "$SIMULATOR_UDID"
           xcrun simctl bootstatus "$SIMULATOR_UDID" -b
-          flutter devices
+          # `flutter devices` also probes for wireless devices, which took
+          # over three minutes on the runner; this only confirms the boot.
+          xcrun simctl list devices booted
           flutter test integration_test -d "$SIMULATOR_UDID" --reporter expanded
