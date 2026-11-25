@@ -2,6 +2,7 @@ package com.endurain.endurain.activity
 
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.VisibleForTesting
 import io.flutter.plugin.common.EventChannel
 
 /**
@@ -25,7 +26,19 @@ object ActivityRecorderCoordinator {
         eventSink = sink
     }
 
-    fun detach() {
+    /**
+     * Detaches [sink] if it is still the attached one. A second Flutter engine
+     * (e.g. a recreated activity) attaches its own sink before the first one is
+     * torn down; that teardown must not cut off the live engine.
+     */
+    fun detach(sink: EventChannel.EventSink) {
+        if (eventSink === sink) {
+            eventSink = null
+        }
+    }
+
+    @VisibleForTesting
+    internal fun detachAll() {
         eventSink = null
     }
 

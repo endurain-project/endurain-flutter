@@ -5,4 +5,8 @@
     <string name="activity_recording_notification_starting">Starting a recording</string>
     <string name="activity_recording_channel_name">Activity recording</string>
     <string name="activity_recording_channel_description">Ongoing notification shown while recording an activity.</string>
+    <string name="activity_recording_interrupted_title">Recording interrupted</string>
+    <string name="activity_recording_interrupted_text">Tap to resume</string>
+    <string name="activity_recording_alert_channel_name">Recording alerts</string>
+    <string name="activity_recording_alert_channel_description">Shown when a recording stops while Endurain is in the background.</string>
 </resources>

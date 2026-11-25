@@ -11,6 +11,7 @@ import io.flutter.plugin.common.EventChannel
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -50,7 +51,7 @@ class ActivityRecorderServiceTest {
     fun tearDown() {
         controllers.forEach { it.destroy() }
         controllers.clear()
-        ActivityRecorderCoordinator.detach()
+        ActivityRecorderCoordinator.detachAll()
         store.clear()
     }
 
@@ -98,6 +99,148 @@ class ActivityRecorderServiceTest {
         assertNull(store.loadSession())
         assertEquals(0, store.pointCount())
         assertFalse(shadowOf(controller.get()).isStoppedBySelf)
+    }
+
+    @Test
+    fun aWarmUpNobodyEndsTimesOut() {
+        val controller = service()
+        warmUp(controller)
+
+        shadowOf(Looper.getMainLooper()).idleFor(
+            java.time.Duration.ofMillis(ActivityRecorderService.WARM_UP_TIMEOUT_MILLIS - 1_000),
+        )
+        assertFalse(shadowOf(controller.get()).isStoppedBySelf)
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(2))
+
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+        assertTrue(shadowOf(controller.get()).isForegroundStopped)
+    }
+
+    @Test
+    fun aWarmUpForAnExistingRecordingStillEntersTheForegroundBeforeStopping() {
+        store.saveSession(session(ActiveActivitySessionData.STATUS_PAUSED))
+        val controller = service()
+        warmUp(controller)
+
+        // The notification is removed again on stop; its id stays.
+        assertNotEquals(0, shadowOf(controller.get()).lastForegroundNotificationId)
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+        assertEquals(ActiveActivitySessionData.STATUS_PAUSED, store.loadSession()?.status)
+    }
+
+    @Test
+    fun removingTheTaskEndsAWarmUp() {
+        val controller = service()
+        warmUp(controller)
+
+        controller.get().onTaskRemoved(Intent())
+
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+    }
+
+    // Android 14+ refuses the location type without the permission, so the
+    // contract can only be met before it.
+    @Test
+    @Config(sdk = [33])
+    fun aWarmUpWithoutLocationPermissionEntersTheForegroundBeforeStopping() {
+        shadowOf(application).denyPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+        val controller = service()
+        warmUp(controller)
+
+        // The notification is removed again on stop; its id stays.
+        assertNotEquals(0, shadowOf(controller.get()).lastForegroundNotificationId)
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+    }
+
+    // Android 14+ refuses the location type without the permission, so the
+    // contract can only be met before it.
+    @Test
+    @Config(sdk = [33])
+    fun aStartWithoutLocationPermissionEntersTheForegroundBeforeStopping() {
+        store.saveSession(session())
+        shadowOf(application).denyPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+        val controller = service()
+        controller.get().onStartCommand(Intent(application, ActivityRecorderService::class.java).apply {
+            action = ActivityRecorderService.ACTION_START
+        }, 0, 1)
+
+        // The notification is removed again on stop; its id stays.
+        assertNotEquals(0, shadowOf(controller.get()).lastForegroundNotificationId)
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+        assertEquals(ActiveActivitySessionData.STATUS_FAILED, store.loadSession()?.status)
+    }
+
+    @Test
+    fun aStartWithNoLocationProviderStopsTheService() {
+        shadowOf(locations).setProviderEnabled(LocationManager.GPS_PROVIDER, false)
+        shadowOf(locations).setProviderEnabled(LocationManager.NETWORK_PROVIDER, false)
+        store.saveSession(session())
+        val controller = service()
+        controller.get().onStartCommand(Intent(application, ActivityRecorderService::class.java).apply {
+            action = ActivityRecorderService.ACTION_START
+        }, 0, 1)
+
+        assertEquals(ActiveActivitySessionData.STATUS_FAILED, store.loadSession()?.status)
+        assertTrue(shadowOf(controller.get()).isForegroundStopped)
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+    }
+
+    @Test
+    fun aFailedStickyRestartDoesNotCountTheDeadGapAndTellsTheUser() {
+        shadowOf(application).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        val startedMillis = System.currentTimeMillis() - 600_000
+        store.saveSession(session().copy(startedAt = IsoTime.format(Date(startedMillis))))
+        store.appendPoints(listOf(RecordedActivityPointData(
+            timestamp = IsoTime.format(Date(startedMillis + 60_000)),
+            latitude = 41.1,
+            longitude = -8.0,
+            segmentIndex = 0,
+        )))
+        shadowOf(application).denyPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+
+        val controller = service()
+        controller.get().onStartCommand(null, 0, 1)
+
+        val failed = store.loadSession()!!
+        assertEquals(ActiveActivitySessionData.STATUS_FAILED, failed.status)
+        // Recorded until the last point, not through the nine dead minutes.
+        assertTrue(failed.elapsedDurationSeconds in 60..62)
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+        val notifications = application.getSystemService(android.app.NotificationManager::class.java)
+        assertEquals(1, shadowOf(notifications).allNotifications.size)
+    }
+
+    @Test
+    fun aStickyRestartRefusedTheForegroundIsRebasedBeforeFailing() {
+        shadowOf(application).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        val startedMillis = System.currentTimeMillis() - 600_000
+        store.saveSession(session().copy(startedAt = IsoTime.format(Date(startedMillis))))
+        store.appendPoints(listOf(RecordedActivityPointData(
+            timestamp = IsoTime.format(Date(startedMillis + 120_000)),
+            latitude = 41.1,
+            longitude = -8.0,
+            segmentIndex = 0,
+        )))
+
+        val controller = service()
+        shadowOf(controller.get()).setThrowInStartForeground(SecurityException("background"))
+        controller.get().onStartCommand(null, 0, 1)
+
+        val failed = store.loadSession()!!
+        assertEquals(ActiveActivitySessionData.STATUS_FAILED, failed.status)
+        assertTrue(failed.elapsedDurationSeconds in 120..122)
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+        val notifications = application.getSystemService(android.app.NotificationManager::class.java)
+        assertEquals(1, shadowOf(notifications).allNotifications.size)
     }
 
     @Test

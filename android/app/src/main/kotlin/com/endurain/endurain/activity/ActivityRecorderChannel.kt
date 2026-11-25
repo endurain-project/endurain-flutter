@@ -1,10 +1,15 @@
 package com.endurain.endurain.activity
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 
 /**
  * Hosts the method/event channels that bridge the Dart
@@ -24,6 +29,14 @@ class ActivityRecorderChannel(context: Context) :
 
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
+    private var eventSink: EventChannel.EventSink? = null
+
+    /** Whether this engine's Dart started a start-countdown warm-up it has not ended. */
+    private var warmUpBegun = false
+
+    /** Drains read the points file off the main thread, in call order. */
+    private val drainExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     fun register(messenger: BinaryMessenger) {
         methodChannel = MethodChannel(messenger, METHOD_CHANNEL).also {
@@ -37,9 +50,17 @@ class ActivityRecorderChannel(context: Context) :
     fun unregister() {
         methodChannel?.setMethodCallHandler(null)
         eventChannel?.setStreamHandler(null)
-        ActivityRecorderCoordinator.detach()
+        eventSink?.let(ActivityRecorderCoordinator::detach)
+        eventSink = null
         methodChannel = null
         eventChannel = null
+        // Dart can no longer end the countdown's warm-up, so end it here; it
+        // is a no-op once a recording started from it.
+        if (warmUpBegun) {
+            warmUpBegun = false
+            ActivityRecorderService.endWarmUp()
+        }
+        drainExecutor.shutdown()
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -55,6 +76,7 @@ class ActivityRecorderChannel(context: Context) :
             METHOD_SPEAK_CUE -> handleSpeakCue(call, result)
             METHOD_BEGIN_START_WARM_UP -> handleBeginStartWarmUp(result)
             METHOD_END_START_WARM_UP -> {
+                warmUpBegun = false
                 ActivityRecorderService.endWarmUp()
                 result.success(null)
             }
@@ -63,11 +85,13 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+        eventSink = events
         ActivityRecorderCoordinator.attach(events)
     }
 
     override fun onCancel(arguments: Any?) {
-        ActivityRecorderCoordinator.detach()
+        eventSink?.let(ActivityRecorderCoordinator::detach)
+        eventSink = null
     }
 
     private fun handleStart(call: MethodCall, result: MethodChannel.Result) {
@@ -223,8 +247,22 @@ class ActivityRecorderChannel(context: Context) :
 
     private fun handleDrain(call: MethodCall, result: MethodChannel.Result) {
         val sinceOffset = call.argument<Int>("sinceOffset") ?: 0
-        val points = store.readPoints(sinceOffset).map { it.toMap() }
-        result.success(points)
+        try {
+            drainExecutor.execute {
+                val points = try {
+                    store.readPoints(sinceOffset).map { it.toMap() }
+                } catch (_: Exception) {
+                    mainHandler.post {
+                        result.error(ERROR_STORE, "Unable to read recorded points", null)
+                    }
+                    return@execute
+                }
+                mainHandler.post { result.success(points) }
+            }
+        } catch (_: RejectedExecutionException) {
+            // The channel was unregistered; its engine is going away.
+            result.error(ERROR_STORE, "Recorder channel unregistered", null)
+        }
     }
 
     private fun handleRecover(result: MethodChannel.Result) {
@@ -279,6 +317,7 @@ class ActivityRecorderChannel(context: Context) :
         }
         try {
             ActivityRecorderService.beginWarmUp(appContext)
+            warmUpBegun = true
         } catch (_: RuntimeException) {
             // Started from the background or refused by the system.
         }

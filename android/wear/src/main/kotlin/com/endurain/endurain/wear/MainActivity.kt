@@ -102,7 +102,7 @@ private fun requiredPermissions(): Array<String> =
     buildList {
         add(Manifest.permission.ACCESS_FINE_LOCATION)
         add(Manifest.permission.ACTIVITY_RECOGNITION)
-        add(if (Build.VERSION.SDK_INT >= 36) "android.permission.health.READ_HEART_RATE" else Manifest.permission.BODY_SENSORS)
+        add(ExercisePermissions.heartRate(Build.VERSION.SDK_INT))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
     }.toTypedArray()
 

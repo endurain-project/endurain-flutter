@@ -5,4 +5,8 @@
     <string name="activity_recording_notification_starting">A iniciar uma gravação</string>
     <string name="activity_recording_channel_name">Gravação de atividade</string>
     <string name="activity_recording_channel_description">Notificação contínua exibida enquanto grava uma atividade.</string>
+    <string name="activity_recording_interrupted_title">Gravação interrompida</string>
+    <string name="activity_recording_interrupted_text">Toque para retomar</string>
+    <string name="activity_recording_alert_channel_name">Alertas de gravação</string>
+    <string name="activity_recording_alert_channel_description">Mostrado quando uma gravação para enquanto o Endurain está em segundo plano.</string>
 </resources>

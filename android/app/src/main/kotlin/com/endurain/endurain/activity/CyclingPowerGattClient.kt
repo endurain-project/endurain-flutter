@@ -25,10 +25,14 @@ import java.util.UUID
  * out of range mid-activity.
  */
 class CyclingPowerGattClient(private val context: Context) {
-    /** The latest decoded instantaneous power in watts, or `null` when not connected. */
-    @Volatile
-    var latestWatts: Int? = null
-        private set
+    private val reading = FreshReading()
+
+    /**
+     * The latest decoded instantaneous power in watts, or `null` when not connected or when none
+     * arrived within [FreshReading.DEFAULT_MAX_AGE_MILLIS].
+     */
+    val latestWatts: Int?
+        get() = reading.value
 
     private var gatt: BluetoothGatt? = null
 
@@ -49,7 +53,7 @@ class CyclingPowerGattClient(private val context: Context) {
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     // Drop the stale reading; autoConnect will restore the link.
-                    latestWatts = null
+                    reading.clear()
                 }
             }
         }
@@ -88,7 +92,7 @@ class CyclingPowerGattClient(private val context: Context) {
             value: ByteArray,
         ) {
             if (characteristic.uuid == CYCLING_POWER_MEASUREMENT) {
-                parsePowerWatts(value)?.let { latestWatts = it }
+                parsePowerWatts(value)?.let { reading.update(it) }
             }
         }
 
@@ -101,7 +105,7 @@ class CyclingPowerGattClient(private val context: Context) {
             if (characteristic.uuid == CYCLING_POWER_MEASUREMENT) {
                 @Suppress("DEPRECATION")
                 val value = characteristic.value ?: return
-                parsePowerWatts(value)?.let { latestWatts = it }
+                parsePowerWatts(value)?.let { reading.update(it) }
             }
         }
     }
@@ -134,7 +138,7 @@ class CyclingPowerGattClient(private val context: Context) {
     /** Disconnects and releases the GATT connection. */
     @SuppressLint("MissingPermission")
     fun stop() {
-        latestWatts = null
+        reading.clear()
         gatt?.let { active ->
             try {
                 active.disconnect()

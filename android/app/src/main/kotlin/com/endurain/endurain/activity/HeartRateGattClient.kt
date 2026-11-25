@@ -25,10 +25,14 @@ import java.util.UUID
  * drops out of range mid-activity.
  */
 class HeartRateGattClient(private val context: Context) {
-    /** The latest decoded heart rate in BPM, or `null` when not connected. */
-    @Volatile
-    var latestBpm: Int? = null
-        private set
+    private val reading = FreshReading()
+
+    /**
+     * The latest decoded heart rate in BPM, or `null` when not connected or when none
+     * arrived within [FreshReading.DEFAULT_MAX_AGE_MILLIS].
+     */
+    val latestBpm: Int?
+        get() = reading.value
 
     private var gatt: BluetoothGatt? = null
 
@@ -49,7 +53,7 @@ class HeartRateGattClient(private val context: Context) {
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     // Drop the stale reading; autoConnect will restore the link.
-                    latestBpm = null
+                    reading.clear()
                 }
             }
         }
@@ -88,7 +92,7 @@ class HeartRateGattClient(private val context: Context) {
             value: ByteArray,
         ) {
             if (characteristic.uuid == HEART_RATE_MEASUREMENT) {
-                parseHeartRate(value)?.let { latestBpm = it }
+                parseHeartRate(value)?.let { reading.update(it) }
             }
         }
 
@@ -101,7 +105,7 @@ class HeartRateGattClient(private val context: Context) {
             if (characteristic.uuid == HEART_RATE_MEASUREMENT) {
                 @Suppress("DEPRECATION")
                 val value = characteristic.value ?: return
-                parseHeartRate(value)?.let { latestBpm = it }
+                parseHeartRate(value)?.let { reading.update(it) }
             }
         }
     }
@@ -134,7 +138,7 @@ class HeartRateGattClient(private val context: Context) {
     /** Disconnects and releases the GATT connection. */
     @SuppressLint("MissingPermission")
     fun stop() {
-        latestBpm = null
+        reading.clear()
         gatt?.let { active ->
             try {
                 active.disconnect()
