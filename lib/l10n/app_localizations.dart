@@ -1740,7 +1740,7 @@ abstract class AppLocalizations {
   /// Note under the tile server field explaining it is stored per server and reset on sign-in - Used in: tile_server_settings_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.'**
+  /// **'Applies while connected to this server. Signing in again replaces it with your server\'s tile setting, if it has one.'**
   String get mapTilesSettingsNote;
 
   /// Error shown when the map tiles setting cannot be read - Used in: tile_server_settings_screen.dart
@@ -2114,6 +2114,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Some workouts were skipped because Endurain could not read their GPS routes. In the Health app, open your profile, then Apps and Services, select Endurain, and allow Workout Routes.'**
   String get healthSyncRouteConsentGuidanceIos;
+
+  /// Guidance shown on Android when older workouts are hidden because Health Connect history access was declined - Used in: health_sync_available_view.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Older workouts aren\'t shown because Health Connect access to past data wasn\'t granted. Allow \"Access past data\" for Endurain in Health Connect to import them.'**
+  String get healthSyncHistoryAccessGuidance;
 
   /// Button to request HealthKit permissions again - Used in: health_sync_screen.dart
   ///

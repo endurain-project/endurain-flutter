@@ -928,7 +928,7 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Gælder, mens du er forbundet til denne server. Når du logger ind igen, nulstilles den til din servers fliseindstilling.';
+      'Gælder, mens du er forbundet til denne server. Når du logger ind igen, erstattes den af din servers fliseindstilling, hvis den har en.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1142,6 +1142,10 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Nogle træningspas blev sprunget over, fordi Endurain ikke kunne læse deres GPS-ruter. I Health-appen skal du åbne din profil, derefter Apps og tjenester, vælge Endurain og tillade træningsruter.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Ældre træninger vises ikke, fordi adgang til tidligere data i Health Connect ikke er givet. Tillad \"Adgang til tidligere data\" for Endurain i Health Connect for at importere dem.';
 
   @override
   String get healthSyncReviewAccess => 'Gennemgå adgang';

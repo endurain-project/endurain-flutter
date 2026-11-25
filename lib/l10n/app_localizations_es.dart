@@ -935,7 +935,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Se aplica mientras estés conectado a este servidor. Al volver a iniciar sesión, se restablece la configuración de teselas de tu servidor.';
+      'Se aplica mientras estés conectado a este servidor. Al volver a iniciar sesión, se sustituye por la configuración de teselas de tu servidor, si tiene una.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1148,6 +1148,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Se omitieron algunos entrenamientos porque Endurain no pudo leer sus rutas GPS. En la aplicación Salud, abra su perfil, luego Aplicaciones y servicios, seleccione Endurain y permita Rutas de entrenamiento.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'No se muestran los entrenamientos más antiguos porque no se concedió acceso a los datos anteriores en Health Connect. Permite «Acceso a datos anteriores» para Endurain en Health Connect para importarlos.';
 
   @override
   String get healthSyncReviewAccess => 'Acceso a reseñas';

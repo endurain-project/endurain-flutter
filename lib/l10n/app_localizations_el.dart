@@ -943,7 +943,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Ισχύει όσο είστε συνδεδεμένοι σε αυτόν τον διακομιστή. Με νέα σύνδεση επαναφέρεται η ρύθμιση πλακιδίων του διακομιστή σας.';
+      'Ισχύει όσο είστε συνδεδεμένοι σε αυτόν τον διακομιστή. Με νέα σύνδεση αντικαθίσταται από τη ρύθμιση πλακιδίων του διακομιστή σας, αν υπάρχει.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1157,6 +1157,10 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Ορισμένες προπονήσεις παραλείφθηκαν επειδή ο Endurain δεν μπορούσε να διαβάσει τις διαδρομές του GPS. Στην εφαρμογή Υγεία, ανοίξτε το προφίλ σας, στη συνέχεια Εφαρμογές και υπηρεσίες, επιλέξτε Endurain και επιτρέψτε τις διαδρομές προπόνησης.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Οι παλαιότερες προπονήσεις δεν εμφανίζονται, επειδή δεν δόθηκε πρόσβαση σε προηγούμενα δεδομένα στο Health Connect. Επιτρέψτε την «Πρόσβαση σε προηγούμενα δεδομένα» για το Endurain στο Health Connect για να τις εισαγάγετε.';
 
   @override
   String get healthSyncReviewAccess => 'Έλεγχος πρόσβασης';

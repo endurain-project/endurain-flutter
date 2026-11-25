@@ -928,7 +928,7 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Kehtib, kuni oled selle serveriga ühendatud. Uuesti sisselogimisel taastatakse sinu serveri paaniseade.';
+      'Kehtib, kuni oled selle serveriga ühendatud. Uuesti sisselogimisel asendatakse see sinu serveri paaniseadega, kui serveril see on.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1141,6 +1141,10 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Mõned treeningud jäid vahele, kuna Endurain ei osanud nende GPS-i marsruute lugeda. Avage terviserakenduses oma profiil, seejärel Rakendused ja teenused, valige Endurain ja lubage treeningmarsruudid.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Vanemaid treeninguid ei kuvata, sest Health Connectis pole varasematele andmetele juurdepääsu antud. Nende importimiseks luba Health Connectis Endurainile „Juurdepääs varasematele andmetele“.';
 
   @override
   String get healthSyncReviewAccess => 'Vaadake juurdepääs';

@@ -936,7 +936,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Amíg ehhez a kiszolgálóhoz csatlakozik, ez érvényes. Újbóli bejelentkezéskor visszaáll a kiszolgáló csempebeállítása.';
+      'Amíg ehhez a kiszolgálóhoz csatlakozik, ez érvényes. Újbóli bejelentkezéskor a kiszolgáló csempebeállítása lép a helyére, ha van ilyen.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1150,6 +1150,10 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Néhány edzést kihagytak, mert az Endurain nem tudta leolvasni a GPS-útvonalait. Az Egészség alkalmazásban nyissa meg profilját, majd az Alkalmazások és szolgáltatások lehetőséget, válassza az Enduraint, és engedélyezze az edzési útvonalakat.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'A régebbi edzések nem jelennek meg, mert a Health Connectben nincs engedélyezve a korábbi adatokhoz való hozzáférés. Az importálásukhoz engedélyezze a „Hozzáférés a korábbi adatokhoz” lehetőséget az Endurain számára a Health Connectben.';
 
   @override
   String get healthSyncReviewAccess => 'Tekintse át a hozzáférést';

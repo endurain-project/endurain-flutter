@@ -858,7 +858,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mapTilesSettingsSubtitle => '用于绘制地图的瓦片服务器';
 
   @override
-  String get mapTilesSettingsNote => '仅在连接此服务器时生效。重新登录后将恢复为服务器的瓦片设置。';
+  String get mapTilesSettingsNote => '仅在连接此服务器时生效。重新登录后，如果服务器有瓦片设置，将替换为该设置。';
 
   @override
   String get mapTilesSettingsLoadFailed => '无法加载地图瓦片设置。';
@@ -1064,6 +1064,10 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       '由于 Endurain 无法读取 GPS 路线，一些锻炼被跳过。在“健康”应用程序中，打开您的个人资料，然后打开“应用程序和服务”，选择“Endurain”，然后允许“锻炼路线”。';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      '由于未在 Health Connect 中授予访问过往数据的权限，较早的锻炼未显示。请在 Health Connect 中为 Endurain 允许“访问过往数据”以导入它们。';
 
   @override
   String get healthSyncReviewAccess => '审查访问权限';
@@ -2227,7 +2231,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get mapTilesSettingsSubtitle => '用於繪製地圖的圖磚伺服器';
 
   @override
-  String get mapTilesSettingsNote => '僅在連線此伺服器時生效。重新登入後會恢復為伺服器的圖磚設定。';
+  String get mapTilesSettingsNote => '僅在連線此伺服器時生效。重新登入後，如果伺服器有圖磚設定，將改用該設定。';
 
   @override
   String get mapTilesSettingsLoadFailed => '無法載入地圖圖磚設定。';
@@ -2433,6 +2437,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       '由於 Endurain 無法讀取 GPS 路線，一些鍛鍊被跳過。在“健康”應用程式中，打開您的個人資料，然後打開“應用程式和服務”，選擇“Endurain”，然後允許“鍛鍊路線”。';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      '由於未在 Health Connect 中授予存取過往資料的權限，較早的鍛鍊未顯示。請在 Health Connect 中為 Endurain 允許「存取過往資料」以匯入它們。';
 
   @override
   String get healthSyncReviewAccess => '審查存取權限';

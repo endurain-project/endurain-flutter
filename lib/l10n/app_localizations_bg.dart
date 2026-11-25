@@ -932,7 +932,7 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Важи, докато сте свързани с този сървър. При повторно влизане се връща настройката за плочки на вашия сървър.';
+      'Важи, докато сте свързани с този сървър. При повторно влизане се заменя с настройката за плочки на вашия сървър, ако има такава.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1146,6 +1146,10 @@ class AppLocalizationsBg extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Някои тренировки бяха пропуснати, защото Endurain не можеше да разчете техните GPS маршрути. В приложението Health отворете своя профил, след това Apps and Services, изберете Endurain и разрешете Workout Routes.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'По-старите тренировки не се показват, защото не е разрешен достъп до минали данни в Health Connect. Разрешете „Достъп до минали данни“ за Endurain в Health Connect, за да ги импортирате.';
 
   @override
   String get healthSyncReviewAccess => 'Достъп за преглед';

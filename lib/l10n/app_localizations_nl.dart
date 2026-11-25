@@ -930,7 +930,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Geldt zolang je met deze server verbonden bent. Opnieuw inloggen zet de tegelinstelling van je server terug.';
+      'Geldt zolang je met deze server verbonden bent. Opnieuw inloggen vervangt deze door de tegelinstelling van je server, als die er een heeft.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1143,6 +1143,10 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Sommige trainingen werden overgeslagen omdat Endurain hun GPS-routes niet kon lezen. Open in de Gezondheid-app uw profiel, vervolgens Apps en services, selecteer Endurain en sta Trainingsroutes toe.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Oudere trainingen worden niet getoond omdat geen toegang tot eerdere gegevens in Health Connect is verleend. Sta \'Toegang tot eerdere gegevens\' toe voor Endurain in Health Connect om ze te importeren.';
 
   @override
   String get healthSyncReviewAccess => 'Toegang bekijken';

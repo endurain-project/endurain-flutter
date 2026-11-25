@@ -939,7 +939,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Vale finché sei connesso a questo server. Accedendo di nuovo torna l\'impostazione dei tasselli del tuo server.';
+      'Vale finché sei connesso a questo server. Accedendo di nuovo viene sostituita dall\'impostazione dei tasselli del tuo server, se presente.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1153,6 +1153,10 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Alcuni allenamenti sono stati saltati perché Endurain non riusciva a leggere i percorsi GPS. Nell\'app Salute, apri il tuo profilo, quindi App e servizi, seleziona Endurain e consenti Percorsi di allenamento.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Gli allenamenti meno recenti non vengono mostrati perché non è stato concesso l\'accesso ai dati passati in Health Connect. Consenti «Accesso ai dati passati» per Endurain in Health Connect per importarli.';
 
   @override
   String get healthSyncReviewAccess => 'Controlla l\'accesso';

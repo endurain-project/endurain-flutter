@@ -939,7 +939,7 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Vrijedi dok ste povezani s ovim poslužiteljem. Ponovnom prijavom vraća se postavka pločica vašeg poslužitelja.';
+      'Vrijedi dok ste povezani s ovim poslužiteljem. Ponovnom prijavom zamjenjuje se postavkom pločica vašeg poslužitelja, ako je ima.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1153,6 +1153,10 @@ class AppLocalizationsHr extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Neki su treninzi preskočeni jer Endurain nije mogao pročitati njihove GPS rute. U aplikaciji Health otvorite svoj profil, zatim Apps and Services, odaberite Endurain i dopustite Workout Routes.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Stariji treninzi nisu prikazani jer u Health Connectu nije odobren pristup prošlim podacima. Dopustite „Pristup prošlim podacima” za Endurain u Health Connectu da biste ih uvezli.';
 
   @override
   String get healthSyncReviewAccess => 'Pregledajte pristup';

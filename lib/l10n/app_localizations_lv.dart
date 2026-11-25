@@ -928,7 +928,7 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, tiek atjaunots jūsu servera elementu iestatījums.';
+      'Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, to aizstāj jūsu servera elementu iestatījums, ja tāds ir.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1141,6 +1141,10 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Daži treniņi tika izlaisti, jo Endurain nevarēja nolasīt savus GPS maršrutus. Lietotnē Health atveriet savu profilu, pēc tam Programmas un pakalpojumi, atlasiet Endurain un atļaujiet Workout Routes.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Vecāki treniņi netiek rādīti, jo Health Connect nav piešķirta piekļuve iepriekšējiem datiem. Lai tos importētu, Health Connect atļaujiet Endurain “Piekļuve iepriekšējiem datiem”.';
 
   @override
   String get healthSyncReviewAccess => 'Pārskatiet piekļuvi';

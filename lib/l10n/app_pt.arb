@@ -1148,7 +1148,7 @@
   "@mapTilesSettingsSubtitle": {
     "description": "Subtítulo da entrada de mosaicos do mapa - Usado em: settings_screen.dart"
   },
-  "mapTilesSettingsNote": "Aplica-se enquanto estiver ligado a este servidor. Ao iniciar sessão novamente, volta à definição de mapas do seu servidor.",
+  "mapTilesSettingsNote": "Aplica-se enquanto estiver ligado a este servidor. Ao iniciar sessão novamente, é substituída pela definição de mapas do seu servidor, se existir.",
   "@mapTilesSettingsNote": {
     "description": "Nota sob o campo do servidor de mosaicos a explicar que é guardado por servidor e reposto ao iniciar sessão - Usado em: tile_server_settings_screen.dart"
   },
@@ -1413,6 +1413,10 @@
   "healthSyncRouteConsentGuidanceIos": "Alguns treinos foram ignorados porque o Endurain não conseguiu ler as respetivas rotas GPS. Na aplicação Saúde, abra o seu perfil, depois Apps e Serviços, selecione Endurain e autorize Rotas de treino.",
   "@healthSyncRouteConsentGuidanceIos": {
     "description": "Orientação para iOS mostrada quando routeConsentDeniedCount > 0 - Usado em: health_sync_screen.dart"
+  },
+  "healthSyncHistoryAccessGuidance": "Os treinos mais antigos não são apresentados porque não foi concedido acesso aos dados anteriores no Health Connect. Permita \"Acesso a dados anteriores\" para o Endurain no Health Connect para os importar.",
+  "@healthSyncHistoryAccessGuidance": {
+    "description": "Orientação mostrada no Android quando os treinos mais antigos ficam ocultos porque o acesso ao histórico do Health Connect foi recusado - Usado em: health_sync_available_view.dart"
   },
   "healthSyncReviewAccess": "Rever acessos",
   "@healthSyncReviewAccess": {

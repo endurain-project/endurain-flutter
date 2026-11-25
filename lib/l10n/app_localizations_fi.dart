@@ -933,7 +933,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Koskee tätä palvelinyhteyttä. Kun kirjaudut uudelleen, palvelimesi laattasetus palautetaan.';
+      'Koskee tätä palvelinyhteyttä. Kun kirjaudut uudelleen, se korvataan palvelimesi laattasetuksella, jos palvelimella on sellainen.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1146,6 +1146,10 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Jotkut harjoitukset jäivät väliin, koska Endurain ei voinut lukea heidän GPS-reittejään. Avaa Health-sovelluksessa profiilisi, sitten Apps and Services, valitse Endurain ja salli harjoitusreitit.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Vanhempia harjoituksia ei näytetä, koska Health Connectin aiempien tietojen käyttöä ei ole sallittu. Tuo ne sallimalla Endurainille ”Aiempien tietojen käyttö” Health Connectissa.';
 
   @override
   String get healthSyncReviewAccess => 'Tarkista käyttöoikeudet';

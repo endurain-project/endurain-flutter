@@ -940,7 +940,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Gilt, solange du mit diesem Server verbunden bist. Bei erneuter Anmeldung wird die Kacheleinstellung deines Servers wiederhergestellt.';
+      'Gilt, solange du mit diesem Server verbunden bist. Bei erneuter Anmeldung wird sie durch die Kacheleinstellung deines Servers ersetzt, sofern er eine hat.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1154,6 +1154,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Einige Trainingseinheiten wurden ausgelassen, weil Endurain ihre GPS-Routen nicht lesen konnte. Öffnen Sie in der Health-App Ihr ​​Profil, dann Apps und Dienste, wählen Sie Endurain aus und erlauben Sie Trainingsrouten.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Ältere Trainings werden nicht angezeigt, weil der Zugriff auf frühere Daten in Health Connect nicht erlaubt wurde. Erlaube „Zugriff auf frühere Daten“ für Endurain in Health Connect, um sie zu importieren.';
 
   @override
   String get healthSyncReviewAccess => 'Überprüfungszugriff';

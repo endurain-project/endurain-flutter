@@ -943,7 +943,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare se revine la setarea de dale a serverului.';
+      'Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare este înlocuită de setarea de dale a serverului, dacă există.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1157,6 +1157,10 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Unele antrenamente au fost omise, deoarece Endurain nu a putut citi traseele GPS. În aplicația Sănătate, deschideți profilul, apoi Aplicații și servicii, selectați Endurain și permiteți Rute de antrenament.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Antrenamentele mai vechi nu sunt afișate deoarece nu a fost acordat accesul la datele anterioare în Health Connect. Permiteți „Acces la datele anterioare” pentru Endurain în Health Connect pentru a le importa.';
 
   @override
   String get healthSyncReviewAccess => 'Examinați accesul';

@@ -936,7 +936,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Важи док сте повезани са овим сервером. Поновном пријавом враћа се подешавање плочица вашег сервера.';
+      'Важи док сте повезани са овим сервером. Поновном пријавом замењује се подешавањем плочица вашег сервера, ако га има.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1151,6 +1151,10 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Неки тренинзи су прескочени јер Ендураин није могао да прочита њихове ГПС руте. У апликацији Здравље отворите свој профил, затим Апликације и услуге, изаберите Ендураин и дозволите Руте за вежбање.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Старији тренинзи се не приказују јер у Health Connect-у није одобрен приступ претходним подацима. Да бисте их увезли, дозволите „Приступ претходним подацима” за Endurain у Health Connect-у.';
 
   @override
   String get healthSyncReviewAccess => 'Прегледајте приступ';

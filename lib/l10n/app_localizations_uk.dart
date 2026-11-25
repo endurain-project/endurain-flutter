@@ -926,7 +926,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Діє, поки ви підключені до цього сервера. Після повторного входу відновлюється налаштування плиток вашого сервера.';
+      'Діє, поки ви підключені до цього сервера. Після повторного входу замінюється налаштуванням плиток вашого сервера, якщо воно є.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1138,6 +1138,10 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Деякі тренування було пропущено, оскільки Endurain не міг прочитати їхні маршрути GPS. У програмі Health відкрийте свій профіль, потім Apps and Services, виберіть Endurain і дозвольте Workout Routes.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Старіші тренування не показано, оскільки в Health Connect не надано доступ до попередніх даних. Щоб імпортувати їх, дозвольте Endurain «Доступ до попередніх даних» у Health Connect.';
 
   @override
   String get healthSyncReviewAccess => 'Огляд доступу';

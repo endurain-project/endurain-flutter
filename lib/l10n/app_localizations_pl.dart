@@ -936,7 +936,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Obowiązuje, gdy jesteś połączony z tym serwerem. Ponowne zalogowanie przywraca ustawienie kafelków Twojego serwera.';
+      'Obowiązuje, gdy jesteś połączony z tym serwerem. Ponowne zalogowanie zastępuje je ustawieniem kafelków Twojego serwera, jeśli je ma.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1149,6 +1149,10 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Niektóre treningi zostały pominięte, ponieważ Endurain nie mógł odczytać tras GPS. W aplikacji Zdrowie otwórz swój profil, wybierz Aplikacje i usługi, wybierz Endurain i zezwól na trasy treningowe.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Starsze treningi nie są wyświetlane, ponieważ nie przyznano dostępu do wcześniejszych danych w Health Connect. Aby je zaimportować, zezwól aplikacji Endurain na „Dostęp do wcześniejszych danych” w Health Connect.';
 
   @override
   String get healthSyncReviewAccess => 'Sprawdź dostęp';

@@ -940,7 +940,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Platí, kým ste pripojení k tomuto serveru. Po opätovnom prihlásení sa obnoví nastavenie dlaždíc vášho servera.';
+      'Platí, kým ste pripojení k tomuto serveru. Po opätovnom prihlásení sa nahradí nastavením dlaždíc vášho servera, ak ho server má.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1154,6 +1154,10 @@ class AppLocalizationsSk extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Niektoré tréningy boli vynechané, pretože Endurain nedokázal prečítať ich GPS trasy. V aplikácii Zdravie otvorte svoj profil, potom Aplikácie a služby, vyberte Endurain a povoľte trasy cvičenia.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Staršie tréningy sa nezobrazujú, pretože nebol udelený prístup k minulým údajom v Health Connect. Ak ich chcete importovať, povoľte pre Endurain v Health Connect „Prístup k minulým údajom“.';
 
   @override
   String get healthSyncReviewAccess => 'Kontrola prístupu';

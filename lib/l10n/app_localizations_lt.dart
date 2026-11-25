@@ -923,7 +923,7 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Galioja, kol esate prisijungę prie šio serverio. Prisijungus iš naujo, atkuriamas jūsų serverio išklotinių nustatymas.';
+      'Galioja, kol esate prisijungę prie šio serverio. Prisijungus iš naujo, jis pakeičiamas jūsų serverio išklotinių nustatymu, jei serveris jį turi.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1136,6 +1136,10 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Kai kurios treniruotės buvo praleistos, nes Endurain negalėjo nuskaityti jų GPS maršrutų. Sveikatos programoje atidarykite savo profilį, tada Programos ir paslaugos, pasirinkite Endurain ir leiskite treniruočių maršrutus.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Senesnės treniruotės nerodomos, nes „Health Connect“ nesuteikta prieiga prie ankstesnių duomenų. Kad jas importuotumėte, „Health Connect“ leiskite Endurain „Prieiga prie ankstesnių duomenų“.';
 
   @override
   String get healthSyncReviewAccess => 'Peržiūrėkite prieigą';

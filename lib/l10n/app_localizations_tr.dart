@@ -919,7 +919,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca sunucunuzun döşeme ayarına döner.';
+      'Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca, varsa sunucunuzun döşeme ayarıyla değiştirilir.';
 
   @override
   String get mapTilesSettingsLoadFailed => 'Harita döşemesi ayarı yüklenemedi.';
@@ -1131,6 +1131,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Endurain GPS rotalarını okuyamadığı için bazı antrenmanlar atlandı. Sağlık uygulamasında profilinizi açın, ardından Uygulamalar ve Hizmetler, Endurain\'i seçin ve Antrenman Rotalarına izin verin.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Health Connect\'te geçmiş verilere erişim izni verilmediği için eski antrenmanlar gösterilmiyor. İçe aktarmak için Health Connect\'te Endurain\'e \"Geçmiş verilere erişim\" izni verin.';
 
   @override
   String get healthSyncReviewAccess => 'Erişimi inceleyin';

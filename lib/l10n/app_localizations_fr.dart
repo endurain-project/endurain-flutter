@@ -938,7 +938,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'S\'applique tant que vous êtes connecté à ce serveur. Une nouvelle connexion rétablit le réglage de tuiles de votre serveur.';
+      'S\'applique tant que vous êtes connecté à ce serveur. Une nouvelle connexion le remplace par le réglage de tuiles de votre serveur, s\'il en a un.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1152,6 +1152,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Certains entraînements ont été ignorés car Endurain ne pouvait pas lire ses itinéraires GPS. Dans l\'application Santé, ouvrez votre profil, puis Applications et services, sélectionnez Endurain et autorisez les itinéraires d\'entraînement.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Les entraînements plus anciens ne s\'affichent pas, car l\'accès aux données passées n\'a pas été accordé dans Health Connect. Autorisez « Accès aux données passées » pour Endurain dans Health Connect pour les importer.';
 
   @override
   String get healthSyncReviewAccess => 'Accès aux avis';
