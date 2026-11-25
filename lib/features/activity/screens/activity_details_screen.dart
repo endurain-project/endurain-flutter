@@ -162,6 +162,10 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
         }
 
         return ListView(
+          // As a pane, leave the route's primary scroll controller (status
+          // bar tap to scroll to top, keyboard paging) to the history list:
+          // the controller supports one scroll view at a time.
+          primary: widget.embedded ? false : null,
           padding: readableContentPadding(context),
           children: [
             _RouteMapSection(future: _routeMapFor(record)),

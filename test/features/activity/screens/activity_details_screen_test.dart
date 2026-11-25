@@ -388,6 +388,10 @@ void main() {
         200,
         scrollable: find.byType(Scrollable).first,
       );
+      // scrollUntilVisible stops once the tile is built, which can still be
+      // just below the window depending on font metrics.
+      await tester.ensureVisible(find.text(_l10n.activityDeleteLocal));
+      await tester.pumpAndSettle();
       await tester.tap(find.text(_l10n.activityDeleteLocal));
       await tester.pumpAndSettle();
       // Confirm in the dialog.

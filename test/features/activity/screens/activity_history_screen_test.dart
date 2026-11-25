@@ -386,6 +386,19 @@ void main() {
       expect(find.text(l10n.activityHistoryDetailsTitle), findsNothing);
     });
 
+    testWidgets('only the list uses the primary scroll controller', (
+      tester,
+    ) async {
+      setWindowSize(tester, landscape);
+      addTearDown(tester.view.reset);
+      await pumpHistory(tester);
+
+      // The status bar tap and keyboard paging drive this controller, which
+      // fails with more than one scroll view attached.
+      final listContext = tester.element(find.byType(ListView).first);
+      expect(PrimaryScrollController.of(listContext).positions, hasLength(1));
+    });
+
     testWidgets('folding back to a narrow window keeps the list', (
       tester,
     ) async {
