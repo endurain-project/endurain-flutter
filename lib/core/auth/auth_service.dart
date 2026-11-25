@@ -177,22 +177,35 @@ class AuthService {
       }
 
       try {
-        final replaced = await _sessionStore.replaceSessionIfCurrent(
+        final replacement = await _sessionStore.replaceSessionIfCurrent(
           expected: session,
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
           sessionId: tokens.sessionId,
           expiresInSeconds: tokens.expiresIn,
         );
-        if (!replaced) {
+        if (!replacement.replaced) {
           // Another sign-in or sign-out replaced the session mid-refresh.
           _recordRefreshFailure('session_superseded');
+          return false;
         }
-        return replaced;
+        final persistError = replacement.persistError;
+        if (persistError != null) {
+          // The server rotated the tokens but secure storage rejected them.
+          // The store keeps the new session current in memory and retries the
+          // write on every later read, so the caller can use it; the old
+          // stored refresh token is already dead. Should the app end before a
+          // write succeeds the user has to sign in again.
+          _diagnostics.recordBreadcrumbSync(
+            DiagnosticsEvents.authRefreshPersistPending,
+            details: diagnosticErrorDetails(persistError),
+          );
+        }
+        return true;
       } catch (error) {
-        // The server accepted the refresh but the device could not store the
-        // result (secure storage unavailable). That says nothing about the
-        // session, so keep it rather than signing the user out.
+        // The store could not even check the current session (secure storage
+        // unreadable). That says nothing about the session, so keep it rather
+        // than signing the user out.
         _recordRefreshFailure('persist_failed', error: error);
         return false;
       }

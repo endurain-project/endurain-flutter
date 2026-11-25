@@ -301,6 +301,11 @@ class DiagnosticsEvents {
   static const String sessionRevalidateFailed = 'session.revalidate_failed';
   static const String authRefreshFailed = 'auth.refresh_failed';
   static const String authSessionCleared = 'auth.session_cleared';
+
+  /// A refresh succeeded but secure storage rejected the new tokens; they stay
+  /// current in memory and the write is retried on the next read.
+  static const String authRefreshPersistPending =
+      'auth.refresh_persist_pending';
   static const String authServerSettingsSaveFailed =
       'auth.server_settings_save_failed';
   static const String httpRequestFailed = 'http.request_failed';

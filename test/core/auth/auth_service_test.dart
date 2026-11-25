@@ -637,15 +637,105 @@ void main() {
       },
     );
 
-    test('a refresh whose result cannot be stored keeps the session', () async {
+    test(
+      'a refresh whose result cannot be stored keeps the new tokens usable',
+      () async {
+        final storage = _FlakySecureStorage();
+        final store = AuthSessionStore(storage: storage);
+        await _seedSession(storage, store: store);
+        storage.failSessionWrites = true;
+        final diagnostics = RecordingDiagnostics();
+        final service = AuthService(
+          storage: storage,
+          sessionStore: store,
+          diagnostics: diagnostics,
+          httpClient: MockClient((request) async {
+            return http.Response(
+              '{"access_token":"access-2","refresh_token":"refresh-2",'
+              '"session_id":"session-2","expires_in":3600}',
+              200,
+            );
+          }),
+        );
+
+        expect(await service.refreshToken(), isTrue);
+
+        expect(
+          diagnostics.events,
+          isNot(contains(DiagnosticsEvents.authRefreshFailed)),
+        );
+        expect(
+          diagnostics.single(DiagnosticsEvents.authRefreshPersistPending),
+          {
+            'type': 'AppException',
+            'code': AppErrorCode.secureStorageWriteFailed.name,
+          },
+        );
+        expect(
+          diagnostics.events,
+          isNot(contains(DiagnosticsEvents.authSessionCleared)),
+        );
+        final current = await store.readSession();
+        expect(current?.accessToken, 'access-2');
+        expect(current?.refreshToken, 'refresh-2');
+        // Not stored yet: the old session is still the one on disk.
+        expect((await _readSession(storage))?.accessToken, 'access-1');
+
+        storage.failSessionWrites = false;
+        expect((await store.readSession())?.accessToken, 'access-2');
+        expect((await _readSession(storage))?.accessToken, 'access-2');
+      },
+    );
+
+    test(
+      'a refresh after an unstored one sends the rotated refresh token',
+      () async {
+        final storage = _FlakySecureStorage();
+        final store = AuthSessionStore(storage: storage);
+        await _seedSession(storage, store: store);
+        storage.failSessionWrites = true;
+        final sentRefreshTokens = <String>[];
+        var issued = 1;
+        final service = AuthService(
+          storage: storage,
+          sessionStore: store,
+          httpClient: MockClient((request) async {
+            final body = jsonDecode(request.body) as Map;
+            sentRefreshTokens.add(body['refresh_token'] as String);
+            issued++;
+            return http.Response(
+              '{"access_token":"access-$issued",'
+              '"refresh_token":"refresh-$issued",'
+              '"session_id":"session-$issued","expires_in":3600}',
+              200,
+            );
+          }),
+        );
+
+        expect(await service.refreshToken(), isTrue);
+        storage.failSessionWrites = false;
+        expect(await service.refreshToken(), isTrue);
+
+        expect(sentRefreshTokens, ['refresh-1', 'refresh-2']);
+        expect((await _readSession(storage))?.accessToken, 'access-3');
+      },
+    );
+
+    test('a sign-out discards a refreshed session not yet stored', () async {
       final storage = _FlakySecureStorage();
-      await _seedSession(storage);
+      final store = AuthSessionStore(storage: storage);
+      await _seedSession(storage, store: store);
       storage.failSessionWrites = true;
-      final diagnostics = RecordingDiagnostics();
+      final logoutTokens = <String>[];
       final service = AuthService(
         storage: storage,
-        diagnostics: diagnostics,
+        sessionStore: store,
         httpClient: MockClient((request) async {
+          if (request.url.path == ApiEndpoints.defaults.logoutEndpoint) {
+            final body = jsonDecode(request.body) as Map;
+            logoutTokens.add(body['refresh_token'] as String);
+            return http.Response('{}', 200);
+          }
           return http.Response(
             '{"access_token":"access-2","refresh_token":"refresh-2",'
             '"session_id":"session-2","expires_in":3600}',
@@ -654,17 +744,12 @@ void main() {
         }),
       );
 
-      expect(await service.refreshToken(), isFalse);
+      expect(await service.refreshToken(), isTrue);
+      expect(await service.logout(), isTrue);
 
-      expect(
-        diagnostics.single(DiagnosticsEvents.authRefreshFailed)['reason'],
-        'persist_failed',
-      );
-      expect(
-        diagnostics.events,
-        isNot(contains(DiagnosticsEvents.authSessionCleared)),
-      );
-      expect((await _readSession(storage))?.accessToken, 'access-1');
+      expect(logoutTokens, ['refresh-2']);
+      expect(await store.readSession(), isNull);
+      expect(await _readSession(storage), isNull);
     });
 
     test(

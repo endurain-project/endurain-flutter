@@ -8,6 +8,25 @@ import 'package:endurain/core/utils/id_generation.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 
+/// Outcome of [AuthSessionStore.replaceSessionIfCurrent].
+final class SessionReplacement {
+  const SessionReplacement._({required this.replaced, this.persistError});
+
+  /// The expected session was no longer current; nothing changed.
+  static const superseded = SessionReplacement._(replaced: false);
+
+  /// The replacement is the current session and is stored.
+  static const stored = SessionReplacement._(replaced: true);
+
+  /// Whether the replacement became the current session.
+  final bool replaced;
+
+  /// Set when secure storage rejected the replacement: it is the current
+  /// session, but held in memory only until a later store operation manages
+  /// to write it (see [AuthSessionStore.replaceSessionIfCurrent]).
+  final Object? persistError;
+}
+
 class AuthSessionStore {
   AuthSessionStore({
     required SecureStorageService storage,
@@ -19,9 +38,25 @@ class AuthSessionStore {
   final AppConfig _config;
   final SerialTaskQueue _queue = SerialTaskQueue();
 
+  /// A refreshed session that secure storage refused to store, kept as the
+  /// current session until a write succeeds. Only accessed on [_queue].
+  ///
+  /// The server rotates the refresh token on every refresh, so the stored
+  /// session it replaced is already dead; this one is the only usable
+  /// credential. While it is set every read of the session returns it and
+  /// first retries the write. It is never persisted any other way: if the
+  /// process ends before a write succeeds the new tokens are lost, the stored
+  /// session's refresh is rejected and the user signs in again.
+  AuthSession? _pendingSession;
+
   Future<AuthSession?> readSession() => _serialize(_readSessionUnlocked);
 
   Future<AuthSession?> _readSessionUnlocked() async {
+    final pending = _pendingSession;
+    if (pending != null) {
+      await _tryPersistPending(pending);
+      return pending;
+    }
     final raw = await _storage.getAuthSession();
     if (raw == null || raw.isEmpty) {
       return null;
@@ -85,6 +120,9 @@ class AuthSessionStore {
     required int expiresInSeconds,
   }) async {
     await _mutate(() async {
+      // An explicit sign-in replaces whatever session was current, including
+      // one still waiting to be stored.
+      _pendingSession = null;
       final normalizedOrigin = ServerUrlResolver.normalize(
         origin,
         config: _config,
@@ -139,18 +177,27 @@ class AuthSessionStore {
     }
   }
 
-  Future<bool> replaceSessionIfCurrent({
+  /// Replaces the session with refreshed tokens when [expected] is still the
+  /// current session.
+  ///
+  /// When secure storage rejects the write the replacement still becomes the
+  /// current session, in memory only, and the result carries the error: the
+  /// server has already rotated the refresh token, so keeping [expected]
+  /// would only defer a sign-out. Every later read of the session returns the
+  /// replacement and retries the write; [clear], a matching [clearIfCurrent]
+  /// or [clearIfProfileCurrent], and a sign-in ([saveSession]) discard it.
+  /// Revision checks see it like a stored session.
+  Future<SessionReplacement> replaceSessionIfCurrent({
     required AuthSession expected,
     required String accessToken,
     required String refreshToken,
     required String sessionId,
     required int expiresInSeconds,
-  }) async {
-    var replaced = false;
-    await _mutate(() async {
+  }) {
+    return _serialize(() async {
       final current = await _readSessionUnlocked();
       if (current?.revision != expected.revision) {
-        return;
+        return SessionReplacement.superseded;
       }
       final replacement = _buildSession(
         origin: expected.origin,
@@ -165,10 +212,16 @@ class AuthSessionStore {
       // Only the session blob changes on a refresh: the origin and username
       // are the expected session's, and legacy keys were purged when it was
       // written. Skipping those writes keeps a refresh from failing on them.
-      await _storage.setAuthSession(jsonEncode(replacement.toJson()));
-      replaced = true;
+      try {
+        await _storage.setAuthSession(jsonEncode(replacement.toJson()));
+      } on AppException catch (error) {
+        if (error.code != AppErrorCode.secureStorageWriteFailed) rethrow;
+        _pendingSession = replacement;
+        return SessionReplacement._(replaced: true, persistError: error);
+      }
+      _pendingSession = null;
+      return SessionReplacement.stored;
     });
-    return replaced;
   }
 
   Future<bool> clearIfCurrent(AuthSession expected) async {
@@ -227,6 +280,17 @@ class AuthSessionStore {
     return session;
   }
 
+  /// Writes [pending], the session held in memory only, and drops it from
+  /// memory once stored. A rejected write keeps it pending for the next try.
+  Future<void> _tryPersistPending(AuthSession pending) async {
+    final stored = await _tryWrite(
+      () => _storage.setAuthSession(jsonEncode(pending.toJson())),
+    );
+    if (stored && identical(_pendingSession, pending)) {
+      _pendingSession = null;
+    }
+  }
+
   Future<void> _writeCanonicalSession(AuthSession session) async {
     await _storage.setServerUrl(session.origin);
     await _storage.setAuthSession(jsonEncode(session.toJson()));
@@ -242,7 +306,12 @@ class AuthSessionStore {
 
   Future<void> clear() => _mutate(_clearUnlocked);
 
-  Future<void> _clearUnlocked() => _storage.clearAuthTokens();
+  /// Discards a session still waiting to be stored before deleting the stored
+  /// one, so even a failed delete never leaves it current.
+  Future<void> _clearUnlocked() {
+    _pendingSession = null;
+    return _storage.clearAuthTokens();
+  }
 
   Future<void> _mutate(Future<void> Function() action) {
     return _serialize(() async {
