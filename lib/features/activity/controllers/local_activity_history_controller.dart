@@ -49,7 +49,8 @@ class LocalActivityHistoryController extends SafeNotifier {
   int _retainSaveGeneration = 0;
 
   /// Retention writes run one at a time, in call order, so storage always ends
-  /// on the last successful write.
+  /// on the last successful write. Reads wait behind it too, so a refresh
+  /// during a pending write sees the written value.
   Future<void> _retainWriteQueue = Future<void>.value();
 
   List<LocalActivityRecord> get records => List.unmodifiable(_records);
@@ -169,7 +170,12 @@ class LocalActivityHistoryController extends SafeNotifier {
     }
     final generation = _retainSaveGeneration;
     try {
-      final stored = await repository.isRetainUploadedGpxEnabled();
+      // Read behind any pending write, so the result reflects it. Queued
+      // writes never fail (they handle their own errors), so the read always
+      // runs.
+      final stored = await _retainWriteQueue.then(
+        (_) => repository.isRetainUploadedGpxEnabled(),
+      );
       if (generation != _retainSaveGeneration) {
         // A save started while this read was in flight; it owns the value.
         return;

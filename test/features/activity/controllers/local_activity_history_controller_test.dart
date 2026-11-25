@@ -410,10 +410,41 @@ void main() {
       expect(retention.stored, isFalse);
     });
 
+    test('a refresh during a pending save reads the saved value', () async {
+      final retention = _GatedRetentionSettings()..stored = true;
+      final controller = buildController(retention);
+
+      final save = controller.setRetainUploadedGpx(false);
+      await pumpEventQueue();
+      expect(retention.writes, hasLength(1));
+      final load = controller.load();
+      await pumpEventQueue();
+      // The read waits for the pending write instead of seeing the old value.
+      expect(retention.reads, isEmpty);
+      retention.writes.single.complete();
+      await save;
+      await pumpEventQueue();
+      retention.reads.single.complete();
+      await load;
+
+      expect(controller.retainUploadedGpx, isFalse);
+
+      // The rollback baseline matches storage too: a failed save reverts to
+      // the value that was actually written.
+      final failing = controller.setRetainUploadedGpx(true);
+      await pumpEventQueue();
+      retention.writes.last.completeError(StateError('write failed'));
+      await failing;
+
+      expect(retention.stored, isFalse);
+      expect(controller.retainUploadedGpx, isFalse);
+    });
+
     test('overlapping saves that both fail match what is stored', () async {
       final retention = _GatedRetentionSettings()..stored = true;
       final controller = buildController(retention);
       final load = controller.load();
+      await pumpEventQueue();
       retention.reads.single.complete();
       await load;
 
