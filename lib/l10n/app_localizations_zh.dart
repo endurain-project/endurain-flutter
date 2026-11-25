@@ -729,6 +729,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsScreen => '设置';
 
   @override
+  String get settingsSectionAccount => '账户';
+
+  @override
+  String get settingsSectionGeneral => '通用';
+
+  @override
+  String get settingsSectionRecording => '记录';
+
+  @override
+  String get settingsSectionDevices => '设备与集成';
+
+  @override
+  String get settingsSectionData => '数据';
+
+  @override
+  String get settingsSectionPrivacySupport => '隐私与支持';
+
+  @override
   String get deviceAccessTitle => '设备接入';
 
   @override
@@ -2063,6 +2081,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsScreen => '設定';
+
+  @override
+  String get settingsSectionAccount => '帳戶';
+
+  @override
+  String get settingsSectionGeneral => '一般';
+
+  @override
+  String get settingsSectionRecording => '記錄';
+
+  @override
+  String get settingsSectionDevices => '裝置與整合';
+
+  @override
+  String get settingsSectionData => '資料';
+
+  @override
+  String get settingsSectionPrivacySupport => '隱私與支援';
 
   @override
   String get deviceAccessTitle => '裝置存取';

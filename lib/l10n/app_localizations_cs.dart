@@ -803,6 +803,24 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsScreen => 'Nastavení';
 
   @override
+  String get settingsSectionAccount => 'Účet';
+
+  @override
+  String get settingsSectionGeneral => 'Obecné';
+
+  @override
+  String get settingsSectionRecording => 'Záznam';
+
+  @override
+  String get settingsSectionDevices => 'Zařízení a integrace';
+
+  @override
+  String get settingsSectionData => 'Data';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Soukromí a podpora';
+
+  @override
   String get deviceAccessTitle => 'Přístup k zařízení';
 
   @override

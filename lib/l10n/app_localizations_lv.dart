@@ -793,6 +793,24 @@ class AppLocalizationsLv extends AppLocalizations {
   String get settingsScreen => 'Iestatījumi';
 
   @override
+  String get settingsSectionAccount => 'Konts';
+
+  @override
+  String get settingsSectionGeneral => 'Vispārīgi';
+
+  @override
+  String get settingsSectionRecording => 'Ierakstīšana';
+
+  @override
+  String get settingsSectionDevices => 'Ierīces un integrācijas';
+
+  @override
+  String get settingsSectionData => 'Dati';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privātums un atbalsts';
+
+  @override
   String get deviceAccessTitle => 'Ierīces piekļuve';
 
   @override

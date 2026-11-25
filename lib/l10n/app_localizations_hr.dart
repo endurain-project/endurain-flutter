@@ -805,6 +805,24 @@ class AppLocalizationsHr extends AppLocalizations {
   String get settingsScreen => 'Postavke';
 
   @override
+  String get settingsSectionAccount => 'Račun';
+
+  @override
+  String get settingsSectionGeneral => 'Općenito';
+
+  @override
+  String get settingsSectionRecording => 'Snimanje';
+
+  @override
+  String get settingsSectionDevices => 'Uređaji i integracije';
+
+  @override
+  String get settingsSectionData => 'Podaci';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privatnost i podrška';
+
+  @override
   String get deviceAccessTitle => 'Pristup uređaju';
 
   @override

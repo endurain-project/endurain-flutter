@@ -796,6 +796,24 @@ class AppLocalizationsBg extends AppLocalizations {
   String get settingsScreen => 'Настройки';
 
   @override
+  String get settingsSectionAccount => 'Акаунт';
+
+  @override
+  String get settingsSectionGeneral => 'Общи';
+
+  @override
+  String get settingsSectionRecording => 'Записване';
+
+  @override
+  String get settingsSectionDevices => 'Устройства и интеграции';
+
+  @override
+  String get settingsSectionData => 'Данни';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Поверителност и поддръжка';
+
+  @override
   String get deviceAccessTitle => 'Достъп до устройството';
 
   @override

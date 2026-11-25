@@ -801,6 +801,24 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsScreen => 'Impostazioni';
 
   @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsSectionGeneral => 'Generali';
+
+  @override
+  String get settingsSectionRecording => 'Registrazione';
+
+  @override
+  String get settingsSectionDevices => 'Dispositivi e integrazioni';
+
+  @override
+  String get settingsSectionData => 'Dati';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacy e supporto';
+
+  @override
   String get deviceAccessTitle => 'Accesso al dispositivo';
 
   @override

@@ -792,6 +792,24 @@ class AppLocalizationsNb extends AppLocalizations {
   String get settingsScreen => 'Innstillinger';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Generelt';
+
+  @override
+  String get settingsSectionRecording => 'Opptak';
+
+  @override
+  String get settingsSectionDevices => 'Enheter og integrasjoner';
+
+  @override
+  String get settingsSectionData => 'Data';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Personvern og støtte';
+
+  @override
   String get deviceAccessTitle => 'Enhetstilgang';
 
   @override

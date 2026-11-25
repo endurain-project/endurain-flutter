@@ -792,6 +792,24 @@ class AppLocalizationsUk extends AppLocalizations {
   String get settingsScreen => 'Налаштування';
 
   @override
+  String get settingsSectionAccount => 'Обліковий запис';
+
+  @override
+  String get settingsSectionGeneral => 'Загальні';
+
+  @override
+  String get settingsSectionRecording => 'Запис';
+
+  @override
+  String get settingsSectionDevices => 'Пристрої та інтеграції';
+
+  @override
+  String get settingsSectionData => 'Дані';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Конфіденційність і підтримка';
+
+  @override
   String get deviceAccessTitle => 'Доступ до пристрою';
 
   @override

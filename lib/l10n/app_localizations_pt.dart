@@ -799,6 +799,24 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsScreen => 'Configurações';
 
   @override
+  String get settingsSectionAccount => 'Conta';
+
+  @override
+  String get settingsSectionGeneral => 'Geral';
+
+  @override
+  String get settingsSectionRecording => 'Gravação';
+
+  @override
+  String get settingsSectionDevices => 'Dispositivos e integrações';
+
+  @override
+  String get settingsSectionData => 'Dados';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacidade e suporte';
+
+  @override
   String get deviceAccessTitle => 'Acesso ao dispositivo';
 
   @override

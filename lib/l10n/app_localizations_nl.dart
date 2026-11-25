@@ -793,6 +793,24 @@ class AppLocalizationsNl extends AppLocalizations {
   String get settingsScreen => 'Instellingen';
 
   @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsSectionGeneral => 'Algemeen';
+
+  @override
+  String get settingsSectionRecording => 'Opnemen';
+
+  @override
+  String get settingsSectionDevices => 'Apparaten en integraties';
+
+  @override
+  String get settingsSectionData => 'Gegevens';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacy en ondersteuning';
+
+  @override
   String get deviceAccessTitle => 'Toegang tot apparaat';
 
   @override

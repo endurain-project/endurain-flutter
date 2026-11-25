@@ -793,6 +793,24 @@ class AppLocalizationsEt extends AppLocalizations {
   String get settingsScreen => 'Sätted';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Üldine';
+
+  @override
+  String get settingsSectionRecording => 'Salvestamine';
+
+  @override
+  String get settingsSectionDevices => 'Seadmed ja integratsioonid';
+
+  @override
+  String get settingsSectionData => 'Andmed';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privaatsus ja tugi';
+
+  @override
   String get deviceAccessTitle => 'Seadme juurdepääs';
 
   @override

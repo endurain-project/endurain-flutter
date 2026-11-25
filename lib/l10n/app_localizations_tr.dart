@@ -784,6 +784,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsScreen => 'Ayarlar';
 
   @override
+  String get settingsSectionAccount => 'Hesap';
+
+  @override
+  String get settingsSectionGeneral => 'Genel';
+
+  @override
+  String get settingsSectionRecording => 'Kayıt';
+
+  @override
+  String get settingsSectionDevices => 'Cihazlar ve entegrasyonlar';
+
+  @override
+  String get settingsSectionData => 'Veriler';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Gizlilik ve destek';
+
+  @override
   String get deviceAccessTitle => 'Cihaz erişimi';
 
   @override

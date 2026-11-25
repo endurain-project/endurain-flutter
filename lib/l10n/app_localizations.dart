@@ -1167,13 +1167,13 @@ abstract class AppLocalizations {
   /// **'Completed activities saved on this device'**
   String get activityHistorySettingsSubtitle;
 
-  /// Settings switch label for local uploaded GPX retention - Used in: settings_screen.dart
+  /// Switch label for local uploaded GPX retention - Used in: activity_history_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Keep uploaded GPX files'**
   String get activityRetainUploadedGpx;
 
-  /// Settings switch subtitle explaining private local GPX retention - Used in: settings_screen.dart
+  /// Switch subtitle explaining private local GPX retention - Used in: activity_history_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Stores completed route files in private app storage after upload.'**
@@ -1484,6 +1484,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settingsScreen;
+
+  /// Settings section header for account (server and sign-in) - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsSectionAccount;
+
+  /// Settings section header for general preferences (language, units) - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsSectionGeneral;
+
+  /// Settings section header for activity recording behaviour - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get settingsSectionRecording;
+
+  /// Settings section header for sensors and health sync - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Devices & integrations'**
+  String get settingsSectionDevices;
+
+  /// Settings section header for locally stored activities - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get settingsSectionData;
+
+  /// Settings section header for permissions, diagnostics and the source code link - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & support'**
+  String get settingsSectionPrivacySupport;
 
   /// Settings entry and screen title for mobile permissions - Used in: settings_screen.dart, device_access_screen.dart
   ///

@@ -799,6 +799,24 @@ class AppLocalizationsGl extends AppLocalizations {
   String get settingsScreen => 'Configuración';
 
   @override
+  String get settingsSectionAccount => 'Conta';
+
+  @override
+  String get settingsSectionGeneral => 'Xeral';
+
+  @override
+  String get settingsSectionRecording => 'Gravación';
+
+  @override
+  String get settingsSectionDevices => 'Dispositivos e integracións';
+
+  @override
+  String get settingsSectionData => 'Datos';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacidade e asistencia';
+
+  @override
   String get deviceAccessTitle => 'Acceso ao dispositivo';
 
   @override

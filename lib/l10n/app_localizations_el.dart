@@ -805,6 +805,24 @@ class AppLocalizationsEl extends AppLocalizations {
   String get settingsScreen => 'Ρυθμίσεις';
 
   @override
+  String get settingsSectionAccount => 'Λογαριασμός';
+
+  @override
+  String get settingsSectionGeneral => 'Γενικά';
+
+  @override
+  String get settingsSectionRecording => 'Καταγραφή';
+
+  @override
+  String get settingsSectionDevices => 'Συσκευές και ενσωματώσεις';
+
+  @override
+  String get settingsSectionData => 'Δεδομένα';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Απόρρητο και υποστήριξη';
+
+  @override
   String get deviceAccessTitle => 'Πρόσβαση στη συσκευή';
 
   @override

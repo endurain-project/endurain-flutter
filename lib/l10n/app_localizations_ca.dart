@@ -804,6 +804,24 @@ class AppLocalizationsCa extends AppLocalizations {
   String get settingsScreen => 'Configuració';
 
   @override
+  String get settingsSectionAccount => 'Compte';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionRecording => 'Enregistrament';
+
+  @override
+  String get settingsSectionDevices => 'Dispositius i integracions';
+
+  @override
+  String get settingsSectionData => 'Dades';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privadesa i assistència';
+
+  @override
   String get deviceAccessTitle => 'Accés al dispositiu';
 
   @override

@@ -155,62 +155,82 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
-          if (_controller.isLoading && _controller.records.isEmpty) {
-            return const Center(child: AdaptiveLoadingIndicator());
-          }
-
-          if (_controller.error != null && _controller.records.isEmpty) {
-            return _HistoryMessage(
-              message: l10n.activityHistoryLoadFailed,
-              actionLabel: l10n.activityHistoryRefresh,
-              onAction: _controller.refresh,
-            );
-          }
-
-          if (_controller.records.isEmpty) {
-            return _HistoryMessage(message: l10n.activityHistoryEmpty);
-          }
-
+          // The retention switch stays reachable whatever state the list is
+          // in, so it sits above the records rather than inside them.
           return RefreshIndicator.adaptive(
             onRefresh: _controller.refresh,
             child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(UIConstants.paddingStandard),
               children: [
-                AdaptiveListSection(
-                  header: l10n.activityHistoryLocalActivities,
-                  children: [
-                    for (final record in _controller.records)
-                      _ActivityRecordTile(
-                        record: record,
-                        isBusy: _controller.isBusy(record.id),
-                        onTap: () => _openDetails(record),
-                        onRetry:
-                            record.uploadStatus ==
-                                LocalActivityUploadStatus.uploaded
-                            ? null
-                            : () => _retry(record),
-                        onDelete: () => _delete(record),
+                if (_controller.canConfigureGpxRetention) ...[
+                  AdaptiveListSection(
+                    children: [
+                      AdaptiveSwitchListTile(
+                        title: l10n.activityRetainUploadedGpx,
+                        subtitle: l10n.activityRetainUploadedGpxSubtitle,
+                        value: _controller.retainUploadedGpx,
+                        onChanged: _controller.setRetainUploadedGpx,
                       ),
-                  ],
-                ),
-                if (_controller.hasMore) ...[
-                  const SizedBox(height: UIConstants.paddingStandard),
-                  Center(
-                    child: AdaptiveButton(
-                      label: l10n.activityHistoryLoadMore,
-                      onPressed: _controller.isLoading
-                          ? null
-                          : _controller.loadMore,
-                    ),
+                    ],
                   ),
                   const SizedBox(height: UIConstants.paddingStandard),
                 ],
+                ..._buildRecords(l10n),
               ],
             ),
           );
         },
       ),
     );
+  }
+
+  List<Widget> _buildRecords(AppLocalizations l10n) {
+    if (_controller.isLoading && _controller.records.isEmpty) {
+      return const [Center(child: AdaptiveLoadingIndicator())];
+    }
+
+    if (_controller.error != null && _controller.records.isEmpty) {
+      return [
+        _HistoryMessage(
+          message: l10n.activityHistoryLoadFailed,
+          actionLabel: l10n.activityHistoryRefresh,
+          onAction: _controller.refresh,
+        ),
+      ];
+    }
+
+    if (_controller.records.isEmpty) {
+      return [_HistoryMessage(message: l10n.activityHistoryEmpty)];
+    }
+
+    return [
+      AdaptiveListSection(
+        header: l10n.activityHistoryLocalActivities,
+        children: [
+          for (final record in _controller.records)
+            _ActivityRecordTile(
+              record: record,
+              isBusy: _controller.isBusy(record.id),
+              onTap: () => _openDetails(record),
+              onRetry: record.uploadStatus == LocalActivityUploadStatus.uploaded
+                  ? null
+                  : () => _retry(record),
+              onDelete: () => _delete(record),
+            ),
+        ],
+      ),
+      if (_controller.hasMore) ...[
+        const SizedBox(height: UIConstants.paddingStandard),
+        Center(
+          child: AdaptiveButton(
+            label: l10n.activityHistoryLoadMore,
+            onPressed: _controller.isLoading ? null : _controller.loadMore,
+          ),
+        ),
+        const SizedBox(height: UIConstants.paddingStandard),
+      ],
+    ];
   }
 }
 

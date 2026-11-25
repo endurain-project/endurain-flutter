@@ -39,6 +39,7 @@ class LocalActivityHistoryController extends SafeNotifier {
   bool _isLoading = false;
   AppException? _error;
   bool _hasMore = true;
+  bool _retainUploadedGpx = true;
 
   List<LocalActivityRecord> get records => List.unmodifiable(_records);
 
@@ -49,6 +50,13 @@ class LocalActivityHistoryController extends SafeNotifier {
   bool get hasMore => _hasMore;
 
   bool isBusy(String id) => _busyRecordIds.contains(id);
+
+  /// Whether the GPX retention switch can be shown. It is hidden when no
+  /// retention repository was provided, since the value could not be saved.
+  bool get canConfigureGpxRetention => _retentionSettingsRepository != null;
+
+  /// Whether a GPX file is kept on device after a successful upload.
+  bool get retainUploadedGpx => _retainUploadedGpx;
 
   LocalActivityRecord? recordById(String id) {
     for (final record in _records) {
@@ -79,7 +87,15 @@ class LocalActivityHistoryController extends SafeNotifier {
     }
   }
 
+  /// Loads the first page of records and the GPX retention preference.
+  ///
+  /// The two loads are independent, so a failing preference read never blanks
+  /// the list.
   Future<void> load() async {
+    await Future.wait([_loadFirstPage(), _loadRetainUploadedGpx()]);
+  }
+
+  Future<void> _loadFirstPage() async {
     _isLoading = true;
     _error = null;
     notify();
@@ -134,6 +150,39 @@ class LocalActivityHistoryController extends SafeNotifier {
   }
 
   Future<void> refresh() => load();
+
+  Future<void> _loadRetainUploadedGpx() async {
+    final repository = _retentionSettingsRepository;
+    if (repository == null) {
+      return;
+    }
+    try {
+      _retainUploadedGpx = await repository.isRetainUploadedGpxEnabled();
+      notify();
+    } catch (_) {
+      // Keep the safe default (retain) when the preference cannot be read.
+    }
+  }
+
+  /// Persists the uploaded-GPX retention preference.
+  ///
+  /// Applied optimistically so the switch responds immediately, then reverted
+  /// if the write fails.
+  Future<void> setRetainUploadedGpx(bool value) async {
+    final repository = _retentionSettingsRepository;
+    if (repository == null) {
+      return;
+    }
+    final previous = _retainUploadedGpx;
+    _retainUploadedGpx = value;
+    notify();
+    try {
+      await repository.setRetainUploadedGpxEnabled(value);
+    } catch (_) {
+      _retainUploadedGpx = previous;
+      notify();
+    }
+  }
 
   Future<void> exportGpx(
     String id, {

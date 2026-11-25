@@ -278,7 +278,6 @@ class AppServices {
   SettingsController createSettingsController() {
     return SettingsController(
       packageInfoService: _infra.packageInfo,
-      retentionSettingsRepository: _activity.retentionSettings,
       measurementSystemController: _infra.measurementSystemController,
       secureStorage: _infra.secureStorage,
     );

@@ -789,6 +789,24 @@ class AppLocalizationsLt extends AppLocalizations {
   String get settingsScreen => 'Nustatymai';
 
   @override
+  String get settingsSectionAccount => 'Paskyra';
+
+  @override
+  String get settingsSectionGeneral => 'Bendrieji';
+
+  @override
+  String get settingsSectionRecording => 'Įrašymas';
+
+  @override
+  String get settingsSectionDevices => 'Įrenginiai ir integracijos';
+
+  @override
+  String get settingsSectionData => 'Duomenys';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privatumas ir pagalba';
+
+  @override
   String get deviceAccessTitle => 'Prieiga prie įrenginio';
 
   @override

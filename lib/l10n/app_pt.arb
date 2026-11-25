@@ -743,11 +743,11 @@
   },
   "activityRetainUploadedGpx": "Manter ficheiros GPX enviados",
   "@activityRetainUploadedGpx": {
-    "description": "Rótulo da opção de retenção local de GPX enviados - Usado em: settings_screen.dart"
+    "description": "Rótulo da opção de retenção local de GPX enviados - Usado em: activity_history_screen.dart"
   },
   "activityRetainUploadedGpxSubtitle": "Guarda ficheiros de percurso concluídos no armazenamento privado da app depois do envio.",
   "@activityRetainUploadedGpxSubtitle": {
-    "description": "Subtítulo que explica a retenção privada local de GPX - Usado em: settings_screen.dart"
+    "description": "Subtítulo que explica a retenção privada local de GPX - Usado em: activity_history_screen.dart"
   },
   "activityAutoPauseTitle": "Pausa automática",
   "activityAutoPauseSubtitle": "Coloca em pausa automaticamente quando pára de se mover",
@@ -973,6 +973,30 @@
   "settingsScreen": "Configurações",
   "@settingsScreen": {
     "description": "Título do ecrã de configurações - Usado em: settings_screen.dart"
+  },
+  "settingsSectionAccount": "Conta",
+  "@settingsSectionAccount": {
+    "description": "Cabeçalho da secção de configurações para conta (servidor e sessão) - Usado em: settings_screen.dart"
+  },
+  "settingsSectionGeneral": "Geral",
+  "@settingsSectionGeneral": {
+    "description": "Cabeçalho da secção de configurações para preferências gerais (idioma, unidades) - Usado em: settings_screen.dart"
+  },
+  "settingsSectionRecording": "Gravação",
+  "@settingsSectionRecording": {
+    "description": "Cabeçalho da secção de configurações para comportamento da gravação de atividades - Usado em: settings_screen.dart"
+  },
+  "settingsSectionDevices": "Dispositivos e integrações",
+  "@settingsSectionDevices": {
+    "description": "Cabeçalho da secção de configurações para sensores e sincronização de saúde - Usado em: settings_screen.dart"
+  },
+  "settingsSectionData": "Dados",
+  "@settingsSectionData": {
+    "description": "Cabeçalho da secção de configurações para atividades guardadas localmente - Usado em: settings_screen.dart"
+  },
+  "settingsSectionPrivacySupport": "Privacidade e suporte",
+  "@settingsSectionPrivacySupport": {
+    "description": "Cabeçalho da secção de configurações para permissões, diagnóstico e ligação ao código-fonte - Usado em: settings_screen.dart"
   },
   "deviceAccessTitle": "Acesso ao dispositivo",
   "@deviceAccessTitle": {

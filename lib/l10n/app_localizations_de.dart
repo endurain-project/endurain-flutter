@@ -803,6 +803,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsScreen => 'Einstellungen';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Allgemein';
+
+  @override
+  String get settingsSectionRecording => 'Aufzeichnung';
+
+  @override
+  String get settingsSectionDevices => 'Geräte & Integrationen';
+
+  @override
+  String get settingsSectionData => 'Daten';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Datenschutz & Support';
+
+  @override
   String get deviceAccessTitle => 'Gerätezugriff';
 
   @override

@@ -797,6 +797,24 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsScreen => 'Inställningar';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Allmänt';
+
+  @override
+  String get settingsSectionRecording => 'Inspelning';
+
+  @override
+  String get settingsSectionDevices => 'Enheter och integrationer';
+
+  @override
+  String get settingsSectionData => 'Data';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Integritet och support';
+
+  @override
   String get deviceAccessTitle => 'Enhetsåtkomst';
 
   @override

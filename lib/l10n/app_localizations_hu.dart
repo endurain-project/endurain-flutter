@@ -800,6 +800,24 @@ class AppLocalizationsHu extends AppLocalizations {
   String get settingsScreen => 'Beállítások';
 
   @override
+  String get settingsSectionAccount => 'Fiók';
+
+  @override
+  String get settingsSectionGeneral => 'Általános';
+
+  @override
+  String get settingsSectionRecording => 'Rögzítés';
+
+  @override
+  String get settingsSectionDevices => 'Eszközök és integrációk';
+
+  @override
+  String get settingsSectionData => 'Adatok';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Adatvédelem és támogatás';
+
+  @override
   String get deviceAccessTitle => 'Eszköz hozzáférés';
 
   @override

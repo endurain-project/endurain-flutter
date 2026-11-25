@@ -798,6 +798,24 @@ class AppLocalizationsFi extends AppLocalizations {
   String get settingsScreen => 'Asetukset';
 
   @override
+  String get settingsSectionAccount => 'Tili';
+
+  @override
+  String get settingsSectionGeneral => 'Yleiset';
+
+  @override
+  String get settingsSectionRecording => 'Tallennus';
+
+  @override
+  String get settingsSectionDevices => 'Laitteet ja integraatiot';
+
+  @override
+  String get settingsSectionData => 'Tiedot';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Tietosuoja ja tuki';
+
+  @override
   String get deviceAccessTitle => 'Laitteen käyttöoikeus';
 
   @override

@@ -807,6 +807,24 @@ class AppLocalizationsRo extends AppLocalizations {
   String get settingsScreen => 'Setări';
 
   @override
+  String get settingsSectionAccount => 'Cont';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionRecording => 'Înregistrare';
+
+  @override
+  String get settingsSectionDevices => 'Dispozitive și integrări';
+
+  @override
+  String get settingsSectionData => 'Date';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Confidențialitate și asistență';
+
+  @override
   String get deviceAccessTitle => 'Acces la dispozitiv';
 
   @override

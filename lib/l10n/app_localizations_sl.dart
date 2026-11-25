@@ -801,6 +801,24 @@ class AppLocalizationsSl extends AppLocalizations {
   String get settingsScreen => 'Nastavitve';
 
   @override
+  String get settingsSectionAccount => 'Račun';
+
+  @override
+  String get settingsSectionGeneral => 'Splošno';
+
+  @override
+  String get settingsSectionRecording => 'Snemanje';
+
+  @override
+  String get settingsSectionDevices => 'Naprave in integracije';
+
+  @override
+  String get settingsSectionData => 'Podatki';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Zasebnost in podpora';
+
+  @override
   String get deviceAccessTitle => 'Dostop do naprave';
 
   @override

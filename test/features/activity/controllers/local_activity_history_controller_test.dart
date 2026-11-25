@@ -5,11 +5,13 @@ import 'package:endurain/core/utils/gpx_document_builder.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/fake_share_service.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
@@ -308,6 +310,88 @@ void main() {
       });
     });
   });
+
+  group('LocalActivityHistoryController GPX retention', () {
+    late Directory tempDirectory;
+    late LocalActivityRepository repository;
+
+    setUp(() async {
+      tempDirectory = await Directory.systemTemp.createTemp(
+        'endurain_history_retention_',
+      );
+      repository = createTestLocalActivityRepository(tempDirectory);
+    });
+
+    tearDown(() {
+      if (tempDirectory.existsSync()) {
+        tempDirectory.deleteSync(recursive: true);
+      }
+    });
+
+    LocalActivityHistoryController buildController(
+      ActivityRetentionSettingsRepository? retention,
+    ) {
+      final controller = LocalActivityHistoryController(
+        repository: repository,
+        uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
+        retentionSettingsRepository: retention,
+      );
+      addTearDown(controller.dispose);
+      return controller;
+    }
+
+    test('is not configurable without a retention repository', () async {
+      final controller = buildController(null);
+
+      await controller.load();
+
+      expect(controller.canConfigureGpxRetention, isFalse);
+      expect(controller.retainUploadedGpx, isTrue);
+    });
+
+    test('load reads the stored preference', () async {
+      final retention = _FakeRetentionSettings()..retainUploadedGpx = false;
+      final controller = buildController(retention);
+
+      await controller.load();
+
+      expect(controller.canConfigureGpxRetention, isTrue);
+      expect(controller.retainUploadedGpx, isFalse);
+    });
+
+    test('a failing preference read keeps the default and the list', () async {
+      await _createRecord(repository, id: 'local-1');
+      final controller = buildController(_ThrowingRetentionSettings());
+
+      await controller.load();
+
+      expect(controller.retainUploadedGpx, isTrue);
+      expect(controller.records.map((record) => record.id), ['local-1']);
+      expect(controller.error, isNull);
+    });
+
+    test('setRetainUploadedGpx persists the new value', () async {
+      final retention = _FakeRetentionSettings();
+      final controller = buildController(retention);
+      await controller.load();
+
+      await controller.setRetainUploadedGpx(false);
+
+      expect(controller.retainUploadedGpx, isFalse);
+      expect(retention.retainUploadedGpx, isFalse);
+    });
+
+    test('setRetainUploadedGpx reverts when the write fails', () async {
+      final controller = buildController(_ThrowingRetentionSettings());
+      await controller.load();
+
+      await controller.setRetainUploadedGpx(false);
+
+      // The switch must not keep showing a value that was never stored.
+      expect(controller.retainUploadedGpx, isTrue);
+    });
+  });
 }
 
 Future<LocalActivityRecord> _createRecord(
@@ -365,4 +449,32 @@ ActivityUploadService _uploadServiceReturning(int statusCode) {
           );
         },
   );
+}
+
+class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
+  _FakeRetentionSettings() : super(preferences: FakePreferencesStore());
+
+  bool retainUploadedGpx = true;
+
+  @override
+  Future<bool> isRetainUploadedGpxEnabled() async => retainUploadedGpx;
+
+  @override
+  Future<void> setRetainUploadedGpxEnabled(bool enabled) async {
+    retainUploadedGpx = enabled;
+  }
+}
+
+class _ThrowingRetentionSettings extends ActivityRetentionSettingsRepository {
+  _ThrowingRetentionSettings() : super(preferences: FakePreferencesStore());
+
+  @override
+  Future<bool> isRetainUploadedGpxEnabled() async {
+    throw const AppException(AppErrorCode.secureStorageReadFailed);
+  }
+
+  @override
+  Future<void> setRetainUploadedGpxEnabled(bool enabled) async {
+    throw const AppException(AppErrorCode.secureStorageWriteFailed);
+  }
 }

@@ -804,6 +804,24 @@ class AppLocalizationsSk extends AppLocalizations {
   String get settingsScreen => 'Nastavenia';
 
   @override
+  String get settingsSectionAccount => 'Účet';
+
+  @override
+  String get settingsSectionGeneral => 'Všeobecné';
+
+  @override
+  String get settingsSectionRecording => 'Záznam';
+
+  @override
+  String get settingsSectionDevices => 'Zariadenia a integrácie';
+
+  @override
+  String get settingsSectionData => 'Údaje';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Súkromie a podpora';
+
+  @override
   String get deviceAccessTitle => 'Prístup k zariadeniu';
 
   @override

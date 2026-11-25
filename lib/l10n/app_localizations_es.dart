@@ -798,6 +798,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsScreen => 'Configuración';
 
   @override
+  String get settingsSectionAccount => 'Cuenta';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionRecording => 'Grabación';
+
+  @override
+  String get settingsSectionDevices => 'Dispositivos e integraciones';
+
+  @override
+  String get settingsSectionData => 'Datos';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacidad y soporte';
+
+  @override
   String get deviceAccessTitle => 'Acceso al dispositivo';
 
   @override

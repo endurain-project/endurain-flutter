@@ -767,11 +767,11 @@
   },
   "activityRetainUploadedGpx": "Keep uploaded GPX files",
   "@activityRetainUploadedGpx": {
-    "description": "Settings switch label for local uploaded GPX retention - Used in: settings_screen.dart"
+    "description": "Switch label for local uploaded GPX retention - Used in: activity_history_screen.dart"
   },
   "activityRetainUploadedGpxSubtitle": "Stores completed route files in private app storage after upload.",
   "@activityRetainUploadedGpxSubtitle": {
-    "description": "Settings switch subtitle explaining private local GPX retention - Used in: settings_screen.dart"
+    "description": "Switch subtitle explaining private local GPX retention - Used in: activity_history_screen.dart"
   },
   "activityAutoPauseTitle": "Auto-pause",
   "@activityAutoPauseTitle": {
@@ -1030,6 +1030,30 @@
   "settingsScreen": "Settings",
   "@settingsScreen": {
     "description": "Settings screen title - Used in: settings_screen.dart"
+  },
+  "settingsSectionAccount": "Account",
+  "@settingsSectionAccount": {
+    "description": "Settings section header for account (server and sign-in) - Used in: settings_screen.dart"
+  },
+  "settingsSectionGeneral": "General",
+  "@settingsSectionGeneral": {
+    "description": "Settings section header for general preferences (language, units) - Used in: settings_screen.dart"
+  },
+  "settingsSectionRecording": "Recording",
+  "@settingsSectionRecording": {
+    "description": "Settings section header for activity recording behaviour - Used in: settings_screen.dart"
+  },
+  "settingsSectionDevices": "Devices & integrations",
+  "@settingsSectionDevices": {
+    "description": "Settings section header for sensors and health sync - Used in: settings_screen.dart"
+  },
+  "settingsSectionData": "Data",
+  "@settingsSectionData": {
+    "description": "Settings section header for locally stored activities - Used in: settings_screen.dart"
+  },
+  "settingsSectionPrivacySupport": "Privacy & support",
+  "@settingsSectionPrivacySupport": {
+    "description": "Settings section header for permissions, diagnostics and the source code link - Used in: settings_screen.dart"
   },
   "deviceAccessTitle": "Device access",
   "@deviceAccessTitle": {
