@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Endurain</string>
+    <string name="app_name" translatable="false">Endurain</string>
     <string name="activity_run">Run</string>
     <string name="activity_ride">Ride</string>
     <string name="activity_walk">Walk</string>
@@ -30,4 +30,6 @@
     <string name="countdown_starts_in">Recording starts in</string>
     <string name="countdown_seconds_left">Seconds left: %1$d</string>
     <string name="countdown_start_now">Start now</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
 </resources>

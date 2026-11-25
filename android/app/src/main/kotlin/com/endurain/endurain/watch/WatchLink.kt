@@ -63,6 +63,13 @@ object WatchHandoffEvents {
     fun notifyHandoffReceived() {
         listener?.invoke()
     }
+
+    /** Clears [expected] if it is still the registered listener (another engine's stays). */
+    fun clearListener(expected: () -> Unit) {
+        if (listener === expected) {
+            listener = null
+        }
+    }
 }
 
 object WatchInbox {

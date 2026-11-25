@@ -19,6 +19,10 @@ class MapStateController extends SafeNotifier {
   StreamSubscription<Position>? _positionSubscription;
   bool _initialized = false;
 
+  /// Bumped by each [_loadSettings], so a slower earlier read cannot
+  /// overwrite the result of a later one.
+  int _settingsGeneration = 0;
+
   LatLng _currentLocation = const LatLng(
     MapConstants.defaultLatitude,
     MapConstants.defaultLongitude,
@@ -43,12 +47,33 @@ class MapStateController extends SafeNotifier {
       return;
     }
     _initialized = true;
+    // The map outlives the settings screens and sign-in/out, so re-read the
+    // tile URL whenever it is saved or the connected server changes.
+    _mapSettingsRepository.changes?.addListener(_handleSettingsChanged);
 
     await Future.wait([_loadSettings(), _loadUserLocation()]);
   }
 
+  void _handleSettingsChanged() {
+    if (isDisposed) {
+      return;
+    }
+    unawaited(_loadSettings());
+  }
+
   Future<void> _loadSettings() async {
-    _tileServerUrl = await _mapSettingsRepository.getTileServerUrl();
+    final generation = ++_settingsGeneration;
+    final String tileServerUrl;
+    try {
+      tileServerUrl = await _mapSettingsRepository.getTileServerUrl();
+    } catch (_) {
+      // Storage unavailable: keep drawing with the URL already in use.
+      return;
+    }
+    if (isDisposed || generation != _settingsGeneration) {
+      return;
+    }
+    _tileServerUrl = tileServerUrl;
     notify();
   }
 
@@ -142,6 +167,7 @@ class MapStateController extends SafeNotifier {
 
   @override
   void dispose() {
+    _mapSettingsRepository.changes?.removeListener(_handleSettingsChanged);
     _positionSubscription?.cancel();
     super.dispose();
   }

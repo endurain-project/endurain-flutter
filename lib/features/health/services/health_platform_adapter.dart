@@ -20,6 +20,15 @@ abstract class HealthPlatformAdapter {
   /// because route access was unavailable or denied.
   int get routeConsentDeniedCount;
 
+  /// Whether the last read could not reach data older than the platform's
+  /// always-readable history window, because access to that history is
+  /// unavailable or was declined (Health Connect without
+  /// `READ_HEALTH_DATA_HISTORY`).
+  ///
+  /// When `true`, windows further back return nothing, so callers stop paging
+  /// back rather than prompting again for every older page.
+  bool get historyAccessDeclined;
+
   /// Returns the current availability of the health platform SDK.
   ///
   /// On platforms that do not support health sync (desktop, web) this returns
@@ -67,11 +76,18 @@ abstract class HealthPlatformAdapter {
   /// [HealthWorkout.route] where available. Workouts for which route consent
   /// has not been granted will have an empty [HealthWorkout.route].
   ///
-  /// Throws [AppException] with [AppErrorCode.healthReadFailed] on a
-  /// non-recoverable read failure.
+  /// Workouts whose source id [exclude] returns `true` for (already imported,
+  /// for example) are left out before their route and heart rate are merged,
+  /// so no heart rate is read for them.
+  ///
+  /// Throws [AppException] with [AppErrorCode.healthPermissionDenied] when the
+  /// platform refuses the read for lack of permission, and with
+  /// [AppErrorCode.healthReadFailed] for any other read failure (flagged
+  /// [AppException.isTransient] when a retry may succeed).
   Future<List<HealthWorkout>> readWorkouts({
     required DateTime start,
     required DateTime end,
+    Future<bool> Function(String sourceId)? exclude,
   });
 }
 
@@ -86,6 +102,9 @@ class UnsupportedHealthPlatformAdapter implements HealthPlatformAdapter {
 
   @override
   int get routeConsentDeniedCount => 0;
+
+  @override
+  bool get historyAccessDeclined => false;
 
   @override
   Future<HealthSdkStatus> getSdkStatus() async => HealthSdkStatus.unsupported;
@@ -112,5 +131,6 @@ class UnsupportedHealthPlatformAdapter implements HealthPlatformAdapter {
   Future<List<HealthWorkout>> readWorkouts({
     required DateTime start,
     required DateTime end,
+    Future<bool> Function(String sourceId)? exclude,
   }) async => const [];
 }

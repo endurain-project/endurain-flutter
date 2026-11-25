@@ -430,12 +430,186 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     XCTAssertEqual(store.loadSession()?.currentSegmentIndex, 0)
     XCTAssertEqual(manager.stopCount, 1)
   }
+
+  private func millis(_ date: Date) -> Int64 {
+    Int64(date.timeIntervalSince1970 * 1000)
+  }
+
+  private func fix(
+    _ timestamp: Date,
+    latitude: Double = 41.1,
+    speed: CLLocationSpeed = 0,
+    horizontalAccuracy: CLLocationAccuracy = 5
+  ) -> CLLocation {
+    CLLocation(
+      coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: -8),
+      altitude: 100,
+      horizontalAccuracy: horizontalAccuracy,
+      verticalAccuracy: 5,
+      course: -1,
+      speed: speed,
+      timestamp: timestamp
+    )
+  }
+
+  func testManualResumeWhileAutoPausedRestartsStillnessAndTimeAnnouncements() throws {
+    let store = makeStore()
+    let start = Date()
+    XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
+      localSessionId: "auto_session",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: IsoTime.format(start),
+      autoPauseEnabled: true,
+      autoPauseDelaySeconds: 5
+    )))
+    XCTAssertTrue(store.saveAnnouncementState(try XCTUnwrap(
+      AnnouncementStateData.fromStartArguments([
+        "languageTag": "en-US",
+        "enabled": true,
+        "intervalUnit": AnnouncementStateData.unitTime,
+        "timeIntervalSeconds": 300,
+      ])
+    )))
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    XCTAssertTrue(recorder.isTimeAnnouncementScheduled)
+
+    recorder.locationManager(manager, didUpdateLocations: [
+      fix(start.addingTimeInterval(1), speed: 3),
+      fix(start.addingTimeInterval(2)),
+      fix(start.addingTimeInterval(8)),
+    ])
+    let autoPaused = try XCTUnwrap(store.loadSession())
+    XCTAssertEqual(autoPaused.status, ActiveActivitySessionData.statusPaused)
+    XCTAssertTrue(autoPaused.pausedAutomatically)
+    XCTAssertFalse(recorder.isTimeAnnouncementScheduled)
+
+    // What `ActivityRecorderChannel.handleResume` persists before resuming.
+    let resumeTime = start.addingTimeInterval(20)
+    XCTAssertTrue(store.saveSession(autoPaused.copyWith(
+      status: ActiveActivitySessionData.statusRecording,
+      resumedAt: .some(IsoTime.format(resumeTime)),
+      pausedAt: .some(nil),
+      pausedAutomatically: false
+    )))
+    let pointsBeforeResume = store.pointCount()
+    XCTAssertTrue(recorder.resumeCollection(nowMillis: millis(resumeTime)))
+    XCTAssertTrue(recorder.isTimeAnnouncementScheduled)
+
+    // Still for 1 s since the resume: the movement seen before the
+    // auto-pause must not count, or this fix would auto-pause again.
+    recorder.locationManager(manager, didUpdateLocations: [fix(start.addingTimeInterval(21))])
+
+    XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusRecording)
+    XCTAssertEqual(store.pointCount(), pointsBeforeResume + 1)
+    XCTAssertEqual(try store.readPoints().last?.segmentIndex, 1)
+    XCTAssertEqual(manager.startCount, 1)
+  }
+
+  func testRejectsFixesWithInvalidOrPoorAccuracy() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    let now = Date()
+
+    recorder.locationManager(manager, didUpdateLocations: [
+      fix(now, horizontalAccuracy: -1),
+      fix(now, horizontalAccuracy: 101),
+    ])
+    XCTAssertEqual(store.pointCount(), 0)
+
+    recorder.locationManager(manager, didUpdateLocations: [fix(now, horizontalAccuracy: 100)])
+    XCTAssertEqual(store.pointCount(), 1)
+  }
+
+  func testRejectsCachedFixesFromBeforeTheCollectionStarted() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    let now = Date()
+
+    recorder.locationManager(manager, didUpdateLocations: [
+      fix(now.addingTimeInterval(-30), latitude: 40.0),
+      fix(now, latitude: 41.1),
+    ])
+
+    let points = try store.readPoints()
+    XCTAssertEqual(points.map { $0.latitude }, [41.1])
+  }
+
+  func testFreshFixPolicy() {
+    let start: Int64 = 1_000_000
+    // Before the (re)start beyond the tolerance: a cached position.
+    XCTAssertFalse(CoreLocationActivityRecorder.isFreshFix(
+      timestampMillis: start - CoreLocationActivityRecorder.staleFixToleranceMillis - 1,
+      nowMillis: start, collectionStartedAtMillis: start, isFirstFix: false
+    ))
+    XCTAssertTrue(CoreLocationActivityRecorder.isFreshFix(
+      timestampMillis: start - CoreLocationActivityRecorder.staleFixToleranceMillis,
+      nowMillis: start, collectionStartedAtMillis: start, isFirstFix: true
+    ))
+    // The first fix must also be recent; later ones may arrive late.
+    let old = start + 1_000
+    let now = old + CoreLocationActivityRecorder.maxFirstFixAgeMillis + 1
+    XCTAssertFalse(CoreLocationActivityRecorder.isFreshFix(
+      timestampMillis: old, nowMillis: now, collectionStartedAtMillis: start, isFirstFix: true
+    ))
+    XCTAssertTrue(CoreLocationActivityRecorder.isFreshFix(
+      timestampMillis: old, nowMillis: now, collectionStartedAtMillis: start, isFirstFix: false
+    ))
+  }
+
+  func testWhenInUseRecordsWithoutTerminationRecovery() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    manager.permission = .authorizedWhenInUse
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+
+    XCTAssertTrue(recorder.startCollection())
+    XCTAssertEqual(manager.startCount, 1)
+    XCTAssertEqual(manager.significantStartCount, 0)
+    XCTAssertTrue(manager.allowsBackgroundLocationUpdates)
+    recorder.locationManager(manager, didUpdateLocations: [fix(Date())])
+    XCTAssertEqual(store.pointCount(), 1)
+  }
+
+  func testDowngradeToWhenInUseKeepsRecordingAndStopsTerminationRecovery() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    XCTAssertEqual(manager.significantStartCount, 1)
+
+    manager.permission = .authorizedWhenInUse
+    recorder.locationManagerDidChangeAuthorization(manager)
+
+    XCTAssertEqual(manager.significantStopCount, 1)
+    XCTAssertEqual(manager.stopCount, 0)
+    XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusRecording)
+    recorder.locationManager(manager, didUpdateLocations: [fix(Date())])
+    XCTAssertEqual(store.pointCount(), 1)
+  }
 }
 
 private final class RecoveryLocationManager: CLLocationManager {
   var permission = CLAuthorizationStatus.authorizedAlways
   var startCount = 0
   var stopCount = 0
+  var significantStartCount = 0
+  var significantStopCount = 0
   private var backgroundUpdates = false
   private var backgroundIndicator = false
 
@@ -450,8 +624,8 @@ private final class RecoveryLocationManager: CLLocationManager {
   }
   override func startUpdatingLocation() { startCount += 1 }
   override func stopUpdatingLocation() { stopCount += 1 }
-  override func startMonitoringSignificantLocationChanges() {}
-  override func stopMonitoringSignificantLocationChanges() {}
+  override func startMonitoringSignificantLocationChanges() { significantStartCount += 1 }
+  override func stopMonitoringSignificantLocationChanges() { significantStopCount += 1 }
   override func requestAlwaysAuthorization() {}
 }
 

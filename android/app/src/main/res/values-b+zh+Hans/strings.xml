@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">正在记录活动</string>
+    <string name="activity_recording_notification_starting">正在开始记录</string>
+    <string name="activity_recording_channel_name">活动记录</string>
+    <string name="activity_recording_channel_description">记录活动时显示的持续通知。</string>
+    <string name="activity_recording_interrupted_title">记录已中断</string>
+    <string name="activity_recording_interrupted_text">点按即可继续</string>
+    <string name="activity_recording_alert_channel_name">记录提醒</string>
+    <string name="activity_recording_alert_channel_description">当 Endurain 在后台运行且记录停止时显示。</string>
+    <string name="health_rationale_title">Endurain 健康数据</string>
+    <string name="health_rationale_usage">Endurain 读取锻炼、路线、心率、距离、卡路里和步数，仅用于导入所选活动。</string>
+    <string name="health_rationale_storage">所选路线数据存储在此设备上，并且只会上传到您连接的 Endurain 服务器。</string>
+</resources>

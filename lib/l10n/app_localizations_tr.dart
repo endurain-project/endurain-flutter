@@ -642,11 +642,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get startCountdownToggleDescription =>
-      'Kayıt başlamadan önce telefonunu kaldırman için zaman tanır.';
+      'Kayıt başlamadan önce telefonunuzu kaldırmanız için zaman tanır.';
 
   @override
   String get startCountdownDurationHelperText =>
-      'Geri sayımın ne kadar süreceğini seç.';
+      'Geri sayımın ne kadar süreceğini seçin.';
 
   @override
   String startCountdownDurationOptionLabel(int seconds) {
@@ -831,7 +831,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get deviceAccessLocationWhileUsing =>
-      'Uygulamayı kullanırken izin veriliyor';
+      'Uygulama kullanılırken izin verilir';
 
   @override
   String get deviceAccessLocationBlocked => 'Sistem ayarlarında engellendi';
@@ -843,10 +843,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deviceAccessHealthUnavailable => 'Bu cihazda kullanılamıyor';
 
   @override
-  String get deviceAccessHealthRequired => 'Sağlık Bağlantısı gerekli';
+  String get deviceAccessHealthRequired => 'Health Connect gerekli';
 
   @override
-  String get deviceAccessHealthSetUp => 'Sağlık erişimi kuruldu';
+  String get deviceAccessHealthSetUp => 'Sağlık verilerine erişim ayarlandı';
 
   @override
   String get deviceAccessHealthNeedsAttention =>
@@ -876,7 +876,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String connectedToServer(String server) {
-    return '$server\'ya bağlanıldı';
+    return 'Bağlanılan sunucu: $server';
   }
 
   @override
@@ -919,7 +919,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca sunucunuzun döşeme ayarına döner.';
+      'Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca, varsa sunucunuzun döşeme ayarıyla değiştirilir.';
 
   @override
   String get mapTilesSettingsLoadFailed => 'Harita döşemesi ayarı yüklenemedi.';
@@ -1040,7 +1040,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get healthSyncScreenTitle => 'Sağlık senkronizasyonu';
 
   @override
-  String get healthAccessScreenTitle => 'Sağlık erişimi';
+  String get healthAccessScreenTitle => 'Sağlık verilerine erişim';
 
   @override
   String get healthAccessRequestedData => 'İstenen veriler';
@@ -1068,7 +1068,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'HealthKit, Endurain\'in hangi verileri okuyabildiğini açıklamaz. Sağlık uygulamasında erişimi inceleyin.';
 
   @override
-  String get healthAccessReview => 'Sağlık erişimini inceleyin';
+  String get healthAccessReview => 'Sağlık verisi erişimini incele';
 
   @override
   String get healthAccessReviewIos => 'Erişim nasıl incelenir?';
@@ -1089,10 +1089,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Sağlık uygulamasını açın, profil resminize, ardından Uygulamalar ve Hizmetler\'e dokunun. Endurain\'i seçin ve veri kategorilerini güncelleyin.';
 
   @override
-  String get healthSyncAuthorize => 'Sağlık verilerine bağlanma';
+  String get healthSyncAuthorize => 'Sağlık verilerine bağlan';
 
   @override
-  String get healthSyncInstallProvider => 'Health Connect\'i yükleyin';
+  String get healthSyncInstallProvider => 'Health Connect\'i yükle';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1130,24 +1130,28 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Endurain GPS rotalarını okuyamadığı için bazı antrenmanlar atlandı. Sağlık uygulamasında profilinizi açın, ardından Uygulamalar ve Hizmetler, Endurain\'i seçin ve Antrenman Rotalarına izin verin.';
+      'Endurain bazı antrenmanların GPS rotalarını okuyamadığı için bu antrenmanlar atlandı. Sağlık uygulamasında profilinizi açın, ardından Uygulamalar ve Hizmetler\'e gidin, Endurain\'i seçin ve Antrenman Rotaları\'na izin verin.';
 
   @override
-  String get healthSyncReviewAccess => 'Erişimi inceleyin';
+  String get healthSyncHistoryAccessGuidance =>
+      'Health Connect\'te geçmiş verilere erişim izni verilmediği için eski antrenmanlar gösterilmiyor. İçe aktarmak için Health Connect\'te Endurain\'e \"Geçmiş verilere erişim\" izni verin.';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Özgeçmişte otomatik senkronizasyon';
+  String get healthSyncReviewAccess => 'Erişimi incele';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Açılışta otomatik senkronizasyon';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Uygulama açıldığında yeni antrenmanları otomatik olarak içe aktarın.';
+      'Uygulama açıldığında yeni antrenmanlar otomatik olarak içe aktarılır.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
       'Bu antrenmanlar GPS rotası içermediğinden içe aktarılamaz. Bazı uygulamalar (Garmin Connect gibi) etkinlikleri rotayı paylaşmadan Apple Health\'e kaydeder. Apple Watch ile kaydedilen antrenmanlar rotaları içerir ve içe aktarılabilir.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'İthal edilemez';
+  String get healthSyncBadgeNonImportable => 'İçe aktarılamaz';
 
   @override
   String get healthSyncViewAvailable => 'Mevcut';
@@ -1200,15 +1204,15 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get sensorsHeartRateHelp =>
-      'Nabzını canlı görmek için bir Bluetooth nabız monitörü eşleştir.';
+      'Nabzınızı canlı görmek için bir Bluetooth nabız monitörü eşleştirin.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth kapalı. Bir sensör bağlamak için aç.';
+      'Bluetooth kapalı. Bir sensör bağlamak için açın.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Bir sensör bağlamak için Bluetooth erişimine izin ver.';
+      'Bir sensör bağlamak için Bluetooth erişimine izin verin.';
 
   @override
   String get sensorsBluetoothUnsupported =>
@@ -1248,7 +1252,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get sensorsForget => 'Unut';
 
   @override
-  String get sensorsConnectionFailed => 'Bağlanılamadı. Tekrar dene.';
+  String get sensorsConnectionFailed => 'Bağlanılamadı. Tekrar deneyin.';
 
   @override
   String get sensorsPermissionRequired =>
@@ -1267,7 +1271,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get sensorsPowerHelp =>
-      'Gücünü canlı görmek için bir Bluetooth güç ölçer eşleştir.';
+      'Gücünüzü canlı görmek için bir Bluetooth güç ölçer eşleştirin.';
 
   @override
   String get sensorsNoPowerDevices => 'Henüz güç ölçer bulunamadı.';
@@ -1282,7 +1286,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get sensorsCadenceHelp =>
-      'Kadansını canlı görmek için bir Bluetooth kadans sensörü eşleştir.';
+      'Kadansınızı canlı görmek için bir Bluetooth kadans sensörü eşleştirin.';
 
   @override
   String get sensorsNoCadenceDevices => 'Henüz kadans sensörü bulunamadı.';
@@ -1300,10 +1304,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Çökme ve hata raporlarını bir tanılama sunucusuna gönder. Bu, yerel tanılamadan bağımsızdır; ikisini de, birini ya da hiçbirini etkinleştirebilirsin.';
+      'Çökme ve hata raporlarını bir tanılama sunucusuna gönderin. Bu, yerel tanılamadan bağımsızdır; ikisini de, birini ya da hiçbirini etkinleştirebilirsiniz.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Çökme raporları gönderiliyor';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

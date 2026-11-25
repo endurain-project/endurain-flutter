@@ -837,7 +837,7 @@ class AppLocalizationsLv extends AppLocalizations {
       'Atrašanās vietas pakalpojumi ir izslēgti';
 
   @override
-  String get deviceAccessLocationAlways => 'Atļauts visu laiku';
+  String get deviceAccessLocationAlways => 'Atļauts vienmēr';
 
   @override
   String get deviceAccessLocationWhileUsing =>
@@ -856,8 +856,7 @@ class AppLocalizationsLv extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Nepieciešams Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp =>
-      'Ir izveidota piekļuve veselības aprūpei';
+  String get deviceAccessHealthSetUp => 'Piekļuve veselības datiem iestatīta';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Piekļuvei jāpievērš uzmanība';
@@ -928,7 +927,7 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, tiek atjaunots jūsu servera elementu iestatījums.';
+      'Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, to aizstāj jūsu servera elementu iestatījums, ja tāds ir.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1049,7 +1048,7 @@ class AppLocalizationsLv extends AppLocalizations {
   String get healthSyncScreenTitle => 'Veselības sinhronizācija';
 
   @override
-  String get healthAccessScreenTitle => 'Veselības pieejamība';
+  String get healthAccessScreenTitle => 'Piekļuve veselības datiem';
 
   @override
   String get healthAccessRequestedData => 'Pieprasītie dati';
@@ -1061,7 +1060,7 @@ class AppLocalizationsLv extends AppLocalizations {
   String get healthAccessWorkoutRoutes => 'Treniņu maršruti';
 
   @override
-  String get healthAccessHeartRate => 'Sirdsdarbība';
+  String get healthAccessHeartRate => 'Pulss';
 
   @override
   String get healthAccessAllowed => 'Atļauts';
@@ -1070,14 +1069,15 @@ class AppLocalizationsLv extends AppLocalizations {
   String get healthAccessNeedsAttention => 'Nepieciešama uzmanība';
 
   @override
-  String get healthAccessManagedBySystem => 'Pārvalda sistēmas iestatījumos';
+  String get healthAccessManagedBySystem =>
+      'Tiek pārvaldīts sistēmas iestatījumos';
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit neatklāj, kādus datus Endurain var nolasīt. Pārskatiet piekļuvi lietotnē Health.';
+      'HealthKit neatklāj, kādus datus Endurain var nolasīt. Pārskatiet piekļuvi lietotnē Veselība.';
 
   @override
-  String get healthAccessReview => 'Pārskatiet veselības pieejamību';
+  String get healthAccessReview => 'Pārskatīt piekļuvi veselības datiem';
 
   @override
   String get healthAccessReviewIos => 'Kā pārskatīt piekļuvi';
@@ -1094,14 +1094,13 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Atveriet lietotni Health, pieskarieties savam profila attēlam un pēc tam: Programmas un pakalpojumi. Atlasiet Endurain un atjauniniet datu kategorijas.';
+      'Atveriet lietotni Veselība, pieskarieties savam profila attēlam un pēc tam vienumam Lietotnes un pakalpojumi. Atlasiet Endurain un atjauniniet datu kategorijas.';
 
   @override
-  String get healthSyncAuthorize =>
-      'Izveidojiet savienojumu ar veselības datiem';
+  String get healthSyncAuthorize => 'Savienot ar veselības datiem';
 
   @override
-  String get healthSyncInstallProvider => 'Instalējiet Health Connect';
+  String get healthSyncInstallProvider => 'Instalēt Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1112,19 +1111,26 @@ class AppLocalizationsLv extends AppLocalizations {
       'Veselības sinhronizācija šajā ierīcē nav pieejama.';
 
   @override
-  String get healthSyncSelectAll => 'Atlasiet visu';
+  String get healthSyncSelectAll => 'Atlasīt visu';
 
   @override
-  String get healthSyncClearSelection => 'Skaidrs';
+  String get healthSyncClearSelection => 'Notīrīt';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Importēt atlasīto ($count)';
+    return 'Importēt atlasītos ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Importēts(-i) $count treniņš(-i).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Importēti $count treniņi.',
+      one: 'Importēts $count treniņš.',
+      zero: 'Importēti $count treniņi.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1136,25 +1142,30 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Daži treniņi tika izlaisti, jo netika piešķirta piekļuve vingrinājumu maršrutam. Atveriet Health Connect → Atļaujas un atļaujiet Endurain vingrojumu maršrutus.';
+      'Daži treniņi tika izlaisti, jo netika piešķirta piekļuve treniņu maršrutiem. Atveriet Health Connect → Atļaujas un atļaujiet Endurain piekļūt treniņu maršrutiem.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Daži treniņi tika izlaisti, jo Endurain nevarēja nolasīt savus GPS maršrutus. Lietotnē Health atveriet savu profilu, pēc tam Programmas un pakalpojumi, atlasiet Endurain un atļaujiet Workout Routes.';
+      'Daži treniņi tika izlaisti, jo Endurain nevarēja nolasīt to GPS maršrutus. Lietotnē Veselība atveriet savu profilu, pēc tam Lietotnes un pakalpojumi, atlasiet Endurain un ieslēdziet Treniņu maršrutus.';
 
   @override
-  String get healthSyncReviewAccess => 'Pārskatiet piekļuvi';
+  String get healthSyncHistoryAccessGuidance =>
+      'Vecāki treniņi netiek rādīti, jo Health Connect nav piešķirta piekļuve iepriekšējiem datiem. Lai tos importētu, Health Connect atļaujiet Endurain “Piekļuve iepriekšējiem datiem”.';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automātiskā sinhronizācija, atsākot';
+  String get healthSyncReviewAccess => 'Pārskatīt piekļuvi';
+
+  @override
+  String get healthSyncAutoSyncTitle =>
+      'Automātiskā sinhronizācija, atverot lietotni';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Kad lietotne tiek atvērta, automātiski importējiet jaunus treniņus.';
+      'Automātiski importēt jaunus treniņus, kad tiek atvērta lietotne.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Šajos treniņos nav iekļauts GPS maršruts, tāpēc tos nevar importēt. Dažas lietotnes (piemēram, Garmin Connect) ieraksta darbības pakalpojumā Apple Health, nekoplietojot maršrutu. Ar Apple Watch ierakstītajos treniņos ir iekļauti maršruti, un tos var importēt.';
+      'Šajos treniņos nav GPS maršruta, tāpēc tos nevar importēt. Dažas lietotnes (piemēram, Garmin Connect) ieraksta aktivitātes Apple Health, nekoplietojot maršrutu. Ar Apple Watch ierakstītajos treniņos ir maršruti, un tos var importēt.';
 
   @override
   String get healthSyncBadgeNonImportable => 'Neimportējams';
@@ -1312,7 +1323,7 @@ class AppLocalizationsLv extends AppLocalizations {
       'Sūtiet avāriju un kļūdu ziņojumus uz diagnostikas serveri. Tas ir neatkarīgs no vietējās diagnostikas; varat iespējot abus, vienu vai nevienu.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Avāriju ziņojumi tiek sūtīti';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

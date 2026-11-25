@@ -75,6 +75,8 @@ class HealthSyncAvailableView extends StatelessWidget {
             _buildRouteConsentNotice(context, l10n),
           if (_showNoRoutesExplanation(state))
             _buildNoRoutesNotice(context, l10n),
+          if (state.olderWorkoutsUnavailable)
+            _buildHistoryAccessNotice(context, l10n),
           if (state.error != null) HealthSyncInlineError(error: state.error!),
           _buildToolbar(context, l10n, state),
           _buildWorkoutList(context, l10n, state),
@@ -254,6 +256,28 @@ class HealthSyncAvailableView extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// Explains why paging stopped early: on Android, workouts older than the
+  /// default window need Health Connect's history permission, which the user
+  /// declined.
+  Widget _buildHistoryAccessNotice(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: UIConstants.paddingStandard,
+        vertical: UIConstants.paddingSmall,
+      ),
+      child: Text(
+        l10n.healthSyncHistoryAccessGuidance,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontSize: 12,
+        ),
       ),
     );
   }

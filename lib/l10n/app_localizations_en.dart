@@ -918,7 +918,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.';
+      'Applies while connected to this server. Signing in again replaces it with your server\'s tile setting, if it has one.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1130,6 +1130,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Some workouts were skipped because Endurain could not read their GPS routes. In the Health app, open your profile, then Apps and Services, select Endurain, and allow Workout Routes.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Older workouts aren\'t shown because Health Connect access to past data wasn\'t granted. Allow \"Access past data\" for Endurain in Health Connect to import them.';
 
   @override
   String get healthSyncReviewAccess => 'Review access';

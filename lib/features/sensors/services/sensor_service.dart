@@ -26,12 +26,15 @@ class SensorService {
     bool Function()? canAutoReconnect,
     int autoReconnectAttempts = 4,
     Duration autoReconnectRetryDelay = const Duration(seconds: 2),
-  }) : _adapter = adapter,
+    List<Duration> linkLossRetryDelays = defaultLinkLossRetryDelays,
+  }) : assert(linkLossRetryDelays.isNotEmpty),
+       _adapter = adapter,
        _preferences = preferences,
        _rememberedKey = rememberedKey,
        _canAutoReconnect = canAutoReconnect ?? _alwaysAllowReconnect,
        _autoReconnectAttempts = autoReconnectAttempts,
-       _autoReconnectRetryDelay = autoReconnectRetryDelay {
+       _autoReconnectRetryDelay = autoReconnectRetryDelay,
+       _linkLossRetryDelays = linkLossRetryDelays {
     _statusSubscription = _adapter.connectionStatus.listen(_handleStatus);
     _measurementSubscription = _adapter.measurements.listen(_handleMeasurement);
     _bluetoothSubscription = _adapter.bluetoothState.listen(
@@ -40,6 +43,16 @@ class SensorService {
   }
 
   static bool _alwaysAllowReconnect() => true;
+
+  /// Waits between reconnect attempts after the link drops unexpectedly. The
+  /// last delay repeats until the sensor is back, the user disconnects or
+  /// forgets it, or the service is disposed.
+  static const List<Duration> defaultLinkLossRetryDelays = [
+    Duration(seconds: 2),
+    Duration(seconds: 5),
+    Duration(seconds: 10),
+    Duration(seconds: 30),
+  ];
 
   final SensorConnectionAdapter _adapter;
   final SensorPreferencesRepository _preferences;
@@ -57,7 +70,22 @@ class SensorService {
   /// reconnection reliable without user interaction.
   final int _autoReconnectAttempts;
   final Duration _autoReconnectRetryDelay;
-  bool _autoConnectInProgress = false;
+  final List<Duration> _linkLossRetryDelays;
+
+  /// The in-flight [autoConnectRemembered] / [tryReconnectRemembered] runs.
+  /// Set synchronously, before the first await, so concurrent callers (cold
+  /// launch, resume, Bluetooth becoming ready) join one attempt instead of
+  /// tearing down each other's connection.
+  Future<void>? _autoConnectFuture;
+  Future<bool>? _reconnectFuture;
+
+  /// Whether the user wants the sensor linked: set by a successful [connect],
+  /// cleared by [disconnect], [forget] and [dispose]. Only then is a dropped
+  /// link reconnected automatically.
+  bool _keepLinked = false;
+  Timer? _linkLossTimer;
+  int _linkLossAttempt = 0;
+  bool _disposed = false;
 
   final StreamController<SensorConnectionStatus> _statusController =
       StreamController<SensorConnectionStatus>.broadcast();
@@ -74,7 +102,6 @@ class SensorService {
   SensorMeasurement? _latestMeasurement;
   BleSensorDevice? _connectedDevice;
   SensorBluetoothState _bluetoothState = SensorBluetoothState.unknown;
-  bool _reconnectInProgress = false;
 
   /// The most recent connection status.
   SensorConnectionStatus get status => _status;
@@ -126,11 +153,17 @@ class SensorService {
       _connectedDevice = null;
       rethrow;
     }
+    _keepLinked = true;
+    _cancelLinkLossReconnect();
     await _preferences.saveRemembered(key: _rememberedKey, device: device);
   }
 
   /// Disconnects the active sensor without forgetting it.
   Future<void> disconnect() async {
+    // Before the adapter reports `disconnected`, so this is not mistaken for a
+    // dropped link.
+    _keepLinked = false;
+    _cancelLinkLossReconnect();
     await _adapter.disconnect();
     _connectedDevice = null;
   }
@@ -151,31 +184,47 @@ class SensorService {
 
   /// Attempts to reconnect to the remembered sensor when Bluetooth is ready.
   ///
-  /// Returns `true` when a reconnect was attempted. No-ops (returning `false`)
-  /// when an attempt is already in flight, a sensor is already
-  /// connected/connecting, nothing is remembered, or Bluetooth is not ready.
-  /// Failures are swallowed: automatic reconnection is best-effort.
-  Future<bool> tryReconnectRemembered() async {
+  /// Returns `true` when a reconnect was attempted. A call made while an
+  /// attempt is already in flight joins it and returns its result. No-ops
+  /// (returning `false`) when a sensor is already connected/connecting,
+  /// nothing is remembered, or Bluetooth is not ready. Failures are swallowed:
+  /// automatic reconnection is best-effort.
+  Future<bool> tryReconnectRemembered() {
+    final inFlight = _reconnectFuture;
+    if (inFlight != null) {
+      return inFlight;
+    }
     if (!_canAutoReconnect() ||
-        _reconnectInProgress ||
         _status == SensorConnectionStatus.connected ||
         _status == SensorConnectionStatus.connecting) {
+      return Future<bool>.value(false);
+    }
+    final attempt = _reconnectRemembered();
+    _reconnectFuture = attempt;
+    return attempt.whenComplete(() {
+      if (identical(_reconnectFuture, attempt)) {
+        _reconnectFuture = null;
+      }
+    });
+  }
+
+  Future<bool> _reconnectRemembered() async {
+    final BleSensorDevice? remembered;
+    try {
+      remembered = await _preferences.getRemembered(key: _rememberedKey);
+      if (remembered == null ||
+          await _adapter.currentBluetoothState() !=
+              SensorBluetoothState.ready) {
+        return false;
+      }
+    } catch (_) {
+      // Storage or adapter unavailable: nothing to reconnect right now.
       return false;
     }
-    final remembered = await _preferences.getRemembered(key: _rememberedKey);
-    if (remembered == null) {
-      return false;
-    }
-    if (await _adapter.currentBluetoothState() != SensorBluetoothState.ready) {
-      return false;
-    }
-    _reconnectInProgress = true;
     try {
       await connect(remembered);
     } catch (_) {
       // Best-effort reconnect.
-    } finally {
-      _reconnectInProgress = false;
     }
     return true;
   }
@@ -189,41 +238,90 @@ class SensorService {
   /// iOS to ready, after which the ready-triggered reconnect (or the immediate
   /// attempt below) establishes the link without the user visiting the Sensors
   /// screen. A no-op when nothing is remembered or a link already exists.
-  Future<void> autoConnectRemembered() async {
-    if (_autoConnectInProgress ||
-        !_canAutoReconnect() ||
-        _reconnectInProgress ||
+  ///
+  /// A call made while a run is already in flight joins it.
+  Future<void> autoConnectRemembered() {
+    final inFlight = _autoConnectFuture;
+    if (inFlight != null) {
+      return inFlight;
+    }
+    if (!_canAutoReconnect() ||
         _status == SensorConnectionStatus.connected ||
         _status == SensorConnectionStatus.connecting) {
-      return;
+      return Future<void>.value();
     }
+    final run = _autoConnectRemembered();
+    _autoConnectFuture = run;
+    return run.whenComplete(() {
+      if (identical(_autoConnectFuture, run)) {
+        _autoConnectFuture = null;
+      }
+    });
+  }
+
+  Future<void> _autoConnectRemembered() async {
     if (await _preferences.getRemembered(key: _rememberedKey) == null) {
       return;
     }
-    _autoConnectInProgress = true;
     try {
-      try {
-        await _adapter.ensurePermissions();
-      } catch (_) {
-        // Best-effort activation; the reconnect attempts below still run.
+      await _adapter.ensurePermissions();
+    } catch (_) {
+      // Best-effort activation; the reconnect attempts below still run.
+    }
+    for (var attempt = 0; attempt < _autoReconnectAttempts; attempt++) {
+      if (isConnected || _disposed) {
+        return;
       }
-      for (var attempt = 0; attempt < _autoReconnectAttempts; attempt++) {
-        if (isConnected) {
-          return;
-        }
-        await tryReconnectRemembered();
-        if (isConnected || attempt == _autoReconnectAttempts - 1) {
-          return;
-        }
-        // Give the platform a moment to expose the peripheral before retrying.
-        await Future<void>.delayed(_autoReconnectRetryDelay);
+      // Joins an attempt already in flight (e.g. one triggered by Bluetooth
+      // becoming ready) rather than starting a competing connection.
+      await tryReconnectRemembered();
+      if (isConnected || attempt == _autoReconnectAttempts - 1) {
+        return;
       }
-    } finally {
-      _autoConnectInProgress = false;
+      // Give the platform a moment to expose the peripheral before retrying.
+      await Future<void>.delayed(_autoReconnectRetryDelay);
     }
   }
 
+  /// Schedules the next reconnect attempt after an unexpected link loss,
+  /// backing off through [_linkLossRetryDelays].
+  void _scheduleLinkLossReconnect() {
+    _linkLossTimer?.cancel();
+    _linkLossTimer = null;
+    if (_disposed || !_keepLinked || !_canAutoReconnect()) {
+      return;
+    }
+    final index = _linkLossAttempt < _linkLossRetryDelays.length
+        ? _linkLossAttempt
+        : _linkLossRetryDelays.length - 1;
+    _linkLossAttempt++;
+    _linkLossTimer = Timer(
+      _linkLossRetryDelays[index],
+      () => unawaited(_retryAfterLinkLoss()),
+    );
+  }
+
+  Future<void> _retryAfterLinkLoss() async {
+    _linkLossTimer = null;
+    if (_disposed || !_keepLinked || isConnected) {
+      return;
+    }
+    await tryReconnectRemembered();
+    if (!isConnected && _linkLossTimer == null) {
+      _scheduleLinkLossReconnect();
+    }
+  }
+
+  void _cancelLinkLossReconnect() {
+    _linkLossTimer?.cancel();
+    _linkLossTimer = null;
+    _linkLossAttempt = 0;
+  }
+
   Future<void> dispose() async {
+    _disposed = true;
+    _keepLinked = false;
+    _cancelLinkLossReconnect();
     await _statusSubscription?.cancel();
     await _measurementSubscription?.cancel();
     await _bluetoothSubscription?.cancel();
@@ -234,6 +332,7 @@ class SensorService {
   }
 
   void _handleStatus(SensorConnectionStatus status) {
+    final previous = _status;
     _status = status;
     if (status == SensorConnectionStatus.disconnected ||
         status == SensorConnectionStatus.failed) {
@@ -241,6 +340,14 @@ class SensorService {
     }
     if (!_statusController.isClosed) {
       _statusController.add(status);
+    }
+    // A link the user did not end (out of range, sensor slept, radio glitch):
+    // the adapter only reports it, so reconnect here with a bounded backoff.
+    if (status == SensorConnectionStatus.disconnected &&
+        previous == SensorConnectionStatus.connected &&
+        _keepLinked) {
+      _linkLossAttempt = 0;
+      _scheduleLinkLossReconnect();
     }
   }
 

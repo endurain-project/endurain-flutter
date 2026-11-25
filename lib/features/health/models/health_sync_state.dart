@@ -39,6 +39,7 @@ class HealthSyncState {
     this.importedCount = 0,
     this.failedImportCount = 0,
     this.routeConsentDeniedCount = 0,
+    this.olderWorkoutsUnavailable = false,
     this.error,
   });
 
@@ -100,6 +101,12 @@ class HealthSyncState {
   /// → app → "Always allow" for exercise routes.
   final int routeConsentDeniedCount;
 
+  /// `true` when the importable list stopped paging back because workouts
+  /// older than Health Connect's 30-day window need history access that was
+  /// not granted (Android). The UI should explain why older workouts are
+  /// missing instead of offering "Load more".
+  final bool olderWorkoutsUnavailable;
+
   /// The last error from an async operation, or `null` when idle / succeeded.
   final AppException? error;
 
@@ -126,6 +133,7 @@ class HealthSyncState {
     int? importedCount,
     int? failedImportCount,
     int? routeConsentDeniedCount,
+    bool? olderWorkoutsUnavailable,
     Object? error = _unset,
   }) {
     return HealthSyncState(
@@ -154,6 +162,8 @@ class HealthSyncState {
       failedImportCount: failedImportCount ?? this.failedImportCount,
       routeConsentDeniedCount:
           routeConsentDeniedCount ?? this.routeConsentDeniedCount,
+      olderWorkoutsUnavailable:
+          olderWorkoutsUnavailable ?? this.olderWorkoutsUnavailable,
       error: error == _unset ? this.error : error as AppException?,
     );
   }

@@ -1,0 +1,1152 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSBluetoothAlwaysUsageDescription" : {
+      "comment" : "Bluetooth permission prompt.",
+      "localizations" : {
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain се свързва с Bluetooth пулсомери и други сензори, за да записва данните ви в реално време по време на дейности."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain es connecta a monitors de freqüència cardíaca Bluetooth i a altres sensors per enregistrar les vostres dades en directe durant les activitats."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain se připojuje k Bluetooth snímačům tepu a dalším senzorům, aby během aktivit zaznamenával vaše živá data."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain forbinder til Bluetooth-pulsmålere og andre sensorer for at registrere dine live-data under aktiviteter."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain verbindet sich mit Bluetooth-Herzfrequenzmessern und anderen Sensoren, um während Aktivitäten Ihre Live-Daten aufzuzeichnen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Endurain συνδέεται με μετρητές καρδιακού ρυθμού Bluetooth και άλλους αισθητήρες για να καταγράφει τα δεδομένα σας σε πραγματικό χρόνο κατά τη διάρκεια δραστηριοτήτων."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain connects to Bluetooth heart rate monitors and other sensors to record your live data during activities."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain se conecta a pulsómetros Bluetooth y otros sensores para registrar tus datos en directo durante las actividades."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain ühendub Bluetoothi pulsikellade ja muude anduritega, et salvestada tegevuste ajal teie reaalajas andmeid."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain muodostaa yhteyden Bluetooth-sykemittareihin ja muihin antureihin tallentaakseen reaaliaikaiset tietosi aktiviteettien aikana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain se connecte aux cardiofréquencemètres Bluetooth et à d’autres capteurs pour enregistrer vos données en direct pendant les activités."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain conéctase a monitores de frecuencia cardíaca Bluetooth e a outros sensores para rexistrar os teus datos en directo durante as actividades."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain se povezuje s Bluetooth mjeračima pulsa i drugim senzorima kako bi tijekom aktivnosti bilježio vaše podatke uživo."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az Endurain Bluetooth-os pulzusmérőkhöz és más érzékelőkhöz csatlakozik, hogy a tevékenységek során rögzítse az élő adatait."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain si connette a cardiofrequenzimetri Bluetooth e ad altri sensori per registrare i tuoi dati in tempo reale durante le attività."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain jungiasi prie Bluetooth pulsometrų ir kitų jutiklių, kad veiklų metu įrašytų jūsų tiesioginius duomenis."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain savienojas ar Bluetooth pulsometriem un citiem sensoriem, lai aktivitāšu laikā ierakstītu jūsu tiešraides datus."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain kobler til Bluetooth-pulsmålere og andre sensorer for å registrere live-dataene dine under aktiviteter."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain maakt verbinding met Bluetooth-hartslagmeters en andere sensoren om je live gegevens tijdens activiteiten op te nemen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain łączy się z pulsometrami Bluetooth i innymi czujnikami, aby rejestrować Twoje dane na żywo podczas aktywności."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain liga-se a monitores de frequência cardíaca Bluetooth e a outros sensores para gravar os seus dados em tempo real durante as atividades."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain liga-se a monitores de frequência cardíaca Bluetooth e a outros sensores para gravar os seus dados em tempo real durante as atividades."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain se conectează la senzori de ritm cardiac Bluetooth și la alți senzori pentru a înregistra datele în timp real în timpul activităților."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain sa pripája k Bluetooth snímačom tepu a ďalším senzorom, aby počas aktivít zaznamenával vaše živé údaje."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain se poveže z merilniki srčnega utripa Bluetooth in drugimi senzorji, da med aktivnostmi beleži vaše podatke v živo."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain се повезује са Bluetooth мерачима пулса и другим сензорима да би током активности снимао ваше податке уживо."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain ansluter till pulsmätare och andra sensorer via Bluetooth för att spela in dina livedata under aktiviteter."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain, etkinlikler sırasında canlı verilerinizi kaydetmek için Bluetooth nabız monitörlerine ve diğer sensörlere bağlanır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain підключається до Bluetooth-пульсометрів та інших датчиків, щоб записувати ваші дані в реальному часі під час активностей."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 会连接蓝牙心率监测器和其他传感器，以便在活动期间记录你的实时数据。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 會連接藍牙心率監測器和其他感測器，以便在活動期間記錄你的即時資料。"
+          }
+        }
+      }
+    },
+    "NSHealthShareUsageDescription" : {
+      "comment" : "Health read permission prompt. 'Health' is Apple's Health app.",
+      "localizations" : {
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain чете пулса ви от Health по време на запис (например от AirPods Pro 3) и историята на тренировките ви, за да импортира дейности и да поддържа дневника ви на тренировките синхронизиран."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain llegeix la vostra freqüència cardíaca de Salut durant un enregistrament (per exemple, dels AirPods Pro 3) i el vostre historial d'entrenaments per importar activitats i mantenir sincronitzat el vostre registre d'entrenament."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain během záznamu čte váš tep ze Zdraví (například z AirPods Pro 3) a historii vašich tréninků, aby mohl importovat aktivity a udržovat váš tréninkový deník synchronizovaný."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain læser din puls fra Sundhed under en optagelse (f.eks. fra AirPods Pro 3) og din træningshistorik for at importere aktiviteter og holde din træningslog synkroniseret."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain liest während einer Aufzeichnung Ihre Herzfrequenz aus Health (zum Beispiel von AirPods Pro 3) und Ihren Trainingsverlauf, um Aktivitäten zu importieren und Ihr Trainingstagebuch synchron zu halten."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Endurain διαβάζει τον καρδιακό σας ρυθμό από την Υγεία κατά τη διάρκεια μιας καταγραφής (για παράδειγμα από AirPods Pro 3) και το ιστορικό προπονήσεών σας για να εισάγει δραστηριότητες και να διατηρεί συγχρονισμένο το ημερολόγιο προπονήσεών σας."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain reads your heart rate from Health during a recording (for example from AirPods Pro 3) and your workout history to import activities and keep your training log in sync."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain lee tu frecuencia cardíaca de Salud durante una grabación (por ejemplo, de los AirPods Pro 3) y tu historial de entrenamientos para importar actividades y mantener sincronizado tu registro de entrenamiento."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain loeb salvestamise ajal teie pulssi rakendusest Health (näiteks AirPods Pro 3-st) ja teie treeningute ajalugu, et importida tegevusi ja hoida teie treeningpäevik sünkroonis."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain lukee sykkeesi Terveys-sovelluksesta tallennuksen aikana (esimerkiksi AirPods Pro 3:sta) sekä harjoitushistoriasi tuodakseen aktiviteetteja ja pitääkseen harjoituspäiväkirjasi ajan tasalla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain lit votre fréquence cardiaque dans Santé pendant un enregistrement (par exemple depuis des AirPods Pro 3) ainsi que votre historique d’entraînements pour importer des activités et garder votre journal d’entraînement synchronisé."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain le a túa frecuencia cardíaca de Saúde durante unha gravación (por exemplo, duns AirPods Pro 3) e o teu historial de adestramentos para importar actividades e manter sincronizado o teu rexistro de adestramento."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain tijekom snimanja čita vaš puls iz aplikacije Zdravlje (na primjer s AirPods Pro 3) i povijest vaših vježbi kako bi uvezao aktivnosti i održavao vaš dnevnik treninga sinkroniziranim."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az Endurain rögzítés közben beolvassa a pulzusát az Egészség alkalmazásból (például AirPods Pro 3-ról), valamint az edzéselőzményeit, hogy tevékenységeket importáljon, és szinkronban tartsa az edzésnaplóját."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain legge la tua frequenza cardiaca da Salute durante una registrazione (ad esempio dagli AirPods Pro 3) e la cronologia dei tuoi allenamenti per importare attività e mantenere sincronizzato il tuo diario di allenamento."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain įrašymo metu nuskaito jūsų pulsą iš programos Health (pavyzdžiui, iš AirPods Pro 3) ir jūsų treniruočių istoriją, kad importuotų veiklas ir sinchronizuotų jūsų treniruočių žurnalą."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain ierakstīšanas laikā nolasa jūsu pulsu no lietotnes Health (piemēram, no AirPods Pro 3) un jūsu treniņu vēsturi, lai importētu aktivitātes un uzturētu sinhronizētu jūsu treniņu žurnālu."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain leser pulsen din fra Helse under et opptak (for eksempel fra AirPods Pro 3) og treningshistorikken din for å importere aktiviteter og holde treningsloggen din synkronisert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain leest tijdens een opname je hartslag uit Gezondheid (bijvoorbeeld van AirPods Pro 3) en je trainingsgeschiedenis om activiteiten te importeren en je trainingslogboek gesynchroniseerd te houden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain odczytuje Twoje tętno z aplikacji Zdrowie podczas nagrywania (na przykład z AirPods Pro 3) oraz historię Twoich treningów, aby importować aktywności i synchronizować Twój dziennik treningowy."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain lê a sua frequência cardíaca da app Saúde durante uma gravação (por exemplo, dos AirPods Pro 3) e o seu histórico de treinos para importar atividades e manter o seu registo de treino sincronizado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain lê a sua frequência cardíaca da app Saúde durante uma gravação (por exemplo, dos AirPods Pro 3) e o seu histórico de treinos para importar atividades e manter o seu registo de treino sincronizado."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain citește ritmul cardiac din Sănătate în timpul unei înregistrări (de exemplu, de la AirPods Pro 3) și istoricul antrenamentelor pentru a importa activități și a menține sincronizat jurnalul de antrenament."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain počas záznamu číta váš tep z aplikácie Zdravie (napríklad z AirPods Pro 3) a históriu vašich tréningov, aby mohol importovať aktivity a udržiavať váš tréningový denník synchronizovaný."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain med snemanjem bere vaš srčni utrip iz aplikacije Health (na primer iz AirPods Pro 3) in zgodovino vaših vadb, da uvozi aktivnosti in ohranja vaš dnevnik vadb sinhroniziran."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain током снимања чита ваш пулс из апликације Здравље (на пример са AirPods Pro 3) и историју ваших вежби да би увезао активности и одржавао ваш дневник тренинга синхронизованим."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain läser din puls från Hälsa under en inspelning (till exempel från AirPods Pro 3) och din träningshistorik för att importera aktiviteter och hålla din träningslogg synkroniserad."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain, etkinlikleri içe aktarmak ve antrenman günlüğünüzü senkronize tutmak için kayıt sırasında nabzınızı Sağlık uygulamasından (örneğin AirPods Pro 3’ten) ve antrenman geçmişinizi okur."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain під час запису зчитує ваш пульс із застосунку «Здоровʼя» (наприклад, з AirPods Pro 3) та історію ваших тренувань, щоб імпортувати активності й синхронізувати ваш журнал тренувань."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 会在记录期间从“健康”读取你的心率（例如来自 AirPods Pro 3），并读取你的锻炼历史以导入活动并保持训练日志同步。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 會在記錄期間從「健康」讀取你的心率（例如來自 AirPods Pro 3），並讀取你的鍛鍊記錄以匯入活動並保持訓練日誌同步。"
+          }
+        }
+      }
+    },
+    "NSHealthUpdateUsageDescription" : {
+      "comment" : "Health write permission prompt. 'Health' is Apple's Health app.",
+      "localizations" : {
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain стартира временна тренировъчна сесия по време на запис, за да получава пулса в реално време. Тя никога не се запазва в Health. Историята на тренировките се използва и за импортиране на дейности."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain inicia una sessió d'entrenament temporal durant un enregistrament per rebre la freqüència cardíaca en directe. Mai no es desa a Salut. L'historial d'entrenaments també s'utilitza per importar activitats."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain během záznamu spouští dočasnou tréninkovou relaci, aby získal tep v reálném čase. Nikdy se neukládá do Zdraví. Historie tréninků se také používá k importu aktivit."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain starter en midlertidig træningssession under en optagelse for at modtage live-puls. Den gemmes aldrig i Sundhed. Træningshistorikken bruges også til at importere aktiviteter."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain startet während einer Aufzeichnung eine temporäre Trainingssitzung, um die Live-Herzfrequenz zu empfangen. Sie wird nie in Health gespeichert. Der Trainingsverlauf wird außerdem zum Importieren von Aktivitäten verwendet."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Endurain ξεκινά μια προσωρινή συνεδρία προπόνησης κατά τη διάρκεια μιας καταγραφής για να λαμβάνει τον καρδιακό ρυθμό σε πραγματικό χρόνο. Δεν αποθηκεύεται ποτέ στην Υγεία. Το ιστορικό προπονήσεων χρησιμοποιείται επίσης για την εισαγωγή δραστηριοτήτων."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain starts a temporary workout session during a recording to receive live heart rate. It is never saved to Health. Workout history is also used to import activities."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain inicia una sesión de entrenamiento temporal durante una grabación para recibir la frecuencia cardíaca en directo. Nunca se guarda en Salud. El historial de entrenamientos también se usa para importar actividades."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain alustab salvestamise ajal ajutise treeningseansi, et saada reaalajas pulssi. Seda ei salvestata kunagi rakendusse Health. Treeningute ajalugu kasutatakse ka tegevuste importimiseks."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain aloittaa tallennuksen aikana väliaikaisen harjoitusistunnon saadakseen reaaliaikaisen sykkeen. Sitä ei koskaan tallenneta Terveys-sovellukseen. Harjoitushistoriaa käytetään myös aktiviteettien tuomiseen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain démarre une séance d’entraînement temporaire pendant un enregistrement pour recevoir la fréquence cardiaque en direct. Elle n’est jamais enregistrée dans Santé. L’historique d’entraînements sert aussi à importer des activités."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain inicia unha sesión de adestramento temporal durante unha gravación para recibir a frecuencia cardíaca en directo. Nunca se garda en Saúde. O historial de adestramentos tamén se usa para importar actividades."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain tijekom snimanja pokreće privremenu sesiju vježbe kako bi primao puls uživo. Nikada se ne sprema u aplikaciju Zdravlje. Povijest vježbi koristi se i za uvoz aktivnosti."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az Endurain rögzítés közben ideiglenes edzésmenetet indít, hogy élő pulzusadatokat kapjon. Ez soha nem kerül mentésre az Egészség alkalmazásba. Az edzéselőzményeket tevékenységek importálására is használja."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain avvia una sessione di allenamento temporanea durante una registrazione per ricevere la frequenza cardiaca in tempo reale. Non viene mai salvata in Salute. La cronologia degli allenamenti viene usata anche per importare attività."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain įrašymo metu pradeda laikiną treniruotės seansą, kad gautų tiesioginį pulsą. Jis niekada neišsaugomas programoje Health. Treniruočių istorija taip pat naudojama veikloms importuoti."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain ierakstīšanas laikā sāk pagaidu treniņa sesiju, lai saņemtu pulsu reāllaikā. Tā nekad netiek saglabāta lietotnē Health. Treniņu vēsture tiek izmantota arī aktivitāšu importēšanai."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain starter en midlertidig treningsøkt under et opptak for å motta live puls. Den lagres aldri i Helse. Treningshistorikken brukes også til å importere aktiviteter."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain start tijdens een opname een tijdelijke trainingssessie om je hartslag live te ontvangen. Deze wordt nooit in Gezondheid bewaard. De trainingsgeschiedenis wordt ook gebruikt om activiteiten te importeren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain rozpoczyna tymczasową sesję treningową podczas nagrywania, aby odbierać tętno na żywo. Nigdy nie jest ona zapisywana w aplikacji Zdrowie. Historia treningów służy też do importowania aktywności."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain inicia uma sessão de treino temporária durante uma gravação para receber a frequência cardíaca em tempo real. Nunca é guardada na app Saúde. O histórico de treinos também é usado para importar atividades."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain inicia uma sessão de treino temporária durante uma gravação para receber a frequência cardíaca em tempo real. Nunca é guardada na app Saúde. O histórico de treinos também é usado para importar atividades."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain pornește o sesiune de antrenament temporară în timpul unei înregistrări pentru a primi ritmul cardiac în timp real. Aceasta nu este niciodată salvată în Sănătate. Istoricul antrenamentelor este folosit și pentru a importa activități."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain počas záznamu spúšťa dočasnú tréningovú reláciu, aby získaval tep v reálnom čase. Nikdy sa neukladá do aplikácie Zdravie. História tréningov sa používa aj na import aktivít."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain med snemanjem začne začasno sejo vadbe, da prejema srčni utrip v živo. Nikoli se ne shrani v aplikacijo Health. Zgodovina vadb se uporablja tudi za uvoz aktivnosti."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain током снимања покреће привремену сесију вежбе да би примао пулс уживо. Она се никада не чува у апликацији Здравље. Историја вежби се користи и за увоз активности."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain startar ett tillfälligt träningspass under en inspelning för att ta emot pulsen i realtid. Det sparas aldrig i Hälsa. Träningshistoriken används också för att importera aktiviteter."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain, canlı nabız almak için kayıt sırasında geçici bir antrenman oturumu başlatır. Bu oturum asla Sağlık uygulamasına kaydedilmez. Antrenman geçmişi etkinlikleri içe aktarmak için de kullanılır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain під час запису запускає тимчасовий сеанс тренування, щоб отримувати пульс у реальному часі. Він ніколи не зберігається в застосунку «Здоровʼя». Історія тренувань також використовується для імпорту активностей."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 会在记录期间启动临时锻炼会话以接收实时心率。该会话绝不会保存到“健康”。锻炼历史也用于导入活动。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 會在記錄期間啟動暫時的鍛鍊工作階段以接收即時心率。此工作階段絕不會儲存到「健康」。鍛鍊記錄也會用於匯入活動。"
+          }
+        }
+      }
+    },
+    "NSLocationAlwaysAndWhenInUseUsageDescription" : {
+      "comment" : "Location permission prompt (always).",
+      "localizations" : {
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Това приложение използва местоположението, за да показва позицията ви на картата и да записва дейности, включително когато приложението е във фонов режим."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquesta aplicació utilitza la ubicació per mostrar la vostra posició al mapa i enregistrar activitats, fins i tot quan l'aplicació és en segon pla."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato aplikace používá polohu k zobrazení vaší pozice na mapě a k záznamu aktivit, i když je aplikace na pozadí."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne app bruger din placering til at vise din position på kortet og registrere aktiviteter, også når appen kører i baggrunden."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App verwendet den Standort, um Ihre Position auf der Karte anzuzeigen und Aktivitäten aufzuzeichnen, auch wenn die App im Hintergrund läuft."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτή η εφαρμογή χρησιμοποιεί την τοποθεσία για να εμφανίζει τη θέση σας στον χάρτη και να καταγράφει δραστηριότητες, ακόμη και όταν η εφαρμογή εκτελείται στο παρασκήνιο."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app uses location to show your position on the map and record activities, including while the app is in the background."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa la ubicación para mostrar tu posición en el mapa y registrar actividades, también cuando la app está en segundo plano."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See rakendus kasutab asukohta, et näidata teie asukohta kaardil ja salvestada tegevusi, sealhulgas siis, kui rakendus töötab taustal."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä sovellus käyttää sijaintia näyttääkseen sijaintisi kartalla ja tallentaakseen aktiviteetteja myös silloin, kun sovellus on taustalla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app utilise la localisation pour afficher votre position sur la carte et enregistrer des activités, y compris lorsque l’app est en arrière-plan."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación usa a localización para amosar a túa posición no mapa e rexistrar actividades, mesmo cando a aplicación está en segundo plano."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ova aplikacija koristi lokaciju za prikaz vašeg položaja na karti i snimanje aktivnosti, uključujući dok je aplikacija u pozadini."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez az alkalmazás a helyadatokat arra használja, hogy megjelenítse a pozícióját a térképen és tevékenységeket rögzítsen, akkor is, amikor az alkalmazás a háttérben fut."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app usa la posizione per mostrare dove ti trovi sulla mappa e registrare attività, anche quando l’app è in background."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ši programa naudoja vietą, kad parodytų jūsų padėtį žemėlapyje ir įrašytų veiklas, taip pat kai programa veikia fone."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šī lietotne izmanto atrašanās vietu, lai parādītu jūsu pozīciju kartē un ierakstītu aktivitātes, arī tad, kad lietotne darbojas fonā."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne appen bruker posisjon til å vise hvor du er på kartet og registrere aktiviteter, også når appen er i bakgrunnen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze app gebruikt je locatie om je positie op de kaart te tonen en activiteiten op te nemen, ook als de app op de achtergrond draait."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacja używa lokalizacji, aby pokazywać Twoją pozycję na mapie i rejestrować aktywności, również gdy działa w tle."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa a localização para mostrar a sua posição no mapa e gravar atividades, incluindo quando a app está em segundo plano."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa a localização para mostrar a sua posição no mapa e gravar atividades, incluindo quando a app está em segundo plano."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Această aplicație folosește localizarea pentru a vă afișa poziția pe hartă și a înregistra activități, inclusiv când aplicația rulează în fundal."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Táto aplikácia používa polohu na zobrazenie vašej pozície na mape a na záznam aktivít, aj keď je aplikácia na pozadí."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacija uporablja lokacijo za prikaz vašega položaja na zemljevidu in snemanje aktivnosti, tudi ko je aplikacija v ozadju."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ова апликација користи локацију да би приказала ваш положај на мапи и снимала активности, укључујући и док је апликација у позадини."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här appen använder platsen för att visa din position på kartan och spela in aktiviteter, även när appen är i bakgrunden."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulama, konumunuzu haritada göstermek ve uygulama arka plandayken de dahil olmak üzere etkinlikleri kaydetmek için konumu kullanır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цей застосунок використовує геопозицію, щоб показувати ваше розташування на карті та записувати активності, зокрема коли застосунок працює у фоні."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此应用使用位置在地图上显示你的位置并记录活动，包括应用在后台运行时。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此應用程式使用位置在地圖上顯示你的位置並記錄活動，包括應用程式在背景執行時。"
+          }
+        }
+      }
+    },
+    "NSLocationAlwaysUsageDescription" : {
+      "comment" : "Location permission prompt (always, legacy).",
+      "localizations" : {
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Това приложение използва местоположението, за да записва дейности, когато приложението е във фонов режим."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquesta aplicació utilitza la ubicació per enregistrar activitats quan l'aplicació és en segon pla."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato aplikace používá polohu k záznamu aktivit, když je aplikace na pozadí."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne app bruger din placering til at registrere aktiviteter, når appen kører i baggrunden."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App verwendet den Standort, um Aktivitäten aufzuzeichnen, während die App im Hintergrund läuft."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτή η εφαρμογή χρησιμοποιεί την τοποθεσία για να καταγράφει δραστηριότητες όταν η εφαρμογή εκτελείται στο παρασκήνιο."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app uses location to record activities while the app is in the background."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa la ubicación para registrar actividades cuando la app está en segundo plano."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See rakendus kasutab asukohta tegevuste salvestamiseks, kui rakendus töötab taustal."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä sovellus käyttää sijaintia aktiviteettien tallentamiseen, kun sovellus on taustalla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app utilise la localisation pour enregistrer des activités lorsque l’app est en arrière-plan."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación usa a localización para rexistrar actividades cando a aplicación está en segundo plano."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ova aplikacija koristi lokaciju za snimanje aktivnosti dok je aplikacija u pozadini."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez az alkalmazás a helyadatokat tevékenységek rögzítésére használja, amikor az alkalmazás a háttérben fut."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app usa la posizione per registrare attività quando l’app è in background."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ši programa naudoja vietą veikloms įrašyti, kai programa veikia fone."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šī lietotne izmanto atrašanās vietu, lai ierakstītu aktivitātes, kad lietotne darbojas fonā."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne appen bruker posisjon til å registrere aktiviteter når appen er i bakgrunnen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze app gebruikt je locatie om activiteiten op te nemen als de app op de achtergrond draait."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacja używa lokalizacji do rejestrowania aktywności, gdy działa w tle."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa a localização para gravar atividades quando a app está em segundo plano."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa a localização para gravar atividades quando a app está em segundo plano."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Această aplicație folosește localizarea pentru a înregistra activități când aplicația rulează în fundal."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Táto aplikácia používa polohu na záznam aktivít, keď je aplikácia na pozadí."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacija uporablja lokacijo za snemanje aktivnosti, ko je aplikacija v ozadju."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ова апликација користи локацију да би снимала активности док је апликација у позадини."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här appen använder platsen för att spela in aktiviteter när appen är i bakgrunden."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulama, uygulama arka plandayken etkinlikleri kaydetmek için konumu kullanır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цей застосунок використовує геопозицію, щоб записувати активності, коли застосунок працює у фоні."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此应用使用位置在应用于后台运行时记录活动。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此應用程式使用位置在應用程式於背景執行時記錄活動。"
+          }
+        }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "comment" : "Location permission prompt (while in use).",
+      "localizations" : {
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Това приложение използва местоположението, за да показва позицията ви на картата и да записва дейности, докато използвате приложението."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquesta aplicació utilitza la ubicació per mostrar la vostra posició al mapa i enregistrar activitats mentre utilitzeu l'aplicació."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato aplikace používá polohu k zobrazení vaší pozice na mapě a k záznamu aktivit, když aplikaci používáte."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne app bruger din placering til at vise din position på kortet og registrere aktiviteter, mens du bruger appen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App verwendet den Standort, um Ihre Position auf der Karte anzuzeigen und Aktivitäten aufzuzeichnen, während Sie die App verwenden."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτή η εφαρμογή χρησιμοποιεί την τοποθεσία για να εμφανίζει τη θέση σας στον χάρτη και να καταγράφει δραστηριότητες ενώ χρησιμοποιείτε την εφαρμογή."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app uses location to show your position on the map and record activities while you are using the app."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa la ubicación para mostrar tu posición en el mapa y registrar actividades mientras usas la app."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See rakendus kasutab asukohta, et näidata teie asukohta kaardil ja salvestada tegevusi, kui rakendust kasutate."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä sovellus käyttää sijaintia näyttääkseen sijaintisi kartalla ja tallentaakseen aktiviteetteja, kun käytät sovellusta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app utilise la localisation pour afficher votre position sur la carte et enregistrer des activités pendant que vous utilisez l’app."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación usa a localización para amosar a túa posición no mapa e rexistrar actividades mentres usas a aplicación."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ova aplikacija koristi lokaciju za prikaz vašeg položaja na karti i snimanje aktivnosti dok koristite aplikaciju."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez az alkalmazás a helyadatokat arra használja, hogy megjelenítse a pozícióját a térképen és tevékenységeket rögzítsen, miközben az alkalmazást használja."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app usa la posizione per mostrare dove ti trovi sulla mappa e registrare attività mentre usi l’app."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ši programa naudoja vietą, kad parodytų jūsų padėtį žemėlapyje ir įrašytų veiklas, kol naudojate programą."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šī lietotne izmanto atrašanās vietu, lai parādītu jūsu pozīciju kartē un ierakstītu aktivitātes, kamēr izmantojat lietotni."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne appen bruker posisjon til å vise hvor du er på kartet og registrere aktiviteter mens du bruker appen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze app gebruikt je locatie om je positie op de kaart te tonen en activiteiten op te nemen terwijl je de app gebruikt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacja używa lokalizacji, aby pokazywać Twoją pozycję na mapie i rejestrować aktywności, gdy z niej korzystasz."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa a localização para mostrar a sua posição no mapa e gravar atividades enquanto está a usar a app."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app usa a localização para mostrar a sua posição no mapa e gravar atividades enquanto está a usar a app."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Această aplicație folosește localizarea pentru a vă afișa poziția pe hartă și a înregistra activități în timp ce folosiți aplicația."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Táto aplikácia používa polohu na zobrazenie vašej pozície na mape a na záznam aktivít, keď aplikáciu používate."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacija uporablja lokacijo za prikaz vašega položaja na zemljevidu in snemanje aktivnosti, medtem ko uporabljate aplikacijo."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ова апликација користи локацију да би приказала ваш положај на мапи и снимала активности док користите апликацију."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här appen använder platsen för att visa din position på kartan och spela in aktiviteter medan du använder appen."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulama, siz uygulamayı kullanırken konumunuzu haritada göstermek ve etkinlikleri kaydetmek için konumu kullanır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цей застосунок використовує геопозицію, щоб показувати ваше розташування на карті та записувати активності, поки ви користуєтеся застосунком."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此应用使用位置在你使用应用时于地图上显示你的位置并记录活动。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此應用程式使用位置在你使用應用程式時於地圖上顯示你的位置並記錄活動。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

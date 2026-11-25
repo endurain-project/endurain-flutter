@@ -20,6 +20,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
+import com.endurain.endurain.MainActivity
 import com.endurain.endurain.R
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
@@ -48,6 +49,9 @@ class ActivityRecorderService : Service() {
     private var isWarmingUp = false
     private var nextPointOffset = 0
 
+    /** Whether [startForegroundCompat] succeeded since the last [stopForegroundCompat]. */
+    private var inForeground = false
+
     private var lastPointEpochMillis: Long? = null
     private var activeNotificationTitle: String? = null
     private var activeNotificationText: String? = null
@@ -64,6 +68,9 @@ class ActivityRecorderService : Service() {
         scheduleNextTimeAnnouncement()
     }
 
+    /** Ends a warm-up that no recording and no `endStartWarmUp` ever ended. */
+    private val warmUpTimeoutRunnable = Runnable { finishWarmUp() }
+
     override fun onCreate() {
         super.onCreate()
         activeInstance = this
@@ -76,7 +83,7 @@ class ActivityRecorderService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> handleStart(intent)
-            ACTION_WARM_UP -> handleWarmUp()
+            ACTION_WARM_UP -> handleWarmUp(intent)
             ACTION_RESUME -> handleResume()
             ACTION_PAUSE -> handlePause()
             ACTION_STOP -> handleStop()
@@ -92,6 +99,7 @@ class ActivityRecorderService : Service() {
 
     private fun startRecording(requestedTitle: String?, requestedText: String?) {
         stopWarmUpLocationUpdates()
+        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
         isWarmingUp = false
         announcementStateCache.reset()
         val title = requestedTitle ?: defaultTitle()
@@ -104,13 +112,16 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
-            stopSelf()
+            stopBeforeForegroundWork()
             return
         }
         if (!startForegroundOrFail(title, text)) {
             return
         }
-        beginCollection()
+        if (!beginCollection()) {
+            stopAfterCollectionFailure()
+            return
+        }
         startSensorCapture()
     }
 
@@ -125,14 +136,22 @@ class ActivityRecorderService : Service() {
      * starting a new one from the background, which Android would refuse or
      * grant without location. GPS runs meanwhile, so the first point is
      * accurate, but every fix is dropped and nothing is stored.
+     *
+     * The safety timeout is sized from the countdown length the channel put
+     * in [EXTRA_COUNTDOWN_SECONDS]; see [warmUpTimeoutMillis].
      */
-    private fun handleWarmUp() {
+    private fun handleWarmUp(intent: Intent) {
         if (collectingSessionId != null || store.loadSession()?.isActive == true) {
-            // A recording already owns this service.
+            // A recording already owns this service. A fresh instance started
+            // just for this warm-up must still enter the foreground before it
+            // stops.
+            if (!inForeground) {
+                stopBeforeForegroundWork()
+            }
             return
         }
         if (!hasAnyLocationPermission()) {
-            stopSelf()
+            stopBeforeForegroundWork()
             return
         }
         try {
@@ -152,10 +171,21 @@ class ActivityRecorderService : Service() {
         }
         isWarmingUp = true
         startWarmUpLocationUpdates()
+        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
+        val countdownSeconds = if (intent.hasExtra(EXTRA_COUNTDOWN_SECONDS)) {
+            intent.getLongExtra(EXTRA_COUNTDOWN_SECONDS, 0L)
+        } else {
+            null
+        }
+        announcementHandler.postDelayed(
+            warmUpTimeoutRunnable,
+            warmUpTimeoutMillis(countdownSeconds),
+        )
     }
 
     /** Ends the warm-up when no recording started from it. */
     private fun finishWarmUp() {
+        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
         if (!isWarmingUp) {
             return
         }
@@ -216,7 +246,7 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
-            stopSelf()
+            stopBeforeForegroundWork()
             return
         }
         if (!startForegroundOrFail(
@@ -226,7 +256,10 @@ class ActivityRecorderService : Service() {
             return
         }
         if (session != null && session.status == ActiveActivitySessionData.STATUS_RECORDING) {
-            beginCollection()
+            if (!beginCollection()) {
+                stopAfterCollectionFailure()
+                return
+            }
             startSensorCapture()
         }
     }
@@ -247,11 +280,19 @@ class ActivityRecorderService : Service() {
         stopSelf()
     }
 
-    /** Restores collection after process death when movement is still needed. */
+    /**
+     * Restores collection after process death when movement is still needed.
+     *
+     * [rebaseTime] is true for the system's sticky restart (no intent), which
+     * runs in the background with no Flutter engine to report a failure to;
+     * false for [ACTION_RECONNECT], which [recover] sent with
+     * `startForegroundService` after already rebasing the session.
+     */
     private fun handleRestart(rebaseTime: Boolean = true) {
+        val stickyRestart = rebaseTime
         val session = store.loadSession()
         if (session == null || !session.isActive) {
-            stopSelf()
+            if (stickyRestart) stopSelf() else stopBeforeForegroundWork()
             return
         }
         if (collectingSessionId == session.localSessionId &&
@@ -259,38 +300,60 @@ class ActivityRecorderService : Service() {
         ) {
             return
         }
+        // Rebase first: every failure below persists the session as failed,
+        // and must not count the time the process was dead as active time.
+        if (rebaseTime && session.status == ActiveActivitySessionData.STATUS_RECORDING) {
+            store.saveSession(
+                SessionTiming.afterInterruption(
+                    session,
+                    store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
+                    System.currentTimeMillis(),
+                ),
+            )
+        }
         if (!hasAnyLocationPermission()) {
             persistFailure()
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
-            stopSelf()
+            if (stickyRestart) {
+                postInterruptedNotification()
+                stopSelf()
+            } else {
+                stopBeforeForegroundWork()
+            }
             return
         }
+        // Android 14+ refuses a location foreground service started from the
+        // background without background location, so a sticky restart can
+        // fail here; the notification lets the user reopen and resume.
         if (!startForegroundOrFail(
             activeNotificationTitle ?: defaultTitle(),
             activeNotificationText ?: defaultText(),
+            notifyInterrupted = stickyRestart,
         )) {
             return
         }
         if (session.requiresLocationMonitoring) {
-            if (rebaseTime && session.status == ActiveActivitySessionData.STATUS_RECORDING) {
-                store.saveSession(
-                    SessionTiming.afterInterruption(
-                        session,
-                        store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
-                        System.currentTimeMillis(),
-                    ),
-                )
-            }
             resumedFromPause = session.status == ActiveActivitySessionData.STATUS_RECORDING &&
                 store.lastPoint() != null
-            beginCollection()
+            if (!beginCollection()) {
+                if (stickyRestart) {
+                    postInterruptedNotification()
+                }
+                stopAfterCollectionFailure()
+                return
+            }
             startSensorCapture()
         }
     }
 
-    private fun beginCollection() {
+    /**
+     * Subscribes to location updates for the active session. Returns false
+     * when collection could not start; the failure is then already persisted
+     * and emitted, and the caller stops the service.
+     */
+    private fun beginCollection(): Boolean {
         stopCollection()
         val manager = locationManager
         if (manager == null) {
@@ -298,7 +361,7 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
             )
-            return
+            return false
         }
         val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
         val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -307,7 +370,7 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
-            return
+            return false
         }
         val providers = selectProviders(manager, hasFine, hasCoarse)
         if (providers.isEmpty()) {
@@ -315,7 +378,7 @@ class ActivityRecorderService : Service() {
             ActivityRecorderCoordinator.emitFailed(
                 ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
             )
-            return
+            return false
         }
         val listener = object : LocationListener {
             override fun onLocationChanged(location: Location) {
@@ -385,11 +448,38 @@ class ActivityRecorderService : Service() {
                     ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE
                 },
             )
-            return
+            return false
         }
         collectingSessionId = store.loadSession()?.localSessionId
         acquireWakeLock()
         scheduleNextTimeAnnouncement()
+        return true
+    }
+
+    /** Stops the service after [beginCollection] failed (and reported why). */
+    private fun stopAfterCollectionFailure() {
+        stopCollection()
+        stopSensorCapture()
+        stopForegroundCompat()
+        stopSelf()
+    }
+
+    /**
+     * Stops the service before any work started. A service started with
+     * `startForegroundService` must call `startForeground` before it stops,
+     * or Android 9+ crashes the app, so it briefly claims the foreground with
+     * the default notification first. On Android 14+ that can itself be
+     * refused (no location permission left to claim the type); nothing more
+     * can be done then.
+     */
+    private fun stopBeforeForegroundWork() {
+        try {
+            startForegroundCompat(defaultTitle(), defaultText(), connectedDevice = false)
+        } catch (_: RuntimeException) {
+            // See above.
+        }
+        stopForegroundCompat()
+        stopSelf()
     }
 
     /**
@@ -511,7 +601,9 @@ class ActivityRecorderService : Service() {
             return
         }
         // Re-subscribe so a GPS<->network provider switch takes effect.
-        beginCollection()
+        if (!beginCollection()) {
+            stopAfterCollectionFailure()
+        }
     }
 
     /**
@@ -940,10 +1032,7 @@ class ActivityRecorderService : Service() {
             PackageManager.PERMISSION_GRANTED
     }
 
-    private fun hasAnyLocationPermission(): Boolean {
-        return hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ||
-            hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-    }
+    private fun hasAnyLocationPermission(): Boolean = hasLocationPermission(this)
 
     /**
      * Whether this service may declare [ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE].
@@ -986,30 +1075,99 @@ class ActivityRecorderService : Service() {
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
+        inForeground = true
     }
 
-    private fun startForegroundOrFail(title: String, text: String): Boolean {
-        return try {
+    /**
+     * Enters the foreground or persists and reports the failure and stops.
+     * With [notifyInterrupted], a failure also posts a notification that the
+     * recording was interrupted, for restarts no Flutter engine sees.
+     */
+    private fun startForegroundOrFail(
+        title: String,
+        text: String,
+        notifyInterrupted: Boolean = false,
+    ): Boolean {
+        val reason = try {
             startForegroundCompat(title, text)
-            true
+            cancelInterruptedNotification()
+            return true
         } catch (_: SecurityException) {
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
-            )
-            stopSelf()
-            false
+            ActivityRecorderCoordinator.REASON_PERMISSION_LOST
         } catch (_: RuntimeException) {
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED,
+            ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED
+        }
+        persistFailure()
+        ActivityRecorderCoordinator.emitFailed(reason)
+        if (notifyInterrupted) {
+            postInterruptedNotification()
+        }
+        stopSelf()
+        return false
+    }
+
+    /**
+     * Tells the user a recording stopped while the app was in the background.
+     * Tapping it opens the app, whose recovery offers to resume.
+     */
+    private fun postInterruptedNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !hasPermission(Manifest.permission.POST_NOTIFICATIONS)
+        ) {
+            return
+        }
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+        try {
+            createAlertNotificationChannel(manager)
+            val openApp = PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, MainActivity::class.java)
+                    .setAction(Intent.ACTION_MAIN)
+                    .addCategory(Intent.CATEGORY_LAUNCHER)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
-            stopSelf()
-            false
+            val notification = NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
+                .setContentTitle(getString(R.string.activity_recording_interrupted_title))
+                .setContentText(getString(R.string.activity_recording_interrupted_text))
+                .setSmallIcon(applicationInfo.icon)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setAutoCancel(true)
+                .setContentIntent(openApp)
+                .build()
+            manager.notify(INTERRUPTED_NOTIFICATION_ID, notification)
+        } catch (_: RuntimeException) {
+            // Best effort: the failed session is persisted either way.
         }
     }
 
+    private fun cancelInterruptedNotification() {
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+        try {
+            manager.cancel(INTERRUPTED_NOTIFICATION_ID)
+        } catch (_: RuntimeException) {
+            // Best effort.
+        }
+    }
+
+    private fun createAlertNotificationChannel(manager: NotificationManager) {
+        if (manager.getNotificationChannel(ALERT_CHANNEL_ID) != null) {
+            return
+        }
+        val channel = NotificationChannel(
+            ALERT_CHANNEL_ID,
+            getString(R.string.activity_recording_alert_channel_name),
+            NotificationManager.IMPORTANCE_HIGH,
+        ).apply {
+            description = getString(R.string.activity_recording_alert_channel_description)
+        }
+        manager.createNotificationChannel(channel)
+    }
+
     private fun stopForegroundCompat() {
+        inForeground = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
@@ -1067,7 +1225,14 @@ class ActivityRecorderService : Service() {
         return getString(R.string.activity_recording_notification_text)
     }
 
+    /** Swiping the app away ends a countdown's warm-up; a recording keeps running. */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        finishWarmUp()
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
+        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
         AudioAnnouncer.stop()
         if (store.loadSession()?.isActive == true) {
             flushAnnouncementState()
@@ -1093,13 +1258,72 @@ class ActivityRecorderService : Service() {
         const val ACTION_RESUME = "com.endurain.endurain.activity.action.RESUME"
         const val ACTION_STOP = "com.endurain.endurain.activity.action.STOP"
         const val ACTION_WARM_UP = "com.endurain.endurain.activity.action.WARM_UP"
-        private const val ACTION_RECONNECT = "com.endurain.endurain.activity.action.RECONNECT"
+        @VisibleForTesting
+        internal const val ACTION_RECONNECT = "com.endurain.endurain.activity.action.RECONNECT"
 
         const val EXTRA_TITLE = "title"
         const val EXTRA_TEXT = "text"
 
+        /** Full length of the start countdown, in seconds (a `Long` extra). */
+        const val EXTRA_COUNTDOWN_SECONDS = "countdownSeconds"
+
         private const val CHANNEL_ID = "activity_recording"
         private const val NOTIFICATION_ID = 4711
+        private const val ALERT_CHANNEL_ID = "activity_recording_alerts"
+        private const val INTERRUPTED_NOTIFICATION_ID = 4712
+
+        /**
+         * Leak guard for a warm-up nobody ended (Dart died mid-countdown), used
+         * when the countdown length is unknown. Longer than the longest
+         * countdown Dart allows (StartCountdown's 10-minute maxRemaining), so
+         * it never ends a live countdown early. Also the upper clamp of
+         * [warmUpTimeoutMillis].
+         */
+        @VisibleForTesting
+        internal const val WARM_UP_TIMEOUT_MILLIS = 11 * 60_000L
+
+        /** Lower clamp of [warmUpTimeoutMillis]. */
+        @VisibleForTesting
+        internal const val MIN_WARM_UP_TIMEOUT_MILLIS = 60_000L
+
+        /** Slack past the countdown's end before the warm-up is ended anyway. */
+        private const val WARM_UP_TIMEOUT_MARGIN_MILLIS = 60_000L
+
+        /**
+         * The warm-up's safety timeout: the countdown plus a minute, clamped
+         * to [[MIN_WARM_UP_TIMEOUT_MILLIS], [WARM_UP_TIMEOUT_MILLIS]], so a
+         * leaked warm-up of a short countdown does not hold a location
+         * foreground service for 11 minutes. [WARM_UP_TIMEOUT_MILLIS] when
+         * [countdownSeconds] is unknown (an older Dart build).
+         */
+        @VisibleForTesting
+        internal fun warmUpTimeoutMillis(countdownSeconds: Long?): Long {
+            if (countdownSeconds == null) {
+                return WARM_UP_TIMEOUT_MILLIS
+            }
+            // Bounded first so the multiplication cannot overflow.
+            val countdownMillis =
+                countdownSeconds.coerceIn(0L, WARM_UP_TIMEOUT_MILLIS / 1000L) * 1000L
+            return (countdownMillis + WARM_UP_TIMEOUT_MARGIN_MILLIS)
+                .coerceIn(MIN_WARM_UP_TIMEOUT_MILLIS, WARM_UP_TIMEOUT_MILLIS)
+        }
+
+        /**
+         * Whether the app holds fine or coarse location. Without either, a
+         * recorder started with `startForegroundService` cannot claim the
+         * `location` foreground type on Android 14+, so callers check this
+         * before starting it.
+         */
+        fun hasLocationPermission(context: Context): Boolean {
+            return ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ) == PackageManager.PERMISSION_GRANTED
+        }
 
         /** Namespaced so this lock is attributable in `dumpsys power`. */
         private const val WAKE_LOCK_TAG = "endurain:activity-recording"
@@ -1142,20 +1366,29 @@ class ActivityRecorderService : Service() {
                 System.currentTimeMillis(),
             )
             store.saveSession(recovered)
-            try {
-                ContextCompat.startForegroundService(
-                    context,
-                    baseIntent(context, ACTION_RECONNECT),
-                )
-            } catch (_: RuntimeException) {
+            // Checked before `startForegroundService`: without location the
+            // service could not enter the foreground on Android 14+, and the
+            // app would crash for not calling `startForeground` in time.
+            val failureReason = if (!hasLocationPermission(context)) {
+                ActivityRecorderCoordinator.REASON_PERMISSION_LOST
+            } else {
+                try {
+                    ContextCompat.startForegroundService(
+                        context,
+                        baseIntent(context, ACTION_RECONNECT),
+                    )
+                    null
+                } catch (_: RuntimeException) {
+                    ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED
+                }
+            }
+            if (failureReason != null) {
                 val paused = recovered.copy(
                     status = ActiveActivitySessionData.STATUS_PAUSED,
                     pausedAt = IsoTime.nowUtc(),
                 )
                 store.saveSession(paused)
-                ActivityRecorderCoordinator.emitFailed(
-                    ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED,
-                )
+                ActivityRecorderCoordinator.emitFailed(failureReason)
                 return paused
             }
             return recovered
@@ -1177,9 +1410,14 @@ class ActivityRecorderService : Service() {
             ContextCompat.startForegroundService(context, intent)
         }
 
-        /** Starts the start-countdown warm-up; see [handleWarmUp]. */
-        fun beginWarmUp(context: Context) {
-            ContextCompat.startForegroundService(context, baseIntent(context, ACTION_WARM_UP))
+        /**
+         * Starts the start-countdown warm-up; see [handleWarmUp].
+         * [countdownSeconds] sizes its safety timeout; null when unknown.
+         */
+        fun beginWarmUp(context: Context, countdownSeconds: Long? = null) {
+            val intent = baseIntent(context, ACTION_WARM_UP)
+            countdownSeconds?.let { intent.putExtra(EXTRA_COUNTDOWN_SECONDS, it) }
+            ContextCompat.startForegroundService(context, intent)
         }
 
         /** Ends the warm-up, unless a recording started from it. */

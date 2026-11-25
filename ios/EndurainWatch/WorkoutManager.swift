@@ -272,15 +272,24 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// Called at launch: resumes a workout that was running when the app was
     /// killed, or finishes and sends it when HealthKit no longer has it.
+    ///
+    /// A failed recovery query says nothing about whether HealthKit still
+    /// runs the workout, and finishing it then could save a second,
+    /// overlapping one. The stored recording is kept for the next launch.
     func restoreUnfinishedRecording() {
         guard session == nil, phase == .idle, let saved = store.load() else {
             return
         }
-        healthStore.recoverActiveWorkoutSession { [weak self] recovered, _ in
+        healthStore.recoverActiveWorkoutSession { [weak self] recovered, error in
             Task { @MainActor in
                 guard let self, self.session == nil else { return }
                 if let recovered {
                     self.adopt(recovered, saved: saved)
+                } else if let error {
+                    NSLog(
+                        "Endurain watch: could not check for a running workout: %@",
+                        error.localizedDescription
+                    )
                 } else {
                     self.finishInterrupted(saved.recording, points: saved.points)
                 }

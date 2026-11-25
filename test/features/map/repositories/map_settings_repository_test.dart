@@ -100,6 +100,107 @@ void main() {
       },
     );
 
+    group('tile URL template', () {
+      test('accepts the z/x/y placeholders with s, r and d', () {
+        expect(
+          repository.isValidTileServerUrl(
+            'https://{s}.tiles.test/{z}/{x}/{y}{r}.png?size={d}',
+          ),
+          isTrue,
+        );
+        expect(
+          repository.isValidTileServerUrl(MapConstants.defaultTileServerUrl),
+          isTrue,
+        );
+      });
+
+      test('rejects a URL missing z, x or y', () {
+        expect(
+          repository.isValidTileServerUrl('https://tiles.test/tile.png'),
+          isFalse,
+        );
+        expect(
+          repository.isValidTileServerUrl('https://tiles.test/{z}/{x}.png'),
+          isFalse,
+        );
+      });
+
+      test('rejects a placeholder the map cannot fill', () async {
+        const url = 'https://tiles.test/{z}/{x}/{y}.png?key={apikey}';
+
+        expect(repository.isValidTileServerUrl(url), isFalse);
+        await expectLater(
+          repository.saveTileServerUrl(url),
+          throwsA(isA<AppException>()),
+        );
+      });
+
+      test(
+        'serves the default for a stored URL without placeholders',
+        () async {
+          // Stored by an earlier build that did not check the template.
+          await prefs.write(
+            key: 'tile_server_url',
+            value: 'https://tiles.test/tile.png',
+          );
+
+          expect(
+            await repository.getTileServerUrl(),
+            MapConstants.defaultTileServerUrl,
+          );
+        },
+      );
+    });
+
+    group('change notifications', () {
+      test('notifies after a save, not after a rejected one', () async {
+        final changes = TileServerUrlChanges();
+        addTearDown(changes.dispose);
+        final notifying = MapSettingsRepository(
+          preferences: prefs,
+          changes: changes,
+        );
+        var notified = 0;
+        changes.addListener(() => notified++);
+
+        await notifying.saveTileServerUrl(
+          'https://tiles.example.test/{z}/{x}/{y}.png',
+        );
+        expect(notified, 1);
+
+        await expectLater(
+          notifying.saveTileServerUrl('not a url'),
+          throwsA(isA<AppException>()),
+        );
+        expect(notified, 1);
+      });
+
+      test('notifies when server settings provide a tile URL', () async {
+        final changes = TileServerUrlChanges();
+        addTearDown(changes.dispose);
+        final notifying = MapSettingsRepository(
+          preferences: prefs,
+          changes: changes,
+        );
+        var notified = 0;
+        changes.addListener(() => notified++);
+
+        await notifying.saveFromServerSettings(
+          ServerSettings.fromJson({}),
+          origin: originA,
+        );
+        expect(notified, 0);
+
+        await notifying.saveFromServerSettings(
+          ServerSettings.fromJson({
+            'tileserver_url': 'https://tiles.test/{z}/{x}/{y}.png',
+          }),
+          origin: originA,
+        );
+        expect(notified, 1);
+      });
+    });
+
     group('saveFromServerSettings', () {
       test('persists non-empty tile URL, attribution, and map color', () async {
         final settings = ServerSettings.fromJson({
@@ -116,7 +217,7 @@ void main() {
         );
       });
 
-      test('clears the origin value when server settings omit it', () async {
+      test('keeps the stored value when server settings omit it', () async {
         await repository.saveTileServerUrl(
           'https://tiles.previous.test/{z}/{x}/{y}.png',
           origin: originA,
@@ -127,10 +228,27 @@ void main() {
 
         await repository.saveFromServerSettings(settings, origin: originA);
 
-        // Previous value must still be there.
+        // A URL the user chose for this server survives signing in again.
         expect(
           await repository.getTileServerUrl(origin: originA),
-          MapConstants.defaultTileServerUrl,
+          'https://tiles.previous.test/{z}/{x}/{y}.png',
+        );
+      });
+
+      test('keeps the stored value when the server URL is invalid', () async {
+        await repository.saveTileServerUrl(
+          'https://tiles.previous.test/{z}/{x}/{y}.png',
+          origin: originA,
+        );
+
+        await repository.saveFromServerSettings(
+          ServerSettings.fromJson({'tileserver_url': 'not a url'}),
+          origin: originA,
+        );
+
+        expect(
+          await repository.getTileServerUrl(origin: originA),
+          'https://tiles.previous.test/{z}/{x}/{y}.png',
         );
       });
 
@@ -152,7 +270,7 @@ void main() {
 
           expect(
             await repository.getTileServerUrl(origin: originA),
-            MapConstants.defaultTileServerUrl,
+            'https://tiles.previous.test/{z}/{x}/{y}.png',
           );
         },
       );

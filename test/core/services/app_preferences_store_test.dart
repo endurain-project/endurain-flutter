@@ -64,13 +64,38 @@ void main() {
       );
     },
   );
+
+  test('retries the legacy import after a failed attempt', () async {
+    final flaky = _InMemoryPreferencesBackend()..failReads = 1;
+    final retryingStore = AppPreferencesStore(
+      backend: flaky,
+      supportDirectoryProvider: () async => tempDir,
+    );
+
+    await expectLater(
+      retryingStore.read(key: 'theme'),
+      throwsA(isA<StateError>()),
+    );
+
+    await retryingStore.write(key: 'theme', value: 'dark');
+    expect(await retryingStore.read(key: 'theme'), 'dark');
+  });
 }
 
 class _InMemoryPreferencesBackend implements AppPreferencesBackend {
   final Map<String, String> _values = {};
 
+  /// How many upcoming reads throw, to simulate a platform failure.
+  int failReads = 0;
+
   @override
-  Future<String?> read(String key) async => _values[key];
+  Future<String?> read(String key) async {
+    if (failReads > 0) {
+      failReads--;
+      throw StateError('preferences unavailable');
+    }
+    return _values[key];
+  }
 
   @override
   Future<void> write(String key, String value) async {

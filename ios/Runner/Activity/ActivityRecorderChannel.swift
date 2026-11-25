@@ -30,17 +30,6 @@ final class ActivityRecorderChannel:
         super.init()
     }
 
-    /// Re-arms location collection after iOS relaunched the app in the
-    /// background for a significant location change.
-    ///
-    /// Called by `AppDelegate` on a location-triggered launch so a recording
-    /// that was interrupted by process termination keeps collecting, without
-    /// waiting for Flutter to attach and drive `recover`.
-    @discardableResult
-    func resumeAfterRelaunch() -> Bool {
-        return recorder.resumeAfterRelaunch()
-    }
-
     func register(with messenger: FlutterBinaryMessenger) {
         let methodChannel = FlutterMethodChannel(
             name: ActivityRecorderChannel.methodChannelName,
@@ -242,8 +231,7 @@ final class ActivityRecorderChannel:
         guard persistSession(updated, result: result) else {
             return
         }
-        recorder.markResumed()
-        if !recorder.startCollection() {
+        if !recorder.resumeCollection(nowMillis: nowMillis) {
             guard persistSession(
                 updated.copyWith(status: ActiveActivitySessionData.statusFailed),
                 result: result

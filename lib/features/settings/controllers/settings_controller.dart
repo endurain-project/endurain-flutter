@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
+import 'package:flutter/foundation.dart';
 
 /// View-model for the settings screen.
 ///
@@ -21,16 +24,27 @@ class SettingsController extends SafeNotifier {
     required PackageInfoService packageInfoService,
     required MeasurementSystemController measurementSystemController,
     required SecureStorageService secureStorage,
+    Listenable? connectionChanges,
   }) : _packageInfoService = packageInfoService,
        _measurementSystem = measurementSystemController,
-       _secureStorage = secureStorage;
+       _secureStorage = secureStorage,
+       _connectionChanges = connectionChanges {
+    // The settings tab stays alive across sign-in and sign-out, so re-read
+    // the connected server whenever the session changes.
+    _connectionChanges?.addListener(_handleConnectionChanged);
+  }
 
   final PackageInfoService _packageInfoService;
   final MeasurementSystemController _measurementSystem;
   final SecureStorageService _secureStorage;
+  final Listenable? _connectionChanges;
 
   String? _appVersion;
   String? _serverUrl;
+
+  /// Bumped by each [_loadServerUrl], so a slower earlier read cannot
+  /// overwrite the result of a later one.
+  int _serverUrlGeneration = 0;
 
   /// The app version string, or `null` before it has loaded.
   String? get appVersion => _appVersion;
@@ -58,9 +72,20 @@ class SettingsController extends SafeNotifier {
     }
   }
 
+  void _handleConnectionChanged() {
+    if (!isDisposed) {
+      unawaited(_loadServerUrl());
+    }
+  }
+
   Future<void> _loadServerUrl() async {
+    final generation = ++_serverUrlGeneration;
     try {
-      _serverUrl = await _secureStorage.getServerUrl();
+      final serverUrl = await _secureStorage.getServerUrl();
+      if (generation != _serverUrlGeneration) {
+        return;
+      }
+      _serverUrl = serverUrl;
       notify();
     } catch (_) {
       // Settings stays usable when secure storage is temporarily unavailable;
@@ -74,5 +99,11 @@ class SettingsController extends SafeNotifier {
   Future<void> setMeasurementSystem(MeasurementSystem? system) async {
     await _measurementSystem.setPreference(system);
     notify();
+  }
+
+  @override
+  void dispose() {
+    _connectionChanges?.removeListener(_handleConnectionChanged);
+    super.dispose();
   }
 }

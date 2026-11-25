@@ -258,6 +258,15 @@ void main() {
         expect(controller.state.routeConsentDeniedCount, 3);
       });
 
+      test('copies the older-workouts-unavailable flag from service', () async {
+        service.olderWorkoutsUnavailableValue = true;
+        service.workouts = [makeWorkout('w1')];
+
+        await controller.loadImportableWorkouts();
+
+        expect(controller.state.olderWorkoutsUnavailable, isTrue);
+      });
+
       test('shows loading flag then clears it', () async {
         final states = <bool>[];
         controller.addListener(
@@ -279,10 +288,12 @@ void main() {
         expect(controller.state.error!.code, AppErrorCode.healthReadFailed);
       });
 
-      test('returns to authorization when reading health data fails', () async {
+      test('returns to authorization when the read lacks permission', () async {
         service.authStatus = HealthAuthorizationStatus.granted;
         await controller.loadStatus();
-        service.nextError = const AppException(AppErrorCode.healthReadFailed);
+        service.nextError = const AppException(
+          AppErrorCode.healthPermissionDenied,
+        );
 
         await controller.loadImportableWorkouts();
 
@@ -291,6 +302,23 @@ void main() {
           HealthAuthorizationStatus.notDetermined,
         );
       });
+
+      test(
+        'keeps authorization when a read fails for another reason',
+        () async {
+          service.authStatus = HealthAuthorizationStatus.granted;
+          await controller.loadStatus();
+          service.nextError = const AppException(AppErrorCode.healthReadFailed);
+
+          await controller.loadImportableWorkouts();
+
+          expect(
+            controller.state.authStatus,
+            HealthAuthorizationStatus.granted,
+          );
+          expect(controller.state.error!.code, AppErrorCode.healthReadFailed);
+        },
+      );
     });
 
     // ── Selection ───────────────────────────────────────────────────────────

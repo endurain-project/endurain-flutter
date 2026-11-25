@@ -139,7 +139,7 @@ The authoritative list is `pubspec.yaml`; keep this section in sync when adding 
 - `latlong2: ^0.10.1`
 - `go_router: ^18.0.1`
 - `sqflite: ^2.4.4`
-- `health: ^13.3.1`
+- `health: ^14.0.0`
 
 ## Best Practices
 

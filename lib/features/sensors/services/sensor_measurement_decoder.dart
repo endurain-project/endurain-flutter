@@ -92,8 +92,20 @@ class CyclingSpeedCadenceMeasurementDecoder
   /// revolutions-per-tick up to revolutions-per-minute with integer math.
   static const int _ticksPerMinute = 60 * 1024;
 
+  /// How long the crank event time may stand still before the rider is
+  /// treated as coasting and 0 rpm is reported. Sensors notify about once a
+  /// second, so this spans a few notifications and is longer than one crank
+  /// revolution at any realistic cadence.
+  static const Duration coastingTimeout = Duration(milliseconds: 2500);
+
   int? _previousCrankRevolutions;
   int? _previousCrankEventTime;
+
+  /// When the crank event time last advanced (or the baseline was taken).
+  DateTime? _lastAdvanceAt;
+
+  /// Whether 0 rpm was already reported for the current coasting stretch.
+  bool _reportedCoasting = false;
 
   @override
   List<SensorMeasurement> decode(List<int> data, DateTime timestamp) {
@@ -109,6 +121,7 @@ class CyclingSpeedCadenceMeasurementDecoder
 
     if (previousRevolutions == null || previousEventTime == null) {
       // First crank sample: establish a baseline to difference against.
+      _lastAdvanceAt = timestamp;
       return const <SensorMeasurement>[];
     }
 
@@ -117,10 +130,26 @@ class CyclingSpeedCadenceMeasurementDecoder
     final deltaTime =
         (crank.lastCrankEventTime - previousEventTime) % _rollover;
     if (deltaTime == 0) {
-      // No time elapsed (a duplicate notification, or the rider is coasting and
-      // the crank event time has not advanced): no new cadence to report.
-      return const <SensorMeasurement>[];
+      // No time elapsed: a duplicate notification, or the rider is coasting
+      // and the crank event time has not advanced. Once it has stood still
+      // for [coastingTimeout], report 0 rpm (once) so the last cadence does
+      // not stay on screen.
+      final lastAdvanceAt = _lastAdvanceAt ??= timestamp;
+      if (_reportedCoasting ||
+          timestamp.difference(lastAdvanceAt) < coastingTimeout) {
+        return const <SensorMeasurement>[];
+      }
+      _reportedCoasting = true;
+      return <SensorMeasurement>[
+        SensorMeasurement(
+          kind: SensorMeasurementKind.cadence,
+          value: 0,
+          timestamp: timestamp,
+        ),
+      ];
     }
+    _lastAdvanceAt = timestamp;
+    _reportedCoasting = false;
 
     final rpm = (deltaRevolutions * _ticksPerMinute) ~/ deltaTime;
     return <SensorMeasurement>[

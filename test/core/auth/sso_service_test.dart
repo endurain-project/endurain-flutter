@@ -201,6 +201,30 @@ void main() {
       expect(url.queryParameters['code_challenge_method'], 'S256');
     });
 
+    test('initiateOAuth encodes the provider slug as one segment', () async {
+      final service = SsoService(
+        storage: SecureStorageService(),
+        httpClient: MockClient((_) async => fail('No request expected')),
+      );
+
+      final url = Uri.parse(
+        await service.initiateOAuth(
+          '../x?redirect=evil#f',
+          serverUrl: 'https://example.test',
+        ),
+      );
+
+      expect(
+        url.path,
+        '${ApiEndpoints.defaults.idpLoginEndpoint}/..%2Fx%3Fredirect%3Devil%23f',
+      );
+      expect(url.fragment, isEmpty);
+      expect(
+        url.queryParameters['redirect'],
+        'com.endurain.endurain:/auth/sso/callback',
+      );
+    });
+
     test('matchesCallback accepts only the app callback address', () {
       expect(
         SsoService.matchesCallback(

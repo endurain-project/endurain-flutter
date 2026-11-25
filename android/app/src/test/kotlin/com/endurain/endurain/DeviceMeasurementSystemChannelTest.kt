@@ -8,6 +8,18 @@ import org.junit.Test
 
 class DeviceMeasurementSystemChannelTest {
     @Test
+    fun mapsRegionsToTheirMeasurementSystemBeforeAndroid9() {
+        val forCountry = DeviceMeasurementSystemChannel::measurementSystemForCountry
+        assertEquals("imperial", forCountry("US"))
+        assertEquals("imperial", forCountry("lr"))
+        assertEquals("imperial", forCountry("MM"))
+        assertEquals("imperial", forCountry("GB"))
+        assertEquals("metric", forCountry("PT"))
+        assertEquals("metric", forCountry("DE"))
+        assertEquals(null, forCountry(""))
+    }
+
+    @Test
     fun returnsResolvedMeasurementSystem() {
         val result = CapturingResult()
         val channel = DeviceMeasurementSystemChannel { "imperial" }

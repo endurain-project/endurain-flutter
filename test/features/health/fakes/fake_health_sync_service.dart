@@ -14,6 +14,7 @@ class FakeHealthSyncService implements HealthSyncService {
   HealthAuthorizationStatus authStatus;
   List<HealthWorkout> workouts;
   int routeConsentDeniedCountValue;
+  bool olderWorkoutsUnavailableValue = false;
   bool autoSyncOnResumeEnabled = false;
   HealthDataAccessDetails accessDetailsValue;
   DateTime? lastSyncAtValue;
@@ -47,6 +48,9 @@ class FakeHealthSyncService implements HealthSyncService {
 
   @override
   int get routeConsentDeniedCount => routeConsentDeniedCountValue;
+
+  @override
+  bool get olderWorkoutsUnavailable => olderWorkoutsUnavailableValue;
 
   @override
   Future<HealthSdkStatus> status() async {

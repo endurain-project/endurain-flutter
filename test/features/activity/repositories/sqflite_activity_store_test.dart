@@ -261,6 +261,55 @@ void main() {
     });
   });
 
+  group('SqfliteActivityStore – listUploadQueueCandidates', () {
+    test('selects only records the upload queue acts on', () async {
+      final store = makeStore();
+      final base = DateTime.utc(2026, 6, 1);
+      Future<void> add(
+        String id,
+        int day,
+        LocalActivityUploadStatus status, {
+        bool autoRetryEligible = true,
+        bool gpxCleanupPending = false,
+      }) => store.upsert(
+        _record(
+          id: id,
+          endedAt: base.add(Duration(days: day)),
+          uploadStatus: status,
+        ).copyWith(
+          autoRetryEligible: autoRetryEligible,
+          gpxCleanupPending: gpxCleanupPending,
+        ),
+      );
+
+      await add('pending', 5, LocalActivityUploadStatus.pending);
+      await add('retryable', 1, LocalActivityUploadStatus.failed);
+      await add(
+        'terminal',
+        2,
+        LocalActivityUploadStatus.failed,
+        autoRetryEligible: false,
+      );
+      await add('uploaded', 3, LocalActivityUploadStatus.uploaded);
+      await add(
+        'cleanup',
+        4,
+        LocalActivityUploadStatus.uploaded,
+        autoRetryEligible: false,
+        gpxCleanupPending: true,
+      );
+
+      final result = await store.listUploadQueueCandidates();
+
+      expect(result.map((r) => r.id).toList(), [
+        'retryable',
+        'cleanup',
+        'pending',
+      ]);
+      await store.close();
+    });
+  });
+
   group('SqfliteActivityStore – schema migration', () {
     late Directory tempDir;
 

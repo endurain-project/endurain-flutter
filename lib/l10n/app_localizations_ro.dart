@@ -52,11 +52,11 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get errorActivityIngestionProcessingFailed =>
-      'A apărut o eroare la importarea activității. Încearcă din nou.';
+      'A apărut o eroare la importarea activității. Încercați din nou.';
 
   @override
   String get errorActivityIngestionProviderUnavailable =>
-      'Furnizorul de activități nu este disponibil momentan. Încearcă din nou mai târziu.';
+      'Furnizorul de activități nu este disponibil momentan. Încercați din nou mai târziu.';
 
   @override
   String get errorActivityUploadNotConfigured =>
@@ -126,7 +126,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get errorHealthPermissionDenied =>
-      'Accesul la datele de sănătate a fost interzis';
+      'Accesul la datele de sănătate a fost refuzat';
 
   @override
   String get errorHealthReadFailed => 'Nu s-au putut citi datele de sănătate';
@@ -623,22 +623,29 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get activityAutoPauseSubtitle =>
-      'Pune automat pauză când te oprești din mișcare';
+      'Pune automat pauză când vă opriți din mișcare';
 
   @override
   String get activityAutoPauseToggleLabel => 'Pauză automată';
 
   @override
   String get activityAutoPauseToggleDescription =>
-      'Înregistrarea este pusă automat pe pauză când te oprești din mișcare și reia imediat ce te miști din nou.';
+      'Înregistrarea este pusă automat pe pauză când vă opriți din mișcare și este reluată imediat ce vă mișcați din nou.';
 
   @override
   String get activityAutoPauseDelayHelperText =>
-      'Alege cât timp fără mișcare se așteaptă înainte de pauză.';
+      'Alegeți cât timp fără mișcare se așteaptă înainte de pauză.';
 
   @override
   String activityAutoPauseDelayOptionLabel(int seconds) {
-    return '$seconds secunde';
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds de secunde',
+      few: '$seconds secunde',
+      one: '$seconds secundă',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -657,11 +664,11 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get startCountdownToggleDescription =>
-      'Îți lasă timp să pui telefonul deoparte înainte să înceapă înregistrarea.';
+      'Vă lasă timp să puneți telefonul deoparte înainte să înceapă înregistrarea.';
 
   @override
   String get startCountdownDurationHelperText =>
-      'Alege cât durează numărătoarea inversă.';
+      'Alegeți cât durează numărătoarea inversă.';
 
   @override
   String startCountdownDurationOptionLabel(int seconds) {
@@ -841,7 +848,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get deviceAccessLocationTitle => 'Acces la locație';
 
   @override
-  String get deviceAccessHealthTitle => 'Accesul la datele de sănătate';
+  String get deviceAccessHealthTitle => 'Acces la datele de sănătate';
 
   @override
   String get deviceAccessChecking => 'Se verifică accesul...';
@@ -871,7 +878,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Health Connect este necesar';
 
   @override
-  String get deviceAccessHealthSetUp => 'Accesul la sănătate configurat';
+  String get deviceAccessHealthSetUp =>
+      'Acces la datele de sănătate configurat';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Accesul necesită atenție';
@@ -943,7 +951,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare se revine la setarea de dale a serverului.';
+      'Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare este înlocuită de setarea de dale a serverului, dacă există.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -996,7 +1004,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get diagnosticsDisabled =>
-      'Colectarea diagnosticelor este dezactivată. Activează-o pentru a începe să înregistrezi evenimentele și erorile aplicației pe acest dispozitiv.';
+      'Colectarea diagnosticelor este dezactivată. Activați-o pentru a începe să înregistrați evenimentele și erorile aplicației pe acest dispozitiv.';
 
   @override
   String get diagnosticsEmpty =>
@@ -1056,17 +1064,17 @@ class AppLocalizationsRo extends AppLocalizations {
   String get diagnosticsRawReport => 'Raport brut';
 
   @override
-  String get healthSyncSettingsTitle => 'Sincronizarea sănătății';
+  String get healthSyncSettingsTitle => 'Sincronizare date de sănătate';
 
   @override
   String get healthSyncSettingsSubtitle =>
       'Importați antrenamente de pe platforma dvs. de sănătate';
 
   @override
-  String get healthSyncScreenTitle => 'Sincronizarea sănătății';
+  String get healthSyncScreenTitle => 'Sincronizare date de sănătate';
 
   @override
-  String get healthAccessScreenTitle => 'Acces la sănătate';
+  String get healthAccessScreenTitle => 'Acces la datele de sănătate';
 
   @override
   String get healthAccessRequestedData => 'Date solicitate';
@@ -1078,7 +1086,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get healthAccessWorkoutRoutes => 'Trasee de antrenament';
 
   @override
-  String get healthAccessHeartRate => 'Ritmul cardiac';
+  String get healthAccessHeartRate => 'Ritm cardiac';
 
   @override
   String get healthAccessAllowed => 'Permis';
@@ -1091,13 +1099,13 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit nu dezvăluie ce date poate citi Endurain. Examinați accesul în aplicația Sănătate.';
+      'HealthKit nu indică ce date poate citi Endurain. Verificați accesul în aplicația Sănătate.';
 
   @override
-  String get healthAccessReview => 'Examinați accesul la sănătate';
+  String get healthAccessReview => 'Verificați accesul la datele de sănătate';
 
   @override
-  String get healthAccessReviewIos => 'Cum să revizuiți accesul';
+  String get healthAccessReviewIos => 'Cum se verifică accesul';
 
   @override
   String get healthAccessDisconnect => 'Deconectează datele de sănătate';
@@ -1125,22 +1133,29 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get healthSyncUnsupported =>
-      'Sincronizarea sănătății nu este disponibilă pe acest dispozitiv.';
+      'Sincronizarea datelor de sănătate nu este disponibilă pe acest dispozitiv.';
 
   @override
   String get healthSyncSelectAll => 'Selectați toate';
 
   @override
-  String get healthSyncClearSelection => 'Clar';
+  String get healthSyncClearSelection => 'Deselectați';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Import selectat ($count)';
+    return 'Importați selecția ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Au importat $count antrenament(e).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Au fost importate $count de antrenamente.',
+      few: 'Au fost importate $count antrenamente.',
+      one: 'A fost importat $count antrenament.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1152,25 +1167,29 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Unele antrenamente au fost omise, deoarece accesul la traseul exercițiului nu a fost acordat. Deschideți Health Connect → Permisiuni și permiteți rute de exerciții pentru Endurain.';
+      'Unele antrenamente au fost omise, deoarece accesul la traseele exercițiilor nu a fost acordat. Deschideți Health Connect → Permisiuni și permiteți traseele exercițiilor pentru Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Unele antrenamente au fost omise, deoarece Endurain nu a putut citi traseele GPS. În aplicația Sănătate, deschideți profilul, apoi Aplicații și servicii, selectați Endurain și permiteți Rute de antrenament.';
+      'Unele antrenamente au fost omise, deoarece Endurain nu a putut citi traseele GPS ale acestora. În aplicația Sănătate, deschideți profilul, apoi Aplicații și servicii, selectați Endurain și permiteți Trasee de antrenament.';
 
   @override
-  String get healthSyncReviewAccess => 'Examinați accesul';
+  String get healthSyncHistoryAccessGuidance =>
+      'Antrenamentele mai vechi nu sunt afișate deoarece nu a fost acordat accesul la datele anterioare în Health Connect. Permiteți „Acces la datele anterioare” pentru Endurain în Health Connect pentru a le importa.';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Sincronizare automată la reluare';
+  String get healthSyncReviewAccess => 'Verificați accesul';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Sincronizare automată la deschidere';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importați automat antrenamente noi când se deschide aplicația.';
+      'Importă automat antrenamentele noi când se deschide aplicația.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Aceste antrenamente nu includ o rută GPS, așa că nu pot fi importate. Unele aplicații (cum ar fi Garmin Connect) înregistrează activități în Apple Health fără a partaja traseul. Antrenamentele înregistrate cu Apple Watch includ rute și pot fi importate.';
+      'Aceste antrenamente nu includ un traseu GPS, așa că nu pot fi importate. Unele aplicații (cum ar fi Garmin Connect) înregistrează activități în Apple Health fără a partaja traseul. Antrenamentele înregistrate cu Apple Watch includ trasee și pot fi importate.';
 
   @override
   String get healthSyncBadgeNonImportable => 'Neimportabil';
@@ -1226,15 +1245,15 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get sensorsHeartRateHelp =>
-      'Asociază un monitor de ritm cardiac Bluetooth pentru a-ți vedea ritmul cardiac în timp real.';
+      'Asociați un monitor de ritm cardiac Bluetooth pentru a vă vedea ritmul cardiac în timp real.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth este dezactivat. Activează-l pentru a conecta un senzor.';
+      'Bluetooth este dezactivat. Activați-l pentru a conecta un senzor.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Permite accesul la Bluetooth pentru a conecta un senzor.';
+      'Permiteți accesul la Bluetooth pentru a conecta un senzor.';
 
   @override
   String get sensorsBluetoothUnsupported =>
@@ -1274,7 +1293,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get sensorsForget => 'Uită';
 
   @override
-  String get sensorsConnectionFailed => 'Conectarea a eșuat. Încearcă din nou.';
+  String get sensorsConnectionFailed =>
+      'Conectarea a eșuat. Încercați din nou.';
 
   @override
   String get sensorsPermissionRequired =>
@@ -1293,7 +1313,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get sensorsPowerHelp =>
-      'Asociază un senzor de putere Bluetooth pentru a-ți vedea puterea în timp real.';
+      'Asociați un senzor de putere Bluetooth pentru a vă vedea puterea în timp real.';
 
   @override
   String get sensorsNoPowerDevices => 'Nu s-au găsit încă senzori de putere.';
@@ -1308,7 +1328,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get sensorsCadenceHelp =>
-      'Asociază un senzor de cadență Bluetooth pentru a-ți vedea cadența în timp real.';
+      'Asociați un senzor de cadență Bluetooth pentru a vă vedea cadența în timp real.';
 
   @override
   String get sensorsNoCadenceDevices =>
@@ -1327,10 +1347,10 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Trimite rapoarte de blocare și de eroare către un server de diagnosticare. Este independent de diagnosticarea locală; poți activa ambele, una sau niciuna.';
+      'Trimite rapoarte de blocare și de eroare către un server de diagnosticare. Este independent de diagnosticarea locală; puteți activa ambele, una sau niciuna.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Rapoartele de blocare sunt trimise';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

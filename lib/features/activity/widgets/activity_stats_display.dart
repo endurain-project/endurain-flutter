@@ -1,4 +1,6 @@
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
+import 'package:endurain/features/activity/models/activity_recording_stats.dart';
+import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
@@ -12,10 +14,48 @@ class ActivityStatsDisplay extends StatelessWidget {
     required this.state,
     ActivityStatsCalculator? calculator,
     this.formatter,
-  }) : calculator = calculator ?? ActivityStatsCalculator();
+  }) : calculator = calculator ?? _defaultCalculator;
+
+  /// Shared so the stats cache below survives the widget being rebuilt.
+  static final ActivityStatsCalculator _defaultCalculator =
+      ActivityStatsCalculator();
+
+  /// The last computed stats. The live screen rebuilds every second for the
+  /// elapsed time while the track only changes when a point lands, and the
+  /// state hands out the same immutable segment list until then, so the whole
+  /// track is recomputed only when it actually changed.
+  static ({
+    List<ActivityTrackSegment> segments,
+    ActivityType? activityType,
+    ActivityStatsCalculator calculator,
+    ActivityRecordingStats stats,
+  })?
+  _lastStats;
 
   final ActivityRecordingState state;
   final ActivityStatsCalculator calculator;
+
+  ActivityRecordingStats _calculateStats() {
+    final segments = state.segments;
+    final last = _lastStats;
+    if (last != null &&
+        identical(last.segments, segments) &&
+        last.activityType == state.activityType &&
+        identical(last.calculator, calculator)) {
+      return last.stats;
+    }
+    final stats = calculator.calculate(
+      segments,
+      activityType: state.activityType,
+    );
+    _lastStats = (
+      segments: segments,
+      activityType: state.activityType,
+      calculator: calculator,
+      stats: stats,
+    );
+    return stats;
+  }
 
   /// Optional override (tests). When null the formatter is resolved from the
   /// active locale and unit preference.
@@ -30,10 +70,7 @@ class ActivityStatsDisplay extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatter = this.formatter ?? context.statsFormatter;
-    final stats = calculator.calculate(
-      state.segments,
-      activityType: state.activityType,
-    );
+    final stats = _calculateStats();
     final durationSeconds = stats.durationSeconds > state.elapsedDurationSeconds
         ? stats.durationSeconds
         : state.elapsedDurationSeconds;

@@ -114,14 +114,14 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get errorHealthGpxBuildFailed =>
-      'Cvičení se nepodařilo převést na GPX';
+      'Trénink se nepodařilo převést na GPX';
 
   @override
-  String get errorHealthImportFailed => 'Cvičení nelze importovat';
+  String get errorHealthImportFailed => 'Trénink nelze importovat';
 
   @override
   String errorHealthImportFailedWithDetails(String details) {
-    return 'Nelze importovat cvičení: $details';
+    return 'Trénink nelze importovat: $details';
   }
 
   @override
@@ -634,7 +634,15 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String activityAutoPauseDelayOptionLabel(int seconds) {
-    return '$seconds sekund';
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds sekund',
+      many: '$seconds sekundy',
+      few: '$seconds sekundy',
+      one: '$seconds sekunda',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -828,7 +836,7 @@ class AppLocalizationsCs extends AppLocalizations {
       'Spravujte přístup k údajům o poloze a zdraví';
 
   @override
-  String get deviceAccessLocationSection => 'Umístění';
+  String get deviceAccessLocationSection => 'Poloha';
 
   @override
   String get deviceAccessHealthSection => 'Zdravotní údaje';
@@ -844,10 +852,10 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get deviceAccessLocationServicesOff =>
-      'Lokalizační služby jsou vypnuté';
+      'Služby určování polohy jsou vypnuté';
 
   @override
-  String get deviceAccessLocationAlways => 'Po celou dobu povoleno';
+  String get deviceAccessLocationAlways => 'Povoleno vždy';
 
   @override
   String get deviceAccessLocationWhileUsing =>
@@ -864,10 +872,10 @@ class AppLocalizationsCs extends AppLocalizations {
       'Není k dispozici na tomto zařízení';
 
   @override
-  String get deviceAccessHealthRequired => 'Je vyžadováno Health Connect';
+  String get deviceAccessHealthRequired => 'Vyžaduje se Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Zdravotní přístup nastaven';
+  String get deviceAccessHealthSetUp => 'Přístup ke zdravotním údajům nastaven';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Přístup vyžaduje pozornost';
@@ -938,7 +946,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Platí, dokud jste připojeni k tomuto serveru. Po opětovném přihlášení se obnoví nastavení dlaždic vašeho serveru.';
+      'Platí, dokud jste připojeni k tomuto serveru. Po opětovném přihlášení se nahradí nastavením dlaždic vašeho serveru, pokud ho server má.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1049,17 +1057,17 @@ class AppLocalizationsCs extends AppLocalizations {
   String get diagnosticsRawReport => 'Nezpracovaná zpráva';
 
   @override
-  String get healthSyncSettingsTitle => 'Synchronizace zdraví';
+  String get healthSyncSettingsTitle => 'Synchronizace zdravotních dat';
 
   @override
   String get healthSyncSettingsSubtitle =>
-      'Importujte cvičení z vaší zdravotní platformy';
+      'Importujte tréninky z vaší zdravotní platformy';
 
   @override
-  String get healthSyncScreenTitle => 'Synchronizace zdraví';
+  String get healthSyncScreenTitle => 'Synchronizace zdravotních dat';
 
   @override
-  String get healthAccessScreenTitle => 'Zdravotní přístup';
+  String get healthAccessScreenTitle => 'Přístup ke zdravotním údajům';
 
   @override
   String get healthAccessRequestedData => 'Požadované údaje';
@@ -1087,7 +1095,7 @@ class AppLocalizationsCs extends AppLocalizations {
       'HealthKit nezveřejňuje, která data může Endurain číst. Zkontrolujte přístup v aplikaci Zdraví.';
 
   @override
-  String get healthAccessReview => 'Zkontrolujte zdravotní přístup';
+  String get healthAccessReview => 'Zkontrolovat přístup ke zdravotním údajům';
 
   @override
   String get healthAccessReviewIos => 'Jak zkontrolovat přístup';
@@ -1100,17 +1108,17 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get healthAccessDisconnectMessage =>
-      'Automatický import a místní historie importů pro tento server budou obnoveny. Stávající aktivity zůstanou v historii.';
+      'Automatický import a místní historie importů pro tento server budou resetovány. Stávající aktivity zůstanou ve vaší historii.';
 
   @override
   String get healthAccessReviewIosInstructions =>
       'Otevřete aplikaci Zdraví, klepněte na svůj profilový obrázek a poté na Aplikace a služby. Vyberte Endurain a aktualizujte kategorie dat.';
 
   @override
-  String get healthSyncAuthorize => 'Připojte se ke zdravotním údajům';
+  String get healthSyncAuthorize => 'Připojit ke zdravotním datům';
 
   @override
-  String get healthSyncInstallProvider => 'Nainstalujte Health Connect';
+  String get healthSyncInstallProvider => 'Nainstalovat Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1118,13 +1126,13 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get healthSyncUnsupported =>
-      'Synchronizace stavu není na tomto zařízení k dispozici.';
+      'Synchronizace zdravotních dat není na tomto zařízení k dispozici.';
 
   @override
-  String get healthSyncSelectAll => 'Vyberte vše';
+  String get healthSyncSelectAll => 'Vybrat vše';
 
   @override
-  String get healthSyncClearSelection => 'Jasný';
+  String get healthSyncClearSelection => 'Zrušit výběr';
 
   @override
   String healthSyncImportSelected(int count) {
@@ -1133,11 +1141,11 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Počet importovaných cvičení: $count.';
+    return 'Importováno tréninků: $count.';
   }
 
   @override
-  String get healthSyncNoRouteLabel => 'Žádná trasa GPS';
+  String get healthSyncNoRouteLabel => 'Bez trasy GPS';
 
   @override
   String get healthSyncEmptyState =>
@@ -1145,29 +1153,33 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Některá cvičení byla přeskočena, protože nebyl povolen přístup na cvičební trasu. Otevřete Health Connect → Oprávnění a povolte trasy cvičení pro Endurain.';
+      'Některé tréninky byly přeskočeny, protože nebyl udělen přístup k trasám cvičení. Otevřete Health Connect → Oprávnění a povolte pro Endurain trasy cvičení.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
       'Některé tréninky byly vynechány, protože Endurain nedokázal přečíst jejich GPS trasy. V aplikaci Zdraví otevřete svůj profil, poté Aplikace a služby, vyberte Endurain a povolte trasy cvičení.';
 
   @override
-  String get healthSyncReviewAccess => 'Přístup ke kontrole';
+  String get healthSyncHistoryAccessGuidance =>
+      'Starší tréninky se nezobrazují, protože nebyl udělen přístup k minulým datům v Health Connect. Chcete-li je importovat, povolte pro Endurain v Health Connect „Přístup k minulým datům“.';
+
+  @override
+  String get healthSyncReviewAccess => 'Zkontrolovat přístup';
 
   @override
   String get healthSyncAutoSyncTitle =>
-      'Automatická synchronizace při obnovení';
+      'Automatická synchronizace při otevření';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importujte nové tréninky automaticky po otevření aplikace.';
+      'Automaticky importovat nové tréninky po otevření aplikace.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Tato cvičení neobsahují trasu GPS, takže je nelze importovat. Některé aplikace (jako Garmin Connect) zaznamenávají aktivity do Apple Health bez sdílení trasy. Tréninky zaznamenané pomocí Apple Watch zahrnují trasy a lze je importovat.';
+      'Tyto tréninky neobsahují trasu GPS, takže je nelze importovat. Některé aplikace (např. Garmin Connect) zaznamenávají aktivity do Apple Health bez sdílení trasy. Tréninky zaznamenané pomocí Apple Watch trasy obsahují a lze je importovat.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Neimportovatelné';
+  String get healthSyncBadgeNonImportable => 'Nelze importovat';
 
   @override
   String get healthSyncViewAvailable => 'Dostupné';
@@ -1326,7 +1338,7 @@ class AppLocalizationsCs extends AppLocalizations {
       'Odesílejte hlášení o pádech a chybách na diagnostický server. Je to nezávislé na místní diagnostice; můžete zapnout obojí, jedno, nebo nic.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Hlášení o pádech se odesílají';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

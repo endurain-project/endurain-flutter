@@ -814,16 +814,16 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get deviceAccessSubtitle =>
-      'Administrer tilgang til plassering og helsedata';
+      'Administrer tilgang til posisjon og helsedata';
 
   @override
-  String get deviceAccessLocationSection => 'Beliggenhet';
+  String get deviceAccessLocationSection => 'Posisjon';
 
   @override
   String get deviceAccessHealthSection => 'Helsedata';
 
   @override
-  String get deviceAccessLocationTitle => 'Stedstilgang';
+  String get deviceAccessLocationTitle => 'Posisjonstilgang';
 
   @override
   String get deviceAccessHealthTitle => 'Helsedatatilgang';
@@ -832,7 +832,8 @@ class AppLocalizationsNb extends AppLocalizations {
   String get deviceAccessChecking => 'Sjekker tilgang …';
 
   @override
-  String get deviceAccessLocationServicesOff => 'Stedstjenester er slått av';
+  String get deviceAccessLocationServicesOff =>
+      'Posisjonstjenester er slått av';
 
   @override
   String get deviceAccessLocationAlways => 'Tillatt hele tiden';
@@ -854,7 +855,7 @@ class AppLocalizationsNb extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Health Connect er påkrevd';
 
   @override
-  String get deviceAccessHealthSetUp => 'Helsetilgang satt opp';
+  String get deviceAccessHealthSetUp => 'Tilgang til helsedata er konfigurert';
 
   @override
   String get deviceAccessHealthNeedsAttention =>
@@ -927,7 +928,7 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Gjelder mens du er koblet til denne serveren. Når du logger inn igjen, tilbakestilles den til serverens flisinnstilling.';
+      'Gjelder mens du er koblet til denne serveren. Når du logger inn igjen, erstattes den av serverens flisinnstilling, hvis den har en.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1048,19 +1049,19 @@ class AppLocalizationsNb extends AppLocalizations {
   String get healthSyncScreenTitle => 'Helsesynkronisering';
 
   @override
-  String get healthAccessScreenTitle => 'Helsetilgang';
+  String get healthAccessScreenTitle => 'Tilgang til helsedata';
 
   @override
   String get healthAccessRequestedData => 'Forespurte data';
 
   @override
-  String get healthAccessWorkouts => 'Treninger';
+  String get healthAccessWorkouts => 'Treningsøkter';
 
   @override
   String get healthAccessWorkoutRoutes => 'Treningsruter';
 
   @override
-  String get healthAccessHeartRate => 'Hjertefrekvens';
+  String get healthAccessHeartRate => 'Puls';
 
   @override
   String get healthAccessAllowed => 'Tillatt';
@@ -1077,10 +1078,10 @@ class AppLocalizationsNb extends AppLocalizations {
       'HealthKit avslører ikke hvilke data Endurain kan lese. Se gjennom tilgangen i Helse-appen.';
 
   @override
-  String get healthAccessReview => 'Gjennomgå helsetilgang';
+  String get healthAccessReview => 'Gjennomgå tilgang til helsedata';
 
   @override
-  String get healthAccessReviewIos => 'Hvordan vurdere tilgang';
+  String get healthAccessReviewIos => 'Slik går du gjennom tilgangen';
 
   @override
   String get healthAccessDisconnect => 'Koble fra helsedata';
@@ -1114,16 +1115,22 @@ class AppLocalizationsNb extends AppLocalizations {
   String get healthSyncSelectAll => 'Velg alle';
 
   @override
-  String get healthSyncClearSelection => 'Klart';
+  String get healthSyncClearSelection => 'Fjern valg';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Importer valgt ($count)';
+    return 'Importer valgte ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Importerte $count trening(er).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count treningsøkter importert.',
+      one: '$count treningsøkt importert.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1139,13 +1146,17 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Noen treningsøkter ble hoppet over fordi Endurain ikke kunne lese GPS-rutene deres. I Helse-appen åpner du profilen din, deretter Apper og tjenester, velg Endurain og tillat treningsruter.';
+      'Noen treningsøkter ble hoppet over fordi Endurain ikke kunne lese GPS-rutene deres. Åpne profilen din i Helse-appen, deretter Apper og tjenester, velg Endurain og tillat Treningsruter.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Eldre økter vises ikke fordi tilgang til tidligere data i Health Connect ikke er gitt. Tillat «Tilgang til tidligere data» for Endurain i Health Connect for å importere dem.';
 
   @override
   String get healthSyncReviewAccess => 'Gjennomgå tilgang';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automatisk synkronisering ved CV';
+  String get healthSyncAutoSyncTitle => 'Automatisk synkronisering ved åpning';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
@@ -1153,10 +1164,10 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Disse treningsøktene inkluderer ikke en GPS-rute, så de kan ikke importeres. Noen apper (som Garmin Connect) registrerer aktiviteter til Apple Health uten å dele ruten. Treningsøkter tatt opp med Apple Watch inkluderer ruter og kan importeres.';
+      'Disse treningsøktene har ikke en GPS-rute, så de kan ikke importeres. Noen apper (som Garmin Connect) registrerer aktiviteter i Apple Health uten å dele ruten. Treningsøkter registrert med Apple Watch har ruter og kan importeres.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Ikke-importerbar';
+  String get healthSyncBadgeNonImportable => 'Kan ikke importeres';
 
   @override
   String get healthSyncViewAvailable => 'Tilgjengelige';
@@ -1187,7 +1198,7 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get healthSyncImportedEmpty =>
-      'Ingen importerte treninger for denne tilkoblingen.';
+      'Ingen importerte treningsøkter for denne tilkoblingen.';
 
   @override
   String healthSyncImportedAt(String dateTime) {
@@ -1311,7 +1322,7 @@ class AppLocalizationsNb extends AppLocalizations {
       'Send krasj- og feilrapporter til en diagnoseserver. Dette er atskilt fra lokal diagnostikk; du kan slå på begge, én eller ingen.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Krasjrapporter sendes';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

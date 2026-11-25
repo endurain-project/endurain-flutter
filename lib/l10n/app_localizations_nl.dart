@@ -815,7 +815,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get deviceAccessSubtitle =>
-      'Beheer de toegang tot locatie- en gezondheidsgegevens';
+      'Toegang tot locatie- en gezondheidsgegevens beheren';
 
   @override
   String get deviceAccessLocationSection => 'Locatie';
@@ -830,7 +830,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Toegang tot gezondheidsgegevens';
 
   @override
-  String get deviceAccessChecking => 'Toegang controleren…';
+  String get deviceAccessChecking => 'Toegang wordt gecontroleerd…';
 
   @override
   String get deviceAccessLocationServicesOff =>
@@ -858,7 +858,8 @@ class AppLocalizationsNl extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Health Connect is vereist';
 
   @override
-  String get deviceAccessHealthSetUp => 'Toegang tot gezondheidszorg ingesteld';
+  String get deviceAccessHealthSetUp =>
+      'Toegang tot gezondheidsgegevens ingesteld';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Toegang heeft aandacht nodig';
@@ -930,7 +931,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Geldt zolang je met deze server verbonden bent. Opnieuw inloggen zet de tegelinstelling van je server terug.';
+      'Geldt zolang je met deze server verbonden bent. Opnieuw inloggen vervangt deze door de tegelinstelling van je server, als die er een heeft.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1046,13 +1047,13 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get healthSyncSettingsSubtitle =>
-      'Importeer trainingen van uw gezondheidsplatform';
+      'Trainingen importeren van je gezondheidsplatform';
 
   @override
   String get healthSyncScreenTitle => 'Gezondheidssynchronisatie';
 
   @override
-  String get healthAccessScreenTitle => 'Toegang tot gezondheidszorg';
+  String get healthAccessScreenTitle => 'Toegang tot gezondheidsgegevens';
 
   @override
   String get healthAccessRequestedData => 'Gevraagde gegevens';
@@ -1077,13 +1078,14 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit maakt niet bekend welke gegevens Endurain kan lezen. Controleer de toegang in de Gezondheid-app.';
+      'HealthKit geeft niet prijs welke gegevens Endurain kan lezen. Controleer de toegang in de Gezondheid-app.';
 
   @override
-  String get healthAccessReview => 'Controleer toegang tot de gezondheidszorg';
+  String get healthAccessReview =>
+      'Toegang tot gezondheidsgegevens controleren';
 
   @override
-  String get healthAccessReviewIos => 'Toegang controleren';
+  String get healthAccessReviewIos => 'Zo controleer je de toegang';
 
   @override
   String get healthAccessDisconnect => 'Gezondheidsgegevens loskoppelen';
@@ -1097,13 +1099,13 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Open de Gezondheid-app, tik op uw profielfoto en vervolgens op Apps en services. Selecteer Endurain en update de gegevenscategorieën.';
+      'Open de Gezondheid-app, tik op je profielfoto en vervolgens op Apps en services. Selecteer Endurain en werk de gegevenscategorieën bij.';
 
   @override
-  String get healthSyncAuthorize => 'Maak verbinding met gezondheidsgegevens';
+  String get healthSyncAuthorize => 'Verbinden met gezondheidsgegevens';
 
   @override
-  String get healthSyncInstallProvider => 'Installeer Health Connect';
+  String get healthSyncInstallProvider => 'Health Connect installeren';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1114,19 +1116,25 @@ class AppLocalizationsNl extends AppLocalizations {
       'Gezondheidssynchronisatie is niet beschikbaar op dit apparaat.';
 
   @override
-  String get healthSyncSelectAll => 'Selecteer alles';
+  String get healthSyncSelectAll => 'Alles selecteren';
 
   @override
-  String get healthSyncClearSelection => 'Duidelijk';
+  String get healthSyncClearSelection => 'Selectie wissen';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Geselecteerde importeren ($count)';
+    return 'Selectie importeren ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Geïmporteerde $count training(en).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count trainingen geïmporteerd.',
+      one: '$count training geïmporteerd.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1138,22 +1146,25 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Sommige trainingen werden overgeslagen omdat er geen toegang tot de trainingsroute was verleend. Open Health Connect → Machtigingen en sta trainingsroutes toe voor Endurain.';
+      'Sommige trainingen zijn overgeslagen omdat er geen toegang tot trainingsroutes is verleend. Open Health Connect → Rechten en sta trainingsroutes toe voor Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Sommige trainingen werden overgeslagen omdat Endurain hun GPS-routes niet kon lezen. Open in de Gezondheid-app uw profiel, vervolgens Apps en services, selecteer Endurain en sta Trainingsroutes toe.';
+      'Sommige trainingen zijn overgeslagen omdat Endurain hun GPS-routes niet kon lezen. Open in de Gezondheid-app je profiel en vervolgens Apps en services, selecteer Endurain en sta Trainingsroutes toe.';
 
   @override
-  String get healthSyncReviewAccess => 'Toegang bekijken';
+  String get healthSyncHistoryAccessGuidance =>
+      'Oudere trainingen worden niet getoond omdat geen toegang tot eerdere gegevens in Health Connect is verleend. Sta \'Toegang tot eerdere gegevens\' toe voor Endurain in Health Connect om ze te importeren.';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automatische synchronisatie bij hervatten';
+  String get healthSyncReviewAccess => 'Toegang controleren';
+
+  @override
+  String get healthSyncAutoSyncTitle => 'Automatisch synchroniseren bij openen';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importeer automatisch nieuwe trainingen wanneer de app wordt geopend.';
+      'Nieuwe trainingen automatisch importeren wanneer de app wordt geopend.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
@@ -1317,7 +1328,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Verstuur crash- en foutrapporten naar een diagnoseserver. Dit staat los van lokale diagnostiek; je kunt beide, één of geen van beide inschakelen.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Crashrapporten worden verzonden';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

@@ -57,7 +57,16 @@ object AudioAnnouncer {
             synchronized(engineLock) {
                 ensureInitialized(appContext)
                 val engine = tts
-                if (engine == null || !ready) {
+                if (engine == null) {
+                    // Initialization failed outright; the next call retries.
+                    return
+                }
+                if (!ready) {
+                    // Bounded so an engine that never reports back cannot
+                    // grow the queue for a whole recording.
+                    if (pending.size >= MAX_PENDING_UTTERANCES) {
+                        pending.removeFirst()
+                    }
                     pending.addLast(PendingUtterance(text, duck, languageTag))
                     return
                 }
@@ -99,40 +108,77 @@ object AudioAnnouncer {
         }
     }
 
+    /** Caller holds [engineLock]. */
     private fun ensureInitialized(context: Context) {
         if (tts != null) {
             return
         }
         try {
             audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-            tts = TextToSpeech(context) { status ->
+            var created: TextToSpeech? = null
+            var statusBeforeCreated: Int? = null
+            val engine = TextToSpeech(context) { status ->
                 synchronized(engineLock) {
-                    try {
-                        ready = status == TextToSpeech.SUCCESS
-                        if (ready) {
-                            val result = tts?.setOnUtteranceProgressListener(
-                                FocusReleasingListener(),
-                            )
-                            if (result == TextToSpeech.ERROR) {
-                                reportFailure(STAGE_LISTENER_REGISTRATION, code = result)
-                            }
-                            flushPending(context)
-                        } else {
-                            reportFailure(STAGE_INITIALIZATION, code = status)
-                            pending.clear()
-                        }
-                    } catch (error: RuntimeException) {
-                        ready = false
-                        pending.clear()
-                        reportFailure(STAGE_INITIALIZATION, error = error)
+                    val current = created
+                    if (current == null) {
+                        // Reported from inside the constructor (no engine to
+                        // bind): handled below once the instance exists.
+                        statusBeforeCreated = status
+                    } else {
+                        onEngineInitialized(context, current, status)
                     }
                 }
             }
+            created = engine
+            tts = engine
+            ready = false
+            statusBeforeCreated?.let { onEngineInitialized(context, engine, it) }
         } catch (error: RuntimeException) {
             tts = null
             ready = false
             pending.clear()
             reportFailure(STAGE_INITIALIZATION, error = error)
+        }
+    }
+
+    /** Caller holds [engineLock]. */
+    private fun onEngineInitialized(context: Context, engine: TextToSpeech, status: Int) {
+        if (tts !== engine) {
+            // Superseded by a later engine; this one is already released.
+            return
+        }
+        try {
+            if (status == TextToSpeech.SUCCESS) {
+                ready = true
+                val result = engine.setOnUtteranceProgressListener(FocusReleasingListener())
+                if (result == TextToSpeech.ERROR) {
+                    reportFailure(STAGE_LISTENER_REGISTRATION, code = result)
+                }
+                flushPending(context)
+            } else {
+                reportFailure(STAGE_INITIALIZATION, code = status)
+                discardEngine(engine)
+            }
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_INITIALIZATION, error = error)
+            discardEngine(engine)
+        }
+    }
+
+    /**
+     * Releases an engine whose initialization failed so the next [speak]
+     * creates a new one instead of queueing forever behind it. Caller holds
+     * [engineLock].
+     */
+    private fun discardEngine(engine: TextToSpeech) {
+        tts = null
+        ready = false
+        appliedLanguageTag = null
+        pending.clear()
+        try {
+            engine.shutdown()
+        } catch (error: RuntimeException) {
+            reportFailure(STAGE_SHUTDOWN, error = error)
         }
     }
 
@@ -300,6 +346,7 @@ object AudioAnnouncer {
     }
 
     private const val LOG_TAG = "EndurainTTS"
+    private const val MAX_PENDING_UTTERANCES = 8
     private const val STAGE_INITIALIZATION = "initialization"
     private const val STAGE_LISTENER_REGISTRATION = "listener_registration"
     private const val STAGE_SPEAK = "speak"

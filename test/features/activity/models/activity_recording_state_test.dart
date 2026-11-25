@@ -25,6 +25,31 @@ void main() {
       expect(updated.points, isEmpty);
     });
 
+    test('copyWith shares the track when it is not replaced', () {
+      final point = ActivityTrackPoint(
+        latitude: 41.1,
+        longitude: -8.6,
+        timestamp: DateTime.utc(2026, 5, 30, 10),
+      );
+      final state = ActivityRecordingState(
+        status: ActivityRecordingStatus.recording,
+        segments: [
+          ActivityTrackSegment(points: [point]),
+        ],
+      );
+
+      final ticked = state.copyWith(elapsedDurationSeconds: 1);
+
+      expect(identical(ticked.points, state.points), isTrue);
+      expect(identical(ticked.segments, state.segments), isTrue);
+      expect(() => ticked.points.add(point), throwsUnsupportedError);
+
+      final grown = state.addPoint(point);
+      expect(identical(grown.points, state.points), isFalse);
+      expect(grown.points, hasLength(2));
+      expect(state.points, hasLength(1));
+    });
+
     test('copyWith can update elapsed duration', () {
       final state = ActivityRecordingState(
         status: ActivityRecordingStatus.recording,

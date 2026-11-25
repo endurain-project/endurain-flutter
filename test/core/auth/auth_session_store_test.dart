@@ -1,6 +1,7 @@
 import 'package:endurain/core/auth/auth_session_store.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -79,13 +80,13 @@ void main() {
       );
 
       expect(
-        await store.replaceSessionIfCurrent(
+        (await store.replaceSessionIfCurrent(
           expected: stale,
           accessToken: 'late-access-a',
           refreshToken: 'late-refresh-a',
           sessionId: 'late-session-a',
           expiresInSeconds: 3600,
-        ),
+        )).replaced,
         isFalse,
       );
       expect(await store.clearIfCurrent(stale), isFalse);
@@ -136,6 +137,200 @@ void main() {
 
       expect(fake.deleteAllCalls, 1);
       expect((await store.readSession())?.accessToken, 'access-1');
+    });
+
+    test('saveSession retries a transient write failure in place', () async {
+      final fake = _ConfigurableStorage()
+        ..values['device_id:https://example.test'] = 'device-1'
+        ..failNextWrites = 1;
+      final store = _storeOver(fake);
+
+      await _save(store);
+
+      expect(fake.deleteAllCalls, 0);
+      expect(fake.values['device_id:https://example.test'], 'device-1');
+      expect((await store.readSession())?.accessToken, 'access-1');
+    });
+
+    test('saveSession clears only the auth keys for a damaged entry', () async {
+      final fake = _ConfigurableStorage()
+        ..values['device_id:https://example.test'] = 'device-1'
+        ..values['auth_session_v2'] = 'damaged'
+        ..damagedKeys.add('auth_session_v2');
+      final store = _storeOver(fake);
+
+      await _save(store);
+
+      expect(fake.deleteAllCalls, 0);
+      expect(fake.values['device_id:https://example.test'], 'device-1');
+      expect((await store.readSession())?.accessToken, 'access-1');
+    });
+
+    test(
+      'a failed legacy cleanup or username write keeps the session',
+      () async {
+        final fake = _ConfigurableStorage()
+          ..failingDeletes.add('access_token')
+          ..damagedKeys.add('username');
+        final store = _storeOver(fake);
+
+        await _save(store, username: 'joao');
+        final saved = (await store.readSession())!;
+        final replaced = await store.replaceSessionIfCurrent(
+          expected: saved,
+          accessToken: 'access-2',
+          refreshToken: 'refresh-2',
+          sessionId: 'session-2',
+          expiresInSeconds: 3600,
+        );
+
+        expect(replaced.replaced, isTrue);
+        expect(replaced.persistError, isNull);
+        expect(fake.deleteAllCalls, 0);
+        expect((await store.readSession())?.accessToken, 'access-2');
+      },
+    );
+
+    group('a refresh secure storage rejects', () {
+      test('stays the current session in memory', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        final saved = (await store.readSession())!;
+        fake.damagedKeys.add('auth_session_v2');
+
+        final replacement = await _replace(store, saved);
+
+        expect(replacement.replaced, isTrue);
+        expect(
+          replacement.persistError,
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageWriteFailed,
+          ),
+        );
+        final current = (await store.readSession())!;
+        expect(current.accessToken, 'access-2');
+        expect(current.refreshToken, 'refresh-2');
+        expect(current.revision, isNot(saved.revision));
+        // Still only in memory: the stored blob is the old session.
+        expect(fake.values['auth_session_v2'], contains('access-1'));
+        expect((await _storeOver(fake).readSession())?.accessToken, 'access-1');
+      });
+
+      test('is stored by the next read once writes work again', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        fake.damagedKeys.add('auth_session_v2');
+        await _replace(store, (await store.readSession())!);
+        final pending = (await store.readSession())!;
+
+        fake.damagedKeys.remove('auth_session_v2');
+        expect((await store.readSession())?.revision, pending.revision);
+
+        final stored = (await _storeOver(fake).readSession())!;
+        expect(stored.accessToken, 'access-2');
+        expect(stored.revision, pending.revision);
+        // No longer held in memory: the store reads what is on disk again.
+        fake.values.remove('auth_session_v2');
+        expect(await store.readSession(), isNull);
+      });
+
+      test('can be refreshed again while still pending', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        fake.damagedKeys.add('auth_session_v2');
+        await _replace(store, (await store.readSession())!);
+        final pending = (await store.readSession())!;
+        fake.damagedKeys.remove('auth_session_v2');
+
+        final replacement = await _replace(
+          store,
+          pending,
+          accessToken: 'access-3',
+        );
+
+        expect(replacement.replaced, isTrue);
+        expect(replacement.persistError, isNull);
+        expect((await _storeOver(fake).readSession())?.accessToken, 'access-3');
+      });
+
+      test('cannot be replaced or cleared by a stale revision', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        final stale = (await store.readSession())!;
+        fake.damagedKeys.add('auth_session_v2');
+        await _replace(store, stale);
+
+        final late = await _replace(store, stale, accessToken: 'late-access');
+
+        expect(late.replaced, isFalse);
+        expect(await store.clearIfCurrent(stale), isFalse);
+        expect((await store.readSession())?.accessToken, 'access-2');
+      });
+
+      test('is discarded by clear', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        fake.damagedKeys.add('auth_session_v2');
+        await _replace(store, (await store.readSession())!);
+
+        await store.clear();
+
+        expect(await store.readSession(), isNull);
+        expect(fake.values['auth_session_v2'], isNull);
+      });
+
+      test('is discarded by a matching clearIfCurrent', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        fake.damagedKeys.add('auth_session_v2');
+        await _replace(store, (await store.readSession())!);
+        final pending = (await store.readSession())!;
+
+        expect(await store.clearIfCurrent(pending), isTrue);
+
+        expect(await store.readSession(), isNull);
+      });
+
+      test('is discarded by a matching clearIfProfileCurrent', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        final saved = (await store.readSession())!;
+        fake.damagedKeys.add('auth_session_v2');
+        await _replace(store, saved);
+
+        expect(await store.clearIfProfileCurrent(saved), isTrue);
+
+        expect(await store.readSession(), isNull);
+      });
+
+      test('is replaced by a sign-in', () async {
+        final fake = _ConfigurableStorage();
+        final store = _storeOver(fake);
+        await _save(store);
+        fake.damagedKeys.add('auth_session_v2');
+        await _replace(store, (await store.readSession())!);
+
+        await store.saveSession(
+          origin: 'https://example.test',
+          accessToken: 'access-3',
+          refreshToken: 'refresh-3',
+          sessionId: 'session-3',
+          accountId: '42',
+          expiresInSeconds: 3600,
+        );
+
+        expect((await store.readSession())?.accessToken, 'access-3');
+        expect((await _storeOver(fake).readSession())?.accessToken, 'access-3');
+      });
     });
 
     test('readSession surfaces a read failure instead of clearing', () async {
@@ -259,6 +454,115 @@ void main() {
       );
     });
   });
+}
+
+AuthSessionStore _storeOver(FlutterSecureStorage fake) {
+  return AuthSessionStore(
+    storage: SecureStorageService(
+      storage: fake,
+      preferences: AppPreferencesStore(backend: _NoopBackend()),
+    ),
+  );
+}
+
+Future<void> _save(AuthSessionStore store, {String? username}) {
+  return store.saveSession(
+    origin: 'https://example.test',
+    accessToken: 'access-1',
+    refreshToken: 'refresh-1',
+    sessionId: 'session-1',
+    accountId: '42',
+    username: username,
+    expiresInSeconds: 3600,
+  );
+}
+
+Future<SessionReplacement> _replace(
+  AuthSessionStore store,
+  AuthSession expected, {
+  String accessToken = 'access-2',
+}) {
+  return store.replaceSessionIfCurrent(
+    expected: expected,
+    accessToken: accessToken,
+    refreshToken: 'refresh-2',
+    sessionId: 'session-2',
+    expiresInSeconds: 3600,
+  );
+}
+
+/// Map-backed fake [FlutterSecureStorage] with scripted failures.
+class _ConfigurableStorage extends Fake implements FlutterSecureStorage {
+  final Map<String, String> values = {};
+
+  /// Writes to these keys fail until the key is deleted.
+  final Set<String> damagedKeys = {};
+
+  /// Deletes of these keys fail.
+  final Set<String> failingDeletes = {};
+
+  /// How many upcoming writes fail, whatever the key.
+  int failNextWrites = 0;
+  int deleteAllCalls = 0;
+
+  @override
+  Future<String?> read({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async => values[key];
+
+  @override
+  Future<void> write({
+    required String key,
+    required String? value,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    if (failNextWrites > 0) {
+      failNextWrites--;
+      throw Exception('keystore busy');
+    }
+    if (damagedKeys.contains(key)) throw Exception('damaged entry');
+    values[key] = value!;
+  }
+
+  @override
+  Future<void> delete({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    if (failingDeletes.contains(key)) throw Exception('delete failed');
+    damagedKeys.remove(key);
+    values.remove(key);
+  }
+
+  @override
+  Future<void> deleteAll({
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    deleteAllCalls++;
+    values.clear();
+    damagedKeys.clear();
+  }
 }
 
 /// Fake [FlutterSecureStorage] simulating an unusable store (e.g. an

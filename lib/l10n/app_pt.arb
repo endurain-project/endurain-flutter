@@ -1148,7 +1148,7 @@
   "@mapTilesSettingsSubtitle": {
     "description": "Subtítulo da entrada de mosaicos do mapa - Usado em: settings_screen.dart"
   },
-  "mapTilesSettingsNote": "Aplica-se enquanto estiver ligado a este servidor. Ao iniciar sessão novamente, volta à definição de mapas do seu servidor.",
+  "mapTilesSettingsNote": "Aplica-se enquanto estiver ligado a este servidor. Ao iniciar sessão novamente, é substituída pela definição de mapas do seu servidor, se existir.",
   "@mapTilesSettingsNote": {
     "description": "Nota sob o campo do servidor de mosaicos a explicar que é guardado por servidor e reposto ao iniciar sessão - Usado em: tile_server_settings_screen.dart"
   },
@@ -1414,6 +1414,10 @@
   "@healthSyncRouteConsentGuidanceIos": {
     "description": "Orientação para iOS mostrada quando routeConsentDeniedCount > 0 - Usado em: health_sync_screen.dart"
   },
+  "healthSyncHistoryAccessGuidance": "Os treinos mais antigos não são apresentados porque não foi concedido acesso aos dados anteriores no Health Connect. Permita \"Acesso a dados anteriores\" para o Endurain no Health Connect para os importar.",
+  "@healthSyncHistoryAccessGuidance": {
+    "description": "Orientação mostrada no Android quando os treinos mais antigos ficam ocultos porque o acesso ao histórico do Health Connect foi recusado - Usado em: health_sync_available_view.dart"
+  },
   "healthSyncReviewAccess": "Rever acessos",
   "@healthSyncReviewAccess": {
     "description": "Botão para pedir novamente permissões do HealthKit - Usado em: health_sync_screen.dart"
@@ -1526,7 +1530,7 @@
   "diagnosticsRemoteTitle": "Relatórios de falhas remotos",
   "diagnosticsRemoteEnable": "Enviar relatórios de falhas",
   "diagnosticsRemoteEnableSubtitle": "Enviar relatórios de falhas e de erros para um servidor de diagnóstico. É independente do diagnóstico local; pode ativar ambos, um ou nenhum.",
-  "diagnosticsRemoteActive": "Crash reports are being sent.",
+  "diagnosticsRemoteActive": "Os relatórios de falhas estão a ser enviados",
   "diagnosticsRemoteNeedsServer": "O relatório remoto de falhas não está disponível nesta versão.",
   "@sectionUnits": "=== UNITS (core/models/measurement_system.dart, features/activity/services/activity_stats_formatter.dart) ===",
   "unitMeter": "{value} m",

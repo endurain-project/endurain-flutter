@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Carreira</string>
+    <string name="activity_ride">Ciclismo</string>
+    <string name="activity_walk">Camiñada</string>
+    <string name="activity_hike">Sendeirismo</string>
+    <string name="pause">Pausar</string>
+    <string name="resume">Retomar</string>
+    <string name="end">Rematar</string>
+    <string name="end_confirm">Rematar o adestramento?</string>
+    <string name="end_workout">Rematar adestramento</string>
+    <string name="cancel">Cancelar</string>
+    <string name="done">Feito</string>
+    <string name="saving">Gardando…</string>
+    <string name="workout_saved">Adestramento gardado</string>
+    <string name="summary_uploads">Endurain no teu teléfono subirao a próxima vez que se abra.</string>
+    <string name="summary_no_route">Non se gravou ningunha ruta GPS, así que aínda non se pode subir este adestramento.</string>
+    <string name="waiting_for_phone">Agardando por Endurain no teléfono: %1$d</string>
+    <string name="permissions_needed">Endurain necesita acceso á localización e á frecuencia cardíaca para gravar adestramentos.</string>
+    <string name="start_failed">Non se puido iniciar o adestramento.</string>
+    <string name="exercise_unsupported">Este reloxo non pode gravar esta actividade.</string>
+    <string name="queue_failed">Non se puido poñer o adestramento en cola para o teu teléfono. Volverase tentar.</string>
+    <string name="notification_channel">Adestramento</string>
+    <string name="notification_recording">Gravando un adestramento</string>
+    <string name="notification_starting">Iniciando un adestramento</string>
+    <string name="countdown_setting">Conta atrás: %1$s</string>
+    <string name="countdown_off">Desactivada</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">A gravación comeza en</string>
+    <string name="countdown_seconds_left">Segundos restantes: %1$d</string>
+    <string name="countdown_start_now">Comezar agora</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

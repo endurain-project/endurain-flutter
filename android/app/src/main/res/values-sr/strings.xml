@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Снимање активности</string>
+    <string name="activity_recording_notification_starting">Покретање снимања</string>
+    <string name="activity_recording_channel_name">Снимање активности</string>
+    <string name="activity_recording_channel_description">Стално обавештење које се приказује током снимања активности.</string>
+    <string name="activity_recording_interrupted_title">Снимање прекинуто</string>
+    <string name="activity_recording_interrupted_text">Додирните да наставите</string>
+    <string name="activity_recording_alert_channel_name">Упозорења о снимању</string>
+    <string name="activity_recording_alert_channel_description">Приказује се када се снимање заустави док је Endurain у позадини.</string>
+    <string name="health_rationale_title">Здравствени подаци у апликацији Endurain</string>
+    <string name="health_rationale_usage">Endurain чита вежбе, руте, пулс, удаљеност, калорије и кораке само ради увоза изабраних активности.</string>
+    <string name="health_rationale_storage">Подаци изабраних рута чувају се на овом уређају и отпремају се само на Endurain сервер на који се повежете.</string>
+</resources>

@@ -146,6 +146,90 @@ class ActivePointsLogTest {
         assertEquals(0, log.count())
     }
 
+    @Test
+    fun cachedReadsMatchAFullScanAcrossCheckpoints() {
+        val (log, file) = newLog()
+        var second = 0
+        repeat(5) { batch ->
+            log.append((0 until 47).map { point(second++, segment = second) })
+            // Written behind the log's back, so its cache must rebuild.
+            file.appendText("not-json\n")
+            if (batch % 2 == 0) {
+                log.count()
+            }
+        }
+        log.append((0 until 30).map { point(second++, segment = second) })
+
+        val fresh = ActivePointsLog(file)
+        assertEquals(265, log.count())
+        assertEquals(fresh.count(), log.count())
+        assertEquals(fresh.last(), log.last())
+        for (offset in listOf(-1, 0, 1, 63, 64, 65, 128, 200, 264, 265, 300)) {
+            val expected = ActivePointsLog(file).read(offset)
+            assertEquals("offset $offset", expected, log.read(offset))
+            assertEquals("offset $offset", maxOf(0, 265 - maxOf(offset, 0)), expected.size)
+        }
+    }
+
+    @Test
+    fun countAndLastFollowAppendsWithoutRescanning() {
+        val (log, _) = newLog()
+        assertEquals(0, log.count())
+
+        log.append(listOf(point(0, segment = 0)))
+        assertEquals(1, log.count())
+        log.append(listOf(point(30, segment = 1), point(60, segment = 2)))
+
+        assertEquals(3, log.count())
+        assertEquals(2, log.last()?.segmentIndex)
+        assertEquals(listOf(1, 2), log.read(sinceOffset = 1).map { it.segmentIndex })
+    }
+
+    @Test
+    fun aWriteFromElsewhereRebuildsTheCache() {
+        val (log, file) = newLog()
+        log.append(listOf(point(0, segment = 0)))
+        assertEquals(1, log.count())
+
+        file.appendText(point(30, segment = 7).toJsonLine() + "\n")
+
+        assertEquals(2, log.count())
+        assertEquals(7, log.last()?.segmentIndex)
+        assertEquals(listOf(7), log.read(sinceOffset = 1).map { it.segmentIndex })
+    }
+
+    @Test
+    fun appendingAfterAPartialLineStaysConsistentWithAFullScan() {
+        val (log, file) = newLog()
+        log.append(listOf(point(0, segment = 0)))
+        log.count()
+        file.appendText("{\"partial\":")
+        log.count()
+
+        log.append(listOf(point(30, segment = 1)))
+        log.append(listOf(point(60, segment = 2)))
+
+        val fresh = ActivePointsLog(file)
+        assertEquals(fresh.count(), log.count())
+        assertEquals(fresh.read(), log.read())
+        assertEquals(2, log.last()?.segmentIndex)
+    }
+
+    @Test
+    fun aDeletedFileReadsAsEmptyAndStartsOver() {
+        val (log, file) = newLog()
+        log.append(listOf(point(0, segment = 0), point(30, segment = 1)))
+        assertEquals(2, log.count())
+
+        file.delete()
+        assertEquals(0, log.count())
+        assertNull(log.last())
+
+        log.append(listOf(point(60, segment = 3)))
+        assertEquals(1, log.count())
+        assertEquals(listOf(3), log.read().map { it.segmentIndex })
+    }
+
     private companion object {
         // Fixed, deterministic epoch (2023-11-14T22:13:20Z) so timestamp math
         // in the tests never depends on the wall clock.

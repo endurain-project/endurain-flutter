@@ -32,17 +32,19 @@ class WatchTransportChannel(
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
     private var eventSink: EventChannel.EventSink? = null
+    private val handoffListener: () -> Unit = {
+        mainHandler.post { send(mapOf("type" to "handoffAvailable")) }
+    }
 
     fun register(messenger: BinaryMessenger) {
         methodChannel = MethodChannel(messenger, METHOD_CHANNEL).also { it.setMethodCallHandler(this) }
         eventChannel = EventChannel(messenger, EVENT_CHANNEL).also { it.setStreamHandler(this) }
-        WatchHandoffEvents.listener = {
-            mainHandler.post { send(mapOf("type" to "handoffAvailable")) }
-        }
+        WatchHandoffEvents.listener = handoffListener
     }
 
     fun unregister() {
-        WatchHandoffEvents.listener = null
+        // Only this channel's own listener: a newer engine may have replaced it.
+        WatchHandoffEvents.clearListener(handoffListener)
         link.stopObserving()
         methodChannel?.setMethodCallHandler(null)
         eventChannel?.setStreamHandler(null)

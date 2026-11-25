@@ -174,6 +174,63 @@ void main() {
         },
       );
 
+      test(
+        'keeps an already saved record when re-finalizing a recovered session',
+        () async {
+          final tempDirectory = await Directory.systemTemp.createTemp(
+            'endurain_recover_refinalize_',
+          );
+          addTearDown(() => tempDirectory.deleteSync(recursive: true));
+          final repository = _repositoryFor(tempDirectory);
+          final uploadedAt = DateTime.utc(2026, 6, 3, 9, 40);
+          final gpxFileName = await repository.writeGpx(
+            id: 'session_1',
+            gpx: '<gpx>saved</gpx>',
+          );
+          await repository.upsert(
+            LocalActivityRecord(
+              id: 'session_1',
+              activityType: ActivityType.ride,
+              startedAt: DateTime.utc(2026, 6, 3, 9),
+              endedAt: DateTime.utc(2026, 6, 3, 9, 30),
+              elapsedDurationSeconds: 120,
+              distanceMeters: 1000,
+              pointCount: 2,
+              gpxFileName: gpxFileName,
+              uploadStatus: LocalActivityUploadStatus.uploaded,
+              createdAt: DateTime.utc(2026, 6, 3, 9, 31),
+              updatedAt: uploadedAt,
+              uploadedAt: uploadedAt,
+              autoRetryEligible: false,
+            ),
+          );
+          // The app died after saving the record but before acknowledging the
+          // native session, which is still marked completed.
+          final store = InMemoryActiveActivityStore();
+          store.session = _activeSession(ActiveActivityStatus.completed)
+              .copyWith(endedAt: DateTime.utc(2026, 6, 3, 9, 30));
+          await store.appendPoints([
+            _recordedPoint(segmentIndex: 0, latitude: 41.1),
+            _recordedPoint(segmentIndex: 0, latitude: 41.2),
+          ]);
+          final controller = _controllerWithActiveStore(
+            store,
+            repository: repository,
+          );
+          addTearDown(controller.dispose);
+
+          expect(await controller.recoverActiveRecording(), isTrue);
+
+          final record = (await repository.get('session_1'))!;
+          expect(record.uploadStatus, LocalActivityUploadStatus.uploaded);
+          expect(record.uploadedAt, uploadedAt);
+          expect(await repository.readGpxContents(record), '<gpx>saved</gpx>');
+          expect(controller.state.status, ActivityRecordingStatus.completed);
+          expect(controller.state.localActivityId, 'session_1');
+          expect(store.session, isNull);
+        },
+      );
+
       test('preserves a paused session before its first fix', () async {
         final store = InMemoryActiveActivityStore();
         store.session = _activeSession(ActiveActivityStatus.paused);
@@ -993,6 +1050,9 @@ class _ThrowingLocalActivityRepository extends LocalActivityRepository {
     : super(supportDirectoryProvider: () async => Directory.systemTemp);
 
   @override
+  Future<LocalActivityRecord?> get(String id) async => null;
+
+  @override
   Future<String> writeGpx({required String id, required String gpx}) {
     throw const AppException(AppErrorCode.activityLocalSaveFailed);
   }
@@ -1156,7 +1216,7 @@ ActivityUploadService _uploadServiceWithResponses(List<int> statusCodes) {
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
     retryPolicy: ActivityUploadRetryPolicy(
       maxAttempts: statusCodes.length,
-      delay: (_) async {},
+      delay: (_, _) async {},
     ),
     uploadFile:
         (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {

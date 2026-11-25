@@ -8,12 +8,15 @@ import WatchConnectivity
 /// when the phone is out of range at the time. A delivered workout stays in
 /// the outbox until the phone confirms Endurain stored it, so a session the
 /// phone cannot store yet (for example one without a GPS route) is never lost
-/// on the watch. Delivered workouts that are never confirmed are dropped after
-/// [deliveredRetention]; the phone keeps its own copy of each.
+/// on the watch. A delivered workout still unconfirmed after
+/// [redeliveryDelay] is sent again, because the phone may have failed to keep
+/// the file it received; unconfirmed workouts are never dropped.
 final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
     static let shared = PhoneLink()
 
-    static let deliveredRetention: TimeInterval = 30 * 24 * 60 * 60
+    /// How long a delivered workout waits for the phone's confirmation
+    /// before it is sent again.
+    static let redeliveryDelay: TimeInterval = 10 * 60
 
     /// A failed transfer is retried after this long, or sooner when the phone
     /// becomes reachable.
@@ -51,18 +54,19 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
         sendPending()
     }
 
-    /// Starts a transfer for every workout not yet delivered and not already
-    /// on its way.
+    /// Starts a transfer for every workout not yet delivered, or delivered
+    /// but unconfirmed for [redeliveryDelay], and not already on its way.
     func sendPending() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         guard session.activationState == .activated else { return }
-        outbox.pruneDelivered(olderThan: Date().addingTimeInterval(-Self.deliveredRetention))
         let inFlight = Set(session.outstandingFileTransfers.compactMap { transfer in
             transfer.file.metadata?[WatchProtocol.keySessionId] as? String
         })
-        let entries = (try? outbox.entries()) ?? []
-        for entry in entries where entry.deliveredAt == nil && !inFlight.contains(entry.sessionId) {
+        let entries = outbox.entriesToTransfer(
+            redeliverDeliveredBefore: Date().addingTimeInterval(-Self.redeliveryDelay)
+        )
+        for entry in entries where !inFlight.contains(entry.sessionId) {
             session.transferFile(
                 entry.url,
                 metadata: WatchProtocol.handoffMetadata(sessionId: entry.sessionId)

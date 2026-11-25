@@ -310,6 +310,9 @@ class ActivityRecordingService {
     await _activeRecovery;
     _ensureNotDisposed();
     if (_state.status == ActivityRecordingStatus.paused) {
+      if (_state.isAutoPaused) {
+        await _convertAutoPauseToManual();
+      }
       return;
     }
     if (_state.status != ActivityRecordingStatus.recording) {
@@ -337,6 +340,25 @@ class ActivityRecordingService {
     if (!await _sensors.flush()) {
       return;
     }
+    await _runRecorderCommand(
+      _recorder.pause,
+      ActivityRecordingError.localSaveFailed,
+    );
+  }
+
+  /// Turns an auto-pause into a manual one when the user pauses while the
+  /// recorder has already paused on its own. The recorder is paused explicitly
+  /// so it stops monitoring movement and can no longer auto-resume.
+  Future<void> _convertAutoPauseToManual() async {
+    _emit(_state.copyWith(isAutoPaused: false));
+    _recordBreadcrumb(
+      DiagnosticsEvents.activityPaused,
+      details: {
+        'elapsedSeconds': _state.elapsedDurationSeconds,
+        'pointCount': _state.points.length,
+        'segmentCount': _state.segments.length,
+      },
+    );
     await _runRecorderCommand(
       _recorder.pause,
       ActivityRecordingError.localSaveFailed,
@@ -617,10 +639,14 @@ class ActivityRecordingService {
   /// `event.session` over recomputing locally: the recorder timestamps the
   /// pause from the fix that triggered it, which stays correct even if the
   /// Dart isolate's own timer was throttled while backgrounded.
+  ///
+  /// The recorder has already saved the session as paused, so it rejects
+  /// further sensor samples: capture stops here and restarts on auto-resume.
   void _handleAutoPaused(ActivityRecorderEvent event) {
     if (_state.status != ActivityRecordingStatus.recording) {
       return;
     }
+    _sensors.stopCapture();
     final elapsedDurationSeconds = _clock.freeze(
       elapsedSeconds: event.session?.elapsedDurationSeconds,
     );
@@ -670,6 +696,7 @@ class ActivityRecordingService {
       },
     );
     _startElapsedTimer();
+    _sensors.startCapture(_localSessionId);
   }
 
   Future<bool> _runRecorderCommand(
@@ -757,7 +784,11 @@ class ActivityRecordingService {
       if (pointOffset > _nextPointOffset) {
         final offset = _nextPointOffset;
         final points = await _recorder.drain(sinceOffset: offset);
-        if (_isDisposed || sessionId != _localSessionId) {
+        // A pause or stop that landed during the drain leaves the gap for the
+        // next batch or the final drain; it is not a save failure.
+        if (_isDisposed ||
+            sessionId != _localSessionId ||
+            _state.status != ActivityRecordingStatus.recording) {
           return;
         }
         _recordRecordedPoints(points, pointOffset: offset);
@@ -779,11 +810,26 @@ class ActivityRecordingService {
     List<RecordedActivityPoint> points, {
     required int pointOffset,
   }) {
-    if (_state.status != ActivityRecordingStatus.recording || points.isEmpty) {
+    // Offsets count the recorder's stored entries, which can exceed the
+    // parsed points when a malformed entry was skipped.
+    final sourceCount = RecordedActivityPointBatch.sourceCountOf(points);
+    if (_state.status != ActivityRecordingStatus.recording ||
+        sourceCount == 0) {
       return;
     }
     final skipCount = _nextPointOffset - pointOffset;
-    if (skipCount < 0 || skipCount >= points.length) {
+    if (skipCount < 0 || skipCount >= sourceCount) {
+      return;
+    }
+    // Trim the overlap by stored-entry index, not by parsed position: a
+    // skipped entry before the cut would otherwise shift it by one.
+    final sourceIndices = RecordedActivityPointBatch.sourceIndicesOf(points);
+    final newPoints = <RecordedActivityPoint>[
+      for (var i = 0; i < points.length; i++)
+        if (sourceIndices[i] >= skipCount) points[i],
+    ];
+    _nextPointOffset = pointOffset + sourceCount;
+    if (newPoints.isEmpty) {
       return;
     }
 
@@ -797,7 +843,7 @@ class ActivityRecordingService {
       segmentPoints.add(<ActivityTrackPoint>[]);
     }
 
-    for (final recordedPoint in points.skip(skipCount)) {
+    for (final recordedPoint in newPoints) {
       if (_lastRecordedSegmentIndex != recordedPoint.segmentIndex &&
           segmentPoints.last.isNotEmpty) {
         segmentPoints.add(<ActivityTrackPoint>[]);
@@ -805,7 +851,6 @@ class ActivityRecordingService {
       segmentPoints.last.add(_toTrackPointWithSensors(recordedPoint));
       _lastRecordedSegmentIndex = recordedPoint.segmentIndex;
     }
-    _nextPointOffset = pointOffset + points.length;
 
     final segments = [
       for (final pts in segmentPoints) ActivityTrackSegment(points: pts),

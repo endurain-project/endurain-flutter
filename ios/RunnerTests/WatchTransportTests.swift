@@ -87,17 +87,38 @@ final class HandoffFileStoreTests: XCTestCase {
         XCTAssertTrue(store.isEmpty)
     }
 
-    func testPruneDropsOnlyOldDeliveredEntries() throws {
+    func testTransfersPendingAndLongUnacknowledgedDeliveredEntries() throws {
         let now = Date()
-        try store.save(Data(), sessionId: "old")
-        try store.save(Data(), sessionId: "recent")
         try store.save(Data(), sessionId: "pending")
-        store.markDelivered("old", at: now.addingTimeInterval(-40 * 24 * 3600))
-        store.markDelivered("recent", at: now.addingTimeInterval(-3600))
+        try store.save(Data(), sessionId: "unacknowledged")
+        try store.save(Data(), sessionId: "recent")
+        store.markDelivered("unacknowledged", at: now.addingTimeInterval(-40 * 24 * 3600))
+        store.markDelivered("recent", at: now.addingTimeInterval(-60))
 
-        store.pruneDelivered(olderThan: now.addingTimeInterval(-30 * 24 * 3600))
+        let toSend = store.entriesToTransfer(redeliverDeliveredBefore: now.addingTimeInterval(-600))
 
-        XCTAssertEqual(Set(try store.entries().map { $0.sessionId }), ["recent", "pending"])
+        XCTAssertEqual(Set(toSend.map { $0.sessionId }), ["pending", "unacknowledged"])
+        // Nothing unacknowledged is ever dropped.
+        XCTAssertEqual(try store.entries().count, 3)
+    }
+
+    func testRedeliveryRestartsTheDeliveredClock() throws {
+        let now = Date()
+        try store.save(Data("route".utf8), sessionId: "s")
+        store.markDelivered("s", at: now.addingTimeInterval(-3600))
+        XCTAssertEqual(store.entriesToTransfer(redeliverDeliveredBefore: now.addingTimeInterval(-600)).count, 1)
+
+        store.markDelivered("s", at: now)
+
+        let entry = try XCTUnwrap(store.entry(for: "s"))
+        XCTAssertEqual(try XCTUnwrap(entry.deliveredAt).timeIntervalSince(now), 0, accuracy: 1)
+        XCTAssertEqual(store.data(for: "s"), Data("route".utf8))
+        XCTAssertTrue(store.entriesToTransfer(redeliverDeliveredBefore: now.addingTimeInterval(-600)).isEmpty)
+    }
+
+    func testMarkDeliveredIgnoresAnUnknownSession() throws {
+        store.markDelivered("missing")
+        XCTAssertTrue(store.isEmpty)
     }
 
     func testIgnoresForeignFiles() throws {
@@ -205,6 +226,22 @@ final class WatchRecordingStoreTests: XCTestCase {
         try handle.close()
 
         XCTAssertEqual(try XCTUnwrap(store.load()).points.count, 1)
+    }
+
+    func testAppendAfterALineCutShortKeepsTheNewPoints() throws {
+        try store.begin(WatchRecording(sessionId: "s", activityType: .run, startedAt: start))
+        try store.append([point(at: 1)])
+        let handle = try FileHandle(forWritingTo: directory.appendingPathComponent("points.jsonl"))
+        try handle.seekToEnd()
+        try handle.write(contentsOf: Data("{\"t\":\"2027-01-15T08:0".utf8))
+        try handle.close()
+
+        try store.append([point(at: 2), point(at: 3)])
+
+        XCTAssertEqual(
+            try XCTUnwrap(store.load()).points.map { $0.timestamp },
+            [1, 2, 3].map { start.addingTimeInterval($0) }
+        )
     }
 
     func testBeginDiscardsThePreviousRecording() throws {

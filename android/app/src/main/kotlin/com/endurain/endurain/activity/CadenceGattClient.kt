@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.os.Build
+import android.os.SystemClock
 import java.util.UUID
 
 /**
@@ -27,16 +28,19 @@ import java.util.UUID
  * is reported directly.
  */
 class CadenceGattClient(private val context: Context) {
-    /** The latest decoded cadence in RPM (cycling) or SPM (running), or `null`. */
-    @Volatile
-    var latestRpm: Int? = null
-        private set
+    private val reading = FreshReading()
+
+    /**
+     * The latest decoded cadence in RPM (cycling) or SPM (running), or `null`
+     * when none arrived within [FreshReading.DEFAULT_MAX_AGE_MILLIS].
+     */
+    val latestRpm: Int?
+        get() = reading.value
 
     private var gatt: BluetoothGatt? = null
 
     // Stateful CSC crank-revolution baseline for cadence derivation.
-    private var previousCrankRevolutions: Int? = null
-    private var previousCrankEventTime: Int? = null
+    private val crankCadence = CrankCadenceCalculator()
 
     private val callback = object : BluetoothGattCallback() {
         @SuppressLint("MissingPermission")
@@ -55,9 +59,8 @@ class CadenceGattClient(private val context: Context) {
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     // Drop the stale reading and baseline; autoConnect restores.
-                    latestRpm = null
-                    previousCrankRevolutions = null
-                    previousCrankEventTime = null
+                    reading.clear()
+                    crankCadence.reset()
                 }
             }
         }
@@ -114,33 +117,19 @@ class CadenceGattClient(private val context: Context) {
 
     private fun handleValue(uuid: UUID, value: ByteArray) {
         when (uuid) {
-            CSC_MEASUREMENT -> parseCscCadenceRpm(value)?.let { latestRpm = it }
-            RSC_MEASUREMENT -> parseRscCadenceSpm(value)?.let { latestRpm = it }
+            CSC_MEASUREMENT -> parseCscCadenceRpm(value)?.let { reading.update(it) }
+            RSC_MEASUREMENT -> parseRscCadenceSpm(value)?.let { reading.update(it) }
         }
     }
 
     /**
      * Derives cycling cadence in RPM from a CSC Measurement, differencing the
-     * crank counters against the previous sample. Returns `null` on the first
-     * (baseline) sample, when no crank data is present, or when no time has
-     * elapsed (a duplicate notification, or the rider is coasting).
+     * crank counters against the previous sample (see [CrankCadenceCalculator]).
+     * Returns `null` when there is no new cadence to report.
      */
     private fun parseCscCadenceRpm(data: ByteArray): Int? {
         val crank = parseCscCrank(data) ?: return null
-        val previousRevolutions = previousCrankRevolutions
-        val previousEventTime = previousCrankEventTime
-        previousCrankRevolutions = crank.first
-        previousCrankEventTime = crank.second
-        if (previousRevolutions == null || previousEventTime == null) {
-            return null
-        }
-        val deltaRevolutions = (crank.first - previousRevolutions) and 0xFFFF
-        val deltaTime = (crank.second - previousEventTime) and 0xFFFF
-        if (deltaTime == 0) {
-            return null
-        }
-        // One crank event time tick is 1/1024 s; 60 s/min * 1024 ticks/s.
-        return (deltaRevolutions * 60 * 1024) / deltaTime
+        return crankCadence.onMeasurement(crank.first, crank.second, SystemClock.elapsedRealtime())
     }
 
     /** Connects to [deviceId] (a BLE MAC address) and begins streaming cadence. */
@@ -171,9 +160,8 @@ class CadenceGattClient(private val context: Context) {
     /** Disconnects and releases the GATT connection. */
     @SuppressLint("MissingPermission")
     fun stop() {
-        latestRpm = null
-        previousCrankRevolutions = null
-        previousCrankEventTime = null
+        reading.clear()
+        crankCadence.reset()
         gatt?.let { active ->
             try {
                 active.disconnect()

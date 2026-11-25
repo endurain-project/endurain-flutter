@@ -58,6 +58,10 @@ class LocalActivityRepository {
     Set<LocalActivityUploadStatus> statuses,
   ) => _store.listByUploadStatus(statuses);
 
+  /// See [LocalActivityStore.listUploadQueueCandidates].
+  Future<List<LocalActivityRecord>> listUploadQueueCandidates() =>
+      _store.listUploadQueueCandidates();
+
   Future<int> count() => _store.count();
 
   Future<int> bindUnassignedToProfile({

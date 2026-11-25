@@ -1,13 +1,16 @@
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/features/activity/services/recording_sensor_session.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeSensorRecorder implements ActivitySensorRecorder {
   final appended = <RecordedSensorSample>[];
   List<RecordedSensorSample> stored = [];
   bool failAppend = false;
+  Object? appendError;
 
   @override
   Future<void> appendSensorSample({
@@ -16,6 +19,9 @@ class _FakeSensorRecorder implements ActivitySensorRecorder {
   }) async {
     if (failAppend) {
       throw StateError('disk full');
+    }
+    if (appendError case final error?) {
+      throw error;
     }
     appended.add(sample);
   }
@@ -102,6 +108,41 @@ void main() {
     await session.flush();
     expect(recorder.appended, isEmpty);
     expect(recorded, isEmpty);
+  });
+
+  test('re-checks recording when a queued write runs', () async {
+    session.startCapture('s1');
+    session.onReading(hr(0, 140));
+    // The recording paused before the queued write got its turn.
+    recording = false;
+
+    expect(await session.flush(), isTrue);
+    expect(recorder.appended, isEmpty);
+    expect(recorded, isEmpty);
+  });
+
+  test('drops a sample the recorder rejects as invalid_state', () async {
+    session.startCapture('s1');
+    recorder.appendError = PlatformException(
+      code: NativeActivityRecorderChannelContract.errorInvalidState,
+    );
+    session.onReading(hr(0, 140));
+
+    expect(await session.flush(), isTrue);
+    expect(failures, isEmpty);
+    expect(recorded, isEmpty);
+    expect(session.overlay(point, t0).heartRateBpm, isNull);
+  });
+
+  test('other platform errors are still write failures', () async {
+    session.startCapture('s1');
+    recorder.appendError = PlatformException(
+      code: NativeActivityRecorderChannelContract.errorStoreWriteFailed,
+    );
+    session.onReading(hr(0, 140));
+
+    expect(await session.flush(), isFalse);
+    expect(failures, hasLength(1));
   });
 
   test('a write failure is reported once and flush returns false', () async {

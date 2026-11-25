@@ -70,10 +70,16 @@ class SensorSectionController extends SafeNotifier
   /// appears when the user opens the Sensors screen, then reads the adapter
   /// state. Ordering mirrors the heart-rate section: some platforms only report
   /// an accurate adapter state once the Bluetooth permission is granted.
+  ///
+  /// The route may be popped while any of these awaits is pending; the
+  /// subscriptions are created before the first await so [dispose] always
+  /// cancels them, and the remaining steps are skipped once disposed.
   Future<void> initialize() async {
+    if (isDisposed) {
+      return;
+    }
     _connectionStatus = _service.status;
     _latestMeasurement = _service.latestMeasurement;
-    _rememberedDevice = await _service.rememberedDevice();
 
     _bluetoothSubscription = _service.bluetoothState.listen((state) {
       _bluetoothState = state;
@@ -87,9 +93,17 @@ class SensorSectionController extends SafeNotifier
       _latestMeasurement = measurement;
       notify();
     });
+
+    _rememberedDevice = await _service.rememberedDevice();
+    if (isDisposed) {
+      return;
+    }
     notify();
 
     await _service.ensurePermissions();
+    if (isDisposed) {
+      return;
+    }
     _bluetoothState = await _service.currentBluetoothState();
     _isCheckingBluetooth = false;
     notify();

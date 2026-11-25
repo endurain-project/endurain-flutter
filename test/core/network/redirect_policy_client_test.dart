@@ -159,6 +159,54 @@ void main() {
       expect(followed.body, 'payload');
     });
 
+    for (final status in [307, 308]) {
+      test('does not re-send a body on a cross-origin $status', () async {
+        final inner = _ScriptedClient([
+          _redirect(status, 'https://evil.test/collect'),
+        ]);
+        final client = RedirectPolicyClient(inner);
+
+        final request = http.Request(
+          'POST',
+          Uri.parse('https://a.test/auth/refresh'),
+        )..body = '{"refresh_token":"secret"}';
+        final response = await client.send(request);
+
+        // The refresh token never reaches the other origin.
+        expect(response.statusCode, status);
+        expect(inner.requests, hasLength(1));
+      });
+    }
+
+    test('follows a cross-origin 307 that carries no body', () async {
+      final inner = _ScriptedClient([
+        _redirect(307, 'https://b.test/result'),
+        _ok('done'),
+      ]);
+      final client = RedirectPolicyClient(inner);
+
+      final response = await _get(client, 'https://a.test/x');
+
+      expect(response.statusCode, 200);
+      expect(inner.requests, hasLength(2));
+    });
+
+    test('a cross-origin 303 still follows as a body-less GET', () async {
+      final inner = _ScriptedClient([
+        _redirect(303, 'https://b.test/result'),
+        _ok('done'),
+      ]);
+      final client = RedirectPolicyClient(inner);
+
+      final request = http.Request('POST', Uri.parse('https://a.test/submit'))
+        ..body = 'payload';
+      await client.send(request);
+
+      final followed = inner.requests[1] as http.Request;
+      expect(followed.method, 'GET');
+      expect(followed.body, isEmpty);
+    });
+
     test('302 on a POST becomes a GET, per convention', () async {
       final inner = _ScriptedClient([
         _redirect(302, 'https://a.test/result'),

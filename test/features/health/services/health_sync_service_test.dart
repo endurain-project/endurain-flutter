@@ -350,7 +350,19 @@ void main() {
       expect(await service.listImportable(), isEmpty);
     });
 
-    test('clears a stale connection when reading health data fails', () async {
+    test('clears a stale connection when the read lacks permission', () async {
+      final settings = makeSyncSettings();
+      await settings.setConnected(profile.id, true);
+      adapter.readWorkoutsError = const AppException(
+        AppErrorCode.healthPermissionDenied,
+      );
+
+      await expectLater(service.listImportable(), throwsA(isA<AppException>()));
+
+      expect(await settings.isConnected(profile.id), isFalse);
+    });
+
+    test('keeps the connection when a read fails for another reason', () async {
       final settings = makeSyncSettings();
       await settings.setConnected(profile.id, true);
       adapter.readWorkoutsError = const AppException(
@@ -359,7 +371,45 @@ void main() {
 
       await expectLater(service.listImportable(), throwsA(isA<AppException>()));
 
-      expect(await settings.isConnected(profile.id), isFalse);
+      expect(await settings.isConnected(profile.id), isTrue);
+    });
+
+    test('skips imported workouts inside the read', () async {
+      adapter.workouts = [makeWorkout('w1')];
+      await service.importAll();
+      adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
+
+      final result = await service.listImportable();
+
+      expect(result.map((w) => w.sourceId), ['w2']);
+      expect(adapter.excludedSourceIds, ['w1']);
+    });
+
+    test('stops paging back once history access is declined', () async {
+      final now = DateTime.utc(2025, 6, 1, 11, 0);
+      adapter.historyDeclinedBefore = now.subtract(const Duration(days: 30));
+      adapter.workoutPages = [
+        [makeWorkout('recent')],
+        const [],
+      ];
+
+      final first = await service.loadAvailable(
+        range: const HealthImportRange.lastYear(),
+      );
+      expect(first.hasMore, isTrue);
+      expect(service.olderWorkoutsUnavailable, isFalse);
+
+      final second = await service.loadMoreAvailable();
+      expect(second.hasMore, isFalse);
+      expect(second.items.map((w) => w.sourceId), ['recent']);
+      expect(service.olderWorkoutsUnavailable, isTrue);
+
+      final third = await service.loadMoreAvailable();
+      expect(third.hasMore, isFalse);
+      expect(adapter.readWindows, hasLength(2));
+
+      await service.loadAvailable(range: const HealthImportRange.lastYear());
+      expect(service.olderWorkoutsUnavailable, isFalse);
     });
   });
 
@@ -420,10 +470,33 @@ void main() {
 
       final result = await service.importWorkouts(['w1']);
       expect(result.imported, 0);
+      expect(result.failed, 0);
       expect(
         await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isFalse,
       );
+    });
+
+    test('counts a selected workout missing from the list as failed', () async {
+      adapter.workouts = [makeWorkout('w1')];
+      await service.listImportable();
+
+      final result = await service.importWorkouts(['w1', 'unknown']);
+
+      expect(result.imported, 1);
+      expect(result.failed, 1);
+    });
+
+    test('does not count a selection imported meanwhile as failed', () async {
+      adapter.workouts = [makeWorkout('w1')];
+      await service.listImportable();
+      await service.importWorkouts(['w1']);
+      await service.listImportable();
+
+      final result = await service.importWorkouts(['w1']);
+
+      expect(result.imported, 0);
+      expect(result.failed, 0);
     });
 
     test('drain is called after successful imports', () async {
@@ -499,6 +572,7 @@ void main() {
       final result = await watchAwareService.importWorkouts(['w1']);
 
       expect(result.imported, 0);
+      expect(result.failed, 0);
       expect(await localActivities.count(), 0);
     });
   });
@@ -613,6 +687,34 @@ void main() {
           adapter.readWindows.single.start,
         ),
         lessThanOrEqualTo(const Duration(days: 30)),
+      );
+    });
+
+    test('leaves the screen list and paging untouched', () async {
+      await service.setAutoSyncOnResumeEnabled(true);
+      adapter.routeConsentDeniedCountValue = 1;
+      adapter.workoutPages = [
+        [makeWorkout('recent')],
+        [makeWorkout('older')],
+        [makeWorkout('recent')],
+      ];
+      await service.loadAvailable(range: const HealthImportRange.last3Months());
+      await service.loadMoreAvailable();
+      final secondPage = adapter.readWindows[1];
+
+      final autoSync = await service.autoSyncOnResume();
+      expect(autoSync?.imported, 1);
+      expect(service.routeConsentDeniedCount, 2);
+
+      // The older workout, outside the default range, is still importable.
+      final result = await service.importWorkouts(['older']);
+      expect(result, (imported: 1, failed: 0));
+
+      // Paging continues the screen's range where it left off.
+      await service.loadMoreAvailable();
+      expect(
+        adapter.readWindows.last.end,
+        secondPage.start.subtract(const Duration(microseconds: 1)),
       );
     });
 

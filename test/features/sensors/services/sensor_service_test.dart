@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
@@ -190,6 +192,133 @@ void main() {
       // The first two attempts fail; a later one connects, no user interaction.
       expect(retryAdapter.connectCalls.length, greaterThanOrEqualTo(3));
       expect(retryService.isConnected, isTrue);
+    });
+
+    test('concurrent tryReconnectRemembered calls share one attempt', () async {
+      await preferences.saveRemembered(key: key, device: device);
+      adapter
+        ..bluetoothStateValue = SensorBluetoothState.ready
+        ..connectGate = Completer<void>();
+
+      // Both start before either has awaited anything (cold launch: the
+      // launch reconnect and the Bluetooth-ready reconnect race).
+      final first = service.tryReconnectRemembered();
+      final second = service.tryReconnectRemembered();
+      await pumpEventQueue();
+      adapter.connectGate!.complete();
+
+      expect(await Future.wait([first, second]), [true, true]);
+      expect(adapter.connectCalls, [device]);
+      expect(service.isConnected, isTrue);
+    });
+
+    test('concurrent autoConnectRemembered calls share one run', () async {
+      await preferences.saveRemembered(key: key, device: device);
+      adapter
+        ..bluetoothStateValue = SensorBluetoothState.ready
+        ..connectGate = Completer<void>();
+
+      final first = service.autoConnectRemembered();
+      final second = service.autoConnectRemembered();
+      await pumpEventQueue();
+      adapter.connectGate!.complete();
+      await Future.wait([first, second]);
+
+      expect(adapter.ensurePermissionsCalls, 1);
+      expect(adapter.connectCalls, [device]);
+      expect(service.isConnected, isTrue);
+    });
+
+    group('after an unexpected link loss', () {
+      late SensorService backoffService;
+
+      setUp(() {
+        backoffService = SensorService(
+          adapter: adapter,
+          preferences: preferences,
+          rememberedKey: key,
+          linkLossRetryDelays: const [
+            Duration(milliseconds: 10),
+            Duration(milliseconds: 20),
+          ],
+        );
+        adapter.bluetoothStateValue = SensorBluetoothState.ready;
+      });
+
+      tearDown(() => backoffService.dispose());
+
+      test('reconnects the remembered sensor', () async {
+        await backoffService.connect(device);
+
+        adapter.emitStatus(SensorConnectionStatus.disconnected);
+        expect(backoffService.isConnected, isFalse);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(adapter.connectCalls, [device, device]);
+        expect(backoffService.isConnected, isTrue);
+      });
+
+      test('keeps retrying with backoff until the sensor is back', () async {
+        await backoffService.connect(device);
+        adapter.connectShouldFail = true;
+
+        adapter.emitStatus(SensorConnectionStatus.disconnected);
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        final failedAttempts = adapter.connectCalls.length - 1;
+        expect(failedAttempts, greaterThanOrEqualTo(2));
+
+        adapter.connectShouldFail = false;
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(backoffService.isConnected, isTrue);
+        // Connected again: no further attempts.
+        final calls = adapter.connectCalls.length;
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(adapter.connectCalls.length, calls);
+      });
+
+      test('does not reconnect after the user disconnects', () async {
+        await backoffService.connect(device);
+
+        await backoffService.disconnect();
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(adapter.connectCalls, [device]);
+        expect(backoffService.isConnected, isFalse);
+      });
+
+      test('stops retrying once the sensor is forgotten', () async {
+        await backoffService.connect(device);
+        adapter.connectShouldFail = true;
+        adapter.emitStatus(SensorConnectionStatus.disconnected);
+        await Future<void>.delayed(const Duration(milliseconds: 15));
+
+        await backoffService.forget();
+        final calls = adapter.connectCalls.length;
+        await Future<void>.delayed(const Duration(milliseconds: 60));
+
+        expect(adapter.connectCalls.length, calls);
+      });
+
+      test('does not reconnect while suppressed by canAutoReconnect', () async {
+        var allowed = true;
+        final gated = SensorService(
+          adapter: adapter,
+          preferences: preferences,
+          rememberedKey: key,
+          canAutoReconnect: () => allowed,
+          linkLossRetryDelays: const [Duration(milliseconds: 10)],
+        );
+        addTearDown(gated.dispose);
+        await gated.connect(device);
+        final calls = adapter.connectCalls.length;
+
+        allowed = false;
+        adapter.emitStatus(SensorConnectionStatus.disconnected);
+        await Future<void>.delayed(const Duration(milliseconds: 40));
+
+        expect(adapter.connectCalls.length, calls);
+      });
     });
 
     test(

@@ -845,7 +845,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'I servizi di localizzazione sono disattivati';
 
   @override
-  String get deviceAccessLocationAlways => 'Permesso tutto il tempo';
+  String get deviceAccessLocationAlways => 'Sempre consentito';
 
   @override
   String get deviceAccessLocationWhileUsing =>
@@ -863,10 +863,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Non disponibile su questo dispositivo';
 
   @override
-  String get deviceAccessHealthRequired => 'È richiesto Connessione Salute';
+  String get deviceAccessHealthRequired => 'È richiesto Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Istituito l\'accesso sanitario';
+  String get deviceAccessHealthSetUp => 'Accesso ai dati sanitari configurato';
 
   @override
   String get deviceAccessHealthNeedsAttention =>
@@ -939,7 +939,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Vale finché sei connesso a questo server. Accedendo di nuovo torna l\'impostazione dei tasselli del tuo server.';
+      'Vale finché sei connesso a questo server. Accedendo di nuovo viene sostituita dall\'impostazione dei tasselli del tuo server, se presente.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1051,17 +1051,17 @@ class AppLocalizationsIt extends AppLocalizations {
   String get diagnosticsRawReport => 'Report non elaborato';
 
   @override
-  String get healthSyncSettingsTitle => 'Sincronizzazione della salute';
+  String get healthSyncSettingsTitle => 'Sincronizzazione dati sanitari';
 
   @override
   String get healthSyncSettingsSubtitle =>
-      'Importa allenamenti dalla tua piattaforma sanitaria';
+      'Importa allenamenti dalla tua piattaforma per la salute';
 
   @override
-  String get healthSyncScreenTitle => 'Sincronizzazione della salute';
+  String get healthSyncScreenTitle => 'Sincronizzazione dati sanitari';
 
   @override
-  String get healthAccessScreenTitle => 'Accesso alla sanità';
+  String get healthAccessScreenTitle => 'Accesso ai dati sanitari';
 
   @override
   String get healthAccessRequestedData => 'Dati richiesti';
@@ -1079,7 +1079,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get healthAccessAllowed => 'Consentito';
 
   @override
-  String get healthAccessNeedsAttention => 'Ha bisogno di attenzione';
+  String get healthAccessNeedsAttention => 'Richiede attenzione';
 
   @override
   String get healthAccessManagedBySystem =>
@@ -1090,7 +1090,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'HealthKit non rivela quali dati Endurain può leggere. Controlla l\'accesso nell\'app Salute.';
 
   @override
-  String get healthAccessReview => 'Rivedere l\'accesso sanitario';
+  String get healthAccessReview => 'Controlla l\'accesso ai dati sanitari';
 
   @override
   String get healthAccessReviewIos => 'Come verificare l\'accesso';
@@ -1113,7 +1113,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get healthSyncAuthorize => 'Connettiti ai dati sanitari';
 
   @override
-  String get healthSyncInstallProvider => 'Installa Connessione Salute';
+  String get healthSyncInstallProvider => 'Installa Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1121,22 +1121,28 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get healthSyncUnsupported =>
-      'La sincronizzazione della salute non è disponibile su questo dispositivo.';
+      'La sincronizzazione dei dati sanitari non è disponibile su questo dispositivo.';
 
   @override
   String get healthSyncSelectAll => 'Seleziona tutto';
 
   @override
-  String get healthSyncClearSelection => 'Chiaro';
+  String get healthSyncClearSelection => 'Deseleziona';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Importa selezionata ($count)';
+    return 'Importa selezionati ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return '$count allenamento/i importati/i.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count allenamenti importati.',
+      one: '$count allenamento importato.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1155,11 +1161,15 @@ class AppLocalizationsIt extends AppLocalizations {
       'Alcuni allenamenti sono stati saltati perché Endurain non riusciva a leggere i percorsi GPS. Nell\'app Salute, apri il tuo profilo, quindi App e servizi, seleziona Endurain e consenti Percorsi di allenamento.';
 
   @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Gli allenamenti meno recenti non vengono mostrati perché non è stato concesso l\'accesso ai dati passati in Health Connect. Consenti «Accesso ai dati passati» per Endurain in Health Connect per importarli.';
+
+  @override
   String get healthSyncReviewAccess => 'Controlla l\'accesso';
 
   @override
   String get healthSyncAutoSyncTitle =>
-      'Sincronizzazione automatica al ripristino';
+      'Sincronizzazione automatica all\'apertura';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
@@ -1327,7 +1337,8 @@ class AppLocalizationsIt extends AppLocalizations {
       'Invia segnalazioni di arresti anomali ed errori a un server di diagnostica. È indipendente dalla diagnostica locale; puoi attivare entrambe, una o nessuna.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive =>
+      'Le segnalazioni di arresto anomalo vengono inviate';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

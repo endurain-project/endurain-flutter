@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Τρέξιμο</string>
+    <string name="activity_ride">Ποδηλασία</string>
+    <string name="activity_walk">Περπάτημα</string>
+    <string name="activity_hike">Πεζοπορία</string>
+    <string name="pause">Παύση</string>
+    <string name="resume">Συνέχεια</string>
+    <string name="end">Τερματισμός</string>
+    <string name="end_confirm">Τερματισμός της προπόνησης;</string>
+    <string name="end_workout">Τερματισμός προπόνησης</string>
+    <string name="cancel">Άκυρο</string>
+    <string name="done">Τέλος</string>
+    <string name="saving">Αποθήκευση…</string>
+    <string name="workout_saved">Η προπόνηση αποθηκεύτηκε</string>
+    <string name="summary_uploads">Το Endurain στο τηλέφωνό σας θα τη μεταφορτώσει την επόμενη φορά που θα ανοίξει.</string>
+    <string name="summary_no_route">Δεν καταγράφηκε διαδρομή GPS, οπότε αυτή η προπόνηση δεν μπορεί ακόμη να μεταφορτωθεί.</string>
+    <string name="waiting_for_phone">Αναμονή για το Endurain στο τηλέφωνο: %1$d</string>
+    <string name="permissions_needed">Το Endurain χρειάζεται πρόσβαση στην τοποθεσία και στον καρδιακό ρυθμό για την καταγραφή προπονήσεων.</string>
+    <string name="start_failed">Δεν ήταν δυνατή η έναρξη της προπόνησης.</string>
+    <string name="exercise_unsupported">Αυτό το ρολόι δεν μπορεί να καταγράψει αυτήν τη δραστηριότητα.</string>
+    <string name="queue_failed">Δεν ήταν δυνατή η προετοιμασία της προπόνησης για το τηλέφωνό σας. Θα γίνει νέα προσπάθεια.</string>
+    <string name="notification_channel">Προπόνηση</string>
+    <string name="notification_recording">Καταγραφή προπόνησης</string>
+    <string name="notification_starting">Έναρξη προπόνησης</string>
+    <string name="countdown_setting">Αντίστροφη μέτρηση: %1$s</string>
+    <string name="countdown_off">Ανενεργή</string>
+    <string name="countdown_seconds">%1$d δ</string>
+    <string name="countdown_starts_in">Η καταγραφή ξεκινά σε</string>
+    <string name="countdown_seconds_left">Δευτερόλεπτα που απομένουν: %1$d</string>
+    <string name="countdown_start_now">Έναρξη τώρα</string>
+    <string name="distance_km">%1$s χλμ</string>
+    <string name="distance_mi">%1$s μί</string>
+</resources>

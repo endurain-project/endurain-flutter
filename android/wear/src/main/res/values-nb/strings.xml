@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Løping</string>
+    <string name="activity_ride">Sykling</string>
+    <string name="activity_walk">Gåtur</string>
+    <string name="activity_hike">Fottur</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Fortsett</string>
+    <string name="end">Avslutt</string>
+    <string name="end_confirm">Avslutte treningen?</string>
+    <string name="end_workout">Avslutt trening</string>
+    <string name="cancel">Avbryt</string>
+    <string name="done">Ferdig</string>
+    <string name="saving">Lagrer…</string>
+    <string name="workout_saved">Trening lagret</string>
+    <string name="summary_uploads">Endurain på telefonen laster den opp neste gang appen åpnes.</string>
+    <string name="summary_no_route">Ingen GPS-rute ble registrert, så denne treningen kan ikke lastes opp ennå.</string>
+    <string name="waiting_for_phone">Venter på Endurain på telefonen: %1$d</string>
+    <string name="permissions_needed">Endurain trenger tilgang til posisjon og puls for å registrere treninger.</string>
+    <string name="start_failed">Treningen kunne ikke startes.</string>
+    <string name="exercise_unsupported">Denne klokken kan ikke registrere denne aktiviteten.</string>
+    <string name="queue_failed">Treningen kunne ikke settes i kø for telefonen. Det blir prøvd på nytt.</string>
+    <string name="notification_channel">Trening</string>
+    <string name="notification_recording">Registrerer en trening</string>
+    <string name="notification_starting">Starter en trening</string>
+    <string name="countdown_setting">Nedtelling: %1$s</string>
+    <string name="countdown_off">Av</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Opptaket starter om</string>
+    <string name="countdown_seconds_left">Sekunder igjen: %1$d</string>
+    <string name="countdown_start_now">Start nå</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

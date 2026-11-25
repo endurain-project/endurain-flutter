@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Запис активності</string>
+    <string name="activity_recording_notification_starting">Початок запису</string>
+    <string name="activity_recording_channel_name">Запис активності</string>
+    <string name="activity_recording_channel_description">Постійне сповіщення, що показується під час запису активності.</string>
+    <string name="activity_recording_interrupted_title">Запис перервано</string>
+    <string name="activity_recording_interrupted_text">Торкніться, щоб продовжити</string>
+    <string name="activity_recording_alert_channel_name">Сповіщення про запис</string>
+    <string name="activity_recording_alert_channel_description">Показується, коли запис зупиняється, поки Endurain працює у фоновому режимі.</string>
+    <string name="health_rationale_title">Дані про здоров\'я в Endurain</string>
+    <string name="health_rationale_usage">Endurain зчитує тренування, маршрути, пульс, відстань, калорії та кроки лише для імпорту вибраних активностей.</string>
+    <string name="health_rationale_storage">Дані вибраних маршрутів зберігаються на цьому пристрої та завантажуються лише на сервер Endurain, до якого ви підключаєтеся.</string>
+</resources>

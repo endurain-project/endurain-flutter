@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Trčanje</string>
+    <string name="activity_ride">Biciklizam</string>
+    <string name="activity_walk">Hodanje</string>
+    <string name="activity_hike">Planinarenje</string>
+    <string name="pause">Pauziraj</string>
+    <string name="resume">Nastavi</string>
+    <string name="end">Završi</string>
+    <string name="end_confirm">Završiti vježbu?</string>
+    <string name="end_workout">Završi vježbu</string>
+    <string name="cancel">Odustani</string>
+    <string name="done">Gotovo</string>
+    <string name="saving">Spremanje…</string>
+    <string name="workout_saved">Vježba spremljena</string>
+    <string name="summary_uploads">Endurain na telefonu prenijet će je pri sljedećem otvaranju.</string>
+    <string name="summary_no_route">Nije snimljena GPS ruta pa se ova vježba još ne može prenijeti.</string>
+    <string name="waiting_for_phone">Čeka se Endurain na telefonu: %1$d</string>
+    <string name="permissions_needed">Endurain treba pristup lokaciji i pulsu za snimanje vježbi.</string>
+    <string name="start_failed">Vježbu nije bilo moguće pokrenuti.</string>
+    <string name="exercise_unsupported">Ovaj sat ne može snimiti ovu aktivnost.</string>
+    <string name="queue_failed">Vježbu nije bilo moguće staviti u red za telefon. Pokušat će se ponovno.</string>
+    <string name="notification_channel">Vježba</string>
+    <string name="notification_recording">Snimanje vježbe</string>
+    <string name="notification_starting">Pokretanje vježbe</string>
+    <string name="countdown_setting">Odbrojavanje: %1$s</string>
+    <string name="countdown_off">Isključeno</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Snimanje počinje za</string>
+    <string name="countdown_seconds_left">Preostalo sekundi: %1$d</string>
+    <string name="countdown_start_now">Počni odmah</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

@@ -21,8 +21,12 @@ abstract class StartCountdownPlatformAdapter {
   /// foreground service, and the recording then starts inside that same
   /// service, so it can start on time even with another app in front.
   ///
+  /// [countdownSeconds] is the countdown's full length. Android sizes a
+  /// safety timeout from it so a warm-up that is never ended (or taken over by
+  /// a recording) cannot keep the foreground service running indefinitely.
+  ///
   /// Call it while the app is in the foreground.
-  Future<void> beginWarmUp();
+  Future<void> beginWarmUp({required int countdownSeconds});
 
   /// Ends [beginWarmUp] when no recording started from it. Safe to call when
   /// no warm-up is running, and after the recording has started.
@@ -42,7 +46,7 @@ class UnsupportedStartCountdownPlatformAdapter
   }) async {}
 
   @override
-  Future<void> beginWarmUp() async {}
+  Future<void> beginWarmUp({required int countdownSeconds}) async {}
 
   @override
   Future<void> endWarmUp() async {}
@@ -80,9 +84,10 @@ class MethodChannelStartCountdownPlatformAdapter
   }
 
   @override
-  Future<void> beginWarmUp() {
+  Future<void> beginWarmUp({required int countdownSeconds}) {
     return _methodChannel.invokeMethod<void>(
       NativeActivityRecorderChannelContract.beginStartWarmUp,
+      {'countdownSeconds': countdownSeconds},
     );
   }
 

@@ -830,16 +830,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get deviceAccessLocationTitle => 'Platsåtkomst';
 
   @override
-  String get deviceAccessHealthTitle => 'Tillgång till hälsodata';
+  String get deviceAccessHealthTitle => 'Åtkomst till hälsodata';
 
   @override
-  String get deviceAccessChecking => 'Kontrollerar åtkomst...';
+  String get deviceAccessChecking => 'Kontrollerar åtkomst…';
 
   @override
   String get deviceAccessLocationServicesOff => 'Platstjänster är avstängda';
 
   @override
-  String get deviceAccessLocationAlways => 'Tillåts hela tiden';
+  String get deviceAccessLocationAlways => 'Tillåtet hela tiden';
 
   @override
   String get deviceAccessLocationWhileUsing => 'Tillåtet när du använder appen';
@@ -858,11 +858,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Health Connect krävs';
 
   @override
-  String get deviceAccessHealthSetUp => 'Hälsoåtkomst ställs in';
+  String get deviceAccessHealthSetUp => 'Åtkomst till hälsodata konfigurerad';
 
   @override
   String get deviceAccessHealthNeedsAttention =>
-      'Tillgång kräver uppmärksamhet';
+      'Åtkomsten kräver uppmärksamhet';
 
   @override
   String get deviceAccessHealthNotConnected => 'Ej ansluten';
@@ -931,7 +931,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Gäller medan du är ansluten till den här servern. När du loggar in igen återställs serverns ruteinställning.';
+      'Gäller medan du är ansluten till den här servern. När du loggar in igen ersätts den av serverns ruteinställning, om den har någon.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1052,16 +1052,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get healthSyncScreenTitle => 'Hälsosynk';
 
   @override
-  String get healthAccessScreenTitle => 'Tillgång till hälsa';
+  String get healthAccessScreenTitle => 'Åtkomst till hälsodata';
 
   @override
-  String get healthAccessRequestedData => 'Begärda uppgifter';
+  String get healthAccessRequestedData => 'Begärda data';
 
   @override
   String get healthAccessWorkouts => 'Träningspass';
 
   @override
-  String get healthAccessWorkoutRoutes => 'Träningsvägar';
+  String get healthAccessWorkoutRoutes => 'Träningsrutter';
 
   @override
   String get healthAccessHeartRate => 'Puls';
@@ -1077,13 +1077,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit avslöjar inte vilken data Endurain kan läsa. Granska åtkomst i Health-appen.';
+      'HealthKit avslöjar inte vilka data Endurain kan läsa. Granska åtkomsten i appen Hälsa.';
 
   @override
-  String get healthAccessReview => 'Granska hälsotillgång';
+  String get healthAccessReview => 'Granska åtkomst till hälsodata';
 
   @override
-  String get healthAccessReviewIos => 'Hur man granskar åtkomst';
+  String get healthAccessReviewIos => 'Så granskar du åtkomsten';
 
   @override
   String get healthAccessDisconnect => 'Koppla från hälsodata';
@@ -1097,7 +1097,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Öppna Health-appen, tryck på din profilbild och sedan på Appar och tjänster. Välj Endurain och uppdatera datakategorierna.';
+      'Öppna appen Hälsa, tryck på din profilbild och sedan på Appar och tjänster. Välj Endurain och uppdatera datakategorierna.';
 
   @override
   String get healthSyncAuthorize => 'Anslut till hälsodata';
@@ -1121,12 +1121,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Importera vald ($count)';
+    return 'Importera valda ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Importerade $count träning(er).';
+    return '$count träningspass har importerats.';
   }
 
   @override
@@ -1138,17 +1138,22 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Vissa träningspass hoppades över eftersom tillgång till träningsväg inte beviljades. Öppna Health Connect → Behörigheter och tillåt träningsrutter för Endurain.';
+      'Vissa träningspass hoppades över eftersom åtkomst till träningsrutter inte beviljades. Öppna Health Connect → Behörigheter och tillåt träningsrutter för Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Vissa träningspass hoppades över eftersom Endurain inte kunde läsa deras GPS-rutter. Öppna din profil i Health-appen, sedan Appar och tjänster, välj Endurain och tillåt träningsrutter.';
+      'Vissa träningspass hoppades över eftersom Endurain inte kunde läsa deras GPS-rutter. Öppna din profil i appen Hälsa, sedan Appar och tjänster, välj Endurain och tillåt Träningsrutter.';
+
+  @override
+  String get healthSyncHistoryAccessGuidance =>
+      'Äldre träningspass visas inte eftersom åtkomst till tidigare data i Health Connect inte har beviljats. Tillåt ”Åtkomst till tidigare data” för Endurain i Health Connect för att importera dem.';
 
   @override
   String get healthSyncReviewAccess => 'Granska åtkomst';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automatisk synkronisering vid CV';
+  String get healthSyncAutoSyncTitle =>
+      'Automatisk synkronisering när appen öppnas';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
@@ -1156,7 +1161,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Dessa träningspass inkluderar inte en GPS-rutt, så de kan inte importeras. Vissa appar (som Garmin Connect) registrerar aktiviteter till Apple Health utan att dela rutten. Träningspass inspelade med Apple Watch inkluderar rutter och kan importeras.';
+      'Dessa träningspass innehåller ingen GPS-rutt, så de kan inte importeras. Vissa appar (som Garmin Connect) registrerar aktiviteter i Apple Health utan att dela rutten. Träningspass som spelats in med Apple Watch innehåller rutter och kan importeras.';
 
   @override
   String get healthSyncBadgeNonImportable => 'Ej importerbar';
@@ -1314,7 +1319,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Skicka krasch- och felrapporter till en diagnostikserver. Detta är skilt från lokal diagnostik; du kan aktivera båda, en eller ingen.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Kraschrapporter skickas';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

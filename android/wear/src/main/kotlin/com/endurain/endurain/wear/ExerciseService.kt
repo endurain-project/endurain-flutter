@@ -84,8 +84,7 @@ class ExerciseService : Service() {
         if (granted(Manifest.permission.ACCESS_FINE_LOCATION)) {
             types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
         }
-        val heartRatePermission =
-            if (Build.VERSION.SDK_INT >= 36) "android.permission.health.READ_HEART_RATE" else Manifest.permission.BODY_SENSORS
+        val heartRatePermission = ExercisePermissions.heartRate(Build.VERSION.SDK_INT)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
             (granted(heartRatePermission) || granted(Manifest.permission.ACTIVITY_RECOGNITION))
         ) {

@@ -1,10 +1,15 @@
 package com.endurain.endurain.activity
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 
 /**
  * Hosts the method/event channels that bridge the Dart
@@ -24,6 +29,14 @@ class ActivityRecorderChannel(context: Context) :
 
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
+    private var eventSink: EventChannel.EventSink? = null
+
+    /** Whether this engine's Dart started a start-countdown warm-up it has not ended. */
+    private var warmUpBegun = false
+
+    /** Drains read the points file off the main thread, in call order. */
+    private val drainExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     fun register(messenger: BinaryMessenger) {
         methodChannel = MethodChannel(messenger, METHOD_CHANNEL).also {
@@ -37,9 +50,17 @@ class ActivityRecorderChannel(context: Context) :
     fun unregister() {
         methodChannel?.setMethodCallHandler(null)
         eventChannel?.setStreamHandler(null)
-        ActivityRecorderCoordinator.detach()
+        eventSink?.let(ActivityRecorderCoordinator::detach)
+        eventSink = null
         methodChannel = null
         eventChannel = null
+        // Dart can no longer end the countdown's warm-up, so end it here; it
+        // is a no-op once a recording started from it.
+        if (warmUpBegun) {
+            warmUpBegun = false
+            ActivityRecorderService.endWarmUp()
+        }
+        drainExecutor.shutdown()
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -53,8 +74,9 @@ class ActivityRecorderChannel(context: Context) :
             METHOD_RECOVER -> handleRecover(result)
             METHOD_SPEAK_PREVIEW -> handleSpeakPreview(call, result)
             METHOD_SPEAK_CUE -> handleSpeakCue(call, result)
-            METHOD_BEGIN_START_WARM_UP -> handleBeginStartWarmUp(result)
+            METHOD_BEGIN_START_WARM_UP -> handleBeginStartWarmUp(call, result)
             METHOD_END_START_WARM_UP -> {
+                warmUpBegun = false
                 ActivityRecorderService.endWarmUp()
                 result.success(null)
             }
@@ -63,11 +85,13 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+        eventSink = events
         ActivityRecorderCoordinator.attach(events)
     }
 
     override fun onCancel(arguments: Any?) {
-        ActivityRecorderCoordinator.detach()
+        eventSink?.let(ActivityRecorderCoordinator::detach)
+        eventSink = null
     }
 
     private fun handleStart(call: MethodCall, result: MethodChannel.Result) {
@@ -82,6 +106,12 @@ class ActivityRecorderChannel(context: Context) :
         }
         if (store.hasRecoverableData()) {
             result.error(ERROR_STATE, "A recoverable session already exists", null)
+            return
+        }
+        // Before anything is persisted: nothing was recorded, so no session
+        // may be left behind to block the next start.
+        if (!hasLocationPermission()) {
+            replyLocationPermissionMissing(result)
             return
         }
         val activityType = call.argument<String>("activityType") ?: ""
@@ -172,6 +202,11 @@ class ActivityRecorderChannel(context: Context) :
             result.error(ERROR_STATE, "No active session", null)
             return
         }
+        // The session stays paused, so it resumes once permission is back.
+        if (!hasLocationPermission()) {
+            replyLocationPermissionMissing(result)
+            return
+        }
         val nowMillis = System.currentTimeMillis()
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_RECORDING,
@@ -223,8 +258,22 @@ class ActivityRecorderChannel(context: Context) :
 
     private fun handleDrain(call: MethodCall, result: MethodChannel.Result) {
         val sinceOffset = call.argument<Int>("sinceOffset") ?: 0
-        val points = store.readPoints(sinceOffset).map { it.toMap() }
-        result.success(points)
+        try {
+            drainExecutor.execute {
+                val points = try {
+                    store.readPoints(sinceOffset).map { it.toMap() }
+                } catch (_: Exception) {
+                    mainHandler.post {
+                        result.error(ERROR_STORE, "Unable to read recorded points", null)
+                    }
+                    return@execute
+                }
+                mainHandler.post { result.success(points) }
+            }
+        } catch (_: RejectedExecutionException) {
+            // The channel was unregistered; its engine is going away.
+            result.error(ERROR_STORE, "Recorder channel unregistered", null)
+        }
     }
 
     private fun handleRecover(result: MethodChannel.Result) {
@@ -233,6 +282,29 @@ class ActivityRecorderChannel(context: Context) :
         } catch (_: Exception) {
             result.error(ERROR_STORE, "Unable to recover recording", null)
         }
+    }
+
+    /**
+     * Whether the recorder may be started with `startForegroundService`.
+     * Without location it cannot claim its `location` foreground type on
+     * Android 14+, so it could never satisfy the `startForeground` contract
+     * and the app would crash. The service keeps its own check for a
+     * permission revoked after this one.
+     */
+    private fun hasLocationPermission(): Boolean =
+        ActivityRecorderService.hasLocationPermission(appContext)
+
+    /**
+     * Rejects a recorder start for missing location permission. The event
+     * lets Dart report the permission problem (`permissionLost` maps to
+     * `locationPermissionDenied`), not a generic stream failure; it is
+     * delivered after the reply, so it is the error Dart is left showing.
+     */
+    private fun replyLocationPermissionMissing(result: MethodChannel.Result) {
+        ActivityRecorderCoordinator.emitFailed(
+            ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
+        )
+        result.error(ERROR_SERVICE, "Location permission is not granted", null)
     }
 
     private fun isSupportedVersion(call: MethodCall): Boolean {
@@ -271,18 +343,35 @@ class ActivityRecorderChannel(context: Context) :
      * Starts the foreground service that keeps the app from being frozen
      * during the start countdown. Best effort: if Android refuses, the
      * countdown still runs while the app stays in the foreground.
+     *
+     * The optional `countdownSeconds` argument sizes the warm-up's safety
+     * timeout; it is ignored when absent or not an integer.
      */
-    private fun handleBeginStartWarmUp(result: MethodChannel.Result) {
+    private fun handleBeginStartWarmUp(call: MethodCall, result: MethodChannel.Result) {
         if (store.hasRecoverableData()) {
             result.success(null)
             return
         }
+        if (!hasLocationPermission()) {
+            // No `failed` event: no recording exists for Dart to fail.
+            result.error(ERROR_SERVICE, "Location permission is not granted", null)
+            return
+        }
         try {
-            ActivityRecorderService.beginWarmUp(appContext)
+            ActivityRecorderService.beginWarmUp(appContext, countdownSecondsArgument(call))
+            warmUpBegun = true
         } catch (_: RuntimeException) {
             // Started from the background or refused by the system.
         }
         result.success(null)
+    }
+
+    private fun countdownSecondsArgument(call: MethodCall): Long? {
+        return when (val value = (call.arguments as? Map<*, *>)?.get(ARG_COUNTDOWN_SECONDS)) {
+            is Int -> value.toLong()
+            is Long -> value
+            else -> null
+        }
     }
 
     /**
@@ -321,6 +410,8 @@ class ActivityRecorderChannel(context: Context) :
         const val METHOD_SPEAK_CUE = "speakCue"
         const val METHOD_BEGIN_START_WARM_UP = "beginStartWarmUp"
         const val METHOD_END_START_WARM_UP = "endStartWarmUp"
+
+        private const val ARG_COUNTDOWN_SECONDS = "countdownSeconds"
 
         private const val ERROR_ARGS = "invalid_arguments"
         private const val ERROR_STATE = "invalid_state"

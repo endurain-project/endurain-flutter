@@ -2,6 +2,7 @@ package com.endurain.endurain.wear
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.SystemClock
 import android.os.VibrationEffect
@@ -9,6 +10,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.health.services.client.ExerciseClient
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
@@ -128,9 +130,13 @@ class WorkoutRecorder(
     private var callbackRegistered = false
     private var finishing = false
 
+    /** Whether the start flow prepared or started an exercise that [failStart] must end. */
+    private var exerciseNeedsEnding = false
+
     fun start(type: WatchActivityType) {
         if (mutableState.value.phase != WorkoutPhase.Idle) return
         mutableState.update { it.copy(phase = WorkoutPhase.Starting, errorMessage = null) }
+        exerciseNeedsEnding = false
         scope.launch {
             try {
                 val exerciseType = exerciseType(type)
@@ -140,8 +146,13 @@ class WorkoutRecorder(
                     return@launch
                 }
                 val supported = capabilities.getExerciseTypeCapabilities(exerciseType).supportedDataTypes
+                // Only location is required to start, so leave out what the
+                // user declined: Health Services rejects the whole exercise
+                // when a requested data type lacks its permission. The warm-up
+                // types derive from these, so they are filtered too.
                 val dataTypes =
-                    setOf(DataType.HEART_RATE_BPM, DataType.LOCATION, DataType.DISTANCE_TOTAL)
+                    ExercisePermissions.permitted(Build.VERSION.SDK_INT, ::isGranted)
+                        .map(::dataType)
                         .filter { it in supported }
                         .toSet()
                 val config =
@@ -205,6 +216,7 @@ class WorkoutRecorder(
         val warmUpTypes = dataTypes.filterIsInstance<DeltaDataType<*, *>>().toSet()
         try {
             exerciseClient.prepareExerciseAsync(WarmUpConfig(exerciseType, warmUpTypes)).await()
+            exerciseNeedsEnding = true
         } catch (error: Exception) {
             // Only the warm-up is lost: the countdown and the workout still run.
             Log.w(TAG, "Could not prepare the exercise", error)
@@ -262,7 +274,14 @@ class WorkoutRecorder(
         attach(newRecording, emptyList())
         registerCallback()
         exerciseClient.startExerciseAsync(config).await()
-        ExerciseService.start(appContext)
+        exerciseNeedsEnding = true
+        // After a countdown the service is already in the foreground; this
+        // only switches its notification to "recording". Android can refuse
+        // the call when the countdown ended with the app in the background,
+        // which must not fail a workout Health Services is already recording.
+        runCatching { ExerciseService.start(appContext) }
+            .onFailure { Log.w(TAG, "Could not update the workout foreground service", it) }
+        exerciseNeedsEnding = false
         mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = false)) }
     }
 
@@ -271,8 +290,18 @@ class WorkoutRecorder(
         ExerciseService.stop(appContext)
         store.clear()
         detach()
+        if (exerciseNeedsEnding) {
+            // Nothing records it any more: end the prepared or started
+            // exercise so Health Services does not keep the sensors on.
+            exerciseNeedsEnding = false
+            unregisterCallback()
+            scope.launch { runCatching { exerciseClient.endExerciseAsync().await() } }
+        }
         fail(R.string.start_failed)
     }
+
+    private fun isGranted(permission: String): Boolean =
+        ContextCompat.checkSelfPermission(appContext, permission) == PackageManager.PERMISSION_GRANTED
 
     fun pause() {
         scope.launch { runCatching { exerciseClient.pauseExerciseAsync().await() } }
@@ -449,6 +478,9 @@ class WorkoutRecorder(
     }
 
     private fun finishInterrupted(saved: WatchRecording, savedPoints: List<WatchRecordedPoint>) {
+        // A sticky restart may have put the service back in the foreground
+        // for a workout that no longer runs: drop its notification.
+        ExerciseService.stop(appContext)
         val end = WatchHandoffBuilder.endOfInterruptedRecording(saved, savedPoints)
         val elapsed = saved.elapsedMillis(end)
         if (savedPoints.isEmpty() && elapsed < 1000) {
@@ -531,6 +563,13 @@ class WorkoutRecorder(
         private const val POINT_FLUSH_THRESHOLD = 10
         private const val COUNTDOWN_TICK_MILLIS = 200L
         private const val START_VIBRATION_MILLIS = 400L
+
+        fun dataType(metric: WorkoutMetric): DataType<*, *> =
+            when (metric) {
+                WorkoutMetric.HEART_RATE -> DataType.HEART_RATE_BPM
+                WorkoutMetric.LOCATION -> DataType.LOCATION
+                WorkoutMetric.DISTANCE -> DataType.DISTANCE_TOTAL
+            }
 
         fun exerciseType(type: WatchActivityType): ExerciseType =
             when (type) {

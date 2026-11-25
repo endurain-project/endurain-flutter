@@ -99,6 +99,12 @@ android {
         }
     }
 
+    // Lists the res/values-* languages (plus res/resources.properties' default)
+    // as the app's supported locales, for Android 13+ per-app language settings.
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
@@ -135,6 +141,8 @@ dependencies {
     // helpers. Kept as an explicit dependency since plugin transitive deps are
     // not exposed to the app compile classpath.
     implementation("androidx.core:core-ktx:1.19.1")
+    // enableEdgeToEdge() for MainActivity and the Health Connect rationale.
+    implementation("androidx.activity:activity:1.13.0")
 
     if (watchLinkEnabled) {
         implementation("com.google.android.gms:play-services-wearable:20.0.1")

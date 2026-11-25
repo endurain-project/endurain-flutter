@@ -52,7 +52,12 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
-      await diagnostics.initialize();
+      // Best-effort and bounded like crash reporting below: a failing or
+      // stalled diagnostics store (it reads preferences and local files) must
+      // never keep the app from reaching `runApp`.
+      try {
+        await diagnostics.initialize().timeout(const Duration(seconds: 3));
+      } catch (_) {}
       final launchContext = await _diagnosticsContext(
         services.packageInfo,
         services.deviceInfo,

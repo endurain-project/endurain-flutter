@@ -9,12 +9,14 @@ import com.endurain.endurain.watchlink.WatchProtocol
 import com.endurain.endurain.watchlink.WatchRecordedPoint
 import com.endurain.endurain.watchlink.WatchRecording
 import com.endurain.endurain.watchlink.WatchRecordingStore
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -24,6 +26,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.io.File
+import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.util.concurrent.AbstractExecutorService
 import java.util.concurrent.TimeUnit
@@ -377,6 +380,19 @@ class WatchTransportChannelTest {
         assertEquals(WatchTransportChannel.ERROR_INVALID_ARGUMENTS, result.errorCode)
     }
 
+    @Test
+    fun unregisteringAnOlderChannelKeepsTheNewerEnginesHandoffListener() {
+        val newer = WatchTransportChannel(FakeWatchLink(), inbox, DirectExecutor())
+        channel.register(NoopMessenger())
+        newer.register(NoopMessenger())
+
+        channel.unregister()
+        assertNotNull(WatchHandoffEvents.listener)
+
+        newer.unregister()
+        assertNull(WatchHandoffEvents.listener)
+    }
+
     private fun call(method: String, arguments: Map<String, Any?>): CapturingResult {
         val result = CapturingResult()
         channel.onMethodCall(MethodCall(method, arguments), result)
@@ -429,6 +445,14 @@ class WatchTransportChannelTest {
         override fun notImplemented() {
             errorCode = "notImplemented"
         }
+    }
+
+    private class NoopMessenger : BinaryMessenger {
+        override fun send(channel: String, message: ByteBuffer?) {}
+
+        override fun send(channel: String, message: ByteBuffer?, callback: BinaryMessenger.BinaryReply?) {}
+
+        override fun setMessageHandler(channel: String, handler: BinaryMessenger.BinaryMessageHandler?) {}
     }
 
     private class DirectExecutor : AbstractExecutorService() {

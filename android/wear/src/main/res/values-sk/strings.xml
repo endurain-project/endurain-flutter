@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Beh</string>
+    <string name="activity_ride">Cyklistika</string>
+    <string name="activity_walk">Chôdza</string>
+    <string name="activity_hike">Turistika</string>
+    <string name="pause">Pozastaviť</string>
+    <string name="resume">Pokračovať</string>
+    <string name="end">Ukončiť</string>
+    <string name="end_confirm">Ukončiť tréning?</string>
+    <string name="end_workout">Ukončiť tréning</string>
+    <string name="cancel">Zrušiť</string>
+    <string name="done">Hotovo</string>
+    <string name="saving">Ukladá sa…</string>
+    <string name="workout_saved">Tréning uložený</string>
+    <string name="summary_uploads">Endurain v telefóne ho nahrá pri ďalšom otvorení.</string>
+    <string name="summary_no_route">Nebola zaznamenaná žiadna trasa GPS, preto tento tréning zatiaľ nemožno nahrať.</string>
+    <string name="waiting_for_phone">Čaká na Endurain v telefóne: %1$d</string>
+    <string name="permissions_needed">Endurain potrebuje prístup k polohe a tepu, aby mohol zaznamenávať tréningy.</string>
+    <string name="start_failed">Tréning sa nepodarilo spustiť.</string>
+    <string name="exercise_unsupported">Tieto hodinky nemôžu zaznamenať túto aktivitu.</string>
+    <string name="queue_failed">Tréning sa nepodarilo zaradiť do frontu pre telefón. Akcia sa zopakuje.</string>
+    <string name="notification_channel">Tréning</string>
+    <string name="notification_recording">Zaznamenávanie tréningu</string>
+    <string name="notification_starting">Spúšťanie tréningu</string>
+    <string name="countdown_setting">Odpočítavanie: %1$s</string>
+    <string name="countdown_off">Vypnuté</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Nahrávanie sa začne o</string>
+    <string name="countdown_seconds_left">Zostáva sekúnd: %1$d</string>
+    <string name="countdown_start_now">Spustiť hneď</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

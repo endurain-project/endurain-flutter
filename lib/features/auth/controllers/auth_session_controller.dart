@@ -28,10 +28,23 @@ class AuthSessionController extends SafeNotifier {
   AuthSessionController({
     required this._authService,
     DiagnosticsRecorder? diagnostics,
-  }) : _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
+  }) : _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder() {
+    // A session the auth layer ends by itself (a refresh the server rejected
+    // during any API call) must drop the app to guest, not only a resume.
+    _sessionEndedSubscription = _authService.sessionEnded.listen((_) {
+      if (_mode == SessionMode.authenticated) {
+        _setMode(SessionMode.guest, reason: 'session_cleared');
+      }
+    });
+  }
 
   final AuthService _authService;
   final DiagnosticsRecorder _diagnostics;
+  late final StreamSubscription<void> _sessionEndedSubscription;
+
+  /// Bumped on every mode decision, so a [revalidate] that started before a
+  /// sign-in, sign-out or session end does not apply its stale answer.
+  int _epoch = 0;
 
   /// Upper bound for the launch session read so a stalled secure-storage call
   /// can never pin the app on the splash.
@@ -109,6 +122,7 @@ class AuthSessionController extends SafeNotifier {
     if (_mode != SessionMode.authenticated && !retryingUnreadable) {
       return;
     }
+    final epoch = _epoch;
     final bool stillAuthenticated;
     try {
       stillAuthenticated = await _authService.isAuthenticated();
@@ -117,6 +131,11 @@ class AuthSessionController extends SafeNotifier {
         DiagnosticsEvents.sessionRevalidateFailed,
         details: diagnosticErrorDetails(error),
       );
+      return;
+    }
+    if (epoch != _epoch || isDisposed) {
+      // The session or mode changed while the check ran; its answer is about
+      // a session that is no longer the current one.
       return;
     }
     _sessionUnreadable = false;
@@ -132,6 +151,7 @@ class AuthSessionController extends SafeNotifier {
   /// Moves to [mode] and records why, so a report shows each sign-in, sign-out
   /// and expiry that moved the app between guest and authenticated.
   void _setMode(SessionMode mode, {required String reason, Object? error}) {
+    _epoch++;
     if (_mode == mode) {
       return;
     }
@@ -146,5 +166,11 @@ class AuthSessionController extends SafeNotifier {
     );
     _mode = mode;
     notify();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_sessionEndedSubscription.cancel());
+    super.dispose();
   }
 }

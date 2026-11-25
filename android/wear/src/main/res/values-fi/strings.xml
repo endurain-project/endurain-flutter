@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Juoksu</string>
+    <string name="activity_ride">Pyöräily</string>
+    <string name="activity_walk">Kävely</string>
+    <string name="activity_hike">Vaellus</string>
+    <string name="pause">Keskeytä</string>
+    <string name="resume">Jatka</string>
+    <string name="end">Lopeta</string>
+    <string name="end_confirm">Lopetetaanko harjoitus?</string>
+    <string name="end_workout">Lopeta harjoitus</string>
+    <string name="cancel">Peruuta</string>
+    <string name="done">Valmis</string>
+    <string name="saving">Tallennetaan…</string>
+    <string name="workout_saved">Harjoitus tallennettu</string>
+    <string name="summary_uploads">Puhelimesi Endurain lataa sen, kun se avataan seuraavan kerran.</string>
+    <string name="summary_no_route">GPS-reittiä ei tallennettu, joten harjoitusta ei voi vielä ladata.</string>
+    <string name="waiting_for_phone">Odottaa puhelimen Endurainia: %1$d</string>
+    <string name="permissions_needed">Endurain tarvitsee sijainnin ja sykkeen käyttöoikeuden harjoitusten tallentamiseen.</string>
+    <string name="start_failed">Harjoitusta ei voitu aloittaa.</string>
+    <string name="exercise_unsupported">Tämä kello ei voi tallentaa tätä aktiviteettia.</string>
+    <string name="queue_failed">Harjoitusta ei voitu lisätä puhelimen jonoon. Yritetään uudelleen.</string>
+    <string name="notification_channel">Harjoitus</string>
+    <string name="notification_recording">Tallennetaan harjoitusta</string>
+    <string name="notification_starting">Aloitetaan harjoitusta</string>
+    <string name="countdown_setting">Laskenta: %1$s</string>
+    <string name="countdown_off">Pois</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Aikaa tallennuksen alkuun</string>
+    <string name="countdown_seconds_left">Sekunteja jäljellä: %1$d</string>
+    <string name="countdown_start_now">Aloita nyt</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

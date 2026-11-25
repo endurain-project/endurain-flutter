@@ -1,6 +1,7 @@
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
+import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
@@ -381,6 +382,86 @@ void main() {
       expect(received.single.points.single.latitude, 41.1);
       expect(received.single.localSessionId, 'session_1');
       expect(received.single.pointOffset, 12);
+    });
+
+    test('a skipped malformed point keeps the stored entry count', () async {
+      final received = <ActivityRecorderEvent>[];
+      final subscription = channel.events.listen(received.add);
+      addTearDown(subscription.cancel);
+      await pumpEventQueue();
+
+      await _sendEvent(codec, {
+        NativeActivityRecorderChannelContract.eventType:
+            NativeActivityRecorderChannelContract.eventPointBatchAvailable,
+        NativeActivityRecorderChannelContract.eventLocalSessionId: 'session_1',
+        NativeActivityRecorderChannelContract.eventPointOffset: 0,
+        NativeActivityRecorderChannelContract.eventPoints: <Object?>[
+          {'t': '2026-06-03T09:00:01.000Z', 'lat': 41.1, 'lon': -8.6, 'seg': 0},
+          {'t': 'invalid'},
+          'not a map',
+        ],
+      });
+      await pumpEventQueue();
+
+      final points = received.single.points;
+      expect(points, hasLength(1));
+      expect(RecordedActivityPointBatch.sourceCountOf(points), 3);
+    });
+
+    test('a parsed point keeps its index among the stored entries', () async {
+      final received = <ActivityRecorderEvent>[];
+      final subscription = channel.events.listen(received.add);
+      addTearDown(subscription.cancel);
+      await pumpEventQueue();
+
+      await _sendEvent(codec, {
+        NativeActivityRecorderChannelContract.eventType:
+            NativeActivityRecorderChannelContract.eventPointBatchAvailable,
+        NativeActivityRecorderChannelContract.eventLocalSessionId: 'session_1',
+        NativeActivityRecorderChannelContract.eventPointOffset: 0,
+        NativeActivityRecorderChannelContract.eventPoints: <Object?>[
+          {'t': 'invalid'},
+          {'t': '2026-06-03T09:00:01.000Z', 'lat': 41.1, 'lon': -8.6, 'seg': 0},
+          'not a map',
+          {'t': '2026-06-03T09:00:02.000Z', 'lat': 41.2, 'lon': -8.7, 'seg': 0},
+        ],
+      });
+      await pumpEventQueue();
+
+      final points = received.single.points;
+      expect(points.map((point) => point.latitude), [41.1, 41.2]);
+      expect(RecordedActivityPointBatch.sourceCountOf(points), 4);
+      expect(RecordedActivityPointBatch.sourceIndicesOf(points), [1, 3]);
+    });
+
+    test('a plain list maps each point to its own position', () {
+      final points = [
+        RecordedActivityPoint(
+          timestamp: DateTime.utc(2026, 6, 3, 9),
+          latitude: 41.1,
+          longitude: -8.6,
+          segmentIndex: 0,
+        ),
+        RecordedActivityPoint(
+          timestamp: DateTime.utc(2026, 6, 3, 9, 0, 1),
+          latitude: 41.2,
+          longitude: -8.7,
+          segmentIndex: 0,
+        ),
+      ];
+
+      expect(RecordedActivityPointBatch.sourceIndicesOf(points), [0, 1]);
+      expect(RecordedActivityPointBatch(points, sourceCount: 2).sourceIndices, [
+        0,
+        1,
+      ]);
+    });
+
+    test('drain keeps the stored entry count', () async {
+      final points = await channel.drain();
+
+      expect(points, hasLength(1));
+      expect(RecordedActivityPointBatch.sourceCountOf(points), 1);
     });
 
     test('parses failure events with a typed reason', () async {

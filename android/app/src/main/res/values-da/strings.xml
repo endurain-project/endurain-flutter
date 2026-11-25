@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Registrerer aktivitet</string>
+    <string name="activity_recording_notification_starting">Starter en registrering</string>
+    <string name="activity_recording_channel_name">Aktivitetsregistrering</string>
+    <string name="activity_recording_channel_description">Vedvarende notifikation, der vises, mens en aktivitet registreres.</string>
+    <string name="activity_recording_interrupted_title">Registrering afbrudt</string>
+    <string name="activity_recording_interrupted_text">Tryk for at genoptage</string>
+    <string name="activity_recording_alert_channel_name">Registreringsadvarsler</string>
+    <string name="activity_recording_alert_channel_description">Vises, når en registrering stopper, mens Endurain kører i baggrunden.</string>
+    <string name="health_rationale_title">Endurain-sundhedsdata</string>
+    <string name="health_rationale_usage">Endurain læser træning, ruter, puls, distance, kalorier og skridt udelukkende for at importere valgte aktiviteter.</string>
+    <string name="health_rationale_storage">Data for valgte ruter gemmes på denne enhed og uploades kun til den Endurain-server, du forbinder til.</string>
+</resources>

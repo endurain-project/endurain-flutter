@@ -92,6 +92,7 @@ class AppException implements Exception {
     this.cause,
     this.statusCode,
     this.isTransient = false,
+    this.retryAfter,
   });
 
   final AppErrorCode code;
@@ -105,6 +106,10 @@ class AppException implements Exception {
   /// platform service, a locked device). Callers use it to avoid treating a
   /// passing failure as a lasting one, such as a lost authorization.
   final bool isTransient;
+
+  /// How long the server asked the client to wait before retrying (its
+  /// `Retry-After`), when the failed response carried one.
+  final Duration? retryAfter;
 
   @override
   String toString() {

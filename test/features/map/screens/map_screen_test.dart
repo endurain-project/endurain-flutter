@@ -444,6 +444,7 @@ void main() {
 
       expect(activityController.state.status, ActivityRecordingStatus.idle);
       expect(countdownPlatform.warmUpsStarted, 1);
+      expect(countdownPlatform.warmUpCountdownSeconds, [3]);
       expect(countdownPlatform.cues, ['3']);
 
       await tester.pump(const Duration(seconds: 1));
@@ -734,6 +735,7 @@ Future<StartCountdownSettingsRepository> _countdownSettings({
 class _RecordingCountdownPlatform implements StartCountdownPlatformAdapter {
   final List<String> cues = [];
   int warmUpsStarted = 0;
+  final List<int> warmUpCountdownSeconds = [];
   int warmUpsEnded = 0;
 
   @override
@@ -746,7 +748,10 @@ class _RecordingCountdownPlatform implements StartCountdownPlatformAdapter {
   }
 
   @override
-  Future<void> beginWarmUp() async => warmUpsStarted++;
+  Future<void> beginWarmUp({required int countdownSeconds}) async {
+    warmUpsStarted++;
+    warmUpCountdownSeconds.add(countdownSeconds);
+  }
 
   @override
   Future<void> endWarmUp() async => warmUpsEnded++;

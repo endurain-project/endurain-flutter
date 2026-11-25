@@ -35,6 +35,14 @@ final class AudioAnnouncer: NSObject {
     private var sessionActive = false
     private var sessionDucks = false
     private var activeUtteranceIds = Set<ObjectIdentifier>()
+    /// Set by `stop()` while the cancelled speech is still winding down; the
+    /// session is released from the synthesizer's cancel/finish callback.
+    private var deactivateWhenSilent = false
+    private var deactivationRetryScheduled = false
+
+    /// Delay before retrying a deactivation the system refused (typically
+    /// "busy" while audio was still being torn down).
+    private static let deactivationRetryDelay: TimeInterval = 1
 
     private override init() {
         super.init()
@@ -62,6 +70,8 @@ final class AudioAnnouncer: NSObject {
             reportFailure(stage: .voice)
         }
         activeUtteranceIds.insert(ObjectIdentifier(utterance))
+        // This utterance's own finish callback releases the session now.
+        deactivateWhenSilent = false
         if !sessionActive || sessionDucks != duck {
             activateSession(duck: duck)
         }
@@ -69,13 +79,24 @@ final class AudioAnnouncer: NSObject {
     }
 
     /// Stops any in-progress or queued utterance and releases audio focus.
+    ///
+    /// Deactivating the session while the synthesizer is still stopping
+    /// fails as "busy" and leaves other audio ducked, so when speech was
+    /// actually playing the session is released from the synthesizer's
+    /// `didCancel`/`didFinish` callback once it has gone silent.
     func stop() {
         let hadActiveUtterances = !activeUtteranceIds.isEmpty
         activeUtteranceIds.removeAll()
-        if hadActiveUtterances && !synthesizer.stopSpeaking(at: .immediate) {
-            reportFailure(stage: .stop)
+        guard hadActiveUtterances, synthesizer.isSpeaking else {
+            deactivateSession()
+            return
         }
-        deactivateSession()
+        guard synthesizer.stopSpeaking(at: .immediate) else {
+            reportFailure(stage: .stop)
+            deactivateSession()
+            return
+        }
+        deactivateWhenSilent = true
     }
 
     @objc private func handleAudioSessionInterruption(_ notification: Notification) {
@@ -110,10 +131,11 @@ final class AudioAnnouncer: NSObject {
     }
 
     private func finish(_ utterance: AVSpeechUtterance) {
-        guard activeUtteranceIds.remove(ObjectIdentifier(utterance)) != nil,
-              activeUtteranceIds.isEmpty else {
+        let wasActive = activeUtteranceIds.remove(ObjectIdentifier(utterance)) != nil
+        guard activeUtteranceIds.isEmpty, wasActive || deactivateWhenSilent else {
             return
         }
+        deactivateWhenSilent = false
         deactivateSession()
     }
 
@@ -137,11 +159,12 @@ final class AudioAnnouncer: NSObject {
         }
     }
 
-    private func deactivateSession() {
-        let wasActive = sessionActive
-        sessionActive = false
-        sessionDucks = false
-        guard wasActive else {
+    /// Releases the session. It stays marked active when the system refuses,
+    /// so a later attempt (one retry here, or the next utterance's finish)
+    /// can still restore other apps' volume.
+    private func deactivateSession(retryOnFailure: Bool = true) {
+        guard sessionActive else {
+            sessionDucks = false
             return
         }
         do {
@@ -149,16 +172,40 @@ final class AudioAnnouncer: NSObject {
                 false,
                 options: [.notifyOthersOnDeactivation]
             )
+            sessionActive = false
+            sessionDucks = false
         } catch {
             reportFailure(stage: .audioSessionDeactivation, error: error)
+            if retryOnFailure {
+                scheduleDeactivationRetry()
+            }
+        }
+    }
+
+    private func scheduleDeactivationRetry() {
+        guard !deactivationRetryScheduled else {
+            return
+        }
+        deactivationRetryScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.deactivationRetryDelay) { [weak self] in
+            guard let self else {
+                return
+            }
+            self.deactivationRetryScheduled = false
+            // Speech queued meanwhile owns the session and releases it itself.
+            guard self.activeUtteranceIds.isEmpty, !self.synthesizer.isSpeaking else {
+                return
+            }
+            self.deactivateSession(retryOnFailure: false)
         }
     }
 
     private func cancel(_ utterance: AVSpeechUtterance) {
-        guard activeUtteranceIds.contains(ObjectIdentifier(utterance)) else {
-            return
+        // An utterance cancelled by `stop()` is no longer tracked; only an
+        // unexpected cancellation is a failure.
+        if activeUtteranceIds.contains(ObjectIdentifier(utterance)) {
+            reportFailure(stage: .utteranceCancelled)
         }
-        reportFailure(stage: .utteranceCancelled)
         finish(utterance)
     }
 

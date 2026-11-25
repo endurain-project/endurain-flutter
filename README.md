@@ -326,7 +326,7 @@ Use these steps to validate provider changes on a physical or emulated Android d
 5. Revoke location permission, reopen, and verify the track is retained without an upload. Restore permission and resume, or explicitly stop and save or discard.
 6. Stop and save normally. Verify exactly one local activity with the original session ID and connection ownership, and no duplicated points around reconnection.
 
-iOS force-quit suppresses background location relaunch until the user opens the app again. Android force-stop and manufacturer battery restrictions can also stop collection. The app preserves the session and restarts when permitted; it cannot reconstruct missing GPS points. Time spent without collection is excluded on restart, using the last persisted fix as the available checkpoint.
+On iOS, recording works with While Using location access, including with the screen locked; Always access is only needed for iOS to relaunch a terminated app and continue the recording, and a downgrade from Always to While Using keeps the recording going without that recovery. iOS force-quit suppresses background location relaunch until the user opens the app again. Android force-stop and manufacturer battery restrictions can also stop collection. The app preserves the session and restarts when permitted; it cannot reconstruct missing GPS points. Time spent without collection is excluded on restart, using the last persisted fix as the available checkpoint.
 
 ## Development Workflow
 
@@ -345,7 +345,9 @@ flutter test
 ### What CI verifies (and what it does not)
 
 CI runs formatting, Dart analysis, the Dart test suite with a coverage
-threshold, the Kotlin unit tests, and a debug Android build.
+threshold, the Kotlin unit tests, and a debug Android build. It also builds,
+tests and lints the Wear OS app (a separate Gradle build, see
+[Wear OS app](#wear-os-app)).
 
 A separate iOS workflow builds the app for the simulator and runs the native
 XCTests in `ios/RunnerTests` on a macOS runner. Pull requests only run it when
@@ -385,7 +387,16 @@ Regenerate localization classes after changing ARB files:
 flutter gen-l10n
 ```
 
-Localization source files live in `lib/l10n/app_en.arb` and `lib/l10n/app_pt.arb`. Every ARB entry must include resource attributes because `l10n.yaml` enables `required-resource-attributes`.
+The app ships in 30 languages (listed in `lib/core/localization/app_locales.dart`). The Flutter UI's translations live in `lib/l10n/app_<code>.arb`, with `app_en.arb` as the source; it and `app_pt.arb` carry the `@` metadata, which `l10n.yaml` requires (`required-resource-attributes`). Add every new entry to all 30 files.
+
+Text the operating system shows outside Flutter is translated separately, in the same 30 languages:
+
+- Android phone app (notifications, the Health Connect rationale): `android/app/src/main/res/values-*/strings.xml`. The build generates the Android 13+ per-app language list from these folders (`generateLocaleConfig`).
+- Wear OS app: `android/wear/src/main/res/values-*/strings.xml`.
+- iPhone permission prompts: `ios/Runner/InfoPlist.xcstrings`.
+- Apple Watch app: `ios/EndurainWatch/Localizable.xcstrings` (its screens) and `ios/EndurainWatch/InfoPlist.xcstrings` (its permission prompts).
+
+The native text follows the device language (or, on Android 13+ and iOS, the per-app language set in system settings); the in-app language picker does not change it.
 
 ## Building from Source
 
@@ -433,8 +444,9 @@ envelope and the file stores) lives in `ios/Shared/Watch`.
   an iPhone simulator.
 - Workouts without a GPS route (location denied, or no fix) stay queued on
   both devices, because the server does not accept a GPX without track points
-  yet. Delivered workouts the phone never confirms are dropped from the watch
-  after 30 days; the phone keeps its copy.
+  yet. The watch keeps every workout until the phone confirms it, and sends a
+  delivered workout again if the phone has not confirmed it within 10
+  minutes, the next time the watch syncs (the phone ignores duplicates).
 - Health Sync skips every workout the watch app saved to Health, so a watch
   workout is never imported twice.
 
@@ -484,6 +496,10 @@ flutter build apk --release
 flutter build appbundle --release
 ```
 
+`flutter build appbundle` builds the phone app only. A Google Play release
+also needs the Wear OS app's bundle; see
+[Publishing to Google Play](#publishing-to-google-play).
+
 ### Wear OS app
 
 The Wear OS app (`android/wear`, Kotlin, Compose for Wear OS, Wear OS 3 or
@@ -526,6 +542,31 @@ cd android
 - Workouts without a GPS route stay queued on both devices, because the
   server does not accept a GPX without track points yet. Workouts the phone
   never confirms are dropped from the watch after 90 days.
+- Because it is its own Gradle root (`android/wear`), it does not read
+  `android/local.properties` or Flutter's JDK setting. If Gradle cannot find
+  the Android SDK or a JDK 17, set `ANDROID_HOME` (the `sdk.dir` from
+  `android/local.properties`) and `JAVA_HOME`, or add an
+  `android/wear/local.properties` with `sdk.dir`.
+
+#### Publishing to Google Play
+
+Google Play takes one bundle per form factor under the same listing. Build
+both with the same version (the tag's, or `pubspec.yaml`'s) and the upload
+key:
+
+```bash
+# Phone app → build/app/outputs/bundle/release/app-release.aab
+flutter build appbundle --release \
+  --dart-define=ENDURAIN_CRASH_REPORTING_DSN='https://<key>@diagnostics.endurain.com/<project>'
+
+# Wear OS app → android/wear/build/outputs/bundle/release/endurain-wear-release.aab
+cd android
+./gradlew -p wear bundleRelease \
+  -Pendurain.buildName=<version name> -Pendurain.buildNumber=<build number>
+```
+
+The `--dart-define` only applies to the Flutter phone app; the watch app is
+native Kotlin and has no crash-reporting DSN.
 
 #### Builds without the Wear OS link
 
