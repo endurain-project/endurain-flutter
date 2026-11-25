@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Notiek aktivitātes ierakstīšana</string>
+    <string name="activity_recording_notification_starting">Sāk ierakstīšanu</string>
+    <string name="activity_recording_channel_name">Aktivitātes ierakstīšana</string>
+    <string name="activity_recording_channel_description">Pastāvīgs paziņojums, kas tiek rādīts aktivitātes ierakstīšanas laikā.</string>
+    <string name="activity_recording_interrupted_title">Ierakstīšana pārtraukta</string>
+    <string name="activity_recording_interrupted_text">Pieskarieties, lai turpinātu</string>
+    <string name="activity_recording_alert_channel_name">Ierakstīšanas brīdinājumi</string>
+    <string name="activity_recording_alert_channel_description">Tiek rādīts, kad ierakstīšana apstājas, kamēr Endurain darbojas fonā.</string>
+    <string name="health_rationale_title">Endurain veselības dati</string>
+    <string name="health_rationale_usage">Endurain nolasa treniņus, maršrutus, pulsu, attālumu, kalorijas un soļus tikai, lai importētu atlasītās aktivitātes.</string>
+    <string name="health_rationale_storage">Atlasīto maršrutu dati tiek glabāti šajā ierīcē un augšupielādēti tikai Endurain serverī, ar kuru izveidojat savienojumu.</string>
+</resources>

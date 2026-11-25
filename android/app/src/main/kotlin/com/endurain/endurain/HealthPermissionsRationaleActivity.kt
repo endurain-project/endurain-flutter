@@ -14,15 +14,11 @@ class HealthPermissionsRationaleActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val text = TextView(this).apply {
-            text = """
-                Endurain health data
-
-                Endurain reads workouts, routes, heart rate, distance,
-                calories, and steps only to import selected activities.
-
-                Selected route data is stored on this device and uploaded only
-                to the Endurain server you connect.
-            """.trimIndent()
+            text = listOf(
+                R.string.health_rationale_title,
+                R.string.health_rationale_usage,
+                R.string.health_rationale_storage,
+            ).joinToString(separator = "\n\n") { getString(it) }
         }
         val content = ScrollView(this).apply { addView(text) }
         // Edge-to-edge draws behind the system bars, so keep the text clear of

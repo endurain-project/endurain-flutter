@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Aktivität wird aufgezeichnet</string>
+    <string name="activity_recording_notification_starting">Aufzeichnung wird gestartet</string>
+    <string name="activity_recording_channel_name">Aktivitätsaufzeichnung</string>
+    <string name="activity_recording_channel_description">Dauerhafte Benachrichtigung, die während der Aufzeichnung einer Aktivität angezeigt wird.</string>
+    <string name="activity_recording_interrupted_title">Aufzeichnung unterbrochen</string>
+    <string name="activity_recording_interrupted_text">Zum Fortsetzen tippen</string>
+    <string name="activity_recording_alert_channel_name">Aufzeichnungswarnungen</string>
+    <string name="activity_recording_alert_channel_description">Wird angezeigt, wenn eine Aufzeichnung stoppt, während Endurain im Hintergrund läuft.</string>
+    <string name="health_rationale_title">Gesundheitsdaten in Endurain</string>
+    <string name="health_rationale_usage">Endurain liest Trainingseinheiten, Routen, Herzfrequenz, Distanz, Kalorien und Schritte nur, um ausgewählte Aktivitäten zu importieren.</string>
+    <string name="health_rationale_storage">Ausgewählte Routendaten werden auf diesem Gerät gespeichert und nur auf den Endurain-Server hochgeladen, mit dem du dich verbindest.</string>
+</resources>

@@ -300,7 +300,7 @@ private fun MetricsPage(
             style = MaterialTheme.typography.displaySmall,
             color = if (paused) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface,
         )
-        Text(WorkoutFormat.distance(state.distanceMeters), style = MaterialTheme.typography.titleMedium)
+        Text(distanceText(state.distanceMeters), style = MaterialTheme.typography.titleMedium)
         Text("♥ ${state.heartRateBpm ?: "--"}", style = MaterialTheme.typography.titleMedium)
         if (ending) {
             Text(stringResource(R.string.saving), style = MaterialTheme.typography.labelSmall)
@@ -346,7 +346,7 @@ private fun SummaryScreen(
             item { ListHeader { Text(stringResource(R.string.workout_saved)) } }
             item { Text(WorkoutFormat.duration(summary.elapsedMillis), style = MaterialTheme.typography.displaySmall) }
             if (summary.distanceMeters != null) {
-                item { Text(WorkoutFormat.distance(summary.distanceMeters), style = MaterialTheme.typography.titleMedium) }
+                item { Text(distanceText(summary.distanceMeters), style = MaterialTheme.typography.titleMedium) }
             }
             item {
                 FootnoteText(
@@ -388,6 +388,13 @@ private fun FootnoteText(text: String) {
     )
 }
 
+/** [WorkoutFormat.distance] with its localized unit, such as "1.50 km". */
+@Composable
+private fun distanceText(meters: Double?): String {
+    val distance = WorkoutFormat.distance(meters)
+    return stringResource(if (distance.imperial) R.string.distance_mi else R.string.distance_km, distance.value)
+}
+
 private val WatchActivityType.label: Int
     get() =
         when (this) {
@@ -410,14 +417,15 @@ object WorkoutFormat {
         }
     }
 
+    /** A distance formatted without its unit, which the string resources add. */
+    data class Distance(val value: String, val imperial: Boolean)
+
     /** Kilometres, or miles in the regions that use them. */
-    fun distance(meters: Double?, locale: Locale = Locale.getDefault()): String {
+    fun distance(meters: Double?, locale: Locale = Locale.getDefault()): Distance {
         val value = meters ?: 0.0
-        return if (locale.country in IMPERIAL_REGIONS) {
-            String.format(locale, "%.2f mi", value / 1609.344)
-        } else {
-            String.format(locale, "%.2f km", value / 1000)
-        }
+        val imperial = locale.country in IMPERIAL_REGIONS
+        val converted = if (imperial) value / 1609.344 else value / 1000
+        return Distance(String.format(locale, "%.2f", converted), imperial)
     }
 
     // Mirrors MeasurementSystem.forLocale in the phone app.

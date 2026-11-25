@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Καταγραφή δραστηριότητας</string>
+    <string name="activity_recording_notification_starting">Έναρξη καταγραφής</string>
+    <string name="activity_recording_channel_name">Καταγραφή δραστηριότητας</string>
+    <string name="activity_recording_channel_description">Μόνιμη ειδοποίηση που εμφανίζεται κατά την καταγραφή μιας δραστηριότητας.</string>
+    <string name="activity_recording_interrupted_title">Η καταγραφή διακόπηκε</string>
+    <string name="activity_recording_interrupted_text">Πατήστε για συνέχεια</string>
+    <string name="activity_recording_alert_channel_name">Ειδοποιήσεις καταγραφής</string>
+    <string name="activity_recording_alert_channel_description">Εμφανίζεται όταν μια καταγραφή σταματά ενώ το Endurain εκτελείται στο παρασκήνιο.</string>
+    <string name="health_rationale_title">Δεδομένα υγείας του Endurain</string>
+    <string name="health_rationale_usage">Το Endurain διαβάζει προπονήσεις, διαδρομές, καρδιακό ρυθμό, απόσταση, θερμίδες και βήματα μόνο για την εισαγωγή επιλεγμένων δραστηριοτήτων.</string>
+    <string name="health_rationale_storage">Τα δεδομένα των επιλεγμένων διαδρομών αποθηκεύονται σε αυτήν τη συσκευή και μεταφορτώνονται μόνο στον διακομιστή Endurain στον οποίο συνδέεστε.</string>
+</resources>

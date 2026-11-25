@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Se înregistrează activitatea</string>
+    <string name="activity_recording_notification_starting">Se pornește o înregistrare</string>
+    <string name="activity_recording_channel_name">Înregistrarea activității</string>
+    <string name="activity_recording_channel_description">Notificare permanentă afișată în timpul înregistrării unei activități.</string>
+    <string name="activity_recording_interrupted_title">Înregistrare întreruptă</string>
+    <string name="activity_recording_interrupted_text">Atingeți pentru a relua</string>
+    <string name="activity_recording_alert_channel_name">Alerte de înregistrare</string>
+    <string name="activity_recording_alert_channel_description">Afișată când o înregistrare se oprește în timp ce Endurain rulează în fundal.</string>
+    <string name="health_rationale_title">Datele de sănătate Endurain</string>
+    <string name="health_rationale_usage">Endurain citește antrenamente, trasee, ritm cardiac, distanță, calorii și pași doar pentru a importa activitățile selectate.</string>
+    <string name="health_rationale_storage">Datele traseelor selectate sunt stocate pe acest dispozitiv și încărcate doar pe serverul Endurain la care vă conectați.</string>
+</resources>

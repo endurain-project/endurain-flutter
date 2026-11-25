@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Bėgimas</string>
+    <string name="activity_ride">Dviratis</string>
+    <string name="activity_walk">Ėjimas</string>
+    <string name="activity_hike">Žygis</string>
+    <string name="pause">Pristabdyti</string>
+    <string name="resume">Tęsti</string>
+    <string name="end">Baigti</string>
+    <string name="end_confirm">Baigti treniruotę?</string>
+    <string name="end_workout">Baigti treniruotę</string>
+    <string name="cancel">Atšaukti</string>
+    <string name="done">Atlikta</string>
+    <string name="saving">Įrašoma…</string>
+    <string name="workout_saved">Treniruotė įrašyta</string>
+    <string name="summary_uploads">Endurain telefone ją įkels kitą kartą atidarius programą.</string>
+    <string name="summary_no_route">GPS maršrutas neįrašytas, todėl šios treniruotės dar negalima įkelti.</string>
+    <string name="waiting_for_phone">Laukiama Endurain telefone: %1$d</string>
+    <string name="permissions_needed">Endurain reikia prieigos prie vietos ir pulso, kad galėtų įrašyti treniruotes.</string>
+    <string name="start_failed">Nepavyko pradėti treniruotės.</string>
+    <string name="exercise_unsupported">Šis laikrodis negali įrašyti šios veiklos.</string>
+    <string name="queue_failed">Nepavyko įtraukti treniruotės į telefono eilę. Bus bandoma dar kartą.</string>
+    <string name="notification_channel">Treniruotė</string>
+    <string name="notification_recording">Įrašoma treniruotė</string>
+    <string name="notification_starting">Pradedama treniruotė</string>
+    <string name="countdown_setting">Atgalinis skaičiavimas: %1$s</string>
+    <string name="countdown_off">Išjungta</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Iki įrašymo pradžios</string>
+    <string name="countdown_seconds_left">Liko sekundžių: %1$d</string>
+    <string name="countdown_start_now">Pradėti dabar</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

@@ -71,7 +71,10 @@ class LocationSampleMapperTest {
     fun formatsDurationAndDistance() {
         assertEquals("01:05", WorkoutFormat.duration(65_000))
         assertEquals("1:01:05", WorkoutFormat.duration(3_665_000))
-        assertEquals("1.50 km", WorkoutFormat.distance(1500.0, Locale.Builder().setLanguage("pt").setRegion("PT").build()).replace(',', '.'))
-        assertEquals("1.00 mi", WorkoutFormat.distance(1609.344, Locale.US))
+        assertEquals(
+            WorkoutFormat.Distance("1,50", imperial = false),
+            WorkoutFormat.distance(1500.0, Locale.Builder().setLanguage("pt").setRegion("PT").build()),
+        )
+        assertEquals(WorkoutFormat.Distance("1.00", imperial = true), WorkoutFormat.distance(1609.344, Locale.US))
     }
 }

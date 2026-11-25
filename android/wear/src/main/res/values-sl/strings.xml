@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Tek</string>
+    <string name="activity_ride">Kolesarjenje</string>
+    <string name="activity_walk">Hoja</string>
+    <string name="activity_hike">Pohod</string>
+    <string name="pause">Premor</string>
+    <string name="resume">Nadaljuj</string>
+    <string name="end">Končaj</string>
+    <string name="end_confirm">Želite končati vadbo?</string>
+    <string name="end_workout">Končaj vadbo</string>
+    <string name="cancel">Prekliči</string>
+    <string name="done">Končano</string>
+    <string name="saving">Shranjevanje…</string>
+    <string name="workout_saved">Vadba shranjena</string>
+    <string name="summary_uploads">Endurain v telefonu jo bo naložil ob naslednjem odprtju.</string>
+    <string name="summary_no_route">Pot GPS ni bila posneta, zato te vadbe še ni mogoče naložiti.</string>
+    <string name="waiting_for_phone">Čakanje na Endurain v telefonu: %1$d</string>
+    <string name="permissions_needed">Endurain potrebuje dostop do lokacije in srčnega utripa za snemanje vadb.</string>
+    <string name="start_failed">Vadbe ni bilo mogoče začeti.</string>
+    <string name="exercise_unsupported">Ta ura ne more posneti te aktivnosti.</string>
+    <string name="queue_failed">Vadbe ni bilo mogoče uvrstiti v čakalno vrsto za telefon. Poskus bo ponovljen.</string>
+    <string name="notification_channel">Vadba</string>
+    <string name="notification_recording">Snemanje vadbe</string>
+    <string name="notification_starting">Začenjanje vadbe</string>
+    <string name="countdown_setting">Odštevanje: %1$s</string>
+    <string name="countdown_off">Izklopljeno</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Snemanje se začne čez</string>
+    <string name="countdown_seconds_left">Preostale sekunde: %1$d</string>
+    <string name="countdown_start_now">Začni zdaj</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

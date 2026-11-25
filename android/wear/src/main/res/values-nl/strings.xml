@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Hardlopen</string>
+    <string name="activity_ride">Fietsen</string>
+    <string name="activity_walk">Wandelen</string>
+    <string name="activity_hike">Wandeltocht</string>
+    <string name="pause">Pauzeren</string>
+    <string name="resume">Hervatten</string>
+    <string name="end">Beëindigen</string>
+    <string name="end_confirm">Training beëindigen?</string>
+    <string name="end_workout">Training beëindigen</string>
+    <string name="cancel">Annuleren</string>
+    <string name="done">Klaar</string>
+    <string name="saving">Opslaan…</string>
+    <string name="workout_saved">Training opgeslagen</string>
+    <string name="summary_uploads">Endurain op je telefoon uploadt deze de volgende keer dat de app opent.</string>
+    <string name="summary_no_route">Er is geen GPS-route opgenomen, dus deze training kan nog niet worden geüpload.</string>
+    <string name="waiting_for_phone">Wacht op Endurain op je telefoon: %1$d</string>
+    <string name="permissions_needed">Endurain heeft toegang tot locatie en hartslag nodig om trainingen op te nemen.</string>
+    <string name="start_failed">De training kon niet worden gestart.</string>
+    <string name="exercise_unsupported">Dit horloge kan deze activiteit niet opnemen.</string>
+    <string name="queue_failed">De training kon niet in de wachtrij voor je telefoon worden gezet. Er wordt opnieuw geprobeerd.</string>
+    <string name="notification_channel">Training</string>
+    <string name="notification_recording">Training opnemen</string>
+    <string name="notification_starting">Training starten</string>
+    <string name="countdown_setting">Aftellen: %1$s</string>
+    <string name="countdown_off">Uit</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Opname begint over</string>
+    <string name="countdown_seconds_left">Resterende seconden: %1$d</string>
+    <string name="countdown_start_now">Nu starten</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

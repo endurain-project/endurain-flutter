@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Enregistrant activitat</string>
+    <string name="activity_recording_notification_starting">Iniciant un enregistrament</string>
+    <string name="activity_recording_channel_name">Enregistrament d\'activitat</string>
+    <string name="activity_recording_channel_description">Notificació permanent que es mostra mentre s\'enregistra una activitat.</string>
+    <string name="activity_recording_interrupted_title">Enregistrament interromput</string>
+    <string name="activity_recording_interrupted_text">Toqueu per reprendre</string>
+    <string name="activity_recording_alert_channel_name">Alertes d\'enregistrament</string>
+    <string name="activity_recording_alert_channel_description">Es mostra quan un enregistrament s\'atura mentre Endurain és en segon pla.</string>
+    <string name="health_rationale_title">Dades de salut d\'Endurain</string>
+    <string name="health_rationale_usage">Endurain llegeix entrenaments, rutes, freqüència cardíaca, distància, calories i passos només per importar les activitats seleccionades.</string>
+    <string name="health_rationale_storage">Les dades de les rutes seleccionades es desen en aquest dispositiu i només es pugen al servidor d\'Endurain que connecteu.</string>
+</resources>

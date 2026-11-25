@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Běh</string>
+    <string name="activity_ride">Cyklistika</string>
+    <string name="activity_walk">Chůze</string>
+    <string name="activity_hike">Turistika</string>
+    <string name="pause">Pozastavit</string>
+    <string name="resume">Pokračovat</string>
+    <string name="end">Ukončit</string>
+    <string name="end_confirm">Ukončit trénink?</string>
+    <string name="end_workout">Ukončit trénink</string>
+    <string name="cancel">Zrušit</string>
+    <string name="done">Hotovo</string>
+    <string name="saving">Ukládání…</string>
+    <string name="workout_saved">Trénink uložen</string>
+    <string name="summary_uploads">Endurain v telefonu ho nahraje při příštím otevření.</string>
+    <string name="summary_no_route">Nebyla zaznamenána žádná trasa GPS, proto tento trénink zatím nelze nahrát.</string>
+    <string name="waiting_for_phone">Čeká na Endurain v telefonu: %1$d</string>
+    <string name="permissions_needed">Endurain potřebuje přístup k poloze a tepu, aby mohl zaznamenávat tréninky.</string>
+    <string name="start_failed">Trénink se nepodařilo spustit.</string>
+    <string name="exercise_unsupported">Tyto hodinky nemohou zaznamenat tuto aktivitu.</string>
+    <string name="queue_failed">Trénink se nepodařilo zařadit do fronty pro telefon. Akce se zopakuje.</string>
+    <string name="notification_channel">Trénink</string>
+    <string name="notification_recording">Zaznamenávání tréninku</string>
+    <string name="notification_starting">Spouštění tréninku</string>
+    <string name="countdown_setting">Odpočet: %1$s</string>
+    <string name="countdown_off">Vypnuto</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Nahrávání začne za</string>
+    <string name="countdown_seconds_left">Zbývá sekund: %1$d</string>
+    <string name="countdown_start_now">Spustit hned</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

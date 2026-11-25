@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Alergare</string>
+    <string name="activity_ride">Ciclism</string>
+    <string name="activity_walk">Mers pe jos</string>
+    <string name="activity_hike">Drumeție</string>
+    <string name="pause">Pauză</string>
+    <string name="resume">Reia</string>
+    <string name="end">Încheie</string>
+    <string name="end_confirm">Încheiați antrenamentul?</string>
+    <string name="end_workout">Încheie antrenamentul</string>
+    <string name="cancel">Anulează</string>
+    <string name="done">Gata</string>
+    <string name="saving">Se salvează…</string>
+    <string name="workout_saved">Antrenament salvat</string>
+    <string name="summary_uploads">Endurain de pe telefon îl va încărca la următoarea deschidere.</string>
+    <string name="summary_no_route">Nu s-a înregistrat niciun traseu GPS, așa că acest antrenament nu poate fi încărcat încă.</string>
+    <string name="waiting_for_phone">Se așteaptă Endurain pe telefon: %1$d</string>
+    <string name="permissions_needed">Endurain are nevoie de acces la locație și la ritmul cardiac pentru a înregistra antrenamente.</string>
+    <string name="start_failed">Antrenamentul nu a putut fi pornit.</string>
+    <string name="exercise_unsupported">Acest ceas nu poate înregistra această activitate.</string>
+    <string name="queue_failed">Antrenamentul nu a putut fi pus în coadă pentru telefon. Se va reîncerca.</string>
+    <string name="notification_channel">Antrenament</string>
+    <string name="notification_recording">Se înregistrează un antrenament</string>
+    <string name="notification_starting">Se pornește un antrenament</string>
+    <string name="countdown_setting">Numărătoare inversă: %1$s</string>
+    <string name="countdown_off">Dezactivată</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Înregistrarea începe în</string>
+    <string name="countdown_seconds_left">Secunde rămase: %1$d</string>
+    <string name="countdown_start_now">Pornește acum</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">跑步</string>
+    <string name="activity_ride">骑行</string>
+    <string name="activity_walk">步行</string>
+    <string name="activity_hike">徒步</string>
+    <string name="pause">暂停</string>
+    <string name="resume">继续</string>
+    <string name="end">结束</string>
+    <string name="end_confirm">要结束此锻炼吗？</string>
+    <string name="end_workout">结束锻炼</string>
+    <string name="cancel">取消</string>
+    <string name="done">完成</string>
+    <string name="saving">正在保存…</string>
+    <string name="workout_saved">锻炼已保存</string>
+    <string name="summary_uploads">手机上的 Endurain 下次打开时会上传它。</string>
+    <string name="summary_no_route">未记录 GPS 路线，因此暂时无法上传此锻炼。</string>
+    <string name="waiting_for_phone">等待手机上的 Endurain：%1$d</string>
+    <string name="permissions_needed">Endurain 需要位置和心率访问权限才能记录锻炼。</string>
+    <string name="start_failed">无法开始锻炼。</string>
+    <string name="exercise_unsupported">此手表无法记录此活动。</string>
+    <string name="queue_failed">无法将锻炼加入手机队列。稍后将重试。</string>
+    <string name="notification_channel">锻炼</string>
+    <string name="notification_recording">正在记录锻炼</string>
+    <string name="notification_starting">正在开始锻炼</string>
+    <string name="countdown_setting">倒计时：%1$s</string>
+    <string name="countdown_off">关闭</string>
+    <string name="countdown_seconds">%1$d 秒</string>
+    <string name="countdown_starts_in">距离开始记录</string>
+    <string name="countdown_seconds_left">剩余秒数：%1$d</string>
+    <string name="countdown_start_now">立即开始</string>
+    <string name="distance_km">%1$s 公里</string>
+    <string name="distance_mi">%1$s 英里</string>
+</resources>

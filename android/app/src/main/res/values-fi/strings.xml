@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Tallennetaan aktiviteettia</string>
+    <string name="activity_recording_notification_starting">Aloitetaan tallennusta</string>
+    <string name="activity_recording_channel_name">Aktiviteetin tallennus</string>
+    <string name="activity_recording_channel_description">Pysyvä ilmoitus, joka näytetään aktiviteetin tallennuksen aikana.</string>
+    <string name="activity_recording_interrupted_title">Tallennus keskeytyi</string>
+    <string name="activity_recording_interrupted_text">Jatka napauttamalla</string>
+    <string name="activity_recording_alert_channel_name">Tallennushälytykset</string>
+    <string name="activity_recording_alert_channel_description">Näytetään, kun tallennus pysähtyy Endurainin ollessa taustalla.</string>
+    <string name="health_rationale_title">Endurainin terveystiedot</string>
+    <string name="health_rationale_usage">Endurain lukee harjoituksia, reittejä, sykettä, matkaa, kaloreita ja askelia vain valittujen aktiviteettien tuomiseksi.</string>
+    <string name="health_rationale_storage">Valittujen reittien tiedot tallennetaan tälle laitteelle ja ladataan vain siihen Endurain-palvelimeen, johon muodostat yhteyden.</string>
+</resources>

@@ -99,6 +99,12 @@ android {
         }
     }
 
+    // Lists the res/values-* languages (plus res/resources.properties' default)
+    // as the app's supported locales, for Android 13+ per-app language settings.
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }

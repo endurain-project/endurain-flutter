@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Löpning</string>
+    <string name="activity_ride">Cykling</string>
+    <string name="activity_walk">Promenad</string>
+    <string name="activity_hike">Vandring</string>
+    <string name="pause">Pausa</string>
+    <string name="resume">Återuppta</string>
+    <string name="end">Avsluta</string>
+    <string name="end_confirm">Avsluta träningspasset?</string>
+    <string name="end_workout">Avsluta pass</string>
+    <string name="cancel">Avbryt</string>
+    <string name="done">Klar</string>
+    <string name="saving">Sparar…</string>
+    <string name="workout_saved">Träningspass sparat</string>
+    <string name="summary_uploads">Endurain på telefonen laddar upp det nästa gång appen öppnas.</string>
+    <string name="summary_no_route">Ingen GPS-rutt spelades in, så det här passet kan inte laddas upp än.</string>
+    <string name="waiting_for_phone">Väntar på Endurain i telefonen: %1$d</string>
+    <string name="permissions_needed">Endurain behöver åtkomst till plats och puls för att spela in träningspass.</string>
+    <string name="start_failed">Träningspasset kunde inte startas.</string>
+    <string name="exercise_unsupported">Den här klockan kan inte spela in den här aktiviteten.</string>
+    <string name="queue_failed">Träningspasset kunde inte köas för telefonen. Ett nytt försök görs.</string>
+    <string name="notification_channel">Träningspass</string>
+    <string name="notification_recording">Spelar in ett träningspass</string>
+    <string name="notification_starting">Startar ett träningspass</string>
+    <string name="countdown_setting">Nedräkning: %1$s</string>
+    <string name="countdown_off">Av</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Inspelningen startar om</string>
+    <string name="countdown_seconds_left">Sekunder kvar: %1$d</string>
+    <string name="countdown_start_now">Starta nu</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

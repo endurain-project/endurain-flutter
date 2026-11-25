@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Gravando a actividade</string>
+    <string name="activity_recording_notification_starting">Iniciando unha gravación</string>
+    <string name="activity_recording_channel_name">Gravación de actividade</string>
+    <string name="activity_recording_channel_description">Notificación permanente que se mostra mentres se grava unha actividade.</string>
+    <string name="activity_recording_interrupted_title">Gravación interrompida</string>
+    <string name="activity_recording_interrupted_text">Toca para retomar</string>
+    <string name="activity_recording_alert_channel_name">Alertas de gravación</string>
+    <string name="activity_recording_alert_channel_description">Móstrase cando unha gravación se detén mentres Endurain está en segundo plano.</string>
+    <string name="health_rationale_title">Datos de saúde de Endurain</string>
+    <string name="health_rationale_usage">Endurain le adestramentos, rutas, frecuencia cardíaca, distancia, calorías e pasos só para importar as actividades seleccionadas.</string>
+    <string name="health_rationale_storage">Os datos das rutas seleccionadas gárdanse neste dispositivo e só se suben ao servidor de Endurain ao que te conectes.</string>
+</resources>

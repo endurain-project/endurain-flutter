@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_run">Futás</string>
+    <string name="activity_ride">Kerékpározás</string>
+    <string name="activity_walk">Séta</string>
+    <string name="activity_hike">Túra</string>
+    <string name="pause">Szünet</string>
+    <string name="resume">Folytatás</string>
+    <string name="end">Befejezés</string>
+    <string name="end_confirm">Befejezi az edzést?</string>
+    <string name="end_workout">Edzés befejezése</string>
+    <string name="cancel">Mégse</string>
+    <string name="done">Kész</string>
+    <string name="saving">Mentés…</string>
+    <string name="workout_saved">Edzés mentve</string>
+    <string name="summary_uploads">A telefonján lévő Endurain a következő megnyitáskor feltölti.</string>
+    <string name="summary_no_route">Nem rögzült GPS-útvonal, ezért ez az edzés még nem tölthető fel.</string>
+    <string name="waiting_for_phone">Várakozás a telefon Endurainjára: %1$d</string>
+    <string name="permissions_needed">Az Endurainnak hozzáférés kell a helyzethez és a pulzushoz az edzések rögzítéséhez.</string>
+    <string name="start_failed">Az edzést nem sikerült elindítani.</string>
+    <string name="exercise_unsupported">Ez az óra nem tudja rögzíteni ezt a tevékenységet.</string>
+    <string name="queue_failed">Az edzést nem sikerült sorba állítani a telefon számára. Később újrapróbálkozik.</string>
+    <string name="notification_channel">Edzés</string>
+    <string name="notification_recording">Edzés rögzítése</string>
+    <string name="notification_starting">Edzés indítása</string>
+    <string name="countdown_setting">Visszaszámlálás: %1$s</string>
+    <string name="countdown_off">Ki</string>
+    <string name="countdown_seconds">%1$d mp</string>
+    <string name="countdown_starts_in">A rögzítés indulásáig</string>
+    <string name="countdown_seconds_left">Hátralévő másodpercek: %1$d</string>
+    <string name="countdown_start_now">Indítás most</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="distance_mi">%1$s mi</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_recording_notification_text">Tevékenység rögzítése</string>
+    <string name="activity_recording_notification_starting">Rögzítés indítása</string>
+    <string name="activity_recording_channel_name">Tevékenység rögzítése</string>
+    <string name="activity_recording_channel_description">Tartós értesítés, amely egy tevékenység rögzítése közben jelenik meg.</string>
+    <string name="activity_recording_interrupted_title">A rögzítés megszakadt</string>
+    <string name="activity_recording_interrupted_text">Koppintson a folytatáshoz</string>
+    <string name="activity_recording_alert_channel_name">Rögzítési figyelmeztetések</string>
+    <string name="activity_recording_alert_channel_description">Akkor jelenik meg, ha egy rögzítés leáll, miközben az Endurain a háttérben fut.</string>
+    <string name="health_rationale_title">Az Endurain egészségügyi adatai</string>
+    <string name="health_rationale_usage">Az Endurain csak a kiválasztott tevékenységek importálásához olvassa az edzéseket, útvonalakat, pulzust, távolságot, kalóriát és lépéseket.</string>
+    <string name="health_rationale_storage">A kiválasztott útvonalak adatai ezen az eszközön tárolódnak, és csak arra az Endurain-szerverre töltődnek fel, amelyhez csatlakozik.</string>
+</resources>
