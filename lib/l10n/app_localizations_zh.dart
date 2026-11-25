@@ -747,25 +747,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsSectionPrivacySupport => '隐私与支持';
 
   @override
-  String get deviceAccessTitle => '设备接入';
+  String get deviceAccessTitle => '设备访问权限';
 
   @override
   String get deviceAccessSubtitle => '管理位置和健康数据访问';
 
   @override
-  String get deviceAccessLocationSection => '地点';
+  String get deviceAccessLocationSection => '位置';
 
   @override
   String get deviceAccessHealthSection => '健康数据';
 
   @override
-  String get deviceAccessLocationTitle => '位置访问';
+  String get deviceAccessLocationTitle => '位置访问权限';
 
   @override
-  String get deviceAccessHealthTitle => '健康数据访问';
+  String get deviceAccessHealthTitle => '健康数据访问权限';
 
   @override
-  String get deviceAccessChecking => '正在检查访问...';
+  String get deviceAccessChecking => '正在检查访问权限…';
 
   @override
   String get deviceAccessLocationServicesOff => '定位服务已关闭';
@@ -774,10 +774,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deviceAccessLocationAlways => '一直允许';
 
   @override
-  String get deviceAccessLocationWhileUsing => '使用应用程序时允许';
+  String get deviceAccessLocationWhileUsing => '使用应用期间允许';
 
   @override
-  String get deviceAccessLocationBlocked => '系统设置中屏蔽了';
+  String get deviceAccessLocationBlocked => '已在系统设置中阻止';
 
   @override
   String get deviceAccessLocationNotAllowed => '不允许';
@@ -786,10 +786,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deviceAccessHealthUnavailable => '在此设备上不可用';
 
   @override
-  String get deviceAccessHealthRequired => '需要健康连接';
+  String get deviceAccessHealthRequired => '需要 Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => '健康访问设置';
+  String get deviceAccessHealthSetUp => '已设置健康数据访问权限';
 
   @override
   String get deviceAccessHealthNeedsAttention => '访问需要注意';
@@ -975,7 +975,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get healthSyncScreenTitle => '健康同步';
 
   @override
-  String get healthAccessScreenTitle => '健康获取';
+  String get healthAccessScreenTitle => '健康数据访问权限';
 
   @override
   String get healthAccessRequestedData => '请求的数据';
@@ -990,23 +990,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get healthAccessHeartRate => '心率';
 
   @override
-  String get healthAccessAllowed => '允许';
+  String get healthAccessAllowed => '已允许';
 
   @override
   String get healthAccessNeedsAttention => '需要注意';
 
   @override
-  String get healthAccessManagedBySystem => '在系统设置中管理';
+  String get healthAccessManagedBySystem => '由系统设置管理';
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit 没有透露 Endurain 可以读取哪些数据。在“健康”应用程序中查看访问权限。';
+      'HealthKit 不会透露 Endurain 可以读取哪些数据。请在“健康”App 中查看访问权限。';
 
   @override
-  String get healthAccessReview => '审查健康访问权限';
+  String get healthAccessReview => '查看健康数据访问权限';
 
   @override
-  String get healthAccessReviewIos => '如何审查访问权限';
+  String get healthAccessReviewIos => '如何查看访问权限';
 
   @override
   String get healthAccessDisconnect => '断开健康数据连接';
@@ -1020,23 +1020,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      '打开“健康”应用程序，点击您的个人资料图片，然后点击“应用程序和服务”。选择 Endurain 并更新数据类别。';
+      '打开“健康”App，轻点您的个人资料图片，然后轻点“App 和服务”。选择 Endurain 并更新数据类别。';
 
   @override
   String get healthSyncAuthorize => '连接到健康数据';
 
   @override
-  String get healthSyncInstallProvider => '安装健康连接';
+  String get healthSyncInstallProvider => '安装 Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
-      '需要 Health Connect 才能同步锻炼。安装它以继续。';
+      '需要 Health Connect 才能同步锻炼。请安装后继续。';
 
   @override
   String get healthSyncUnsupported => '健康同步在此设备上不可用。';
 
   @override
-  String get healthSyncSelectAll => '选择全部';
+  String get healthSyncSelectAll => '全选';
 
   @override
   String get healthSyncClearSelection => '清除';
@@ -1048,7 +1048,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String healthSyncImportedCount(int count) {
-    return '导入了 $count 项锻炼。';
+    return '已导入 $count 项锻炼。';
   }
 
   @override
@@ -1059,31 +1059,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      '由于未授予锻炼路线访问权限，因此跳过了一些锻炼。打开 Health Connect → 权限并允许 Endurain 的锻炼路线。';
+      '由于未授予锻炼路线访问权限，部分锻炼已被跳过。请打开 Health Connect → 权限，并允许 Endurain 访问锻炼路线。';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      '由于 Endurain 无法读取 GPS 路线，一些锻炼被跳过。在“健康”应用程序中，打开您的个人资料，然后打开“应用程序和服务”，选择“Endurain”，然后允许“锻炼路线”。';
+      '由于 Endurain 无法读取部分锻炼的 GPS 路线，这些锻炼已被跳过。在“健康”App 中打开您的个人资料，然后打开“App 和服务”，选择 Endurain，并允许“体能训练路线”。';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
       '由于未在 Health Connect 中授予访问过往数据的权限，较早的锻炼未显示。请在 Health Connect 中为 Endurain 允许“访问过往数据”以导入它们。';
 
   @override
-  String get healthSyncReviewAccess => '审查访问权限';
+  String get healthSyncReviewAccess => '查看访问权限';
 
   @override
-  String get healthSyncAutoSyncTitle => '恢复时自动同步';
+  String get healthSyncAutoSyncTitle => '打开应用时自动同步';
 
   @override
-  String get healthSyncAutoSyncSubtitle => '应用程序打开时自动导入新的锻炼。';
+  String get healthSyncAutoSyncSubtitle => '打开应用时自动导入新的锻炼。';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      '这些锻炼不包括 GPS 路线，因此无法导入。某些应用程序（例如 Garmin Connect）将活动记录到 Apple Health，但不共享路线。使用Apple Watch记录的锻炼包括路线并且可以导入。';
+      '这些锻炼不包含 GPS 路线，因此无法导入。某些应用（例如 Garmin Connect）会将活动记录到 Apple Health，但不共享路线。使用 Apple Watch 记录的锻炼包含路线，可以导入。';
 
   @override
-  String get healthSyncBadgeNonImportable => '不可进口';
+  String get healthSyncBadgeNonImportable => '无法导入';
 
   @override
   String get healthSyncViewAvailable => '可导入';
@@ -1231,7 +1231,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '将崩溃和错误报告发送到诊断服务器。这与本地诊断相互独立；您可以同时启用两者、其中之一或都不启用。';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => '正在发送崩溃报告';
 
   @override
   String get diagnosticsRemoteNeedsServer => '此版本不支持远程崩溃报告。';
@@ -1469,21 +1469,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get errorHealthGpxBuildFailed => '無法將鍛鍊資料轉換為 GPX';
+  String get errorHealthGpxBuildFailed => '無法將運動轉換為 GPX';
 
   @override
-  String get errorHealthImportFailed => '無法導入鍛煉';
+  String get errorHealthImportFailed => '無法匯入運動';
 
   @override
   String errorHealthImportFailedWithDetails(String details) {
-    return '無法匯入鍛鍊：$details';
+    return '無法匯入運動：$details';
   }
 
   @override
-  String get errorHealthPermissionDenied => '健康數據存取被拒絕';
+  String get errorHealthPermissionDenied => '健康資料存取遭拒';
 
   @override
-  String get errorHealthReadFailed => '無法讀取健康數據';
+  String get errorHealthReadFailed => '無法讀取健康資料';
 
   @override
   String get errorLoginError => '無法登入';
@@ -1942,7 +1942,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityAutoPauseToggleDescription =>
-      '當您停止移動時自動暫停記錄,一旦您重新開始移動即恢復。';
+      '當您停止移動時自動暫停記錄，一旦您重新開始移動即恢復。';
 
   @override
   String get activityAutoPauseDelayHelperText => '選擇在暫停前等待多長時間沒有移動。';
@@ -2120,52 +2120,52 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsSectionPrivacySupport => '隱私與支援';
 
   @override
-  String get deviceAccessTitle => '裝置存取';
+  String get deviceAccessTitle => '裝置存取權限';
 
   @override
-  String get deviceAccessSubtitle => '管理位置和健康數據訪問';
+  String get deviceAccessSubtitle => '管理位置和健康資料存取權限';
 
   @override
-  String get deviceAccessLocationSection => '地點';
+  String get deviceAccessLocationSection => '位置';
 
   @override
-  String get deviceAccessHealthSection => '健康數據';
+  String get deviceAccessHealthSection => '健康資料';
 
   @override
-  String get deviceAccessLocationTitle => '位置訪問';
+  String get deviceAccessLocationTitle => '位置存取權限';
 
   @override
-  String get deviceAccessHealthTitle => '健康數據訪問';
+  String get deviceAccessHealthTitle => '健康資料存取權限';
 
   @override
-  String get deviceAccessChecking => '正在檢查訪問...';
+  String get deviceAccessChecking => '正在檢查存取權限…';
 
   @override
   String get deviceAccessLocationServicesOff => '定位服務已關閉';
 
   @override
-  String get deviceAccessLocationAlways => '一直允許';
+  String get deviceAccessLocationAlways => '永遠允許';
 
   @override
-  String get deviceAccessLocationWhileUsing => '使用應用程式時允許';
+  String get deviceAccessLocationWhileUsing => '使用應用程式期間允許';
 
   @override
-  String get deviceAccessLocationBlocked => '系統設定中屏蔽了';
+  String get deviceAccessLocationBlocked => '已在系統設定中封鎖';
 
   @override
   String get deviceAccessLocationNotAllowed => '不允許';
 
   @override
-  String get deviceAccessHealthUnavailable => '在此設備上不可用';
+  String get deviceAccessHealthUnavailable => '此裝置上無法使用';
 
   @override
-  String get deviceAccessHealthRequired => '需要健康連接';
+  String get deviceAccessHealthRequired => '需要 Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => '健康訪問設置';
+  String get deviceAccessHealthSetUp => '已設定健康資料存取權限';
 
   @override
-  String get deviceAccessHealthNeedsAttention => '訪問需要注意';
+  String get deviceAccessHealthNeedsAttention => '存取權限需要注意';
 
   @override
   String get deviceAccessHealthNotConnected => '未連接';
@@ -2190,7 +2190,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String connectedToServer(String server) {
-    return '已連接到$server';
+    return '已連線至 $server';
   }
 
   @override
@@ -2342,44 +2342,44 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get healthSyncSettingsTitle => '健康同步';
 
   @override
-  String get healthSyncSettingsSubtitle => '從您的健康平台匯入鍛鍊數據';
+  String get healthSyncSettingsSubtitle => '從您的健康平台匯入運動';
 
   @override
   String get healthSyncScreenTitle => '健康同步';
 
   @override
-  String get healthAccessScreenTitle => '健康獲取';
+  String get healthAccessScreenTitle => '健康資料存取權限';
 
   @override
-  String get healthAccessRequestedData => '請求的數據';
+  String get healthAccessRequestedData => '要求的資料';
 
   @override
-  String get healthAccessWorkouts => '鍛鍊';
+  String get healthAccessWorkouts => '運動';
 
   @override
-  String get healthAccessWorkoutRoutes => '鍛鍊路線';
+  String get healthAccessWorkoutRoutes => '運動路線';
 
   @override
   String get healthAccessHeartRate => '心率';
 
   @override
-  String get healthAccessAllowed => '允許';
+  String get healthAccessAllowed => '已允許';
 
   @override
   String get healthAccessNeedsAttention => '需要注意';
 
   @override
-  String get healthAccessManagedBySystem => '在系統設定中管理';
+  String get healthAccessManagedBySystem => '由系統設定管理';
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit 並未透露 Endurain 可以讀取哪些資料。在“健康”應用程式中查看存取權限。';
+      'HealthKit 不會透露 Endurain 可以讀取哪些資料。請在「健康」App 中檢查存取權限。';
 
   @override
-  String get healthAccessReview => '審查健康存取權限';
+  String get healthAccessReview => '檢查健康資料存取權限';
 
   @override
-  String get healthAccessReviewIos => '如何審查存取權限';
+  String get healthAccessReviewIos => '如何檢查存取權限';
 
   @override
   String get healthAccessDisconnect => '中斷健康資料連線';
@@ -2393,70 +2393,70 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      '打開“健康”應用程序，點擊您的個人資料圖片，然後點擊“應用程式和服務”。選擇 Endurain 並更新資料類別。';
+      '開啟「健康」App，點一下您的個人資料照片，然後點一下「App 和服務」。選擇 Endurain 並更新資料類別。';
 
   @override
-  String get healthSyncAuthorize => '連接到健康數據';
+  String get healthSyncAuthorize => '連結健康資料';
 
   @override
-  String get healthSyncInstallProvider => '安裝健康連接';
+  String get healthSyncInstallProvider => '安裝 Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
-      '需要 Health Connect 才能同步鍛鍊。安裝它以繼續。';
+      '需要 Health Connect 才能同步運動。請安裝後繼續。';
 
   @override
-  String get healthSyncUnsupported => '健康同步在此裝置上不可用。';
+  String get healthSyncUnsupported => '此裝置不支援健康同步。';
 
   @override
-  String get healthSyncSelectAll => '選擇全部';
+  String get healthSyncSelectAll => '全選';
 
   @override
   String get healthSyncClearSelection => '清除';
 
   @override
   String healthSyncImportSelected(int count) {
-    return '匯入所選內容 ($count)';
+    return '匯入所選項目 ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return '導入了 $count 項鍛鍊。';
+    return '已匯入 $count 項運動。';
   }
 
   @override
-  String get healthSyncNoRouteLabel => '沒有 GPS 路線';
+  String get healthSyncNoRouteLabel => '無 GPS 路線';
 
   @override
   String get healthSyncEmptyState => '所選日期範圍內找不到運動。';
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      '由於未授予鍛煉路線訪問權限，因此跳過了一些鍛煉。開啟 Health Connect → 權限並允許 Endurain 的鍛鍊路線。';
+      '由於未授予運動路線存取權限，已略過部分運動。請開啟 Health Connect → 權限，並允許 Endurain 存取運動路線。';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      '由於 Endurain 無法讀取 GPS 路線，一些鍛鍊被跳過。在“健康”應用程式中，打開您的個人資料，然後打開“應用程式和服務”，選擇“Endurain”，然後允許“鍛鍊路線”。';
+      '由於 Endurain 無法讀取部分運動的 GPS 路線，已略過這些運動。在「健康」App 中開啟您的個人資料，然後開啟「App 和服務」，選擇 Endurain，並允許「體能訓練路線」。';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
-      '由於未在 Health Connect 中授予存取過往資料的權限，較早的鍛鍊未顯示。請在 Health Connect 中為 Endurain 允許「存取過往資料」以匯入它們。';
+      '由於未在 Health Connect 中授予存取過往資料的權限，因此未顯示較早的運動。若要匯入這些運動，請在 Health Connect 中允許 Endurain「存取過往資料」。';
 
   @override
-  String get healthSyncReviewAccess => '審查存取權限';
+  String get healthSyncReviewAccess => '檢查存取權限';
 
   @override
-  String get healthSyncAutoSyncTitle => '恢復時自動同步';
+  String get healthSyncAutoSyncTitle => '開啟應用程式時自動同步';
 
   @override
-  String get healthSyncAutoSyncSubtitle => '應用程式開啟時自動匯入新的鍛鍊。';
+  String get healthSyncAutoSyncSubtitle => '開啟應用程式時自動匯入新的運動。';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      '這些鍛鍊不包括 GPS 路線，因此無法匯入。某些應用程式（例如 Garmin Connect）會將活動記錄到 Apple Health，但不共用路線。使用Apple Watch記錄的鍛鍊包括路線並且可以導入。';
+      '這些運動不包含 GPS 路線，因此無法匯入。某些應用程式（例如 Garmin Connect）會將活動記錄到 Apple Health，但不分享路線。使用 Apple Watch 記錄的運動包含路線，可以匯入。';
 
   @override
-  String get healthSyncBadgeNonImportable => '不可進口';
+  String get healthSyncBadgeNonImportable => '無法匯入';
 
   @override
   String get healthSyncViewAvailable => '可匯入';
@@ -2494,7 +2494,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get healthSyncRestore => '恢復';
+  String get healthSyncRestore => '還原';
 
   @override
   String get sensorsTitle => '感測器';
@@ -2604,7 +2604,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '將當機和錯誤報告傳送到診斷伺服器。這與本機診斷相互獨立；您可以同時啟用兩者、其中之一或都不啟用。';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => '正在傳送當機報告';
 
   @override
   String get diagnosticsRemoteNeedsServer => '此版本不支援遠端當機報告。';

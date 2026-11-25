@@ -860,10 +860,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No disponible en este dispositivo';
 
   @override
-  String get deviceAccessHealthRequired => 'Se requiere Conexión de Salud';
+  String get deviceAccessHealthRequired => 'Se requiere Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Configuración del acceso a la salud';
+  String get deviceAccessHealthSetUp => 'Acceso a datos de salud configurado';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'El acceso necesita atención';
@@ -1056,7 +1056,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get healthSyncScreenTitle => 'Sincronización de salud';
 
   @override
-  String get healthAccessScreenTitle => 'Acceso a la salud';
+  String get healthAccessScreenTitle => 'Acceso a datos de salud';
 
   @override
   String get healthAccessRequestedData => 'Datos solicitados';
@@ -1068,13 +1068,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get healthAccessWorkoutRoutes => 'Rutas de entrenamiento';
 
   @override
-  String get healthAccessHeartRate => 'frecuencia cardiaca';
+  String get healthAccessHeartRate => 'Frecuencia cardíaca';
 
   @override
   String get healthAccessAllowed => 'Permitido';
 
   @override
-  String get healthAccessNeedsAttention => 'necesita atencion';
+  String get healthAccessNeedsAttention => 'Requiere atención';
 
   @override
   String get healthAccessManagedBySystem =>
@@ -1082,10 +1082,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit no revela qué datos puede leer Endurain. Revisar el acceso en la aplicación Salud.';
+      'HealthKit no revela qué datos puede leer Endurain. Revisa el acceso en la aplicación Salud.';
 
   @override
-  String get healthAccessReview => 'Revisar el acceso a la salud';
+  String get healthAccessReview => 'Revisar el acceso a datos de salud';
 
   @override
   String get healthAccessReviewIos => 'Cómo revisar el acceso';
@@ -1102,13 +1102,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Abra la aplicación Salud, toque su foto de perfil y luego Aplicaciones y servicios. Seleccione Endurain y actualice las categorías de datos.';
+      'Abre la aplicación Salud, toca tu foto de perfil y luego Aplicaciones y servicios. Selecciona Endurain y actualiza las categorías de datos.';
 
   @override
-  String get healthSyncAuthorize => 'Conéctese a datos de salud';
+  String get healthSyncAuthorize => 'Conectar con los datos de salud';
 
   @override
-  String get healthSyncInstallProvider => 'Instalar Conexión de salud';
+  String get healthSyncInstallProvider => 'Instalar Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1131,7 +1131,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String healthSyncImportedCount(int count) {
-    return '$count ejercicios importados.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se importaron $count entrenamientos.',
+      one: 'Se importó $count entrenamiento.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1143,21 +1149,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Se omitieron algunos entrenamientos porque no se permitió el acceso a la ruta de ejercicio. Abra Health Connect → Permisos y permita rutas de ejercicio para Endurain.';
+      'Se omitieron algunos entrenamientos porque no se concedió acceso a las rutas de ejercicio. Abre Health Connect → Permisos y permite las rutas de ejercicio para Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Se omitieron algunos entrenamientos porque Endurain no pudo leer sus rutas GPS. En la aplicación Salud, abra su perfil, luego Aplicaciones y servicios, seleccione Endurain y permita Rutas de entrenamiento.';
+      'Se omitieron algunos entrenamientos porque Endurain no pudo leer sus rutas GPS. En la aplicación Salud, abre tu perfil, luego Aplicaciones y servicios, selecciona Endurain y permite Rutas de entrenamiento.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
       'No se muestran los entrenamientos más antiguos porque no se concedió acceso a los datos anteriores en Health Connect. Permite «Acceso a datos anteriores» para Endurain en Health Connect para importarlos.';
 
   @override
-  String get healthSyncReviewAccess => 'Acceso a reseñas';
+  String get healthSyncReviewAccess => 'Revisar acceso';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Sincronización automática al reanudar';
+  String get healthSyncAutoSyncTitle => 'Sincronización automática al abrir';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
@@ -1328,7 +1334,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Envía informes de fallos y errores a un servidor de diagnóstico. Esto es independiente de los diagnósticos locales: puedes activar ambos, uno o ninguno.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Se están enviando informes de fallos';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

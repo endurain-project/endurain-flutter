@@ -814,16 +814,16 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get deviceAccessSubtitle =>
-      'Керуйте доступом до даних про місцезнаходження та здоров’я';
+      'Керуйте доступом до геопозиції та даних про здоров’я';
 
   @override
-  String get deviceAccessLocationSection => 'Розташування';
+  String get deviceAccessLocationSection => 'Геопозиція';
 
   @override
   String get deviceAccessHealthSection => 'Дані про здоров\'я';
 
   @override
-  String get deviceAccessLocationTitle => 'Доступ до місцезнаходження';
+  String get deviceAccessLocationTitle => 'Доступ до геопозиції';
 
   @override
   String get deviceAccessHealthTitle => 'Доступ до даних про здоров\'я';
@@ -832,21 +832,21 @@ class AppLocalizationsUk extends AppLocalizations {
   String get deviceAccessChecking => 'Перевірка доступу…';
 
   @override
-  String get deviceAccessLocationServicesOff => 'Служби локації вимкнено';
+  String get deviceAccessLocationServicesOff => 'Служби геопозиції вимкнено';
 
   @override
-  String get deviceAccessLocationAlways => 'Дозволено весь час';
+  String get deviceAccessLocationAlways => 'Завжди дозволено';
 
   @override
   String get deviceAccessLocationWhileUsing =>
-      'Дозволено під час використання програми';
+      'Дозволено під час використання застосунку';
 
   @override
   String get deviceAccessLocationBlocked =>
       'Заблоковано в системних налаштуваннях';
 
   @override
-  String get deviceAccessLocationNotAllowed => 'Не допускається';
+  String get deviceAccessLocationNotAllowed => 'Не дозволено';
 
   @override
   String get deviceAccessHealthUnavailable => 'Недоступно на цьому пристрої';
@@ -855,7 +855,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Потрібен Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Оздоровчий доступ налаштований';
+  String get deviceAccessHealthSetUp =>
+      'Доступ до даних про здоров’я налаштовано';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Доступ потребує уваги';
@@ -1037,17 +1038,17 @@ class AppLocalizationsUk extends AppLocalizations {
   String get diagnosticsRawReport => 'Необроблений звіт';
 
   @override
-  String get healthSyncSettingsTitle => 'Синхронізація здоров\'я';
+  String get healthSyncSettingsTitle => 'Синхронізація даних про здоров’я';
 
   @override
   String get healthSyncSettingsSubtitle =>
       'Імпортуйте тренування зі своєї платформи здоров’я';
 
   @override
-  String get healthSyncScreenTitle => 'Синхронізація здоров\'я';
+  String get healthSyncScreenTitle => 'Синхронізація даних про здоров’я';
 
   @override
-  String get healthAccessScreenTitle => 'Оздоровчий доступ';
+  String get healthAccessScreenTitle => 'Доступ до даних про здоров’я';
 
   @override
   String get healthAccessRequestedData => 'Запитувані дані';
@@ -1059,7 +1060,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get healthAccessWorkoutRoutes => 'Маршрути тренувань';
 
   @override
-  String get healthAccessHeartRate => 'ЧСС';
+  String get healthAccessHeartRate => 'Пульс';
 
   @override
   String get healthAccessAllowed => 'Дозволено';
@@ -1072,10 +1073,10 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit не розкриває, які дані може читати Endurain. Переглянути доступ у додатку Health.';
+      'HealthKit не повідомляє, які дані може читати Endurain. Перевірте доступ у програмі «Здоровʼя».';
 
   @override
-  String get healthAccessReview => 'Перегляньте доступ до охорони здоров’я';
+  String get healthAccessReview => 'Перевірити доступ до даних про здоров’я';
 
   @override
   String get healthAccessReviewIos => 'Як перевірити доступ';
@@ -1092,13 +1093,13 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Відкрийте програму «Здоров’я», торкніться свого зображення профілю, а потім «Програми та служби». Виберіть Endurain і оновіть категорії даних.';
+      'Відкрийте програму «Здоровʼя», торкніться свого зображення профілю, а потім «Програми та служби». Виберіть Endurain і оновіть категорії даних.';
 
   @override
-  String get healthSyncAuthorize => 'Підключіться до даних про здоров’я';
+  String get healthSyncAuthorize => 'Підключитися до даних про здоров’я';
 
   @override
-  String get healthSyncInstallProvider => 'Встановіть Health Connect';
+  String get healthSyncInstallProvider => 'Встановити Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1106,22 +1107,22 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get healthSyncUnsupported =>
-      'Синхронізація здоров\'я недоступна на цьому пристрої.';
+      'Синхронізація даних про здоров’я недоступна на цьому пристрої.';
 
   @override
   String get healthSyncSelectAll => 'Вибрати все';
 
   @override
-  String get healthSyncClearSelection => 'ясно';
+  String get healthSyncClearSelection => 'Очистити';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Імпорт вибраного ($count)';
+    return 'Імпортувати вибрані ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Імпортовано $count тренувань.';
+    return 'Імпортовано тренувань: $count.';
   }
 
   @override
@@ -1133,33 +1134,32 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Деякі тренування було пропущено, оскільки не було надано доступ до маршруту вправ. Відкрийте Health Connect → Дозволи та дозвольте маршрути вправ для Endurain.';
+      'Деякі тренування пропущено, оскільки не надано доступ до маршрутів тренувань. Відкрийте Health Connect → Дозволи та дозвольте Endurain доступ до маршрутів тренувань.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Деякі тренування було пропущено, оскільки Endurain не міг прочитати їхні маршрути GPS. У програмі Health відкрийте свій профіль, потім Apps and Services, виберіть Endurain і дозвольте Workout Routes.';
+      'Деякі тренування пропущено, оскільки Endurain не зміг прочитати їхні маршрути GPS. У програмі «Здоровʼя» відкрийте свій профіль, потім «Програми та служби», виберіть Endurain і дозвольте «Маршрути тренувань».';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
       'Старіші тренування не показано, оскільки в Health Connect не надано доступ до попередніх даних. Щоб імпортувати їх, дозвольте Endurain «Доступ до попередніх даних» у Health Connect.';
 
   @override
-  String get healthSyncReviewAccess => 'Огляд доступу';
+  String get healthSyncReviewAccess => 'Перевірити доступ';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Автоматична синхронізація під час відновлення';
+  String get healthSyncAutoSyncTitle => 'Автосинхронізація під час відкриття';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Імпортувати нові тренування автоматично, коли відкривається програма.';
+      'Автоматично імпортувати нові тренування, коли відкривається застосунок.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Ці тренування не включають GPS-маршрут, тому їх не можна імпортувати. Деякі програми (наприклад, Garmin Connect) записують дії в Apple Health, не повідомляючи маршрут. Тренування, записані за допомогою Apple Watch, містять маршрути та можуть бути імпортовані.';
+      'Ці тренування не містять GPS-маршруту, тому їх не можна імпортувати. Деякі застосунки (наприклад, Garmin Connect) записують активності в Apple Health, не передаючи маршрут. Тренування, записані за допомогою Apple Watch, містять маршрути й можуть бути імпортовані.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Неімпортний';
+  String get healthSyncBadgeNonImportable => 'Не імпортується';
 
   @override
   String get healthSyncViewAvailable => 'Доступні';
@@ -1316,7 +1316,7 @@ class AppLocalizationsUk extends AppLocalizations {
       'Надсилайте звіти про збої та помилки на діагностичний сервер. Це незалежно від локальної діагностики; можна ввімкнути обидва, одне або жодного.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Звіти про збої надсилаються';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

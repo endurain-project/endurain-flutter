@@ -836,7 +836,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get deviceAccessHealthSection => 'Δεδομένα υγείας';
 
   @override
-  String get deviceAccessLocationTitle => 'Πρόσβαση τοποθεσίας';
+  String get deviceAccessLocationTitle => 'Πρόσβαση στην τοποθεσία';
 
   @override
   String get deviceAccessHealthTitle => 'Πρόσβαση σε δεδομένα υγείας';
@@ -849,7 +849,7 @@ class AppLocalizationsEl extends AppLocalizations {
       'Οι υπηρεσίες τοποθεσίας είναι απενεργοποιημένες';
 
   @override
-  String get deviceAccessLocationAlways => 'Επιτρέπεται όλη την ώρα';
+  String get deviceAccessLocationAlways => 'Επιτρέπεται πάντα';
 
   @override
   String get deviceAccessLocationWhileUsing =>
@@ -870,7 +870,8 @@ class AppLocalizationsEl extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Απαιτείται Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Ρύθμιση πρόσβασης υγείας';
+  String get deviceAccessHealthSetUp =>
+      'Η πρόσβαση στα δεδομένα υγείας έχει ρυθμιστεί';
 
   @override
   String get deviceAccessHealthNeedsAttention =>
@@ -1065,7 +1066,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get healthSyncScreenTitle => 'Συγχρονισμός υγείας';
 
   @override
-  String get healthAccessScreenTitle => 'Πρόσβαση στην υγεία';
+  String get healthAccessScreenTitle => 'Πρόσβαση σε δεδομένα υγείας';
 
   @override
   String get healthAccessRequestedData => 'Ζητούμενα δεδομένα';
@@ -1087,14 +1088,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get healthAccessManagedBySystem =>
-      'Διαχειρίζεται στις ρυθμίσεις συστήματος';
+      'Διαχείριση στις ρυθμίσεις συστήματος';
 
   @override
   String get healthAccessSystemManagedNotice =>
       'Το HealthKit δεν αποκαλύπτει ποια δεδομένα μπορεί να διαβάσει το Endurain. Ελέγξτε την πρόσβαση στην εφαρμογή Υγεία.';
 
   @override
-  String get healthAccessReview => 'Ελέγξτε την πρόσβαση στην υγεία';
+  String get healthAccessReview => 'Έλεγχος πρόσβασης σε δεδομένα υγείας';
 
   @override
   String get healthAccessReviewIos => 'Πώς να ελέγξετε την πρόσβαση';
@@ -1117,7 +1118,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get healthSyncAuthorize => 'Σύνδεση σε δεδομένα υγείας';
 
   @override
-  String get healthSyncInstallProvider => 'Εγκαταστήστε το Health Connect';
+  String get healthSyncInstallProvider => 'Εγκατάσταση του Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1128,19 +1129,25 @@ class AppLocalizationsEl extends AppLocalizations {
       'Ο συγχρονισμός υγείας δεν είναι διαθέσιμος σε αυτήν τη συσκευή.';
 
   @override
-  String get healthSyncSelectAll => 'Επιλέξτε όλα';
+  String get healthSyncSelectAll => 'Επιλογή όλων';
 
   @override
-  String get healthSyncClearSelection => 'Καθαρό';
+  String get healthSyncClearSelection => 'Εκκαθάριση';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Επιλέχτηκε εισαγωγή ($count)';
+    return 'Εισαγωγή επιλεγμένων ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Εισήχθησαν $count προπόνηση(ες).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Εισήχθησαν $count προπονήσεις.',
+      one: 'Εισήχθη $count προπόνηση.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1156,7 +1163,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Ορισμένες προπονήσεις παραλείφθηκαν επειδή ο Endurain δεν μπορούσε να διαβάσει τις διαδρομές του GPS. Στην εφαρμογή Υγεία, ανοίξτε το προφίλ σας, στη συνέχεια Εφαρμογές και υπηρεσίες, επιλέξτε Endurain και επιτρέψτε τις διαδρομές προπόνησης.';
+      'Ορισμένες προπονήσεις παραλείφθηκαν επειδή το Endurain δεν μπόρεσε να διαβάσει τις διαδρομές GPS τους. Στην εφαρμογή Υγεία, ανοίξτε το προφίλ σας, έπειτα Εφαρμογές και Υπηρεσίες, επιλέξτε Endurain και επιτρέψτε τις Διαδρομές προπόνησης.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
@@ -1166,18 +1173,19 @@ class AppLocalizationsEl extends AppLocalizations {
   String get healthSyncReviewAccess => 'Έλεγχος πρόσβασης';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Αυτόματος συγχρονισμός στη συνέχιση';
+  String get healthSyncAutoSyncTitle =>
+      'Αυτόματος συγχρονισμός κατά το άνοιγμα';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Εισαγάγετε αυτόματα νέες προπονήσεις όταν ανοίξει η εφαρμογή.';
+      'Αυτόματη εισαγωγή νέων προπονήσεων όταν ανοίγει η εφαρμογή.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
       'Αυτές οι προπονήσεις δεν περιλαμβάνουν διαδρομή GPS, επομένως δεν είναι δυνατή η εισαγωγή τους. Ορισμένες εφαρμογές (όπως το Garmin Connect) καταγράφουν δραστηριότητες στο Apple Health χωρίς να μοιράζονται τη διαδρομή. Οι προπονήσεις που καταγράφονται με το Apple Watch περιλαμβάνουν διαδρομές και μπορούν να εισαχθούν.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Μη εισαγόμενο';
+  String get healthSyncBadgeNonImportable => 'Δεν εισάγεται';
 
   @override
   String get healthSyncViewAvailable => 'Διαθέσιμα';
@@ -1335,7 +1343,7 @@ class AppLocalizationsEl extends AppLocalizations {
       'Στείλτε αναφορές κατάρρευσης και σφαλμάτων σε έναν διακομιστή διαγνωστικών. Είναι ανεξάρτητο από τα τοπικά διαγνωστικά; μπορείτε να ενεργοποιήσετε και τα δύο, ένα ή κανένα.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Οι αναφορές κατάρρευσης αποστέλλονται';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

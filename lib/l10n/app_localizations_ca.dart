@@ -52,11 +52,11 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get errorActivityIngestionProcessingFailed =>
-      'Alguna cosa ha anat malament en importar l\'activitat. Torna-ho a provar.';
+      'Alguna cosa ha anat malament en importar l\'activitat. Torneu-ho a provar.';
 
   @override
   String get errorActivityIngestionProviderUnavailable =>
-      'El proveïdor d\'activitats no està disponible ara mateix. Torna-ho a provar més tard.';
+      'El proveïdor d\'activitats no està disponible ara mateix. Torneu-ho a provar més tard.';
 
   @override
   String get errorActivityUploadNotConfigured =>
@@ -176,7 +176,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get errorSsoCallbackFailed =>
-      'No s\'ha pogut completar l\'inici de sessió únic. Torna-ho a provar.';
+      'No s\'ha pogut completar l\'inici de sessió únic. Torneu-ho a provar.';
 
   @override
   String get errorNotAuthenticated => 'No heu iniciat la sessió';
@@ -627,18 +627,18 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get activityAutoPauseSubtitle =>
-      'Fa una pausa automàticament quan deixes de moure\'t';
+      'Fa una pausa automàticament quan deixeu de moure-us';
 
   @override
   String get activityAutoPauseToggleLabel => 'Pausa automàticament';
 
   @override
   String get activityAutoPauseToggleDescription =>
-      'Posa en pausa l\'enregistrament quan deixes de moure\'t i el reprèn quan tornes a moure\'t.';
+      'Posa en pausa l\'enregistrament quan deixeu de moure-us i el reprèn quan us torneu a moure.';
 
   @override
   String get activityAutoPauseDelayHelperText =>
-      'Tria quant de temps sense moviment cal esperar abans de pausar.';
+      'Trieu quant de temps sense moviment cal esperar abans de fer una pausa.';
 
   @override
   String activityAutoPauseDelayOptionLabel(int seconds) {
@@ -660,11 +660,11 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get startCountdownToggleDescription =>
-      'Et dona temps per desar el telèfon abans que comenci l\'enregistrament.';
+      'Us dona temps per desar el telèfon abans que comenci l\'enregistrament.';
 
   @override
   String get startCountdownDurationHelperText =>
-      'Tria quant dura el compte enrere.';
+      'Trieu quant dura el compte enrere.';
 
   @override
   String startCountdownDurationOptionLabel(int seconds) {
@@ -869,7 +869,7 @@ class AppLocalizationsCa extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Es requereix Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Configuració d\'accés a la salut';
+  String get deviceAccessHealthSetUp => 'Accés a les dades de salut configurat';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'L\'accés requereix atenció';
@@ -941,7 +941,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'S\'aplica mentre estàs connectat a aquest servidor. Si tornes a iniciar la sessió, se substitueix per la configuració de tessel·les del teu servidor, si en té.';
+      'S\'aplica mentre esteu connectat a aquest servidor. Si torneu a iniciar la sessió, se substitueix per la configuració de tessel·les del vostre servidor, si en té.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -993,7 +993,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get diagnosticsDisabled =>
-      'La recopilació de diagnòstics està desactivada. Activa-la per començar a capturar esdeveniments i errors de l\'aplicació en aquest dispositiu.';
+      'La recopilació de diagnòstics està desactivada. Activeu-la per començar a capturar esdeveniments i errors de l\'aplicació en aquest dispositiu.';
 
   @override
   String get diagnosticsEmpty => 'Encara no s\'ha capturat cap diagnòstic.';
@@ -1052,17 +1052,17 @@ class AppLocalizationsCa extends AppLocalizations {
   String get diagnosticsRawReport => 'Informe en brut';
 
   @override
-  String get healthSyncSettingsTitle => 'Sincronització de la salut';
+  String get healthSyncSettingsTitle => 'Sincronització de salut';
 
   @override
   String get healthSyncSettingsSubtitle =>
-      'Importa entrenaments des de la teva plataforma de salut';
+      'Importa entrenaments des de la vostra plataforma de salut';
 
   @override
-  String get healthSyncScreenTitle => 'Sincronització de la salut';
+  String get healthSyncScreenTitle => 'Sincronització de salut';
 
   @override
-  String get healthAccessScreenTitle => 'Accés a la salut';
+  String get healthAccessScreenTitle => 'Accés a les dades de salut';
 
   @override
   String get healthAccessRequestedData => 'Dades sol·licitades';
@@ -1088,10 +1088,10 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit no revela quines dades pot llegir Endurain. Revisa l\'accés a l\'aplicació Salut.';
+      'HealthKit no revela quines dades pot llegir Endurain. Reviseu l\'accés a l\'aplicació Salut.';
 
   @override
-  String get healthAccessReview => 'Revisar l\'accés a la salut';
+  String get healthAccessReview => 'Revisa l\'accés a les dades de salut';
 
   @override
   String get healthAccessReviewIos => 'Com revisar l\'accés';
@@ -1112,10 +1112,10 @@ class AppLocalizationsCa extends AppLocalizations {
       'Obriu l\'aplicació Salut, toqueu la vostra foto de perfil i, a continuació, Aplicacions i serveis. Seleccioneu Endurain i actualitzeu les categories de dades.';
 
   @override
-  String get healthSyncAuthorize => 'Connecteu-vos a dades de salut';
+  String get healthSyncAuthorize => 'Connecta amb les dades de salut';
 
   @override
-  String get healthSyncInstallProvider => 'Instal·leu Health Connect';
+  String get healthSyncInstallProvider => 'Instal·la Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1126,19 +1126,25 @@ class AppLocalizationsCa extends AppLocalizations {
       'La sincronització de salut no està disponible en aquest dispositiu.';
 
   @override
-  String get healthSyncSelectAll => 'Seleccioneu-ho tot';
+  String get healthSyncSelectAll => 'Selecciona-ho tot';
 
   @override
-  String get healthSyncClearSelection => 'Clar';
+  String get healthSyncClearSelection => 'Esborra';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Importació seleccionada ($count)';
+    return 'Importa els seleccionats ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'S\'han importat $count entrenaments.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'S\'han importat $count entrenaments.',
+      one: 'S\'ha importat $count entrenament.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1150,22 +1156,22 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Alguns entrenaments es van saltar perquè no es va concedir l\'accés a la ruta d\'exercici. Obriu Health Connect → Permisos i permeteu rutes d\'exercici per a Endurain.';
+      'S\'han omès alguns entrenaments perquè no s\'ha concedit l\'accés a les rutes d\'exercici. Obriu Health Connect → Permisos i permeteu les rutes d\'exercici per a Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Alguns entrenaments es van saltar perquè Endurain no podia llegir les seves rutes GPS. A l\'aplicació Salut, obriu el vostre perfil, després Aplicacions i serveis, seleccioneu Endurain i permeteu les rutes d\'entrenament.';
+      'S\'han omès alguns entrenaments perquè Endurain no n\'ha pogut llegir les rutes GPS. A l\'aplicació Salut, obriu el vostre perfil, després Aplicacions i serveis, seleccioneu Endurain i permeteu les rutes d\'entrenament.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
-      'No es mostren els entrenaments més antics perquè no s\'ha concedit l\'accés a les dades anteriors a Health Connect. Permet «Accés a dades anteriors» per a Endurain a Health Connect per importar-los.';
+      'No es mostren els entrenaments més antics perquè no s\'ha concedit l\'accés a les dades anteriors a Health Connect. Permeteu «Accés a dades anteriors» per a Endurain a Health Connect per importar-los.';
 
   @override
-  String get healthSyncReviewAccess => 'Revisió d\'accés';
+  String get healthSyncReviewAccess => 'Revisa l\'accés';
 
   @override
   String get healthSyncAutoSyncTitle =>
-      'Sincronització automàtica al currículum';
+      'Sincronització automàtica en obrir l\'aplicació';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
@@ -1173,10 +1179,10 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Aquests entrenaments no inclouen una ruta GPS, de manera que no es poden importar. Algunes aplicacions (com Garmin Connect) registren activitats a Apple Health sense compartir la ruta. Els entrenaments gravats amb Apple Watch inclouen rutes i es poden importar.';
+      'Aquests entrenaments no inclouen una ruta GPS, de manera que no es poden importar. Algunes aplicacions (com Garmin Connect) registren activitats a Apple Health sense compartir la ruta. Els entrenaments enregistrats amb l\'Apple Watch inclouen rutes i es poden importar.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'No importables';
+  String get healthSyncBadgeNonImportable => 'No importable';
 
   @override
   String get healthSyncViewAvailable => 'Disponibles';
@@ -1229,15 +1235,15 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get sensorsHeartRateHelp =>
-      'Vincula un monitor de freqüència cardíaca Bluetooth per veure la teva freqüència cardíaca en directe.';
+      'Vinculeu un monitor de freqüència cardíaca Bluetooth per veure la vostra freqüència cardíaca en directe.';
 
   @override
   String get sensorsBluetoothOff =>
-      'El Bluetooth està desactivat. Activa\'l per connectar un sensor.';
+      'El Bluetooth està desactivat. Activeu-lo per connectar un sensor.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Permet l\'accés al Bluetooth per connectar un sensor.';
+      'Permeteu l\'accés al Bluetooth per connectar un sensor.';
 
   @override
   String get sensorsBluetoothUnsupported =>
@@ -1279,7 +1285,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get sensorsConnectionFailed =>
-      'No s\'ha pogut connectar. Torna-ho a provar.';
+      'No s\'ha pogut connectar. Torneu-ho a provar.';
 
   @override
   String get sensorsPermissionRequired =>
@@ -1298,7 +1304,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get sensorsPowerHelp =>
-      'Vincula un mesurador de potència Bluetooth per veure la teva potència en directe.';
+      'Vinculeu un mesurador de potència Bluetooth per veure la vostra potència en directe.';
 
   @override
   String get sensorsNoPowerDevices =>
@@ -1314,7 +1320,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get sensorsCadenceHelp =>
-      'Vincula un sensor de cadència Bluetooth per veure la teva cadència en directe.';
+      'Vinculeu un sensor de cadència Bluetooth per veure la vostra cadència en directe.';
 
   @override
   String get sensorsNoCadenceDevices =>
@@ -1333,10 +1339,10 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Envia informes de fallada i d\'error a un servidor de diagnòstic. Això és independent dels diagnòstics locals: pots activar-ne tots dos, un o cap.';
+      'Envia informes de fallada i d\'error a un servidor de diagnòstic. Això és independent dels diagnòstics locals: podeu activar-ne tots dos, un o cap.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'S\'estan enviant informes de fallada';
 
   @override
   String get diagnosticsRemoteNeedsServer =>
@@ -1414,7 +1420,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'El servidor ha intentat redirigir a una connexió no segura. La sol·licitud s\'ha bloquejat per protegir les teves credencials.';
+      'El servidor ha intentat redirigir a una connexió no segura. La sol·licitud s\'ha bloquejat per protegir les vostres credencials.';
 
   @override
   String get errorTooManyRedirects =>

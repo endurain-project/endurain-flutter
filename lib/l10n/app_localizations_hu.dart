@@ -53,11 +53,11 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get errorActivityIngestionProcessingFailed =>
-      'Hiba történt a tevékenység importálása közben. Próbáld újra.';
+      'Hiba történt a tevékenység importálása közben. Próbálja újra.';
 
   @override
   String get errorActivityIngestionProviderUnavailable =>
-      'A tevékenységszolgáltató jelenleg nem érhető el. Próbáld újra később.';
+      'A tevékenységszolgáltató jelenleg nem érhető el. Próbálja újra később.';
 
   @override
   String get errorActivityUploadNotConfigured =>
@@ -624,18 +624,18 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get activityAutoPauseSubtitle =>
-      'Automatikusan szünetelteti, ha megállsz';
+      'Automatikus szüneteltetés, ha megáll';
 
   @override
   String get activityAutoPauseToggleLabel => 'Automatikus szüneteltetés';
 
   @override
   String get activityAutoPauseToggleDescription =>
-      'A rögzítés automatikusan szünetel, ha megállsz, és folytatódik, amint újra mozogni kezdesz.';
+      'A rögzítés automatikusan szünetel, ha megáll, és folytatódik, amint újra mozogni kezd.';
 
   @override
   String get activityAutoPauseDelayHelperText =>
-      'Válaszd ki, mennyi ideig várjon mozgás nélkül szüneteltetés előtt.';
+      'Válassza ki, mennyi ideig várjon mozgás nélkül szüneteltetés előtt.';
 
   @override
   String activityAutoPauseDelayOptionLabel(int seconds) {
@@ -657,11 +657,11 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get startCountdownToggleDescription =>
-      'Időt ad, hogy eltedd a telefont, mielőtt a rögzítés elindul.';
+      'Időt ad, hogy eltegye a telefont, mielőtt a rögzítés elindul.';
 
   @override
   String get startCountdownDurationHelperText =>
-      'Válaszd ki, mennyi ideig tartson a visszaszámlálás.';
+      'Válassza ki, mennyi ideig tartson a visszaszámlálás.';
 
   @override
   String startCountdownDurationOptionLabel(int seconds) {
@@ -818,14 +818,14 @@ class AppLocalizationsHu extends AppLocalizations {
   String get settingsSectionPrivacySupport => 'Adatvédelem és támogatás';
 
   @override
-  String get deviceAccessTitle => 'Eszköz hozzáférés';
+  String get deviceAccessTitle => 'Eszközhozzáférés';
 
   @override
   String get deviceAccessSubtitle =>
       'A hely- és egészségügyi adatokhoz való hozzáférés kezelése';
 
   @override
-  String get deviceAccessLocationSection => 'Helyszín';
+  String get deviceAccessLocationSection => 'Helymeghatározás';
 
   @override
   String get deviceAccessHealthSection => 'Egészségügyi adatok';
@@ -863,7 +863,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get deviceAccessHealthRequired => 'A Health Connect szükséges';
 
   @override
-  String get deviceAccessHealthSetUp => 'Egészségügyi hozzáférés beállítása';
+  String get deviceAccessHealthSetUp => 'Egészségügyi adathozzáférés beállítva';
 
   @override
   String get deviceAccessHealthNeedsAttention =>
@@ -1057,7 +1057,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get healthSyncScreenTitle => 'Egészségügyi szinkron';
 
   @override
-  String get healthAccessScreenTitle => 'Egészségügyi hozzáférés';
+  String get healthAccessScreenTitle => 'Egészségügyi adathozzáférés';
 
   @override
   String get healthAccessRequestedData => 'Kért adatok';
@@ -1066,7 +1066,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get healthAccessWorkouts => 'Edzések';
 
   @override
-  String get healthAccessWorkoutRoutes => 'Edzés útvonalak';
+  String get healthAccessWorkoutRoutes => 'Edzésútvonalak';
 
   @override
   String get healthAccessHeartRate => 'Pulzusszám';
@@ -1083,13 +1083,13 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'A HealthKit nem hozza nyilvánosságra, hogy az Endurain mely adatokat tud olvasni. Tekintse át a hozzáférést az Egészség alkalmazásban.';
+      'A HealthKit nem árulja el, mely adatokat olvashatja az Endurain. Tekintse át a hozzáférést az Egészség alkalmazásban.';
 
   @override
-  String get healthAccessReview => 'Tekintse át az egészségügyi hozzáférést';
+  String get healthAccessReview => 'Egészségügyi adathozzáférés áttekintése';
 
   @override
-  String get healthAccessReviewIos => 'A hozzáférés felülvizsgálata';
+  String get healthAccessReviewIos => 'Hogyan tekintheti át a hozzáférést';
 
   @override
   String get healthAccessDisconnect => 'Egészségügyi adatok leválasztása';
@@ -1110,7 +1110,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get healthSyncAuthorize => 'Csatlakozás egészségügyi adatokhoz';
 
   @override
-  String get healthSyncInstallProvider => 'Telepítse a Health Connectet';
+  String get healthSyncInstallProvider => 'Health Connect telepítése';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1118,26 +1118,26 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get healthSyncUnsupported =>
-      'Az állapotszinkronizálás nem érhető el ezen az eszközön.';
+      'Az egészségügyi szinkronizálás nem érhető el ezen az eszközön.';
 
   @override
-  String get healthSyncSelectAll => 'Válassza ki az összeset';
+  String get healthSyncSelectAll => 'Összes kijelölése';
 
   @override
-  String get healthSyncClearSelection => 'Világos';
+  String get healthSyncClearSelection => 'Kijelölés törlése';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Kijelölt importálás ($count)';
+    return 'Kijelöltek importálása ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Importált $count edzés.';
+    return '$count edzés importálva.';
   }
 
   @override
-  String get healthSyncNoRouteLabel => 'Nincs GPS útvonal';
+  String get healthSyncNoRouteLabel => 'Nincs GPS-útvonal';
 
   @override
   String get healthSyncEmptyState =>
@@ -1145,30 +1145,30 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Néhány edzést kihagytunk, mert nem biztosítottak hozzáférést az edzési útvonalhoz. Nyissa meg a Health Connect → Engedélyek lehetőséget, és engedélyezze az edzési útvonalakat az Endurain számára.';
+      'Néhány edzés kimaradt, mert nincs engedélyezve a hozzáférés az edzésútvonalakhoz. Nyissa meg a Health Connect → Engedélyek menüt, és engedélyezze az edzésútvonalakat az Endurain számára.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Néhány edzést kihagytak, mert az Endurain nem tudta leolvasni a GPS-útvonalait. Az Egészség alkalmazásban nyissa meg profilját, majd az Alkalmazások és szolgáltatások lehetőséget, válassza az Enduraint, és engedélyezze az edzési útvonalakat.';
+      'Néhány edzés kimaradt, mert az Endurain nem tudta beolvasni a GPS-útvonalukat. Az Egészség alkalmazásban nyissa meg a profilját, majd az Alkalmazások és szolgáltatások elemet, válassza az Enduraint, és engedélyezze az Edzésútvonalakat.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
       'A régebbi edzések nem jelennek meg, mert a Health Connectben nincs engedélyezve a korábbi adatokhoz való hozzáférés. Az importálásukhoz engedélyezze a „Hozzáférés a korábbi adatokhoz” lehetőséget az Endurain számára a Health Connectben.';
 
   @override
-  String get healthSyncReviewAccess => 'Tekintse át a hozzáférést';
+  String get healthSyncReviewAccess => 'Hozzáférés áttekintése';
 
   @override
   String get healthSyncAutoSyncTitle =>
-      'Automatikus szinkronizálás folytatáskor';
+      'Automatikus szinkronizálás megnyitáskor';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Az alkalmazás megnyitásakor automatikusan importáljon új edzéseket.';
+      'Új edzések automatikus importálása az alkalmazás megnyitásakor.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Ezek az edzések nem tartalmaznak GPS útvonalat, így nem importálhatók. Egyes alkalmazások (például a Garmin Connect) az útvonal megosztása nélkül rögzítik a tevékenységeket az Apple Health számára. Az Apple Watch segítségével rögzített edzések útvonalakat tartalmaznak, és importálhatók.';
+      'Ezek az edzések nem tartalmaznak GPS-útvonalat, így nem importálhatók. Egyes alkalmazások (például a Garmin Connect) az útvonal megosztása nélkül rögzítik a tevékenységeket az Apple Healthben. Az Apple Watch-csal rögzített edzések tartalmaznak útvonalat, és importálhatók.';
 
   @override
   String get healthSyncBadgeNonImportable => 'Nem importálható';
@@ -1223,15 +1223,15 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get sensorsHeartRateHelp =>
-      'Párosíts egy Bluetooth-pulzusmérőt, hogy élőben lásd a pulzusodat.';
+      'Párosítson egy Bluetooth-pulzusmérőt, hogy élőben lássa a pulzusát.';
 
   @override
   String get sensorsBluetoothOff =>
-      'A Bluetooth ki van kapcsolva. Kapcsold be egy érzékelő csatlakoztatásához.';
+      'A Bluetooth ki van kapcsolva. Kapcsolja be egy érzékelő csatlakoztatásához.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Engedélyezd a Bluetooth-hozzáférést egy érzékelő csatlakoztatásához.';
+      'Engedélyezze a Bluetooth-hozzáférést egy érzékelő csatlakoztatásához.';
 
   @override
   String get sensorsBluetoothUnsupported =>
@@ -1272,7 +1272,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get sensorsConnectionFailed =>
-      'A csatlakozás sikertelen. Próbáld újra.';
+      'A csatlakozás sikertelen. Próbálja újra.';
 
   @override
   String get sensorsPermissionRequired =>
@@ -1291,7 +1291,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get sensorsPowerHelp =>
-      'Párosíts egy Bluetooth-teljesítménymérőt, hogy élőben lásd a teljesítményedet.';
+      'Párosítson egy Bluetooth-teljesítménymérőt, hogy élőben lássa a teljesítményét.';
 
   @override
   String get sensorsNoPowerDevices => 'Még nem található teljesítménymérő.';
@@ -1306,7 +1306,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get sensorsCadenceHelp =>
-      'Párosíts egy Bluetooth-pedálütem-érzékelőt, hogy élőben lásd a pedálütemedet.';
+      'Párosítson egy Bluetooth-pedálütem-érzékelőt, hogy élőben lássa a pedálütemét.';
 
   @override
   String get sensorsNoCadenceDevices => 'Még nem található pedálütem-érzékelő.';
@@ -1324,10 +1324,11 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get diagnosticsRemoteEnableSubtitle =>
-      'Küldj összeomlás- és hibajelentéseket egy diagnosztikai kiszolgálóra. Ez független a helyi diagnosztikától; bekapcsolhatod mindkettőt, az egyiket vagy egyiket sem.';
+      'Összeomlás- és hibajelentések küldése egy diagnosztikai kiszolgálóra. Ez független a helyi diagnosztikától; bekapcsolhatja mindkettőt, az egyiket vagy egyiket sem.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive =>
+      'Összeomlásjelentések küldése folyamatban';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

@@ -114,7 +114,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get errorHealthGpxBuildFailed =>
-      'Није могуће конвертовати вежбање у ГПКС';
+      'Није могуће конвертовати тренинг у GPX';
 
   @override
   String get errorHealthImportFailed => 'Није могуће увести тренинг';
@@ -635,7 +635,14 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String activityAutoPauseDelayOptionLabel(int seconds) {
-    return '$seconds секунди';
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds секунди',
+      few: '$seconds секунде',
+      one: '$seconds секунда',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -862,16 +869,16 @@ class AppLocalizationsSr extends AppLocalizations {
   String get deviceAccessHealthUnavailable => 'Није доступно на овом уређају';
 
   @override
-  String get deviceAccessHealthRequired => 'Хеалтх Цоннецт је обавезан';
+  String get deviceAccessHealthRequired => 'Потребан је Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Постављен здравствени приступ';
+  String get deviceAccessHealthSetUp => 'Приступ здравственим подацима подешен';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Приступ захтева пажњу';
 
   @override
-  String get deviceAccessHealthNotConnected => 'Није повезан';
+  String get deviceAccessHealthNotConnected => 'Није повезано';
 
   @override
   String get language => 'Језик';
@@ -1048,26 +1055,26 @@ class AppLocalizationsSr extends AppLocalizations {
   String get diagnosticsRawReport => 'Необрађени извештај';
 
   @override
-  String get healthSyncSettingsTitle => 'Здравствена синхронизација';
+  String get healthSyncSettingsTitle => 'Синхронизација здравствених података';
 
   @override
   String get healthSyncSettingsSubtitle =>
-      'Увезите вежбе са своје здравствене платформе';
+      'Увезите тренинге са своје здравствене платформе';
 
   @override
-  String get healthSyncScreenTitle => 'Здравствена синхронизација';
+  String get healthSyncScreenTitle => 'Синхронизација здравствених података';
 
   @override
-  String get healthAccessScreenTitle => 'Приступ здрављу';
+  String get healthAccessScreenTitle => 'Приступ здравственим подацима';
 
   @override
   String get healthAccessRequestedData => 'Тражени подаци';
 
   @override
-  String get healthAccessWorkouts => 'Вежбе';
+  String get healthAccessWorkouts => 'Тренинзи';
 
   @override
-  String get healthAccessWorkoutRoutes => 'Руте за вежбање';
+  String get healthAccessWorkoutRoutes => 'Руте тренинга';
 
   @override
   String get healthAccessHeartRate => 'Откуцаји срца';
@@ -1084,10 +1091,10 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'ХеалтхКит не открива које податке Ендураин може да чита. Прегледајте приступ у апликацији Здравље.';
+      'HealthKit не открива које податке Endurain може да чита. Прегледајте приступ у апликацији Здравље.';
 
   @override
-  String get healthAccessReview => 'Прегледајте здравствени приступ';
+  String get healthAccessReview => 'Прегледај приступ здравственим подацима';
 
   @override
   String get healthAccessReviewIos => 'Како прегледати приступ';
@@ -1105,40 +1112,47 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Отворите апликацију Здравље, додирните своју слику профила, затим Апликације и услуге. Изаберите Ендураин и ажурирајте категорије података.';
+      'Отворите апликацију Здравље, додирните своју слику профила, затим Апликације и услуге. Изаберите Endurain и ажурирајте категорије података.';
 
   @override
-  String get healthSyncAuthorize => 'Повежите се са здравственим подацима';
+  String get healthSyncAuthorize => 'Повежи здравствене податке';
 
   @override
-  String get healthSyncInstallProvider => 'Инсталирајте Хеалтх Цоннецт';
+  String get healthSyncInstallProvider => 'Инсталирај Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
-      'Хеалтх Цоннецт је неопходан за синхронизацију тренинга. Инсталирајте га да бисте наставили.';
+      'Health Connect је неопходан за синхронизацију тренинга. Инсталирајте га да бисте наставили.';
 
   @override
   String get healthSyncUnsupported =>
-      'Синхронизација здравља није доступна на овом уређају.';
+      'Синхронизација здравствених података није доступна на овом уређају.';
 
   @override
-  String get healthSyncSelectAll => 'Изаберите све';
+  String get healthSyncSelectAll => 'Изабери све';
 
   @override
-  String get healthSyncClearSelection => 'Јасно';
+  String get healthSyncClearSelection => 'Поништи избор';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Изабран увоз ($count)';
+    return 'Увези изабране ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Увезено вежби: $count.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Увезено је $count тренинга.',
+      few: 'Увезена су $count тренинга.',
+      one: 'Увезен је $count тренинг.',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get healthSyncNoRouteLabel => 'Нема ГПС руте';
+  String get healthSyncNoRouteLabel => 'Без GPS руте';
 
   @override
   String get healthSyncEmptyState =>
@@ -1146,32 +1160,33 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Неки тренинзи су прескочени јер приступ рути вежбања није одобрен. Отворите Хеалтх Цоннецт → Дозволе и дозволите руте вежбања за Ендураин.';
+      'Неки тренинзи су прескочени јер приступ рутама вежбања није одобрен. Отворите Health Connect → Дозволе и дозволите руте вежбања за Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Неки тренинзи су прескочени јер Ендураин није могао да прочита њихове ГПС руте. У апликацији Здравље отворите свој профил, затим Апликације и услуге, изаберите Ендураин и дозволите Руте за вежбање.';
+      'Неки тренинзи су прескочени јер Endurain није могао да прочита њихове GPS руте. У апликацији Здравље отворите свој профил, затим Апликације и услуге, изаберите Endurain и дозволите Руте тренинга.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
       'Старији тренинзи се не приказују јер у Health Connect-у није одобрен приступ претходним подацима. Да бисте их увезли, дозволите „Приступ претходним подацима” за Endurain у Health Connect-у.';
 
   @override
-  String get healthSyncReviewAccess => 'Прегледајте приступ';
+  String get healthSyncReviewAccess => 'Прегледај приступ';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Аутоматска синхронизација у наставку';
+  String get healthSyncAutoSyncTitle =>
+      'Аутоматска синхронизација при отварању';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Аутоматски увозите нове вежбе када се апликација отвори.';
+      'Аутоматски увози нове тренинге када се апликација отвори.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Ове вежбе не укључују ГПС руту, тако да се не могу увести. Неке апликације (као што је Гармин Цоннецт) бележе активности у Аппле Хеалтх без дељења руте. Вежбе снимљене помоћу Аппле Ватцх-а укључују руте и могу се увести.';
+      'Ови тренинзи не садрже GPS руту, па се не могу увести. Неке апликације (као што је Garmin Connect) бележе активности у Apple Health без дељења руте. Тренинзи снимљени помоћу Apple Watch-а садрже руте и могу се увести.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Неувозно';
+  String get healthSyncBadgeNonImportable => 'Није могуће увести';
 
   @override
   String get healthSyncViewAvailable => 'Доступно';
@@ -1180,7 +1195,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get healthSyncViewImported => 'Увезено';
 
   @override
-  String get healthSyncDateRange => 'Период вежбања';
+  String get healthSyncDateRange => 'Период тренинга';
 
   @override
   String get healthSyncRange30Days => 'Последњих 30 дана';
@@ -1201,7 +1216,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get healthSyncRangeCustom => 'Прилагођени период';
 
   @override
-  String get healthSyncImportedEmpty => 'Нема увезених вежбања за ову везу.';
+  String get healthSyncImportedEmpty => 'Нема увезених тренинга за ову везу.';
 
   @override
   String healthSyncImportedAt(String dateTime) {
@@ -1222,15 +1237,15 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get sensorsHeartRateHelp =>
-      'Упари Bluetooth мерач пулса да видиш свој пулс уживо.';
+      'Упарите Bluetooth мерач пулса да бисте видели свој пулс уживо.';
 
   @override
   String get sensorsBluetoothOff =>
-      'Bluetooth је искључен. Укључи га да повежеш сензор.';
+      'Bluetooth је искључен. Укључите га да бисте повезали сензор.';
 
   @override
   String get sensorsBluetoothUnauthorized =>
-      'Дозволи приступ Bluetooth-у да повежеш сензор.';
+      'Дозволите приступ Bluetooth-у да бисте повезали сензор.';
 
   @override
   String get sensorsBluetoothUnsupported =>
@@ -1271,7 +1286,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get sensorsConnectionFailed =>
-      'Повезивање није успело. Покушај поново.';
+      'Повезивање није успело. Покушајте поново.';
 
   @override
   String get sensorsPermissionRequired =>
@@ -1290,7 +1305,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get sensorsPowerHelp =>
-      'Упари Bluetooth мерач снаге да видиш своју снагу уживо.';
+      'Упарите Bluetooth мерач снаге да бисте видели своју снагу уживо.';
 
   @override
   String get sensorsNoPowerDevices => 'Још нема пронађених мерача снаге.';
@@ -1305,7 +1320,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get sensorsCadenceHelp =>
-      'Упари Bluetooth сензор каденце да видиш своју каденцу уживо.';
+      'Упарите Bluetooth сензор каденце да бисте видели своју каденцу уживо.';
 
   @override
   String get sensorsNoCadenceDevices => 'Још нема пронађених сензора каденце.';
@@ -1326,7 +1341,7 @@ class AppLocalizationsSr extends AppLocalizations {
       'Шаљи извештаје о падовима и грешкама на дијагностички сервер. Независно је од локалне дијагностике; можеш укључити обоје, једно или ништа.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Извештаји о падовима се шаљу';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

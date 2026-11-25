@@ -825,7 +825,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get deviceAccessSubtitle =>
-      'Verwalten Sie den Standort- und Gesundheitsdatenzugriff';
+      'Zugriff auf Standort und Gesundheitsdaten verwalten';
 
   @override
   String get deviceAccessLocationSection => 'Standort';
@@ -868,11 +868,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Health Connect ist erforderlich';
 
   @override
-  String get deviceAccessHealthSetUp => 'Gesundheitszugang eingerichtet';
+  String get deviceAccessHealthSetUp =>
+      'Zugriff auf Gesundheitsdaten eingerichtet';
 
   @override
   String get deviceAccessHealthNeedsAttention =>
-      'Der Zugang erfordert Aufmerksamkeit';
+      'Zugriff muss überprüft werden';
 
   @override
   String get deviceAccessHealthNotConnected => 'Nicht verbunden';
@@ -1055,13 +1056,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get healthSyncSettingsSubtitle =>
-      'Importieren Sie Workouts von Ihrer Gesundheitsplattform';
+      'Trainings aus deiner Gesundheitsplattform importieren';
 
   @override
   String get healthSyncScreenTitle => 'Gesundheitssynchronisierung';
 
   @override
-  String get healthAccessScreenTitle => 'Gesundheitszugang';
+  String get healthAccessScreenTitle => 'Zugriff auf Gesundheitsdaten';
 
   @override
   String get healthAccessRequestedData => 'Angeforderte Daten';
@@ -1079,7 +1080,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get healthAccessAllowed => 'Erlaubt';
 
   @override
-  String get healthAccessNeedsAttention => 'Braucht Aufmerksamkeit';
+  String get healthAccessNeedsAttention => 'Überprüfung erforderlich';
 
   @override
   String get healthAccessManagedBySystem =>
@@ -1087,13 +1088,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit gibt nicht bekannt, welche Daten Endurain lesen kann. Überprüfen Sie den Zugriff in der Health-App.';
+      'HealthKit gibt nicht preis, welche Daten Endurain lesen kann. Überprüfe den Zugriff in der Health-App.';
 
   @override
-  String get healthAccessReview => 'Überprüfen Sie den Gesundheitszugang';
+  String get healthAccessReview => 'Zugriff auf Gesundheitsdaten prüfen';
 
   @override
-  String get healthAccessReviewIos => 'So überprüfen Sie den Zugriff';
+  String get healthAccessReviewIos => 'So überprüfst du den Zugriff';
 
   @override
   String get healthAccessDisconnect => 'Gesundheitsdaten trennen';
@@ -1107,18 +1108,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Öffnen Sie die Health-App, tippen Sie auf Ihr Profilbild und dann auf Apps und Dienste. Wählen Sie Endurain aus und aktualisieren Sie die Datenkategorien.';
+      'Öffne die Health-App, tippe auf dein Profilbild und dann auf „Apps und Dienste“. Wähle Endurain aus und aktualisiere die Datenkategorien.';
 
   @override
-  String get healthSyncAuthorize =>
-      'Stellen Sie eine Verbindung zu Gesundheitsdaten her';
+  String get healthSyncAuthorize => 'Mit Gesundheitsdaten verbinden';
 
   @override
-  String get healthSyncInstallProvider => 'Installieren Sie Health Connect';
+  String get healthSyncInstallProvider => 'Health Connect installieren';
 
   @override
   String get healthSyncInstallProviderDescription =>
-      'Zum Synchronisieren von Trainingseinheiten ist Health Connect erforderlich. Installieren Sie es, um fortzufahren.';
+      'Zum Synchronisieren von Trainings ist Health Connect erforderlich. Installiere es, um fortzufahren.';
 
   @override
   String get healthSyncUnsupported =>
@@ -1128,16 +1128,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get healthSyncSelectAll => 'Alles auswählen';
 
   @override
-  String get healthSyncClearSelection => 'Klar';
+  String get healthSyncClearSelection => 'Auswahl aufheben';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Import ausgewählt ($count)';
+    return 'Auswahl importieren ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return '$count Training(s) importiert.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Trainings importiert.',
+      one: '$count Training importiert.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1149,26 +1155,26 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Einige Trainingseinheiten wurden übersprungen, weil der Zugriff auf die Trainingsroute nicht gewährt wurde. Öffnen Sie Health Connect → Berechtigungen und erlauben Sie Trainingsrouten für Endurain.';
+      'Einige Trainings wurden übersprungen, weil der Zugriff auf Trainingsrouten nicht erteilt wurde. Öffne Health Connect → Berechtigungen und erlaube Trainingsrouten für Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Einige Trainingseinheiten wurden ausgelassen, weil Endurain ihre GPS-Routen nicht lesen konnte. Öffnen Sie in der Health-App Ihr ​​Profil, dann Apps und Dienste, wählen Sie Endurain aus und erlauben Sie Trainingsrouten.';
+      'Einige Trainings wurden übersprungen, weil Endurain ihre GPS-Routen nicht lesen konnte. Öffne in der Health-App dein Profil, dann „Apps und Dienste“, wähle Endurain aus und erlaube „Trainingsrouten“.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
       'Ältere Trainings werden nicht angezeigt, weil der Zugriff auf frühere Daten in Health Connect nicht erlaubt wurde. Erlaube „Zugriff auf frühere Daten“ für Endurain in Health Connect, um sie zu importieren.';
 
   @override
-  String get healthSyncReviewAccess => 'Überprüfungszugriff';
+  String get healthSyncReviewAccess => 'Zugriff prüfen';
 
   @override
   String get healthSyncAutoSyncTitle =>
-      'Automatische Synchronisierung beim Fortsetzen';
+      'Beim Öffnen automatisch synchronisieren';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importieren Sie neue Trainings automatisch, wenn die App geöffnet wird.';
+      'Neue Trainings automatisch importieren, wenn die App geöffnet wird.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
@@ -1333,7 +1339,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Absturz- und Fehlerberichte an einen Diagnoseserver senden. Dies ist von der lokalen Diagnose getrennt – beides, eines oder keines kann aktiviert werden.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Absturzberichte werden gesendet';
 
   @override
   String get diagnosticsRemoteNeedsServer =>
@@ -1411,11 +1417,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get errorInsecureRedirectRejected =>
-      'Der Server wollte auf eine unsichere Verbindung umleiten. Die Anfrage wurde blockiert, um Ihre Zugangsdaten zu schützen.';
+      'Der Server wollte auf eine unsichere Verbindung umleiten. Die Anfrage wurde blockiert, um deine Zugangsdaten zu schützen.';
 
   @override
   String get errorTooManyRedirects =>
-      'Der Server hat zu oft umgeleitet. Prüfen Sie die Serveradresse.';
+      'Der Server hat zu oft umgeleitet. Prüfe die Serveradresse.';
 
   @override
   String get audioAnnouncementsTitle => 'Sprachansagen';

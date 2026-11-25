@@ -126,7 +126,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get errorHealthPermissionDenied =>
-      'Denegóuselle o acceso aos datos de saúde';
+      'Denegouse o acceso aos datos de saúde';
 
   @override
   String get errorHealthReadFailed => 'Non se puideron ler os datos de saúde';
@@ -864,7 +864,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Requírese Health Connect';
 
   @override
-  String get deviceAccessHealthSetUp => 'Acceso sanitario configurado';
+  String get deviceAccessHealthSetUp => 'Acceso aos datos de saúde configurado';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'O acceso precisa atención';
@@ -936,7 +936,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get mapTilesSettingsNote =>
-      'Aplícase mentres estea conectado a este servidor. Ao iniciar sesión de novo, substitúese pola configuración de teselas do seu servidor, se ten unha.';
+      'Aplícase mentres estás conectado a este servidor. Ao iniciar sesión de novo, substitúese pola configuración de teselas do teu servidor, se ten unha.';
 
   @override
   String get mapTilesSettingsLoadFailed =>
@@ -1047,17 +1047,17 @@ class AppLocalizationsGl extends AppLocalizations {
   String get diagnosticsRawReport => 'Informe en bruto';
 
   @override
-  String get healthSyncSettingsTitle => 'Sincronización da saúde';
+  String get healthSyncSettingsTitle => 'Sincronización de saúde';
 
   @override
   String get healthSyncSettingsSubtitle =>
       'Importa adestramentos da túa plataforma de saúde';
 
   @override
-  String get healthSyncScreenTitle => 'Sincronización da saúde';
+  String get healthSyncScreenTitle => 'Sincronización de saúde';
 
   @override
-  String get healthAccessScreenTitle => 'Acceso sanitario';
+  String get healthAccessScreenTitle => 'Acceso aos datos de saúde';
 
   @override
   String get healthAccessRequestedData => 'Datos solicitados';
@@ -1086,7 +1086,7 @@ class AppLocalizationsGl extends AppLocalizations {
       'HealthKit non revela que datos pode ler Endurain. Revisa o acceso na aplicación Saúde.';
 
   @override
-  String get healthAccessReview => 'Revisar o acceso á saúde';
+  String get healthAccessReview => 'Revisar o acceso aos datos de saúde';
 
   @override
   String get healthAccessReviewIos => 'Como revisar o acceso';
@@ -1103,13 +1103,13 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Abre a aplicación Saúde, toca a túa imaxe de perfil e despois Aplicacións e servizos. Seleccione Endurain e actualice as categorías de datos.';
+      'Abre a aplicación Saúde, toca a túa imaxe de perfil e despois Aplicacións e servizos. Selecciona Endurain e actualiza as categorías de datos.';
 
   @override
   String get healthSyncAuthorize => 'Conectar aos datos de saúde';
 
   @override
-  String get healthSyncInstallProvider => 'Instala Health Connect';
+  String get healthSyncInstallProvider => 'Instalar Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1120,19 +1120,25 @@ class AppLocalizationsGl extends AppLocalizations {
       'A sincronización de saúde non está dispoñible neste dispositivo.';
 
   @override
-  String get healthSyncSelectAll => 'Selecciona todo';
+  String get healthSyncSelectAll => 'Seleccionar todo';
 
   @override
   String get healthSyncClearSelection => 'Limpar';
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Importación seleccionada ($count)';
+    return 'Importar seleccionados ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Importáronse $count adestramentos.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Importáronse $count adestramentos.',
+      one: 'Importouse $count adestramento.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1144,11 +1150,11 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Omitiron algúns adestramentos porque non se concedeu o acceso á ruta do exercicio. Abre Health Connect → Permisos e permite rutas de exercicio para Endurain.';
+      'Omitíronse algúns adestramentos porque non se concedeu o acceso ás rutas de exercicio. Abre Health Connect → Permisos e permite as rutas de exercicio para Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Saltáronse algúns adestramentos porque Endurain non podía ler as súas rutas GPS. Na aplicación Saúde, abre o teu perfil, despois Aplicacións e servizos, selecciona Endurain e permite Rutas de adestramento.';
+      'Omitíronse algúns adestramentos porque Endurain non puido ler as súas rutas GPS. Na aplicación Saúde, abre o teu perfil, despois Aplicacións e servizos, selecciona Endurain e permite Rutas de adestramento.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
@@ -1158,8 +1164,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get healthSyncReviewAccess => 'Revisar o acceso';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Sincronización automática no currículo';
+  String get healthSyncAutoSyncTitle => 'Sincronización automática ao abrir';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
@@ -1170,7 +1175,7 @@ class AppLocalizationsGl extends AppLocalizations {
       'Estes adestramentos non inclúen unha ruta GPS, polo que non se poden importar. Algunhas aplicacións (como Garmin Connect) rexistran actividades en Apple Health sen compartir a ruta. Os adestramentos gravados con Apple Watch inclúen rutas e pódense importar.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Non importables';
+  String get healthSyncBadgeNonImportable => 'Non importable';
 
   @override
   String get healthSyncViewAvailable => 'Dispoñibles';
@@ -1330,7 +1335,7 @@ class AppLocalizationsGl extends AppLocalizations {
       'Envía informes de fallos e erros a un servidor de diagnóstico. Isto é independente dos diagnósticos locais: podes activar ambos, un ou ningún.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Estanse enviando informes de fallos';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

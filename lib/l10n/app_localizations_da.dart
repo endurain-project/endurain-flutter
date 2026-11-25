@@ -816,10 +816,10 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get deviceAccessSubtitle =>
-      'Administrer lokations- og sundhedsdataadgang';
+      'Administrer adgang til placering og sundhedsdata';
 
   @override
-  String get deviceAccessLocationSection => 'Beliggenhed';
+  String get deviceAccessLocationSection => 'Placering';
 
   @override
   String get deviceAccessHealthSection => 'Sundhedsdata';
@@ -831,7 +831,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Adgang til sundhedsdata';
 
   @override
-  String get deviceAccessChecking => 'Tjekker adgang...';
+  String get deviceAccessChecking => 'Kontrollerer adgang…';
 
   @override
   String get deviceAccessLocationServicesOff =>
@@ -856,7 +856,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Health Connect er påkrævet';
 
   @override
-  String get deviceAccessHealthSetUp => 'Sundhedsadgang opsat';
+  String get deviceAccessHealthSetUp => 'Adgang til sundhedsdata konfigureret';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Adgang kræver opmærksomhed';
@@ -1050,7 +1050,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String get healthSyncScreenTitle => 'Sundhedssynkronisering';
 
   @override
-  String get healthAccessScreenTitle => 'Sundhedsadgang';
+  String get healthAccessScreenTitle => 'Adgang til sundhedsdata';
 
   @override
   String get healthAccessRequestedData => 'Anmodede data';
@@ -1068,7 +1068,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String get healthAccessAllowed => 'Tilladt';
 
   @override
-  String get healthAccessNeedsAttention => 'Har brug for opmærksomhed';
+  String get healthAccessNeedsAttention => 'Kræver opmærksomhed';
 
   @override
   String get healthAccessManagedBySystem =>
@@ -1076,10 +1076,10 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit oplyser ikke, hvilke data Endurain kan læse. Gennemgå adgangen i Health-appen.';
+      'HealthKit oplyser ikke, hvilke data Endurain kan læse. Gennemgå adgangen i appen Sundhed.';
 
   @override
-  String get healthAccessReview => 'Gennemgå sundhedsadgang';
+  String get healthAccessReview => 'Gennemgå adgang til sundhedsdata';
 
   @override
   String get healthAccessReviewIos => 'Sådan gennemgår du adgang';
@@ -1096,7 +1096,7 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Åbn Health-appen, tryk på dit profilbillede og derefter Apps og tjenester. Vælg Endurain og opdater datakategorierne.';
+      'Åbn appen Sundhed, tryk på dit profilbillede og derefter på Apps og tjenester. Vælg Endurain, og opdater datakategorierne.';
 
   @override
   String get healthSyncAuthorize => 'Opret forbindelse til sundhedsdata';
@@ -1120,12 +1120,12 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String healthSyncImportSelected(int count) {
-    return 'Importer valgt ($count)';
+    return 'Importer valgte ($count)';
   }
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Importerede $count træning(er).';
+    return '$count træningspas importeret.';
   }
 
   @override
@@ -1141,7 +1141,7 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Nogle træningspas blev sprunget over, fordi Endurain ikke kunne læse deres GPS-ruter. I Health-appen skal du åbne din profil, derefter Apps og tjenester, vælge Endurain og tillade træningsruter.';
+      'Nogle træningspas blev sprunget over, fordi Endurain ikke kunne læse deres GPS-ruter. Åbn din profil i appen Sundhed, derefter Apps og tjenester, vælg Endurain, og tillad Træningsruter.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
@@ -1151,19 +1151,18 @@ class AppLocalizationsDa extends AppLocalizations {
   String get healthSyncReviewAccess => 'Gennemgå adgang';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automatisk synkronisering ved genoptagelse';
+  String get healthSyncAutoSyncTitle => 'Automatisk synkronisering ved åbning';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importer nye træningsprogrammer automatisk, når appen åbner.';
+      'Importer nye træningspas automatisk, når appen åbnes.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Disse træningspas inkluderer ikke en GPS-rute, så de kan ikke importeres. Nogle apps (som Garmin Connect) optager aktiviteter til Apple Health uden at dele ruten. Træninger optaget med Apple Watch inkluderer ruter og kan importeres.';
+      'Disse træningspas indeholder ikke en GPS-rute, så de kan ikke importeres. Nogle apps (som Garmin Connect) registrerer aktiviteter i Apple Health uden at dele ruten. Træningspas registreret med Apple Watch indeholder ruter og kan importeres.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Ikke-importabel';
+  String get healthSyncBadgeNonImportable => 'Kan ikke importeres';
 
   @override
   String get healthSyncViewAvailable => 'Tilgængelige';
@@ -1318,7 +1317,7 @@ class AppLocalizationsDa extends AppLocalizations {
       'Send nedbruds- og fejlrapporter til en diagnosticeringsserver. Dette er adskilt fra lokal diagnostik; du kan slå begge, én eller ingen til.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Nedbrudsrapporter bliver sendt';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

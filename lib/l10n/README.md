@@ -5,8 +5,16 @@ This directory contains the app's translations organized by feature.
 ## Files
 
 - `app_en.arb` - English translations (template)
-- `app_pt.arb` - Portuguese translations
-- `l10n.yaml` - Flutter localization configuration
+- `app_<code>.arb` - one file per supported language (30 in total, listed in
+  `lib/core/localization/app_locales.dart`). `app_pt.arb` is European
+  Portuguese and, like `app_en.arb`, carries the `@` metadata; the other files
+  carry values only.
+- `../../l10n.yaml` - Flutter localization configuration
+
+Text the operating system shows outside Flutter (Android and Wear OS
+notifications and screens, iOS permission prompts, the Apple Watch app) is
+translated in native resource files; see the root README's localization
+section.
 
 ## Structure
 
@@ -50,7 +58,8 @@ Used by: `features/settings/screens/settings_screen.dart`, `features/settings/sc
 
 When adding a new translation:
 
-1. **Find the right section** in both `app_en.arb` and `app_pt.arb`
+1. **Find the right section** in `app_en.arb`, and add the key to every
+   `app_<code>.arb` file (the ARB parity test fails otherwise)
 2. **Add the key** in alphabetical order within that section
 3. **Include usage info** in the description: `"description": "Button label - Used in: your_screen.dart"`
 4. **Run** `flutter gen-l10n` to regenerate localization classes

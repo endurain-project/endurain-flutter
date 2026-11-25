@@ -1328,7 +1328,8 @@ class AppLocalizationsPt extends AppLocalizations {
       'Enviar relatórios de falhas e de erros para um servidor de diagnóstico. É independente do diagnóstico local; pode ativar ambos, um ou nenhum.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive =>
+      'Os relatórios de falhas estão a ser enviados';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

@@ -816,7 +816,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get settingsSectionPrivacySupport => 'Tietosuoja ja tuki';
 
   @override
-  String get deviceAccessTitle => 'Laitteen käyttöoikeus';
+  String get deviceAccessTitle => 'Laitteen käyttöoikeudet';
 
   @override
   String get deviceAccessSubtitle =>
@@ -835,7 +835,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Terveystietojen käyttöoikeus';
 
   @override
-  String get deviceAccessChecking => 'Tarkistetaan pääsyä…';
+  String get deviceAccessChecking => 'Tarkistetaan käyttöoikeuksia…';
 
   @override
   String get deviceAccessLocationServicesOff =>
@@ -861,10 +861,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get deviceAccessHealthRequired => 'Health Connect vaaditaan';
 
   @override
-  String get deviceAccessHealthSetUp => 'Terveydenhuoltoon pääsy';
+  String get deviceAccessHealthSetUp => 'Terveystietojen käyttö määritetty';
 
   @override
-  String get deviceAccessHealthNeedsAttention => 'Pääsy vaatii huomiota';
+  String get deviceAccessHealthNeedsAttention => 'Käyttöoikeus vaatii huomiota';
 
   @override
   String get deviceAccessHealthNotConnected => 'Ei yhdistetty';
@@ -906,7 +906,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get serverUrl => 'Palvelimen URL-osoite';
 
   @override
-  String get serverProtocol => 'pöytäkirja';
+  String get serverProtocol => 'Protokolla';
 
   @override
   String get serverUrlHint => 'https://esimerkki.com';
@@ -1054,7 +1054,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthSyncScreenTitle => 'Terveyssynkronointi';
 
   @override
-  String get healthAccessScreenTitle => 'Terveyden pääsy';
+  String get healthAccessScreenTitle => 'Terveystietojen käyttö';
 
   @override
   String get healthAccessRequestedData => 'Pyydetyt tiedot';
@@ -1075,17 +1075,17 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthAccessNeedsAttention => 'Vaatii huomiota';
 
   @override
-  String get healthAccessManagedBySystem => 'Hallittu järjestelmäasetuksissa';
+  String get healthAccessManagedBySystem => 'Hallitaan järjestelmäasetuksissa';
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit ei paljasta, mitä tietoja Endurain voi lukea. Tarkista pääsy Terveys-sovelluksessa.';
+      'HealthKit ei kerro, mitä tietoja Endurain voi lukea. Tarkista käyttöoikeudet Terveys-sovelluksessa.';
 
   @override
-  String get healthAccessReview => 'Tarkista terveydenhuoltoon pääsy';
+  String get healthAccessReview => 'Tarkista terveystietojen käyttöoikeudet';
 
   @override
-  String get healthAccessReviewIos => 'Käyttöoikeuden tarkistaminen';
+  String get healthAccessReviewIos => 'Näin tarkistat käyttöoikeudet';
 
   @override
   String get healthAccessDisconnect => 'Katkaise terveystietojen yhteys';
@@ -1120,7 +1120,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthSyncSelectAll => 'Valitse kaikki';
 
   @override
-  String get healthSyncClearSelection => 'Selkeä';
+  String get healthSyncClearSelection => 'Tyhjennä valinta';
 
   @override
   String healthSyncImportSelected(int count) {
@@ -1129,7 +1129,13 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String healthSyncImportedCount(int count) {
-    return 'Tuotu $count harjoitusta.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tuotiin $count harjoitusta.',
+      one: 'Tuotiin $count harjoitus.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1141,11 +1147,11 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Jotkut harjoitukset jätettiin väliin, koska harjoitusreitin käyttöoikeutta ei myönnetty. Avaa Health Connect → Permissions ja salli harjoitusreitit Endurainille.';
+      'Osa harjoituksista ohitettiin, koska harjoitusreittien käyttöoikeutta ei myönnetty. Avaa Health Connect → Käyttöoikeudet ja salli harjoitusreitit Endurainille.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Jotkut harjoitukset jäivät väliin, koska Endurain ei voinut lukea heidän GPS-reittejään. Avaa Health-sovelluksessa profiilisi, sitten Apps and Services, valitse Endurain ja salli harjoitusreitit.';
+      'Osa harjoituksista ohitettiin, koska Endurain ei voinut lukea niiden GPS-reittejä. Avaa Terveys-sovelluksessa profiilisi, sitten Sovellukset ja palvelut, valitse Endurain ja salli harjoitusreitit.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
@@ -1155,7 +1161,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthSyncReviewAccess => 'Tarkista käyttöoikeudet';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automaattinen synkronointi jatkuessa';
+  String get healthSyncAutoSyncTitle => 'Automaattinen synkronointi avattaessa';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
@@ -1163,10 +1169,10 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Nämä harjoitukset eivät sisällä GPS-reittiä, joten niitä ei voi tuoda. Jotkut sovellukset (kuten Garmin Connect) tallentavat toimintoja Apple Healthille jakamatta reittiä. Apple Watchilla tallennetut harjoitukset sisältävät reittejä ja ne voidaan tuoda.';
+      'Näissä harjoituksissa ei ole GPS-reittiä, joten niitä ei voi tuoda. Jotkin sovellukset (kuten Garmin Connect) tallentavat aktiviteetteja Apple Healthiin jakamatta reittiä. Apple Watchilla tallennetuissa harjoituksissa on reitit, ja ne voidaan tuoda.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Ei tuoda maahan';
+  String get healthSyncBadgeNonImportable => 'Ei tuotavissa';
 
   @override
   String get healthSyncViewAvailable => 'Saatavilla';
@@ -1322,7 +1328,7 @@ class AppLocalizationsFi extends AppLocalizations {
       'Lähetä kaatumis- ja virheraportteja diagnostiikkapalvelimelle. Tämä on erillään paikallisesta diagnostiikasta; voit ottaa käyttöön molemmat, toisen tai ei kumpaakaan.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Kaatumisraportteja lähetetään';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

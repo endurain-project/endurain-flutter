@@ -820,7 +820,7 @@ class AppLocalizationsLt extends AppLocalizations {
   String get deviceAccessHealthSection => 'Sveikatos duomenys';
 
   @override
-  String get deviceAccessLocationTitle => 'Vietos prieiga';
+  String get deviceAccessLocationTitle => 'Prieiga prie vietos';
 
   @override
   String get deviceAccessHealthTitle => 'Prieiga prie sveikatos duomenų';
@@ -833,31 +833,32 @@ class AppLocalizationsLt extends AppLocalizations {
       'Vietos nustatymo paslaugos išjungtos';
 
   @override
-  String get deviceAccessLocationAlways => 'Leidžiama visą laiką';
+  String get deviceAccessLocationAlways => 'Leidžiama visada';
 
   @override
   String get deviceAccessLocationWhileUsing => 'Leidžiama naudojant programą';
 
   @override
-  String get deviceAccessLocationBlocked => 'Užblokuotas sistemos nustatymuose';
+  String get deviceAccessLocationBlocked => 'Užblokuota sistemos nustatymuose';
 
   @override
   String get deviceAccessLocationNotAllowed => 'Neleidžiama';
 
   @override
-  String get deviceAccessHealthUnavailable => 'Šiame įrenginyje nėra';
+  String get deviceAccessHealthUnavailable => 'Šiame įrenginyje nepasiekiama';
 
   @override
-  String get deviceAccessHealthRequired => 'Reikalingas Health Connect';
+  String get deviceAccessHealthRequired => 'Reikalinga „Health Connect“';
 
   @override
-  String get deviceAccessHealthSetUp => 'Sukurta prieiga prie sveikatos';
+  String get deviceAccessHealthSetUp =>
+      'Prieiga prie sveikatos duomenų nustatyta';
 
   @override
   String get deviceAccessHealthNeedsAttention => 'Prieigai reikia dėmesio';
 
   @override
-  String get deviceAccessHealthNotConnected => 'Neprisijungęs';
+  String get deviceAccessHealthNotConnected => 'Neprijungta';
 
   @override
   String get language => 'Kalba';
@@ -896,7 +897,7 @@ class AppLocalizationsLt extends AppLocalizations {
   String get serverUrl => 'Serverio URL';
 
   @override
-  String get serverProtocol => 'protokolas';
+  String get serverProtocol => 'Protokolas';
 
   @override
   String get serverUrlHint => 'https://pavyzdys.com';
@@ -1045,7 +1046,7 @@ class AppLocalizationsLt extends AppLocalizations {
   String get healthSyncScreenTitle => 'Sveikatos sinchronizavimas';
 
   @override
-  String get healthAccessScreenTitle => 'Prieiga prie sveikatos';
+  String get healthAccessScreenTitle => 'Prieiga prie sveikatos duomenų';
 
   @override
   String get healthAccessRequestedData => 'Prašomi duomenys';
@@ -1057,7 +1058,7 @@ class AppLocalizationsLt extends AppLocalizations {
   String get healthAccessWorkoutRoutes => 'Treniruočių maršrutai';
 
   @override
-  String get healthAccessHeartRate => 'Širdies ritmas';
+  String get healthAccessHeartRate => 'Pulsas';
 
   @override
   String get healthAccessAllowed => 'Leidžiama';
@@ -1066,14 +1067,14 @@ class AppLocalizationsLt extends AppLocalizations {
   String get healthAccessNeedsAttention => 'Reikia dėmesio';
 
   @override
-  String get healthAccessManagedBySystem => 'Tvarkomas sistemos nustatymuose';
+  String get healthAccessManagedBySystem => 'Tvarkoma sistemos nustatymuose';
 
   @override
   String get healthAccessSystemManagedNotice =>
-      '„HealthKit“ neatskleidžia, kokius duomenis Endurain gali nuskaityti. Peržiūrėkite prieigą programoje Health.';
+      '„HealthKit“ neatskleidžia, kokius duomenis Endurain gali nuskaityti. Peržiūrėkite prieigą programoje „Sveikata“.';
 
   @override
-  String get healthAccessReview => 'Peržiūrėkite prieigą prie sveikatos';
+  String get healthAccessReview => 'Peržiūrėti prieigą prie sveikatos duomenų';
 
   @override
   String get healthAccessReviewIos => 'Kaip peržiūrėti prieigą';
@@ -1090,27 +1091,27 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get healthAccessReviewIosInstructions =>
-      'Atidarykite sveikatos programą, bakstelėkite savo profilio nuotrauką, tada Programos ir paslaugos. Pasirinkite Endurain ir atnaujinkite duomenų kategorijas.';
+      'Atidarykite programą „Sveikata“, bakstelėkite savo profilio nuotrauką, tada „Programos ir paslaugos“. Pasirinkite Endurain ir atnaujinkite duomenų kategorijas.';
 
   @override
-  String get healthSyncAuthorize => 'Prisijunkite prie sveikatos duomenų';
+  String get healthSyncAuthorize => 'Prisijungti prie sveikatos duomenų';
 
   @override
-  String get healthSyncInstallProvider => 'Įdiekite „Health Connect“.';
+  String get healthSyncInstallProvider => 'Įdiegti „Health Connect“';
 
   @override
   String get healthSyncInstallProviderDescription =>
-      'Norint sinchronizuoti treniruotes, reikalinga „Health Connect“. Norėdami tęsti, įdiekite.';
+      'Treniruotėms sinchronizuoti reikalinga „Health Connect“. Norėdami tęsti, ją įdiekite.';
 
   @override
   String get healthSyncUnsupported =>
       'Sveikatos sinchronizavimas šiame įrenginyje nepasiekiamas.';
 
   @override
-  String get healthSyncSelectAll => 'Pasirinkite viską';
+  String get healthSyncSelectAll => 'Pasirinkti viską';
 
   @override
-  String get healthSyncClearSelection => 'Aišku';
+  String get healthSyncClearSelection => 'Išvalyti';
 
   @override
   String healthSyncImportSelected(int count) {
@@ -1131,38 +1132,39 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Kai kurios treniruotės buvo praleistos, nes nebuvo suteikta prieiga prie pratimų maršruto. Atidarykite „Health Connect“ → „Leidimai“ ir leiskite „Endurain“ mankštos maršrutus.';
+      'Kai kurios treniruotės praleistos, nes nesuteikta prieiga prie treniruočių maršrutų. Atidarykite „Health Connect“ → „Leidimai“ ir leiskite Endurain pasiekti treniruočių maršrutus.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Kai kurios treniruotės buvo praleistos, nes Endurain negalėjo nuskaityti jų GPS maršrutų. Sveikatos programoje atidarykite savo profilį, tada Programos ir paslaugos, pasirinkite Endurain ir leiskite treniruočių maršrutus.';
+      'Kai kurios treniruotės praleistos, nes Endurain negalėjo nuskaityti jų GPS maršrutų. Programoje „Sveikata“ atidarykite savo profilį, tada „Programos ir paslaugos“, pasirinkite Endurain ir įjunkite „Treniruočių maršrutai“.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
-      'Senesnės treniruotės nerodomos, nes „Health Connect“ nesuteikta prieiga prie ankstesnių duomenų. Kad jas importuotumėte, „Health Connect“ leiskite Endurain „Prieiga prie ankstesnių duomenų“.';
+      'Senesnės treniruotės nerodomos, nes „Health Connect“ nesuteikta prieiga prie ankstesnių duomenų. Kad jas importuotumėte, „Health Connect“ įjunkite Endurain leidimą „Prieiga prie ankstesnių duomenų“.';
 
   @override
-  String get healthSyncReviewAccess => 'Peržiūrėkite prieigą';
+  String get healthSyncReviewAccess => 'Peržiūrėti prieigą';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automatinis sinchronizavimas tęsiant';
+  String get healthSyncAutoSyncTitle =>
+      'Automatinis sinchronizavimas atidarius';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Atsidarius programai automatiškai importuokite naujas treniruotes.';
+      'Automatiškai importuoti naujas treniruotes atidarius programą.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Šiose treniruotėse nėra GPS maršruto, todėl jų negalima importuoti. Kai kurios programos (pvz., „Garmin Connect“) įrašo veiklą „Apple Health“ nebendrindamos maršruto. „Apple Watch“ įrašytos treniruotės apima maršrutus ir jas galima importuoti.';
+      'Šiose treniruotėse nėra GPS maršruto, todėl jų negalima importuoti. Kai kurios programos (pvz., „Garmin Connect“) įrašo veiklas į „Apple Health“, bet maršruto nebendrina. Su „Apple Watch“ įrašytose treniruotėse maršrutai yra, todėl jas galima importuoti.';
 
   @override
-  String get healthSyncBadgeNonImportable => 'Neimportuotini';
+  String get healthSyncBadgeNonImportable => 'Negalima importuoti';
 
   @override
-  String get healthSyncViewAvailable => 'Galimi';
+  String get healthSyncViewAvailable => 'Galimos';
 
   @override
-  String get healthSyncViewImported => 'Importuoti';
+  String get healthSyncViewImported => 'Importuotos';
 
   @override
   String get healthSyncDateRange => 'Treniruočių laikotarpis';
@@ -1313,7 +1315,7 @@ class AppLocalizationsLt extends AppLocalizations {
       'Siųskite strigčių ir klaidų ataskaitas į diagnostikos serverį. Tai nepriklauso nuo vietinės diagnostikos; galite įjungti abu, vieną arba nė vieno.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Strigčių ataskaitos siunčiamos';
 
   @override
   String get diagnosticsRemoteNeedsServer =>

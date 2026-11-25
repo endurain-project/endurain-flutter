@@ -819,14 +819,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsSectionPrivacySupport => 'Confidentialité et assistance';
 
   @override
-  String get deviceAccessTitle => 'Accès aux appareils';
+  String get deviceAccessTitle => 'Autorisations de l\'appareil';
 
   @override
   String get deviceAccessSubtitle =>
       'Gérer l\'accès aux données de localisation et de santé';
 
   @override
-  String get deviceAccessLocationSection => 'Emplacement';
+  String get deviceAccessLocationSection => 'Localisation';
 
   @override
   String get deviceAccessHealthSection => 'Données de santé';
@@ -862,14 +862,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deviceAccessHealthUnavailable => 'Non disponible sur cet appareil';
 
   @override
-  String get deviceAccessHealthRequired => 'Connexion Santé est requis';
+  String get deviceAccessHealthRequired => 'Health Connect est requis';
 
   @override
-  String get deviceAccessHealthSetUp => 'Accès à la santé mis en place';
+  String get deviceAccessHealthSetUp => 'Accès aux données de santé configuré';
 
   @override
-  String get deviceAccessHealthNeedsAttention =>
-      'L’accès nécessite une attention particulière';
+  String get deviceAccessHealthNeedsAttention => 'Accès à vérifier';
 
   @override
   String get deviceAccessHealthNotConnected => 'Non connecté';
@@ -1050,17 +1049,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get diagnosticsRawReport => 'Rapport brut';
 
   @override
-  String get healthSyncSettingsTitle => 'Synchronisation de la santé';
+  String get healthSyncSettingsTitle => 'Synchronisation santé';
 
   @override
   String get healthSyncSettingsSubtitle =>
       'Importez des entraînements depuis votre plateforme de santé';
 
   @override
-  String get healthSyncScreenTitle => 'Synchronisation de la santé';
+  String get healthSyncScreenTitle => 'Synchronisation santé';
 
   @override
-  String get healthAccessScreenTitle => 'Accès à la santé';
+  String get healthAccessScreenTitle => 'Accès aux données de santé';
 
   @override
   String get healthAccessRequestedData => 'Données demandées';
@@ -1078,17 +1077,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get healthAccessAllowed => 'Autorisé';
 
   @override
-  String get healthAccessNeedsAttention => 'A besoin d\'attention';
+  String get healthAccessNeedsAttention => 'À vérifier';
 
   @override
   String get healthAccessManagedBySystem => 'Géré dans les paramètres système';
 
   @override
   String get healthAccessSystemManagedNotice =>
-      'HealthKit ne divulgue pas quelles données Endurain peut lire. Vérifiez l’accès dans l’application Santé.';
+      'HealthKit n\'indique pas quelles données Endurain peut lire. Vérifiez l\'accès dans l\'application Santé.';
 
   @override
-  String get healthAccessReview => 'Revoir l’accès à la santé';
+  String get healthAccessReview => 'Vérifier l\'accès aux données de santé';
 
   @override
   String get healthAccessReviewIos => 'Comment vérifier l\'accès';
@@ -1109,10 +1108,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ouvrez l\'application Santé, appuyez sur votre photo de profil, puis sur Applications et services. Sélectionnez Endurain et mettez à jour les catégories de données.';
 
   @override
-  String get healthSyncAuthorize => 'Connectez-vous aux données de santé';
+  String get healthSyncAuthorize => 'Se connecter aux données de santé';
 
   @override
-  String get healthSyncInstallProvider => 'Installer Connexion Santé';
+  String get healthSyncInstallProvider => 'Installer Health Connect';
 
   @override
   String get healthSyncInstallProviderDescription =>
@@ -1120,7 +1119,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get healthSyncUnsupported =>
-      'La synchronisation de l\'état de santé n\'est pas disponible sur cet appareil.';
+      'La synchronisation des données de santé n\'est pas disponible sur cet appareil.';
 
   @override
   String get healthSyncSelectAll => 'Tout sélectionner';
@@ -1135,7 +1134,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String healthSyncImportedCount(int count) {
-    return '$count entraînement(s) importé(s).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entraînements importés.',
+      one: '$count entraînement importé.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1147,30 +1152,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get healthSyncRouteConsentGuidance =>
-      'Certains entraînements ont été ignorés car l’accès au parcours d’exercices n’était pas accordé. Ouvrez Health Connect → Autorisations et autorisez les itinéraires d\'exercice pour Endurain.';
+      'Certains entraînements ont été ignorés, car l\'accès aux itinéraires d\'exercice n\'a pas été accordé. Ouvrez Health Connect → Autorisations et autorisez les itinéraires d\'exercice pour Endurain.';
 
   @override
   String get healthSyncRouteConsentGuidanceIos =>
-      'Certains entraînements ont été ignorés car Endurain ne pouvait pas lire ses itinéraires GPS. Dans l\'application Santé, ouvrez votre profil, puis Applications et services, sélectionnez Endurain et autorisez les itinéraires d\'entraînement.';
+      'Certains entraînements ont été ignorés, car Endurain n\'a pas pu lire leurs itinéraires GPS. Dans l\'application Santé, ouvrez votre profil, puis Applications et services, sélectionnez Endurain et autorisez les itinéraires d\'entraînement.';
 
   @override
   String get healthSyncHistoryAccessGuidance =>
       'Les entraînements plus anciens ne s\'affichent pas, car l\'accès aux données passées n\'a pas été accordé dans Health Connect. Autorisez « Accès aux données passées » pour Endurain dans Health Connect pour les importer.';
 
   @override
-  String get healthSyncReviewAccess => 'Accès aux avis';
+  String get healthSyncReviewAccess => 'Vérifier l\'accès';
 
   @override
   String get healthSyncAutoSyncTitle =>
-      'Synchronisation automatique à la reprise';
+      'Synchronisation automatique à l\'ouverture';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importez automatiquement de nouveaux entraînements à l\'ouverture de l\'application.';
+      'Importe automatiquement les nouveaux entraînements à l\'ouverture de l\'application.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
-      'Ces entraînements n\'incluent pas d\'itinéraire GPS et ne peuvent donc pas être importés. Certaines applications (comme Garmin Connect) enregistrent les activités sur Apple Health sans partager l\'itinéraire. Les entraînements enregistrés avec Apple Watch incluent des itinéraires et peuvent être importés.';
+      'Ces entraînements n\'incluent pas d\'itinéraire GPS et ne peuvent donc pas être importés. Certaines applications (comme Garmin Connect) enregistrent les activités dans Apple Health sans partager l\'itinéraire. Les entraînements enregistrés avec une Apple Watch incluent des itinéraires et peuvent être importés.';
 
   @override
   String get healthSyncBadgeNonImportable => 'Non importable';
@@ -1332,7 +1337,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Envoyer les rapports de plantage et d\'erreur à un serveur de diagnostic. C\'est indépendant des diagnostics locaux; vous pouvez activer les deux, l\'un ou aucun.';
 
   @override
-  String get diagnosticsRemoteActive => 'Crash reports are being sent.';
+  String get diagnosticsRemoteActive => 'Les rapports de plantage sont envoyés';
 
   @override
   String get diagnosticsRemoteNeedsServer =>
