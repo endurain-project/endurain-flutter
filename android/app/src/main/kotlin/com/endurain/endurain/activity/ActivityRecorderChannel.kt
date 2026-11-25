@@ -53,9 +53,11 @@ class ActivityRecorderChannel(context: Context) :
             METHOD_RECOVER -> handleRecover(result)
             METHOD_SPEAK_PREVIEW -> handleSpeakPreview(call, result)
             METHOD_SPEAK_CUE -> handleSpeakCue(call, result)
-            // Android keeps Dart timers running with the screen off, so the
-            // start countdown needs no warm-up here (iOS does).
-            METHOD_BEGIN_START_WARM_UP, METHOD_END_START_WARM_UP -> result.success(null)
+            METHOD_BEGIN_START_WARM_UP -> handleBeginStartWarmUp(result)
+            METHOD_END_START_WARM_UP -> {
+                ActivityRecorderService.endWarmUp()
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }
@@ -262,6 +264,24 @@ class ActivityRecorderChannel(context: Context) :
             state.duckOtherAudio,
             state.languageTag,
         )
+        result.success(null)
+    }
+
+    /**
+     * Starts the foreground service that keeps the app from being frozen
+     * during the start countdown. Best effort: if Android refuses, the
+     * countdown still runs while the app stays in the foreground.
+     */
+    private fun handleBeginStartWarmUp(result: MethodChannel.Result) {
+        if (store.hasRecoverableData()) {
+            result.success(null)
+            return
+        }
+        try {
+            ActivityRecorderService.beginWarmUp(appContext)
+        } catch (_: RuntimeException) {
+            // Started from the background or refused by the system.
+        }
         result.success(null)
     }
 

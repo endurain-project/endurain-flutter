@@ -38,8 +38,8 @@ class NativeActivityRecorderChannelContract {
   /// touches the durable session store.
   static const String speakCue = 'speakCue';
 
-  /// Starts and ends the location warm-up that keeps iOS running during the
-  /// start countdown. Android answers both without doing anything.
+  /// Starts and ends the location warm-up that keeps the app running during
+  /// the start countdown (a foreground service on Android).
   static const String beginStartWarmUp = 'beginStartWarmUp';
   static const String endStartWarmUp = 'endStartWarmUp';
 

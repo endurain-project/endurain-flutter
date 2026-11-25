@@ -11,16 +11,21 @@ abstract class StartCountdownPlatformAdapter {
     required String languageTag,
   });
 
-  /// Keeps the app running while the countdown runs with the screen locked.
+  /// Keeps the app running while the countdown runs in the background.
   ///
-  /// iOS suspends an app soon after the screen locks unless it is doing
-  /// something allowed in the background. Nothing records during the
-  /// countdown, so iOS starts location updates that are thrown away; that
-  /// keeps the app awake and warms up GPS for the first point. Android keeps
-  /// timers running with the screen off and does nothing here.
+  /// Nothing records during the countdown, so on its own the app would look
+  /// idle: iOS suspends it soon after the screen locks, and newer Android
+  /// versions can freeze it soon after the user switches apps. Both platforms
+  /// therefore run location updates that are thrown away, which also warms up
+  /// GPS for the first point. On Android this runs in the recorder's
+  /// foreground service, and the recording then starts inside that same
+  /// service, so it can start on time even with another app in front.
+  ///
+  /// Call it while the app is in the foreground.
   Future<void> beginWarmUp();
 
-  /// Ends [beginWarmUp]. Safe to call when no warm-up is running.
+  /// Ends [beginWarmUp] when no recording started from it. Safe to call when
+  /// no warm-up is running, and after the recording has started.
   Future<void> endWarmUp();
 }
 

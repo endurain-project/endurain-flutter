@@ -301,8 +301,9 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     try {
       await _activityController.start(type);
     } finally {
-      // Ended only after the recorder has started, so iOS keeps the app awake
-      // (and GPS warm) right up to the first point.
+      // Ended only after the recorder has started, so the app stays awake
+      // (and GPS warm) right up to the first point. On Android the recording
+      // has taken over the warm-up's service by now, so this leaves it alone.
       if (countedDown) {
         await _safely(countdownPlatform.endWarmUp);
       }
