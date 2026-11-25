@@ -39,33 +39,57 @@ Future<void> _migrateLegacyDatabase({
 }) async {
   final legacyDirectory = await databaseFactory.getDatabasesPath();
   final legacyPath = '$legacyDirectory${Platform.pathSeparator}$fileName';
-  final legacyDatabase = File(legacyPath);
+  // The main file moves first, so its absence from the legacy directory while
+  // the target holds it marks a migration interrupted between files.
   const suffixes = ['', '-wal', '-shm', '-journal'];
-  final legacyFiles = [
-    for (final suffix in suffixes) File('$legacyPath$suffix'),
-  ];
-  final targetFiles = [
-    for (final suffix in suffixes) File('$targetPath$suffix'),
-  ];
-  final hasLegacyFiles = legacyFiles.any((file) => file.existsSync());
-  final hasTargetFiles = targetFiles.any((file) => file.existsSync());
-
-  // Never combine source and target files from separate database copies.
-  // Preflight the full SQLite set before changing anything so a later launch
-  // can reliably retry an interrupted migration.
-  if (hasLegacyFiles && hasTargetFiles) {
-    throw FileSystemException(
-      'Conflicting SQLite migration database',
-      legacyDatabase.path,
-    );
-  }
-  if (!hasLegacyFiles || hasTargetFiles) return;
-
+  final pending = <String>[];
   for (final suffix in suffixes) {
     final source = File('$legacyPath$suffix');
     if (!source.existsSync()) continue;
-    await _moveFile(source, '$targetPath$suffix');
+    final target = File('$targetPath$suffix');
+    if (target.existsSync() && await _sameContents(source, target)) {
+      // A cross-device move copies, renames, then deletes the source; a crash
+      // before that delete leaves two identical copies. Finish the move.
+      await source.delete();
+      continue;
+    }
+    pending.add(suffix);
   }
+  if (pending.isEmpty) return;
+
+  final resuming =
+      !File(legacyPath).existsSync() && File(targetPath).existsSync();
+  final conflicting = pending.any(
+    (suffix) => File('$targetPath$suffix').existsSync(),
+  );
+  final hasTargetFiles = suffixes.any(
+    (suffix) => File('$targetPath$suffix').existsSync(),
+  );
+
+  // Never combine source and target files from separate database copies: the
+  // only mix allowed is the remaining sidecars of the database already moved.
+  // Preflight the full SQLite set before changing anything so a later launch
+  // can reliably retry an interrupted migration.
+  if (conflicting || (hasTargetFiles && !resuming)) {
+    throw FileSystemException(
+      'Conflicting SQLite migration database',
+      legacyPath,
+    );
+  }
+
+  for (final suffix in pending) {
+    await _moveFile(File('$legacyPath$suffix'), '$targetPath$suffix');
+  }
+}
+
+Future<bool> _sameContents(File a, File b) async {
+  if (await a.length() != await b.length()) return false;
+  final aBytes = await a.readAsBytes();
+  final bBytes = await b.readAsBytes();
+  for (var i = 0; i < aBytes.length; i++) {
+    if (aBytes[i] != bBytes[i]) return false;
+  }
+  return true;
 }
 
 Future<void> _moveFile(File source, String targetPath) async {

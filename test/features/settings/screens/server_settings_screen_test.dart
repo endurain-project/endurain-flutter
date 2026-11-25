@@ -1,6 +1,7 @@
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
@@ -66,7 +67,63 @@ void main() {
       expect(find.text(l10n.notConfigured), findsOneWidget);
       expect(find.text(l10n.notLoggedIn), findsOneWidget);
     });
+
+    testWidgets('signs out of the app even when the local clear fails', (
+      tester,
+    ) async {
+      final storage = SecureStorageService();
+      var loggedOut = false;
+      final repository = ServerSettingsRepository(
+        storage: storage,
+        authService: _FailingLogoutAuthService(storage),
+      );
+
+      // The screen is pushed, so the scope sits above the navigator.
+      await tester.pumpWidget(
+        TestMaterialApp(
+          child: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => ServerSettingsScreen(
+                      repository: repository,
+                      onLogout: () => loggedOut = true,
+                    ),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.logout));
+      await tester.pumpAndSettle();
+      // Confirm in the dialog.
+      await tester.tap(find.text(l10n.logout).last);
+      await tester.pumpAndSettle();
+
+      expect(loggedOut, isTrue);
+      expect(find.text(l10n.errorSecureStorageDeleteFailed), findsOneWidget);
+      expect(find.byType(ServerSettingsScreen), findsNothing);
+    });
   });
+}
+
+/// An [AuthService] whose local session clear fails.
+class _FailingLogoutAuthService extends AuthService {
+  _FailingLogoutAuthService(SecureStorageService storage)
+    : super(storage: storage);
+
+  @override
+  Future<bool> logout() async {
+    throw const AppException(AppErrorCode.secureStorageDeleteFailed);
+  }
 }
 
 ServerSettingsRepository _repository(SecureStorageService storage) {

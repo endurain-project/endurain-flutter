@@ -637,6 +637,105 @@ void main() {
       },
     );
 
+    test('a refresh whose result cannot be stored keeps the session', () async {
+      final storage = _FlakySecureStorage();
+      await _seedSession(storage);
+      storage.failSessionWrites = true;
+      final diagnostics = RecordingDiagnostics();
+      final service = AuthService(
+        storage: storage,
+        diagnostics: diagnostics,
+        httpClient: MockClient((request) async {
+          return http.Response(
+            '{"access_token":"access-2","refresh_token":"refresh-2",'
+            '"session_id":"session-2","expires_in":3600}',
+            200,
+          );
+        }),
+      );
+
+      expect(await service.refreshToken(), isFalse);
+
+      expect(
+        diagnostics.single(DiagnosticsEvents.authRefreshFailed)['reason'],
+        'persist_failed',
+      );
+      expect(
+        diagnostics.events,
+        isNot(contains(DiagnosticsEvents.authSessionCleared)),
+      );
+      expect((await _readSession(storage))?.accessToken, 'access-1');
+    });
+
+    test(
+      'a late refresh rejection keeps a newer sign-in to the same account',
+      () async {
+        final storage = SecureStorageService();
+        final store = AuthSessionStore(storage: storage);
+        await _seedSession(storage, store: store);
+        final requestStarted = Completer<void>();
+        final response = Completer<http.Response>();
+        final service = AuthService(
+          storage: storage,
+          sessionStore: store,
+          httpClient: MockClient((request) async {
+            requestStarted.complete();
+            return response.future;
+          }),
+        );
+
+        final refresh = service.refreshToken();
+        await requestStarted.future;
+        // Same origin and account: the same profile, a new revision.
+        await _seedSession(
+          storage,
+          store: store,
+          accessToken: 'access-b',
+          refreshToken: 'refresh-b',
+        );
+        response.complete(http.Response('{"detail":"Session ended"}', 401));
+
+        expect(await refresh, isFalse);
+        expect((await store.readSession())?.accessToken, 'access-b');
+      },
+    );
+
+    test('a rejected refresh reports the ended session', () async {
+      final storage = SecureStorageService();
+      await _seedSession(storage);
+      final service = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          return http.Response('{"detail":"Session ended"}', 401);
+        }),
+      );
+      var ended = 0;
+      final subscription = service.sessionEnded.listen((_) => ended++);
+
+      expect(await service.refreshToken(), isFalse);
+
+      expect(ended, 1);
+      await subscription.cancel();
+    });
+
+    test('a transient refresh failure does not end the session', () async {
+      final storage = SecureStorageService();
+      await _seedSession(storage);
+      final service = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          return http.Response('unavailable', 503);
+        }),
+      );
+      var ended = 0;
+      final subscription = service.sessionEnded.listen((_) => ended++);
+
+      expect(await service.refreshToken(), isFalse);
+
+      expect(ended, 0);
+      await subscription.cancel();
+    });
+
     test('refreshToken stores rotated tokens on success', () async {
       final storage = SecureStorageService();
       await _seedSession(storage);
@@ -899,6 +998,46 @@ void main() {
       expect(await logout, isTrue);
       expect(logoutCalls, 1);
       expect(await store.readSession(), isNull);
+    });
+
+    test('logout falls back to a full clear when the first fails', () async {
+      final storage = _FlakySecureStorage();
+      await _seedSession(storage);
+      storage.failSessionDeletes = 1;
+      final service = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async => http.Response('', 200)),
+      );
+      var ended = 0;
+      final subscription = service.sessionEnded.listen((_) => ended++);
+
+      expect(await service.logout(), isTrue);
+
+      expect(await _readSession(storage), isNull);
+      // An explicit sign-out is the caller's to report.
+      expect(ended, 0);
+      await subscription.cancel();
+    });
+
+    test('logout reports a store that cannot delete anything', () async {
+      final storage = _FlakySecureStorage();
+      await _seedSession(storage);
+      storage.failSessionDeletes = 2;
+      final service = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async => http.Response('', 200)),
+      );
+
+      await expectLater(
+        service.logout(),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageDeleteFailed,
+          ),
+        ),
+      );
     });
 
     test('logout clears local tokens without server credentials', () async {
@@ -1169,6 +1308,31 @@ Future<void> _seedSession(
 
 Future<AuthSession?> _readSession(SecureStorageService storage) {
   return AuthSessionStore(storage: storage).readSession();
+}
+
+/// [SecureStorageService] whose session writes or deletes can be made to fail.
+class _FlakySecureStorage extends SecureStorageService {
+  bool failSessionWrites = false;
+
+  /// How many upcoming session deletes fail.
+  int failSessionDeletes = 0;
+
+  @override
+  Future<void> setAuthSession(String session) {
+    if (failSessionWrites) {
+      throw const AppException(AppErrorCode.secureStorageWriteFailed);
+    }
+    return super.setAuthSession(session);
+  }
+
+  @override
+  Future<void> deleteAuthSession() {
+    if (failSessionDeletes > 0) {
+      failSessionDeletes--;
+      throw const AppException(AppErrorCode.secureStorageDeleteFailed);
+    }
+    return super.deleteAuthSession();
+  }
 }
 
 /// Fake [FlutterSecureStorage] whose reads fail but deletes succeed.

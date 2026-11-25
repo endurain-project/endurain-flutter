@@ -84,6 +84,10 @@ class SecureStorageService {
   // stale item cannot be updated in place. We self-heal by deleting the
   // existing key and retrying once so upgrading users are not locked out, while
   // still keeping the hardened accessibility for the rewritten value.
+  //
+  // The keychain cannot replace an item atomically, so the stale value is read
+  // first: if the rewrite fails it is put back, and a failed write leaves the
+  // key as it was rather than empty.
   Future<void> write({required String key, required String value}) async {
     try {
       await _storage.write(key: key, value: value);
@@ -91,10 +95,29 @@ class SecureStorageService {
       if (!_isDuplicateKeychainItem(error)) {
         throw AppException(AppErrorCode.secureStorageWriteFailed, cause: error);
       }
+      String? previous;
+      try {
+        previous = await _storage.read(key: key);
+      } catch (e) {
+        // Without the old value a failed rewrite would lose it: leave the
+        // stale item in place.
+        throw AppException(AppErrorCode.secureStorageWriteFailed, cause: e);
+      }
       try {
         await _storage.delete(key: key);
+      } catch (e) {
+        throw AppException(AppErrorCode.secureStorageWriteFailed, cause: e);
+      }
+      try {
         await _storage.write(key: key, value: value);
       } catch (e) {
+        if (previous != null) {
+          try {
+            await _storage.write(key: key, value: previous);
+          } catch (_) {
+            // Nothing more can be done; the original failure is reported.
+          }
+        }
         throw AppException(AppErrorCode.secureStorageWriteFailed, cause: e);
       }
     }
@@ -244,9 +267,30 @@ class SecureStorageService {
     }
   }
 
-  // Clear all auth tokens
+  /// Deletes every auth key, the session and the pre-v2 credential keys.
+  ///
+  /// Each key is attempted even when an earlier delete fails, so one stuck
+  /// item does not leave the others behind; the first failure is then
+  /// rethrown.
   Future<void> clearAuthTokens() async {
-    await deleteAuthSession();
-    await clearLegacyAuthTokens();
+    Object? firstError;
+    StackTrace? firstStackTrace;
+    for (final delete in <Future<void> Function()>[
+      deleteAuthSession,
+      deleteAccessToken,
+      deleteRefreshToken,
+      deleteSessionId,
+      deleteAccessTokenExpiresAt,
+    ]) {
+      try {
+        await delete();
+      } catch (error, stackTrace) {
+        firstError ??= error;
+        firstStackTrace ??= stackTrace;
+      }
+    }
+    if (firstError != null) {
+      Error.throwWithStackTrace(firstError, firstStackTrace!);
+    }
   }
 }

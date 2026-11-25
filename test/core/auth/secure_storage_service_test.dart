@@ -66,9 +66,25 @@ class _ThrowingWriteStorage extends Fake implements FlutterSecureStorage {
 /// keychain item with mismatched accessibility) but succeeds on the retry after
 /// the key is deleted.
 class _StaleItemStorage extends Fake implements FlutterSecureStorage {
+  _StaleItemStorage({this.failRewrite = false});
+
+  /// The write after the stale item is deleted fails too.
+  final bool failRewrite;
+
   final Map<String, String?> values = {};
   int writeAttempts = 0;
   int deleteCalls = 0;
+
+  @override
+  Future<String?> read({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async => values[key];
 
   @override
   Future<void> write({
@@ -85,6 +101,9 @@ class _StaleItemStorage extends Fake implements FlutterSecureStorage {
     if (writeAttempts == 1) {
       throw Exception('errSecDuplicateItem');
     }
+    if (failRewrite && writeAttempts == 2) {
+      throw Exception('keychain write failed');
+    }
     values[key] = value;
   }
 
@@ -99,6 +118,28 @@ class _StaleItemStorage extends Fake implements FlutterSecureStorage {
     WindowsOptions? wOptions,
   }) async {
     deleteCalls++;
+    values.remove(key);
+  }
+}
+
+/// Fake [FlutterSecureStorage] whose [delete] of [failingKey] throws.
+class _FailingDeleteStorage extends Fake implements FlutterSecureStorage {
+  _FailingDeleteStorage({required this.failingKey});
+
+  final String failingKey;
+  final Map<String, String> values = {};
+
+  @override
+  Future<void> delete({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    if (key == failingKey) throw Exception('keychain delete failed');
     values.remove(key);
   }
 }
@@ -226,6 +267,54 @@ void main() {
       expect(fake.deleteCalls, 1);
       expect(fake.writeAttempts, 2);
       expect(fake.values['k'], 'v');
+    });
+
+    test('a failed self-heal rewrite puts the stale value back', () async {
+      final fake = _StaleItemStorage(failRewrite: true)..values['k'] = 'old';
+      final storage = SecureStorageService(storage: fake);
+
+      await expectLater(
+        storage.write(key: 'k', value: 'new'),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageWriteFailed,
+          ),
+        ),
+      );
+
+      expect(fake.deleteCalls, 1);
+      expect(fake.values['k'], 'old');
+    });
+
+    test('clearAuthTokens attempts every key when one delete fails', () async {
+      final fake = _FailingDeleteStorage(failingKey: 'auth_session_v2')
+        ..values.addAll({
+          'auth_session_v2': 'session',
+          'access_token': 'access',
+          'refresh_token': 'refresh',
+          'session_id': 'id',
+          'access_token_expires_at': 'later',
+          'device_id': 'device',
+        });
+      final storage = SecureStorageService(storage: fake);
+
+      await expectLater(
+        storage.clearAuthTokens(),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.secureStorageDeleteFailed,
+          ),
+        ),
+      );
+
+      expect(
+        fake.values.keys,
+        unorderedEquals(['auth_session_v2', 'device_id']),
+      );
     });
 
     group('server URL mirror', () {

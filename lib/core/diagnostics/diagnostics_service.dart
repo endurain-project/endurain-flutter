@@ -301,6 +301,8 @@ class DiagnosticsEvents {
   static const String sessionRevalidateFailed = 'session.revalidate_failed';
   static const String authRefreshFailed = 'auth.refresh_failed';
   static const String authSessionCleared = 'auth.session_cleared';
+  static const String authServerSettingsSaveFailed =
+      'auth.server_settings_save_failed';
   static const String httpRequestFailed = 'http.request_failed';
   static const String legacyProfileAdopted = 'account.legacy_profile_adopted';
   static const String legacyProfileDeclined = 'account.legacy_profile_declined';

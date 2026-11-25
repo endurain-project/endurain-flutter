@@ -8,6 +8,8 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 import '../../../helpers/recording_diagnostics.dart';
 
@@ -244,6 +246,56 @@ void main() {
       controller.dispose();
     });
 
+    test('drops to guest when the auth layer ends the session', () async {
+      final storage = SecureStorageService();
+      await AuthSessionStore(storage: storage).saveSession(
+        origin: 'https://example.test',
+        accessToken: 'access-1',
+        refreshToken: 'refresh-1',
+        sessionId: 'session-1',
+        accountId: '42',
+        expiresInSeconds: 3600,
+      );
+      final diagnostics = RecordingDiagnostics();
+      final service = AuthService(
+        storage: storage,
+        httpClient: MockClient((request) async {
+          return http.Response('{"detail":"Session ended"}', 401);
+        }),
+      );
+      final controller = AuthSessionController(
+        authService: service,
+        diagnostics: diagnostics,
+      );
+      controller.markAuthenticated();
+
+      // A refresh triggered by an API call's 401, not by the controller.
+      expect(await service.refreshToken(), isFalse);
+
+      expect(controller.isGuest, isTrue);
+      expect(diagnostics.details.last, {
+        'from': 'authenticated',
+        'to': 'guest',
+        'reason': 'session_cleared',
+      });
+      controller.dispose();
+    });
+
+    test('stops listening for ended sessions once disposed', () async {
+      final service = AuthService(
+        storage: SecureStorageService(),
+        httpClient: MockClient((request) async => fail('No request')),
+      );
+      final controller = AuthSessionController(authService: service);
+      controller.markAuthenticated();
+      controller.dispose();
+
+      // No session stored: the refresh reports it ended.
+      expect(await service.refreshToken(), isFalse);
+
+      expect(controller.isAuthenticated, isTrue);
+    });
+
     group('revalidate', () {
       test('does nothing in guest mode', () async {
         final controller = AuthSessionController(
@@ -283,6 +335,23 @@ void main() {
         controller.markAuthenticated();
 
         await controller.revalidate();
+
+        expect(controller.isAuthenticated, isTrue);
+        controller.dispose();
+      });
+
+      test('ignores a check that a new sign-in overtook', () async {
+        final service = _FakeAuthService(authenticated: true)
+          ..confirmation = Completer<bool>();
+        final controller = AuthSessionController(authService: service);
+        controller.markAuthenticated();
+
+        final revalidation = controller.revalidate();
+        // The user signs in again while the old session is being checked.
+        controller.continueAsGuest();
+        controller.markAuthenticated();
+        service.confirmation!.complete(false);
+        await revalidation;
 
         expect(controller.isAuthenticated, isTrue);
         controller.dispose();
@@ -335,8 +404,14 @@ class _FakeAuthService extends AuthService {
     return authenticated;
   }
 
+  /// When set, [isAuthenticated] answers with this completer's value.
+  Completer<bool>? confirmation;
+
   @override
   Future<bool> isAuthenticated() async {
+    if (confirmation != null) {
+      return confirmation!.future;
+    }
     if (hang) {
       return Completer<bool>().future;
     }

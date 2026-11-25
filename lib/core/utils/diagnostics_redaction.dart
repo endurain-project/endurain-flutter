@@ -4,10 +4,11 @@
 /// Both destinations must scrub the same sensitive material before anything is
 /// persisted or transmitted, so the rules live here once rather than being
 /// duplicated (and drifting) between the two. The redaction is deliberately
-/// conservative: it strips bearer tokens, secret-like `key=value` pairs, any
-/// query-string values, absolute on-device file paths (iOS/desktop home and
-/// container dirs, Android app-data and external-storage dirs), and
-/// coordinate-looking pairs, then truncates to a bounded length.
+/// conservative: it strips bearer tokens and JWTs, secret-like `key=value`
+/// pairs and JSON members, any query-string values, absolute on-device file
+/// paths (iOS/desktop home and container dirs, Android app-data and
+/// external-storage dirs), and coordinate-looking pairs, then truncates to a
+/// bounded length.
 library;
 
 /// Returns [value] with sensitive substrings redacted and truncated to
@@ -18,9 +19,14 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
         RegExp(r'Bearer\s+[A-Za-z0-9._~+/=-]+', caseSensitive: false),
         'Bearer <redacted>',
       )
+      // A JWT is a credential wherever it appears, with or without `Bearer `.
+      .replaceAll(RegExp(r'eyJ[\w-]+\.[\w-]+\.[\w-]+'), '<redacted>')
+      // `key=value`, `key: value` and JSON members such as
+      // `"refresh_token": "value"`: an optional closing quote may sit between
+      // the key and the separator, and a quoted value is redacted whole.
       .replaceAllMapped(
         RegExp(
-          r'(token|password|secret|authorization|cookie|session)[=:]\s*[^,\s]+',
+          r'''(token|password|secret|authorization|cookie|session)["']?\s*[=:]\s*("[^"]*"|'[^']*'|[^,\s]+)''',
           caseSensitive: false,
         ),
         (match) => '${match.group(1)}=<redacted>',

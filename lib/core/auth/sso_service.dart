@@ -181,8 +181,11 @@ class SsoService {
       createdAt: _now(),
     );
 
-    // Build OAuth URL with PKCE challenge
-    final oauthUrl = Uri.parse('$url${_endpoints.idpLoginEndpoint}/$idpSlug')
+    // Build OAuth URL with PKCE challenge. The slug comes from the server, so
+    // it is encoded as one path segment: it can neither add segments nor a
+    // query or fragment.
+    final slug = Uri.encodeComponent(idpSlug);
+    final oauthUrl = Uri.parse('$url${_endpoints.idpLoginEndpoint}/$slug')
         .replace(
           queryParameters: {
             'code_challenge': pkce.challenge,

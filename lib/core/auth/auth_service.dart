@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:endurain/core/auth/auth_session_store.dart';
@@ -60,6 +61,18 @@ class AuthService {
   // refresh independently without joining a stale request from the old session.
   final Map<String, Future<bool>> _inFlightRefreshes = {};
 
+  // Synchronous so a listener sees the end before any later sign-in can run.
+  final StreamController<void> _sessionEnded = StreamController<void>.broadcast(
+    sync: true,
+  );
+
+  /// Emits when this service ends the stored session on its own: a refresh
+  /// the server rejected or answered with an unusable body, a session left
+  /// without a refresh token, or a refresh that found no session at all.
+  ///
+  /// An explicit [logout] does not emit; its caller already drops to guest.
+  Stream<void> get sessionEnded => _sessionEnded.stream;
+
   /// Starts a password sign-in (PKCE, mobile). The result says whether the
   /// user is signed in or which step comes next ([verifyMfa],
   /// [changePassword]).
@@ -97,6 +110,7 @@ class AuthService {
     final session = await _sessionStore.readSession();
     if (session == null) {
       await _sessionStore.clear();
+      _sessionEnded.add(null);
       return false;
     }
     final existing = _inFlightRefreshes[session.revision];
@@ -137,31 +151,21 @@ class AuthService {
     }
 
     if (response.statusCode == 200) {
+      final ({
+        String accessToken,
+        String refreshToken,
+        String sessionId,
+        int expiresIn,
+      })
+      tokens;
       try {
         final data = ApiResponse.decodeJsonObject(response);
-        final newAccessToken = ApiResponse.requiredString(data, 'access_token');
-        final newRefreshToken = ApiResponse.requiredString(
-          data,
-          'refresh_token',
+        tokens = (
+          accessToken: ApiResponse.requiredString(data, 'access_token'),
+          refreshToken: ApiResponse.requiredString(data, 'refresh_token'),
+          sessionId: ApiResponse.requiredString(data, 'session_id'),
+          expiresIn: ApiResponse.requiredPositiveInt(data, 'expires_in'),
         );
-        final returnedSessionId = ApiResponse.requiredString(
-          data,
-          'session_id',
-        );
-        final expiresIn = ApiResponse.requiredPositiveInt(data, 'expires_in');
-
-        final replaced = await _sessionStore.replaceSessionIfCurrent(
-          expected: session,
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
-          sessionId: returnedSessionId,
-          expiresInSeconds: expiresIn,
-        );
-        if (!replaced) {
-          // Another sign-in or sign-out replaced the session mid-refresh.
-          _recordRefreshFailure('session_superseded');
-        }
-        return replaced;
       } catch (error) {
         // 200 with a malformed body is a definitive contract failure, not a
         // transient blip: the stored tokens cannot be trusted. Clear them.
@@ -170,6 +174,27 @@ class AuthService {
           session,
           reason: 'refresh_malformed_response',
         );
+      }
+
+      try {
+        final replaced = await _sessionStore.replaceSessionIfCurrent(
+          expected: session,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          sessionId: tokens.sessionId,
+          expiresInSeconds: tokens.expiresIn,
+        );
+        if (!replaced) {
+          // Another sign-in or sign-out replaced the session mid-refresh.
+          _recordRefreshFailure('session_superseded');
+        }
+        return replaced;
+      } catch (error) {
+        // The server accepted the refresh but the device could not store the
+        // result (secure storage unavailable). That says nothing about the
+        // session, so keep it rather than signing the user out.
+        _recordRefreshFailure('persist_failed', error: error);
+        return false;
       }
     }
 
@@ -195,15 +220,22 @@ class AuthService {
     AuthSession session, {
     required String reason,
   }) async {
-    // Recorded only once the store confirms it: a session another sign-in
-    // replaced meanwhile is left alone, and a failed clear throws.
-    if (await _sessionStore.clearIfProfileCurrent(session)) {
-      _diagnostics.recordBreadcrumbSync(
-        DiagnosticsEvents.authSessionCleared,
-        details: {'reason': reason},
-      );
+    // Matched on the revision, not the profile: a newer sign-in to the same
+    // account, or a refresh that already rotated this session, must survive a
+    // late rejection of the old tokens. Recorded only once the store confirms
+    // it, and a failed clear throws.
+    if (await _sessionStore.clearIfCurrent(session)) {
+      _reportSessionEnded(reason);
     }
     return false;
+  }
+
+  void _reportSessionEnded(String reason) {
+    _diagnostics.recordBreadcrumbSync(
+      DiagnosticsEvents.authSessionCleared,
+      details: {'reason': reason},
+    );
+    _sessionEnded.add(null);
   }
 
   void _recordRefreshFailure(String reason, {Object? error, int? status}) {
@@ -219,7 +251,8 @@ class AuthService {
 
   /// Logout and clear all tokens
   /// Returns true if server logout succeeded, false if it failed
-  /// Local tokens are always cleared regardless of server response
+  /// Local tokens are always cleared regardless of server response; throws
+  /// only when secure storage cannot delete them at all.
   Future<bool> logout() async {
     // An unreadable store must not block sign-out: treat it as no session so
     // the local clear below still runs.
@@ -251,11 +284,27 @@ class AuthService {
       }
     }
 
-    // Always clear local tokens
-    if (session == null) {
+    // Always clear local tokens. Matched on the profile, so a refresh that
+    // rotated this session while the server call ran is cleared too.
+    try {
+      if (session == null) {
+        await _sessionStore.clear();
+      } else {
+        await _sessionStore.clearIfProfileCurrent(session);
+      }
+    } catch (error) {
+      // Reading or clearing the session failed. Signing out must not leave
+      // credentials behind, so fall back to deleting every auth key; when even
+      // that fails the error reaches the caller, which still signs out of the
+      // app.
       await _sessionStore.clear();
-    } else {
-      await _sessionStore.clearIfProfileCurrent(session);
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.authSessionCleared,
+        details: {
+          'reason': 'logout_fallback',
+          ...diagnosticErrorDetails(error),
+        },
+      );
     }
 
     return serverLogoutSuccess;
@@ -284,10 +333,7 @@ class AuthService {
 
     if (session.refreshToken.isEmpty) {
       if (await _sessionStore.clearIfCurrent(session)) {
-        _diagnostics.recordBreadcrumbSync(
-          DiagnosticsEvents.authSessionCleared,
-          details: const {'reason': 'no_refresh_token'},
-        );
+        _reportSessionEnded('no_refresh_token');
       }
       return false;
     }

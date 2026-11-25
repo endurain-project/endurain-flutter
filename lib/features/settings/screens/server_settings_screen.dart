@@ -7,6 +7,7 @@ import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/settings/controllers/server_settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -71,22 +72,31 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
     );
 
     if (confirmed && mounted) {
-      final serverLogoutSuccess = await _controller.logout();
-      if (mounted) {
-        if (!serverLogoutSuccess) {
-          await DialogUtils.showMessage(
-            context,
-            l10n.logoutServerFailedWarning,
-          );
-
-          if (!mounted) {
-            return;
-          }
+      // The local clear can fail when secure storage is unavailable. The user
+      // asked to sign out, so the app still leaves the session; the message
+      // says what went wrong.
+      String? warning;
+      try {
+        if (!await _controller.logout()) {
+          warning = l10n.logoutServerFailedWarning;
         }
-        // Pop back to settings screen and trigger logout
-        Navigator.pop(context);
-        widget.onLogout?.call();
+      } catch (error) {
+        warning = localizedErrorMessage(error, l10n);
       }
+      if (!mounted) {
+        widget.onLogout?.call();
+        return;
+      }
+      if (warning != null) {
+        await DialogUtils.showMessage(context, warning);
+        if (!mounted) {
+          widget.onLogout?.call();
+          return;
+        }
+      }
+      // Pop back to settings screen and trigger logout
+      Navigator.pop(context);
+      widget.onLogout?.call();
     }
   }
 

@@ -30,6 +30,9 @@ import 'package:http/http.dart' as http;
 /// 5. Only requests whose body can be replayed are followed. Streamed bodies —
 ///    notably the multipart activity upload — are returned as-is, so an upload
 ///    is never re-sent (with or without its token) to a redirect target.
+/// 6. A cross-origin `307`/`308` that would re-send a non-empty body is
+///    returned as-is too: the body can itself be a credential (a refresh
+///    token, a password), and stripping headers does not protect it.
 ///
 /// Method rewriting follows the usual convention: `303` always becomes `GET`,
 /// `301`/`302` become `GET` for non-`GET`/`HEAD` methods, and `307`/`308`
@@ -84,6 +87,11 @@ class RedirectPolicyClient extends http.BaseClient {
       if (current.url.isScheme('https') && target.isScheme('http')) {
         throw const AppException(AppErrorCode.insecureRedirectRejected);
       }
+      if (!_becomesGet(response.statusCode, current.method) &&
+          current.bodyBytes.isNotEmpty &&
+          !_isSameOrigin(current.url, target)) {
+        return response;
+      }
 
       // Drain the redirect body so the connection can be reused.
       await response.stream.drain<void>();
@@ -112,11 +120,7 @@ class RedirectPolicyClient extends http.BaseClient {
     Uri target,
     int statusCode,
   ) {
-    final becomesGet =
-        statusCode == 303 ||
-        ((statusCode == 301 || statusCode == 302) &&
-            previous.method != 'GET' &&
-            previous.method != 'HEAD');
+    final becomesGet = _becomesGet(statusCode, previous.method);
     final method = becomesGet ? 'GET' : previous.method;
 
     final next = http.Request(method, target);
@@ -133,6 +137,14 @@ class RedirectPolicyClient extends http.BaseClient {
     next.followRedirects = false;
     next.persistentConnection = previous.persistentConnection;
     return next;
+  }
+
+  /// Whether following [statusCode] rewrites [method] to a body-less `GET`.
+  static bool _becomesGet(int statusCode, String method) {
+    return statusCode == 303 ||
+        ((statusCode == 301 || statusCode == 302) &&
+            method != 'GET' &&
+            method != 'HEAD');
   }
 
   static bool _isSameOrigin(Uri a, Uri b) {

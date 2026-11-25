@@ -358,14 +358,24 @@ class LoginController extends SafeNotifier {
     _onError?.call(error);
   }
 
+  /// Saves the signed-in server's map settings. Best-effort: the session is
+  /// already stored, so a preferences failure here must not turn a completed
+  /// sign-in into an error. The settings are saved again at the next sign-in.
   Future<void> _commitServerSettings() async {
     final settings = _serverSettings;
     final origin = ServerUrlResolver.normalize(_serverUrl, config: _config);
     if (settings == null || origin.isEmpty) return;
-    await _mapSettingsRepository?.saveFromServerSettings(
-      settings,
-      origin: origin,
-    );
+    try {
+      await _mapSettingsRepository?.saveFromServerSettings(
+        settings,
+        origin: origin,
+      );
+    } catch (error) {
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.authServerSettingsSaveFailed,
+        details: diagnosticErrorDetails(error),
+      );
+    }
   }
 
   @override

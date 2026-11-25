@@ -28,23 +28,37 @@ class AppPreferencesStore {
 
   final AppPreferencesBackend _backend;
   final Future<Directory> Function() _supportDirectoryProvider;
-  late final Future<void> _migration = _migrateLegacyPreferences();
+
+  /// The legacy import, shared by concurrent callers. A failed import is
+  /// dropped so the next call retries it instead of every call failing until
+  /// the app restarts.
+  Future<void>? _migration;
+
+  Future<void> _ensureMigrated() {
+    return _migration ??= _migrateLegacyPreferences().catchError((
+      Object error,
+      StackTrace stackTrace,
+    ) {
+      _migration = null;
+      Error.throwWithStackTrace(error, stackTrace);
+    });
+  }
 
   /// Returns the stored value for [key], or `null` when absent.
   Future<String?> read({required String key}) async {
-    await _migration;
+    await _ensureMigrated();
     return _backend.read(key);
   }
 
   /// Persists [value] for [key].
   Future<void> write({required String key, required String value}) async {
-    await _migration;
+    await _ensureMigrated();
     await _backend.write(key, value);
   }
 
   /// Removes [key] from the store. Silently succeeds when absent.
   Future<void> delete({required String key}) async {
-    await _migration;
+    await _ensureMigrated();
     await _backend.delete(key);
   }
 

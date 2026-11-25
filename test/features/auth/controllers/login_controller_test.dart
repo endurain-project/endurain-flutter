@@ -1051,7 +1051,71 @@ void main() {
       );
       controller.dispose();
     });
+
+    test('a failed map settings save still completes the sign-in', () async {
+      final storage = SecureStorageService();
+      final diagnostics = RecordingDiagnostics();
+      final errors = <Object>[];
+      final controller = LoginController(
+        authCoordinator: _repository(
+          storage: storage,
+          client: MockClient((request) async {
+            if (request.url.path ==
+                ApiEndpoints.defaults.serverSettingsEndpoint) {
+              return http.Response(
+                '{"tileserver_url":"https://tiles.test/{z}/{x}/{y}.png"}',
+                200,
+              );
+            }
+            if (request.url.path == ApiEndpoints.defaults.tokenEndpoint) {
+              return http.Response(_exchangeStep, 200);
+            }
+            if (request.url.path ==
+                ApiEndpoints.defaults.sessionTokensEndpoint('session-1')) {
+              return http.Response(_tokensStep, 200);
+            }
+            if (request.url.path == ApiEndpoints.defaults.profileEndpoint) {
+              return http.Response('{"id":1}', 200);
+            }
+            if (request.url.path == ApiEndpoints.defaults.idpListEndpoint) {
+              return http.Response('[]', 200);
+            }
+            fail('Unexpected request to ${request.url}');
+          }),
+        ),
+        appLinksService: const EmptyAppLinksService(),
+        mapSettingsRepository: MapSettingsRepository(
+          preferences: _FailingWritesPreferencesStore(),
+        ),
+        diagnostics: diagnostics,
+      );
+      final loginCompleted = Completer<void>();
+      controller.startSsoCallbackListener(
+        onLoginSuccess: loginCompleted.complete,
+        onError: errors.add,
+      );
+      await controller.submitServerUrl('https://example.test');
+
+      await controller.submitLogin(
+        serverUrl: 'https://example.test',
+        username: 'joao',
+        password: 'secret',
+      );
+      await loginCompleted.future.timeout(const Duration(seconds: 1));
+
+      expect(errors, isEmpty);
+      expect(diagnostics.events, contains('auth.server_settings_save_failed'));
+      controller.dispose();
+    });
   });
+}
+
+/// Preferences whose writes fail, as when platform storage is unavailable.
+class _FailingWritesPreferencesStore extends FakePreferencesStore {
+  @override
+  Future<void> write({required String key, required String value}) async {
+    throw StateError('preferences unavailable');
+  }
 }
 
 AuthCoordinator _repository({

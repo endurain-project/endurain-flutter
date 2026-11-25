@@ -98,19 +98,45 @@ class AuthSessionStore {
         expiresInSeconds: expiresInSeconds,
         accountId: accountId,
       );
-      try {
-        await _writeCanonicalSession(session);
-      } on AppException catch (error) {
-        if (error.code != AppErrorCode.secureStorageWriteFailed) {
-          rethrow;
-        }
-        // The store is unusable (e.g. invalidated Android Keystore key). The
-        // user just signed in explicitly, so reset it and write once more
-        // rather than leaving them unable to sign in until reinstall.
-        await _storage.resetAll();
-        await _writeCanonicalSession(session);
-      }
+      await _writeSignInSession(session);
     });
+  }
+
+  /// Writes the session of an explicit sign-in, recovering a store that
+  /// rejects the write with the least destructive step that works:
+  ///
+  /// 1. retry once, for a transient platform failure;
+  /// 2. delete the auth keys only and write again, for a damaged auth entry;
+  /// 3. reset the whole store and write again. Reached only when the store
+  ///    rejects writes even with the auth keys gone (e.g. an invalidated
+  ///    Android Keystore key), in which case no other value is readable
+  ///    either, so the device ids and per-profile markers it removes are
+  ///    already lost. Without it the user could not sign in until reinstall.
+  Future<void> _writeSignInSession(AuthSession session) async {
+    if (await _tryWrite(() => _writeCanonicalSession(session))) return;
+    if (await _tryWrite(() => _writeCanonicalSession(session))) return;
+    final authKeysCleared = await _tryWrite(_storage.clearAuthTokens);
+    if (authKeysCleared &&
+        await _tryWrite(() => _writeCanonicalSession(session))) {
+      return;
+    }
+    await _storage.resetAll();
+    await _writeCanonicalSession(session);
+  }
+
+  /// Runs [write], returning `false` when secure storage rejected it. Other
+  /// failures propagate.
+  static Future<bool> _tryWrite(Future<void> Function() write) async {
+    try {
+      await write();
+      return true;
+    } on AppException catch (error) {
+      if (error.code != AppErrorCode.secureStorageWriteFailed &&
+          error.code != AppErrorCode.secureStorageDeleteFailed) {
+        rethrow;
+      }
+      return false;
+    }
   }
 
   Future<bool> replaceSessionIfCurrent({
@@ -136,7 +162,10 @@ class AuthSessionStore {
         connectionKind: expected.connectionKind,
         accountId: expected.accountId,
       );
-      await _writeCanonicalSession(replacement);
+      // Only the session blob changes on a refresh: the origin and username
+      // are the expected session's, and legacy keys were purged when it was
+      // written. Skipping those writes keeps a refresh from failing on them.
+      await _storage.setAuthSession(jsonEncode(replacement.toJson()));
       replaced = true;
     });
     return replaced;
@@ -201,9 +230,13 @@ class AuthSessionStore {
   Future<void> _writeCanonicalSession(AuthSession session) async {
     await _storage.setServerUrl(session.origin);
     await _storage.setAuthSession(jsonEncode(session.toJson()));
-    await _storage.clearLegacyAuthTokens();
-    if (session.username != null) {
-      await _storage.setUsername(session.username!);
+    // The session is stored at this point. Purging pre-v2 keys and keeping
+    // the login-form username are housekeeping: a failure there must not fail
+    // the write, and both are retried at the next canonical write.
+    await _tryWrite(_storage.clearLegacyAuthTokens);
+    final username = session.username;
+    if (username != null) {
+      await _tryWrite(() => _storage.setUsername(username));
     }
   }
 
