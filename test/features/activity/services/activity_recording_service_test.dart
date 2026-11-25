@@ -1082,6 +1082,84 @@ void main() {
           expect(service.state.points, hasLength(2));
         },
       );
+
+      test(
+        'an overlapping batch is trimmed by stored index past skipped entries',
+        () async {
+          final recorder = _ControllableRecorder();
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          final sessionId = service.localSessionId!;
+          final first = _point(latitude: 41.1, longitude: -8.6);
+          final second = _point(latitude: 41.2, longitude: -8.7);
+
+          // Stored entries 0 (malformed, skipped) and 1 (first).
+          recorder._controller.add(
+            ActivityRecorderEvent.pointBatchAvailable(
+              RecordedActivityPointBatch(
+                [first],
+                sourceCount: 2,
+                sourceIndices: const [1],
+              ),
+              localSessionId: sessionId,
+              pointOffset: 0,
+            ),
+          );
+          // Redelivered from 0 with one more entry: only entry 2 is new. The
+          // skipped entry 0 precedes the cut, so trimming the parsed list by
+          // the overlap (2) would drop the new point as well.
+          recorder._controller.add(
+            ActivityRecorderEvent.pointBatchAvailable(
+              RecordedActivityPointBatch(
+                [first, second],
+                sourceCount: 3,
+                sourceIndices: const [1, 2],
+              ),
+              localSessionId: sessionId,
+              pointOffset: 0,
+            ),
+          );
+          await pumpEventQueue();
+
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(service.state.points.map((point) => point.latitude), [
+            41.1,
+            41.2,
+          ]);
+        },
+      );
+
+      test('an overlapping plain list is trimmed by position', () async {
+        final recorder = _ControllableRecorder();
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+        await service.start(activityType: ActivityType.run);
+        final sessionId = service.localSessionId!;
+        final first = _point(latitude: 41.1, longitude: -8.6);
+        final second = _point(latitude: 41.2, longitude: -8.7);
+
+        recorder._controller.add(
+          ActivityRecorderEvent.pointBatchAvailable(
+            [first],
+            localSessionId: sessionId,
+            pointOffset: 0,
+          ),
+        );
+        recorder._controller.add(
+          ActivityRecorderEvent.pointBatchAvailable(
+            [first, second],
+            localSessionId: sessionId,
+            pointOffset: 0,
+          ),
+        );
+        await pumpEventQueue();
+
+        expect(service.state.points.map((point) => point.latitude), [
+          41.1,
+          41.2,
+        ]);
+      });
     });
 
     test('stop finalizes durable points and completes', () async {

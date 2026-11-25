@@ -44,23 +44,52 @@ enum ActivityRecorderEventType {
 }
 
 /// Points read from a recorder's durable store that remembers how many
-/// entries the store returned.
+/// entries the store returned and where each parsed point sat among them.
 ///
 /// A malformed stored entry is skipped while parsing, so [length] can be
 /// smaller than [sourceCount]. Offsets into the store (`pointOffset`,
 /// `drain(sinceOffset:)`) count stored entries, so they must advance by
-/// [sourceCount], never by the parsed length.
+/// [sourceCount], never by the parsed length, and a batch that overlaps
+/// already-recorded points must be trimmed by [sourceIndices], never by a
+/// position in the parsed list.
 class RecordedActivityPointBatch
     extends UnmodifiableListView<RecordedActivityPoint> {
-  RecordedActivityPointBatch(super.points, {required this.sourceCount});
+  RecordedActivityPointBatch(
+    List<RecordedActivityPoint> points, {
+    required this.sourceCount,
+    List<int>? sourceIndices,
+  }) : sourceIndices = List.unmodifiable(
+         sourceIndices ?? List<int>.generate(points.length, (i) => i),
+       ),
+       super(points) {
+    if (this.sourceIndices.length != points.length) {
+      throw ArgumentError.value(
+        sourceIndices,
+        'sourceIndices',
+        'must have one index per point',
+      );
+    }
+  }
 
   /// Number of entries the store returned, including skipped ones.
   final int sourceCount;
+
+  /// For each point, the index of its entry among the [sourceCount] stored
+  /// entries (strictly increasing). Defaults to `0..length-1` when nothing
+  /// was skipped.
+  final List<int> sourceIndices;
 
   /// The store entry count behind [points]: its [sourceCount] when it is a
   /// [RecordedActivityPointBatch], otherwise its length.
   static int sourceCountOf(List<RecordedActivityPoint> points) =>
       points is RecordedActivityPointBatch ? points.sourceCount : points.length;
+
+  /// The stored entry index of each of [points]: its [sourceIndices] when it
+  /// is a [RecordedActivityPointBatch], otherwise `0..length-1`.
+  static List<int> sourceIndicesOf(List<RecordedActivityPoint> points) =>
+      points is RecordedActivityPointBatch
+      ? points.sourceIndices
+      : List<int>.generate(points.length, (i) => i);
 }
 
 /// An event emitted by an [ActivityLocationRecorder].

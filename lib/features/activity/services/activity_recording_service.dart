@@ -821,7 +821,13 @@ class ActivityRecordingService {
     if (skipCount < 0 || skipCount >= sourceCount) {
       return;
     }
-    final newPoints = points.skip(skipCount).toList();
+    // Trim the overlap by stored-entry index, not by parsed position: a
+    // skipped entry before the cut would otherwise shift it by one.
+    final sourceIndices = RecordedActivityPointBatch.sourceIndicesOf(points);
+    final newPoints = <RecordedActivityPoint>[
+      for (var i = 0; i < points.length; i++)
+        if (sourceIndices[i] >= skipCount) points[i],
+    ];
     _nextPointOffset = pointOffset + sourceCount;
     if (newPoints.isEmpty) {
       return;

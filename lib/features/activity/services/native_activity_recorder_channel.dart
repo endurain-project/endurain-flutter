@@ -310,23 +310,31 @@ class NativeActivityRecorderChannel
   }
 
   /// Parses stored points, skipping malformed entries. The result keeps the
-  /// stored entry count so point offsets stay aligned with the native store.
+  /// stored entry count and each point's index among the stored entries so
+  /// point offsets stay aligned with the native store.
   RecordedActivityPointBatch _parsePoints(Object? value) {
     if (value is! List) {
       return RecordedActivityPointBatch(const [], sourceCount: 0);
     }
     final points = <RecordedActivityPoint>[];
-    for (final entry in value) {
+    final sourceIndices = <int>[];
+    for (var index = 0; index < value.length; index++) {
+      final entry = value[index];
       if (entry is! Map) {
         continue;
       }
       try {
         points.add(RecordedActivityPoint.fromJson(entry));
+        sourceIndices.add(index);
       } on FormatException {
         continue;
       }
     }
-    return RecordedActivityPointBatch(points, sourceCount: value.length);
+    return RecordedActivityPointBatch(
+      points,
+      sourceCount: value.length,
+      sourceIndices: sourceIndices,
+    );
   }
 
   ActivityRecorderFailureReason _parseReason(Object? value) {

@@ -48,13 +48,23 @@ void main() {
     });
 
     test('begins and ends the warm-up', () async {
-      await adapter.beginWarmUp();
+      await adapter.beginWarmUp(countdownSeconds: 5);
       await adapter.endWarmUp();
 
       expect(calls.map((call) => call.method), [
         NativeActivityRecorderChannelContract.beginStartWarmUp,
         NativeActivityRecorderChannelContract.endStartWarmUp,
       ]);
+    });
+
+    test('passes the countdown length to the warm-up', () async {
+      await adapter.beginWarmUp(countdownSeconds: 10);
+
+      expect(
+        calls.single.method,
+        NativeActivityRecorderChannelContract.beginStartWarmUp,
+      );
+      expect(calls.single.arguments, {'countdownSeconds': 10});
     });
   });
 }

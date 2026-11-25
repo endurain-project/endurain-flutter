@@ -88,18 +88,45 @@ class IngestionPollPolicy {
 /// the same single-attempt behaviour as before. Set it to a higher value for
 /// post-recording uploads that benefit from silent recovery.
 ///
+/// Between attempts it waits [retryDelay], or longer when the failed response
+/// carried a `Retry-After`. A `Retry-After` beyond [maxRetryAfter] is not
+/// waited out in-process: the attempt ends there and the record stays
+/// auto-retry-eligible for the next queue drain (resume, reconnect).
+///
 /// Inject a no-op [delay] in tests to avoid real sleeps.
 class ActivityUploadRetryPolicy {
   const ActivityUploadRetryPolicy({
     this.maxAttempts = 1,
-    Future<void> Function(int attempt)? delay,
+    this.retryDelay = const Duration(seconds: 2),
+    this.maxRetryAfter = const Duration(seconds: 60),
+    Future<void> Function(int attempt, Duration wait)? delay,
   }) : delay = delay ?? _defaultDelay;
 
   final int maxAttempts;
-  final Future<void> Function(int attempt) delay;
 
-  static Future<void> _defaultDelay(int attempt) =>
-      Future.delayed(const Duration(seconds: 2));
+  /// The wait between attempts when the server did not ask for a longer one.
+  final Duration retryDelay;
+
+  /// The longest server-requested `Retry-After` waited in-process. Longer
+  /// requests end the attempt instead, so a busy server cannot hold the
+  /// upload queue (or a user's manual retry) for minutes while the app may
+  /// be suspended anyway.
+  final Duration maxRetryAfter;
+
+  /// Waits `wait` before attempt number `attempt`; replaced in tests.
+  final Future<void> Function(int attempt, Duration wait) delay;
+
+  static Future<void> _defaultDelay(int attempt, Duration wait) =>
+      Future.delayed(wait);
+
+  /// The wait before the next attempt: [retryDelay], or the server's
+  /// [retryAfter] when that is longer. Null when [retryAfter] exceeds
+  /// [maxRetryAfter]: the retry is left to the next queue drain.
+  Duration? waitFor(Duration? retryAfter) {
+    if (retryAfter == null) return retryDelay;
+    if (retryAfter > maxRetryAfter) return null;
+    return retryAfter > retryDelay ? retryAfter : retryDelay;
+  }
 }
 
 class ActivityUploadConfig {
@@ -246,8 +273,14 @@ class ActivityUploadService {
         415 => unsupportedFileTypeDetails,
         _ => 'HTTP ${response.statusCode}',
       },
+      retryAfter: _retryAfterStatuses.contains(response.statusCode)
+          ? parseRetryAfter(response.headers[ApiConstants.retryAfterHeader])
+          : null,
     );
   }
+
+  /// Refused-upload statuses whose `Retry-After` paces the next attempt.
+  static const Set<int> _retryAfterStatuses = {408, 429, 503};
 
   /// [AppException.details] of an upload the server refused because an
   /// administrator requires two-step verification the account has not set up.
@@ -543,10 +576,11 @@ class ActivityUploadService {
 
     final maxAttempts = _retryPolicy.maxAttempts.clamp(1, 1 << 20);
     Object? lastError;
+    Duration? nextWait;
 
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       if (attempt > 0) {
-        await _retryPolicy.delay(attempt);
+        await _retryPolicy.delay(attempt, nextWait!);
       }
       try {
         if (!isConfigured) {
@@ -594,7 +628,12 @@ class ActivityUploadService {
       } catch (error) {
         lastError = error;
         if (attempt < maxAttempts - 1 && _isTransient(error)) {
-          continue;
+          nextWait = _retryPolicy.waitFor(
+            error is AppException ? error.retryAfter : null,
+          );
+          // A Retry-After too long to wait here ends the attempt; the
+          // transient failure keeps the record eligible for the next drain.
+          if (nextWait != null) continue;
         }
         final failedRecord = updated.copyWith(
           uploadStatus: LocalActivityUploadStatus.failed,

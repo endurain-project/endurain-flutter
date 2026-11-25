@@ -784,6 +784,244 @@ void main() {
       expect(persisted.autoRetryEligible, isFalse);
     });
 
+    group('Retry-After', () {
+      Future<List<Duration>> waitsFor(
+        List<(int, Map<String, String>)> responses, {
+        String id = 'svc_retry_after',
+        Duration retryDelay = const Duration(seconds: 2),
+        Duration maxRetryAfter = const Duration(seconds: 60),
+      }) async {
+        final record = await _createRecord(repository, id: id);
+        final waits = <Duration>[];
+        var call = 0;
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          retryPolicy: ActivityUploadRetryPolicy(
+            maxAttempts: responses.length,
+            retryDelay: retryDelay,
+            maxRetryAfter: maxRetryAfter,
+            delay: (_, wait) async => waits.add(wait),
+          ),
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                final (status, headers) = responses[call++];
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  status,
+                  headers: headers,
+                );
+              },
+        );
+        final result = await service.performUploadAttempt(
+          record: record,
+          repository: repository,
+        );
+        expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+        return waits;
+      }
+
+      for (final status in [408, 429, 503]) {
+        test('HTTP $status waits the server Retry-After', () async {
+          final waits = await waitsFor([
+            (status, {ApiConstants.retryAfterHeader: '30'}),
+            (201, const {}),
+          ], id: 'svc_retry_after_$status');
+
+          expect(waits, [const Duration(seconds: 30)]);
+        });
+      }
+
+      test('without Retry-After waits the policy delay', () async {
+        final waits = await waitsFor([
+          (429, const {}),
+          (503, const {}),
+          (201, const {}),
+        ]);
+
+        expect(waits, [const Duration(seconds: 2), const Duration(seconds: 2)]);
+      });
+
+      test('a Retry-After shorter than the policy delay is ignored', () async {
+        final waits = await waitsFor([
+          (429, {ApiConstants.retryAfterHeader: '1'}),
+          (201, const {}),
+        ], retryDelay: const Duration(seconds: 5));
+
+        expect(waits, [const Duration(seconds: 5)]);
+      });
+
+      test('a malformed Retry-After falls back to the policy delay', () async {
+        final waits = await waitsFor([
+          (429, {ApiConstants.retryAfterHeader: 'soon'}),
+          (201, const {}),
+        ]);
+
+        expect(waits, [const Duration(seconds: 2)]);
+      });
+
+      test('a Retry-After at the limit is still waited', () async {
+        final waits = await waitsFor([
+          (503, {ApiConstants.retryAfterHeader: '120'}),
+          (201, const {}),
+        ], maxRetryAfter: const Duration(seconds: 120));
+
+        expect(waits, [const Duration(seconds: 120)]);
+      });
+
+      test('a long Retry-After defers the retry to the next drain', () async {
+        final record = await _createRecord(repository, id: 'svc_long_wait');
+        final waits = <Duration>[];
+        var calls = 0;
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          retryPolicy: ActivityUploadRetryPolicy(
+            maxAttempts: 3,
+            delay: (_, wait) async => waits.add(wait),
+          ),
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async {
+                calls++;
+                return http.StreamedResponse(
+                  const Stream<List<int>>.empty(),
+                  429,
+                  headers: {ApiConstants.retryAfterHeader: '86400'},
+                );
+              },
+        );
+
+        await expectLater(
+          service.performUploadAttempt(record: record, repository: repository),
+          throwsA(isA<AppException>()),
+        );
+
+        expect(calls, 1);
+        expect(waits, isEmpty);
+        final stored = await repository.get(record.id);
+        expect(stored!.uploadStatus, LocalActivityUploadStatus.failed);
+        expect(stored.autoRetryEligible, isTrue);
+      });
+
+      test('only the latest failure paces the next attempt', () async {
+        final waits = await waitsFor([
+          (429, {ApiConstants.retryAfterHeader: '30'}),
+          (500, const {}),
+          (201, const {}),
+        ]);
+
+        expect(waits, [
+          const Duration(seconds: 30),
+          const Duration(seconds: 2),
+        ]);
+      });
+
+      test('uploadGpx carries Retry-After on the exception', () async {
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async => http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                429,
+                headers: {ApiConstants.retryAfterHeader: '42'},
+              ),
+        );
+
+        await expectLater(
+          service.uploadGpx(_request()),
+          throwsA(
+            isA<AppException>()
+                .having((e) => e.details, 'details', 'HTTP 429')
+                .having(
+                  (e) => e.retryAfter,
+                  'retryAfter',
+                  const Duration(seconds: 42),
+                ),
+          ),
+        );
+      });
+
+      test('a permanent failure ignores Retry-After', () async {
+        final service = ActivityUploadService(
+          config: const ActivityUploadConfig(
+            endpoint: '/upload',
+            fieldName: 'file',
+          ),
+          uploadFile:
+              (
+                _,
+                _,
+                _, {
+                idempotencyKey,
+                expectedOrigin,
+                expectedProfileId,
+              }) async => http.StreamedResponse(
+                const Stream<List<int>>.empty(),
+                422,
+                headers: {ApiConstants.retryAfterHeader: '42'},
+              ),
+        );
+
+        await expectLater(
+          service.uploadGpx(_request()),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.retryAfter,
+              'retryAfter',
+              isNull,
+            ),
+          ),
+        );
+      });
+    });
+
+    test('ActivityUploadRetryPolicy.waitFor bounds the server wait', () {
+      const policy = ActivityUploadRetryPolicy(
+        retryDelay: Duration(seconds: 2),
+        maxRetryAfter: Duration(minutes: 5),
+      );
+
+      expect(policy.waitFor(null), const Duration(seconds: 2));
+      expect(policy.waitFor(Duration.zero), const Duration(seconds: 2));
+      expect(
+        policy.waitFor(const Duration(seconds: 90)),
+        const Duration(seconds: 90),
+      );
+      expect(
+        policy.waitFor(const Duration(minutes: 5)),
+        const Duration(minutes: 5),
+      );
+      expect(policy.waitFor(const Duration(hours: 1)), isNull);
+    });
+
     for (final status in [408, 429]) {
       test('HTTP $status is transient and retried', () async {
         final record = await _createRecord(repository, id: 'svc_retry_$status');
@@ -824,7 +1062,7 @@ void main() {
         ),
         retryPolicy: ActivityUploadRetryPolicy(
           maxAttempts: 3,
-          delay: (_) async {},
+          delay: (_, _) async {},
         ),
         uploadFile:
             (
@@ -892,7 +1130,7 @@ void main() {
         ),
         retryPolicy: ActivityUploadRetryPolicy(
           maxAttempts: 3,
-          delay: (_) async => delayCalls++,
+          delay: (_, _) async => delayCalls++,
         ),
         uploadFile:
             (
@@ -981,7 +1219,7 @@ ActivityUploadService _serviceWithResponses(List<int> statusCodes) {
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
     retryPolicy: ActivityUploadRetryPolicy(
       maxAttempts: statusCodes.length,
-      delay: (_) async {},
+      delay: (_, _) async {},
     ),
     uploadFile:
         (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {

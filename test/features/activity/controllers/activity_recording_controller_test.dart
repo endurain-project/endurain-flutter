@@ -1216,7 +1216,7 @@ ActivityUploadService _uploadServiceWithResponses(List<int> statusCodes) {
     config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
     retryPolicy: ActivityUploadRetryPolicy(
       maxAttempts: statusCodes.length,
-      delay: (_) async {},
+      delay: (_, _) async {},
     ),
     uploadFile:
         (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {

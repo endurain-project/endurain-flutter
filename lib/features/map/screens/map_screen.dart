@@ -344,7 +344,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     if (!locationReady) {
       return null;
     }
-    await _safely(platform.beginWarmUp);
+    await _safely(() => platform.beginWarmUp(countdownSeconds: config.seconds));
     if (!mounted) {
       return StartCountdownOutcome.cancel;
     }
