@@ -54,9 +54,8 @@ if (isReleaseBuild && configuredReleaseStoreFile?.isFile != true) {
 // Wear OS link. The Wearable Data Layer comes from Google Play Services
 // (play-services-wearable); -Pendurain.wearable=false leaves it out (with
 // Flutter: `flutter build apk --android-project-arg=endurain.wearable=false`).
-// The watch link then reports "unsupported" and nothing else changes. The
-// release workflow publishes both variants. Note that geolocator_android
-// still brings play-services-location either way.
+// The watch link then reports "unsupported" and nothing else changes. Note
+// that geolocator_android still brings play-services-location either way.
 val watchLinkEnabled =
     providers.gradleProperty("endurain.wearable").map { it.toBoolean() }.getOrElse(true)
 val watchLinkSourceDir = if (watchLinkEnabled) "src/watchLinkPlay" else "src/watchLinkNone"

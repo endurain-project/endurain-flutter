@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   build-android:
-    name: Build Android APKs
+    name: Build Android APK
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
@@ -112,11 +112,7 @@ jobs:
             echo "EXPECTED_CERT_SHA256=$expected_fingerprint"
           } >> "$GITHUB_ENV"
 
-      # Two APKs from the same commit: the standard one, which links to the
-      # Wear OS app through the Wearable Data Layer, and one built with
-      # -Pendurain.wearable=false, which leaves that link (and
-      # play-services-wearable) out for users who do not want it.
-      - name: Build release APKs
+      - name: Build release APK
         shell: bash
         env:
           GRADLE_OPTS: >-
@@ -132,85 +128,52 @@ jobs:
             -XX:ReservedCodeCacheSize=128m
           ENDURAIN_CRASH_REPORTING_DSN: ${{ vars.ENDURAIN_CRASH_REPORTING_DSN }}
         run: |
-          set -euo pipefail
-          mkdir -p dist
-          build() {
-            local wearable="$1" output="$2"
-            pkill -f 'GradleDaemon' || true
-            flutter build apk --release \
-              --build-name="$VERSION_NAME" \
-              --build-number="$VERSION_CODE" \
-              --target-platform android-arm64 \
-              --split-debug-info="build/debug-info/${output%.apk}" \
-              --android-project-arg=endurain.wearable="$wearable" \
-              --dart-define=ENDURAIN_CRASH_REPORTING_DSN="${ENDURAIN_CRASH_REPORTING_DSN:-}"
-            # The next build overwrites Flutter's output, so keep a copy.
-            cp build/app/outputs/flutter-apk/app-release.apk "dist/$output"
-          }
-          build true app-release.apk
-          build false app-release-no-wear-os.apk
+          pkill -f 'GradleDaemon' || true
+          flutter build apk --release \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE" \
+            --target-platform android-arm64 \
+            --split-debug-info=build/debug-info \
+            --dart-define=ENDURAIN_CRASH_REPORTING_DSN="${ENDURAIN_CRASH_REPORTING_DSN:-}"
 
-      - name: Verify signed APKs
+      - name: Verify signed APK
         shell: bash
+        env:
+          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
         run: |
           set -euo pipefail
+          test -s "$APK_PATH"
           apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -path '*/apksigner' -type f | sort -V | tail -n 1)"
           test -n "$apksigner"
-          for apk in dist/app-release.apk dist/app-release-no-wear-os.apk; do
-            test -s "$apk"
-            "$apksigner" verify --verbose --print-certs "$apk"
-            actual_fingerprint="$(
-              "$apksigner" verify --print-certs "$apk" |
-                awk -F': ' '/Signer #1 certificate SHA-256 digest:/{gsub(":", "", $2); print toupper($2); exit}'
-            )"
-            [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
-          done
+          "$apksigner" verify --verbose --print-certs "$APK_PATH"
+          actual_fingerprint="$(
+            "$apksigner" verify --print-certs "$APK_PATH" |
+              awk -F': ' '/Signer #1 certificate SHA-256 digest:/{gsub(":", "", $2); print toupper($2); exit}'
+          )"
+          [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
 
-      - name: Verify the Wear OS link is left out
-        shell: bash
-        run: |
-          set -euo pipefail
-          wearable_classes() {
-            local apk="$1" count=0 dex
-            for dex in $(unzip -Z1 "$apk" 'classes*.dex'); do
-              count=$((count + $(unzip -p "$apk" "$dex" | grep -a -c 'com/google/android/gms/wearable' || true)))
-            done
-            echo "$count"
-          }
-          if [[ "$(wearable_classes dist/app-release.apk)" == 0 ]]; then
-            echo "app-release.apk is missing the Wear OS link." >&2
-            exit 1
-          fi
-          if [[ "$(wearable_classes dist/app-release-no-wear-os.apk)" != 0 ]]; then
-            echo "app-release-no-wear-os.apk still contains play-services-wearable." >&2
-            exit 1
-          fi
-
-      - name: Upload APKs as workflow artifact
+      - name: Upload APK as workflow artifact
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: endurain-release-apks
-          path: |
-            dist/app-release.apk
-            dist/app-release-no-wear-os.apk
+          name: endurain-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
 
-      - name: Attach APKs to the release
+      - name: Attach APK to the release
         if: github.event_name == 'release'
         shell: bash
         env:
           UPLOAD_URL: ${{ github.event.release.upload_url }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
         run: |
           set -euo pipefail
           upload_url="${UPLOAD_URL%%\{*}"
-          for apk in dist/app-release.apk dist/app-release-no-wear-os.apk; do
-            curl --fail --show-error --location \
-              --request POST \
-              --header "Accept: application/vnd.github+json" \
-              --header "Authorization: Bearer $TOKEN" \
-              --header "Content-Type: application/vnd.android.package-archive" \
-              --data-binary "@$apk" \
-              "${upload_url}?name=$(basename "$apk")"
-          done
+          curl --fail --show-error --location \
+            --request POST \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer $TOKEN" \
+            --header "Content-Type: application/vnd.android.package-archive" \
+            --data-binary "@$APK_PATH" \
+            "${upload_url}?name=app-release.apk"

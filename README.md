@@ -528,10 +528,9 @@ the rest of the app is unchanged:
 flutter build apk --release --android-project-arg=endurain.wearable=false
 ```
 
-The release workflow publishes both: `app-release.apk` (with the Wear OS
-link) and `app-release-no-wear-os.apk` (without it), and checks that only the
-first contains `play-services-wearable`. Neither APK is free of Google Play
-Services yet: `geolocator_android` brings `play-services-location` in both.
+Releases ship one APK, with the Wear OS link. Leaving the link out does not
+make the app free of Google Play Services: `geolocator_android` brings
+`play-services-location` either way.
 
 ## Project Structure
 
