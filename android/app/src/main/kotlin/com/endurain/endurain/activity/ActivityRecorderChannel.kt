@@ -74,7 +74,7 @@ class ActivityRecorderChannel(context: Context) :
             METHOD_RECOVER -> handleRecover(result)
             METHOD_SPEAK_PREVIEW -> handleSpeakPreview(call, result)
             METHOD_SPEAK_CUE -> handleSpeakCue(call, result)
-            METHOD_BEGIN_START_WARM_UP -> handleBeginStartWarmUp(result)
+            METHOD_BEGIN_START_WARM_UP -> handleBeginStartWarmUp(call, result)
             METHOD_END_START_WARM_UP -> {
                 warmUpBegun = false
                 ActivityRecorderService.endWarmUp()
@@ -106,6 +106,12 @@ class ActivityRecorderChannel(context: Context) :
         }
         if (store.hasRecoverableData()) {
             result.error(ERROR_STATE, "A recoverable session already exists", null)
+            return
+        }
+        // Before anything is persisted: nothing was recorded, so no session
+        // may be left behind to block the next start.
+        if (!hasLocationPermission()) {
+            replyLocationPermissionMissing(result)
             return
         }
         val activityType = call.argument<String>("activityType") ?: ""
@@ -196,6 +202,11 @@ class ActivityRecorderChannel(context: Context) :
             result.error(ERROR_STATE, "No active session", null)
             return
         }
+        // The session stays paused, so it resumes once permission is back.
+        if (!hasLocationPermission()) {
+            replyLocationPermissionMissing(result)
+            return
+        }
         val nowMillis = System.currentTimeMillis()
         val updated = session.copy(
             status = ActiveActivitySessionData.STATUS_RECORDING,
@@ -273,6 +284,29 @@ class ActivityRecorderChannel(context: Context) :
         }
     }
 
+    /**
+     * Whether the recorder may be started with `startForegroundService`.
+     * Without location it cannot claim its `location` foreground type on
+     * Android 14+, so it could never satisfy the `startForeground` contract
+     * and the app would crash. The service keeps its own check for a
+     * permission revoked after this one.
+     */
+    private fun hasLocationPermission(): Boolean =
+        ActivityRecorderService.hasLocationPermission(appContext)
+
+    /**
+     * Rejects a recorder start for missing location permission. The event
+     * lets Dart report the permission problem (`permissionLost` maps to
+     * `locationPermissionDenied`), not a generic stream failure; it is
+     * delivered after the reply, so it is the error Dart is left showing.
+     */
+    private fun replyLocationPermissionMissing(result: MethodChannel.Result) {
+        ActivityRecorderCoordinator.emitFailed(
+            ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
+        )
+        result.error(ERROR_SERVICE, "Location permission is not granted", null)
+    }
+
     private fun isSupportedVersion(call: MethodCall): Boolean {
         val version = call.argument<Int>("version") ?: return true
         return version == PAYLOAD_VERSION
@@ -309,19 +343,35 @@ class ActivityRecorderChannel(context: Context) :
      * Starts the foreground service that keeps the app from being frozen
      * during the start countdown. Best effort: if Android refuses, the
      * countdown still runs while the app stays in the foreground.
+     *
+     * The optional `countdownSeconds` argument sizes the warm-up's safety
+     * timeout; it is ignored when absent or not an integer.
      */
-    private fun handleBeginStartWarmUp(result: MethodChannel.Result) {
+    private fun handleBeginStartWarmUp(call: MethodCall, result: MethodChannel.Result) {
         if (store.hasRecoverableData()) {
             result.success(null)
             return
         }
+        if (!hasLocationPermission()) {
+            // No `failed` event: no recording exists for Dart to fail.
+            result.error(ERROR_SERVICE, "Location permission is not granted", null)
+            return
+        }
         try {
-            ActivityRecorderService.beginWarmUp(appContext)
+            ActivityRecorderService.beginWarmUp(appContext, countdownSecondsArgument(call))
             warmUpBegun = true
         } catch (_: RuntimeException) {
             // Started from the background or refused by the system.
         }
         result.success(null)
+    }
+
+    private fun countdownSecondsArgument(call: MethodCall): Long? {
+        return when (val value = (call.arguments as? Map<*, *>)?.get(ARG_COUNTDOWN_SECONDS)) {
+            is Int -> value.toLong()
+            is Long -> value
+            else -> null
+        }
     }
 
     /**
@@ -360,6 +410,8 @@ class ActivityRecorderChannel(context: Context) :
         const val METHOD_SPEAK_CUE = "speakCue"
         const val METHOD_BEGIN_START_WARM_UP = "beginStartWarmUp"
         const val METHOD_END_START_WARM_UP = "endStartWarmUp"
+
+        private const val ARG_COUNTDOWN_SECONDS = "countdownSeconds"
 
         private const val ERROR_ARGS = "invalid_arguments"
         private const val ERROR_STATE = "invalid_state"

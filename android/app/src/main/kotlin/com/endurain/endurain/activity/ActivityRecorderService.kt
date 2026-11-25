@@ -83,7 +83,7 @@ class ActivityRecorderService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> handleStart(intent)
-            ACTION_WARM_UP -> handleWarmUp()
+            ACTION_WARM_UP -> handleWarmUp(intent)
             ACTION_RESUME -> handleResume()
             ACTION_PAUSE -> handlePause()
             ACTION_STOP -> handleStop()
@@ -136,8 +136,11 @@ class ActivityRecorderService : Service() {
      * starting a new one from the background, which Android would refuse or
      * grant without location. GPS runs meanwhile, so the first point is
      * accurate, but every fix is dropped and nothing is stored.
+     *
+     * The safety timeout is sized from the countdown length the channel put
+     * in [EXTRA_COUNTDOWN_SECONDS]; see [warmUpTimeoutMillis].
      */
-    private fun handleWarmUp() {
+    private fun handleWarmUp(intent: Intent) {
         if (collectingSessionId != null || store.loadSession()?.isActive == true) {
             // A recording already owns this service. A fresh instance started
             // just for this warm-up must still enter the foreground before it
@@ -169,7 +172,15 @@ class ActivityRecorderService : Service() {
         isWarmingUp = true
         startWarmUpLocationUpdates()
         announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
-        announcementHandler.postDelayed(warmUpTimeoutRunnable, WARM_UP_TIMEOUT_MILLIS)
+        val countdownSeconds = if (intent.hasExtra(EXTRA_COUNTDOWN_SECONDS)) {
+            intent.getLongExtra(EXTRA_COUNTDOWN_SECONDS, 0L)
+        } else {
+            null
+        }
+        announcementHandler.postDelayed(
+            warmUpTimeoutRunnable,
+            warmUpTimeoutMillis(countdownSeconds),
+        )
     }
 
     /** Ends the warm-up when no recording started from it. */
@@ -1021,10 +1032,7 @@ class ActivityRecorderService : Service() {
             PackageManager.PERMISSION_GRANTED
     }
 
-    private fun hasAnyLocationPermission(): Boolean {
-        return hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ||
-            hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-    }
+    private fun hasAnyLocationPermission(): Boolean = hasLocationPermission(this)
 
     /**
      * Whether this service may declare [ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE].
@@ -1250,10 +1258,14 @@ class ActivityRecorderService : Service() {
         const val ACTION_RESUME = "com.endurain.endurain.activity.action.RESUME"
         const val ACTION_STOP = "com.endurain.endurain.activity.action.STOP"
         const val ACTION_WARM_UP = "com.endurain.endurain.activity.action.WARM_UP"
-        private const val ACTION_RECONNECT = "com.endurain.endurain.activity.action.RECONNECT"
+        @VisibleForTesting
+        internal const val ACTION_RECONNECT = "com.endurain.endurain.activity.action.RECONNECT"
 
         const val EXTRA_TITLE = "title"
         const val EXTRA_TEXT = "text"
+
+        /** Full length of the start countdown, in seconds (a `Long` extra). */
+        const val EXTRA_COUNTDOWN_SECONDS = "countdownSeconds"
 
         private const val CHANNEL_ID = "activity_recording"
         private const val NOTIFICATION_ID = 4711
@@ -1261,12 +1273,57 @@ class ActivityRecorderService : Service() {
         private const val INTERRUPTED_NOTIFICATION_ID = 4712
 
         /**
-         * Leak guard for a warm-up nobody ended (Dart died mid-countdown).
-         * Longer than the longest countdown Dart allows (StartCountdown's
-         * 10-minute maxRemaining), so it never ends a live countdown early.
+         * Leak guard for a warm-up nobody ended (Dart died mid-countdown), used
+         * when the countdown length is unknown. Longer than the longest
+         * countdown Dart allows (StartCountdown's 10-minute maxRemaining), so
+         * it never ends a live countdown early. Also the upper clamp of
+         * [warmUpTimeoutMillis].
          */
         @VisibleForTesting
         internal const val WARM_UP_TIMEOUT_MILLIS = 11 * 60_000L
+
+        /** Lower clamp of [warmUpTimeoutMillis]. */
+        @VisibleForTesting
+        internal const val MIN_WARM_UP_TIMEOUT_MILLIS = 60_000L
+
+        /** Slack past the countdown's end before the warm-up is ended anyway. */
+        private const val WARM_UP_TIMEOUT_MARGIN_MILLIS = 60_000L
+
+        /**
+         * The warm-up's safety timeout: the countdown plus a minute, clamped
+         * to [[MIN_WARM_UP_TIMEOUT_MILLIS], [WARM_UP_TIMEOUT_MILLIS]], so a
+         * leaked warm-up of a short countdown does not hold a location
+         * foreground service for 11 minutes. [WARM_UP_TIMEOUT_MILLIS] when
+         * [countdownSeconds] is unknown (an older Dart build).
+         */
+        @VisibleForTesting
+        internal fun warmUpTimeoutMillis(countdownSeconds: Long?): Long {
+            if (countdownSeconds == null) {
+                return WARM_UP_TIMEOUT_MILLIS
+            }
+            // Bounded first so the multiplication cannot overflow.
+            val countdownMillis =
+                countdownSeconds.coerceIn(0L, WARM_UP_TIMEOUT_MILLIS / 1000L) * 1000L
+            return (countdownMillis + WARM_UP_TIMEOUT_MARGIN_MILLIS)
+                .coerceIn(MIN_WARM_UP_TIMEOUT_MILLIS, WARM_UP_TIMEOUT_MILLIS)
+        }
+
+        /**
+         * Whether the app holds fine or coarse location. Without either, a
+         * recorder started with `startForegroundService` cannot claim the
+         * `location` foreground type on Android 14+, so callers check this
+         * before starting it.
+         */
+        fun hasLocationPermission(context: Context): Boolean {
+            return ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ) == PackageManager.PERMISSION_GRANTED
+        }
 
         /** Namespaced so this lock is attributable in `dumpsys power`. */
         private const val WAKE_LOCK_TAG = "endurain:activity-recording"
@@ -1309,20 +1366,29 @@ class ActivityRecorderService : Service() {
                 System.currentTimeMillis(),
             )
             store.saveSession(recovered)
-            try {
-                ContextCompat.startForegroundService(
-                    context,
-                    baseIntent(context, ACTION_RECONNECT),
-                )
-            } catch (_: RuntimeException) {
+            // Checked before `startForegroundService`: without location the
+            // service could not enter the foreground on Android 14+, and the
+            // app would crash for not calling `startForeground` in time.
+            val failureReason = if (!hasLocationPermission(context)) {
+                ActivityRecorderCoordinator.REASON_PERMISSION_LOST
+            } else {
+                try {
+                    ContextCompat.startForegroundService(
+                        context,
+                        baseIntent(context, ACTION_RECONNECT),
+                    )
+                    null
+                } catch (_: RuntimeException) {
+                    ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED
+                }
+            }
+            if (failureReason != null) {
                 val paused = recovered.copy(
                     status = ActiveActivitySessionData.STATUS_PAUSED,
                     pausedAt = IsoTime.nowUtc(),
                 )
                 store.saveSession(paused)
-                ActivityRecorderCoordinator.emitFailed(
-                    ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED,
-                )
+                ActivityRecorderCoordinator.emitFailed(failureReason)
                 return paused
             }
             return recovered
@@ -1344,9 +1410,14 @@ class ActivityRecorderService : Service() {
             ContextCompat.startForegroundService(context, intent)
         }
 
-        /** Starts the start-countdown warm-up; see [handleWarmUp]. */
-        fun beginWarmUp(context: Context) {
-            ContextCompat.startForegroundService(context, baseIntent(context, ACTION_WARM_UP))
+        /**
+         * Starts the start-countdown warm-up; see [handleWarmUp].
+         * [countdownSeconds] sizes its safety timeout; null when unknown.
+         */
+        fun beginWarmUp(context: Context, countdownSeconds: Long? = null) {
+            val intent = baseIntent(context, ACTION_WARM_UP)
+            countdownSeconds?.let { intent.putExtra(EXTRA_COUNTDOWN_SECONDS, it) }
+            ContextCompat.startForegroundService(context, intent)
         }
 
         /** Ends the warm-up, unless a recording started from it. */

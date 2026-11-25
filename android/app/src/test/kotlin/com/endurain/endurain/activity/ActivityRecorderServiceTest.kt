@@ -82,9 +82,15 @@ class ActivityRecorderServiceTest {
         shadowOf(Looper.getMainLooper()).idle()
     }
 
-    private fun warmUp(controller: ServiceController<ActivityRecorderService>) {
+    private fun warmUp(
+        controller: ServiceController<ActivityRecorderService>,
+        countdownSeconds: Long? = null,
+    ) {
         controller.get().onStartCommand(Intent(application, ActivityRecorderService::class.java).apply {
             action = ActivityRecorderService.ACTION_WARM_UP
+            countdownSeconds?.let {
+                putExtra(ActivityRecorderService.EXTRA_COUNTDOWN_SECONDS, it)
+            }
         }, 0, 1)
     }
 
@@ -114,6 +120,59 @@ class ActivityRecorderServiceTest {
 
         assertTrue(shadowOf(controller.get()).isStoppedBySelf)
         assertTrue(shadowOf(controller.get()).isForegroundStopped)
+    }
+
+    @Test
+    fun aWarmUpTimesOutAMinuteAfterItsCountdown() {
+        val controller = service()
+        warmUp(controller, countdownSeconds = 30)
+
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(89))
+        assertFalse(shadowOf(controller.get()).isStoppedBySelf)
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(2))
+
+        assertTrue(shadowOf(controller.get()).isStoppedBySelf)
+        assertTrue(shadowOf(controller.get()).isForegroundStopped)
+    }
+
+    @Test
+    fun warmUpTimeoutIsTheCountdownPlusAMinuteClampedToOneToElevenMinutes() {
+        assertEquals(90_000L, ActivityRecorderService.warmUpTimeoutMillis(30))
+        assertEquals(60_000L, ActivityRecorderService.warmUpTimeoutMillis(0))
+        assertEquals(60_000L, ActivityRecorderService.warmUpTimeoutMillis(-5))
+        assertEquals(11 * 60_000L, ActivityRecorderService.warmUpTimeoutMillis(600))
+        assertEquals(11 * 60_000L, ActivityRecorderService.warmUpTimeoutMillis(3_600))
+        assertEquals(11 * 60_000L, ActivityRecorderService.warmUpTimeoutMillis(Long.MAX_VALUE))
+        assertEquals(60_000L, ActivityRecorderService.warmUpTimeoutMillis(Long.MIN_VALUE))
+        assertEquals(
+            ActivityRecorderService.MIN_WARM_UP_TIMEOUT_MILLIS,
+            ActivityRecorderService.warmUpTimeoutMillis(0),
+        )
+    }
+
+    @Test
+    fun warmUpTimeoutDefaultsToElevenMinutesWithoutACountdownLength() {
+        assertEquals(
+            ActivityRecorderService.WARM_UP_TIMEOUT_MILLIS,
+            ActivityRecorderService.warmUpTimeoutMillis(null),
+        )
+        assertEquals(11 * 60_000L, ActivityRecorderService.WARM_UP_TIMEOUT_MILLIS)
+    }
+
+    @Test
+    fun beginWarmUpPutsTheCountdownLengthOnTheIntentOnlyWhenKnown() {
+        ActivityRecorderService.beginWarmUp(application, 45L)
+        assertEquals(
+            45L,
+            shadowOf(application).nextStartedService!!
+                .getLongExtra(ActivityRecorderService.EXTRA_COUNTDOWN_SECONDS, -1L),
+        )
+
+        ActivityRecorderService.beginWarmUp(application)
+        assertFalse(
+            shadowOf(application).nextStartedService!!
+                .hasExtra(ActivityRecorderService.EXTRA_COUNTDOWN_SECONDS),
+        )
     }
 
     @Test
@@ -391,7 +450,7 @@ class ActivityRecorderServiceTest {
     }
 
     @Test
-    fun deniedPermissionKeepsDurablePointsForExplicitRecovery() {
+    fun recoveryWithoutPermissionStartsNoServiceAndKeepsDurablePoints() {
         store.saveSession(session())
         store.appendPoints(listOf(RecordedActivityPointData(
             timestamp = IsoTime.nowUtc(), latitude = 41.1, longitude = -8.0, segmentIndex = 0,
@@ -400,9 +459,31 @@ class ActivityRecorderServiceTest {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
         )
-        ActivityRecorderService.recover(application)
+
+        val recovered = ActivityRecorderService.recover(application)
+
+        assertEquals(ActiveActivitySessionData.STATUS_PAUSED, recovered?.status)
+        assertEquals(ActiveActivitySessionData.STATUS_PAUSED, store.loadSession()?.status)
+        assertNull(shadowOf(application).nextStartedService)
+        assertEquals(1, store.pointCount())
+    }
+
+    @Test
+    fun deniedPermissionKeepsDurablePointsForExplicitRecovery() {
+        // A permission revoked after recover() checked it: the reconnect
+        // intent still arrives, and the service must fail safely on its own.
+        store.saveSession(session())
+        store.appendPoints(listOf(RecordedActivityPointData(
+            timestamp = IsoTime.nowUtc(), latitude = 41.1, longitude = -8.0, segmentIndex = 0,
+        )))
+        shadowOf(application).denyPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
         val controller = service()
-        controller.get().onStartCommand(shadowOf(application).nextStartedService!!, 0, 1)
+        controller.get().onStartCommand(Intent(application, ActivityRecorderService::class.java).apply {
+            action = ActivityRecorderService.ACTION_RECONNECT
+        }, 0, 1)
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals(ActiveActivitySessionData.STATUS_FAILED, store.loadSession()?.status)

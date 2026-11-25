@@ -14,6 +14,7 @@ import java.util.Date
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -121,6 +122,155 @@ class ActivityRecorderChannelTest {
         controller.destroy()
     }
 
+    private fun denyLocation() {
+        shadowOf(application).denyPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+    }
+
+    private fun listen(channel: ActivityRecorderChannel): RecordingSink =
+        RecordingSink().also { channel.onListen(null, it) }
+
+    private fun failureReasons(events: RecordingSink): List<Any?> {
+        shadowOf(Looper.getMainLooper()).idle()
+        return events.events
+            .map { it as Map<*, *> }
+            .filter { it["type"] == "failed" }
+            .map { it["reason"] }
+    }
+
+    private fun startArguments() = mapOf(
+        "version" to ActivityRecorderChannel.PAYLOAD_VERSION,
+        "localSessionId" to "new_session",
+        "activityType" to "run",
+    )
+
+    private fun pausedSession() = ActiveActivitySessionData(
+        localSessionId = "paused_session",
+        activityType = "run",
+        status = ActiveActivitySessionData.STATUS_PAUSED,
+        startedAt = IsoTime.format(Date(System.currentTimeMillis() - 60_000)),
+        pausedAt = IsoTime.nowUtc(),
+    )
+
+    @Test
+    fun startWithoutLocationPermissionRepliesWithAnErrorAndStartsNoService() {
+        denyLocation()
+        val channel = channel()
+        val events = listen(channel)
+        val result = CapturingResult()
+
+        channel.onMethodCall(MethodCall("start", startArguments()), result)
+
+        assertEquals("service_start_failed", result.errorCode)
+        assertNull(shadowOf(application).nextStartedService)
+        // Nothing may be left behind to reject the next start as invalid_state.
+        assertNull(store.loadSession())
+        assertFalse(store.hasRecoverableData())
+        assertEquals(listOf("permissionLost"), failureReasons(events))
+    }
+
+    @Test
+    fun startWithLocationPermissionStartsTheService() {
+        val result = CapturingResult()
+
+        channel().onMethodCall(MethodCall("start", startArguments()), result)
+
+        assertTrue(result.done)
+        assertNull(result.errorCode)
+        assertEquals(
+            ActivityRecorderService.ACTION_START,
+            shadowOf(application).nextStartedService?.action,
+        )
+    }
+
+    @Test
+    fun resumeWithoutLocationPermissionRepliesWithAnErrorAndStartsNoService() {
+        val paused = pausedSession()
+        store.saveSession(paused)
+        denyLocation()
+        val channel = channel()
+        val events = listen(channel)
+        val result = CapturingResult()
+
+        channel.onMethodCall(MethodCall("resume", null), result)
+
+        assertEquals("service_start_failed", result.errorCode)
+        assertNull(shadowOf(application).nextStartedService)
+        // Still paused, so it can resume once permission is granted again.
+        assertEquals(paused, store.loadSession())
+        assertEquals(listOf("permissionLost"), failureReasons(events))
+    }
+
+    @Test
+    fun beginWarmUpWithoutLocationPermissionRepliesWithAnErrorAndStartsNoService() {
+        denyLocation()
+        val channel = channel()
+        val events = listen(channel)
+        val result = CapturingResult()
+
+        channel.onMethodCall(
+            MethodCall("beginStartWarmUp", mapOf("countdownSeconds" to 10)),
+            result,
+        )
+
+        assertEquals("service_start_failed", result.errorCode)
+        assertNull(shadowOf(application).nextStartedService)
+        // No recording exists, so Dart is not told one failed.
+        assertTrue(failureReasons(events).isEmpty())
+    }
+
+    @Test
+    fun recoverWithoutLocationPermissionPausesTheSessionAndStartsNoService() {
+        store.saveSession(pausedSession().copy(
+            status = ActiveActivitySessionData.STATUS_RECORDING,
+            pausedAt = null,
+        ))
+        denyLocation()
+        val channel = channel()
+        val events = listen(channel)
+        val result = CapturingResult()
+
+        channel.onMethodCall(MethodCall("recover", null), result)
+
+        assertNull(result.errorCode)
+        val recovered = result.value as Map<*, *>
+        assertEquals(ActiveActivitySessionData.STATUS_PAUSED, recovered["status"])
+        assertEquals(ActiveActivitySessionData.STATUS_PAUSED, store.loadSession()?.status)
+        assertNull(shadowOf(application).nextStartedService)
+        assertEquals(listOf("permissionLost"), failureReasons(events))
+    }
+
+    @Test
+    fun beginWarmUpPassesTheCountdownLengthToTheService() {
+        channel().onMethodCall(
+            MethodCall("beginStartWarmUp", mapOf("countdownSeconds" to 30)),
+            CapturingResult(),
+        )
+
+        val intent = shadowOf(application).nextStartedService!!
+        assertEquals(ActivityRecorderService.ACTION_WARM_UP, intent.action)
+        assertEquals(
+            30L,
+            intent.getLongExtra(ActivityRecorderService.EXTRA_COUNTDOWN_SECONDS, -1L),
+        )
+    }
+
+    @Test
+    fun beginWarmUpToleratesAMissingOrNonIntegerCountdownLength() {
+        for (arguments in listOf(null, emptyMap<String, Any?>(), mapOf("countdownSeconds" to "30"))) {
+            val result = CapturingResult()
+            channel().onMethodCall(MethodCall("beginStartWarmUp", arguments), result)
+
+            assertTrue(result.done)
+            assertNull(result.errorCode)
+            val intent = shadowOf(application).nextStartedService!!
+            assertEquals(ActivityRecorderService.ACTION_WARM_UP, intent.action)
+            assertFalse(intent.hasExtra(ActivityRecorderService.EXTRA_COUNTDOWN_SECONDS))
+        }
+    }
+
     private class RecordingSink : EventChannel.EventSink {
         val events = mutableListOf<Any?>()
 
@@ -136,6 +286,7 @@ class ActivityRecorderChannelTest {
     private class CapturingResult : MethodChannel.Result {
         @Volatile var done = false
         var value: Any? = null
+        var errorCode: String? = null
         var thread: Thread? = null
 
         override fun success(result: Any?) {
@@ -145,6 +296,7 @@ class ActivityRecorderChannelTest {
         }
 
         override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+            this.errorCode = errorCode
             thread = Thread.currentThread()
             done = true
         }
