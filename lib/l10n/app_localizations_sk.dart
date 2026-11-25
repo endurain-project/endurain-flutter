@@ -660,7 +660,15 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String startCountdownDurationOptionLabel(int seconds) {
-    return '$seconds sekúnd';
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds sekúnd',
+      many: '$seconds sekundy',
+      few: '$seconds sekundy',
+      one: '$seconds sekunda',
+    );
+    return '$_temp0';
   }
 
   @override

@@ -145,10 +145,12 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// Starts the workout now instead of waiting for the countdown.
     func skipCountdown() {
-        guard case .countingDown = phase else { return }
+        guard case .countingDown = phase, let expected = pendingStart?.session else { return }
         countdownTask?.cancel()
         countdownTask = nil
-        Task { await finishCountdown() }
+        // Bound to this countdown: if it is cancelled and another one starts
+        // before the task runs, the task must not start the new one early.
+        Task { await finishCountdown(expecting: expected) }
     }
 
     /// Stops the countdown without recording anything.
@@ -203,8 +205,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         await finishCountdown()
     }
 
-    private func finishCountdown() async {
+    private func finishCountdown(expecting expected: HKWorkoutSession? = nil) async {
         guard case .countingDown = phase, let pending = pendingStart else { return }
+        if let expected, pending.session !== expected { return }
         pendingStart = nil
         phase = .starting
         do {

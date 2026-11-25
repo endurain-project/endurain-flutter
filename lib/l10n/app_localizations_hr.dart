@@ -663,7 +663,14 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String startCountdownDurationOptionLabel(int seconds) {
-    return '$seconds sekundi';
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds sekundi',
+      few: '$seconds sekunde',
+      one: '$seconds sekunda',
+    );
+    return '$_temp0';
   }
 
   @override

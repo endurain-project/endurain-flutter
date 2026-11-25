@@ -163,6 +163,9 @@ class WorkoutRecorder(
         }
     }
 
+    /** Whether a workout is saved on disk (recording, or waiting to be finished). */
+    fun hasSavedRecording(): Boolean = store.hasRecording()
+
     /** Cycles the countdown through [StartCountdown.OPTIONS]. */
     fun cycleCountdown() {
         val next = StartCountdown.next(countdownSeconds.value)

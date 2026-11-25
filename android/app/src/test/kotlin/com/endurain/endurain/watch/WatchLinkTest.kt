@@ -203,6 +203,17 @@ class WatchRecordingStoreTest {
     }
 
     @Test
+    fun hasRecordingFollowsBeginAndClear() {
+        assertFalse(store.hasRecording())
+
+        store.begin(WatchRecording("s", WatchActivityType.RUN, START))
+        assertTrue(store.hasRecording())
+
+        store.clear()
+        assertFalse(store.hasRecording())
+    }
+
+    @Test
     fun restoresTheRecordingAndItsPoints() {
         var recording = WatchRecording("s", WatchActivityType.HIKE, START)
         store.begin(recording)

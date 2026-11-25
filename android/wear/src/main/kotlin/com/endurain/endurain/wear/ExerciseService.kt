@@ -27,6 +27,13 @@ class ExerciseService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent == null && !(application as EndurainWearApplication).recorder.hasSavedRecording()) {
+            // Restarted after the process died, with no workout on disk: it was
+            // a countdown, which only lived in memory. Nothing is recording, so
+            // show nothing instead of "Recording a workout".
+            stopSelf()
+            return START_NOT_STICKY
+        }
         val title =
             getString(
                 if (intent?.getBooleanExtra(EXTRA_COUNTING_DOWN, false) == true) {

@@ -102,6 +102,24 @@ void main() {
     ]);
   });
 
+  testWidgets('keeps the buttons on screen in a short landscape window', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 360);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final outcomes = await pumpLauncher(tester, seconds: 30);
+
+    expect(tester.takeException(), isNull);
+    final startNow = find.byKey(const ValueKey('startCountdownStartNow'));
+    expect(tester.getRect(startNow).bottom, lessThanOrEqualTo(360));
+    expect(remaining(tester), '30');
+
+    await tester.tap(startNow);
+    await tester.pumpAndSettle();
+    expect(outcomes, [StartCountdownOutcome.start]);
+  });
+
   testWidgets('announces the seconds left to screen readers', (tester) async {
     final semantics = tester.ensureSemantics();
     await pumpLauncher(tester, seconds: 7);

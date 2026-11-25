@@ -135,32 +135,51 @@ class _StartCountdownViewState extends State<StartCountdownView> {
               textAlign: TextAlign.center,
               child: Column(
                 children: [
-                  const Spacer(),
-                  Text(
-                    widget.activityType.localizedLabel(l10n),
-                    style: TextStyle(color: secondary, fontSize: 20),
-                  ),
-                  const SizedBox(height: UIConstants.paddingStandard),
-                  Text(l10n.activityStartCountdownTitle),
-                  Semantics(
-                    liveRegion: true,
-                    label: l10n.activityStartCountdownRemaining(remaining),
-                    excludeSemantics: true,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '$remaining',
-                        key: const ValueKey('startCountdownRemaining'),
-                        style: TextStyle(
-                          color: foreground,
-                          fontSize: 160,
-                          fontWeight: FontWeight.w700,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
+                  // The header and number take whatever height the buttons
+                  // leave, and the number shrinks to fit (landscape, large
+                  // text), so the buttons always stay on screen.
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.activityType.localizedLabel(l10n),
+                            style: TextStyle(color: secondary, fontSize: 20),
+                          ),
+                          const SizedBox(height: UIConstants.paddingStandard),
+                          Text(l10n.activityStartCountdownTitle),
+                          Flexible(
+                            child: Semantics(
+                              liveRegion: true,
+                              label: l10n.activityStartCountdownRemaining(
+                                remaining,
+                              ),
+                              excludeSemantics: true,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  '$remaining',
+                                  key: const ValueKey(
+                                    'startCountdownRemaining',
+                                  ),
+                                  style: TextStyle(
+                                    color: foreground,
+                                    fontSize: 160,
+                                    fontWeight: FontWeight.w700,
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures(),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: UIConstants.paddingStandard),
                   AdaptiveButton(
                     key: const ValueKey('startCountdownStartNow'),
                     label: l10n.activityStartCountdownStartNow,

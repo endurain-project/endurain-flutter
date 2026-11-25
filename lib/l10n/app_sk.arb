@@ -172,7 +172,7 @@
   "startCountdownToggleLabel": "Odpočítavať pred štartom",
   "startCountdownToggleDescription": "Dá vám čas odložiť telefón, kým sa začne nahrávanie.",
   "startCountdownDurationHelperText": "Vyberte, ako dlho odpočítavanie trvá.",
-  "startCountdownDurationOptionLabel": "{seconds} sekúnd",
+  "startCountdownDurationOptionLabel": "{seconds, plural, one{{seconds} sekunda} few{{seconds} sekundy} many{{seconds} sekundy} other{{seconds} sekúnd}}",
   "startCountdownVoiceLabel": "Odpočítavať nahlas",
   "startCountdownVoiceDescription": "Prečíta nahlas posledné sekundy a oznámi, kedy sa nahrávanie začalo.",
   "activityStartCountdownTitle": "Nahrávanie sa začne o",

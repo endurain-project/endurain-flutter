@@ -172,7 +172,7 @@
   "startCountdownToggleLabel": "Odštevaj pred začetkom",
   "startCountdownToggleDescription": "Vam da čas, da pospravite telefon, preden se snemanje začne.",
   "startCountdownDurationHelperText": "Izberite, kako dolgo traja odštevanje.",
-  "startCountdownDurationOptionLabel": "{seconds} sekund",
+  "startCountdownDurationOptionLabel": "{seconds, plural, one{{seconds} sekunda} two{{seconds} sekundi} few{{seconds} sekunde} other{{seconds} sekund}}",
   "startCountdownVoiceLabel": "Odštevaj na glas",
   "startCountdownVoiceDescription": "Na glas prebere zadnje sekunde in sporoči, ko se snemanje začne.",
   "activityStartCountdownTitle": "Snemanje se začne čez",

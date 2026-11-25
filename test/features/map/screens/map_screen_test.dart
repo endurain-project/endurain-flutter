@@ -477,6 +477,54 @@ void main() {
       await platform.close();
     });
 
+    testWidgets(
+      'a second tap during the start flow opens no second countdown',
+      (tester) async {
+        final platform = FakeLocationPlatformAdapter(
+          currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+        );
+        final mapController = await _mapController(platform);
+        final activityController = _activityController(platform);
+        final countdownPlatform = _RecordingCountdownPlatform();
+
+        await tester.pumpWidget(
+          _MapTestApp(
+            child: MapScreen(
+              controller: mapController,
+              activityController: activityController,
+              startCountdownSettings: await _countdownSettings(seconds: 10),
+              startCountdownPlatform: countdownPlatform,
+              countdownClock: tester.binding.clock.now,
+            ),
+          ),
+        );
+        await _pumpMapFrame(tester);
+
+        // Both taps land before the first one has finished its awaits.
+        await tester.tap(find.byTooltip(l10n.activityStart));
+        await tester.tap(find.byTooltip(l10n.activityStart));
+        await _pumpUntil(
+          tester,
+          () => find
+              .byKey(const ValueKey('startCountdownCancel'))
+              .evaluate()
+              .isNotEmpty,
+        );
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(find.byKey(const ValueKey('startCountdownRemaining')), findsOne);
+        expect(countdownPlatform.warmUpsStarted, 1);
+
+        await tester.tap(find.byKey(const ValueKey('startCountdownCancel')));
+        await tester.pumpAndSettle();
+        expect(activityController.state.status, ActivityRecordingStatus.idle);
+
+        activityController.dispose();
+        mapController.dispose();
+        await platform.close();
+      },
+    );
+
     testWidgets('cancelling the countdown does not record', (tester) async {
       final platform = FakeLocationPlatformAdapter(
         currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),

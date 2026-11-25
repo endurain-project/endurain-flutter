@@ -31,6 +31,9 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<!-- Required for haptic feedback during a workout session (the start
+		     countdown taps the wrist, possibly with the wrist lowered). -->
+		<string>audio</string>
 	</array>
 	<key>WKApplication</key>
 	<true/>

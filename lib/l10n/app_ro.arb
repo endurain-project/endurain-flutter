@@ -172,7 +172,7 @@
   "startCountdownToggleLabel": "Numărătoare inversă înainte de start",
   "startCountdownToggleDescription": "Îți lasă timp să pui telefonul deoparte înainte să înceapă înregistrarea.",
   "startCountdownDurationHelperText": "Alege cât durează numărătoarea inversă.",
-  "startCountdownDurationOptionLabel": "{seconds} secunde",
+  "startCountdownDurationOptionLabel": "{seconds, plural, one{{seconds} secundă} few{{seconds} secunde} other{{seconds} de secunde}}",
   "startCountdownVoiceLabel": "Rostește numărătoarea inversă",
   "startCountdownVoiceDescription": "Rostește ultimele secunde și anunță când a început înregistrarea.",
   "activityStartCountdownTitle": "Înregistrarea începe în",

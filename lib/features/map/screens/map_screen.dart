@@ -73,8 +73,10 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   LatLng? _lastFollowedLocation;
   bool _centeredInitialLocation = false;
   bool _isStopConfirmationOpen = false;
-  bool _isBackgroundPermissionFlowOpen = false;
-  bool _isStartCountdownOpen = false;
+
+  /// Set for the whole start flow (permission dialogs, countdown, start), from
+  /// before its first await, so a second tap cannot start a second flow.
+  bool _isStartFlowRunning = false;
 
   @override
   void initState() {
@@ -214,10 +216,18 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   }
 
   Future<void> _startActivity(ActivityType type) async {
-    if (_isBackgroundPermissionFlowOpen || _isStartCountdownOpen) {
+    if (_isStartFlowRunning) {
       return;
     }
+    _isStartFlowRunning = true;
+    try {
+      await _runStartFlow(type);
+    } finally {
+      _isStartFlowRunning = false;
+    }
+  }
 
+  Future<void> _runStartFlow(ActivityType type) async {
     final l10n = AppLocalizations.of(context)!;
     final backgroundTrackingReady = await _activityController
         .isBackgroundTrackingReady();
@@ -226,14 +236,12 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     }
 
     if (!backgroundTrackingReady) {
-      _isBackgroundPermissionFlowOpen = true;
       final shouldContinue = await DialogUtils.showConfirmDialog(
         context,
         title: l10n.activityBackgroundPermissionTitle,
         message: l10n.activityBackgroundPermissionMessage,
         confirmText: l10n.activityBackgroundPermissionContinue,
       );
-      _isBackgroundPermissionFlowOpen = false;
       if (!mounted || !shouldContinue) {
         return;
       }
@@ -244,14 +252,12 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
         return;
       }
       if (!permissionReady) {
-        _isBackgroundPermissionFlowOpen = true;
         final openSettings = await DialogUtils.showConfirmDialog(
           context,
           title: l10n.activityBackgroundPermissionSettingsTitle,
           message: l10n.activityBackgroundPermissionSettingsMessage,
           confirmText: l10n.activityOpenSettings,
         );
-        _isBackgroundPermissionFlowOpen = false;
         if (mounted && openSettings) {
           await _activityController.openLocationSettings();
         }
@@ -331,35 +337,34 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   }) async {
     // Settle any location prompt now, while the phone is still in hand.
     final locationReady = await _activityController.isLocationReady();
-    if (!mounted || !locationReady) {
+    if (!mounted) {
+      // The user left the screen: do not start anything.
+      return StartCountdownOutcome.cancel;
+    }
+    if (!locationReady) {
       return null;
     }
-    _isStartCountdownOpen = true;
-    try {
-      await _safely(platform.beginWarmUp);
-      if (!mounted) {
-        return StartCountdownOutcome.cancel;
-      }
-      return await showStartCountdownDialog(
-        context,
-        seconds: config.seconds,
-        activityType: type,
-        now: widget.countdownClock,
-        onCue: config.voiceEnabled
-            ? (secondsLeft) => unawaited(
-                _safely(
-                  () => platform.speakCue(
-                    '$secondsLeft',
-                    duckOtherAudio: announcements.duckOtherAudio,
-                    languageTag: announcements.languageTag,
-                  ),
-                ),
-              )
-            : null,
-      );
-    } finally {
-      _isStartCountdownOpen = false;
+    await _safely(platform.beginWarmUp);
+    if (!mounted) {
+      return StartCountdownOutcome.cancel;
     }
+    return showStartCountdownDialog(
+      context,
+      seconds: config.seconds,
+      activityType: type,
+      now: widget.countdownClock,
+      onCue: config.voiceEnabled
+          ? (secondsLeft) => unawaited(
+              _safely(
+                () => platform.speakCue(
+                  '$secondsLeft',
+                  duckOtherAudio: announcements.duckOtherAudio,
+                  languageTag: announcements.languageTag,
+                ),
+              ),
+            )
+          : null,
+    );
   }
 
   /// Runs a best-effort native countdown call: a missing speech engine or

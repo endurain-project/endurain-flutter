@@ -172,7 +172,7 @@
   "startCountdownToggleLabel": "Odbrojavaj prije početka",
   "startCountdownToggleDescription": "Daje vam vremena da spremite telefon prije nego što snimanje počne.",
   "startCountdownDurationHelperText": "Odaberite koliko dugo traje odbrojavanje.",
-  "startCountdownDurationOptionLabel": "{seconds} sekundi",
+  "startCountdownDurationOptionLabel": "{seconds, plural, one{{seconds} sekunda} few{{seconds} sekunde} other{{seconds} sekundi}}",
   "startCountdownVoiceLabel": "Odbrojavaj naglas",
   "startCountdownVoiceDescription": "Naglas čita zadnje sekunde i javlja kada je snimanje počelo.",
   "activityStartCountdownTitle": "Snimanje počinje za",
