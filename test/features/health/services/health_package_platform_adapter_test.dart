@@ -696,6 +696,40 @@ void main() {
       expect(workouts.single.route.map((p) => p.heartRate), everyElement(140));
     });
 
+    test(
+      'an earlier long reading covers points past a later short one',
+      () async {
+        // Overlapping sources: a long interval, and an instant inside it.
+        final reader = _FakeHeartRateSeriesReader([
+          _reading(start, 120, end: start.add(const Duration(seconds: 50))),
+          _reading(start.add(const Duration(seconds: 10)), 150),
+          _reading(
+            start.add(const Duration(seconds: 20)),
+            130,
+            end: start.add(const Duration(seconds: 40)),
+          ),
+        ]);
+        final adapter = HealthPackagePlatformAdapter(
+          health: healthWith(route: routeEverySecond(61)),
+          targetPlatform: () => TargetPlatform.iOS,
+          heartRateSeriesReader: reader,
+        );
+
+        final workouts = await adapter.readWorkouts(start: start, end: end);
+        final hr = workouts.single.route.map((p) => p.heartRate).toList();
+
+        // 20 s past the instant, but still inside the long reading.
+        expect(hr[30], 120);
+        // Covered by both long readings: the earliest-starting one wins.
+        expect(hr[25], 120);
+        // The instant covers this point too; the earliest-starting still wins.
+        expect(hr[10], 120);
+        // Uncovered: the long reading ended 10 s before, while the reading that
+        // started last ended 20 s before.
+        expect(hr[60], 120);
+      },
+    );
+
     test('bridges gaps up to 20 s but not longer ones', () async {
       final reader = _FakeHeartRateSeriesReader([
         _reading(start, 150),
