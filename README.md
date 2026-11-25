@@ -518,7 +518,11 @@ cd android
 - The **Build Android** workflow builds it after the phone APK, with the same
   version and upload key, checks both signatures, and attaches it to the
   release as `wear-release.apk`. Install it on a watch with
-  `adb -s <watch> install wear-release.apk`.
+  `adb -s <watch> install wear-release.apk`, and install the phone app from
+  the same release (`app-release.apk`). A phone app from Google Play is
+  signed with Google's app-signing key instead of the upload key, so a
+  watch app from GitHub cannot connect to it. Install both apps from GitHub,
+  or both from Play.
 - Workouts without a GPS route stay queued on both devices, because the
   server does not accept a GPX without track points yet. Workouts the phone
   never confirms are dropped from the watch after 90 days.

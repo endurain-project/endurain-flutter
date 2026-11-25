@@ -193,20 +193,57 @@ jobs:
             build/app/outputs/flutter-apk/wear-release.apk
           if-no-files-found: error
 
+      # A rerun after a partial upload finds some APKs already attached, and
+      # GitHub rejects a second asset with the same name. Replace them, so every
+      # APK on the release comes from this run.
       - name: Attach APKs to the release
         if: github.event_name == 'release'
         shell: bash
         env:
           UPLOAD_URL: ${{ github.event.release.upload_url }}
+          RELEASE_ID: ${{ github.event.release.id }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           upload_url="${UPLOAD_URL%%\{*}"
+          releases_api="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases"
+          auth_headers=(
+            --header "Accept: application/vnd.github+json"
+            --header "Authorization: Bearer $TOKEN"
+          )
+          assets_json="$RUNNER_TEMP/release-assets.json"
+          curl --fail --show-error --location "${auth_headers[@]}" \
+            --output "$assets_json" \
+            "$releases_api/$RELEASE_ID/assets?per_page=100"
+
+          # The CI image has no jq, so the Flutter SDK's Dart reads the list.
+          # The id is printed behind a marker so other output is ignored.
+          asset_id_script="$RUNNER_TEMP/release_asset_id.dart"
+          cat > "$asset_id_script" <<'DART'
+          import 'dart:convert';
+          import 'dart:io';
+
+          void main(List<String> args) {
+            final assets = jsonDecode(File(args[0]).readAsStringSync()) as List;
+            for (final asset in assets) {
+              if (asset['name'] == args[1]) print('asset-id:${asset['id']}');
+            }
+          }
+          DART
+
           for apk_name in app-release.apk wear-release.apk; do
-            curl --fail --show-error --location \
+            existing_id="$(
+              dart "$asset_id_script" "$assets_json" "$apk_name" |
+                sed -n 's/^asset-id://p'
+            )"
+            if [[ -n "$existing_id" ]]; then
+              echo "Replacing the existing $apk_name (asset $existing_id)."
+              curl --fail --show-error --location "${auth_headers[@]}" \
+                --request DELETE \
+                "$releases_api/assets/$existing_id"
+            fi
+            curl --fail --show-error --location "${auth_headers[@]}" \
               --request POST \
-              --header "Accept: application/vnd.github+json" \
-              --header "Authorization: Bearer $TOKEN" \
               --header "Content-Type: application/vnd.android.package-archive" \
               --data-binary "@build/app/outputs/flutter-apk/$apk_name" \
               "${upload_url}?name=$apk_name"
