@@ -60,7 +60,7 @@ current approach cannot satisfy.
 ## Localization
 
 - Never hardcode user-facing strings in widgets, dialogs, validators, snack bars, errors, or button labels.
-- Add English and Portuguese ARB entries together.
+- Add every new ARB entry to all locale files (`app_en.arb` is the source; see `lib/core/localization/app_locales.dart`), and translate native text too: Android `res/values-*/strings.xml` (phone and `android/wear`) and the iOS/watchOS string catalogs.
 - Include ARB metadata descriptions with usage context such as `Used in: activity_screen.dart`.
 - Keep service-layer errors language-free and map them to localized text near the UI.
 - Run `flutter gen-l10n` after ARB changes when generated files need refreshing.
