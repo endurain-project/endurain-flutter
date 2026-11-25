@@ -309,6 +309,98 @@ void main() {
       expect(loadMoreCallCount, 1);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Large screens (e.g. an unfolded iPhone Duo)
+  // -------------------------------------------------------------------------
+
+  group('ActivityHistoryScreen – side-by-side details', () {
+    // An unfolded iPhone Duo: 669pt wide in portrait, 951pt in landscape.
+    const portrait = Size(669, 951);
+    const landscape = Size(951, 669);
+
+    void setWindowSize(WidgetTester tester, Size size) {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+    }
+
+    Future<void> pumpHistory(WidgetTester tester) async {
+      final controller = _LoadedHistoryController(
+        records: [_pendingRecord, _uploadedRecord],
+      );
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityHistoryScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a narrow window shows only the list', (tester) async {
+      setWindowSize(tester, portrait);
+      addTearDown(tester.view.reset);
+      await pumpHistory(tester);
+
+      expect(find.text(l10n.activityHistorySummary), findsNothing);
+
+      await tester.tap(
+        find.textContaining(l10n.activityHistoryDuration('')).first,
+      );
+      await tester.pumpAndSettle();
+
+      // Tapping a record opens its own page.
+      expect(find.text(l10n.activityHistoryDetailsTitle), findsOneWidget);
+      expect(find.text(l10n.activityHistorySummary), findsOneWidget);
+    });
+
+    testWidgets('a wide window shows the first record beside the list', (
+      tester,
+    ) async {
+      setWindowSize(tester, landscape);
+      addTearDown(tester.view.reset);
+      await pumpHistory(tester);
+
+      expect(find.text(l10n.activityHistoryLocalActivities), findsOneWidget);
+      expect(find.text(l10n.activityHistorySummary), findsOneWidget);
+      expect(find.text('${_pendingRecord.pointCount}'), findsOneWidget);
+      // The pane has no navigation bar of its own.
+      expect(find.text(l10n.activityHistoryDetailsTitle), findsNothing);
+    });
+
+    testWidgets('tapping a record shows it in the pane instead of a page', (
+      tester,
+    ) async {
+      setWindowSize(tester, landscape);
+      addTearDown(tester.view.reset);
+      await pumpHistory(tester);
+
+      await tester.tap(
+        find.textContaining(l10n.activityHistoryDuration('')).last,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('${_uploadedRecord.pointCount}'), findsOneWidget);
+      expect(find.text('${_pendingRecord.pointCount}'), findsNothing);
+      expect(find.text(l10n.activityHistoryDetailsTitle), findsNothing);
+    });
+
+    testWidgets('folding back to a narrow window keeps the list', (
+      tester,
+    ) async {
+      setWindowSize(tester, landscape);
+      addTearDown(tester.view.reset);
+      await pumpHistory(tester);
+      expect(find.text(l10n.activityHistorySummary), findsOneWidget);
+
+      setWindowSize(tester, portrait);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.activityHistoryLocalActivities), findsOneWidget);
+      expect(find.text(l10n.activityHistorySummary), findsNothing);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -392,6 +484,10 @@ class _LoadedHistoryController extends LocalActivityHistoryController {
 
   @override
   List<LocalActivityRecord> get records => _records;
+
+  @override
+  LocalActivityRecord? recordById(String id) =>
+      _records.where((record) => record.id == id).firstOrNull;
 
   @override
   bool get isLoading => false;

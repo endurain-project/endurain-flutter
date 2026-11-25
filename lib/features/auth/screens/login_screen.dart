@@ -14,6 +14,7 @@ import 'package:endurain/features/auth/controllers/login_controller.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:material_ui/material_ui.dart';
@@ -302,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
               key: _formKey,
               child: AutofillGroup(
                 child: ListView(
-                  padding: const EdgeInsets.all(UIConstants.paddingStandard),
+                  padding: readableContentPadding(context),
                   children: [
                     const SizedBox(height: 40),
                     Center(

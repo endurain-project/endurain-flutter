@@ -5,6 +5,7 @@ import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/features/map/controllers/tile_server_settings_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -153,7 +154,7 @@ class _TileServerSettingsScreenState extends State<TileServerSettingsScreen>
           return Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.all(UIConstants.paddingStandard),
+              padding: readableContentPadding(context),
               children: [
                 AdaptiveTextFormField(
                   label: l10n.tileServerUrl,

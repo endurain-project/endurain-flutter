@@ -25,7 +25,10 @@ jobs:
     name: iOS build and unit tests
     # macOS runners cannot use container jobs, so unlike ci.yml this job does
     # not use the CI builder image and checks out Flutter at the pinned version.
-    runs-on: macos-26
+    # The Xcode 27 image (arm64 only): App Store uploads need the iOS 27 SDK
+    # from April 2027, and the iOS 27.1+ SDK lets the app use the whole
+    # iPhone Duo display. The macos-26 image only has Xcode 26.
+    runs-on: xcode-27
     timeout-minutes: 45
     steps:
       - name: Checkout code
@@ -33,17 +36,32 @@ jobs:
         with:
           fetch-depth: 1
 
+      # The image defaults to an older Xcode 27; match the one releases are
+      # built with. Selected first, since it decides which simulators exist.
+      - name: Select Xcode
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo xcode-select -s /Applications/Xcode_27.2.app
+          xcodebuild -version
+
       # Cold-booting a simulator takes minutes on a fresh runner, so start it
       # now and let it boot while Flutter is installed and the app is built.
-      # An available iPhone is picked instead of a hard-coded model, since
-      # runner images change which simulators they ship.
+      # The iPhone Duo is preferred so the resizable foldable is what the
+      # tests run on; otherwise any available iPhone, since runner images
+      # change which simulators they ship.
       - name: Boot simulator
         shell: bash
         run: |
           set -euo pipefail
           udid=$(xcrun simctl list devices available --json | jq -r \
             '[.devices | to_entries[] | select(.key | test("iOS")) | .value[]
-              | select(.name | startswith("iPhone"))][0].udid')
+              | select(.name | startswith("iPhone"))]
+              | (map(select(.name == "iPhone Duo")) + .)[0].udid // empty')
+          if [ -z "$udid" ]; then
+            echo "No iPhone simulator available" >&2
+            exit 1
+          fi
           echo "Using simulator $udid"
           echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
           xcrun simctl boot "$udid"

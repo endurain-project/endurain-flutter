@@ -9,6 +9,7 @@ import 'package:endurain/features/settings/controllers/diagnostics_controller.da
 import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
@@ -86,7 +87,7 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen>
         builder: (context, _) {
           final report = _controller.report;
           return ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+            padding: readableContentPadding(context),
             children: [
               AdaptiveListSection(
                 header: l10n.diagnosticsCollection,

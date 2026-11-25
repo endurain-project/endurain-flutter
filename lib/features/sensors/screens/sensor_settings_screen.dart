@@ -9,6 +9,7 @@ import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Settings screen to discover, connect, and monitor external Bluetooth Low
@@ -93,7 +94,7 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
         return AdaptiveScaffold(
           title: l10n.sensorsTitle,
           body: ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+            padding: readableContentPadding(context),
             children: _buildChildren(context, l10n),
           ),
         );

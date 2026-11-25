@@ -11,6 +11,7 @@ import 'package:endurain/features/settings/controllers/audio_announcement_settin
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -57,7 +58,7 @@ class AudioAnnouncementSettingsScreen extends StatelessWidget {
         builder: (context, _) {
           final settings = settingsController.settings;
           return ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+            padding: readableContentPadding(context),
             children: [
               AdaptiveListSection(
                 children: [

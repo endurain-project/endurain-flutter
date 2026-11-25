@@ -5,13 +5,13 @@ import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
-import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/settings/controllers/server_settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -113,7 +113,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
             return const Center(child: AdaptiveLoadingIndicator());
           }
           return ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+            padding: readableContentPadding(context),
             children: [
               AdaptiveListSection(
                 header: l10n.loggedIn,

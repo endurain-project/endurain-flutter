@@ -8,6 +8,7 @@ import 'package:endurain/features/health/screens/health_access_screen.dart';
 import 'package:endurain/features/settings/controllers/device_access_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -85,7 +86,7 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
             onRefresh: _refresh,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(UIConstants.paddingStandard),
+              padding: readableContentPadding(context),
               children: [
                 AdaptiveListSection(
                   header: l10n.deviceAccessLocationSection,

@@ -13,6 +13,18 @@ class UIConstants {
   // Tab bar
   static const double tabBarHeight = 60.0;
 
+  // Large screens (an unfolded iPhone Duo, tablets, landscape).
+  /// Widest that list sections and forms grow; wider windows centre them.
+  static const double readableContentMaxWidth = 640.0;
+
+  /// Narrowest width that shows a list and its selected item side by side.
+  /// The Material "expanded" window size class, which an unfolded iPhone Duo
+  /// (951pt) reaches in landscape but not in portrait (669pt).
+  static const double twoPaneMinWidth = 840.0;
+
+  /// Width of the list pane in a side-by-side layout.
+  static const double listPaneWidth = 360.0;
+
   // Common layout values
   static const double elevationNone = 0.0;
   // Subtle depth for transient/floating surfaces (dialogs, sheets, menus).

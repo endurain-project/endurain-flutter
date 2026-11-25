@@ -13,6 +13,7 @@ import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/widgets/health_sync_inline_error.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
@@ -43,7 +44,7 @@ class HealthSyncAvailableView extends StatelessWidget {
       onRefresh: controller.loadImportableWorkouts,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(UIConstants.paddingStandard),
+        padding: readableContentPadding(context),
         children: [
           AdaptiveListSection(
             children: [_buildRangeSelector(context, l10n, state)],

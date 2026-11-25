@@ -360,6 +360,45 @@ void main() {
       expect(find.byType(ActivityRouteMap), findsNothing);
     });
   });
+
+  group('ActivityDetailsScreen – embedded pane', () {
+    testWidgets('has no navigation bar of its own', (tester) async {
+      final controller = _LoadedController(record: _baseRecord);
+      addTearDown(controller.dispose);
+
+      await _pumpDetails(tester, controller, embedded: true);
+
+      expect(find.text(_l10n.activityHistorySummary), findsOneWidget);
+      expect(find.text(_l10n.activityHistoryDetailsTitle), findsNothing);
+    });
+
+    testWidgets('reports a delete instead of popping', (tester) async {
+      final controller = _DeletableController(record: _baseRecord);
+      addTearDown(controller.dispose);
+      var deleted = 0;
+
+      await _pumpDetails(
+        tester,
+        controller,
+        embedded: true,
+        onDeleted: () => deleted += 1,
+      );
+      await tester.scrollUntilVisible(
+        find.text(_l10n.activityDeleteLocal),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text(_l10n.activityDeleteLocal));
+      await tester.pumpAndSettle();
+      // Confirm in the dialog.
+      await tester.tap(find.text(_l10n.activityDeleteLocal).last);
+      await tester.pumpAndSettle();
+
+      expect(controller.deletedIds, [_baseRecord.id]);
+      expect(deleted, 1);
+      expect(find.byType(ActivityDetailsScreen), findsOneWidget);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -368,15 +407,21 @@ void main() {
 
 Future<void> _pumpDetails(
   WidgetTester tester,
-  LocalActivityHistoryController controller,
-) async {
+  LocalActivityHistoryController controller, {
+  bool embedded = false,
+  VoidCallback? onDeleted,
+}) async {
+  final details = ActivityDetailsScreen(
+    recordId: _baseRecord.id,
+    controller: controller,
+    embedded: embedded,
+    onDeleted: onDeleted,
+  );
   await tester.pumpWidget(
     AdaptiveApp(
       title: 'Test',
-      home: ActivityDetailsScreen(
-        recordId: _baseRecord.id,
-        controller: controller,
-      ),
+      // An embedded pane sits inside its host's scaffold.
+      home: embedded ? AdaptiveScaffold(body: details) : details,
     ),
   );
   await tester.pumpAndSettle();
@@ -468,4 +513,13 @@ class _LoadedController extends LocalActivityHistoryController {
 
   @override
   Future<void> load() async {}
+}
+
+class _DeletableController extends _LoadedController {
+  _DeletableController({required super.record});
+
+  final List<String> deletedIds = [];
+
+  @override
+  Future<void> delete(String id) async => deletedIds.add(id);
 }

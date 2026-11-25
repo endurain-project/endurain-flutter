@@ -18,6 +18,7 @@ import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -48,6 +49,14 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
   late final LocalActivityHistoryController _controller;
   ActivityUploadQueue? _uploadQueue;
   MapSettingsRepository? _mapSettings;
+
+  /// The record shown beside the list when there is room for both. Null, or
+  /// a record no longer listed, shows the first one.
+  String? _selectedRecordId;
+
+  /// Keeps the list (and its scroll position) when the window changes between
+  /// one pane and two, e.g. when an iPhone Duo is unfolded or rotated.
+  final GlobalKey _listKey = GlobalKey();
 
   @override
   void initState() {
@@ -132,18 +141,34 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
   }
 
   void _openDetails(LocalActivityRecord record) {
-    final mapSettings = _mapSettings;
     adaptivePush<void>(
       context,
       (context) => ActivityDetailsScreen(
         recordId: record.id,
         controller: _controller,
-        tileServerUrlProvider: mapSettings == null
-            ? null
-            : () =>
-                  mapSettings.getTileServerUrl(origin: record.connectionOrigin),
+        tileServerUrlProvider: _tileServerUrlProvider(record),
       ),
     );
+  }
+
+  Future<String> Function()? _tileServerUrlProvider(
+    LocalActivityRecord record,
+  ) {
+    final mapSettings = _mapSettings;
+    if (mapSettings == null) {
+      return null;
+    }
+    return () => mapSettings.getTileServerUrl(origin: record.connectionOrigin);
+  }
+
+  /// The record for the details pane, or null when there are none.
+  LocalActivityRecord? _paneRecord() {
+    final records = _controller.records;
+    if (records.isEmpty) {
+      return null;
+    }
+    return records.where((r) => r.id == _selectedRecordId).firstOrNull ??
+        records.first;
   }
 
   @override
@@ -154,38 +179,88 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
       title: l10n.activityHistoryTitle,
       body: AnimatedBuilder(
         animation: _controller,
-        builder: (context, _) {
-          // The retention switch stays reachable whatever state the list is
-          // in, so it sits above the records rather than inside them.
-          return RefreshIndicator.adaptive(
-            onRefresh: _controller.refresh,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(UIConstants.paddingStandard),
+        builder: (context, _) => LayoutBuilder(
+          builder: (context, constraints) {
+            final paneRecord =
+                constraints.maxWidth >= UIConstants.twoPaneMinWidth
+                ? _paneRecord()
+                : null;
+            final list = KeyedSubtree(
+              key: _listKey,
+              child: Builder(
+                builder: (context) =>
+                    _buildList(context, l10n, selectedId: paneRecord?.id),
+              ),
+            );
+            if (paneRecord == null) {
+              return list;
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (_controller.canConfigureGpxRetention) ...[
-                  AdaptiveListSection(
-                    children: [
-                      AdaptiveSwitchListTile(
-                        title: l10n.activityRetainUploadedGpx,
-                        subtitle: l10n.activityRetainUploadedGpxSubtitle,
-                        value: _controller.retainUploadedGpx,
-                        onChanged: _controller.setRetainUploadedGpx,
-                      ),
-                    ],
+                SizedBox(
+                  width: UIConstants.listPaneWidth,
+                  child: ReadableWidthScope(child: list),
+                ),
+                const _PaneDivider(),
+                Expanded(
+                  child: ReadableWidthScope(
+                    child: ActivityDetailsScreen(
+                      key: ValueKey(paneRecord.id),
+                      recordId: paneRecord.id,
+                      controller: _controller,
+                      tileServerUrlProvider: _tileServerUrlProvider(paneRecord),
+                      embedded: true,
+                      onDeleted: () => setState(() => _selectedRecordId = null),
+                    ),
                   ),
-                  const SizedBox(height: UIConstants.paddingStandard),
-                ],
-                ..._buildRecords(l10n),
+                ),
               ],
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 
-  List<Widget> _buildRecords(AppLocalizations l10n) {
+  /// The history list. [selectedId] is the record shown beside it, or null
+  /// when the list is on its own and tapping a record opens its page.
+  Widget _buildList(
+    BuildContext context,
+    AppLocalizations l10n, {
+    required String? selectedId,
+  }) {
+    // The retention switch stays reachable whatever state the list is
+    // in, so it sits above the records rather than inside them.
+    return RefreshIndicator.adaptive(
+      onRefresh: _controller.refresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: readableContentPadding(context),
+        children: [
+          if (_controller.canConfigureGpxRetention) ...[
+            AdaptiveListSection(
+              children: [
+                AdaptiveSwitchListTile(
+                  title: l10n.activityRetainUploadedGpx,
+                  subtitle: l10n.activityRetainUploadedGpxSubtitle,
+                  value: _controller.retainUploadedGpx,
+                  onChanged: _controller.setRetainUploadedGpx,
+                ),
+              ],
+            ),
+            const SizedBox(height: UIConstants.paddingStandard),
+          ],
+          ..._buildRecords(l10n, selectedId: selectedId),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildRecords(
+    AppLocalizations l10n, {
+    required String? selectedId,
+  }) {
     if (_controller.isLoading && _controller.records.isEmpty) {
       return const [Center(child: AdaptiveLoadingIndicator())];
     }
@@ -212,7 +287,10 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
             _ActivityRecordTile(
               record: record,
               isBusy: _controller.isBusy(record.id),
-              onTap: () => _openDetails(record),
+              selected: record.id == selectedId,
+              onTap: selectedId == null
+                  ? () => _openDetails(record)
+                  : () => setState(() => _selectedRecordId = record.id),
               onRetry: record.uploadStatus == LocalActivityUploadStatus.uploaded
                   ? null
                   : () => _retry(record),
@@ -273,6 +351,27 @@ class _HistoryMessage extends StatelessWidget {
   }
 }
 
+/// The line between the list and details panes.
+class _PaneDivider extends StatelessWidget {
+  const _PaneDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    if (PlatformUtils.isApplePlatform) {
+      return SizedBox(
+        width: 0.5,
+        child: ColoredBox(
+          color: CupertinoDynamicColor.resolve(
+            CupertinoColors.separator,
+            context,
+          ),
+        ),
+      );
+    }
+    return const VerticalDivider(width: 1);
+  }
+}
+
 class _ActivityRecordTile extends StatelessWidget {
   const _ActivityRecordTile({
     required this.record,
@@ -280,10 +379,12 @@ class _ActivityRecordTile extends StatelessWidget {
     required this.onTap,
     required this.onRetry,
     required this.onDelete,
+    this.selected = false,
   });
 
   final LocalActivityRecord record;
   final bool isBusy;
+  final bool selected;
   final VoidCallback onTap;
   final VoidCallback? onRetry;
   final VoidCallback onDelete;
@@ -319,6 +420,7 @@ class _ActivityRecordTile extends StatelessWidget {
         onDelete: onDelete,
       ),
       onTap: onTap,
+      selected: selected,
     );
   }
 

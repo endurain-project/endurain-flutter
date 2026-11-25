@@ -12,6 +12,7 @@ class AdaptiveListTile extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.destructive = false,
+    this.selected = false,
   });
 
   final String title;
@@ -20,6 +21,10 @@ class AdaptiveListTile extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
   final bool destructive;
+
+  /// Whether this tile is the item shown beside the list in a side-by-side
+  /// layout.
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +39,12 @@ class AdaptiveListTile extends StatelessWidget {
 
     if (isApplePlatform) {
       return CupertinoListTile(
+        backgroundColor: selected
+            ? CupertinoDynamicColor.resolve(
+                CupertinoColors.tertiarySystemFill,
+                context,
+              )
+            : null,
         padding: subtitle == null ? null : adaptiveCupertinoSubtitleTilePadding,
         leading: leading,
         title: Text(title, style: titleStyle),
@@ -55,6 +66,7 @@ class AdaptiveListTile extends StatelessWidget {
           : AdaptiveListTileSubtitle(child: Text(subtitle!)),
       trailing: trailing,
       onTap: onTap,
+      selected: selected,
     );
   }
 }
