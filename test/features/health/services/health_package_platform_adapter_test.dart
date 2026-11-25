@@ -7,6 +7,7 @@ import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/services/health_package_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
+import 'package:endurain/features/health/services/heart_rate_series_reader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
@@ -603,6 +604,212 @@ void main() {
     });
   });
 
+  group('HealthPackagePlatformAdapter heart rate', () {
+    final start = DateTime.utc(2026, 11, 5, 9);
+    final end = DateTime.utc(2026, 11, 5, 10);
+
+    /// A route with one point per second for [seconds] seconds from [start].
+    List<WorkoutRouteLocation> routeEverySecond(int seconds) => [
+      for (var i = 0; i < seconds; i++)
+        WorkoutRouteLocation(
+          latitude: 41.1,
+          longitude: -8.6,
+          timestamp: start.add(Duration(seconds: i)),
+        ),
+    ];
+
+    _FakeHealth healthWith({
+      required List<WorkoutRouteLocation> route,
+      List<HealthDataPoint> heartRate = const [],
+    }) {
+      return _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [_workoutPoint(start: start, end: end)],
+          HealthDataType.WORKOUT_ROUTE: [
+            _routePoint(
+              start: start,
+              end: end,
+              metadata: const {'workout_uuid': 'workout-1'},
+              locations: route,
+            ),
+          ],
+          HealthDataType.HEART_RATE: heartRate,
+        },
+      );
+    }
+
+    test('reads each workout window through the series reader', () async {
+      final reader = _FakeHeartRateSeriesReader([
+        for (var i = 0; i < 6; i++)
+          _reading(start.add(Duration(seconds: i * 5)), 150.0 + i),
+      ]);
+      final health = healthWith(
+        route: routeEverySecond(30),
+        // A condensed series as the plugin reports it: must not be used.
+        heartRate: [_hrPoint(start: start, end: end, bpm: 99)],
+      );
+      final diagnostics = RecordingDiagnostics();
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        diagnostics: diagnostics,
+        targetPlatform: () => TargetPlatform.iOS,
+        heartRateSeriesReader: reader,
+      );
+
+      final workouts = await adapter.readWorkouts(start: start, end: end);
+
+      expect(reader.windows, [
+        (
+          start: start.subtract(const Duration(minutes: 1)),
+          end: end.add(const Duration(minutes: 1)),
+        ),
+      ]);
+      expect(health.heartRateReadCount, 0);
+      final hr = workouts.single.route.map((p) => p.heartRate).toList();
+      expect(hr, everyElement(isNotNull));
+      expect(hr.first, 150);
+      expect(hr[12], 152); // nearer to the 10 s reading than the 15 s one
+      expect(hr.last, 155);
+      expect(
+        diagnostics.single(DiagnosticsEvents.healthReadWorkouts),
+        allOf(
+          containsPair('heart_rate_source', 'series'),
+          containsPair('heart_rate_readings', 6),
+          containsPair('route_points_with_heart_rate', 30),
+        ),
+      );
+    });
+
+    test('a reading interval covers every route point inside it', () async {
+      final reader = _FakeHeartRateSeriesReader([
+        _reading(start, 140, end: start.add(const Duration(seconds: 40))),
+      ]);
+      final adapter = HealthPackagePlatformAdapter(
+        health: healthWith(route: routeEverySecond(41)),
+        targetPlatform: () => TargetPlatform.iOS,
+        heartRateSeriesReader: reader,
+      );
+
+      final workouts = await adapter.readWorkouts(start: start, end: end);
+
+      expect(workouts.single.route.map((p) => p.heartRate), everyElement(140));
+    });
+
+    test(
+      'an earlier long reading covers points past a later short one',
+      () async {
+        // Overlapping sources: a long interval, and an instant inside it.
+        final reader = _FakeHeartRateSeriesReader([
+          _reading(start, 120, end: start.add(const Duration(seconds: 50))),
+          _reading(start.add(const Duration(seconds: 10)), 150),
+          _reading(
+            start.add(const Duration(seconds: 20)),
+            130,
+            end: start.add(const Duration(seconds: 40)),
+          ),
+        ]);
+        final adapter = HealthPackagePlatformAdapter(
+          health: healthWith(route: routeEverySecond(61)),
+          targetPlatform: () => TargetPlatform.iOS,
+          heartRateSeriesReader: reader,
+        );
+
+        final workouts = await adapter.readWorkouts(start: start, end: end);
+        final hr = workouts.single.route.map((p) => p.heartRate).toList();
+
+        // 20 s past the instant, but still inside the long reading.
+        expect(hr[30], 120);
+        // Covered by both long readings: the earliest-starting one wins.
+        expect(hr[25], 120);
+        // The instant covers this point too; the earliest-starting still wins.
+        expect(hr[10], 120);
+        // Uncovered: the long reading ended 10 s before, while the reading that
+        // started last ended 20 s before.
+        expect(hr[60], 120);
+      },
+    );
+
+    test('bridges gaps up to 20 s but not longer ones', () async {
+      final reader = _FakeHeartRateSeriesReader([
+        _reading(start, 150),
+        _reading(start.add(const Duration(seconds: 14)), 160),
+        _reading(start.add(const Duration(seconds: 40)), 170),
+      ]);
+      final adapter = HealthPackagePlatformAdapter(
+        health: healthWith(route: routeEverySecond(41)),
+        targetPlatform: () => TargetPlatform.iOS,
+        heartRateSeriesReader: reader,
+      );
+
+      final workouts = await adapter.readWorkouts(start: start, end: end);
+      final hr = workouts.single.route.map((p) => p.heartRate).toList();
+
+      // 14 s gap: every point is within 7 s of a reading.
+      expect(hr.sublist(0, 15), everyElement(isNotNull));
+      expect(hr[7], 150); // tie: the earlier reading wins
+      // 26 s gap: points more than 10 s from both readings get none.
+      expect(hr[24], 160);
+      expect(hr[25], isNull);
+      expect(hr[29], isNull);
+      expect(hr[30], 170);
+    });
+
+    test('falls back to the plugin read when the series read fails', () async {
+      final diagnostics = RecordingDiagnostics();
+      final health = healthWith(
+        route: routeEverySecond(3),
+        heartRate: [_hrPoint(start: start, end: start, bpm: 120)],
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        diagnostics: diagnostics,
+        targetPlatform: () => TargetPlatform.iOS,
+        heartRateSeriesReader: _FakeHeartRateSeriesReader(
+          const [],
+          error: PlatformException(code: 'DEVICE_LOCKED'),
+        ),
+      );
+
+      final workouts = await adapter.readWorkouts(start: start, end: end);
+
+      expect(health.heartRateReadCount, 1);
+      expect(workouts.single.route.map((p) => p.heartRate), everyElement(120));
+      expect(
+        diagnostics.events,
+        contains(DiagnosticsEvents.healthHeartRateSeriesFailed),
+      );
+      expect(
+        diagnostics.single(DiagnosticsEvents.healthReadWorkouts),
+        containsPair('heart_rate_source', 'samples_fallback'),
+      );
+    });
+
+    test('without a series reader, plugin samples cover their interval', () {
+      final health = healthWith(
+        route: routeEverySecond(20),
+        heartRate: [
+          _hrPoint(
+            start: start,
+            end: start.add(const Duration(seconds: 19)),
+            bpm: 133,
+          ),
+        ],
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+      );
+
+      expect(
+        adapter
+            .readWorkouts(start: start, end: end)
+            .then((w) => w.single.route.map((p) => p.heartRate)),
+        completion(everyElement(133)),
+      );
+    });
+  });
+
   group('read failures', () {
     final start = DateTime.utc(2025, 6, 1);
     final end = DateTime.utc(2025, 6, 2);
@@ -674,6 +881,7 @@ class _FakeHealth extends Health {
   final bool historyAuthorized;
   final bool requestHistoryResult;
   int configureCallCount = 0;
+  int heartRateReadCount = 0;
   int historyAvailableCallCount = 0;
   int historyAuthorizedCallCount = 0;
   int requestHistoryCallCount = 0;
@@ -742,6 +950,9 @@ class _FakeHealth extends Health {
     if (types.contains(HealthDataType.WORKOUT)) {
       lastWorkoutReadStart = startTime;
     }
+    if (types.contains(HealthDataType.HEART_RATE)) {
+      heartRateReadCount++;
+    }
     return [for (final type in types) ...?dataByType[type]];
   }
 }
@@ -787,4 +998,45 @@ HealthDataPoint _routePoint({
     sourceName: 'source',
     metadata: metadata,
   );
+}
+
+HealthDataPoint _hrPoint({
+  required DateTime start,
+  required DateTime end,
+  required num bpm,
+}) {
+  return HealthDataPoint(
+    uuid: 'hr-${start.millisecondsSinceEpoch}',
+    value: NumericHealthValue(numericValue: bpm),
+    type: HealthDataType.HEART_RATE,
+    unit: HealthDataUnit.BEATS_PER_MINUTE,
+    dateFrom: start,
+    dateTo: end,
+    sourcePlatform: HealthPlatformType.appleHealth,
+    sourceDeviceId: 'device',
+    sourceId: 'source',
+    sourceName: 'source',
+  );
+}
+
+HeartRateReading _reading(DateTime start, double bpm, {DateTime? end}) =>
+    HeartRateReading(start: start, end: end ?? start, bpm: bpm);
+
+class _FakeHeartRateSeriesReader implements HeartRateSeriesReader {
+  _FakeHeartRateSeriesReader(this.readings, {this.error});
+
+  final List<HeartRateReading> readings;
+  final Object? error;
+  final List<({DateTime start, DateTime end})> windows = [];
+
+  @override
+  Future<List<HeartRateReading>> read({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    windows.add((start: start, end: end));
+    final failure = error;
+    if (failure != null) throw failure;
+    return readings;
+  }
 }

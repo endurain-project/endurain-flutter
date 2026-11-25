@@ -43,6 +43,9 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
 ### Fixed
 
 - A temporary health-platform read error no longer disconnects Health Sync. That covers a rate limit, Health Connect being busy, and a locked iPhone. Since `health` 14 these errors are raised instead of returning an empty list of workouts. Only lasting errors still ask the user to reconnect.
+- Health Sync on iPhone now imports every heart rate reading of a workout, not one value per ~5 minutes ([#39](https://github.com/endurain-project/endurain-flutter/issues/39)). HealthKit stores heart rate from some recordings, such as Apple Workout, as condensed series, and the `health` plugin read each series as a single value. Endurain now reads each workout's readings with `HKQuantitySeriesSampleQuery` over its own platform channel (`endurain/health_heart_rate`), and falls back to the plugin read if that fails.
+- A route point now takes the heart rate reading whose time interval covers it, or the nearest reading within 10 seconds (was 5 seconds, measured from the reading's start only). Short gaps between readings no longer leave route points without heart rate, on iPhone and Android.
+- The `health.read_workouts` diagnostics breadcrumb now records the number of heart rate readings, where they came from, and how many route points got one. A failed series read records `health.heart_rate_series_failed`.
 
 ### Changed
 

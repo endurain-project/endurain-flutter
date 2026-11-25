@@ -8,6 +8,7 @@ import 'package:endurain/features/health/services/health_package_platform_adapte
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_sync_service.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
+import 'package:endurain/features/health/services/heart_rate_series_reader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 
@@ -78,6 +79,11 @@ class HealthModule {
       return HealthPackagePlatformAdapter(
         health: Health(),
         diagnostics: _infra.diagnostics,
+        // The plugin reduces condensed HealthKit heart rate series to one
+        // value each, so iOS reads heart rate through its own channel.
+        heartRateSeriesReader: defaultTargetPlatform == TargetPlatform.iOS
+            ? const MethodChannelHeartRateSeriesReader()
+            : null,
       );
     }
     return const UnsupportedHealthPlatformAdapter();
