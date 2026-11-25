@@ -9,7 +9,7 @@ on:
 env:
   # Keep in sync with docker/flutter-build/Dockerfile, the image workflow and
   # ios.yml.
-  FLUTTER_VERSION: 3.50.0
+  FLUTTER_VERSION: 3.50.1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +25,7 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.0
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -42,7 +42,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.0
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -59,7 +59,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.0
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -89,7 +89,7 @@ jobs:
     name: Android unit tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.0
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -122,11 +122,24 @@ jobs:
         shell: bash
         run: cd android && ./gradlew :app:testDebugUnitTest --console=plain
 
+      # The default build links to the Wear OS app through
+      # play-services-wearable; -Pendurain.wearable=false swaps in a stub.
+      # Keep that stub compiling.
+      - name: Compile without the Wear OS link
+        shell: bash
+        run: cd android && ./gradlew :app:compileDebugKotlin -Pendurain.wearable=false --console=plain
+
+      # The Wear OS app is a standalone Gradle build (android/wear), so the
+      # Flutter build never compiles it.
+      - name: Build, test and lint the Wear OS app
+        shell: bash
+        run: cd android && ./gradlew -p wear assembleDebug testDebugUnitTest lintDebug --console=plain
+
   android-build:
     name: Android build
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.0
+      image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

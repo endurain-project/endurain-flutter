@@ -23,13 +23,16 @@ class HealthModule {
     required AppInfrastructure infra,
     required AuthModule auth,
     required ActivityModule activity,
+    Future<bool> Function(String sourceId)? isRecordedElsewhere,
   }) : _infra = infra,
        _auth = auth,
-       _activity = activity;
+       _activity = activity,
+       _isRecordedElsewhere = isRecordedElsewhere;
 
   final AppInfrastructure _infra;
   final AuthModule _auth;
   final ActivityModule _activity;
+  final Future<bool> Function(String sourceId)? _isRecordedElsewhere;
 
   late final HealthSyncSettingsRepository syncSettings =
       HealthSyncSettingsRepository(
@@ -49,6 +52,7 @@ class HealthModule {
     diagnostics: _infra.diagnostics,
     healthSyncEnabled: _infra.config.healthSyncEnabled,
     activeConnectionProfile: _auth.session.getConnectionProfile,
+    isRecordedElsewhere: _isRecordedElsewhere,
   );
 
   /// Creates a route-owned controller for health-platform workout sync.

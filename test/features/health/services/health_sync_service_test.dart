@@ -188,6 +188,19 @@ void main() {
       final settings = makeSyncSettings();
       expect(await settings.isConnected(profile.id), isFalse);
     });
+
+    test('keeps the connection when a read fails transiently', () async {
+      final settings = makeSyncSettings();
+      await settings.setConnected(profile.id, true);
+      adapter.readWorkoutsError = const AppException(
+        AppErrorCode.healthReadFailed,
+        isTransient: true,
+      );
+
+      await expectLater(service.listImportable(), throwsA(isA<AppException>()));
+
+      expect(await settings.isConnected(profile.id), isTrue);
+    });
   });
 
   // ── currentAuthorizationStatus (iOS read-grant resolution) ─────────────────
@@ -438,6 +451,57 @@ void main() {
   });
 
   // ── I5: importAll ─────────────────────────────────────────────────────────
+
+  group('workouts recorded by the companion watch', () {
+    late HealthSyncService watchAwareService;
+
+    setUp(() {
+      watchAwareService = HealthSyncService(
+        adapter: adapter,
+        importRepository: HealthImportRepository(store: importStore),
+        localActivities: localActivities,
+        uploadQueue: uploadQueue,
+        gpxBuilder: const HealthWorkoutGpxBuilder(),
+        syncSettings: makeSyncSettings(),
+        diagnostics: const NoopDiagnosticsRecorder(),
+        healthSyncEnabled: true,
+        activeConnectionProfile: () async => profile,
+        isRecordedElsewhere: (sourceId) async => sourceId == 'w1',
+        now: () => DateTime.utc(2025, 6, 1, 11, 0),
+      );
+    });
+
+    test('are not offered for import', () async {
+      adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
+
+      final result = await watchAwareService.listImportable();
+
+      expect(result.map((w) => w.sourceId), ['w2']);
+    });
+
+    test('are skipped by importAll', () async {
+      adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
+
+      final result = await watchAwareService.importAll();
+
+      expect(result.imported, 1);
+      expect(
+        await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
+        isFalse,
+      );
+      expect(await localActivities.count(), 1);
+    });
+
+    test('are skipped even when selected explicitly', () async {
+      adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
+      await service.listImportable();
+
+      final result = await watchAwareService.importWorkouts(['w1']);
+
+      expect(result.imported, 0);
+      expect(await localActivities.count(), 0);
+    });
+  });
 
   group('importAll', () {
     test('always discovers only the default range', () async {

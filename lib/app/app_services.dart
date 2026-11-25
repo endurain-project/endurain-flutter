@@ -3,6 +3,7 @@ import 'package:endurain/app/modules/activity_module.dart';
 import 'package:endurain/app/modules/auth_module.dart';
 import 'package:endurain/app/modules/health_module.dart';
 import 'package:endurain/app/modules/sensors_module.dart';
+import 'package:endurain/app/modules/watch_module.dart';
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/auth_session_store.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
@@ -47,11 +48,14 @@ import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
 import 'package:endurain/features/settings/services/crash_reporting_service.dart';
+import 'package:endurain/features/watch/services/watch_companion_service.dart';
+import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
 
 /// The application's composition root.
 ///
 /// [AppServices] wires the shared [AppInfrastructure] and the per-feature
-/// modules ([AuthModule], [SensorsModule], [ActivityModule], [HealthModule])
+/// modules ([AuthModule], [SensorsModule], [ActivityModule], [HealthModule],
+/// [WatchModule])
 /// once, in dependency order, and exposes them through a stable public surface
 /// that screens and controllers reach via `AppScope.servicesOf(context)`.
 ///
@@ -63,6 +67,8 @@ import 'package:endurain/features/settings/services/crash_reporting_service.dart
 ///   so either module can be built first.
 /// - activity → health: the local-history controller's default health-import
 ///   cleanup is injected here (see [createLocalActivityHistoryController]).
+/// - watch → health: Health Sync skips workouts a companion-watch session
+///   already covers, through a lazy closure over [WatchModule.ledger].
 class AppServices {
   AppServices({this.config = AppConfig.defaults});
 
@@ -90,6 +96,13 @@ class AppServices {
   late final HealthModule _health = HealthModule(
     infra: _infra,
     auth: _auth,
+    activity: _activity,
+    // Lazy: the watch module is only built when Health Sync first asks.
+    isRecordedElsewhere: (sourceId) =>
+        _watch.ledger.containsHealthWorkout(sourceId),
+  );
+  late final WatchModule _watch = WatchModule(
+    infra: _infra,
     activity: _activity,
   );
 
@@ -187,6 +200,16 @@ class AppServices {
   /// Builds the concrete health-platform adapter for the current platform.
   HealthPlatformAdapter createHealthPlatformAdapter() =>
       _health.createPlatformAdapter();
+
+  // ── Companion watch ────────────────────────────────────────────────────────
+
+  /// App-lifetime coordinator that ingests sessions recorded on a paired
+  /// Apple Watch / Wear OS watch into the local activity + upload pipeline.
+  WatchCompanionService get watchCompanion => _watch.companion;
+
+  /// Builds the companion-watch transport for the current platform.
+  WatchTransportAdapter createWatchTransportAdapter() =>
+      _watch.createTransportAdapter();
 
   // ── Account migration ──────────────────────────────────────────────────────
 

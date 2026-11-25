@@ -1,7 +1,7 @@
 # Copilot Instructions for Endurain mobile app
 
 ## Tech Stack
-- **Flutter**: 3.50+ (stable channel; CI pins 3.50.0)
+- **Flutter**: 3.50+ (stable channel; CI pins 3.50.1)
 - **Dart**: 3.14.0+
 - **Platforms**: Android, iOS
 - **State Management**: `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and exposed via `AppScope`; obtain services with `AppScope.servicesOf(context)`

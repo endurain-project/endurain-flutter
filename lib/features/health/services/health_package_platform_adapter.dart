@@ -25,6 +25,15 @@ const _androidWorkoutSummaryReadTypes = [
 
 const _healthConnectHistoryWindow = Duration(days: 30);
 
+/// Health platform source ids (the writing app's bundle id or package name)
+/// of Endurain's own companion watch apps.
+///
+/// Their workouts reach the phone through the watch transport, so Health Sync
+/// never offers or imports them. Filtering by source (rather than only by the
+/// health workout id a handoff carries) also covers a workout that syncs to
+/// the phone's health store before the watch's own transfer arrives.
+const companionWatchHealthSourceIds = {'com.endurain.endurain.watchkitapp'};
+
 /// Absorbs the small skew between when a caller computes a read window and when
 /// this adapter actually reaches Health Connect. Reading exactly the last 30
 /// days must never depend on (or prompt for) the history permission, and the
@@ -233,12 +242,16 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       if (!effectiveStart.isBefore(end)) return const [];
       _routeConsentDeniedCount = 0;
       // Step 1 — Fetch workout metadata.
-      final workoutPoints = await _health.getHealthDataFromTypes(
+      final allWorkoutPoints = await _health.getHealthDataFromTypes(
         types: [HealthDataType.WORKOUT],
         startTime: effectiveStart,
         endTime: end,
       );
-
+      final workoutPoints = [
+        for (final point in allWorkoutPoints)
+          if (!companionWatchHealthSourceIds.contains(point.sourceId)) point,
+      ];
+      final companionWorkouts = allWorkoutPoints.length - workoutPoints.length;
       if (workoutPoints.isEmpty) return const [];
 
       // Step 2 — Fetch GPS routes for the same window.
@@ -277,6 +290,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
           'workouts_with_route': workouts.where((w) => w.hasRoute).length,
           'route_read_failed': _routeConsentDeniedCount > 0,
           'history_clamped': window.historyClamped,
+          'companion_watch_skipped': companionWorkouts,
         },
       );
 
@@ -284,9 +298,18 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(AppErrorCode.healthReadFailed, cause: e);
+      throw _readFailed(e);
     }
   }
+
+  /// Maps a read failure to [AppErrorCode.healthReadFailed], flagging the ones
+  /// the plugin reports as retryable (rate limit, Health Connect busy, iOS
+  /// device locked) as transient so they are not taken for lost access.
+  static AppException _readFailed(Object error) => AppException(
+    AppErrorCode.healthReadFailed,
+    cause: error,
+    isTransient: error is HealthException && error.isRetryable,
+  );
 
   /// Resolves the widest start Endurain can actually read for [requestedStart].
   ///
@@ -380,7 +403,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
         );
       }
     } catch (error) {
-      throw AppException(AppErrorCode.healthReadFailed, cause: error);
+      throw _readFailed(error);
     }
     return result;
   }

@@ -1,0 +1,97 @@
+package com.endurain.endurain.wear
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.Build
+import android.os.IBinder
+import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
+import androidx.wear.ongoing.OngoingActivity
+import androidx.wear.ongoing.Status
+
+/**
+ * Foreground service that keeps the process alive while a workout records,
+ * and shows it as an ongoing activity on the watch face.
+ */
+class ExerciseService : Service() {
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(
+            NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW),
+        )
+        val openApp =
+            PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+        val notification =
+            NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_workout)
+                .setContentTitle(getString(R.string.notification_recording))
+                .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setOngoing(true)
+                .setContentIntent(openApp)
+        OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notification)
+            .setStaticIcon(R.drawable.ic_workout)
+            .setTouchIntent(openApp)
+            .setStatus(Status.Builder().addTemplate(getString(R.string.notification_recording)).build())
+            .build()
+            .apply(applicationContext)
+
+        try {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification.build(), foregroundTypes())
+        } catch (error: Exception) {
+            // Starting from the background (for example a relaunch by Play
+            // Services) can be refused; Health Services keeps recording.
+            Log.w(TAG, "Could not start the workout foreground service", error)
+            stopSelf()
+        }
+        return START_STICKY
+    }
+
+    private fun foregroundTypes(): Int {
+        var types = 0
+        if (granted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+        }
+        val heartRatePermission =
+            if (Build.VERSION.SDK_INT >= 36) "android.permission.health.READ_HEART_RATE" else Manifest.permission.BODY_SENSORS
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+            (granted(heartRatePermission) || granted(Manifest.permission.ACTIVITY_RECOGNITION))
+        ) {
+            types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
+        }
+        return types
+    }
+
+    private fun granted(permission: String): Boolean =
+        ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+    companion object {
+        private const val TAG = "EndurainWear"
+        private const val CHANNEL_ID = "workout"
+        private const val NOTIFICATION_ID = 1
+
+        fun start(context: Context) {
+            ContextCompat.startForegroundService(context, Intent(context, ExerciseService::class.java))
+        }
+
+        fun stop(context: Context) {
+            context.stopService(Intent(context, ExerciseService::class.java))
+        }
+    }
+}

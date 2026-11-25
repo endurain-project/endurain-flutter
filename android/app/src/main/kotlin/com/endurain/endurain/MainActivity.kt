@@ -5,12 +5,16 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import com.endurain.endurain.activity.ActivityRecorderChannel
+import com.endurain.endurain.watch.WatchInbox
+import com.endurain.endurain.watch.WatchLinkFactory
+import com.endurain.endurain.watch.WatchTransportChannel
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterFragmentActivity() {
     private var recorderChannel: ActivityRecorderChannel? = null
     private var deviceMeasurementSystemChannel: DeviceMeasurementSystemChannel? = null
+    private var watchTransportChannel: WatchTransportChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +29,12 @@ class MainActivity : FlutterFragmentActivity() {
         recorderChannel = ActivityRecorderChannel(applicationContext).also {
             it.register(flutterEngine.dartExecutor.binaryMessenger)
         }
+        watchTransportChannel = WatchTransportChannel(
+            link = WatchLinkFactory.create(applicationContext),
+            inbox = WatchInbox.create(applicationContext),
+        ).also {
+            it.register(flutterEngine.dartExecutor.binaryMessenger)
+        }
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
@@ -32,6 +42,8 @@ class MainActivity : FlutterFragmentActivity() {
         deviceMeasurementSystemChannel = null
         recorderChannel?.unregister()
         recorderChannel = null
+        watchTransportChannel?.unregister()
+        watchTransportChannel = null
         super.cleanUpFlutterEngine(flutterEngine)
     }
 

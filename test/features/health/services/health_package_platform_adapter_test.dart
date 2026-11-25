@@ -1,3 +1,5 @@
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
@@ -5,9 +7,11 @@ import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/services/health_package_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
+
+import '../../../helpers/recording_diagnostics.dart';
 
 // These tests verify the adapter contract using the
 // UnsupportedHealthPlatformAdapter and the HealthWorkoutType mapping logic.
@@ -271,6 +275,63 @@ void main() {
 
       expect(workouts.single.route, isEmpty);
       expect(adapter.routeConsentDeniedCount, 1);
+    });
+  });
+
+  group('HealthPackagePlatformAdapter companion watch workouts', () {
+    final start = DateTime.utc(2026, 7, 1, 9);
+    final end = DateTime.utc(2026, 7, 1, 10);
+
+    test('skips workouts saved by the Endurain watch app', () async {
+      final diagnostics = RecordingDiagnostics();
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [
+            _workoutPoint(
+              start: start,
+              end: end,
+              uuid: 'from-watch',
+              sourceId: 'com.endurain.endurain.watchkitapp',
+            ),
+            _workoutPoint(start: start, end: end, uuid: 'from-elsewhere'),
+          ],
+        },
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        diagnostics: diagnostics,
+        targetPlatform: () => TargetPlatform.iOS,
+      );
+
+      final workouts = await adapter.readWorkouts(start: start, end: end);
+
+      expect(workouts.map((w) => w.sourceId), ['from-elsewhere']);
+      expect(
+        diagnostics.single(DiagnosticsEvents.healthReadWorkouts),
+        containsPair('companion_watch_skipped', 1),
+      );
+    });
+
+    test('returns nothing when every workout came from the watch', () async {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [
+            _workoutPoint(
+              start: start,
+              end: end,
+              sourceId: 'com.endurain.endurain.watchkitapp',
+            ),
+          ],
+        },
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.iOS,
+      );
+
+      expect(await adapter.readWorkouts(start: start, end: end), isEmpty);
     });
   });
 
@@ -541,6 +602,55 @@ void main() {
       );
     });
   });
+
+  group('read failures', () {
+    final start = DateTime.utc(2025, 6, 1);
+    final end = DateTime.utc(2025, 6, 2);
+
+    Future<AppException> readFailure(Object error) async {
+      final adapter = HealthPackagePlatformAdapter(
+        health: _FakeHealth(hasPermissionsResult: true, readError: error),
+        targetPlatform: () => TargetPlatform.android,
+      );
+      try {
+        await adapter.readWorkouts(start: start, end: end);
+      } on AppException catch (e) {
+        return e;
+      }
+      fail('readWorkouts did not throw');
+    }
+
+    test('flags a retryable platform error as transient', () async {
+      final error = await readFailure(
+        HealthPlatformException(
+          HealthDataType.WORKOUT,
+          PlatformException(code: 'UNAVAILABLE'),
+        ),
+      );
+
+      expect(error.code, AppErrorCode.healthReadFailed);
+      expect(error.isTransient, isTrue);
+    });
+
+    test('does not flag a lasting platform error as transient', () async {
+      final error = await readFailure(
+        HealthPlatformException(
+          HealthDataType.WORKOUT,
+          PlatformException(code: 'PERMISSION_DENIED'),
+        ),
+      );
+
+      expect(error.code, AppErrorCode.healthReadFailed);
+      expect(error.isTransient, isFalse);
+    });
+
+    test('does not flag an unclassified error as transient', () async {
+      final error = await readFailure(StateError('boom'));
+
+      expect(error.code, AppErrorCode.healthReadFailed);
+      expect(error.isTransient, isFalse);
+    });
+  });
 }
 
 class _FakeHealth extends Health {
@@ -551,9 +661,13 @@ class _FakeHealth extends Health {
     this.historyAvailable = false,
     this.historyAuthorized = false,
     this.requestHistoryResult = false,
+    this.readError,
   });
 
   final bool? hasPermissionsResult;
+
+  /// Thrown by every data read when set.
+  final Object? readError;
   final bool requestAuthorizationResult;
   final Map<HealthDataType, List<HealthDataPoint>> dataByType;
   final bool historyAvailable;
@@ -619,7 +733,12 @@ class _FakeHealth extends Health {
     required DateTime startTime,
     required DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter = const [],
+    int? limit,
   }) async {
+    final error = readError;
+    if (error != null) {
+      throw error;
+    }
     if (types.contains(HealthDataType.WORKOUT)) {
       lastWorkoutReadStart = startTime;
     }
@@ -630,9 +749,11 @@ class _FakeHealth extends Health {
 HealthDataPoint _workoutPoint({
   required DateTime start,
   required DateTime end,
+  String uuid = 'workout-1',
+  String sourceId = 'source',
 }) {
   return HealthDataPoint(
-    uuid: 'workout-1',
+    uuid: uuid,
     value: WorkoutHealthValue(
       workoutActivityType: HealthWorkoutActivityType.RUNNING,
     ),
@@ -642,7 +763,7 @@ HealthDataPoint _workoutPoint({
     dateTo: end,
     sourcePlatform: HealthPlatformType.googleHealthConnect,
     sourceDeviceId: 'device',
-    sourceId: 'source',
+    sourceId: sourceId,
     sourceName: 'source',
   );
 }

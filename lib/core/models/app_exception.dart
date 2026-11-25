@@ -86,7 +86,13 @@ AppErrorCode? appErrorCodeByName(Object? value) =>
     value is String ? _appErrorCodesByName[value] : null;
 
 class AppException implements Exception {
-  const AppException(this.code, {this.details, this.cause, this.statusCode});
+  const AppException(
+    this.code, {
+    this.details,
+    this.cause,
+    this.statusCode,
+    this.isTransient = false,
+  });
 
   final AppErrorCode code;
   final String? details;
@@ -94,6 +100,11 @@ class AppException implements Exception {
 
   /// HTTP status of the failed response, when the failure came from one.
   final int? statusCode;
+
+  /// Whether the same call may succeed if retried later (a rate limit, a busy
+  /// platform service, a locked device). Callers use it to avoid treating a
+  /// passing failure as a lasting one, such as a lost authorization.
+  final bool isTransient;
 
   @override
   String toString() {

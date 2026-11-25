@@ -131,6 +131,12 @@ Future<void> main() async {
       // each coordinator also starts it listening for Bluetooth becoming ready.
       // Best-effort and self-guarded; a no-op when no sensor was ever paired.
       unawaited(services.reconnectRememberedSensors(withRetries: true));
+
+      // Pull any workout a paired companion watch finished while the app was
+      // not running. Touching the coordinator also starts it listening for
+      // watch push events; app resume alone would miss a cold launch. Inert
+      // and silent on builds and platforms without a watch transport.
+      unawaited(services.watchCompanion.syncPendingSessions());
     },
     (error, stackTrace) {
       diagnostics.recordErrorSync(
