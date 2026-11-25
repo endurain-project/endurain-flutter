@@ -929,6 +929,13 @@ class AppLocalizationsUk extends AppLocalizations {
       'Діє, поки ви підключені до цього сервера. Після повторного входу відновлюється налаштування плиток вашого сервера.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Не вдалося завантажити налаштування картографічних плиток.';
+
+  @override
+  String get tryAgain => 'Спробувати ще раз';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

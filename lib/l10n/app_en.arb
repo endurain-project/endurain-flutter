@@ -1209,6 +1209,14 @@
   "@mapTilesSettingsNote": {
     "description": "Note under the tile server field explaining it is stored per server and reset on sign-in - Used in: tile_server_settings_screen.dart"
   },
+  "mapTilesSettingsLoadFailed": "Couldn't load the map tiles setting.",
+  "@mapTilesSettingsLoadFailed": {
+    "description": "Error shown when the map tiles setting cannot be read - Used in: tile_server_settings_screen.dart"
+  },
+  "tryAgain": "Try again",
+  "@tryAgain": {
+    "description": "Generic retry button label - Used in: tile_server_settings_screen.dart"
+  },
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "@tileServerUrlHint": {
     "description": "Tile server URL field hint text"

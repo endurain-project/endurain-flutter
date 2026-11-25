@@ -41,6 +41,17 @@ class LocalActivityHistoryController extends SafeNotifier {
   bool _hasMore = true;
   bool _retainUploadedGpx = true;
 
+  /// The last retention value known to be in storage (read or written).
+  bool _storedRetainUploadedGpx = true;
+
+  /// Bumped by every save, so a read or a failed write that a newer save
+  /// superseded never overwrites what the switch shows.
+  int _retainSaveGeneration = 0;
+
+  /// Retention writes run one at a time, in call order, so storage always ends
+  /// on the last successful write.
+  Future<void> _retainWriteQueue = Future<void>.value();
+
   List<LocalActivityRecord> get records => List.unmodifiable(_records);
 
   bool get isLoading => _isLoading;
@@ -156,8 +167,15 @@ class LocalActivityHistoryController extends SafeNotifier {
     if (repository == null) {
       return;
     }
+    final generation = _retainSaveGeneration;
     try {
-      _retainUploadedGpx = await repository.isRetainUploadedGpxEnabled();
+      final stored = await repository.isRetainUploadedGpxEnabled();
+      if (generation != _retainSaveGeneration) {
+        // A save started while this read was in flight; it owns the value.
+        return;
+      }
+      _retainUploadedGpx = stored;
+      _storedRetainUploadedGpx = stored;
       notify();
     } catch (_) {
       // Keep the safe default (retain) when the preference cannot be read.
@@ -166,22 +184,31 @@ class LocalActivityHistoryController extends SafeNotifier {
 
   /// Persists the uploaded-GPX retention preference.
   ///
-  /// Applied optimistically so the switch responds immediately, then reverted
-  /// if the write fails.
-  Future<void> setRetainUploadedGpx(bool value) async {
+  /// Applied optimistically so the switch responds immediately. Writes are
+  /// queued in call order; if the latest one fails, the switch reverts to the
+  /// last value known to be stored. An earlier write that fails while a newer
+  /// one is queued leaves the switch alone, since the newer write decides.
+  Future<void> setRetainUploadedGpx(bool value) {
     final repository = _retentionSettingsRepository;
     if (repository == null) {
-      return;
+      return Future<void>.value();
     }
-    final previous = _retainUploadedGpx;
+    final generation = ++_retainSaveGeneration;
     _retainUploadedGpx = value;
     notify();
-    try {
-      await repository.setRetainUploadedGpxEnabled(value);
-    } catch (_) {
-      _retainUploadedGpx = previous;
-      notify();
-    }
+    final write = _retainWriteQueue.then((_) async {
+      try {
+        await repository.setRetainUploadedGpxEnabled(value);
+        _storedRetainUploadedGpx = value;
+      } catch (_) {
+        if (generation == _retainSaveGeneration) {
+          _retainUploadedGpx = _storedRetainUploadedGpx;
+          notify();
+        }
+      }
+    });
+    _retainWriteQueue = write;
+    return write;
   }
 
   Future<void> exportGpx(

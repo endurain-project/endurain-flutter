@@ -943,6 +943,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Gilt, solange du mit diesem Server verbunden bist. Bei erneuter Anmeldung wird die Kacheleinstellung deines Servers wiederhergestellt.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Die Einstellung für Kartenkacheln konnte nicht geladen werden.';
+
+  @override
+  String get tryAgain => 'Erneut versuchen';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

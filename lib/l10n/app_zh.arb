@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "地图瓦片",
   "mapTilesSettingsSubtitle": "用于绘制地图的瓦片服务器",
   "mapTilesSettingsNote": "仅在连接此服务器时生效。重新登录后将恢复为服务器的瓦片设置。",
+  "mapTilesSettingsLoadFailed": "无法加载地图瓦片设置。",
+  "tryAgain": "重试",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "不同的瓦片服务器主机",
   "tileServerHostWarningMessage": "瓦片服务器主机与您的 Endurain 服务器主机不同。瓦片将从第三方服务器加载。是否要继续？",

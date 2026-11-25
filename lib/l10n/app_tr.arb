@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Harita döşemeleri",
   "mapTilesSettingsSubtitle": "Haritaları çizmek için kullanılan döşeme sunucusu",
   "mapTilesSettingsNote": "Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca sunucunuzun döşeme ayarına döner.",
+  "mapTilesSettingsLoadFailed": "Harita döşemesi ayarı yüklenemedi.",
+  "tryAgain": "Tekrar dene",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Farklı döşeme sunucusu ana bilgisayarı",
   "tileServerHostWarningMessage": "Döşeme sunucusu ana bilgisayarı, Endurain sunucunuzun ana bilgisayarından farklı. Döşemeler üçüncü taraf bir sunucudan yüklenecek. Devam etmek istiyor musunuz?",

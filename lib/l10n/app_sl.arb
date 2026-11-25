@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Ploščice zemljevida",
   "mapTilesSettingsSubtitle": "Strežnik ploščic za risanje zemljevidov",
   "mapTilesSettingsNote": "Velja, dokler ste povezani s tem strežnikom. Ob ponovni prijavi se povrne nastavitev ploščic vašega strežnika.",
+  "mapTilesSettingsLoadFailed": "Nastavitve ploščic zemljevida ni bilo mogoče naložiti.",
+  "tryAgain": "Poskusi znova",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Drug gostitelj strežnika ploščic",
   "tileServerHostWarningMessage": "Gostitelj strežnika ploščic se razlikuje od gostitelja vašega strežnika Endurain. Ploščice bodo naložene s strežnika tretje osebe. Želite nadaljevati?",

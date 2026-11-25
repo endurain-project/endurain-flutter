@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Картови плочки",
   "mapTilesSettingsSubtitle": "Сървър за плочки, използван за картите",
   "mapTilesSettingsNote": "Важи, докато сте свързани с този сървър. При повторно влизане се връща настройката за плочки на вашия сървър.",
+  "mapTilesSettingsLoadFailed": "Настройката за картови плочки не можа да се зареди.",
+  "tryAgain": "Опитай отново",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Различен хост на сървъра за плочки",
   "tileServerHostWarningMessage": "Хостът на сървъра за плочки се различава от хоста на вашия сървър Endurain. Плочките ще се зареждат от сървър на трета страна. Искате ли да продължите?",

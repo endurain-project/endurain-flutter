@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Картографічні плитки",
   "mapTilesSettingsSubtitle": "Сервер плиток для відображення карт",
   "mapTilesSettingsNote": "Діє, поки ви підключені до цього сервера. Після повторного входу відновлюється налаштування плиток вашого сервера.",
+  "mapTilesSettingsLoadFailed": "Не вдалося завантажити налаштування картографічних плиток.",
+  "tryAgain": "Спробувати ще раз",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Інший хост сервера плиток",
   "tileServerHostWarningMessage": "Хост сервера плиток відрізняється від хоста вашого сервера Endurain. Плитки завантажуватимуться зі стороннього сервера. Продовжити?",

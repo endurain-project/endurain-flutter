@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Pločice karte",
   "mapTilesSettingsSubtitle": "Poslužitelj pločica za crtanje karata",
   "mapTilesSettingsNote": "Vrijedi dok ste povezani s ovim poslužiteljem. Ponovnom prijavom vraća se postavka pločica vašeg poslužitelja.",
+  "mapTilesSettingsLoadFailed": "Postavka pločica karte nije se mogla učitati.",
+  "tryAgain": "Pokušaj ponovno",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Drugačiji host poslužitelja pločica",
   "tileServerHostWarningMessage": "Host poslužitelja pločica razlikuje se od hosta vašeg Endurain poslužitelja. Pločice će se učitati s poslužitelja treće strane. Želite li nastaviti?",

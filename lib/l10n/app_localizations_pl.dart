@@ -939,6 +939,13 @@ class AppLocalizationsPl extends AppLocalizations {
       'Obowiązuje, gdy jesteś połączony z tym serwerem. Ponowne zalogowanie przywraca ustawienie kafelków Twojego serwera.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nie udało się wczytać ustawienia kafelków mapy.';
+
+  @override
+  String get tryAgain => 'Spróbuj ponownie';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

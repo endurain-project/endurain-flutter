@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Kartes elementi",
   "mapTilesSettingsSubtitle": "Elementu serveris karšu zīmēšanai",
   "mapTilesSettingsNote": "Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, tiek atjaunots jūsu servera elementu iestatījums.",
+  "mapTilesSettingsLoadFailed": "Neizdevās ielādēt kartes elementu iestatījumu.",
+  "tryAgain": "Mēģināt vēlreiz",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Cits elementu servera resursdators",
   "tileServerHostWarningMessage": "Elementu servera resursdators atšķiras no jūsu Endurain servera resursdatora. Elementi tiks ielādēti no trešās puses servera. Vai vēlaties turpināt?",

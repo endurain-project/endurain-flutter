@@ -942,6 +942,13 @@ class AppLocalizationsHr extends AppLocalizations {
       'Vrijedi dok ste povezani s ovim poslužiteljem. Ponovnom prijavom vraća se postavka pločica vašeg poslužitelja.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Postavka pločica karte nije se mogla učitati.';
+
+  @override
+  String get tryAgain => 'Pokušaj ponovno';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

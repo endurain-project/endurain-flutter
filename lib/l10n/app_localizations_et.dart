@@ -931,6 +931,13 @@ class AppLocalizationsEt extends AppLocalizations {
       'Kehtib, kuni oled selle serveriga ühendatud. Uuesti sisselogimisel taastatakse sinu serveri paaniseade.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Kaardipaanide seadet ei õnnestunud laadida.';
+
+  @override
+  String get tryAgain => 'Proovi uuesti';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

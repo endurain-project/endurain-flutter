@@ -941,6 +941,13 @@ class AppLocalizationsCs extends AppLocalizations {
       'Platí, dokud jste připojeni k tomuto serveru. Po opětovném přihlášení se obnoví nastavení dlaždic vašeho serveru.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nastavení mapových dlaždic se nepodařilo načíst.';
+
+  @override
+  String get tryAgain => 'Zkusit znovu';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

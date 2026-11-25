@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "地圖圖磚",
   "mapTilesSettingsSubtitle": "用於繪製地圖的圖磚伺服器",
   "mapTilesSettingsNote": "僅在連線此伺服器時生效。重新登入後會恢復為伺服器的圖磚設定。",
+  "mapTilesSettingsLoadFailed": "無法載入地圖圖磚設定。",
+  "tryAgain": "重試",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "不同的圖磚伺服器主機",
   "tileServerHostWarningMessage": "圖磚伺服器主機與您的 Endurain 伺服器主機不同。圖磚將從第三方伺服器載入。是否要繼續？",

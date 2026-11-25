@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Kartrutor",
   "mapTilesSettingsSubtitle": "Ruteserver som används för att rita kartor",
   "mapTilesSettingsNote": "Gäller medan du är ansluten till den här servern. När du loggar in igen återställs serverns ruteinställning.",
+  "mapTilesSettingsLoadFailed": "Inställningen för kartrutor kunde inte läsas in.",
+  "tryAgain": "Försök igen",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Annan värd för kartruteserver",
   "tileServerHostWarningMessage": "Värden för kartruteservern skiljer sig från din Endurain-servers värd. Rutorna läses in från en tredjepartsserver. Vill du fortsätta?",

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
@@ -391,6 +392,61 @@ void main() {
       // The switch must not keep showing a value that was never stored.
       expect(controller.retainUploadedGpx, isTrue);
     });
+
+    test('a read that finishes after a save does not undo it', () async {
+      final retention = _GatedRetentionSettings()..stored = true;
+      final controller = buildController(retention);
+
+      final load = controller.load();
+      // The read is in flight with the old value when the user toggles.
+      final save = controller.setRetainUploadedGpx(false);
+      await pumpEventQueue();
+      retention.writes.single.complete();
+      await save;
+      retention.reads.single.complete();
+      await load;
+
+      expect(controller.retainUploadedGpx, isFalse);
+      expect(retention.stored, isFalse);
+    });
+
+    test('overlapping saves that both fail match what is stored', () async {
+      final retention = _GatedRetentionSettings()..stored = true;
+      final controller = buildController(retention);
+      final load = controller.load();
+      retention.reads.single.complete();
+      await load;
+
+      final first = controller.setRetainUploadedGpx(false);
+      final second = controller.setRetainUploadedGpx(true);
+      // Writes run one at a time, in order.
+      await pumpEventQueue();
+      expect(retention.writes, hasLength(1));
+      retention.writes[0].completeError(StateError('write failed'));
+      await pumpEventQueue();
+      expect(retention.writes, hasLength(2));
+      retention.writes[1].completeError(StateError('write failed'));
+      await Future.wait([first, second]);
+
+      expect(retention.stored, isTrue);
+      expect(controller.retainUploadedGpx, isTrue);
+    });
+
+    test('a failed save after a successful one reverts to it', () async {
+      final retention = _GatedRetentionSettings()..stored = true;
+      final controller = buildController(retention);
+
+      final first = controller.setRetainUploadedGpx(false);
+      final second = controller.setRetainUploadedGpx(true);
+      await pumpEventQueue();
+      retention.writes[0].complete();
+      await pumpEventQueue();
+      retention.writes[1].completeError(StateError('write failed'));
+      await Future.wait([first, second]);
+
+      expect(retention.stored, isFalse);
+      expect(controller.retainUploadedGpx, isFalse);
+    });
   });
 }
 
@@ -476,5 +532,32 @@ class _ThrowingRetentionSettings extends ActivityRetentionSettingsRepository {
   @override
   Future<void> setRetainUploadedGpxEnabled(bool enabled) async {
     throw const AppException(AppErrorCode.secureStorageWriteFailed);
+  }
+}
+
+/// Retention settings whose reads and writes finish only when a test
+/// completes them, to reproduce overlapping loads and saves.
+class _GatedRetentionSettings extends ActivityRetentionSettingsRepository {
+  _GatedRetentionSettings() : super(preferences: FakePreferencesStore());
+
+  bool stored = true;
+  final List<Completer<void>> reads = [];
+  final List<Completer<void>> writes = [];
+
+  @override
+  Future<bool> isRetainUploadedGpxEnabled() async {
+    final value = stored;
+    final gate = Completer<void>();
+    reads.add(gate);
+    await gate.future;
+    return value;
+  }
+
+  @override
+  Future<void> setRetainUploadedGpxEnabled(bool enabled) async {
+    final gate = Completer<void>();
+    writes.add(gate);
+    await gate.future;
+    stored = enabled;
   }
 }

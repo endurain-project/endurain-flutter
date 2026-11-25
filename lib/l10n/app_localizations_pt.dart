@@ -938,6 +938,13 @@ class AppLocalizationsPt extends AppLocalizations {
       'Aplica-se enquanto estiver ligado a este servidor. Ao iniciar sessão novamente, volta à definição de mapas do seu servidor.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Não foi possível carregar a definição de mosaicos do mapa.';
+
+  @override
+  String get tryAgain => 'Tentar novamente';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

@@ -926,6 +926,13 @@ class AppLocalizationsLt extends AppLocalizations {
       'Galioja, kol esate prisijungę prie šio serverio. Prisijungus iš naujo, atkuriamas jūsų serverio išklotinių nustatymas.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nepavyko įkelti žemėlapio išklotinių nustatymo.';
+
+  @override
+  String get tryAgain => 'Bandyti dar kartą';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

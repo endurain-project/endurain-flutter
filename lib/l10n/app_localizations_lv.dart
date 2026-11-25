@@ -931,6 +931,13 @@ class AppLocalizationsLv extends AppLocalizations {
       'Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, tiek atjaunots jūsu servera elementu iestatījums.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Neizdevās ielādēt kartes elementu iestatījumu.';
+
+  @override
+  String get tryAgain => 'Mēģināt vēlreiz';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

@@ -939,6 +939,13 @@ class AppLocalizationsSr extends AppLocalizations {
       'Важи док сте повезани са овим сервером. Поновном пријавом враћа се подешавање плочица вашег сервера.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Подешавање плочица мапе није могло да се учита.';
+
+  @override
+  String get tryAgain => 'Покушај поново';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

@@ -936,6 +936,13 @@ class AppLocalizationsFi extends AppLocalizations {
       'Koskee tätä palvelinyhteyttä. Kun kirjaudut uudelleen, palvelimesi laattasetus palautetaan.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Karttalaattojen asetusta ei voitu ladata.';
+
+  @override
+  String get tryAgain => 'Yritä uudelleen';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

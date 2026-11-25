@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Karttalaatat",
   "mapTilesSettingsSubtitle": "Laattapalvelin, jolla kartat piirretään",
   "mapTilesSettingsNote": "Koskee tätä palvelinyhteyttä. Kun kirjaudut uudelleen, palvelimesi laattasetus palautetaan.",
+  "mapTilesSettingsLoadFailed": "Karttalaattojen asetusta ei voitu ladata.",
+  "tryAgain": "Yritä uudelleen",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Eri laattapalvelimen isäntä",
   "tileServerHostWarningMessage": "Laattapalvelimen isäntä on eri kuin Endurain-palvelimesi isäntä. Laatat ladataan kolmannen osapuolen palvelimelta. Haluatko jatkaa?",

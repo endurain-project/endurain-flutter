@@ -1743,6 +1743,18 @@ abstract class AppLocalizations {
   /// **'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.'**
   String get mapTilesSettingsNote;
 
+  /// Error shown when the map tiles setting cannot be read - Used in: tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the map tiles setting.'**
+  String get mapTilesSettingsLoadFailed;
+
+  /// Generic retry button label - Used in: tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
   /// Tile server URL field hint text
   ///
   /// In en, this message translates to:

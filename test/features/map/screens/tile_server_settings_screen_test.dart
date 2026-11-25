@@ -68,6 +68,44 @@ void main() {
       expect(find.text(l10n.mapTilesSettingsNote), findsOneWidget);
     });
 
+    testWidgets('offers a retry when the setting cannot be loaded', (
+      tester,
+    ) async {
+      final prefs = FakePreferencesStore();
+      var failServerUrl = true;
+      final controller = TileServerSettingsController(
+        repository: MapSettingsRepository(preferences: prefs),
+        config: AppConfig.defaults,
+        loadServerUrl: () async {
+          if (failServerUrl) {
+            throw StateError('keychain locked');
+          }
+          return 'https://endurain.example.test';
+        },
+      );
+      controllers.add(controller);
+
+      await tester.pumpWidget(
+        _SettingsTestApp(
+          child: TileServerSettingsScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.mapTilesSettingsLoadFailed), findsOneWidget);
+      expect(find.byType(TextFormField), findsNothing);
+
+      failServerUrl = false;
+      await tester.tap(find.text(l10n.tryAgain));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.mapTilesSettingsLoadFailed), findsNothing);
+      expect(
+        find.widgetWithText(TextFormField, l10n.tileServerUrl),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('validates and saves tile server settings', (tester) async {
       final prefs = FakePreferencesStore();
 

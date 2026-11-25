@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Kaardipaanid",
   "mapTilesSettingsSubtitle": "Paaniserver, millega kaarte joonistatakse",
   "mapTilesSettingsNote": "Kehtib, kuni oled selle serveriga ühendatud. Uuesti sisselogimisel taastatakse sinu serveri paaniseade.",
+  "mapTilesSettingsLoadFailed": "Kaardipaanide seadet ei õnnestunud laadida.",
+  "tryAgain": "Proovi uuesti",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Erinev paaniserveri host",
   "tileServerHostWarningMessage": "Paaniserveri host erineb teie Enduraini serveri hostist. Paanid laaditakse kolmanda osapoole serverist. Kas soovite jätkata?",

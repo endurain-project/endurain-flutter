@@ -938,6 +938,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se aplica mientras estés conectado a este servidor. Al volver a iniciar sesión, se restablece la configuración de teselas de tu servidor.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'No se pudo cargar la configuración de teselas del mapa.';
+
+  @override
+  String get tryAgain => 'Reintentar';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

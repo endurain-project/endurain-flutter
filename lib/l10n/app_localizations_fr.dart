@@ -941,6 +941,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'S\'applique tant que vous êtes connecté à ce serveur. Une nouvelle connexion rétablit le réglage de tuiles de votre serveur.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Impossible de charger le réglage des tuiles de la carte.';
+
+  @override
+  String get tryAgain => 'Réessayer';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

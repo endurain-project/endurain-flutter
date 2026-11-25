@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Kortfliser",
   "mapTilesSettingsSubtitle": "Fliseserver, der bruges til at tegne kort",
   "mapTilesSettingsNote": "Gælder, mens du er forbundet til denne server. Når du logger ind igen, nulstilles den til din servers fliseindstilling.",
+  "mapTilesSettingsLoadFailed": "Indstillingen for kortfliser kunne ikke indlæses.",
+  "tryAgain": "Prøv igen",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Anden fliseservervært",
   "tileServerHostWarningMessage": "Fliseserverens vært er forskellig fra din Endurain-servers vært. Fliser indlæses fra en tredjepartsserver. Vil du fortsætte?",

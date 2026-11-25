@@ -921,6 +921,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Couldn\'t load the map tiles setting.';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

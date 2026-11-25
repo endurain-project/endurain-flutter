@@ -922,6 +922,12 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca sunucunuzun döşeme ayarına döner.';
 
   @override
+  String get mapTilesSettingsLoadFailed => 'Harita döşemesi ayarı yüklenemedi.';
+
+  @override
+  String get tryAgain => 'Tekrar dene';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

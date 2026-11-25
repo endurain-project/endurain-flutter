@@ -861,6 +861,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mapTilesSettingsNote => '仅在连接此服务器时生效。重新登录后将恢复为服务器的瓦片设置。';
 
   @override
+  String get mapTilesSettingsLoadFailed => '无法加载地图瓦片设置。';
+
+  @override
+  String get tryAgain => '重试';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override
@@ -2222,6 +2228,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get mapTilesSettingsNote => '僅在連線此伺服器時生效。重新登入後會恢復為伺服器的圖磚設定。';
+
+  @override
+  String get mapTilesSettingsLoadFailed => '無法載入地圖圖磚設定。';
+
+  @override
+  String get tryAgain => '重試';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

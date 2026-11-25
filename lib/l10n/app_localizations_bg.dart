@@ -935,6 +935,13 @@ class AppLocalizationsBg extends AppLocalizations {
       'Важи, докато сте свързани с този сървър. При повторно влизане се връща настройката за плочки на вашия сървър.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Настройката за картови плочки не можа да се зареди.';
+
+  @override
+  String get tryAgain => 'Опитай отново';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

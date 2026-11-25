@@ -40,11 +40,17 @@ class TileServerSettingsController extends SafeNotifier {
   final Future<String?> Function() _loadServerUrl;
 
   bool _isLoading = true;
+  Object? _loadError;
   String? _serverUrl;
   String _tileServerUrl = '';
 
   /// Whether the initial [load] is still in progress.
   bool get isLoading => _isLoading;
+
+  /// Whether the last [load] failed, for example because secure storage was
+  /// locked. The screen then offers a retry instead of the form, since the
+  /// host warning cannot be applied without the server URL.
+  bool get hasLoadError => _loadError != null;
 
   /// The connected server origin, used to warn about third-party tile hosts.
   String? get serverUrl => _serverUrl;
@@ -58,17 +64,25 @@ class TileServerSettingsController extends SafeNotifier {
 
   /// Loads the stored tile-server URL and the connected server origin,
   /// emitting a loading state first so the screen can show a spinner.
+  ///
+  /// A failure is recorded in [hasLoadError] rather than thrown.
   Future<void> load() async {
     _isLoading = true;
+    _loadError = null;
     notify();
-    final results = await Future.wait([
-      _repository.getTileServerUrl(),
-      _loadServerUrl(),
-    ]);
-    _tileServerUrl = results[0]!;
-    _serverUrl = results[1];
-    _isLoading = false;
-    notify();
+    try {
+      final results = await Future.wait([
+        _repository.getTileServerUrl(),
+        _loadServerUrl(),
+      ]);
+      _tileServerUrl = results[0]!;
+      _serverUrl = results[1];
+    } catch (error) {
+      _loadError = error;
+    } finally {
+      _isLoading = false;
+      notify();
+    }
   }
 
   /// Applies the tile-host policy for a candidate [tileUrl].

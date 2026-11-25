@@ -64,6 +64,34 @@ void main() {
       expect(controller.tileServerUrl, MapConstants.defaultTileServerUrl);
     });
 
+    test('a failing load clears loading and records the error', () async {
+      var failServerUrl = true;
+      final controller = TileServerSettingsController(
+        repository: MapSettingsRepository(preferences: prefs),
+        config: AppConfig.defaults,
+        loadServerUrl: () async {
+          if (failServerUrl) {
+            throw const AppException(AppErrorCode.secureStorageReadFailed);
+          }
+          return 'https://endurain.example.test';
+        },
+      );
+      addTearDown(controller.dispose);
+
+      await controller.load();
+
+      expect(controller.isLoading, isFalse);
+      expect(controller.hasLoadError, isTrue);
+
+      // A retry that succeeds clears the error.
+      failServerUrl = false;
+      await controller.load();
+
+      expect(controller.hasLoadError, isFalse);
+      expect(controller.serverUrl, 'https://endurain.example.test');
+      expect(controller.tileServerUrl, MapConstants.defaultTileServerUrl);
+    });
+
     group('evaluateTileHost', () {
       test('allows an empty or hostless tile URL', () async {
         final controller = controllerFor();

@@ -51,7 +51,7 @@ class _TileServerSettingsScreenState extends State<TileServerSettingsScreen>
 
   Future<void> _initialize() async {
     await _controller.load();
-    if (mounted) {
+    if (mounted && !_controller.hasLoadError) {
       _tileServerUrlController.text = _controller.tileServerUrl;
     }
   }
@@ -129,6 +129,26 @@ class _TileServerSettingsScreenState extends State<TileServerSettingsScreen>
         builder: (context, _) {
           if (_controller.isLoading) {
             return const Center(child: AdaptiveLoadingIndicator());
+          }
+          if (_controller.hasLoadError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(UIConstants.paddingStandard),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AdaptiveEmptyStateText(
+                      message: l10n.mapTilesSettingsLoadFailed,
+                    ),
+                    const SizedBox(height: UIConstants.paddingStandard),
+                    AdaptiveButton(
+                      label: l10n.tryAgain,
+                      onPressed: _initialize,
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
           return Form(
             key: _formKey,

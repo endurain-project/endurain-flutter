@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Tasselli della mappa",
   "mapTilesSettingsSubtitle": "Server dei tasselli usato per disegnare le mappe",
   "mapTilesSettingsNote": "Vale finché sei connesso a questo server. Accedendo di nuovo torna l'impostazione dei tasselli del tuo server.",
+  "mapTilesSettingsLoadFailed": "Impossibile caricare l'impostazione dei tasselli della mappa.",
+  "tryAgain": "Riprova",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Host del server dei tasselli diverso",
   "tileServerHostWarningMessage": "L'host del server dei tasselli è diverso dall'host del tuo server Endurain. I tasselli saranno caricati da un server di terze parti. Vuoi continuare?",

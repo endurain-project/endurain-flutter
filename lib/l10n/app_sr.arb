@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Плочице мапе",
   "mapTilesSettingsSubtitle": "Сервер плочица за цртање мапа",
   "mapTilesSettingsNote": "Важи док сте повезани са овим сервером. Поновном пријавом враћа се подешавање плочица вашег сервера.",
+  "mapTilesSettingsLoadFailed": "Подешавање плочица мапе није могло да се учита.",
+  "tryAgain": "Покушај поново",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Другачији хост сервера плочица",
   "tileServerHostWarningMessage": "Хост сервера плочица разликује се од хоста вашег Endurain сервера. Плочице ће се учитати са сервера треће стране. Желите ли да наставите?",

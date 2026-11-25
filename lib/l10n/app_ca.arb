@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Tessel·les del mapa",
   "mapTilesSettingsSubtitle": "Servidor de tessel·les per dibuixar els mapes",
   "mapTilesSettingsNote": "S'aplica mentre estàs connectat a aquest servidor. Si tornes a iniciar la sessió, es restableix la configuració de tessel·les del teu servidor.",
+  "mapTilesSettingsLoadFailed": "No s'ha pogut carregar la configuració de tessel·les del mapa.",
+  "tryAgain": "Torna-ho a provar",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Servidor de tessel·les diferent",
   "tileServerHostWarningMessage": "L'amfitrió del servidor de tessel·les és diferent del del vostre servidor Endurain. Les tessel·les es carregaran des d'un servidor de tercers. Voleu continuar?",

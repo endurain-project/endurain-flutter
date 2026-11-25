@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Teselas do mapa",
   "mapTilesSettingsSubtitle": "Servidor de teselas para debuxar os mapas",
   "mapTilesSettingsNote": "Aplícase mentres estea conectado a este servidor. Ao iniciar sesión de novo, restablécese a configuración de teselas do seu servidor.",
+  "mapTilesSettingsLoadFailed": "Non se puido cargar a configuración de teselas do mapa.",
+  "tryAgain": "Tentar de novo",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Servidor de teselas diferente",
   "tileServerHostWarningMessage": "O host do servidor de teselas é diferente do host do teu servidor Endurain. As teselas cargaranse desde un servidor de terceiros. Queres continuar?",

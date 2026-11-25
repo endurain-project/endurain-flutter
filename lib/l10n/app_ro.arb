@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Dale pentru hartă",
   "mapTilesSettingsSubtitle": "Serverul de dale folosit pentru desenarea hărților",
   "mapTilesSettingsNote": "Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare se revine la setarea de dale a serverului.",
+  "mapTilesSettingsLoadFailed": "Setarea dalelor pentru hartă nu a putut fi încărcată.",
+  "tryAgain": "Încearcă din nou",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Gazdă diferită a serverului de dale",
   "tileServerHostWarningMessage": "Gazda serverului de dale este diferită de gazda serverului dvs. Endurain. Dalele vor fi încărcate de la un server terț. Doriți să continuați?",

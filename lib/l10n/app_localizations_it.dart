@@ -942,6 +942,13 @@ class AppLocalizationsIt extends AppLocalizations {
       'Vale finché sei connesso a questo server. Accedendo di nuovo torna l\'impostazione dei tasselli del tuo server.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Impossibile caricare l\'impostazione dei tasselli della mappa.';
+
+  @override
+  String get tryAgain => 'Riprova';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

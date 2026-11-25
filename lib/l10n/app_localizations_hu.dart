@@ -939,6 +939,13 @@ class AppLocalizationsHu extends AppLocalizations {
       'Amíg ehhez a kiszolgálóhoz csatlakozik, ez érvényes. Újbóli bejelentkezéskor visszaáll a kiszolgáló csempebeállítása.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'A térképcsempe-beállítást nem sikerült betölteni.';
+
+  @override
+  String get tryAgain => 'Próbálja újra';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

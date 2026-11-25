@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Mapové dlaždice",
   "mapTilesSettingsSubtitle": "Server dlaždic pro vykreslování map",
   "mapTilesSettingsNote": "Platí, dokud jste připojeni k tomuto serveru. Po opětovném přihlášení se obnoví nastavení dlaždic vašeho serveru.",
+  "mapTilesSettingsLoadFailed": "Nastavení mapových dlaždic se nepodařilo načíst.",
+  "tryAgain": "Zkusit znovu",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Jiný hostitel serveru dlaždic",
   "tileServerHostWarningMessage": "Hostitel serveru dlaždic se liší od hostitele vašeho serveru Endurain. Dlaždice budou načteny ze serveru třetí strany. Chcete pokračovat?",

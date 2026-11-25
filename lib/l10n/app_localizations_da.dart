@@ -931,6 +931,13 @@ class AppLocalizationsDa extends AppLocalizations {
       'Gælder, mens du er forbundet til denne server. Når du logger ind igen, nulstilles den til din servers fliseindstilling.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Indstillingen for kortfliser kunne ikke indlæses.';
+
+  @override
+  String get tryAgain => 'Prøv igen';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

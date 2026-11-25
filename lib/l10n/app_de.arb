@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Kartenkacheln",
   "mapTilesSettingsSubtitle": "Kachelserver zum Zeichnen der Karten",
   "mapTilesSettingsNote": "Gilt, solange du mit diesem Server verbunden bist. Bei erneuter Anmeldung wird die Kacheleinstellung deines Servers wiederhergestellt.",
+  "mapTilesSettingsLoadFailed": "Die Einstellung für Kartenkacheln konnte nicht geladen werden.",
+  "tryAgain": "Erneut versuchen",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Anderer Kachelserver-Host",
   "tileServerHostWarningMessage": "Der Host des Kachelservers unterscheidet sich von deinem Endurain-Server-Host. Die Kacheln werden von einem Drittanbieter-Server geladen. Möchtest du fortfahren?",

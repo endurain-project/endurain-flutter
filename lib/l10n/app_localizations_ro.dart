@@ -946,6 +946,13 @@ class AppLocalizationsRo extends AppLocalizations {
       'Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare se revine la setarea de dale a serverului.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Setarea dalelor pentru hartă nu a putut fi încărcată.';
+
+  @override
+  String get tryAgain => 'Încearcă din nou';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

@@ -943,6 +943,13 @@ class AppLocalizationsSk extends AppLocalizations {
       'Platí, kým ste pripojení k tomuto serveru. Po opätovnom prihlásení sa obnoví nastavenie dlaždíc vášho servera.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nastavenie mapových dlaždíc sa nepodarilo načítať.';
+
+  @override
+  String get tryAgain => 'Skúsiť znova';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

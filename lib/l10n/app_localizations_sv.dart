@@ -934,6 +934,13 @@ class AppLocalizationsSv extends AppLocalizations {
       'Gäller medan du är ansluten till den här servern. När du loggar in igen återställs serverns ruteinställning.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Inställningen för kartrutor kunde inte läsas in.';
+
+  @override
+  String get tryAgain => 'Försök igen';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

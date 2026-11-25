@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Térképcsempék",
   "mapTilesSettingsSubtitle": "A térképek rajzolásához használt csempekiszolgáló",
   "mapTilesSettingsNote": "Amíg ehhez a kiszolgálóhoz csatlakozik, ez érvényes. Újbóli bejelentkezéskor visszaáll a kiszolgáló csempebeállítása.",
+  "mapTilesSettingsLoadFailed": "A térképcsempe-beállítást nem sikerült betölteni.",
+  "tryAgain": "Próbálja újra",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Eltérő csempekiszolgáló-gazdagép",
   "tileServerHostWarningMessage": "A csempekiszolgáló gazdagépe eltér az Endurain-kiszolgáló gazdagépétől. A csempék egy harmadik féltől származó kiszolgálóról töltődnek be. Szeretné folytatni?",

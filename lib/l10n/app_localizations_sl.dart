@@ -940,6 +940,13 @@ class AppLocalizationsSl extends AppLocalizations {
       'Velja, dokler ste povezani s tem strežnikom. Ob ponovni prijavi se povrne nastavitev ploščic vašega strežnika.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nastavitve ploščic zemljevida ni bilo mogoče naložiti.';
+
+  @override
+  String get tryAgain => 'Poskusi znova';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

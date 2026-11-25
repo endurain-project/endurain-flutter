@@ -946,6 +946,13 @@ class AppLocalizationsEl extends AppLocalizations {
       'Ισχύει όσο είστε συνδεδεμένοι σε αυτόν τον διακομιστή. Με νέα σύνδεση επαναφέρεται η ρύθμιση πλακιδίων του διακομιστή σας.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση της ρύθμισης πλακιδίων χάρτη.';
+
+  @override
+  String get tryAgain => 'Δοκιμάστε ξανά';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

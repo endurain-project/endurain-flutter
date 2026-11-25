@@ -1152,6 +1152,14 @@
   "@mapTilesSettingsNote": {
     "description": "Nota sob o campo do servidor de mosaicos a explicar que é guardado por servidor e reposto ao iniciar sessão - Usado em: tile_server_settings_screen.dart"
   },
+  "mapTilesSettingsLoadFailed": "Não foi possível carregar a definição de mosaicos do mapa.",
+  "@mapTilesSettingsLoadFailed": {
+    "description": "Erro mostrado quando não é possível ler a definição de mosaicos do mapa - Usado em: tile_server_settings_screen.dart"
+  },
+  "tryAgain": "Tentar novamente",
+  "@tryAgain": {
+    "description": "Rótulo genérico do botão para tentar novamente - Usado em: tile_server_settings_screen.dart"
+  },
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "@tileServerUrlHint": {
     "description": "Texto de dica do campo de URL do servidor de mapas"

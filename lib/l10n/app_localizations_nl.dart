@@ -933,6 +933,13 @@ class AppLocalizationsNl extends AppLocalizations {
       'Geldt zolang je met deze server verbonden bent. Opnieuw inloggen zet de tegelinstelling van je server terug.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'De kaarttegelinstelling kon niet worden geladen.';
+
+  @override
+  String get tryAgain => 'Opnieuw proberen';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

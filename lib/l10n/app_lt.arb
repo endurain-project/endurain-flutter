@@ -235,6 +235,8 @@
   "mapTilesSettingsTitle": "Žemėlapio išklotinės",
   "mapTilesSettingsSubtitle": "Išklotinių serveris žemėlapiams piešti",
   "mapTilesSettingsNote": "Galioja, kol esate prisijungę prie šio serverio. Prisijungus iš naujo, atkuriamas jūsų serverio išklotinių nustatymas.",
+  "mapTilesSettingsLoadFailed": "Nepavyko įkelti žemėlapio išklotinių nustatymo.",
+  "tryAgain": "Bandyti dar kartą",
   "tileServerUrlHint": "https://tile.openstreetmap.org/...",
   "tileServerHostWarningTitle": "Kitas išklotinės serverio prieglobis",
   "tileServerHostWarningMessage": "Išklotinės serverio prieglobis skiriasi nuo jūsų Endurain serverio prieglobio. Išklotinės bus įkeltos iš trečiosios šalies serverio. Ar norite tęsti?",

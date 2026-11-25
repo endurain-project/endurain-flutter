@@ -939,6 +939,13 @@ class AppLocalizationsGl extends AppLocalizations {
       'Aplícase mentres estea conectado a este servidor. Ao iniciar sesión de novo, restablécese a configuración de teselas do seu servidor.';
 
   @override
+  String get mapTilesSettingsLoadFailed =>
+      'Non se puido cargar a configuración de teselas do mapa.';
+
+  @override
+  String get tryAgain => 'Tentar de novo';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override
