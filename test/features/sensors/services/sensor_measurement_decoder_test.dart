@@ -81,6 +81,46 @@ void main() {
       expect(result, isEmpty);
     });
 
+    test('reports 0 rpm once after coasting past the timeout', () {
+      final decoder = CyclingSpeedCadenceMeasurementDecoder();
+      const sample = [0x02, 102, 0, 0x00, 0x08];
+
+      decoder.decode([0x02, 100, 0, 0x00, 0x04], timestamp);
+      // Last crank event at t+1 s; the rider then stops pedalling.
+      final last = timestamp.add(const Duration(seconds: 1));
+      expect(decoder.decode(sample, last).single.value, 120);
+
+      // Still within the timeout: nothing new to report.
+      expect(
+        decoder.decode(sample, last.add(const Duration(seconds: 2))),
+        isEmpty,
+      );
+
+      // Past the timeout: report 0 rpm so the old cadence does not stick.
+      final coasting = decoder.decode(
+        sample,
+        last.add(const Duration(seconds: 3)),
+      );
+      expect(coasting.single.value, 0);
+      expect(coasting.single.kind, SensorMeasurementKind.cadence);
+
+      // Reported once per coasting stretch.
+      expect(
+        decoder.decode(sample, last.add(const Duration(seconds: 4))),
+        isEmpty,
+      );
+
+      // Pedalling again resumes normal cadence.
+      final resumed = decoder.decode([
+        0x02,
+        104,
+        0,
+        0x00,
+        0x0C,
+      ], last.add(const Duration(seconds: 5)));
+      expect(resumed.single.value, 120);
+    });
+
     test('handles 16-bit rollover of the counters', () {
       final decoder = CyclingSpeedCadenceMeasurementDecoder();
 

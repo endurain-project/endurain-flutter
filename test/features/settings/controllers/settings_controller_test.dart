@@ -5,6 +5,7 @@ import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
 import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -19,12 +20,14 @@ void main() {
   SettingsController buildController({
     PackageInfoService? packageInfo,
     SecureStorageService? storage,
+    Listenable? connectionChanges,
   }) {
     return SettingsController(
       packageInfoService:
           packageInfo ?? const _FakePackageInfoService(version: '1.2.3'),
       measurementSystemController: measurement,
       secureStorage: storage ?? SecureStorageService(),
+      connectionChanges: connectionChanges,
     );
   }
 
@@ -85,6 +88,42 @@ void main() {
 
       expect(controller.appVersion, isNull);
       expect(controller.serverUrl, 'https://endurain.example.test');
+    });
+  });
+
+  group('SettingsController connection changes', () {
+    test('re-reads the server URL when the session changes', () async {
+      final changes = ValueNotifier<int>(0);
+      addTearDown(changes.dispose);
+      final storage = SecureStorageService();
+      final controller = buildController(
+        storage: storage,
+        connectionChanges: changes,
+      );
+      addTearDown(controller.dispose);
+      await controller.load();
+      expect(controller.serverUrl, 'https://endurain.example.test');
+
+      // Signed in to another server while the settings tab stayed alive.
+      await storage.setServerUrl('https://other.example.test');
+      changes.value++;
+      await pumpEventQueue();
+
+      expect(controller.serverUrl, 'https://other.example.test');
+    });
+
+    test('stops listening once disposed', () async {
+      final changes = ValueNotifier<int>(0);
+      addTearDown(changes.dispose);
+      final controller = buildController(connectionChanges: changes);
+      var notifications = 0;
+      controller.addListener(() => notifications++);
+
+      controller.dispose();
+      changes.value++;
+      await pumpEventQueue();
+
+      expect(notifications, 0);
     });
   });
 

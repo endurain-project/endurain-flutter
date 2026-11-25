@@ -97,5 +97,41 @@ void main() {
         );
       });
     });
+
+    group('validateTileServerUrl', () {
+      String? validate(String? value) => Validators.validateTileServerUrl(
+        value,
+        l10n,
+        config: AppConfig.defaults,
+      );
+
+      test('accepts a z/x/y template', () {
+        expect(
+          validate('https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+          isNull,
+        );
+      });
+
+      test('accepts a {s} subdomain in the host and {r}/{d}', () {
+        expect(validate('https://{s}.tiles.test/{z}/{x}/{y}{r}.png'), isNull);
+        expect(validate('https://tiles.test/{d}/{z}/{x}/{y}.png'), isNull);
+      });
+
+      test('still reports an empty value as required', () {
+        expect(validate(''), l10n.requiredField);
+      });
+
+      test('rejects a URL missing z, x or y', () {
+        expect(validate('https://tiles.test/tile.png'), l10n.invalidUrl);
+        expect(validate('https://tiles.test/{z}/{y}.png'), l10n.invalidUrl);
+      });
+
+      test('rejects a placeholder the map cannot fill', () {
+        expect(
+          validate('https://tiles.test/{z}/{x}/{y}.png?key={apikey}'),
+          l10n.invalidUrl,
+        );
+      });
+    });
   });
 }

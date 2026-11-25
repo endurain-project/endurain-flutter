@@ -161,7 +161,7 @@ class _TileServerSettingsScreenState extends State<TileServerSettingsScreen>
                   controller: _tileServerUrlController,
                   keyboardType: TextInputType.url,
                   textInputAction: TextInputAction.done,
-                  validator: (value) => Validators.validateUrl(
+                  validator: (value) => Validators.validateTileServerUrl(
                     value,
                     l10n,
                     config: _controller.config,

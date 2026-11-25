@@ -1,6 +1,8 @@
+import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_location_platform_adapter.dart';
@@ -42,6 +44,91 @@ void main() {
       expect(controller.currentLocation.longitude, -8.6);
       expect(controller.heading, 45);
       controller.dispose();
+    });
+
+    test('reloads the tile URL when it changes', () async {
+      final changes = TileServerUrlChanges();
+      addTearDown(changes.dispose);
+      final settings = MapSettingsRepository(
+        preferences: FakePreferencesStore(),
+        changes: changes,
+      );
+      final controller = MapStateController(
+        locationService: LocationService(
+          platformAdapter: FakeLocationPlatformAdapter(),
+        ),
+        mapSettingsRepository: settings,
+      );
+      addTearDown(controller.dispose);
+      await controller.initialize();
+      expect(controller.tileServerUrl, MapConstants.defaultTileServerUrl);
+
+      // Saved on the Map tiles screen while the map tab stays alive.
+      await settings.saveTileServerUrl(
+        'https://tiles.example.test/{z}/{x}/{y}.png',
+      );
+      await pumpEventQueue();
+
+      expect(
+        controller.tileServerUrl,
+        'https://tiles.example.test/{z}/{x}/{y}.png',
+      );
+    });
+
+    test('reloads the tile URL when the connection changes', () async {
+      final changes = TileServerUrlChanges();
+      addTearDown(changes.dispose);
+      final prefs = FakePreferencesStore();
+      const origin = 'https://endurain.example.test';
+      String? activeOrigin = origin;
+      final settings = MapSettingsRepository(
+        preferences: prefs,
+        activeConnectionOrigin: () async => activeOrigin,
+        changes: changes,
+      );
+      await settings.saveTileServerUrl(
+        'https://tiles.example.test/{z}/{x}/{y}.png',
+      );
+      final controller = MapStateController(
+        locationService: LocationService(
+          platformAdapter: FakeLocationPlatformAdapter(),
+        ),
+        mapSettingsRepository: settings,
+      );
+      addTearDown(controller.dispose);
+      await controller.initialize();
+      expect(
+        controller.tileServerUrl,
+        'https://tiles.example.test/{z}/{x}/{y}.png',
+      );
+
+      // Signing out drops the origin; the app signals the change.
+      activeOrigin = null;
+      changes.notifyChanged();
+      await pumpEventQueue();
+
+      expect(controller.tileServerUrl, MapConstants.defaultTileServerUrl);
+    });
+
+    test('stops listening for tile URL changes once disposed', () async {
+      final changes = _CountingTileServerUrlChanges();
+      addTearDown(changes.dispose);
+      final controller = MapStateController(
+        locationService: LocationService(
+          platformAdapter: FakeLocationPlatformAdapter(),
+        ),
+        mapSettingsRepository: MapSettingsRepository(
+          preferences: FakePreferencesStore(),
+          changes: changes,
+        ),
+      );
+      await controller.initialize();
+
+      expect(changes.listenerCount, 1);
+
+      controller.dispose();
+
+      expect(changes.listenerCount, 0);
     });
 
     test('updates location from the position stream', () async {
@@ -155,4 +242,20 @@ void main() {
       },
     );
   });
+}
+
+class _CountingTileServerUrlChanges extends TileServerUrlChanges {
+  int listenerCount = 0;
+
+  @override
+  void addListener(VoidCallback listener) {
+    listenerCount++;
+    super.addListener(listener);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    listenerCount--;
+    super.removeListener(listener);
+  }
 }

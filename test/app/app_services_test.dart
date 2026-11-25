@@ -35,6 +35,31 @@ void main() {
       );
     });
 
+    test('map repositories share one tile URL change signal', () {
+      final services = AppServices();
+
+      expect(
+        identical(
+          services.createMapSettingsRepository().changes,
+          services.tileServerUrlChanges,
+        ),
+        isTrue,
+      );
+    });
+
+    test('a session change signals the map and connection listeners', () {
+      final services = AppServices();
+      var tileChanges = 0;
+      var connectionChanges = 0;
+      services.tileServerUrlChanges.addListener(() => tileChanges++);
+      services.connectionChanges.addListener(() => connectionChanges++);
+
+      services.notifyConnectionChanged();
+
+      expect(tileChanges, 1);
+      expect(connectionChanges, 1);
+    });
+
     test('activityRecordingController is an app-lifetime singleton', () {
       final services = AppServices();
 

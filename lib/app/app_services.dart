@@ -54,6 +54,7 @@ import 'package:endurain/features/settings/controllers/settings_controller.dart'
 import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:endurain/features/watch/services/watch_companion_service.dart';
 import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
+import 'package:flutter/foundation.dart';
 
 /// The application's composition root.
 ///
@@ -109,6 +110,25 @@ class AppServices {
     infra: _infra,
     activity: _activity,
   );
+
+  // ── Session ────────────────────────────────────────────────────────────────
+
+  final _ChangeSignal _connectionChanges = _ChangeSignal();
+
+  /// Fires when the active server connection may have changed: sign-in,
+  /// sign-out, session expiry, or the launch session check finishing.
+  ///
+  /// Long-lived screens (the bottom-navigation tabs stay alive across session
+  /// changes) listen to refresh values tied to the connected server.
+  Listenable get connectionChanges => _connectionChanges;
+
+  /// Called by the root `App` whenever the session mode changes, so values
+  /// scoped to the connected server are re-read.
+  void notifyConnectionChanged() {
+    _connectionChanges.emit();
+    // The stored tile URL is scoped to the connection origin.
+    tileServerUrlChanges.notifyChanged();
+  }
 
   // ── Infrastructure ─────────────────────────────────────────────────────────
 
@@ -260,12 +280,18 @@ class AppServices {
 
   // ── Map ────────────────────────────────────────────────────────────────────
 
+  /// Shared by every [MapSettingsRepository] built here: notified when a tile
+  /// URL is saved and when the connection (and so the origin-scoped key)
+  /// changes, so the long-lived map reloads its tiles.
+  late final TileServerUrlChanges tileServerUrlChanges = TileServerUrlChanges();
+
   /// Builds a [MapSettingsRepository] scoped to the active connection origin.
   MapSettingsRepository createMapSettingsRepository() {
     return MapSettingsRepository(
       preferences: _infra.preferences,
       config: config,
       activeConnectionOrigin: _auth.session.getAuthenticatedOrigin,
+      changes: tileServerUrlChanges,
     );
   }
 
@@ -291,6 +317,7 @@ class AppServices {
       packageInfoService: _infra.packageInfo,
       measurementSystemController: _infra.measurementSystemController,
       secureStorage: _infra.secureStorage,
+      connectionChanges: connectionChanges,
     );
   }
 
@@ -307,4 +334,9 @@ class AppServices {
       repository: _activity.startCountdownSettings,
     );
   }
+}
+
+/// A [ChangeNotifier] that only signals; it carries no value.
+class _ChangeSignal extends ChangeNotifier {
+  void emit() => notifyListeners();
 }

@@ -125,6 +125,17 @@ void main() {
 
       expect(find.text(l10n.invalidUrl), findsOneWidget);
 
+      // A URL the map cannot fill per tile is rejected before saving.
+      await tester.enterText(
+        find.byType(TextFormField),
+        'https://tiles.example.test/{z}/{x}/{y}.png?key={apikey}',
+      );
+      await tester.tap(find.text(l10n.save));
+      await tester.pump();
+
+      expect(find.text(l10n.invalidUrl), findsOneWidget);
+      expect(await prefs.read(key: 'tile_server_url'), isNull);
+
       const tileServerUrl = 'https://tiles.example.test/{z}/{x}/{y}.png';
       await tester.enterText(find.byType(TextFormField), tileServerUrl);
       await tester.tap(find.text(l10n.save));

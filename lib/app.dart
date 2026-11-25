@@ -49,6 +49,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           authService: widget.authService ?? _services.auth,
           diagnostics: _services.diagnostics,
         );
+    // Screens kept alive across sign-in/out (the map and settings tabs) refresh
+    // their server-scoped values from this signal.
+    _sessionController.addListener(_services.notifyConnectionChanged);
     // The router redirects declaratively off the session state; no manual
     // listener/setState is needed here (see `app_router.dart`).
     _router = buildAppRouter(
@@ -68,6 +71,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _router.dispose();
+    _sessionController.removeListener(_services.notifyConnectionChanged);
     if (_ownsSessionController) {
       _sessionController.dispose();
     }

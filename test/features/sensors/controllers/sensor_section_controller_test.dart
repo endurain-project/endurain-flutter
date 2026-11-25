@@ -57,6 +57,21 @@ void main() {
       expect(controller.bluetoothState, SensorBluetoothState.ready);
     });
 
+    test('initialize stops when disposed before it finishes', () async {
+      final early = SensorSectionController(service: service);
+
+      final initializing = early.initialize();
+      early.dispose();
+      await initializing;
+
+      // The permission prompt is not shown for a route that already closed,
+      // and later service events reach no disposed listener.
+      expect(adapter.ensurePermissionsCalls, 0);
+      adapter
+        ..emitStatus(SensorConnectionStatus.connected)
+        ..emitBluetoothState(SensorBluetoothState.off);
+    });
+
     test('startScan flags permission denial without scanning', () async {
       adapter.permissionGranted = false;
       await controller.initialize();
