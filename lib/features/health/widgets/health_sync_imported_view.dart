@@ -10,6 +10,7 @@ import 'package:endurain/features/health/models/health_sync_state.dart';
 import 'package:endurain/features/health/widgets/health_sync_inline_error.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -31,7 +32,7 @@ class HealthSyncImportedView extends StatelessWidget {
       onRefresh: controller.loadImported,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(UIConstants.paddingStandard),
+        padding: readableContentPadding(context),
         children: [
           if (state.error != null) ...[
             HealthSyncInlineError(error: state.error!),

@@ -10,6 +10,7 @@ import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
@@ -138,6 +139,12 @@ void main() {
     );
 
     await pumpScreen(tester);
+    // The cadence section is last, so it may be below the fold.
+    await tester.scrollUntilVisible(
+      find.text('Wahoo RPM'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
 
     expect(find.text('Wahoo RPM'), findsOneWidget);
     expect(find.text(l10n.sensorsRpm('88')), findsOneWidget);

@@ -16,6 +16,7 @@ import 'package:endurain/features/activity/widgets/activity_route_map.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -28,6 +29,8 @@ class ActivityDetailsScreen extends StatefulWidget {
     this.uploadService,
     this.retentionSettingsRepository,
     this.tileServerUrlProvider,
+    this.embedded = false,
+    this.onDeleted,
   });
 
   final String recordId;
@@ -39,6 +42,13 @@ class ActivityDetailsScreen extends StatefulWidget {
   /// Supplies the tile-server URL for the route preview map. When null, the map
   /// is not shown (e.g. in tests that do not exercise the map).
   final Future<String> Function()? tileServerUrlProvider;
+
+  /// Whether this is the details pane beside the history list rather than a
+  /// page of its own: it then has no navigation bar of its own.
+  final bool embedded;
+
+  /// Called once the record is deleted. When null, the page pops instead.
+  final VoidCallback? onDeleted;
 
   @override
   State<ActivityDetailsScreen> createState() => _ActivityDetailsScreenState();
@@ -126,7 +136,12 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       await DialogUtils.showErrorDialog(context, error);
       return;
     }
-    if (mounted) {
+    if (!mounted) {
+      return;
+    }
+    if (widget.onDeleted case final onDeleted?) {
+      onDeleted();
+    } else {
       Navigator.pop(context);
     }
   }
@@ -135,47 +150,54 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    final body = AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final record = _controller.recordById(widget.recordId);
+        if (_controller.isLoading && record == null) {
+          return const Center(child: AdaptiveLoadingIndicator());
+        }
+        if (record == null) {
+          return _DetailsMessage(message: l10n.activityHistoryDetailsMissing);
+        }
+
+        return ListView(
+          // As a pane, leave the route's primary scroll controller (status
+          // bar tap to scroll to top, keyboard paging) to the history list:
+          // the controller supports one scroll view at a time.
+          primary: widget.embedded ? false : null,
+          padding: readableContentPadding(context),
+          children: [
+            _RouteMapSection(future: _routeMapFor(record)),
+            _SummarySection(record: record, controller: _controller),
+            const SizedBox(height: UIConstants.paddingStandard),
+            FutureBuilder<bool>(
+              future: _controller.hasGpx(record),
+              builder: (context, snapshot) {
+                return _ActionsSection(
+                  record: record,
+                  isBusy: _controller.isBusy(record.id),
+                  onRetry:
+                      record.uploadStatus == LocalActivityUploadStatus.uploaded
+                      ? null
+                      : () => _retry(record),
+                  onExport: (snapshot.data ?? false)
+                      ? () => _export(record)
+                      : null,
+                  onDelete: () => _delete(record),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+    if (widget.embedded) {
+      return body;
+    }
     return AdaptiveScaffold(
       title: l10n.activityHistoryDetailsTitle,
-      body: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          final record = _controller.recordById(widget.recordId);
-          if (_controller.isLoading && record == null) {
-            return const Center(child: AdaptiveLoadingIndicator());
-          }
-          if (record == null) {
-            return _DetailsMessage(message: l10n.activityHistoryDetailsMissing);
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
-            children: [
-              _RouteMapSection(future: _routeMapFor(record)),
-              _SummarySection(record: record, controller: _controller),
-              const SizedBox(height: UIConstants.paddingStandard),
-              FutureBuilder<bool>(
-                future: _controller.hasGpx(record),
-                builder: (context, snapshot) {
-                  return _ActionsSection(
-                    record: record,
-                    isBusy: _controller.isBusy(record.id),
-                    onRetry:
-                        record.uploadStatus ==
-                            LocalActivityUploadStatus.uploaded
-                        ? null
-                        : () => _retry(record),
-                    onExport: (snapshot.data ?? false)
-                        ? () => _export(record)
-                        : null,
-                    onDelete: () => _delete(record),
-                  );
-                },
-              ),
-            ],
-          );
-        },
-      ),
+      body: body,
     );
   }
 

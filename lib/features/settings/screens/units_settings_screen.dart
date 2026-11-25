@@ -1,10 +1,10 @@
 import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Lets the user pick the unit system used to display distances, speeds,
@@ -36,7 +36,7 @@ class UnitsSettingsScreen extends StatelessWidget {
         builder: (context, _) {
           final selected = measurement.preference;
           return ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+            padding: readableContentPadding(context),
             children: [
               AdaptiveListSection(
                 children: [

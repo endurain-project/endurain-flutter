@@ -5,6 +5,7 @@ import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -58,7 +59,7 @@ class _AutoPauseSettingsScreenState extends State<AutoPauseSettingsScreen>
     return AdaptiveScaffold(
       title: l10n.activityAutoPauseTitle,
       body: ListView(
-        padding: const EdgeInsets.all(UIConstants.paddingStandard),
+        padding: readableContentPadding(context),
         children: [
           AdaptiveListSection(
             children: [

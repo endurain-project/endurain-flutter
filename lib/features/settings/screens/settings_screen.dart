@@ -22,6 +22,7 @@ import 'package:endurain/features/settings/screens/server_settings_screen.dart';
 import 'package:endurain/features/settings/screens/units_settings_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -121,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
         children: [
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(UIConstants.paddingStandard),
+              padding: readableContentPadding(context),
               children: [
                 AdaptiveListSection(
                   header: l10n.settingsSectionAccount,

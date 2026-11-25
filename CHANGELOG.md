@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Screens fit large displays such as an unfolded iPhone Duo, a tablet or a phone in landscape. Settings, sign-in, health and activity screens keep their content at most 640pt wide and centred instead of stretching edge to edge, and the side margins still scroll.
+- When there is room for both (840pt or wider, such as an unfolded iPhone Duo in landscape), the activity history shows the list and the selected activity side by side. Narrower windows open an activity on its own page as before, and the list keeps its scroll position when the device is folded, unfolded or rotated.
+- The iOS workflow builds and tests with Xcode 27.2 on GitHub's Xcode 27 runner image and runs on an iPhone Duo simulator when one is available. The macOS 26 image only has Xcode 26, and from April 2027 App Store uploads must be built with the iOS 27 SDK.
+
 ## [v0.12.1+23] - 2026-11-25
 
 This release fixes how the Wear OS app is built and how the iOS workflow runs. The apps behave the same as in 0.12.0.

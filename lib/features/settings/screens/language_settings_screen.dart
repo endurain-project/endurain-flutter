@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Native names (autonyms) for the supported languages, shown in each
@@ -146,7 +146,7 @@ class LanguageSettingsScreen extends StatelessWidget {
         builder: (context, _) {
           final selected = controller.locale;
           return ListView(
-            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+            padding: readableContentPadding(context),
             children: [
               AdaptiveListSection(
                 children: [
