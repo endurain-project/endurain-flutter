@@ -931,6 +931,16 @@ class AppLocalizationsCs extends AppLocalizations {
   String get tileServerUrl => 'Adresa URL serveru mapových dlaždic';
 
   @override
+  String get mapTilesSettingsTitle => 'Mapové dlaždice';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Server dlaždic pro vykreslování map';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Platí, dokud jste připojeni k tomuto serveru. Po opětovném přihlášení se obnoví nastavení dlaždic vašeho serveru.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

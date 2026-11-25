@@ -928,6 +928,17 @@ class AppLocalizationsHu extends AppLocalizations {
   String get tileServerUrl => 'Térképcsempe-kiszolgáló URL-címe';
 
   @override
+  String get mapTilesSettingsTitle => 'Térképcsempék';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'A térképek rajzolásához használt csempekiszolgáló';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Amíg ehhez a kiszolgálóhoz csatlakozik, ez érvényes. Újbóli bejelentkezéskor visszaáll a kiszolgáló csempebeállítása.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

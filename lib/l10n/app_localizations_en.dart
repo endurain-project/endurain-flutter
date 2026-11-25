@@ -911,6 +911,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tileServerUrl => 'Map tile server URL';
 
   @override
+  String get mapTilesSettingsTitle => 'Map tiles';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Tile server used to draw maps';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

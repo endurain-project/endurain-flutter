@@ -1,57 +1,35 @@
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
-import 'package:endurain/core/constants/map_constants.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 
 class StoredServerSettings {
-  const StoredServerSettings({
-    required this.serverUrl,
-    required this.username,
-    required this.tileServerUrl,
-  });
+  const StoredServerSettings({required this.serverUrl, required this.username});
 
   final String? serverUrl;
   final String? username;
-  final String tileServerUrl;
 }
 
-/// Screen-scoped facade for the settings screen.
+/// Screen-scoped facade for the server & account settings screen.
 ///
-/// This intentionally aggregates the few unrelated reads/writes the settings
-/// screen needs — server URL + username (auth-session concern), tile-server URL
-/// (map-display concern), and logout (auth concern) — behind one dependency so
-/// the screen stays thin. It is deliberately NOT a general-purpose repository:
-/// each concern still lives in its own owner (`SecureStorageService`,
-/// `MapSettingsRepository`, `AuthService`); this type only composes them for
-/// one screen. New cross-feature settings should get their own repository
-/// rather than growing this aggregator into a grab-bag.
+/// Composes the two auth concerns that screen needs — the stored server URL
+/// and username (`SecureStorageService`) and logout (`AuthService`) — behind
+/// one dependency so the screen stays thin. It is deliberately NOT a
+/// general-purpose repository: each concern still lives in its own owner. The
+/// tile-server URL is a map concern and has its own screen
+/// (`TileServerSettingsScreen`).
 class ServerSettingsRepository {
   const ServerSettingsRepository({
     required this._storage,
     required AuthService authService,
-    required this._mapSettingsRepository,
   }) : _authService = authService;
 
   final SecureStorageService _storage;
   final AuthService _authService;
-  final MapSettingsRepository _mapSettingsRepository;
 
   Future<StoredServerSettings> loadSettings() async {
     final serverUrl = await _storage.getServerUrl();
     final username = await _storage.getUsername();
-    final tileServerUrl = await _mapSettingsRepository.getTileServerUrl();
 
-    return StoredServerSettings(
-      serverUrl: serverUrl,
-      username: username,
-      tileServerUrl: tileServerUrl.isEmpty
-          ? MapConstants.defaultTileServerUrl
-          : tileServerUrl,
-    );
-  }
-
-  Future<void> saveTileServerUrl(String url) {
-    return _mapSettingsRepository.saveTileServerUrl(url);
+    return StoredServerSettings(serverUrl: serverUrl, username: username);
   }
 
   Future<bool> logout() {

@@ -933,6 +933,17 @@ class AppLocalizationsCa extends AppLocalizations {
   String get tileServerUrl => 'URL del servidor de tessel·les del mapa';
 
   @override
+  String get mapTilesSettingsTitle => 'Tessel·les del mapa';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Servidor de tessel·les per dibuixar els mapes';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'S\'aplica mentre estàs connectat a aquest servidor. Si tornes a iniciar la sessió, es restableix la configuració de tessel·les del teu servidor.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

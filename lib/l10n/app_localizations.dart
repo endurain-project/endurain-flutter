@@ -1719,11 +1719,29 @@ abstract class AppLocalizations {
   /// **'Continue anyway'**
   String get warnHttpServerUrlConfirm;
 
-  /// Tile server URL field label - Used in: server_settings_screen.dart
+  /// Tile server URL field label - Used in: tile_server_settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Map tile server URL'**
   String get tileServerUrl;
+
+  /// Settings entry and screen title for the map tile server - Used in: settings_screen.dart, tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Map tiles'**
+  String get mapTilesSettingsTitle;
+
+  /// Subtitle for the map tiles settings entry - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Tile server used to draw maps'**
+  String get mapTilesSettingsSubtitle;
+
+  /// Note under the tile server field explaining it is stored per server and reset on sign-in - Used in: tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.'**
+  String get mapTilesSettingsNote;
 
   /// Tile server URL field hint text
   ///
@@ -1731,13 +1749,13 @@ abstract class AppLocalizations {
   /// **'https://tile.openstreetmap.org/...'**
   String get tileServerUrlHint;
 
-  /// Title for tile server host mismatch warning dialog - Used in: server_settings_screen.dart
+  /// Title for tile server host mismatch warning dialog - Used in: tile_server_settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Different tile server host'**
   String get tileServerHostWarningTitle;
 
-  /// Body of tile server host mismatch warning dialog - Used in: server_settings_screen.dart
+  /// Body of tile server host mismatch warning dialog - Used in: tile_server_settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'The tile server host is different from your Endurain server host. Tiles will be loaded from a third-party server. Do you want to continue?'**

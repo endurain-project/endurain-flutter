@@ -929,6 +929,16 @@ class AppLocalizationsSr extends AppLocalizations {
   String get tileServerUrl => 'URL сервера плочица мапе';
 
   @override
+  String get mapTilesSettingsTitle => 'Плочице мапе';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Сервер плочица за цртање мапа';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Важи док сте повезани са овим сервером. Поновном пријавом враћа се подешавање плочица вашег сервера.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

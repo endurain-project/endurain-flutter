@@ -928,6 +928,17 @@ class AppLocalizationsGl extends AppLocalizations {
   String get tileServerUrl => 'URL do servidor de teselas do mapa';
 
   @override
+  String get mapTilesSettingsTitle => 'Teselas do mapa';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Servidor de teselas para debuxar os mapas';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Aplícase mentres estea conectado a este servidor. Ao iniciar sesión de novo, restablécese a configuración de teselas do seu servidor.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

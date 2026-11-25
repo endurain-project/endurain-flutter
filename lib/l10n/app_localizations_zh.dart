@@ -852,6 +852,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tileServerUrl => '地图瓦片服务器网址';
 
   @override
+  String get mapTilesSettingsTitle => '地图瓦片';
+
+  @override
+  String get mapTilesSettingsSubtitle => '用于绘制地图的瓦片服务器';
+
+  @override
+  String get mapTilesSettingsNote => '仅在连接此服务器时生效。重新登录后将恢复为服务器的瓦片设置。';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override
@@ -2204,6 +2213,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tileServerUrl => '地圖圖磚伺服器網址';
+
+  @override
+  String get mapTilesSettingsTitle => '地圖圖磚';
+
+  @override
+  String get mapTilesSettingsSubtitle => '用於繪製地圖的圖磚伺服器';
+
+  @override
+  String get mapTilesSettingsNote => '僅在連線此伺服器時生效。重新登入後會恢復為伺服器的圖磚設定。';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

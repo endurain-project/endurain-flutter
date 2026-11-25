@@ -928,6 +928,17 @@ class AppLocalizationsPl extends AppLocalizations {
   String get tileServerUrl => 'Adres URL serwera kafelków mapy';
 
   @override
+  String get mapTilesSettingsTitle => 'Kafelki mapy';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Serwer kafelków używany do rysowania map';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Obowiązuje, gdy jesteś połączony z tym serwerem. Ponowne zalogowanie przywraca ustawienie kafelków Twojego serwera.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

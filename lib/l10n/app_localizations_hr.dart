@@ -931,6 +931,17 @@ class AppLocalizationsHr extends AppLocalizations {
   String get tileServerUrl => 'URL poslužitelja pločica karte';
 
   @override
+  String get mapTilesSettingsTitle => 'Pločice karte';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Poslužitelj pločica za crtanje karata';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Vrijedi dok ste povezani s ovim poslužiteljem. Ponovnom prijavom vraća se postavka pločica vašeg poslužitelja.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

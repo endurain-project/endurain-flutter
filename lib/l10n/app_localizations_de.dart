@@ -933,6 +933,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tileServerUrl => 'URL des Karten-Kachelservers';
 
   @override
+  String get mapTilesSettingsTitle => 'Kartenkacheln';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Kachelserver zum Zeichnen der Karten';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Gilt, solange du mit diesem Server verbunden bist. Bei erneuter Anmeldung wird die Kacheleinstellung deines Servers wiederhergestellt.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

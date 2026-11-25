@@ -930,6 +930,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tileServerUrl => 'URL du serveur de tuiles de la carte';
 
   @override
+  String get mapTilesSettingsTitle => 'Tuiles de la carte';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Serveur de tuiles utilisé pour dessiner les cartes';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'S\'applique tant que vous êtes connecté à ce serveur. Une nouvelle connexion rétablit le réglage de tuiles de votre serveur.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

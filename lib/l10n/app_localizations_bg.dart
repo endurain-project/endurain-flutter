@@ -924,6 +924,17 @@ class AppLocalizationsBg extends AppLocalizations {
   String get tileServerUrl => 'URL адрес на сървъра за картови плочки';
 
   @override
+  String get mapTilesSettingsTitle => 'Картови плочки';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Сървър за плочки, използван за картите';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Важи, докато сте свързани с този сървър. При повторно влизане се връща настройката за плочки на вашия сървър.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

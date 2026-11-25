@@ -927,6 +927,17 @@ class AppLocalizationsPt extends AppLocalizations {
   String get tileServerUrl => 'URL do servidor de mapas';
 
   @override
+  String get mapTilesSettingsTitle => 'Mosaicos do mapa';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Servidor usado para desenhar os mapas';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Aplica-se enquanto estiver ligado a este servidor. Ao iniciar sessão novamente, volta à definição de mapas do seu servidor.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

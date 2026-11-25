@@ -915,6 +915,17 @@ class AppLocalizationsLt extends AppLocalizations {
   String get tileServerUrl => 'Žemėlapio išklotinės serverio URL';
 
   @override
+  String get mapTilesSettingsTitle => 'Žemėlapio išklotinės';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Išklotinių serveris žemėlapiams piešti';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Galioja, kol esate prisijungę prie šio serverio. Prisijungus iš naujo, atkuriamas jūsų serverio išklotinių nustatymas.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

@@ -935,6 +935,17 @@ class AppLocalizationsEl extends AppLocalizations {
   String get tileServerUrl => 'URL διακομιστή πλακιδίων χάρτη';
 
   @override
+  String get mapTilesSettingsTitle => 'Πλακίδια χάρτη';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Διακομιστής πλακιδίων για τη σχεδίαση χαρτών';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Ισχύει όσο είστε συνδεδεμένοι σε αυτόν τον διακομιστή. Με νέα σύνδεση επαναφέρεται η ρύθμιση πλακιδίων του διακομιστή σας.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

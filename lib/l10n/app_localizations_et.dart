@@ -920,6 +920,17 @@ class AppLocalizationsEt extends AppLocalizations {
   String get tileServerUrl => 'Kaardipaanide serveri URL';
 
   @override
+  String get mapTilesSettingsTitle => 'Kaardipaanid';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Paaniserver, millega kaarte joonistatakse';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Kehtib, kuni oled selle serveriga ühendatud. Uuesti sisselogimisel taastatakse sinu serveri paaniseade.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

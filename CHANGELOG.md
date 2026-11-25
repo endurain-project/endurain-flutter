@@ -51,6 +51,7 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
 
 - Settings is now grouped into sections: Account, General, Recording, Devices & integrations, Data, and Privacy & support. Before, every entry was in one long list.
 - The "Keep uploaded GPX files" switch moved from the main Settings list to the top of Settings → Activity history. It is shown even when the history is empty.
+- The map tile server URL moved from Settings → Server to its own Settings → Map tiles screen, so the Server screen only shows the account and Log out. The URL is still stored per server, so Map tiles is hidden in guest mode. As before, signing in again resets it to the server's tile setting.
 - The Android app now includes Google Play Services' Wearable Data Layer (`play-services-wearable`) for the Wear OS link. Builds can leave it out with `--android-project-arg=endurain.wearable=false`; the watch link then reports "unsupported" and nothing else changes. The app still contains `play-services-location`, which `geolocator` already brought in.
 - Updated dependencies: `health` 14.0.0, `sentry` 10.6.0 and `flutter_svg` 2.5.0, plus their transitive updates.
 - Android builds now use Gradle 9.9.2 and Android Gradle Plugin 9.5.2.

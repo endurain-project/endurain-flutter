@@ -10,6 +10,7 @@ import 'package:endurain/features/activity/screens/activity_history_screen.dart'
 import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
 import 'package:endurain/features/activity/screens/start_countdown_settings_screen.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
+import 'package:endurain/features/map/screens/tile_server_settings_screen.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
@@ -164,6 +165,17 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       subtitle: l10n.unitsSubtitle,
                       destination: (context) => const UnitsSettingsScreen(),
                     ),
+                    // The tile URL is stored per connected server, so guests
+                    // (no server) have nothing to configure.
+                    if (!widget.isGuest)
+                      _SettingsNavTile(
+                        materialIcon: Icons.map_outlined,
+                        cupertinoIcon: CupertinoIcons.map,
+                        title: l10n.mapTilesSettingsTitle,
+                        subtitle: l10n.mapTilesSettingsSubtitle,
+                        destination: (context) =>
+                            const TileServerSettingsScreen(),
+                      ),
                   ],
                 ),
                 const SizedBox(height: UIConstants.paddingStandard),

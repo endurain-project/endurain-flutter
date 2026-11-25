@@ -935,6 +935,17 @@ class AppLocalizationsRo extends AppLocalizations {
   String get tileServerUrl => 'URL server de dale pentru hartă';
 
   @override
+  String get mapTilesSettingsTitle => 'Dale pentru hartă';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Serverul de dale folosit pentru desenarea hărților';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare se revine la setarea de dale a serverului.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

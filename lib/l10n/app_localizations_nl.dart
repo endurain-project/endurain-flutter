@@ -922,6 +922,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get tileServerUrl => 'URL van kaarttegelserver';
 
   @override
+  String get mapTilesSettingsTitle => 'Kaarttegels';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Tegelserver voor het tekenen van kaarten';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Geldt zolang je met deze server verbonden bent. Opnieuw inloggen zet de tegelinstelling van je server terug.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

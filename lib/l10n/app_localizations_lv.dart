@@ -921,6 +921,16 @@ class AppLocalizationsLv extends AppLocalizations {
   String get tileServerUrl => 'Kartes elementu servera URL';
 
   @override
+  String get mapTilesSettingsTitle => 'Kartes elementi';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Elementu serveris karšu zīmēšanai';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, tiek atjaunots jūsu servera elementu iestatījums.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

@@ -925,6 +925,17 @@ class AppLocalizationsFi extends AppLocalizations {
   String get tileServerUrl => 'Karttalaattapalvelimen URL-osoite';
 
   @override
+  String get mapTilesSettingsTitle => 'Karttalaatat';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Laattapalvelin, jolla kartat piirretään';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Koskee tätä palvelinyhteyttä. Kun kirjaudut uudelleen, palvelimesi laattasetus palautetaan.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

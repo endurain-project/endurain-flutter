@@ -923,6 +923,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tileServerUrl => 'URL till kartruteserver';
 
   @override
+  String get mapTilesSettingsTitle => 'Kartrutor';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Ruteserver som används för att rita kartor';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Gäller medan du är ansluten till den här servern. När du loggar in igen återställs serverns ruteinställning.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

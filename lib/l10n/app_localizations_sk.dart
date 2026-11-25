@@ -933,6 +933,16 @@ class AppLocalizationsSk extends AppLocalizations {
   String get tileServerUrl => 'Adresa URL servera mapových dlaždíc';
 
   @override
+  String get mapTilesSettingsTitle => 'Mapové dlaždice';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Server dlaždíc na vykresľovanie máp';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Platí, kým ste pripojení k tomuto serveru. Po opätovnom prihlásení sa obnoví nastavenie dlaždíc vášho servera.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

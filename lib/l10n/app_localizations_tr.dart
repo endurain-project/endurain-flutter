@@ -911,6 +911,17 @@ class AppLocalizationsTr extends AppLocalizations {
   String get tileServerUrl => 'Harita döşeme sunucusu URL\'si';
 
   @override
+  String get mapTilesSettingsTitle => 'Harita döşemeleri';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Haritaları çizmek için kullanılan döşeme sunucusu';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca sunucunuzun döşeme ayarına döner.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

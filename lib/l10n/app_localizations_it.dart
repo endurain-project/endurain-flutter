@@ -931,6 +931,17 @@ class AppLocalizationsIt extends AppLocalizations {
   String get tileServerUrl => 'URL del server dei tasselli della mappa';
 
   @override
+  String get mapTilesSettingsTitle => 'Tasselli della mappa';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Server dei tasselli usato per disegnare le mappe';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Vale finché sei connesso a questo server. Accedendo di nuovo torna l\'impostazione dei tasselli del tuo server.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

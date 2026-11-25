@@ -920,6 +920,17 @@ class AppLocalizationsDa extends AppLocalizations {
   String get tileServerUrl => 'URL til kortfliseserver';
 
   @override
+  String get mapTilesSettingsTitle => 'Kortfliser';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Fliseserver, der bruges til at tegne kort';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Gælder, mens du er forbundet til denne server. Når du logger ind igen, nulstilles den til din servers fliseindstilling.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

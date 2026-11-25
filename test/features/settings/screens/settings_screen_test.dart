@@ -116,7 +116,11 @@ void main() {
     // Each entry sits below its own section header and above the next one.
     final layout = <String, List<String>>{
       l10n.settingsSectionAccount: [l10n.serverSettings],
-      l10n.settingsSectionGeneral: [l10n.language, l10n.unitsTitle],
+      l10n.settingsSectionGeneral: [
+        l10n.language,
+        l10n.unitsTitle,
+        l10n.mapTilesSettingsTitle,
+      ],
       l10n.settingsSectionRecording: [
         l10n.startCountdownSettingsTitle,
         l10n.activityAutoPauseTitle,
@@ -241,6 +245,8 @@ void main() {
     // Guests see the connect-a-server entry instead of server settings.
     expect(find.text(l10n.signInConnectServer), findsOneWidget);
     expect(find.text(l10n.serverSettings), findsNothing);
+    // Tile URLs are stored per server, so guests have no Map tiles entry.
+    expect(find.text(l10n.mapTilesSettingsTitle), findsNothing);
 
     await tester.tap(find.text(l10n.signInConnectServer));
     await tester.pumpAndSettle();

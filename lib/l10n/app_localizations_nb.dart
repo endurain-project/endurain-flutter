@@ -919,6 +919,17 @@ class AppLocalizationsNb extends AppLocalizations {
   String get tileServerUrl => 'URL for kartflisserver';
 
   @override
+  String get mapTilesSettingsTitle => 'Kartfliser';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Flisserver som brukes til å tegne kart';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Gjelder mens du er koblet til denne serveren. Når du logger inn igjen, tilbakestilles den til serverens flisinnstilling.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override

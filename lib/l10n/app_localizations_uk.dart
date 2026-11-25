@@ -919,6 +919,16 @@ class AppLocalizationsUk extends AppLocalizations {
   String get tileServerUrl => 'URL сервера картографічних плиток';
 
   @override
+  String get mapTilesSettingsTitle => 'Картографічні плитки';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Сервер плиток для відображення карт';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Діє, поки ви підключені до цього сервера. Після повторного входу відновлюється налаштування плиток вашого сервера.';
+
+  @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';
 
   @override
