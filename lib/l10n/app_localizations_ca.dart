@@ -649,6 +649,56 @@ class AppLocalizationsCa extends AppLocalizations {
   String get activityAutoPausedIndicator => 'En pausa automàtica';
 
   @override
+  String get startCountdownSettingsTitle => 'Compte enrere d\'inici';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Compte enrere abans de començar a enregistrar';
+
+  @override
+  String get startCountdownToggleLabel => 'Compte enrere abans de començar';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Et dona temps per desar el telèfon abans que comenci l\'enregistrament.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Tria quant dura el compte enrere.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds segons';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Llegeix el compte enrere en veu alta';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Llegeix en veu alta els últims segons i avisa quan l\'enregistrament ha començat.';
+
+  @override
+  String get activityStartCountdownTitle =>
+      'L\'enregistrament comença d\'aquí a';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Segons restants: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Comença ara';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Enregistrament iniciat';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Enregistrament en pausa';
 
   @override

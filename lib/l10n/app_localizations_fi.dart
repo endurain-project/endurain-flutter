@@ -644,6 +644,55 @@ class AppLocalizationsFi extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaattisesti keskeytetty';
 
   @override
+  String get startCountdownSettingsTitle => 'Aloituslaskenta';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Laske alaspäin ennen tallennuksen alkua';
+
+  @override
+  String get startCountdownToggleLabel => 'Laske alaspäin ennen aloitusta';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Antaa aikaa laittaa puhelin pois ennen kuin tallennus alkaa.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Valitse, kuinka kauan laskenta kestää.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sekuntia';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Lue laskenta ääneen';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Lukee viimeiset sekunnit ääneen ja kertoo, kun tallennus on alkanut.';
+
+  @override
+  String get activityStartCountdownTitle => 'Aikaa tallennuksen alkuun';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Sekunteja jäljellä: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Aloita nyt';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Tallennus aloitettu';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Tallennus keskeytetty';
 
   @override

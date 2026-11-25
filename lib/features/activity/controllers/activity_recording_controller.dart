@@ -300,6 +300,11 @@ class ActivityRecordingController extends SafeNotifier {
     return _recordingService.requestBackgroundTrackingPermission();
   }
 
+  /// See [ActivityRecordingService.isLocationReady].
+  Future<bool> isLocationReady() {
+    return _recordingService.isLocationReady();
+  }
+
   String? _buildCompletedGpx(ActivityRecordingState completedState) {
     try {
       final gpx = _gpxBuilder.build(completedState);

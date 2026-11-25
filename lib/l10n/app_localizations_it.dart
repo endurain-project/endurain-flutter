@@ -645,6 +645,56 @@ class AppLocalizationsIt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'In pausa automatica';
 
   @override
+  String get startCountdownSettingsTitle => 'Conto alla rovescia di partenza';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Conto alla rovescia prima di registrare';
+
+  @override
+  String get startCountdownToggleLabel =>
+      'Conto alla rovescia prima di iniziare';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Ti dà il tempo di mettere via il telefono prima che inizi la registrazione.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Scegli quanto dura il conto alla rovescia.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds secondi';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Pronuncia il conto alla rovescia';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Legge ad alta voce gli ultimi secondi e annuncia quando la registrazione è iniziata.';
+
+  @override
+  String get activityStartCountdownTitle => 'La registrazione inizia tra';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Secondi rimanenti: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Inizia ora';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Registrazione avviata';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Registrazione in pausa';
 
   @override

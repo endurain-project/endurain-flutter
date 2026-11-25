@@ -641,6 +641,55 @@ class AppLocalizationsSk extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaticky pozastavené';
 
   @override
+  String get startCountdownSettingsTitle => 'Odpočítavanie pred štartom';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Odpočítavať pred začatím nahrávania';
+
+  @override
+  String get startCountdownToggleLabel => 'Odpočítavať pred štartom';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Dá vám čas odložiť telefón, kým sa začne nahrávanie.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Vyberte, ako dlho odpočítavanie trvá.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sekúnd';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Odpočítavať nahlas';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Prečíta nahlas posledné sekundy a oznámi, kedy sa nahrávanie začalo.';
+
+  @override
+  String get activityStartCountdownTitle => 'Nahrávanie sa začne o';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Zostáva sekúnd: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Spustiť hneď';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Nahrávanie spustené';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Nahrávanie pozastavené';
 
   @override

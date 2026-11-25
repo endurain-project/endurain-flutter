@@ -1,6 +1,7 @@
 import CoreLocation
 import Foundation
 import HealthKit
+import WatchKit
 
 /// Records one outdoor workout on the watch and hands it to the iPhone.
 ///
@@ -18,6 +19,9 @@ final class WorkoutManager: NSObject, ObservableObject {
     enum Phase: Equatable {
         case idle
         case starting
+        /// Counting down to the start. The session is prepared (which keeps
+        /// the app running and warms up the sensors) but nothing records yet.
+        case countingDown(endsAt: Date)
         case running
         case paused
         case ending
@@ -40,6 +44,21 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// Points are written to disk in batches of this size.
     static let pointFlushThreshold = 10
 
+    /// Start countdown choices in seconds; 0 starts right away.
+    static let countdownOptions = [0, 3, 5, 10]
+
+    /// The last seconds of the countdown that tap the wrist.
+    static let countdownCueSeconds = 3
+
+    private static let countdownSecondsKey = "startCountdownSeconds"
+
+    /// Seconds counted down before a workout starts, saved on the watch.
+    @Published var countdownSeconds: Int {
+        didSet {
+            UserDefaults.standard.set(countdownSeconds, forKey: Self.countdownSecondsKey)
+        }
+    }
+
     @Published private(set) var phase: Phase = .idle
     @Published private(set) var activityType: WatchActivityType?
     @Published private(set) var distanceMeters: Double?
@@ -59,10 +78,14 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var unsavedPoints: [WatchRecordedPoint] = []
     private var lastHeartRate: (bpm: Int, at: Date)?
     private var isUpdatingLocation = false
+    private var pendingStart: (session: HKWorkoutSession, builder: HKLiveWorkoutBuilder, type: WatchActivityType)?
+    private var countdownTask: Task<Void, Never>?
 
     init(store: WatchRecordingStore = WatchRecordingStore(directory: WorkoutManager.defaultRecordingDirectory())) {
         self.store = store
         self.locationAuthorization = locationManager.authorizationStatus
+        let savedCountdown = UserDefaults.standard.integer(forKey: Self.countdownSecondsKey)
+        self.countdownSeconds = Self.countdownOptions.contains(savedCountdown) ? savedCountdown : 0
         super.init()
         locationManager.delegate = self
     }
@@ -110,26 +133,116 @@ final class WorkoutManager: NSObject, ObservableObject {
                 healthStore: healthStore,
                 workoutConfiguration: configuration
             )
-            let start = Date()
-            let recording = WatchRecording(
-                sessionId: UUID().uuidString,
-                activityType: type,
-                startedAt: start
-            )
-            try store.begin(recording)
-            attach(session: session, builder: builder, recording: recording, points: [])
-            session.startActivity(with: start)
-            try await builder.beginCollection(at: start)
-            phase = .running
-            startLocationUpdates()
+            if countdownSeconds > 0 {
+                beginCountdown(session: session, builder: builder, type: type)
+                return
+            }
+            try await begin(session: session, builder: builder, type: type)
         } catch {
-            NSLog("Endurain watch: could not start a workout: %@", error.localizedDescription)
-            startedSession?.end()
-            store.clear()
-            detach()
-            phase = .idle
-            errorMessage = String(localized: "The workout could not be started.")
+            failStart(session: startedSession, error: error)
         }
+    }
+
+    /// Starts the workout now instead of waiting for the countdown.
+    func skipCountdown() {
+        guard case .countingDown = phase else { return }
+        countdownTask?.cancel()
+        countdownTask = nil
+        Task { await finishCountdown() }
+    }
+
+    /// Stops the countdown without recording anything.
+    func cancelCountdown() {
+        guard case .countingDown = phase else { return }
+        countdownTask?.cancel()
+        countdownTask = nil
+        pendingStart?.session.end()
+        pendingStart = nil
+        stopLocationUpdates()
+        activityType = nil
+        phase = .idle
+    }
+
+    // MARK: - Countdown
+
+    private func beginCountdown(
+        session: HKWorkoutSession,
+        builder: HKLiveWorkoutBuilder,
+        type: WatchActivityType
+    ) {
+        pendingStart = (session, builder, type)
+        activityType = type
+        // A prepared session keeps the app running when the wrist is lowered
+        // and warms up the sensors; collection only begins at zero.
+        session.prepare()
+        // Warm up GPS too. `record` ignores fixes until the workout runs.
+        startLocationUpdates()
+        let endsAt = Date().addingTimeInterval(TimeInterval(countdownSeconds))
+        phase = .countingDown(endsAt: endsAt)
+        countdownTask = Task { [weak self] in
+            await self?.runCountdown(until: endsAt)
+        }
+    }
+
+    private func runCountdown(until endsAt: Date) async {
+        var lastCue: Int?
+        while !Task.isCancelled {
+            let left = endsAt.timeIntervalSinceNow
+            if left <= 0 {
+                break
+            }
+            let seconds = Int(left.rounded(.up))
+            if seconds <= Self.countdownCueSeconds, seconds != lastCue {
+                lastCue = seconds
+                WKInterfaceDevice.current().play(.click)
+            }
+            try? await Task.sleep(for: .milliseconds(200))
+        }
+        guard !Task.isCancelled else { return }
+        countdownTask = nil
+        await finishCountdown()
+    }
+
+    private func finishCountdown() async {
+        guard case .countingDown = phase, let pending = pendingStart else { return }
+        pendingStart = nil
+        phase = .starting
+        do {
+            try await begin(session: pending.session, builder: pending.builder, type: pending.type)
+            WKInterfaceDevice.current().play(.start)
+        } catch {
+            failStart(session: pending.session, error: error)
+        }
+    }
+
+    // MARK: - Starting
+
+    private func begin(
+        session: HKWorkoutSession,
+        builder: HKLiveWorkoutBuilder,
+        type: WatchActivityType
+    ) async throws {
+        let start = Date()
+        let recording = WatchRecording(
+            sessionId: UUID().uuidString,
+            activityType: type,
+            startedAt: start
+        )
+        try store.begin(recording)
+        attach(session: session, builder: builder, recording: recording, points: [])
+        session.startActivity(with: start)
+        try await builder.beginCollection(at: start)
+        phase = .running
+        startLocationUpdates()
+    }
+
+    private func failStart(session: HKWorkoutSession?, error: Error) {
+        NSLog("Endurain watch: could not start a workout: %@", error.localizedDescription)
+        session?.end()
+        store.clear()
+        detach()
+        phase = .idle
+        errorMessage = String(localized: "The workout could not be started.")
     }
 
     func pause() {
@@ -187,6 +300,12 @@ final class WorkoutManager: NSObject, ObservableObject {
         _ session: HKWorkoutSession,
         saved: (recording: WatchRecording, points: [WatchRecordedPoint])?
     ) {
+        if session.state == .prepared || session.state == .notStarted {
+            // Left over from a countdown the app never finished: nothing was
+            // recorded, so drop it rather than start a workout unasked.
+            session.end()
+            return
+        }
         var recording: WatchRecording
         let savedPoints: [WatchRecordedPoint]
         if let saved {

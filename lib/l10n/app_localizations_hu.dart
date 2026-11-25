@@ -646,6 +646,55 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatikusan szüneteltetve';
 
   @override
+  String get startCountdownSettingsTitle => 'Visszaszámlálás indítás előtt';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Visszaszámlálás a rögzítés kezdete előtt';
+
+  @override
+  String get startCountdownToggleLabel => 'Visszaszámlálás bekapcsolása';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Időt ad, hogy eltedd a telefont, mielőtt a rögzítés elindul.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Válaszd ki, mennyi ideig tartson a visszaszámlálás.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds másodperc';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Visszaszámlálás felolvasása';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Felolvassa az utolsó másodperceket, és jelzi, amikor a rögzítés elindult.';
+
+  @override
+  String get activityStartCountdownTitle => 'A rögzítés indulásáig';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Hátralévő másodpercek: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Indítás most';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds mp';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Rögzítés elindítva';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Rögzítés szüneteltetve';
 
   @override

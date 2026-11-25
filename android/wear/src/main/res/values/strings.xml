@@ -23,4 +23,11 @@
     <string name="queue_failed">The workout could not be queued for your phone. It will be retried.</string>
     <string name="notification_channel">Workout</string>
     <string name="notification_recording">Recording a workout</string>
+    <string name="notification_starting">Starting a workout</string>
+    <string name="countdown_setting">Countdown: %1$s</string>
+    <string name="countdown_off">Off</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="countdown_starts_in">Recording starts in</string>
+    <string name="countdown_seconds_left">Seconds left: %1$d</string>
+    <string name="countdown_start_now">Start now</string>
 </resources>

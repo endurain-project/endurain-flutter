@@ -23,6 +23,8 @@ struct RootView: View {
         switch workout.phase {
         case .idle, .starting:
             StartView()
+        case .countingDown(let endsAt):
+            CountdownView(endsAt: endsAt)
         case .running, .paused, .ending:
             ActiveWorkoutView()
         case .finished(let summary):
@@ -48,6 +50,16 @@ struct StartView: View {
                         .disabled(workout.phase != .idle)
                     }
                 }
+                Section {
+                    Picker("Countdown", selection: $workout.countdownSeconds) {
+                        ForEach(WorkoutManager.countdownOptions, id: \.self) { seconds in
+                            Text(Self.countdownLabel(seconds)).tag(seconds)
+                        }
+                    }
+                    .disabled(workout.phase != .idle)
+                } footer: {
+                    Text("Time to get ready before recording starts.")
+                }
                 if workout.isLocationDenied {
                     Section {
                         Text("Location is off for Endurain. Workouts without a GPS route can't be uploaded yet.")
@@ -64,6 +76,49 @@ struct StartView: View {
                 }
             }
             .navigationTitle("Endurain")
+        }
+    }
+
+    private static func countdownLabel(_ seconds: Int) -> LocalizedStringKey {
+        return seconds == 0 ? "Off" : "\(seconds) s"
+    }
+}
+
+/// Counts down to the start of a workout. The watch taps the wrist for the
+/// last seconds and once more when recording starts (see `WorkoutManager`).
+struct CountdownView: View {
+    @EnvironmentObject private var workout: WorkoutManager
+    let endsAt: Date
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 0.25)) { context in
+            let remaining = max(0, Int(endsAt.timeIntervalSince(context.date).rounded(.up)))
+            VStack(spacing: 6) {
+                if let type = workout.activityType {
+                    Label(type.title, systemImage: type.symbolName)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Text("\(remaining)")
+                    .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
+                    .contentTransition(.numericText(countsDown: true))
+                    .accessibilityLabel(Text("Seconds left: \(remaining)"))
+                HStack {
+                    Button {
+                        workout.cancelCountdown()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .accessibilityLabel(Text("Cancel"))
+                    Button {
+                        workout.skipCountdown()
+                    } label: {
+                        Image(systemName: "play.fill")
+                    }
+                    .tint(.green)
+                    .accessibilityLabel(Text("Start now"))
+                }
+            }
         }
     }
 }

@@ -25,14 +25,17 @@ import 'package:endurain/features/account_migration/services/legacy_profile_adop
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/controllers/auto_pause_settings_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
+import 'package:endurain/features/activity/controllers/start_countdown_settings_controller.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
+import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
+import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/repositories/health_import_repository.dart';
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
@@ -140,6 +143,10 @@ class AppServices {
       _activity.retentionSettings;
   AutoPauseSettingsRepository get activityAutoPauseSettings =>
       _activity.autoPauseSettings;
+  StartCountdownSettingsRepository get activityStartCountdownSettings =>
+      _activity.startCountdownSettings;
+  StartCountdownPlatformAdapter get activityStartCountdownPlatform =>
+      _activity.startCountdownPlatform;
   ActivityUploadQueue get activityUploadQueue => _activity.uploadQueue;
   ActivityRecordingController get activityRecordingController =>
       _activity.recordingController;
@@ -281,5 +288,13 @@ class AppServices {
   /// settings screen.
   AutoPauseSettingsController createAutoPauseSettingsController() {
     return AutoPauseSettingsController(repository: _activity.autoPauseSettings);
+  }
+
+  /// Builds a route-owned [StartCountdownSettingsController] for the start
+  /// countdown settings screen.
+  StartCountdownSettingsController createStartCountdownSettingsController() {
+    return StartCountdownSettingsController(
+      repository: _activity.startCountdownSettings,
+    );
   }
 }

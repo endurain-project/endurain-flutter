@@ -640,6 +640,55 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatisch gepauzeerd';
 
   @override
+  String get startCountdownSettingsTitle => 'Startaftelling';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Aftellen voordat de opname begint';
+
+  @override
+  String get startCountdownToggleLabel => 'Aftellen voor het starten';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Geeft je tijd om je telefoon weg te stoppen voordat de opname begint.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Kies hoe lang het aftellen duurt.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds seconden';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Aftellen uitspreken';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Spreekt de laatste seconden uit en meldt wanneer de opname is begonnen.';
+
+  @override
+  String get activityStartCountdownTitle => 'Opname begint over';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Resterende seconden: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Nu starten';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Opname gestart';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Opname gepauzeerd';
 
   @override

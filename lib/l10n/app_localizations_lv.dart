@@ -639,6 +639,55 @@ class AppLocalizationsLv extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automātiski pauzēts';
 
   @override
+  String get startCountdownSettingsTitle => 'Sākuma atpakaļskaitīšana';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Atpakaļskaitīšana pirms ierakstīšanas sākuma';
+
+  @override
+  String get startCountdownToggleLabel => 'Skaitīt atpakaļ pirms sākuma';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Dod laiku nolikt tālruni malā, pirms sākas ierakstīšana.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Izvēlieties, cik ilgi ilgst atpakaļskaitīšana.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sekundes';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Nolasīt atpakaļskaitīšanu';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Nolasa pēdējās sekundes un paziņo, kad ierakstīšana ir sākusies.';
+
+  @override
+  String get activityStartCountdownTitle => 'Līdz ierakstīšanas sākumam';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Atlikušās sekundes: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Sākt tagad';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Ierakstīšana sākta';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Ierakstīšana pauzēta';
 
   @override

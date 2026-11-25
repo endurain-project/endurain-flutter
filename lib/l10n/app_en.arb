@@ -807,6 +807,76 @@
   "@activityAutoPausedIndicator": {
     "description": "Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart"
   },
+  "startCountdownSettingsTitle": "Start countdown",
+  "@startCountdownSettingsTitle": {
+    "description": "Start countdown settings screen title and settings navigation label - Used in: start_countdown_settings_screen.dart, settings_screen.dart"
+  },
+  "startCountdownSettingsSubtitle": "Count down before recording starts",
+  "@startCountdownSettingsSubtitle": {
+    "description": "Settings subtitle for start countdown navigation - Used in: settings_screen.dart"
+  },
+  "startCountdownToggleLabel": "Count down before starting",
+  "@startCountdownToggleLabel": {
+    "description": "Start countdown switch label - Used in: start_countdown_settings_screen.dart"
+  },
+  "startCountdownToggleDescription": "Gives you time to put your phone away before recording begins.",
+  "@startCountdownToggleDescription": {
+    "description": "Start countdown switch subtitle explaining the behavior - Used in: start_countdown_settings_screen.dart"
+  },
+  "startCountdownDurationHelperText": "Choose how long the countdown lasts.",
+  "@startCountdownDurationHelperText": {
+    "description": "Helper text above the countdown length options - Used in: start_countdown_settings_screen.dart"
+  },
+  "startCountdownDurationOptionLabel": "{seconds} seconds",
+  "@startCountdownDurationOptionLabel": {
+    "description": "Countdown length option label - Used in: start_countdown_settings_screen.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "startCountdownVoiceLabel": "Speak the countdown",
+  "@startCountdownVoiceLabel": {
+    "description": "Switch label for speaking the countdown aloud - Used in: start_countdown_settings_screen.dart"
+  },
+  "startCountdownVoiceDescription": "Reads out the last seconds and says when recording has started.",
+  "@startCountdownVoiceDescription": {
+    "description": "Subtitle of the spoken countdown switch - Used in: start_countdown_settings_screen.dart"
+  },
+  "activityStartCountdownTitle": "Recording starts in",
+  "@activityStartCountdownTitle": {
+    "description": "Text above the big countdown number shown before recording starts - Used in: start_countdown_dialog.dart"
+  },
+  "activityStartCountdownRemaining": "Seconds left: {seconds}",
+  "@activityStartCountdownRemaining": {
+    "description": "Screen reader label for the countdown number - Used in: start_countdown_dialog.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "activityStartCountdownStartNow": "Start now",
+  "@activityStartCountdownStartNow": {
+    "description": "Button that skips the rest of the countdown and starts recording - Used in: start_countdown_dialog.dart"
+  },
+  "activityStartCountdownAddSeconds": "+{seconds} s",
+  "@activityStartCountdownAddSeconds": {
+    "description": "Button that adds time to the countdown - Used in: start_countdown_dialog.dart",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "audioAnnouncementsRecordingStarted": "Recording started",
+  "@audioAnnouncementsRecordingStarted": {
+    "description": "Spoken cue when recording starts after the countdown - Used in: map_screen.dart"
+  },
   "audioAnnouncementsAutoPaused": "Recording paused",
   "@audioAnnouncementsAutoPaused": {
     "description": "Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart"

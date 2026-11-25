@@ -642,6 +642,55 @@ class AppLocalizationsBg extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Автоматична пауза';
 
   @override
+  String get startCountdownSettingsTitle => 'Обратно броене преди старт';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Обратно броене преди началото на записа';
+
+  @override
+  String get startCountdownToggleLabel => 'Броене преди старт';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Дава ви време да приберете телефона, преди записът да започне.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Изберете колко дълго трае обратното броене.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds секунди';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Изговаряне на обратното броене';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Изговаря последните секунди и съобщава, когато записът е започнал.';
+
+  @override
+  String get activityStartCountdownTitle => 'Записът започва след';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Оставащи секунди: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Старт сега';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds с';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Записът започна';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Записът е поставен на пауза';
 
   @override

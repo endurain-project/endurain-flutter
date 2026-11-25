@@ -639,6 +639,55 @@ class AppLocalizationsSl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Samodejno prekinjeno';
 
   @override
+  String get startCountdownSettingsTitle => 'Odštevanje pred začetkom';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Odštevaj pred začetkom snemanja';
+
+  @override
+  String get startCountdownToggleLabel => 'Odštevaj pred začetkom';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Vam da čas, da pospravite telefon, preden se snemanje začne.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Izberite, kako dolgo traja odštevanje.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sekund';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Odštevaj na glas';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Na glas prebere zadnje sekunde in sporoči, ko se snemanje začne.';
+
+  @override
+  String get activityStartCountdownTitle => 'Snemanje se začne čez';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Preostale sekunde: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Začni zdaj';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Snemanje se je začelo';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Snemanje začasno ustavljeno';
 
   @override

@@ -19,6 +19,7 @@ import 'package:endurain/features/activity/repositories/auto_pause_settings_repo
 import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
+import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
@@ -27,6 +28,7 @@ import 'package:endurain/features/activity/services/audio_announcement_preview_a
 import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
+import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:flutter/foundation.dart';
@@ -115,6 +117,17 @@ class ActivityModule {
 
   late final AutoPauseSettingsRepository autoPauseSettings =
       AutoPauseSettingsRepository(preferences: _infra.preferences);
+
+  late final StartCountdownSettingsRepository startCountdownSettings =
+      StartCountdownSettingsRepository(preferences: _infra.preferences);
+
+  /// Native support for the start countdown (spoken cues, iOS warm-up). Only
+  /// Android and iOS host the native recorder channel.
+  late final StartCountdownPlatformAdapter startCountdownPlatform =
+      defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS
+      ? MethodChannelStartCountdownPlatformAdapter()
+      : const UnsupportedStartCountdownPlatformAdapter();
 
   /// App-lifetime durable upload queue. Drains locally-stored activities whose
   /// upload has not yet succeeded; triggered on app-resume (see `app.dart`) and

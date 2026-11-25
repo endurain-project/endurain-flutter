@@ -298,6 +298,12 @@ class ActivityRecordingService {
   Future<bool> requestBackgroundTrackingPermission() => _permissions
       .requestBackground(required: _requiresAppleBackgroundPermission);
 
+  /// Whether location is on and permitted, asking for permission first when
+  /// it was never decided. Lets the start countdown settle the permission
+  /// prompt before the user puts the phone away.
+  Future<bool> isLocationReady() async =>
+      await _permissions.locationError() == null;
+
   Future<void> pause() => _commands.run(_pause);
 
   Future<void> _pause() async {

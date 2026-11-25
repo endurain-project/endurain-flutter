@@ -647,6 +647,55 @@ class AppLocalizationsFr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'En pause automatique';
 
   @override
+  String get startCountdownSettingsTitle => 'Compte à rebours de départ';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Compte à rebours avant l\'enregistrement';
+
+  @override
+  String get startCountdownToggleLabel => 'Compte à rebours avant le départ';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Vous laisse le temps de ranger votre téléphone avant le début de l\'enregistrement.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Choisissez la durée du compte à rebours.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds secondes';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Annoncer le compte à rebours';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Énonce les dernières secondes et annonce le début de l\'enregistrement.';
+
+  @override
+  String get activityStartCountdownTitle => 'L\'enregistrement commence dans';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Secondes restantes : $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Démarrer maintenant';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Enregistrement démarré';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Enregistrement en pause';
 
   @override

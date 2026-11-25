@@ -636,6 +636,55 @@ class AppLocalizationsLt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatiškai pristabdyta';
 
   @override
+  String get startCountdownSettingsTitle => 'Pradžios atgalinis skaičiavimas';
+
+  @override
+  String get startCountdownSettingsSubtitle =>
+      'Atgalinis skaičiavimas prieš pradedant įrašymą';
+
+  @override
+  String get startCountdownToggleLabel => 'Skaičiuoti atgal prieš pradedant';
+
+  @override
+  String get startCountdownToggleDescription =>
+      'Suteikia laiko pasidėti telefoną prieš prasidedant įrašymui.';
+
+  @override
+  String get startCountdownDurationHelperText =>
+      'Pasirinkite, kiek truks atgalinis skaičiavimas.';
+
+  @override
+  String startCountdownDurationOptionLabel(int seconds) {
+    return '$seconds sek.';
+  }
+
+  @override
+  String get startCountdownVoiceLabel => 'Garsiai skaičiuoti atgal';
+
+  @override
+  String get startCountdownVoiceDescription =>
+      'Garsiai perskaito paskutines sekundes ir praneša, kai įrašymas prasidėjo.';
+
+  @override
+  String get activityStartCountdownTitle => 'Iki įrašymo pradžios';
+
+  @override
+  String activityStartCountdownRemaining(int seconds) {
+    return 'Liko sekundžių: $seconds';
+  }
+
+  @override
+  String get activityStartCountdownStartNow => 'Pradėti dabar';
+
+  @override
+  String activityStartCountdownAddSeconds(int seconds) {
+    return '+$seconds s';
+  }
+
+  @override
+  String get audioAnnouncementsRecordingStarted => 'Įrašymas pradėtas';
+
+  @override
   String get audioAnnouncementsAutoPaused => 'Įrašymas pristabdytas';
 
   @override

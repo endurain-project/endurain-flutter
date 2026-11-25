@@ -52,6 +52,10 @@ class ActivityRecorderChannel(context: Context) :
             METHOD_DRAIN -> handleDrain(call, result)
             METHOD_RECOVER -> handleRecover(result)
             METHOD_SPEAK_PREVIEW -> handleSpeakPreview(call, result)
+            METHOD_SPEAK_CUE -> handleSpeakCue(call, result)
+            // Android keeps Dart timers running with the screen off, so the
+            // start countdown needs no warm-up here (iOS does).
+            METHOD_BEGIN_START_WARM_UP, METHOD_END_START_WARM_UP -> result.success(null)
             else -> result.notImplemented()
         }
     }
@@ -260,6 +264,26 @@ class ActivityRecorderChannel(context: Context) :
         )
         result.success(null)
     }
+
+    /**
+     * Speaks one short start-countdown cue. Like the preview, it never
+     * touches the durable session store.
+     */
+    private fun handleSpeakCue(call: MethodCall, result: MethodChannel.Result) {
+        if (!isSupportedVersion(call)) {
+            result.error(ERROR_VERSION, "Unsupported payload version", null)
+            return
+        }
+        val text = call.argument<String>("text")
+        val languageTag = call.argument<String>("languageTag")
+        if (text.isNullOrBlank() || languageTag.isNullOrBlank()) {
+            result.error(ERROR_ARGS, "Missing text or languageTag", null)
+            return
+        }
+        val duck = call.argument<Boolean>("duckOtherAudio") ?: true
+        AudioAnnouncer.speak(appContext, text, duck, languageTag)
+        result.success(null)
+    }
     companion object {
         const val PAYLOAD_VERSION = 2
 
@@ -274,6 +298,9 @@ class ActivityRecorderChannel(context: Context) :
         const val METHOD_DRAIN = "drain"
         const val METHOD_RECOVER = "recover"
         const val METHOD_SPEAK_PREVIEW = "speakAnnouncementPreview"
+        const val METHOD_SPEAK_CUE = "speakCue"
+        const val METHOD_BEGIN_START_WARM_UP = "beginStartWarmUp"
+        const val METHOD_END_START_WARM_UP = "endStartWarmUp"
 
         private const val ERROR_ARGS = "invalid_arguments"
         private const val ERROR_STATE = "invalid_state"

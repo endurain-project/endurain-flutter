@@ -8,6 +8,7 @@ import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
+import 'package:endurain/features/activity/screens/start_countdown_settings_screen.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
@@ -214,6 +215,20 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         adaptivePush<void>(
                           context,
                           (context) => const AutoPauseSettingsScreen(),
+                        );
+                      },
+                    ),
+                    AdaptiveListTile(
+                      leading: const AdaptiveIcon(
+                        materialIcon: Icons.timer_outlined,
+                        cupertinoIcon: CupertinoIcons.timer,
+                      ),
+                      title: l10n.startCountdownSettingsTitle,
+                      subtitle: l10n.startCountdownSettingsSubtitle,
+                      onTap: () {
+                        adaptivePush<void>(
+                          context,
+                          (context) => const StartCountdownSettingsScreen(),
                         );
                       },
                     ),

@@ -34,6 +34,15 @@ class NativeActivityRecorderChannelContract {
   /// the native handler never touches the durable session store.
   static const String speakAnnouncementPreview = 'speakAnnouncementPreview';
 
+  /// Speaks one short cue (the start countdown). Like the preview, it never
+  /// touches the durable session store.
+  static const String speakCue = 'speakCue';
+
+  /// Starts and ends the location warm-up that keeps iOS running during the
+  /// start countdown. Android answers both without doing anything.
+  static const String beginStartWarmUp = 'beginStartWarmUp';
+  static const String endStartWarmUp = 'endStartWarmUp';
+
   // Event payload keys.
   static const String eventType = 'type';
   static const String eventSession = 'session';

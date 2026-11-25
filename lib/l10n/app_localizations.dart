@@ -1221,6 +1221,84 @@ abstract class AppLocalizations {
   /// **'Auto-paused'**
   String get activityAutoPausedIndicator;
 
+  /// Start countdown settings screen title and settings navigation label - Used in: start_countdown_settings_screen.dart, settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Start countdown'**
+  String get startCountdownSettingsTitle;
+
+  /// Settings subtitle for start countdown navigation - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Count down before recording starts'**
+  String get startCountdownSettingsSubtitle;
+
+  /// Start countdown switch label - Used in: start_countdown_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Count down before starting'**
+  String get startCountdownToggleLabel;
+
+  /// Start countdown switch subtitle explaining the behavior - Used in: start_countdown_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Gives you time to put your phone away before recording begins.'**
+  String get startCountdownToggleDescription;
+
+  /// Helper text above the countdown length options - Used in: start_countdown_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how long the countdown lasts.'**
+  String get startCountdownDurationHelperText;
+
+  /// Countdown length option label - Used in: start_countdown_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds'**
+  String startCountdownDurationOptionLabel(int seconds);
+
+  /// Switch label for speaking the countdown aloud - Used in: start_countdown_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Speak the countdown'**
+  String get startCountdownVoiceLabel;
+
+  /// Subtitle of the spoken countdown switch - Used in: start_countdown_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Reads out the last seconds and says when recording has started.'**
+  String get startCountdownVoiceDescription;
+
+  /// Text above the big countdown number shown before recording starts - Used in: start_countdown_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording starts in'**
+  String get activityStartCountdownTitle;
+
+  /// Screen reader label for the countdown number - Used in: start_countdown_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds left: {seconds}'**
+  String activityStartCountdownRemaining(int seconds);
+
+  /// Button that skips the rest of the countdown and starts recording - Used in: start_countdown_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Start now'**
+  String get activityStartCountdownStartNow;
+
+  /// Button that adds time to the countdown - Used in: start_countdown_dialog.dart
+  ///
+  /// In en, this message translates to:
+  /// **'+{seconds} s'**
+  String activityStartCountdownAddSeconds(int seconds);
+
+  /// Spoken cue when recording starts after the countdown - Used in: map_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording started'**
+  String get audioAnnouncementsRecordingStarted;
+
   /// Spoken cue when automatic pause begins - Used in: audio_announcement_config.dart
   ///
   /// In en, this message translates to:
