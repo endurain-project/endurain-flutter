@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import com.endurain.endurain.activity.ActivityRecorderChannel
 import com.endurain.endurain.watch.WatchInbox
 import com.endurain.endurain.watch.WatchLinkFactory
@@ -18,6 +19,12 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Android 15+ forces edge-to-edge for apps targeting SDK 35+; opt in on
+        // older versions too so every device lays out the same way. Flutter
+        // already pads its UI with the system bar insets (SafeArea/MediaQuery).
+        // Called after super.onCreate so it replaces the translucent status bar
+        // FlutterFragmentActivity sets there.
+        enableEdgeToEdge()
         maybeRequestNotificationPermission()
     }
 
