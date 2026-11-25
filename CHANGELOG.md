@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.12.1+23] - 2026-11-25
+
+This release fixes how the Wear OS app is built and how the iOS workflow runs. The apps behave the same as in 0.12.0.
+
+### Fixed
+
+- The iOS workflow passes again. Since the Apple Watch app was added, rebuilding the app for the simulator takes about two minutes longer, which pushed the integration-test step past its 12-minute limit while the app was launching. The step now allows 20 minutes, and checks the booted simulator with `xcrun simctl list devices booted` instead of `flutter devices`, whose search for wireless devices took over three minutes on the runner.
+
+### Changed
+
+- The Wear OS app builds with the Kotlin support built into Android Gradle Plugin 9, without the `org.jetbrains.kotlin.android` plugin. Its standalone build no longer sets `android.builtInKotlin=false` and `android.newDsl=false`, which it had copied from the phone build, so it builds without deprecation warnings. The phone build keeps both settings, because the Flutter Gradle plugin still uses the legacy variant API.
+- The README says the Wear OS bundle goes on a Wear OS track of the Play listing; Google Play rejects a watch bundle on a phone track.
+
 ## [v0.12.0+22] - 2026-11-24
 
 This release adds watch apps for Apple Watch and Wear OS. Each records outdoor workouts on the watch and hands them to Endurain on the phone, which uploads them like any other activity. It also adds an optional countdown before a recording starts, on the phone and on both watches.
