@@ -263,6 +263,33 @@ void main() {
       addTearDown(controller.dispose);
     }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
+    testWidgets('explains hidden older workouts when history access was '
+        'declined', (tester) async {
+      service = FakeHealthSyncService(
+        sdkStatus: HealthSdkStatus.available,
+        authStatus: HealthAuthorizationStatus.granted,
+        workouts: [makeWorkout('w1')],
+      )..olderWorkoutsUnavailableValue = true;
+      await pumpScreen(tester);
+      final l10n = l10nOf(tester);
+
+      expect(find.text(l10n.healthSyncHistoryAccessGuidance), findsOneWidget);
+      addTearDown(controller.dispose);
+    });
+
+    testWidgets('does not show the history notice by default', (tester) async {
+      service = FakeHealthSyncService(
+        sdkStatus: HealthSdkStatus.available,
+        authStatus: HealthAuthorizationStatus.granted,
+        workouts: [makeWorkout('w1')],
+      );
+      await pumpScreen(tester);
+      final l10n = l10nOf(tester);
+
+      expect(find.text(l10n.healthSyncHistoryAccessGuidance), findsNothing);
+      addTearDown(controller.dispose);
+    });
+
     testWidgets('hides the no-routes banner when a route-bearing workout '
         'exists', (tester) async {
       service = FakeHealthSyncService(

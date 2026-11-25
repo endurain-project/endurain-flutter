@@ -504,6 +504,53 @@ void main() {
       },
     );
 
+    test('reports declined history so callers stop paging back', () async {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        historyAvailable: true,
+        requestHistoryResult: false,
+        dataByType: {
+          HealthDataType.WORKOUT: [
+            _workoutPoint(
+              start: now.subtract(const Duration(days: 10)),
+              end: now.subtract(const Duration(days: 10, hours: -1)),
+            ),
+          ],
+          HealthDataType.WORKOUT_ROUTE: [
+            _routePoint(
+              start: now.subtract(const Duration(days: 10)),
+              end: now.subtract(const Duration(days: 10, hours: -1)),
+              metadata: const {
+                'workout_uuid': 'workout-1',
+                'route_requires_consent': true,
+              },
+            ),
+          ],
+        },
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+        now: () => now,
+      );
+
+      await adapter.readWorkouts(
+        start: now.subtract(const Duration(days: 30)),
+        end: now,
+      );
+      expect(adapter.historyAccessDeclined, isFalse);
+      expect(adapter.routeConsentDeniedCount, 1);
+
+      // An older page: history is declined and the read returns early.
+      final older = await adapter.readWorkouts(
+        start: now.subtract(const Duration(days: 60)),
+        end: now.subtract(const Duration(days: 30)),
+      );
+      expect(older, isEmpty);
+      expect(adapter.historyAccessDeclined, isTrue);
+      expect(adapter.routeConsentDeniedCount, 0);
+    });
+
     test('non-Android platforms ignore the 30-day window', () async {
       final requestedStart = now.subtract(const Duration(days: 365));
       final health = fakeWith(
@@ -528,79 +575,183 @@ void main() {
     });
   });
 
-  group('healthRouteMatchesWorkout', () {
-    final workoutStart = DateTime.utc(2025, 6, 1, 9, 0);
-    final workoutEnd = DateTime.utc(2025, 6, 1, 10, 0);
+  group('healthRouteOwnerIndex', () {
+    final workouts = [
+      (
+        uuid: 'w1',
+        start: DateTime.utc(2025, 6, 1, 9, 0),
+        end: DateTime.utc(2025, 6, 1, 10, 0),
+      ),
+      // Starts 30 s after w1 ends: inside the time tolerance of w1.
+      (
+        uuid: 'w2',
+        start: DateTime.utc(2025, 6, 1, 10, 0, 30),
+        end: DateTime.utc(2025, 6, 1, 11, 0),
+      ),
+    ];
+
+    int? owner({
+      String? uuid,
+      required DateTime routeStart,
+      required DateTime routeEnd,
+    }) => healthRouteOwnerIndex(
+      routeWorkoutUuid: uuid,
+      routeStart: routeStart,
+      routeEnd: routeEnd,
+      workouts: workouts,
+    );
 
     test('matches by UUID when the route carries the workout UUID', () {
       expect(
-        healthRouteMatchesWorkout(
-          routeWorkoutUuid: 'w1',
+        owner(
+          uuid: 'w2',
           routeStart: DateTime.utc(2030), // time ignored when UUID present
           routeEnd: DateTime.utc(2030),
-          workoutUuid: 'w1',
-          workoutStart: workoutStart,
-          workoutEnd: workoutEnd,
         ),
-        isTrue,
+        1,
       );
     });
 
-    test('rejects a different UUID even if the times overlap', () {
+    test('rejects an unknown UUID even if the times overlap', () {
       expect(
-        healthRouteMatchesWorkout(
-          routeWorkoutUuid: 'other',
-          routeStart: workoutStart,
-          routeEnd: workoutEnd,
-          workoutUuid: 'w1',
-          workoutStart: workoutStart,
-          workoutEnd: workoutEnd,
+        owner(
+          uuid: 'other',
+          routeStart: DateTime.utc(2025, 6, 1, 9, 0),
+          routeEnd: DateTime.utc(2025, 6, 1, 10, 0),
         ),
-        isFalse,
+        isNull,
       );
     });
 
-    test('matches by time overlap when UUID is absent (iOS)', () {
+    test('gives a route to the one workout it overlaps (iOS)', () {
       expect(
-        healthRouteMatchesWorkout(
-          routeWorkoutUuid: null,
-          routeStart: DateTime.utc(2025, 6, 1, 9, 5),
-          routeEnd: DateTime.utc(2025, 6, 1, 9, 55),
-          workoutUuid: 'w1',
-          workoutStart: workoutStart,
-          workoutEnd: workoutEnd,
+        owner(
+          routeStart: DateTime.utc(2025, 6, 1, 9, 0),
+          routeEnd: DateTime.utc(2025, 6, 1, 10, 0),
         ),
-        isTrue,
+        0,
+      );
+      expect(
+        owner(
+          routeStart: DateTime.utc(2025, 6, 1, 10, 0, 30),
+          routeEnd: DateTime.utc(2025, 6, 1, 11, 0),
+        ),
+        1,
       );
     });
 
-    test('does not match a route well outside the workout window', () {
+    test('a route overlapping two workouts goes to the larger overlap', () {
       expect(
-        healthRouteMatchesWorkout(
-          routeWorkoutUuid: null,
+        owner(
+          routeStart: DateTime.utc(2025, 6, 1, 9, 55),
+          routeEnd: DateTime.utc(2025, 6, 1, 10, 50),
+        ),
+        1,
+      );
+    });
+
+    test('does not match a route well outside every workout', () {
+      expect(
+        owner(
           routeStart: DateTime.utc(2025, 6, 1, 12, 0),
           routeEnd: DateTime.utc(2025, 6, 1, 13, 0),
-          workoutUuid: 'w1',
-          workoutStart: workoutStart,
-          workoutEnd: workoutEnd,
         ),
-        isFalse,
+        isNull,
       );
     });
 
-    test('tolerates a small clock skew at the window edge', () {
-      // Route ends 30s before the workout starts — within the 60s tolerance.
+    test('tolerates a small clock skew when nothing overlaps', () {
+      // Route ends 30 s before w1 starts — within the 60 s tolerance.
       expect(
-        healthRouteMatchesWorkout(
-          routeWorkoutUuid: null,
+        owner(
           routeStart: DateTime.utc(2025, 6, 1, 8, 58, 30),
           routeEnd: DateTime.utc(2025, 6, 1, 8, 59, 30),
-          workoutUuid: 'w1',
-          workoutStart: workoutStart,
-          workoutEnd: workoutEnd,
         ),
-        isTrue,
+        0,
       );
+    });
+  });
+
+  group('HealthPackagePlatformAdapter iOS route assignment', () {
+    final firstStart = DateTime.utc(2026, 7, 1, 9);
+    final firstEnd = DateTime.utc(2026, 7, 1, 10);
+    final secondStart = DateTime.utc(2026, 7, 1, 10, 0, 30);
+    final secondEnd = DateTime.utc(2026, 7, 1, 11);
+
+    WorkoutRouteLocation at(DateTime time, double latitude) =>
+        WorkoutRouteLocation(
+          latitude: latitude,
+          longitude: -8.6,
+          timestamp: time,
+        );
+
+    _FakeHealth backToBack() => _FakeHealth(
+      hasPermissionsResult: true,
+      dataByType: {
+        HealthDataType.WORKOUT: [
+          _workoutPoint(start: firstStart, end: firstEnd, uuid: 'first'),
+          _workoutPoint(start: secondStart, end: secondEnd, uuid: 'second'),
+        ],
+        HealthDataType.WORKOUT_ROUTE: [
+          // Routes arrive newest first and carry no workout UUID on iOS.
+          _routePoint(
+            uuid: 'route-second',
+            start: secondStart,
+            end: secondEnd,
+            metadata: const {},
+            locations: [at(secondStart, 2)],
+          ),
+          _routePoint(
+            uuid: 'route-first-b',
+            start: firstStart.add(const Duration(minutes: 30)),
+            end: firstEnd,
+            metadata: const {},
+            locations: [at(firstStart.add(const Duration(minutes: 30)), 1.5)],
+          ),
+          _routePoint(
+            uuid: 'route-first-a',
+            start: firstStart,
+            end: firstStart.add(const Duration(minutes: 30)),
+            metadata: const {},
+            locations: [at(firstStart, 1)],
+          ),
+        ],
+      },
+    );
+
+    test(
+      'back-to-back workouts keep only their own tracks, in order',
+      () async {
+        final adapter = HealthPackagePlatformAdapter(
+          health: backToBack(),
+          targetPlatform: () => TargetPlatform.iOS,
+        );
+
+        final workouts = await adapter.readWorkouts(
+          start: firstStart,
+          end: secondEnd,
+        );
+        final bySource = {for (final w in workouts) w.sourceId: w};
+
+        expect(bySource['first']!.route.map((p) => p.latitude), [1, 1.5]);
+        expect(bySource['second']!.route.map((p) => p.latitude), [2]);
+      },
+    );
+
+    test('a skipped workout keeps its route from its neighbour', () async {
+      final adapter = HealthPackagePlatformAdapter(
+        health: backToBack(),
+        targetPlatform: () => TargetPlatform.iOS,
+      );
+
+      final workouts = await adapter.readWorkouts(
+        start: firstStart,
+        end: secondEnd,
+        exclude: (sourceId) async => sourceId == 'second',
+      );
+
+      expect(workouts.map((w) => w.sourceId), ['first']);
+      expect(workouts.single.route.map((p) => p.latitude), [1, 1.5]);
     });
   });
 
@@ -785,6 +936,123 @@ void main() {
       );
     });
 
+    test('reads plugin heart rate per workout window on Android', () async {
+      final secondStart = start.add(const Duration(hours: 5));
+      final secondEnd = secondStart.add(const Duration(hours: 1));
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [
+            _workoutPoint(start: start, end: end, uuid: 'first'),
+            _workoutPoint(start: secondStart, end: secondEnd, uuid: 'second'),
+            _workoutPoint(
+              start: secondEnd.add(const Duration(hours: 1)),
+              end: secondEnd.add(const Duration(hours: 2)),
+              uuid: 'imported',
+            ),
+          ],
+        },
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+      );
+
+      final workouts = await adapter.readWorkouts(
+        start: start,
+        end: secondEnd.add(const Duration(hours: 3)),
+        exclude: (sourceId) async => sourceId == 'imported',
+      );
+
+      expect(workouts.map((w) => w.sourceId), ['first', 'second']);
+      // One read per remaining workout, never the whole page, and none for
+      // the skipped one.
+      expect(health.heartRateReadWindows, [
+        (
+          start: start.subtract(const Duration(minutes: 1)),
+          end: end.add(const Duration(minutes: 1)),
+        ),
+        (
+          start: secondStart.subtract(const Duration(minutes: 1)),
+          end: secondEnd.add(const Duration(minutes: 1)),
+        ),
+      ]);
+    });
+
+    test('does not read heart rate when every workout is skipped', () async {
+      final health = healthWith(route: routeEverySecond(3));
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+      );
+
+      final workouts = await adapter.readWorkouts(
+        start: start,
+        end: end,
+        exclude: (_) async => true,
+      );
+
+      expect(workouts, isEmpty);
+      expect(health.heartRateReadCount, 0);
+    });
+
+    test('a failed heart rate read fails the read instead of dropping it', () {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [_workoutPoint(start: start, end: end)],
+        },
+        errorByType: {
+          HealthDataType.HEART_RATE: HealthPlatformException(
+            HealthDataType.HEART_RATE,
+            PlatformException(code: 'RATE_LIMIT_EXCEEDED'),
+          ),
+        },
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.android,
+      );
+
+      expect(
+        adapter.readWorkouts(start: start, end: end),
+        throwsA(
+          isA<AppException>()
+              .having((e) => e.code, 'code', AppErrorCode.healthReadFailed)
+              .having((e) => e.isTransient, 'isTransient', isTrue),
+        ),
+      );
+    });
+
+    test('fails the read when the series and plugin reads both fail', () {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        dataByType: {
+          HealthDataType.WORKOUT: [_workoutPoint(start: start, end: end)],
+        },
+        errorByType: {HealthDataType.HEART_RATE: StateError('boom')},
+      );
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        targetPlatform: () => TargetPlatform.iOS,
+        heartRateSeriesReader: _FakeHeartRateSeriesReader(
+          const [],
+          error: PlatformException(code: 'DEVICE_LOCKED'),
+        ),
+      );
+
+      expect(
+        adapter.readWorkouts(start: start, end: end),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            AppErrorCode.healthReadFailed,
+          ),
+        ),
+      );
+    });
+
     test('without a series reader, plugin samples cover their interval', () {
       final health = healthWith(
         route: routeEverySecond(20),
@@ -843,11 +1111,23 @@ void main() {
       final error = await readFailure(
         HealthPlatformException(
           HealthDataType.WORKOUT,
-          PlatformException(code: 'PERMISSION_DENIED'),
+          PlatformException(code: 'DATA_TOO_LARGE'),
         ),
       );
 
       expect(error.code, AppErrorCode.healthReadFailed);
+      expect(error.isTransient, isFalse);
+    });
+
+    test('reports a missing permission as a permission denial', () async {
+      final error = await readFailure(
+        HealthPlatformException(
+          HealthDataType.WORKOUT,
+          PlatformException(code: 'PERMISSION_DENIED'),
+        ),
+      );
+
+      expect(error.code, AppErrorCode.healthPermissionDenied);
       expect(error.isTransient, isFalse);
     });
 
@@ -869,12 +1149,17 @@ class _FakeHealth extends Health {
     this.historyAuthorized = false,
     this.requestHistoryResult = false,
     this.readError,
+    this.errorByType = const {},
   });
 
   final bool? hasPermissionsResult;
 
   /// Thrown by every data read when set.
   final Object? readError;
+
+  /// Thrown by reads of the given type.
+  final Map<HealthDataType, Object> errorByType;
+  final List<({DateTime start, DateTime end})> heartRateReadWindows = [];
   final bool requestAuthorizationResult;
   final Map<HealthDataType, List<HealthDataPoint>> dataByType;
   final bool historyAvailable;
@@ -952,6 +1237,11 @@ class _FakeHealth extends Health {
     }
     if (types.contains(HealthDataType.HEART_RATE)) {
       heartRateReadCount++;
+      heartRateReadWindows.add((start: startTime, end: endTime));
+    }
+    for (final type in types) {
+      final typeError = errorByType[type];
+      if (typeError != null) throw typeError;
     }
     return [for (final type in types) ...?dataByType[type]];
   }
@@ -984,9 +1274,10 @@ HealthDataPoint _routePoint({
   required DateTime end,
   required Map<String, dynamic> metadata,
   List<WorkoutRouteLocation> locations = const [],
+  String uuid = 'route-1',
 }) {
   return HealthDataPoint(
-    uuid: 'route-1',
+    uuid: uuid,
     value: WorkoutRouteHealthValue(locations: locations),
     type: HealthDataType.WORKOUT_ROUTE,
     unit: HealthDataUnit.NO_UNIT,

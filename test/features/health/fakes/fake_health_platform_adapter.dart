@@ -24,6 +24,11 @@ class FakeHealthPlatformAdapter implements HealthPlatformAdapter {
   List<HealthWorkout> _workouts;
   List<List<HealthWorkout>> workoutPages = const [];
   int _routeConsentDeniedCount = 0;
+
+  /// Reported as [historyAccessDeclined] after a read whose start is before
+  /// this time (mimics Health Connect without the history permission).
+  DateTime? historyDeclinedBefore;
+  bool _historyAccessDeclined = false;
   AppException? readWorkoutsError;
   Future<HealthAuthorizationStatus>? currentAuthorizationStatusFuture;
   HealthDataAccessDetails accessDetails;
@@ -38,6 +43,9 @@ class FakeHealthPlatformAdapter implements HealthPlatformAdapter {
 
   // Last arguments passed to readWorkouts
   DateTime? lastReadStart;
+
+  /// Source ids the `exclude` callback of readWorkouts left out.
+  final List<String> excludedSourceIds = [];
   DateTime? lastReadEnd;
   final List<({DateTime start, DateTime end})> readWindows = [];
 
@@ -50,6 +58,9 @@ class FakeHealthPlatformAdapter implements HealthPlatformAdapter {
 
   @override
   int get routeConsentDeniedCount => _routeConsentDeniedCount;
+
+  @override
+  bool get historyAccessDeclined => _historyAccessDeclined;
 
   @override
   Future<HealthSdkStatus> getSdkStatus() async {
@@ -89,19 +100,34 @@ class FakeHealthPlatformAdapter implements HealthPlatformAdapter {
   Future<List<HealthWorkout>> readWorkouts({
     required DateTime start,
     required DateTime end,
+    Future<bool> Function(String sourceId)? exclude,
   }) async {
     readWorkoutsCallCount++;
     lastReadStart = start;
     lastReadEnd = end;
     readWindows.add((start: start, end: end));
+    final declinedBefore = historyDeclinedBefore;
+    _historyAccessDeclined =
+        declinedBefore != null && start.isBefore(declinedBefore);
     if (readWorkoutsError case final error?) throw error;
+    final List<HealthWorkout> page;
     if (workoutPages.isNotEmpty) {
       final index = (readWorkoutsCallCount - 1).clamp(
         0,
         workoutPages.length - 1,
       );
-      return List.unmodifiable(workoutPages[index]);
+      page = workoutPages[index];
+    } else {
+      page = _workouts;
     }
-    return List.unmodifiable(_workouts);
+    final result = <HealthWorkout>[];
+    for (final workout in page) {
+      if (exclude != null && await exclude(workout.sourceId)) {
+        excludedSourceIds.add(workout.sourceId);
+      } else {
+        result.add(workout);
+      }
+    }
+    return List.unmodifiable(result);
   }
 }

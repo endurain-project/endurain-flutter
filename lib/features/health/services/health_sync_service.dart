@@ -72,6 +72,11 @@ class HealthSyncService {
   /// Number of workouts in the latest read whose route data could not be read.
   int get routeConsentDeniedCount => _cursor.routeConsentDeniedCount;
 
+  /// Whether the importable list stopped paging back because workouts older
+  /// than the platform's readable history window need a history access the
+  /// user has not granted (Health Connect without `READ_HEALTH_DATA_HISTORY`).
+  bool get olderWorkoutsUnavailable => _cursor.historyUnavailable;
+
   /// Returns `true` when auto-sync on app resume has been enabled by the user.
   ///
   /// Used by the optional Phase N auto-sync path in `app.dart`.
@@ -218,7 +223,12 @@ class HealthSyncService {
   }) {
     return _serialize(() async {
       final profile = await _requireActiveProfile();
-      return _loadAvailableForProfile(profile, range: range, reset: true);
+      return _loadAvailableForProfile(
+        profile,
+        cursor: _cursor,
+        range: range,
+        reset: true,
+      );
     });
   }
 
@@ -227,36 +237,43 @@ class HealthSyncService {
       final profile = await _requireActiveProfile();
       return _loadAvailableForProfile(
         profile,
+        cursor: _cursor,
         range: _cursor.range ?? HealthImportRange.defaultRange,
         reset: false,
       );
     });
   }
 
+  /// Reads the next page of importable workouts into [cursor].
+  ///
+  /// The Health Sync screen pages through the service's own cursor; one-shot
+  /// imports ([importAll], [autoSyncOnResume]) pass a fresh one so they never
+  /// disturb what the screen is showing.
   Future<HealthWorkoutPage> _loadAvailableForProfile(
     ConnectionProfile profile, {
+    required _DiscoveryCursor cursor,
     required HealthImportRange range,
     required bool reset,
   }) async {
     if (!_healthSyncEnabled) {
-      _cursor.reset();
+      cursor.reset();
       return const HealthWorkoutPage(items: [], hasMore: false);
     }
 
-    if (reset || _cursor.profileId != profile.id || _cursor.range != range) {
-      _cursor.begin(
+    if (reset || cursor.profileId != profile.id || cursor.range != range) {
+      cursor.begin(
         profileId: profile.id,
         range: range,
         bounds: range.resolve(_now()),
       );
     }
 
-    final bounds = _cursor.bounds!;
-    final pageEndExclusive = _cursor.nextPageEndExclusive!;
-    if (!_cursor.hasMore || !pageEndExclusive.isAfter(bounds.startInclusive)) {
-      _cursor.hasMore = false;
+    final bounds = cursor.bounds!;
+    final pageEndExclusive = cursor.nextPageEndExclusive!;
+    if (!cursor.hasMore || !pageEndExclusive.isAfter(bounds.startInclusive)) {
+      cursor.hasMore = false;
       return HealthWorkoutPage(
-        items: List.unmodifiable(_cursor.candidates),
+        items: List.unmodifiable(cursor.candidates),
         hasMore: false,
       );
     }
@@ -269,69 +286,83 @@ class HealthSyncService {
       const Duration(microseconds: 1),
     );
 
-    final all = await _readWorkouts(
+    // Already-imported workouts and ones another Endurain path recorded are
+    // skipped inside the read, before their heart rate is fetched. Discovery
+    // is read-only: a missing local record stays in Imported history until
+    // the user explicitly restores it (or deletes it through local history,
+    // which removes provenance as part of that workflow).
+    final candidates = await _readWorkouts(
       profile: profile,
       start: pageStart,
       end: pageEndInclusive,
+      exclude: (sourceId) => _isAlreadyHandled(profile, sourceId),
     );
-
-    final candidates = <HealthWorkout>[];
-    for (final workout in all) {
-      var importedLocalId = await _importRepo.localActivityIdFor(
-        profileId: profile.id,
-        sourceId: workout.sourceId,
-      );
-      importedLocalId ??= await _adoptStrayImport(profile, workout.sourceId);
-      if (importedLocalId != null ||
-          await _isRecordedElsewhere(workout.sourceId)) {
-        // Discovery is read-only. A missing local record stays in Imported
-        // history until the user explicitly restores it (or deletes it through
-        // local history, which removes provenance as part of that workflow).
-        continue;
-      }
-      candidates.add(workout);
-    }
 
     await _ensureProfileUnchanged(profile);
 
     final mergedById = {
-      for (final workout in _cursor.candidates) workout.sourceId: workout,
+      for (final workout in cursor.candidates) workout.sourceId: workout,
       for (final workout in candidates) workout.sourceId: workout,
     };
-    _cursor.candidates = mergedById.values.toList()
+    cursor.candidates = mergedById.values.toList()
       ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-    _cursor.nextPageEndExclusive = pageStart;
-    _cursor.hasMore = pageStart.isAfter(bounds.startInclusive);
-    _cursor.routeConsentDeniedCount += _adapter.routeConsentDeniedCount;
+    cursor.nextPageEndExclusive = pageStart;
+    // Without history access, every older page would prompt again and come
+    // back empty, so paging stops here.
+    if (_adapter.historyAccessDeclined) cursor.historyUnavailable = true;
+    cursor.hasMore =
+        !cursor.historyUnavailable && pageStart.isAfter(bounds.startInclusive);
+    cursor.routeConsentDeniedCount += _adapter.routeConsentDeniedCount;
     _diagnostics.recordBreadcrumbSync(
       DiagnosticsEvents.healthListImportable,
       details: {
-        'total': all.length,
+        'total': candidates.length,
         'importable': candidates.where((w) => w.hasRoute).length,
         'no_route': candidates.where((w) => !w.hasRoute).length,
-        'has_more': _cursor.hasMore,
+        'has_more': cursor.hasMore,
+        'history_unavailable': cursor.historyUnavailable,
       },
     );
     return HealthWorkoutPage(
-      items: List.unmodifiable(_cursor.candidates),
-      hasMore: _cursor.hasMore,
+      items: List.unmodifiable(cursor.candidates),
+      hasMore: cursor.hasMore,
     );
+  }
+
+  /// Whether the workout with [sourceId] is already imported for [profile]
+  /// (adopting a stray pre-migration import) or was recorded by another
+  /// Endurain path, so it is neither offered nor imported.
+  Future<bool> _isAlreadyHandled(
+    ConnectionProfile profile,
+    String sourceId,
+  ) async {
+    var importedLocalId = await _importRepo.localActivityIdFor(
+      profileId: profile.id,
+      sourceId: sourceId,
+    );
+    importedLocalId ??= await _adoptStrayImport(profile, sourceId);
+    return importedLocalId != null || await _isRecordedElsewhere(sourceId);
   }
 
   Future<List<HealthWorkout>> _readWorkouts({
     required ConnectionProfile profile,
     required DateTime start,
     required DateTime end,
+    required Future<bool> Function(String sourceId) exclude,
   }) async {
     try {
-      return await _adapter.readWorkouts(start: start, end: end);
+      return await _adapter.readWorkouts(
+        start: start,
+        end: end,
+        exclude: exclude,
+      );
     } on AppException catch (error) {
-      // HealthKit does not reveal read authorization status. If a persisted
-      // connection can no longer read, require the user to reconnect so the
-      // next explicit action can request authorization again. A transient
-      // failure (rate limit, Health Connect busy, device locked) says nothing
-      // about access, so the connection is kept.
-      if (error.code == AppErrorCode.healthReadFailed && !error.isTransient) {
+      // HealthKit does not reveal read authorization status. If the platform
+      // refuses a read for lack of permission, require the user to reconnect
+      // so the next explicit action can request authorization again. Any
+      // other read failure (transient or not) says nothing about access, so
+      // the connection is kept.
+      if (error.code == AppErrorCode.healthPermissionDenied) {
         await _syncSettings.setConnected(profile.id, false);
       }
       rethrow;
@@ -396,8 +427,10 @@ class HealthSyncService {
   /// Imports the workouts identified by [sourceIds].
   ///
   /// Resolves each ID against the most recent [loadAvailable] result. Skips
-  /// IDs that are non-importable (no GPS route), already imported, or not in
-  /// the current candidate list (idempotent / safe to call twice).
+  /// IDs that are non-importable (no GPS route) or already imported
+  /// (idempotent / safe to call twice). An ID that is in neither the current
+  /// candidate list nor the import history cannot be imported and counts as
+  /// failed.
   ///
   /// Returns the number of workouts successfully imported. Per-workout
   /// failures are counted but do not abort the rest of the batch.
@@ -414,26 +447,34 @@ class HealthSyncService {
       if (_cursor.profileId != profile.id) {
         await _loadAvailableForProfile(
           profile,
+          cursor: _cursor,
           range: HealthImportRange.defaultRange,
           reset: true,
         );
       }
-      return _importSelected(profile, ids);
+      return _importSelected(profile, ids, _cursor.candidates);
     });
   }
 
   Future<({int imported, int failed})> _importSelected(
     ConnectionProfile profile,
     Set<String> sourceIds,
+    List<HealthWorkout> candidates,
   ) async {
-    final candidates = List<HealthWorkout>.of(_cursor.candidates);
-
+    final candidateIds = {for (final w in candidates) w.sourceId};
     final toImport = candidates
         .where((w) => sourceIds.contains(w.sourceId) && w.hasRoute)
         .toList();
 
     var imported = 0;
     var failed = 0;
+
+    // A selected workout missing from the candidates has no data to import
+    // here. Unless it was imported (or recorded elsewhere) meanwhile, report it
+    // as failed instead of dropping it silently.
+    for (final sourceId in sourceIds.difference(candidateIds)) {
+      if (!await _isAlreadyHandled(profile, sourceId)) failed++;
+    }
 
     for (final workout in toImport) {
       if (await _importRepo.isImported(
@@ -502,19 +543,23 @@ class HealthSyncService {
     });
   }
 
+  /// Discovers and imports the default range with its own discovery state,
+  /// leaving the Health Sync screen's list and paging untouched.
   Future<({int imported, int failed})> _importDefaultRangeForProfile(
     ConnectionProfile profile,
   ) async {
+    final cursor = _DiscoveryCursor();
     await _loadAvailableForProfile(
       profile,
+      cursor: cursor,
       range: HealthImportRange.defaultRange,
       reset: true,
     );
-    final ids = _cursor.candidates
+    final ids = cursor.candidates
         .where((workout) => workout.hasRoute)
         .map((workout) => workout.sourceId)
         .toSet();
-    return _importSelected(profile, ids);
+    return _importSelected(profile, ids, cursor.candidates);
   }
 
   // ── Private ─────────────────────────────────────────────────────────────
@@ -652,6 +697,9 @@ class _DiscoveryCursor {
   bool hasMore = false;
   int routeConsentDeniedCount = 0;
 
+  /// Set once a read reports that older history is unreadable; stops paging.
+  bool historyUnavailable = false;
+
   /// Starts a fresh discovery pass for [profileId] over [range]/[bounds].
   void begin({
     required String profileId,
@@ -665,6 +713,7 @@ class _DiscoveryCursor {
     nextPageEndExclusive = bounds.endExclusive;
     hasMore = bounds.endExclusive.isAfter(bounds.startInclusive);
     routeConsentDeniedCount = 0;
+    historyUnavailable = false;
   }
 
   /// Drops all cursor state so no route-scoped candidates linger.
@@ -676,5 +725,6 @@ class _DiscoveryCursor {
     nextPageEndExclusive = null;
     hasMore = false;
     routeConsentDeniedCount = 0;
+    historyUnavailable = false;
   }
 }

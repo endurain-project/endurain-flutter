@@ -215,6 +215,7 @@ class HealthSyncController extends SafeNotifier {
           isLoadingWorkouts: false,
           availableHasMore: page.hasMore,
           routeConsentDeniedCount: _service.routeConsentDeniedCount,
+          olderWorkoutsUnavailable: _service.olderWorkoutsUnavailable,
           lastSyncAt: lastSyncAt,
           error: null,
         ),
@@ -226,7 +227,9 @@ class HealthSyncController extends SafeNotifier {
       );
       _update(
         _state.copyWith(
-          authStatus: e.code == AppErrorCode.healthReadFailed && !e.isTransient
+          // Only a permission refusal means access was lost; any other read
+          // failure keeps the user on the import screen with the error.
+          authStatus: e.code == AppErrorCode.healthPermissionDenied
               ? HealthAuthorizationStatus.notDetermined
               : _state.authStatus,
           isLoadingWorkouts: false,
@@ -253,6 +256,7 @@ class HealthSyncController extends SafeNotifier {
           availableHasMore: page.hasMore,
           isLoadingMoreAvailable: false,
           routeConsentDeniedCount: _service.routeConsentDeniedCount,
+          olderWorkoutsUnavailable: _service.olderWorkoutsUnavailable,
           error: null,
         ),
       );
@@ -397,6 +401,7 @@ class HealthSyncController extends SafeNotifier {
           importedCount: importedCount,
           failedImportCount: failedImportCount,
           routeConsentDeniedCount: _service.routeConsentDeniedCount,
+          olderWorkoutsUnavailable: _service.olderWorkoutsUnavailable,
           availableHasMore: page.hasMore,
           importedHasMore: importedPage?.hasMore ?? _state.importedHasMore,
           lastSyncAt: lastSyncAt,

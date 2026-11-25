@@ -81,6 +81,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   final TargetPlatform Function() _targetPlatform;
   final DateTime Function() _now;
   int _routeConsentDeniedCount = 0;
+  bool _historyAccessDeclined = false;
   Future<void>? _configureOnce;
 
   static TargetPlatform _defaultTargetPlatform() => defaultTargetPlatform;
@@ -96,6 +97,9 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
 
   @override
   int get routeConsentDeniedCount => _routeConsentDeniedCount;
+
+  @override
+  bool get historyAccessDeclined => _historyAccessDeclined;
 
   /// The `health` plugin requires [Health.configure] to be called exactly once
   /// before any other call. Without it, iOS HealthKit calls fail before a
@@ -251,49 +255,65 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   Future<List<HealthWorkout>> readWorkouts({
     required DateTime start,
     required DateTime end,
+    Future<bool> Function(String sourceId)? exclude,
   }) async {
+    // Reset per-read state first, so an early return or a failure never
+    // leaves the previous read's values behind.
+    _routeConsentDeniedCount = 0;
+    _historyAccessDeclined = false;
     try {
       await _ensureConfigured();
       final window = await _resolveReadWindow(start);
+      _historyAccessDeclined = window.historyClamped;
       final effectiveStart = window.start;
       // An unauthorized historical page can clamp its start past [end]; reading
       // an inverted window would only return an empty list, so skip it.
       if (!effectiveStart.isBefore(end)) return const [];
-      _routeConsentDeniedCount = 0;
       // Step 1 — Fetch workout metadata.
       final allWorkoutPoints = await _health.getHealthDataFromTypes(
         types: [HealthDataType.WORKOUT],
         startTime: effectiveStart,
         endTime: end,
       );
-      final workoutPoints = [
-        for (final point in allWorkoutPoints)
-          if (!companionWatchHealthSourceIds.contains(point.sourceId)) point,
-      ];
-      final companionWorkouts = allWorkoutPoints.length - workoutPoints.length;
+      final workoutPoints = <HealthDataPoint>[];
+      var companionWorkouts = 0;
+      var excludedWorkouts = 0;
+      for (final point in allWorkoutPoints) {
+        if (companionWatchHealthSourceIds.contains(point.sourceId)) {
+          companionWorkouts++;
+        } else if (exclude != null && await exclude(point.uuid)) {
+          excludedWorkouts++;
+        } else {
+          workoutPoints.add(point);
+        }
+      }
       if (workoutPoints.isEmpty) return const [];
 
-      // Step 2 — Fetch GPS routes for the same window.
+      // Step 2 — Fetch GPS routes for the same window and give each one to
+      // the single workout that owns it. Every workout in the window takes
+      // part, including skipped ones, so a skipped workout's route is never
+      // handed to a neighbour.
       final routes = await _fetchRoutes(
         start: effectiveStart,
         end: end,
         workoutCount: workoutPoints.length,
       );
-
-      // Step 3 — Fetch heart rate readings for the workouts.
-      final heartRate = await _fetchHeartRate(
-        workoutPoints: workoutPoints,
-        start: effectiveStart,
-        end: end,
+      final routesByWorkout = _assignRoutes(
+        routes: routes,
+        workoutPoints: allWorkoutPoints,
       );
+
+      // Step 3 — Fetch heart rate readings for the remaining workouts only.
+      final heartRate = await _fetchHeartRate(workoutPoints: workoutPoints);
+      final heartRateIndex = _HeartRateIndex(heartRate.samples);
 
       // Step 4 — Map each workout data point to a HealthWorkout.
       final workouts = workoutPoints
           .map(
             (pt) => _mapWorkout(
               point: pt,
-              routes: routes,
-              heartRate: _HeartRateIndex(heartRate.samples),
+              locations: routesByWorkout[pt.uuid] ?? const [],
+              heartRate: heartRateIndex,
             ),
           )
           .whereType<HealthWorkout>()
@@ -315,6 +335,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
           'route_read_failed': _routeConsentDeniedCount > 0,
           'history_clamped': window.historyClamped,
           'companion_watch_skipped': companionWorkouts,
+          'already_handled_skipped': excludedWorkouts,
           'heart_rate_readings': heartRate.samples.length,
           'heart_rate_source': heartRate.source,
           'route_points_with_heart_rate': workouts.fold<int>(
@@ -332,14 +353,24 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     }
   }
 
-  /// Maps a read failure to [AppErrorCode.healthReadFailed], flagging the ones
-  /// the plugin reports as retryable (rate limit, Health Connect busy, iOS
-  /// device locked) as transient so they are not taken for lost access.
-  static AppException _readFailed(Object error) => AppException(
-    AppErrorCode.healthReadFailed,
-    cause: error,
-    isTransient: error is HealthException && error.isRetryable,
-  );
+  /// Maps a read failure to an [AppException].
+  ///
+  /// A missing permission becomes [AppErrorCode.healthPermissionDenied], the
+  /// only failure that means access was lost. Anything else is
+  /// [AppErrorCode.healthReadFailed], flagged as transient when the plugin
+  /// reports it as retryable (rate limit, Health Connect busy, iOS device
+  /// locked).
+  static AppException _readFailed(Object error) {
+    if (error is HealthException &&
+        error.errorCode == HealthErrorCode.permissionDenied) {
+      return AppException(AppErrorCode.healthPermissionDenied, cause: error);
+    }
+    return AppException(
+      AppErrorCode.healthReadFailed,
+      cause: error,
+      isTransient: error is HealthException && error.isRetryable,
+    );
+  }
 
   /// Resolves the widest start Endurain can actually read for [requestedStart].
   ///
@@ -438,25 +469,63 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     return result;
   }
 
+  /// Gives each route to the workout in [workoutPoints] that owns it (see
+  /// [healthRouteOwnerIndex]), keyed by workout uuid.
+  Map<String, List<WorkoutRouteLocation>> _assignRoutes({
+    required List<_RouteData> routes,
+    required List<HealthDataPoint> workoutPoints,
+  }) {
+    final windows = [
+      for (final point in workoutPoints)
+        (
+          uuid: point.uuid,
+          start: point.dateFrom.toUtc(),
+          end: point.dateTo.toUtc(),
+        ),
+    ];
+    final byWorkout = <String, List<WorkoutRouteLocation>>{};
+    for (final route in routes) {
+      final owner = healthRouteOwnerIndex(
+        routeWorkoutUuid: route.workoutUuid,
+        routeStart: route.start,
+        routeEnd: route.end,
+        workouts: windows,
+      );
+      if (owner == null) continue;
+      (byWorkout[windows[owner].uuid] ??= []).addAll(route.locations);
+    }
+    return byWorkout;
+  }
+
   /// Fetches heart rate readings for [workoutPoints], sorted by start.
   ///
-  /// Uses the series reader when one is injected (iOS), reading each workout's
-  /// own window rather than the whole page, and falls back to the plugin read
-  /// when it fails. `source` names where the readings came from, for
-  /// diagnostics: `series`, `samples`, or `samples_fallback`.
+  /// Reads each workout's own window (padded by [_heartRateWindowPadding])
+  /// rather than the whole page. Uses the series reader when one is injected
+  /// (iOS) and falls back to the plugin read when it fails. `source` names
+  /// where the readings came from, for diagnostics: `series`, `samples`, or
+  /// `samples_fallback`.
+  ///
+  /// A failed plugin read throws (see [_readFailed]) instead of returning no
+  /// readings, so a workout is never imported without its heart rate because
+  /// of a passing failure.
   Future<({List<_HrSample> samples, String source})> _fetchHeartRate({
     required List<HealthDataPoint> workoutPoints,
-    required DateTime start,
-    required DateTime end,
   }) async {
+    final windows = [
+      for (final point in workoutPoints)
+        (
+          start: point.dateFrom.toUtc().subtract(_heartRateWindowPadding),
+          end: point.dateTo.toUtc().add(_heartRateWindowPadding),
+        ),
+    ];
     final reader = _heartRateSeriesReader;
     if (reader != null) {
       try {
         final samples = <_HrSample>[];
-        for (final point in workoutPoints) {
+        for (final window in windows) {
           final readings = await reader.read(
-            start: point.dateFrom.toUtc().subtract(_heartRateWindowPadding),
-            end: point.dateTo.toUtc().add(_heartRateWindowPadding),
+            start: window.start,
+            end: window.end,
           );
           for (final reading in readings) {
             samples.add(
@@ -476,49 +545,47 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
           details: diagnosticErrorDetails(error),
         );
         return (
-          samples: await _fetchHeartRateSamples(start: start, end: end),
+          samples: await _fetchHeartRateSamples(windows),
           source: 'samples_fallback',
         );
       }
     }
-    return (
-      samples: await _fetchHeartRateSamples(start: start, end: end),
-      source: 'samples',
-    );
+    return (samples: await _fetchHeartRateSamples(windows), source: 'samples');
   }
 
-  /// Fetches heart rate samples through the plugin and returns them sorted by
-  /// start.
+  /// Fetches heart rate samples for each window through the plugin and returns
+  /// them sorted by start.
   ///
   /// On iOS a condensed series arrives here as one sample spanning the whole
   /// series with a single summary value; it still covers its full interval.
-  Future<List<_HrSample>> _fetchHeartRateSamples({
-    required DateTime start,
-    required DateTime end,
-  }) async {
+  Future<List<_HrSample>> _fetchHeartRateSamples(
+    List<({DateTime start, DateTime end})> windows,
+  ) async {
+    final samples = <_HrSample>[];
     try {
-      final points = await _health.getHealthDataFromTypes(
-        types: [HealthDataType.HEART_RATE],
-        startTime: start,
-        endTime: end,
-      );
-      final samples = <_HrSample>[];
-      for (final pt in points) {
-        final value = pt.value;
-        if (value is! NumericHealthValue) continue;
-        samples.add(
-          _HrSample.interval(
-            start: pt.dateFrom,
-            end: pt.dateTo,
-            bpm: value.numericValue.round(),
-          ),
+      for (final window in windows) {
+        final points = await _health.getHealthDataFromTypes(
+          types: [HealthDataType.HEART_RATE],
+          startTime: window.start,
+          endTime: window.end,
         );
+        for (final pt in points) {
+          final value = pt.value;
+          if (value is! NumericHealthValue) continue;
+          samples.add(
+            _HrSample.interval(
+              start: pt.dateFrom,
+              end: pt.dateTo,
+              bpm: value.numericValue.round(),
+            ),
+          );
+        }
       }
-      samples.sort(_HrSample.byStart);
-      return samples;
-    } catch (_) {
-      return const [];
+    } catch (error) {
+      throw _readFailed(error);
     }
+    samples.sort(_HrSample.byStart);
+    return samples;
   }
 
   /// Maps a WORKOUT [HealthDataPoint] into a [HealthWorkout].
@@ -527,7 +594,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   /// happen in practice but guards against API changes).
   HealthWorkout? _mapWorkout({
     required HealthDataPoint point,
-    required List<_RouteData> routes,
+    required List<WorkoutRouteLocation> locations,
     required _HeartRateIndex heartRate,
   }) {
     final value = point.value;
@@ -562,23 +629,13 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     final workoutStart = point.dateFrom.toUtc();
     final workoutEnd = point.dateTo.toUtc();
 
-    // Merge GPS route + HR. Match routes by UUID when available (Android),
-    // otherwise by time overlap (iOS).
-    final locations = <WorkoutRouteLocation>[];
-    for (final r in routes) {
-      final matches = healthRouteMatchesWorkout(
-        routeWorkoutUuid: r.workoutUuid,
-        routeStart: r.start,
-        routeEnd: r.end,
-        workoutUuid: point.uuid,
-        workoutStart: workoutStart,
-        workoutEnd: workoutEnd,
-      );
-      if (matches) locations.addAll(r.locations);
-    }
-    final route = locations
-        .map((loc) => _mergeHr(loc: loc, heartRate: heartRate))
-        .toList();
+    // Merge GPS route + HR. A workout can own several route samples, which
+    // arrive in no particular order, so the points are sorted by time.
+    final route =
+        locations
+            .map((loc) => _mergeHr(loc: loc, heartRate: heartRate))
+            .toList()
+          ..sort((a, b) => a.time.compareTo(b.time));
 
     return HealthWorkout(
       sourceId: point.uuid,
@@ -738,33 +795,52 @@ class _RouteData {
   final List<WorkoutRouteLocation> locations;
 }
 
-/// Tolerance applied to the workout window when correlating a route by time.
+/// How far a route may lie outside a workout's window and still be given to it
+/// when it overlaps no workout, absorbing clock/rounding differences between
+/// the route and workout samples.
 const int _routeMatchToleranceMs = 60000;
 
-/// Decides whether a GPS route belongs to a workout.
+/// Returns the index in [workouts] of the workout that owns a GPS route, or
+/// `null` when none does.
 ///
 /// When the route carries its owning workout's UUID (Android / Health Connect)
-/// the match is exact. On iOS `HKWorkoutRoute` does not expose that UUID, so we
-/// fall back to time-overlap: a route belongs to the workout whose time window
-/// it overlaps (workouts do not overlap one another), with a small tolerance
-/// to absorb clock/rounding differences between the route and workout samples.
+/// the match is exact. On iOS `HKWorkoutRoute` does not expose that UUID, so
+/// the route goes to the one workout it overlaps the most. A route that
+/// overlaps none goes to the nearest workout within [_routeMatchToleranceMs],
+/// so back-to-back workouts never share each other's tracks. A tie goes to the
+/// workout whose start is closest to the route's.
 @visibleForTesting
-bool healthRouteMatchesWorkout({
+int? healthRouteOwnerIndex({
   required String? routeWorkoutUuid,
   required DateTime routeStart,
   required DateTime routeEnd,
-  required String workoutUuid,
-  required DateTime workoutStart,
-  required DateTime workoutEnd,
+  required List<({String uuid, DateTime start, DateTime end})> workouts,
 }) {
   if (routeWorkoutUuid != null) {
-    return routeWorkoutUuid == workoutUuid;
+    final index = workouts.indexWhere((w) => w.uuid == routeWorkoutUuid);
+    return index < 0 ? null : index;
   }
   final routeStartMs = routeStart.millisecondsSinceEpoch;
   final routeEndMs = routeEnd.millisecondsSinceEpoch;
-  final windowStartMs =
-      workoutStart.millisecondsSinceEpoch - _routeMatchToleranceMs;
-  final windowEndMs =
-      workoutEnd.millisecondsSinceEpoch + _routeMatchToleranceMs;
-  return routeStartMs <= windowEndMs && windowStartMs <= routeEndMs;
+  int? owner;
+  // Overlap in ms; negative values are the gap between route and workout.
+  var bestOverlapMs = -_routeMatchToleranceMs - 1;
+  var bestStartDistanceMs = 0;
+  for (var i = 0; i < workouts.length; i++) {
+    final workoutStartMs = workouts[i].start.millisecondsSinceEpoch;
+    final workoutEndMs = workouts[i].end.millisecondsSinceEpoch;
+    final overlapMs =
+        (routeEndMs < workoutEndMs ? routeEndMs : workoutEndMs) -
+        (routeStartMs > workoutStartMs ? routeStartMs : workoutStartMs);
+    final startDistanceMs = (routeStartMs - workoutStartMs).abs();
+    if (overlapMs > bestOverlapMs ||
+        (owner != null &&
+            overlapMs == bestOverlapMs &&
+            startDistanceMs < bestStartDistanceMs)) {
+      owner = i;
+      bestOverlapMs = overlapMs;
+      bestStartDistanceMs = startDistanceMs;
+    }
+  }
+  return owner;
 }

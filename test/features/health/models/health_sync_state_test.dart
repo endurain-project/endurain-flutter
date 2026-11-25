@@ -37,6 +37,7 @@ void main() {
       expect(state.lastSyncAt, isNull);
       expect(state.importedCount, 0);
       expect(state.routeConsentDeniedCount, 0);
+      expect(state.olderWorkoutsUnavailable, isFalse);
       expect(state.error, isNull);
     });
 
@@ -49,6 +50,7 @@ void main() {
         lastSyncAt: DateTime.utc(2025, 6, 1),
         importedCount: 2,
         routeConsentDeniedCount: 1,
+        olderWorkoutsUnavailable: true,
       );
 
       final copy = state.copyWith(isLoadingWorkouts: true);
@@ -60,6 +62,11 @@ void main() {
       expect(copy.lastSyncAt, DateTime.utc(2025, 6, 1));
       expect(copy.importedCount, 2);
       expect(copy.routeConsentDeniedCount, 1);
+      expect(copy.olderWorkoutsUnavailable, isTrue);
+      expect(
+        copy.copyWith(olderWorkoutsUnavailable: false).olderWorkoutsUnavailable,
+        isFalse,
+      );
     });
 
     test('copyWith can update selectedSourceIds', () {
