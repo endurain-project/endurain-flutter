@@ -337,6 +337,16 @@ class ActivityRecordingController extends SafeNotifier {
       final createdAt = _now().toUtc();
       final localActivityId =
           _recordingService.localSessionId ?? _localActivityIdProvider();
+      // A recovered completed session can be finalized again when the app
+      // died after saving it but before acknowledging the native session.
+      // Keep the saved record (it may already be uploaded) instead of
+      // replacing it with a fresh pending one.
+      final existing = await _localActivityRepository.get(localActivityId);
+      if (existing != null) {
+        _completedLocalActivityId = existing.id;
+        _completedLocalActivityRecord = existing;
+        return existing;
+      }
       final gpxFileName = await _localActivityRepository.writeGpx(
         id: localActivityId,
         gpx: gpx,

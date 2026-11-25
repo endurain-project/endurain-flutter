@@ -122,6 +122,42 @@ void main() {
       }
     });
 
+    test('stops at the first auth failure and keeps the backlog', () async {
+      await _createRecord(
+        repository,
+        id: 'q_auth_a',
+        status: LocalActivityUploadStatus.pending,
+      );
+      await _createRecord(
+        repository,
+        id: 'q_auth_b',
+        status: LocalActivityUploadStatus.pending,
+      );
+      final attemptedKeys = <String?>[];
+      final queue = ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(attemptedKeys, status: 401),
+      );
+
+      await queue.drain();
+
+      // The lost session would fail every record the same way: only the first
+      // is attempted.
+      expect(attemptedKeys, hasLength(1));
+      final records = await repository.list();
+      for (final record in records) {
+        expect(record.autoRetryEligible, isTrue);
+      }
+
+      // After signing in again, the next drain uploads the whole backlog.
+      final retriedKeys = <String?>[];
+      await ActivityUploadQueue(
+        repository: repository,
+        uploadService: _uploadServiceCapturing(retriedKeys, status: 201),
+      ).drain();
+      expect(retriedKeys.toSet(), {'q_auth_a', 'q_auth_b'});
+    });
+
     test('skips failed records that require manual retry', () async {
       await _createRecord(
         repository,

@@ -410,6 +410,24 @@ class SqfliteActivityStore implements LocalActivityStore {
     return rows.map(_fromRow).toList();
   }
 
+  @override
+  Future<List<LocalActivityRecord>> listUploadQueueCandidates() async {
+    final db = await _open();
+    final rows = await db.query(
+      _tableActivity,
+      where:
+          'upload_status = ? '
+          'OR (upload_status = ? AND auto_retry_eligible = 1) '
+          'OR gpx_cleanup_pending = 1',
+      whereArgs: [
+        LocalActivityUploadStatus.pending.toJson(),
+        LocalActivityUploadStatus.failed.toJson(),
+      ],
+      orderBy: 'ended_at ASC',
+    );
+    return rows.map(_fromRow).toList();
+  }
+
   Future<void> close() async {
     await _db?.close();
     _db = null;

@@ -909,6 +909,179 @@ void main() {
           expect(service.state.elapsedDurationSeconds, 10);
         },
       );
+
+      test('a manual pause while auto-paused becomes a manual pause', () async {
+        final startedAt = DateTime.utc(2026, 6, 3, 9);
+        final recorder = _ControllableRecorder();
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        recorder.emitAutoPaused(
+          session(
+            status: ActiveActivityStatus.paused,
+            startedAt: startedAt,
+            pausedAutomatically: true,
+          ),
+        );
+        await pumpEventQueue();
+        await service.pause();
+
+        expect(service.state.status, ActivityRecordingStatus.paused);
+        expect(service.state.isAutoPaused, isFalse);
+        // The recorder is told to pause, so it stops watching movement.
+        expect(recorder.pauseCount, 1);
+
+        recorder.emitAutoResumed(
+          session(status: ActiveActivityStatus.recording, startedAt: startedAt),
+        );
+        await pumpEventQueue();
+        expect(service.state.status, ActivityRecordingStatus.paused);
+      });
+
+      test(
+        'sensor capture stops on auto-pause and restarts on auto-resume',
+        () async {
+          final startedAt = DateTime.utc(2026, 6, 3, 9);
+          final storedSamples = <RecordedSensorSample>[];
+          final pending = Completer<void>();
+          final sensorRecorder = _StoredSensorRecorder(storedSamples)
+            ..pendingWrite = pending.future;
+          final readings = StreamController<({DateTime timestamp, int bpm})>();
+          addTearDown(readings.close);
+          final recorder = _ControllableRecorder();
+          final service = _buildService(
+            recorder: recorder,
+            sensorRecorder: sensorRecorder,
+            heartRateReadings: readings.stream,
+          );
+          addTearDown(service.dispose);
+
+          await service.start(activityType: ActivityType.run);
+          // 140 is in flight; 145 is queued behind it when the recorder
+          // auto-pauses, so it must not reach the (now paused) recorder.
+          readings
+            ..add((timestamp: startedAt, bpm: 140))
+            ..add((timestamp: startedAt, bpm: 145));
+          await pumpEventQueue();
+          recorder.emitAutoPaused(
+            session(
+              status: ActiveActivityStatus.paused,
+              startedAt: startedAt,
+              pausedAutomatically: true,
+            ),
+          );
+          await pumpEventQueue();
+          pending.complete();
+          readings.add((timestamp: startedAt, bpm: 150));
+          await pumpEventQueue();
+          recorder.emitAutoResumed(
+            session(
+              status: ActiveActivityStatus.recording,
+              startedAt: startedAt,
+            ),
+          );
+          await pumpEventQueue();
+          readings.add((timestamp: startedAt, bpm: 160));
+          await pumpEventQueue();
+
+          expect(storedSamples.map((sample) => sample.value), [140, 160]);
+          expect(service.state.status, ActivityRecordingStatus.recording);
+        },
+      );
+
+      test('a sample the recorder rejects as invalid_state is dropped, not a '
+          'save failure', () async {
+        final startedAt = DateTime.utc(2026, 6, 3, 9);
+        final readings = StreamController<({DateTime timestamp, int bpm})>();
+        addTearDown(readings.close);
+        final recorder = _ControllableRecorder();
+        final service = _buildService(
+          recorder: recorder,
+          sensorRecorder: _StoredSensorRecorder([])
+            ..writeError = PlatformException(
+              code: NativeActivityRecorderChannelContract.errorInvalidState,
+            ),
+          heartRateReadings: readings.stream,
+        );
+        addTearDown(service.dispose);
+
+        await service.start(activityType: ActivityType.run);
+        // Native already saved the session as auto-paused; Dart has not
+        // heard the event yet.
+        readings.add((timestamp: startedAt, bpm: 140));
+        await pumpEventQueue();
+
+        expect(service.state.status, ActivityRecordingStatus.recording);
+        expect(service.state.lastError, isNull);
+        await service.pause();
+        expect(recorder.pauseCount, 1);
+        expect(service.state.status, ActivityRecordingStatus.paused);
+      });
+    });
+
+    group('point batch offsets', () {
+      test('a pause during a gap drain is not a save failure', () async {
+        final recorder = _ControllableRecorder();
+        final service = _buildService(recorder: recorder);
+        addTearDown(service.dispose);
+        await service.start(activityType: ActivityType.run);
+
+        // A batch was missed, so the next one triggers a gap drain.
+        recorder._drained.add(_point(latitude: 41.0, longitude: -8.5));
+        final drainGate = Completer<void>();
+        recorder.drainOverride = (offset) async {
+          await drainGate.future;
+          return recorder._drained.sublist(offset);
+        };
+        recorder.emitPoints([_point(latitude: 41.1, longitude: -8.6)]);
+        await pumpEventQueue();
+        await service.pause();
+        drainGate.complete();
+        await pumpEventQueue();
+
+        expect(service.state.status, ActivityRecordingStatus.paused);
+        expect(service.state.lastError, isNull);
+      });
+
+      test(
+        'offsets advance by the stored count when entries are skipped',
+        () async {
+          final recorder = _ControllableRecorder();
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          final sessionId = service.localSessionId!;
+          var drains = 0;
+          recorder.drainOverride = (offset) async {
+            drains++;
+            return const [];
+          };
+
+          // The recorder stored two entries; one was malformed and skipped.
+          recorder._controller.add(
+            ActivityRecorderEvent.pointBatchAvailable(
+              RecordedActivityPointBatch([
+                _point(latitude: 41.1, longitude: -8.6),
+              ], sourceCount: 2),
+              localSessionId: sessionId,
+              pointOffset: 0,
+            ),
+          );
+          recorder._controller.add(
+            ActivityRecorderEvent.pointBatchAvailable(
+              [_point(latitude: 41.2, longitude: -8.7)],
+              localSessionId: sessionId,
+              pointOffset: 2,
+            ),
+          );
+          await pumpEventQueue();
+
+          expect(drains, 0);
+          expect(service.state.status, ActivityRecordingStatus.recording);
+          expect(service.state.points, hasLength(2));
+        },
+      );
     });
 
     test('stop finalizes durable points and completes', () async {

@@ -601,7 +601,13 @@ class ActivityUploadService {
           updatedAt: clock().toUtc(),
           lastUploadAttemptAt: attemptedAt,
           lastUploadErrorCode: _safeUploadErrorCode(error),
-          autoRetryEligible: _isTransient(error) || _isUploadLimit(error),
+          // An auth failure is resolved by signing in again, not by the user
+          // retrying this record, so it stays eligible for the drain that
+          // follows the next sign-in.
+          autoRetryEligible:
+              _isTransient(error) ||
+              _isUploadLimit(error) ||
+              isAuthFailure(error),
         );
         await repository.updateIfPresent(failedRecord);
         rethrow;
@@ -613,8 +619,16 @@ class ActivityUploadService {
     throw lastError!;
   }
 
-  /// Returns true if [error] represents a failure worth retrying (5xx
-  /// response, network-level I/O error, or secure storage temporarily
+  /// Whether [error] means the stored session can no longer authorize an
+  /// upload. Every further upload fails the same way until the user signs in
+  /// again, so the queue stops draining at the first one.
+  static bool isAuthFailure(Object error) =>
+      error is AppException &&
+      (error.code == AppErrorCode.sessionExpired ||
+          error.code == AppErrorCode.notAuthenticated);
+
+  /// Returns true if [error] represents a failure worth retrying (5xx, 408 or
+  /// 429 response, network-level I/O error, or secure storage temporarily
   /// unreadable). Auth failures, missing GPX, and
   /// configuration errors are not transient.
   ///
@@ -639,9 +653,13 @@ class ActivityUploadService {
     if (error.cause case final cause?) {
       return _isTransientIoError(cause);
     }
-    // HTTP 5xx: transient. HTTP 4xx: permanent.
+    // HTTP 5xx, 408 (request timeout) and 429 (rate limited): transient.
+    // Any other HTTP 4xx: permanent.
     final details = error.details;
-    if (details != null && details.startsWith('HTTP 5')) {
+    if (details != null &&
+        (details.startsWith('HTTP 5') ||
+            details == 'HTTP 408' ||
+            details == 'HTTP 429')) {
       return true;
     }
     return false;

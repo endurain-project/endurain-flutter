@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:endurain/core/utils/copy_with.dart';
 import 'package:endurain/features/activity/models/activity_recording_error.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
@@ -37,12 +35,27 @@ class ActivityRecordingState {
     this.isAutoPaused = false,
     List<ActivityTrackPoint> points = const [],
     List<ActivityTrackSegment> segments = const [],
-  }) : _segments = List<ActivityTrackSegment>.unmodifiable(
-         segments.isEmpty ? _segmentsFromPoints(points) : segments,
-       ),
-       _points = List<ActivityTrackPoint>.unmodifiable(
-         segments.isEmpty ? points : _flattenSegments(segments),
-       );
+  }) : _segments = _frozenSegments(points, segments),
+       _points = _frozenPoints(points, segments);
+
+  /// Takes the track as already-frozen lists, so [copyWith] can share them
+  /// with the source state instead of copying them again.
+  ActivityRecordingState._({
+    required this.status,
+    required this.activityType,
+    required this.startedAt,
+    required this.endedAt,
+    required this.localActivityId,
+    required this.lastError,
+    required this.elapsedDurationSeconds,
+    required this.currentHeartRateBpm,
+    required this.currentPowerWatts,
+    required this.currentCadenceRpm,
+    required this.isAutoPaused,
+    required List<ActivityTrackPoint> frozenPoints,
+    required List<ActivityTrackSegment> frozenSegments,
+  }) : _points = frozenPoints,
+       _segments = frozenSegments;
 
   final ActivityRecordingStatus status;
   final ActivityType? activityType;
@@ -82,9 +95,13 @@ class ActivityRecordingState {
   final List<ActivityTrackPoint> _points;
   final List<ActivityTrackSegment> _segments;
 
-  List<ActivityTrackPoint> get points => UnmodifiableListView(_points);
+  /// The track points, unmodifiable. The same list instance is returned for
+  /// as long as the track is unchanged, also across [copyWith] calls that do
+  /// not replace it, so callers can cache work derived from it by identity.
+  List<ActivityTrackPoint> get points => _points;
 
-  List<ActivityTrackSegment> get segments => UnmodifiableListView(_segments);
+  /// The track segments, unmodifiable and identity-stable like [points].
+  List<ActivityTrackSegment> get segments => _segments;
 
   bool get isActive {
     return status == ActivityRecordingStatus.recording ||
@@ -111,7 +128,12 @@ class ActivityRecordingState {
     List<ActivityTrackPoint>? points,
     List<ActivityTrackSegment>? segments,
   }) {
-    return ActivityRecordingState(
+    // Share the frozen track when it is unchanged: the 1 Hz elapsed tick and
+    // live sensor updates must not re-copy every recorded point.
+    final keepsTrack = points == null && segments == null;
+    final newPoints = points ?? _points;
+    final newSegments = segments ?? (points == null ? _segments : const []);
+    return ActivityRecordingState._(
       status: status ?? this.status,
       activityType: identical(activityType, kUnset)
           ? this.activityType
@@ -138,8 +160,12 @@ class ActivityRecordingState {
           ? this.currentCadenceRpm
           : currentCadenceRpm as int?,
       isAutoPaused: isAutoPaused ?? this.isAutoPaused,
-      points: points ?? _points,
-      segments: segments ?? (points == null ? _segments : const []),
+      frozenPoints: keepsTrack
+          ? _points
+          : _frozenPoints(newPoints, newSegments),
+      frozenSegments: keepsTrack
+          ? _segments
+          : _frozenSegments(newPoints, newSegments),
     );
   }
 
@@ -178,6 +204,24 @@ class ActivityRecordingState {
       RecordedSensorKind.power => copyWith(currentPowerWatts: value),
       RecordedSensorKind.cadence => copyWith(currentCadenceRpm: value),
     };
+  }
+
+  static List<ActivityTrackSegment> _frozenSegments(
+    List<ActivityTrackPoint> points,
+    List<ActivityTrackSegment> segments,
+  ) {
+    return List<ActivityTrackSegment>.unmodifiable(
+      segments.isEmpty ? _segmentsFromPoints(points) : segments,
+    );
+  }
+
+  static List<ActivityTrackPoint> _frozenPoints(
+    List<ActivityTrackPoint> points,
+    List<ActivityTrackSegment> segments,
+  ) {
+    return List<ActivityTrackPoint>.unmodifiable(
+      segments.isEmpty ? points : _flattenSegments(segments),
+    );
   }
 
   static List<ActivityTrackSegment> _segmentsFromPoints(

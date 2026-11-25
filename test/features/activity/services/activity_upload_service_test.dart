@@ -784,6 +784,37 @@ void main() {
       expect(persisted.autoRetryEligible, isFalse);
     });
 
+    for (final status in [408, 429]) {
+      test('HTTP $status is transient and retried', () async {
+        final record = await _createRecord(repository, id: 'svc_retry_$status');
+        final service = _serviceWithResponses([status, 201]);
+
+        final result = await service.performUploadAttempt(
+          record: record,
+          repository: repository,
+        );
+
+        expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+      });
+
+      test('HTTP $status keeps the record auto-retry eligible', () async {
+        final record = await _createRecord(
+          repository,
+          id: 'svc_eligible_$status',
+        );
+        final service = _serviceReturningStatus(status);
+
+        await expectLater(
+          service.performUploadAttempt(record: record, repository: repository),
+          throwsA(isA<AppException>()),
+        );
+
+        final persisted = await repository.get(record.id);
+        expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
+        expect(persisted.autoRetryEligible, isTrue);
+      });
+    }
+
     test('401 is not retried', () async {
       final record = await _createRecord(repository, id: 'svc_no_retry_401');
       final service = ActivityUploadService(
@@ -824,7 +855,30 @@ void main() {
 
       final persisted = await repository.get(record.id);
       expect(persisted!.uploadStatus, LocalActivityUploadStatus.failed);
-      expect(persisted.autoRetryEligible, isFalse);
+      // Signing in again resolves it, so the next drain retries the record.
+      expect(persisted.autoRetryEligible, isTrue);
+    });
+
+    test('isAuthFailure recognizes only lost-session errors', () {
+      expect(
+        ActivityUploadService.isAuthFailure(
+          const AppException(AppErrorCode.sessionExpired),
+        ),
+        isTrue,
+      );
+      expect(
+        ActivityUploadService.isAuthFailure(
+          const AppException(AppErrorCode.notAuthenticated),
+        ),
+        isTrue,
+      );
+      expect(
+        ActivityUploadService.isAuthFailure(
+          const AppException(AppErrorCode.transientAuthUnavailable),
+        ),
+        isFalse,
+      );
+      expect(ActivityUploadService.isAuthFailure(StateError('x')), isFalse);
     });
 
     test('unexpected non-IO error fails fast without retrying', () async {

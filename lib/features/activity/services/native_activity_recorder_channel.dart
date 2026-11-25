@@ -309,9 +309,11 @@ class NativeActivityRecorderChannel
     }
   }
 
-  List<RecordedActivityPoint> _parsePoints(Object? value) {
+  /// Parses stored points, skipping malformed entries. The result keeps the
+  /// stored entry count so point offsets stay aligned with the native store.
+  RecordedActivityPointBatch _parsePoints(Object? value) {
     if (value is! List) {
-      return const <RecordedActivityPoint>[];
+      return RecordedActivityPointBatch(const [], sourceCount: 0);
     }
     final points = <RecordedActivityPoint>[];
     for (final entry in value) {
@@ -324,7 +326,7 @@ class NativeActivityRecorderChannel
         continue;
       }
     }
-    return points;
+    return RecordedActivityPointBatch(points, sourceCount: value.length);
   }
 
   ActivityRecorderFailureReason _parseReason(Object? value) {

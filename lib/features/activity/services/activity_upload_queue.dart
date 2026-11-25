@@ -52,19 +52,10 @@ class ActivityUploadQueue {
 
   static Future<bool> _alwaysAuthorized() async => true;
 
-  /// Upload statuses the drain query loads. `pending`/`failed` records may still
-  /// need an upload attempt; `uploaded` records are loaded only so one with a
-  /// *deferred* post-upload GPX cleanup (`gpxCleanupPending`) can have that
-  /// cleanup retried — such records are never re-uploaded. [_requiresDrainPass]
-  /// then decides which of the loaded records are actually processed.
-  static const Set<LocalActivityUploadStatus> _drainableStatuses = {
-    LocalActivityUploadStatus.pending,
-    LocalActivityUploadStatus.failed,
-    LocalActivityUploadStatus.uploaded,
-  };
-
-  /// Whether the drain must act on [record]. The pass carries two distinct
-  /// responsibilities, both resolved by
+  /// Whether the drain must act on [record]. The repository query already
+  /// selects these records ([LocalActivityRepository.listUploadQueueCandidates]);
+  /// this re-check keeps the rule in one readable place. The pass carries two
+  /// distinct responsibilities, both resolved by
   /// [ActivityUploadService.performUploadAttempt] (which uploads a not-yet-
   /// uploaded record and, for an already-uploaded one, only finishes its GPX
   /// cleanup):
@@ -74,9 +65,12 @@ class ActivityUploadQueue {
   ///   was deferred (`gpxCleanupPending`) and must be retried, with no network
   ///   upload.
   static bool _requiresDrainPass(LocalActivityRecord record) {
-    return record.uploadStatus == LocalActivityUploadStatus.pending ||
-        record.autoRetryEligible ||
-        record.gpxCleanupPending;
+    return switch (record.uploadStatus) {
+      LocalActivityUploadStatus.pending => true,
+      LocalActivityUploadStatus.failed =>
+        record.autoRetryEligible || record.gpxCleanupPending,
+      LocalActivityUploadStatus.uploaded => record.gpxCleanupPending,
+    };
   }
 
   final LocalActivityRepository _repository;
@@ -152,7 +146,7 @@ class ActivityUploadQueue {
       await _reconcileProfile?.call(activeProfile);
     }
 
-    final records = await _repository.listByUploadStatus(_drainableStatuses);
+    final records = await _repository.listUploadQueueCandidates();
     final retryableRecords = records.where(_requiresDrainPass);
     final pending = profileProvider == null
         ? retryableRecords.toList()
@@ -186,6 +180,11 @@ class ActivityUploadQueue {
           DiagnosticsEvents.activityUploadQueueRecordFailed,
           details: {'id': record.id, ...diagnosticErrorDetails(error)},
         );
+        // A lost session fails every remaining record the same way; they stay
+        // retryable and drain after the next sign-in.
+        if (ActivityUploadService.isAuthFailure(error)) {
+          break;
+        }
       }
     }
 

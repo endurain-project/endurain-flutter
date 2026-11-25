@@ -383,6 +383,37 @@ void main() {
       expect(received.single.pointOffset, 12);
     });
 
+    test('a skipped malformed point keeps the stored entry count', () async {
+      final received = <ActivityRecorderEvent>[];
+      final subscription = channel.events.listen(received.add);
+      addTearDown(subscription.cancel);
+      await pumpEventQueue();
+
+      await _sendEvent(codec, {
+        NativeActivityRecorderChannelContract.eventType:
+            NativeActivityRecorderChannelContract.eventPointBatchAvailable,
+        NativeActivityRecorderChannelContract.eventLocalSessionId: 'session_1',
+        NativeActivityRecorderChannelContract.eventPointOffset: 0,
+        NativeActivityRecorderChannelContract.eventPoints: <Object?>[
+          {'t': '2026-06-03T09:00:01.000Z', 'lat': 41.1, 'lon': -8.6, 'seg': 0},
+          {'t': 'invalid'},
+          'not a map',
+        ],
+      });
+      await pumpEventQueue();
+
+      final points = received.single.points;
+      expect(points, hasLength(1));
+      expect(RecordedActivityPointBatch.sourceCountOf(points), 3);
+    });
+
+    test('drain keeps the stored entry count', () async {
+      final points = await channel.drain();
+
+      expect(points, hasLength(1));
+      expect(RecordedActivityPointBatch.sourceCountOf(points), 1);
+    });
+
     test('parses failure events with a typed reason', () async {
       final received = <ActivityRecorderEvent>[];
       final subscription = channel.events.listen(received.add);

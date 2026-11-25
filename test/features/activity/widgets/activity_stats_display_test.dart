@@ -1,7 +1,10 @@
 import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
+import 'package:endurain/features/activity/models/activity_recording_stats.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
+import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/services/activity_stats_calculator.dart';
 import 'package:endurain/features/activity/widgets/activity_stats_display.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
@@ -17,6 +20,42 @@ void main() {
   setUp(() => useDeviceLocale(metricDeviceLocale));
 
   group('ActivityStatsDisplay', () {
+    testWidgets('recomputes stats only when the track changes', (tester) async {
+      final calculator = _CountingCalculator();
+      final state = ActivityRecordingState(
+        status: ActivityRecordingStatus.recording,
+        activityType: ActivityType.run,
+        points: [
+          ActivityTrackPoint(
+            latitude: 41.1,
+            longitude: -8.6,
+            timestamp: DateTime.utc(2026, 5, 30, 10),
+          ),
+        ],
+      );
+      Future<void> show(ActivityRecordingState state) => tester.pumpWidget(
+        _TestApp(
+          child: ActivityStatsDisplay(state: state, calculator: calculator),
+        ),
+      );
+
+      await show(state);
+      await show(state.copyWith(elapsedDurationSeconds: 1));
+      await show(state.copyWith(elapsedDurationSeconds: 2));
+      expect(calculator.calls, 1);
+
+      await show(
+        state.addPoint(
+          ActivityTrackPoint(
+            latitude: 41.2,
+            longitude: -8.7,
+            timestamp: DateTime.utc(2026, 5, 30, 10, 0, 10),
+          ),
+        ),
+      );
+      expect(calculator.calls, 2);
+    });
+
     testWidgets('shows empty recording stats safely', (tester) async {
       await tester.pumpWidget(
         _TestApp(
@@ -323,4 +362,17 @@ ActivityTrackPoint _point({
     powerWatts: power,
     cadenceRpm: cadence,
   );
+}
+
+class _CountingCalculator extends ActivityStatsCalculator {
+  int calls = 0;
+
+  @override
+  ActivityRecordingStats calculate(
+    List<ActivityTrackSegment> rawSegments, {
+    ActivityType? activityType,
+  }) {
+    calls++;
+    return super.calculate(rawSegments, activityType: activityType);
+  }
 }

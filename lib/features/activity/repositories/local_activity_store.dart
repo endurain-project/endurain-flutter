@@ -26,6 +26,14 @@ abstract interface class LocalActivityStore {
     Set<LocalActivityUploadStatus> statuses,
   );
 
+  /// Returns the records the durable upload queue must act on, ordered
+  /// oldest-first: every `pending` record, every `failed` one still
+  /// [LocalActivityRecord.autoRetryEligible], and any record whose post-upload
+  /// GPX cleanup was deferred ([LocalActivityRecord.gpxCleanupPending]).
+  ///
+  /// Filters in the store so a drain never loads the uploaded history.
+  Future<List<LocalActivityRecord>> listUploadQueueCandidates();
+
   /// Returns the total number of stored records.
   Future<int> count();
 

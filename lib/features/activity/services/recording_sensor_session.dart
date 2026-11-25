@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
+import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/features/activity/services/sensor_reading_buffer.dart';
+import 'package:flutter/services.dart' show PlatformException;
 
 /// Captures external-sensor readings (heart rate, power, cadence) for one
 /// recording: persists each sample through the recorder, keeps time-ordered
@@ -77,7 +79,9 @@ class RecordingSensorSession {
       return;
     }
     _writes = _writes.then((_) async {
-      if (sessionId != _activeSessionId() || _writeFailed) {
+      // Re-checked when the write runs: a pause or stop queued behind earlier
+      // writes means the recorder no longer takes samples for this session.
+      if (sessionId != _activeSessionId() || _writeFailed || !_isRecording()) {
         return;
       }
       try {
@@ -85,11 +89,18 @@ class RecordingSensorSession {
           localSessionId: sessionId,
           sample: sample,
         );
-      } catch (error, stackTrace) {
-        if (!_isDisposed() && sessionId == _activeSessionId()) {
-          _writeFailed = true;
-          _onWriteFailed(error, stackTrace);
+      } on PlatformException catch (error, stackTrace) {
+        // The recorder already left the recording state (e.g. it auto-paused
+        // before Dart heard about it): the sample belongs to no track point,
+        // so it is dropped rather than failing the recording.
+        if (error.code ==
+            NativeActivityRecorderChannelContract.errorInvalidState) {
+          return;
         }
+        _reportWriteFailure(sessionId, error, stackTrace);
+        return;
+      } catch (error, stackTrace) {
+        _reportWriteFailure(sessionId, error, stackTrace);
         return;
       }
       if (!_isDisposed() && sessionId == _activeSessionId()) {
@@ -97,6 +108,17 @@ class RecordingSensorSession {
         _onSampleRecorded(sample);
       }
     });
+  }
+
+  void _reportWriteFailure(
+    String sessionId,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    if (!_isDisposed() && sessionId == _activeSessionId()) {
+      _writeFailed = true;
+      _onWriteFailed(error, stackTrace);
+    }
   }
 
   /// Reloads the persisted samples of the active session into the buffers.

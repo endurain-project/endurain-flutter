@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -39,6 +41,26 @@ enum ActivityRecorderEventType {
   /// detector observed enough consecutive movement), not in response to an
   /// explicit [ActivityLocationRecorder.resume] call.
   autoResumed,
+}
+
+/// Points read from a recorder's durable store that remembers how many
+/// entries the store returned.
+///
+/// A malformed stored entry is skipped while parsing, so [length] can be
+/// smaller than [sourceCount]. Offsets into the store (`pointOffset`,
+/// `drain(sinceOffset:)`) count stored entries, so they must advance by
+/// [sourceCount], never by the parsed length.
+class RecordedActivityPointBatch
+    extends UnmodifiableListView<RecordedActivityPoint> {
+  RecordedActivityPointBatch(super.points, {required this.sourceCount});
+
+  /// Number of entries the store returned, including skipped ones.
+  final int sourceCount;
+
+  /// The store entry count behind [points]: its [sourceCount] when it is a
+  /// [RecordedActivityPointBatch], otherwise its length.
+  static int sourceCountOf(List<RecordedActivityPoint> points) =>
+      points is RecordedActivityPointBatch ? points.sourceCount : points.length;
 }
 
 /// An event emitted by an [ActivityLocationRecorder].
@@ -186,6 +208,9 @@ abstract class ActivityLocationRecorder {
   Future<void> discard();
 
   /// Returns persisted points from [sinceOffset] for incremental syncing.
+  ///
+  /// When stored entries may be skipped while reading, return a
+  /// [RecordedActivityPointBatch] so offsets still advance by the stored count.
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0});
 
   /// Reconnects to the existing session without pausing a live recorder.
