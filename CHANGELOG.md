@@ -17,7 +17,7 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
 - A Wear OS app (Wear OS 3 or newer), built with Health Services and Compose for Wear OS. It records outdoor runs, rides, walks and hikes with GPS, heart rate and distance, and shows the workout as an ongoing activity on the watch face. Pausing starts a new track segment.
   - The finished workout is sent to the phone over the Wearable Data Layer, which delivers it whenever the devices connect, even if Endurain is not running.
   - A workout interrupted by a killed process is picked up again when the app relaunches. If Health Services ended it, the app finishes and sends what was recorded instead.
-  - The Wear OS app is English-only for now. It is a separate build (`android/wear`) published under the same Play listing.
+  - The Wear OS app is English-only for now. It is a separate build (`android/wear`) published under the same Play listing. GitHub releases attach it as `wear-release.apk`, next to the phone's `app-release.apk`, signed with the same key.
 - Phone-side support for companion watch apps. A watch app hands finished workouts to the phone over a platform channel (`endurain/watch_transport`). It is served by a WatchConnectivity bridge on iPhone and a Wearable Data Layer bridge on Android. Each keeps every received workout in a durable inbox until it has been stored.
 - A watch session is confirmed back to the watch only once the phone has stored it. These sessions stay queued on the watch instead:
   - sessions that are not finished yet;
