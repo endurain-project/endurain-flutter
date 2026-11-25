@@ -40,6 +40,16 @@ final class CoreLocationActivityRecorder:
     private static let minTimeAnnouncementIntervalSeconds = 60
     private static let maxTimeAnnouncementIntervalSeconds = 3600
 
+    /// Slack (ms) allowed between a fix's timestamp and the collection
+    /// (re)start it must not predate, for clock rounding between the fix and
+    /// `Date()`.
+    static let staleFixToleranceMillis: Int64 = 2_000
+
+    /// Maximum age (ms) of the first fix accepted after a collection
+    /// (re)start. Core Location can hand over a cached location first, whose
+    /// stale position would otherwise add distance that was never covered.
+    static let maxFirstFixAgeMillis: Int64 = 10_000
+
     private let store: ActiveActivityStore
     private let manager: CLLocationManager
     private let announcementStateCache = AnnouncementStateCache()
@@ -48,6 +58,11 @@ final class CoreLocationActivityRecorder:
     private var lastPointEpochMillis: Int64?
     private var resumedFromPause = false
     private var isCollecting = false
+    /// When the current active period started collecting; fixes older than
+    /// this are cached positions, not part of the recording.
+    private var collectionStartedAtMillis: Int64 = 0
+    /// Whether no fix has been accepted since the collection (re)started.
+    private var awaitingFirstFix = true
     private var autoPauseDetector: MovementAutoPauseDetector?
     private var nextPointOffset = 0
     private var timeAnnouncementTimer: DispatchSourceTimer?
@@ -100,16 +115,7 @@ final class CoreLocationActivityRecorder:
             )
             return false
         case .notDetermined:
-            // Background recording needs Always; request it and let the user
-            // retry once the permission upgrade is complete.
-            manager.requestAlwaysAuthorization()
-            ActivityRecorderCoordinator.shared.emitFailed(
-                ActivityRecorderCoordinator.reasonPermissionLost
-            )
-            return false
-        case .authorizedWhenInUse:
-            // "When In Use" cannot record while backgrounded; surface the
-            // missing Always grant and request an upgrade for the next attempt.
+            // Request Always and let the user retry once it is answered.
             manager.requestAlwaysAuthorization()
             ActivityRecorderCoordinator.shared.emitFailed(
                 ActivityRecorderCoordinator.reasonPermissionLost
@@ -119,10 +125,12 @@ final class CoreLocationActivityRecorder:
             break
         }
 
-        if status == .authorizedAlways {
-            manager.allowsBackgroundLocationUpdates = true
-            manager.showsBackgroundLocationIndicator = true
-        }
+        // Both grants keep recording in the background: with the `location`
+        // background mode, updates started in the foreground continue after
+        // the app is backgrounded even under When In Use. Only the relaunch
+        // after termination needs Always (see `startTerminationRecovery`).
+        manager.allowsBackgroundLocationUpdates = true
+        manager.showsBackgroundLocationIndicator = true
 
         restoreAnnouncementState()
         lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
@@ -139,6 +147,7 @@ final class CoreLocationActivityRecorder:
         // point: that point can predate a manual pause, which would let the
         // first slow fix auto-pause immediately.
         autoPauseDetector?.reset(movementAtMillis: nowMillis)
+        markCollectionStarted(atMillis: nowMillis)
         nextPointOffset = store.pointCount()
         manager.startUpdatingLocation()
         startTerminationRecovery()
@@ -160,20 +169,26 @@ final class CoreLocationActivityRecorder:
     /// `AppDelegate` and `resumeAfterRelaunch()`, which re-arm the accurate
     /// stream once the process is back.
     ///
-    /// Requires Always authorization, which `startCollection` has verified.
+    /// Requires Always authorization: under When In Use the recording
+    /// continues in the background but cannot be relaunched after
+    /// termination, so the monitoring is not armed.
     private func startTerminationRecovery() {
-        guard CLLocationManager.significantLocationChangeMonitoringAvailable() else {
+        guard currentAuthorizationStatus() == .authorizedAlways,
+              CLLocationManager.significantLocationChangeMonitoringAvailable() else {
             return
         }
         manager.startMonitoringSignificantLocationChanges()
     }
 
-    /// Re-arms collection after iOS relaunched the app for a significant
-    /// location change, when a recording session is still active on disk.
+    /// Re-arms collection after the process was relaunched (for example by
+    /// iOS for a significant location change) while a recording session that
+    /// needs location monitoring is still active on disk.
     ///
     /// Returns `true` when a recording was resumed. Called from `AppDelegate`
-    /// on a location-triggered launch; a no-op for a normal user launch, where
-    /// the Dart layer drives recovery through `recover`/`drain` instead.
+    /// on every launch, independent of the Flutter engine: scene-based apps
+    /// cannot rely on the `.location` launch option. Idempotent, and a no-op
+    /// without such a session or while already collecting; a later Dart
+    /// `recover` then reports the live session without restarting it.
     @discardableResult
     func resumeAfterRelaunch() -> Bool {
         guard !isCollecting else {
@@ -304,6 +319,11 @@ final class CoreLocationActivityRecorder:
         timer.resume()
     }
 
+    /// Whether a time-based announcement is scheduled. Exposed for tests.
+    var isTimeAnnouncementScheduled: Bool {
+        return timeAnnouncementTimer != nil
+    }
+
     private func stopTimeAnnouncementTimer() {
         timeAnnouncementTimer?.setEventHandler {}
         timeAnnouncementTimer?.cancel()
@@ -346,10 +366,52 @@ final class CoreLocationActivityRecorder:
         }
     }
 
-    /// Marks that collection is resuming from a pause so the next fix opens a
-    /// new segment, matching the Dart segment policy.
-    func markResumed() {
+    /// Resumes collection after a manual resume, from either a manual pause
+    /// (collection stopped) or an automatic one (still collecting). The next
+    /// fix opens a new segment, matching the Dart segment policy.
+    ///
+    /// While auto-paused, Core Location never stopped, so `startCollection`
+    /// alone would be a no-op: the detector would keep its pre-pause movement
+    /// history and auto-pause again on the next fix, and the time
+    /// announcements cancelled by the auto-pause would never be rescheduled.
+    @discardableResult
+    func resumeCollection(nowMillis: Int64) -> Bool {
         resumedFromPause = true
+        guard isCollecting else {
+            return startCollection()
+        }
+        autoPauseDetector?.reset(movementAtMillis: nowMillis)
+        markCollectionStarted(atMillis: nowMillis)
+        scheduleNextTimeAnnouncement()
+        return true
+    }
+
+    private func markCollectionStarted(atMillis millis: Int64) {
+        collectionStartedAtMillis = millis
+        awaitingFirstFix = true
+    }
+
+    /// Whether a fix belongs to the current active period rather than being
+    /// a cached position Core Location delivered on (re)start.
+    static func isFreshFix(
+        timestampMillis: Int64,
+        nowMillis: Int64,
+        collectionStartedAtMillis: Int64,
+        isFirstFix: Bool
+    ) -> Bool {
+        if timestampMillis < collectionStartedAtMillis - staleFixToleranceMillis {
+            return false
+        }
+        if isFirstFix && nowMillis - timestampMillis > maxFirstFixAgeMillis {
+            return false
+        }
+        return true
+    }
+
+    /// Whether a fix's horizontal accuracy is valid and good enough for the
+    /// track. A negative accuracy means the coordinate is invalid.
+    static func hasUsableAccuracy(_ horizontalAccuracy: CLLocationAccuracy) -> Bool {
+        return horizontalAccuracy >= 0 && horizontalAccuracy <= maxAccuracyMeters
     }
 
     // MARK: - CLLocationManagerDelegate
@@ -371,6 +433,19 @@ final class CoreLocationActivityRecorder:
     }
 
     private func handleLocationFix(_ location: CLLocation) {
+        let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
+        let rawMillis = Int64(location.timestamp.timeIntervalSince1970 * 1000)
+        // Checked before the auto-pause detector too: a stale position fed
+        // to it would read as displacement against the next real fix.
+        guard rawMillis <= 0 || Self.isFreshFix(
+            timestampMillis: rawMillis,
+            nowMillis: nowMillis,
+            collectionStartedAtMillis: collectionStartedAtMillis,
+            isFirstFix: awaitingFirstFix
+        ) else {
+            return
+        }
+        awaitingFirstFix = false
         guard let session = store.loadSession() else {
             return
         }
@@ -410,9 +485,7 @@ final class CoreLocationActivityRecorder:
             return
         }
 
-        guard location.horizontalAccuracy < 0 ||
-            location.horizontalAccuracy <= CoreLocationActivityRecorder.maxAccuracyMeters
-        else {
+        guard Self.hasUsableAccuracy(location.horizontalAccuracy) else {
             return
         }
         if let previous = lastPointEpochMillis,
@@ -700,14 +773,13 @@ final class CoreLocationActivityRecorder:
                 ActivityRecorderCoordinator.reasonPermissionLost
             )
         case .authorizedWhenInUse:
-            stopCollection()
-            persistFailure()
-            ActivityRecorderCoordinator.shared.emitFailed(
-                ActivityRecorderCoordinator.reasonPermissionLost
-            )
+            // A downgrade from Always keeps the running updates, including in
+            // the background; only the relaunch after termination is lost.
+            manager.stopMonitoringSignificantLocationChanges()
         case .authorizedAlways:
             manager.allowsBackgroundLocationUpdates = true
             manager.showsBackgroundLocationIndicator = true
+            startTerminationRecovery()
         default:
             break
         }

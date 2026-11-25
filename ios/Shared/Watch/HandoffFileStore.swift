@@ -113,7 +113,8 @@ final class HandoffFileStore {
     }
 
     /// Records that the transfer of [sessionId] finished. The file is kept,
-    /// renamed, until the acknowledgement arrives or [pruneDelivered] drops it.
+    /// renamed, until the acknowledgement arrives. A repeated delivery of an
+    /// already delivered entry (see [entriesToTransfer]) restarts its clock.
     func markDelivered(_ sessionId: String, at date: Date = Date()) {
         guard let stem = try? Self.fileStem(for: sessionId) else {
             return
@@ -122,18 +123,34 @@ final class HandoffFileStore {
         defer { lock.unlock() }
         let pending = pendingURL(stem: stem)
         let delivered = deliveredURL(stem: stem)
-        guard fileManager.fileExists(atPath: pending.path) else {
-            return
-        }
-        removeIfPresent(delivered)
         do {
-            try fileManager.moveItem(at: pending, to: delivered)
+            if fileManager.fileExists(atPath: pending.path) {
+                removeIfPresent(delivered)
+                try fileManager.moveItem(at: pending, to: delivered)
+            } else if !fileManager.fileExists(atPath: delivered.path) {
+                return
+            }
             try fileManager.setAttributes(
                 [.modificationDate: date],
                 ofItemAtPath: delivered.path
             )
         } catch {
             NSLog("Endurain watch store: could not mark a session delivered")
+        }
+    }
+
+    /// The entries the watch should transfer: every one not yet delivered,
+    /// and every delivered one still unacknowledged since before
+    /// [redeliverDeliveredBefore].
+    ///
+    /// A delivered file is not proof the phone kept it: the phone can fail
+    /// to read or store it, and then never acknowledges it. Sending it again
+    /// is safe because the phone stores one copy per session and Dart
+    /// ignores a session it already has.
+    func entriesToTransfer(redeliverDeliveredBefore date: Date) -> [Entry] {
+        return ((try? entries()) ?? []).filter { entry in
+            guard let deliveredAt = entry.deliveredAt else { return true }
+            return deliveredAt <= date
         }
     }
 
@@ -145,20 +162,6 @@ final class HandoffFileStore {
         defer { lock.unlock() }
         removeIfPresent(pendingURL(stem: stem))
         removeIfPresent(deliveredURL(stem: stem))
-    }
-
-    /// Drops delivered entries older than [date] whose acknowledgement never
-    /// came. The phone holds its own copy of each, so nothing is lost.
-    func pruneDelivered(olderThan date: Date) {
-        let stale = ((try? entries()) ?? []).filter { entry in
-            guard let deliveredAt = entry.deliveredAt else { return false }
-            return deliveredAt < date
-        }
-        lock.lock()
-        defer { lock.unlock() }
-        for entry in stale {
-            removeIfPresent(entry.url)
-        }
     }
 
     // MARK: - File names

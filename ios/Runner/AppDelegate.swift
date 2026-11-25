@@ -16,22 +16,27 @@ import UIKit
   /// Strong reference so Health Sync's heart rate series reader stays registered.
   private var heartRateSeriesChannel: HeartRateSeriesChannel?
 
-  /// Whether iOS relaunched the process to deliver a location event.
-  ///
-  /// Set before the Flutter engine finishes initializing, and consumed in
-  /// `didInitializeImplicitFlutterEngine` once the recorder channel exists.
-  private var launchedForLocationEvent = false
+  /// The single activity recorder, created at launch so its location
+  /// manager and delegate exist before iOS delivers the event a background
+  /// relaunch was for, and handed to the recorder channel once the Flutter
+  /// engine (which may start late, or not at all, in the background) is up.
+  private var activityRecorder: CoreLocationActivityRecorder?
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     excludeHealthDataFromBackup()
-    // A location key means the app was relaunched in the background by
-    // significant-location-change monitoring, which the recorder arms while a
-    // recording is active. Without this the process would start, do nothing,
-    // and the remainder of the activity would be lost.
-    launchedForLocationEvent = launchOptions?[.location] != nil
+    // A recording interrupted by termination continues as soon as the
+    // process is back, whatever relaunched it: significant-location-change
+    // monitoring, which the recorder arms while a recording is active, or
+    // the user. The `.location` launch option is not used because it is
+    // unreliable for scene-based apps. Resuming here rather than when Dart
+    // attaches matters: a background relaunch has a short execution window,
+    // and the durable store already holds everything needed to continue.
+    let recorder = CoreLocationActivityRecorder(store: .shared)
+    activityRecorder = recorder
+    recorder.resumeAfterRelaunch()
     // Activated before the engine so sessions the watch queued while the app
     // was closed land in the durable inbox as soon as they are delivered.
     WatchConnectivityBridge.shared.activate()
@@ -101,16 +106,9 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(
       forPlugin: "EndurainActivityRecorderChannel"
     ) {
-      let channel = ActivityRecorderChannel()
+      let channel = ActivityRecorderChannel(store: .shared, recorder: activityRecorder)
       channel.register(with: registrar.messenger())
       activityRecorderChannel = channel
-      if launchedForLocationEvent {
-        launchedForLocationEvent = false
-        // Resume the accurate stream immediately rather than waiting for Dart
-        // to attach: a background relaunch has a short execution window, and
-        // the durable store already holds everything needed to continue.
-        channel.resumeAfterRelaunch()
-      }
     }
   }
 }

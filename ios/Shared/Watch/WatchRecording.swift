@@ -200,9 +200,18 @@ final class WatchRecordingStore {
         if !fileManager.fileExists(atPath: pointsURL.path) {
             try Data().write(to: pointsURL, options: .atomic)
         }
-        let handle = try FileHandle(forWritingTo: pointsURL)
+        let handle = try FileHandle(forUpdating: pointsURL)
         defer { try? handle.close() }
-        try handle.seekToEnd()
+        let end = try handle.seekToEnd()
+        if end > 0 {
+            // A crash can cut the last line short. Terminate it first, or the
+            // new points would be glued onto it and lost with it on load.
+            try handle.seek(toOffset: end - 1)
+            if try handle.read(upToCount: 1) != Data([0x0A]) {
+                lines.insert(0x0A, at: 0)
+            }
+            try handle.seekToEnd()
+        }
         try handle.write(contentsOf: lines)
     }
 
