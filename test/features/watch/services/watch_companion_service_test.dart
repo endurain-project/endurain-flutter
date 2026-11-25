@@ -30,12 +30,17 @@ class FakeWatchTransport implements WatchTransportAdapter {
   bool failDrain;
 
   final List<String> acknowledged = <String>[];
+  final _firstAcknowledgement = Completer<void>();
   int drainCount = 0;
   bool disposed = false;
 
   /// When set, each drain waits on it before answering, so a test can make a
   /// request arrive while a drain is in flight.
   Completer<void>? drainGate;
+
+  /// Completes once the first handoff is acknowledged, so a test can wait for
+  /// a sync started by an event, whose ingestion does real file I/O.
+  Future<void> get firstAcknowledgement => _firstAcknowledgement.future;
 
   @override
   Stream<WatchTransportEvent> get events => controller.stream;
@@ -60,6 +65,7 @@ class FakeWatchTransport implements WatchTransportAdapter {
   @override
   Future<void> acknowledgeHandoff(String sessionId) async {
     acknowledged.add(sessionId);
+    if (!_firstAcknowledgement.isCompleted) _firstAcknowledgement.complete();
   }
 
   @override
@@ -342,7 +348,8 @@ void main() {
     );
 
     transport.controller.add(const WatchTransportEvent.handoffAvailable());
-    await pumpEventQueue();
+    // The ingestion writes files, which pumpEventQueue does not wait for.
+    await transport.firstAcknowledgement.timeout(const Duration(seconds: 10));
 
     expect(transport.drainCount, 1);
     expect(transport.acknowledged, ['watch_session_1']);
