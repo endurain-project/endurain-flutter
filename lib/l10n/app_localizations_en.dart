@@ -786,6 +786,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsScreen => 'Settings';
 
   @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionRecording => 'Recording';
+
+  @override
+  String get settingsSectionDevices => 'Devices & integrations';
+
+  @override
+  String get settingsSectionData => 'Data';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacy & support';
+
+  @override
   String get deviceAccessTitle => 'Device access';
 
   @override
@@ -891,6 +909,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Map tile server URL';
+
+  @override
+  String get mapTilesSettingsTitle => 'Map tiles';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Tile server used to draw maps';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Couldn\'t load the map tiles setting.';
+
+  @override
+  String get tryAgain => 'Try again';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

@@ -41,6 +41,7 @@ import 'package:endurain/features/health/repositories/health_import_repository.d
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_sync_service.dart';
+import 'package:endurain/features/map/controllers/tile_server_settings_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
@@ -268,6 +269,16 @@ class AppServices {
     );
   }
 
+  /// Builds a route-owned [TileServerSettingsController] for the map tiles
+  /// settings screen. The server origin feeds the third-party host warning.
+  TileServerSettingsController createTileServerSettingsController() {
+    return TileServerSettingsController(
+      repository: createMapSettingsRepository(),
+      config: config,
+      loadServerUrl: _infra.secureStorage.getServerUrl,
+    );
+  }
+
   // ── Settings ───────────────────────────────────────────────────────────────
 
   /// Builds a route-owned [SettingsController] for the settings screen.
@@ -278,7 +289,6 @@ class AppServices {
   SettingsController createSettingsController() {
     return SettingsController(
       packageInfoService: _infra.packageInfo,
-      retentionSettingsRepository: _activity.retentionSettings,
       measurementSystemController: _infra.measurementSystemController,
       secureStorage: _infra.secureStorage,
     );

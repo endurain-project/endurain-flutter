@@ -1167,13 +1167,13 @@ abstract class AppLocalizations {
   /// **'Completed activities saved on this device'**
   String get activityHistorySettingsSubtitle;
 
-  /// Settings switch label for local uploaded GPX retention - Used in: settings_screen.dart
+  /// Switch label for local uploaded GPX retention - Used in: activity_history_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Keep uploaded GPX files'**
   String get activityRetainUploadedGpx;
 
-  /// Settings switch subtitle explaining private local GPX retention - Used in: settings_screen.dart
+  /// Switch subtitle explaining private local GPX retention - Used in: activity_history_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Stores completed route files in private app storage after upload.'**
@@ -1485,6 +1485,42 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsScreen;
 
+  /// Settings section header for account (server and sign-in) - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsSectionAccount;
+
+  /// Settings section header for general preferences (language, units) - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsSectionGeneral;
+
+  /// Settings section header for activity recording behaviour - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get settingsSectionRecording;
+
+  /// Settings section header for sensors and health sync - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Devices & integrations'**
+  String get settingsSectionDevices;
+
+  /// Settings section header for locally stored activities - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get settingsSectionData;
+
+  /// Settings section header for permissions, diagnostics and the source code link - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & support'**
+  String get settingsSectionPrivacySupport;
+
   /// Settings entry and screen title for mobile permissions - Used in: settings_screen.dart, device_access_screen.dart
   ///
   /// In en, this message translates to:
@@ -1683,11 +1719,41 @@ abstract class AppLocalizations {
   /// **'Continue anyway'**
   String get warnHttpServerUrlConfirm;
 
-  /// Tile server URL field label - Used in: server_settings_screen.dart
+  /// Tile server URL field label - Used in: tile_server_settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Map tile server URL'**
   String get tileServerUrl;
+
+  /// Settings entry and screen title for the map tile server - Used in: settings_screen.dart, tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Map tiles'**
+  String get mapTilesSettingsTitle;
+
+  /// Subtitle for the map tiles settings entry - Used in: settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Tile server used to draw maps'**
+  String get mapTilesSettingsSubtitle;
+
+  /// Note under the tile server field explaining it is stored per server and reset on sign-in - Used in: tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Applies while connected to this server. Signing in again resets it to your server\'s tile setting.'**
+  String get mapTilesSettingsNote;
+
+  /// Error shown when the map tiles setting cannot be read - Used in: tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the map tiles setting.'**
+  String get mapTilesSettingsLoadFailed;
+
+  /// Generic retry button label - Used in: tile_server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
 
   /// Tile server URL field hint text
   ///
@@ -1695,13 +1761,13 @@ abstract class AppLocalizations {
   /// **'https://tile.openstreetmap.org/...'**
   String get tileServerUrlHint;
 
-  /// Title for tile server host mismatch warning dialog - Used in: server_settings_screen.dart
+  /// Title for tile server host mismatch warning dialog - Used in: tile_server_settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'Different tile server host'**
   String get tileServerHostWarningTitle;
 
-  /// Body of tile server host mismatch warning dialog - Used in: server_settings_screen.dart
+  /// Body of tile server host mismatch warning dialog - Used in: tile_server_settings_screen.dart
   ///
   /// In en, this message translates to:
   /// **'The tile server host is different from your Endurain server host. Tiles will be loaded from a third-party server. Do you want to continue?'**

@@ -17,7 +17,7 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
 - A Wear OS app (Wear OS 3 or newer), built with Health Services and Compose for Wear OS. It records outdoor runs, rides, walks and hikes with GPS, heart rate and distance, and shows the workout as an ongoing activity on the watch face. Pausing starts a new track segment.
   - The finished workout is sent to the phone over the Wearable Data Layer, which delivers it whenever the devices connect, even if Endurain is not running.
   - A workout interrupted by a killed process is picked up again when the app relaunches. If Health Services ended it, the app finishes and sends what was recorded instead.
-  - The Wear OS app is English-only for now. It is a separate build (`android/wear`) published under the same Play listing.
+  - The Wear OS app is English-only for now. It is a separate build (`android/wear`) published under the same Play listing. GitHub releases attach it as `wear-release.apk`, next to the phone's `app-release.apk`, signed with the same key.
 - Phone-side support for companion watch apps. A watch app hands finished workouts to the phone over a platform channel (`endurain/watch_transport`). It is served by a WatchConnectivity bridge on iPhone and a Wearable Data Layer bridge on Android. Each keeps every received workout in a durable inbox until it has been stored.
 - A watch session is confirmed back to the watch only once the phone has stored it. These sessions stay queued on the watch instead:
   - sessions that are not finished yet;
@@ -29,7 +29,7 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
   - Health Sync never offers or imports a workout the Endurain watch app saved to Health, even when it reaches Health before the watch's own transfer arrives. It also skips any HealthKit or Health Connect workout that a received watch session already covers.
 - Watch sync runs when the app starts, when it returns to the foreground, and when the watch signals new sessions. Only one sync runs at a time, with one extra pass for sessions that arrive during a sync.
 - Local diagnostics breadcrumbs for watch syncs that have pending sessions, and for sessions left on the watch. Builds without a watch record none.
-- An optional countdown before a recording starts, to put the phone away or get into the saddle first ([#47](https://github.com/endurain-project/endurain-flutter/issues/47)). Turn it on under Settings → Start countdown and pick 3, 5, 10, 15 or 30 seconds. It is off by default.
+- An optional countdown before a recording starts, to put the phone away or get into the saddle first ([#47](https://github.com/endurain-project/endurain-flutter/issues/47)). Turn it on under Settings → Recording → Start countdown and pick 3, 5, 10, 15 or 30 seconds. It is off by default.
   - The countdown screen shows the seconds left, with buttons to start now, add 10 seconds or cancel.
   - The last three seconds are spoken, followed by "Recording started" once recording begins. The voice can be turned off, and it uses the language and ducking settings of audio announcements.
   - Location updates run during the countdown and are thrown away, so GPS has a fix for the first point. They also keep the app running in the background, so the countdown does not stall:
@@ -49,6 +49,9 @@ This release adds watch apps for Apple Watch and Wear OS. Each records outdoor w
 
 ### Changed
 
+- Settings is now grouped into sections: Account, General, Recording, Devices & integrations, Data, and Privacy & support. Before, every entry was in one long list.
+- The "Keep uploaded GPX files" switch moved from the main Settings list to the top of Settings → Activity history. It is shown even when the history is empty.
+- The map tile server URL moved from Settings → Server to its own Settings → Map tiles screen, so the Server screen only shows the account and Log out. The URL is still stored per server, so Map tiles is hidden in guest mode. As before, signing in again resets it to the server's tile setting.
 - The Android app now includes Google Play Services' Wearable Data Layer (`play-services-wearable`) for the Wear OS link. Builds can leave it out with `--android-project-arg=endurain.wearable=false`; the watch link then reports "unsupported" and nothing else changes. The app still contains `play-services-location`, which `geolocator` already brought in.
 - Updated dependencies: `health` 14.0.0, `sentry` 10.6.0 and `flutter_svg` 2.5.0, plus their transitive updates.
 - Android builds now use Gradle 9.9.2 and Android Gradle Plugin 9.5.2.

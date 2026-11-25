@@ -801,6 +801,24 @@ class AppLocalizationsSl extends AppLocalizations {
   String get settingsScreen => 'Nastavitve';
 
   @override
+  String get settingsSectionAccount => 'Račun';
+
+  @override
+  String get settingsSectionGeneral => 'Splošno';
+
+  @override
+  String get settingsSectionRecording => 'Snemanje';
+
+  @override
+  String get settingsSectionDevices => 'Naprave in integracije';
+
+  @override
+  String get settingsSectionData => 'Podatki';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Zasebnost in podpora';
+
+  @override
   String get deviceAccessTitle => 'Dostop do naprave';
 
   @override
@@ -909,6 +927,24 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL strežnika ploščic zemljevida';
+
+  @override
+  String get mapTilesSettingsTitle => 'Ploščice zemljevida';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Strežnik ploščic za risanje zemljevidov';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Velja, dokler ste povezani s tem strežnikom. Ob ponovni prijavi se povrne nastavitev ploščic vašega strežnika.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nastavitve ploščic zemljevida ni bilo mogoče naložiti.';
+
+  @override
+  String get tryAgain => 'Poskusi znova';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

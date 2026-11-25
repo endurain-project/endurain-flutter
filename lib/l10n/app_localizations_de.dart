@@ -803,6 +803,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsScreen => 'Einstellungen';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Allgemein';
+
+  @override
+  String get settingsSectionRecording => 'Aufzeichnung';
+
+  @override
+  String get settingsSectionDevices => 'Geräte & Integrationen';
+
+  @override
+  String get settingsSectionData => 'Daten';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Datenschutz & Support';
+
+  @override
   String get deviceAccessTitle => 'Gerätezugriff';
 
   @override
@@ -913,6 +931,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL des Karten-Kachelservers';
+
+  @override
+  String get mapTilesSettingsTitle => 'Kartenkacheln';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Kachelserver zum Zeichnen der Karten';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Gilt, solange du mit diesem Server verbunden bist. Bei erneuter Anmeldung wird die Kacheleinstellung deines Servers wiederhergestellt.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Die Einstellung für Kartenkacheln konnte nicht geladen werden.';
+
+  @override
+  String get tryAgain => 'Erneut versuchen';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

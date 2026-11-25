@@ -4,6 +4,7 @@ import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
@@ -12,6 +13,7 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/fake_share_service.dart';
 
 void main() {
@@ -41,6 +43,67 @@ void main() {
 
     expect(find.text(l10n.activityHistoryTitle), findsOneWidget);
     _expectBrightCupertinoText(tester, l10n.activityHistoryEmpty);
+  });
+
+  group('ActivityHistoryScreen – GPX retention switch', () {
+    testWidgets('shows the switch above an empty history', (tester) async {
+      final retention = _FakeRetentionSettings()..retainUploadedGpx = false;
+      final controller = _RetentionHistoryController(retention);
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityHistoryScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.activityRetainUploadedGpx), findsOneWidget);
+      expect(find.text(l10n.activityHistoryEmpty), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text(l10n.activityRetainUploadedGpx)).dy,
+        lessThan(tester.getTopLeft(find.text(l10n.activityHistoryEmpty)).dy),
+      );
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+    });
+
+    testWidgets('toggling the switch saves the preference', (tester) async {
+      final retention = _FakeRetentionSettings();
+      final controller = _RetentionHistoryController(retention);
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityHistoryScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      expect(retention.retainUploadedGpx, isFalse);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+    });
+
+    testWidgets('hides the switch without a retention repository', (
+      tester,
+    ) async {
+      final controller = _LoadedEmptyHistoryController();
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        AdaptiveApp(
+          title: 'Test',
+          home: ActivityHistoryScreen(controller: controller),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.activityRetainUploadedGpx), findsNothing);
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -439,4 +502,44 @@ void _expectBrightCupertinoText(WidgetTester tester, String text) {
     tester.element(finder),
   );
   expect(resolvedColor.computeLuminance(), greaterThan(0.5));
+}
+
+/// Empty history whose `load` reads a real retention preference, so the
+/// switch can be exercised without a database.
+class _RetentionHistoryController extends LocalActivityHistoryController {
+  _RetentionHistoryController(ActivityRetentionSettingsRepository retention)
+    : super(
+        repository: LocalActivityRepository(
+          supportDirectoryProvider: () async => throw StateError('unused'),
+        ),
+        uploadService: ActivityUploadService(),
+        shareService: FakeShareService(),
+        retentionSettingsRepository: retention,
+      );
+
+  @override
+  List<LocalActivityRecord> get records => const [];
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  AppException? get error => null;
+
+  @override
+  bool get hasMore => false;
+}
+
+class _FakeRetentionSettings extends ActivityRetentionSettingsRepository {
+  _FakeRetentionSettings() : super(preferences: FakePreferencesStore());
+
+  bool retainUploadedGpx = true;
+
+  @override
+  Future<bool> isRetainUploadedGpxEnabled() async => retainUploadedGpx;
+
+  @override
+  Future<void> setRetainUploadedGpxEnabled(bool enabled) async {
+    retainUploadedGpx = enabled;
+  }
 }

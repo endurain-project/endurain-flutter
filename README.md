@@ -512,7 +512,17 @@ cd android
   form factor of the same Play listing.
 - Its version name follows `pubspec.yaml`; its version code is the Flutter
   build number plus 1,000,000, because Play requires a distinct version code
-  for each APK in a release.
+  for each APK in a release. `-Pendurain.buildName=<name>` and
+  `-Pendurain.buildNumber=<number>` override both, like `flutter build`'s
+  `--build-name` and `--build-number`.
+- The **Build Android** workflow builds it after the phone APK, with the same
+  version and upload key, checks both signatures, and attaches it to the
+  release as `wear-release.apk`. Install it on a watch with
+  `adb -s <watch> install wear-release.apk`, and install the phone app from
+  the same release (`app-release.apk`). A phone app from Google Play is
+  signed with Google's app-signing key instead of the upload key, so a
+  watch app from GitHub cannot connect to it. Install both apps from GitHub,
+  or both from Play.
 - Workouts without a GPS route stay queued on both devices, because the
   server does not accept a GPX without track points yet. Workouts the phone
   never confirms are dropped from the watch after 90 days.

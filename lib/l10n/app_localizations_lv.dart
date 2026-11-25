@@ -793,6 +793,24 @@ class AppLocalizationsLv extends AppLocalizations {
   String get settingsScreen => 'Iestatījumi';
 
   @override
+  String get settingsSectionAccount => 'Konts';
+
+  @override
+  String get settingsSectionGeneral => 'Vispārīgi';
+
+  @override
+  String get settingsSectionRecording => 'Ierakstīšana';
+
+  @override
+  String get settingsSectionDevices => 'Ierīces un integrācijas';
+
+  @override
+  String get settingsSectionData => 'Dati';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privātums un atbalsts';
+
+  @override
   String get deviceAccessTitle => 'Ierīces piekļuve';
 
   @override
@@ -901,6 +919,23 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Kartes elementu servera URL';
+
+  @override
+  String get mapTilesSettingsTitle => 'Kartes elementi';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Elementu serveris karšu zīmēšanai';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Attiecas, kamēr esat savienots ar šo serveri. Atkārtoti piesakoties, tiek atjaunots jūsu servera elementu iestatījums.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Neizdevās ielādēt kartes elementu iestatījumu.';
+
+  @override
+  String get tryAgain => 'Mēģināt vēlreiz';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

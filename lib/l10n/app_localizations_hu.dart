@@ -800,6 +800,24 @@ class AppLocalizationsHu extends AppLocalizations {
   String get settingsScreen => 'Beállítások';
 
   @override
+  String get settingsSectionAccount => 'Fiók';
+
+  @override
+  String get settingsSectionGeneral => 'Általános';
+
+  @override
+  String get settingsSectionRecording => 'Rögzítés';
+
+  @override
+  String get settingsSectionDevices => 'Eszközök és integrációk';
+
+  @override
+  String get settingsSectionData => 'Adatok';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Adatvédelem és támogatás';
+
+  @override
   String get deviceAccessTitle => 'Eszköz hozzáférés';
 
   @override
@@ -908,6 +926,24 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Térképcsempe-kiszolgáló URL-címe';
+
+  @override
+  String get mapTilesSettingsTitle => 'Térképcsempék';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'A térképek rajzolásához használt csempekiszolgáló';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Amíg ehhez a kiszolgálóhoz csatlakozik, ez érvényes. Újbóli bejelentkezéskor visszaáll a kiszolgáló csempebeállítása.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'A térképcsempe-beállítást nem sikerült betölteni.';
+
+  @override
+  String get tryAgain => 'Próbálja újra';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

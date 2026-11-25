@@ -798,6 +798,24 @@ class AppLocalizationsFi extends AppLocalizations {
   String get settingsScreen => 'Asetukset';
 
   @override
+  String get settingsSectionAccount => 'Tili';
+
+  @override
+  String get settingsSectionGeneral => 'Yleiset';
+
+  @override
+  String get settingsSectionRecording => 'Tallennus';
+
+  @override
+  String get settingsSectionDevices => 'Laitteet ja integraatiot';
+
+  @override
+  String get settingsSectionData => 'Tiedot';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Tietosuoja ja tuki';
+
+  @override
   String get deviceAccessTitle => 'Laitteen käyttöoikeus';
 
   @override
@@ -905,6 +923,24 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Karttalaattapalvelimen URL-osoite';
+
+  @override
+  String get mapTilesSettingsTitle => 'Karttalaatat';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Laattapalvelin, jolla kartat piirretään';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Koskee tätä palvelinyhteyttä. Kun kirjaudut uudelleen, palvelimesi laattasetus palautetaan.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Karttalaattojen asetusta ei voitu ladata.';
+
+  @override
+  String get tryAgain => 'Yritä uudelleen';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

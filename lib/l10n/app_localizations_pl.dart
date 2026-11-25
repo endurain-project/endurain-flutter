@@ -799,6 +799,24 @@ class AppLocalizationsPl extends AppLocalizations {
   String get settingsScreen => 'Ustawienia';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Ogólne';
+
+  @override
+  String get settingsSectionRecording => 'Nagrywanie';
+
+  @override
+  String get settingsSectionDevices => 'Urządzenia i integracje';
+
+  @override
+  String get settingsSectionData => 'Dane';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Prywatność i pomoc';
+
+  @override
   String get deviceAccessTitle => 'Dostęp do urządzenia';
 
   @override
@@ -908,6 +926,24 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Adres URL serwera kafelków mapy';
+
+  @override
+  String get mapTilesSettingsTitle => 'Kafelki mapy';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Serwer kafelków używany do rysowania map';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Obowiązuje, gdy jesteś połączony z tym serwerem. Ponowne zalogowanie przywraca ustawienie kafelków Twojego serwera.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nie udało się wczytać ustawienia kafelków mapy.';
+
+  @override
+  String get tryAgain => 'Spróbuj ponownie';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

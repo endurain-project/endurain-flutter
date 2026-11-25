@@ -1,7 +1,6 @@
 import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
@@ -37,11 +36,8 @@ void main() {
     repository: LocaleSettingsRepository(preferences: FakePreferencesStore()),
   );
 
-  SettingsController buildSettingsController({
-    ActivityRetentionSettingsRepository? retention,
-  }) => SettingsController(
+  SettingsController buildSettingsController() => SettingsController(
     packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
-    retentionSettingsRepository: retention ?? _FakeActivityRetentionSettings(),
     measurementSystemController: MeasurementSystemController(
       repository: MeasurementSettingsRepository(
         preferences: FakePreferencesStore(),
@@ -53,6 +49,9 @@ void main() {
   testWidgets('SettingsScreen shows navigation and package version', (
     tester,
   ) async {
+    // Tall enough that the lazy list builds every entry.
+    await tester.binding.setSurfaceSize(const Size(800, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final localeController = buildLocaleController();
     addTearDown(localeController.dispose);
 
@@ -80,18 +79,72 @@ void main() {
     expect(find.text(l10n.language), findsOneWidget);
     expect(find.text(l10n.languageSystemDefault), findsOneWidget);
     expect(find.text(l10n.activityHistoryTitle), findsOneWidget);
-    expect(find.text(l10n.activityRetainUploadedGpx), findsOneWidget);
+    // The GPX retention switch lives on the activity history screen now.
+    expect(find.text(l10n.activityRetainUploadedGpx), findsNothing);
     expect(find.text(l10n.deviceAccessTitle), findsOneWidget);
-    expect(find.byIcon(Icons.description), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.byIcon(Icons.description)).dx,
-      tester.getTopLeft(find.byIcon(Icons.dns)).dx,
-    );
     expect(find.text(l10n.diagnostics), findsOneWidget);
     expect(find.text(l10n.sourceCode), findsOneWidget);
     expect(find.text(l10n.sourceCodeSubtitle), findsOneWidget);
     expect(find.textContaining('Endurain • 1.2.3'), findsOneWidget);
     expect(find.text(l10n.endurainTrademarkNotice), findsOneWidget);
+  });
+
+  testWidgets('SettingsScreen groups entries under section headers', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final localeController = buildLocaleController();
+    addTearDown(localeController.dispose);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: TestAppScope(
+          child: SettingsScreen(
+            controller: buildSettingsController(),
+            localeController: localeController,
+            urlLauncherService: FakeUrlLauncherService(launched: true),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+
+    // Each entry sits below its own section header and above the next one.
+    final layout = <String, List<String>>{
+      l10n.settingsSectionAccount: [l10n.serverSettings],
+      l10n.settingsSectionGeneral: [
+        l10n.language,
+        l10n.unitsTitle,
+        l10n.mapTilesSettingsTitle,
+      ],
+      l10n.settingsSectionRecording: [
+        l10n.startCountdownSettingsTitle,
+        l10n.activityAutoPauseTitle,
+        l10n.audioAnnouncementsTitle,
+      ],
+      l10n.settingsSectionDevices: [l10n.sensorsTitle],
+      l10n.settingsSectionData: [l10n.activityHistoryTitle],
+      l10n.settingsSectionPrivacySupport: [
+        l10n.deviceAccessTitle,
+        l10n.diagnostics,
+        l10n.sourceCode,
+      ],
+    };
+    final headers = layout.keys.toList();
+    for (var i = 0; i < headers.length; i++) {
+      final header = headers[i];
+      expect(find.text(header), findsOneWidget);
+      for (final entry in layout[header]!) {
+        expect(top(entry), greaterThan(top(header)), reason: entry);
+        if (i + 1 < headers.length) {
+          expect(top(entry), lessThan(top(headers[i + 1])), reason: entry);
+        }
+      }
+    }
   });
 
   testWidgets('SettingsScreen opens the source code repository', (
@@ -192,26 +245,13 @@ void main() {
     // Guests see the connect-a-server entry instead of server settings.
     expect(find.text(l10n.signInConnectServer), findsOneWidget);
     expect(find.text(l10n.serverSettings), findsNothing);
+    // Tile URLs are stored per server, so guests have no Map tiles entry.
+    expect(find.text(l10n.mapTilesSettingsTitle), findsNothing);
 
     await tester.tap(find.text(l10n.signInConnectServer));
     await tester.pumpAndSettle();
     expect(signInTapped, isTrue);
   });
-}
-
-class _FakeActivityRetentionSettings
-    extends ActivityRetentionSettingsRepository {
-  _FakeActivityRetentionSettings() : super(preferences: FakePreferencesStore());
-
-  var retainUploadedGpx = true;
-
-  @override
-  Future<bool> isRetainUploadedGpxEnabled() async => retainUploadedGpx;
-
-  @override
-  Future<void> setRetainUploadedGpxEnabled(bool enabled) async {
-    retainUploadedGpx = enabled;
-  }
 }
 
 class _FakePackageInfoService extends PackageInfoService {

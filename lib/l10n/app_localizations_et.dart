@@ -793,6 +793,24 @@ class AppLocalizationsEt extends AppLocalizations {
   String get settingsScreen => 'Sätted';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Üldine';
+
+  @override
+  String get settingsSectionRecording => 'Salvestamine';
+
+  @override
+  String get settingsSectionDevices => 'Seadmed ja integratsioonid';
+
+  @override
+  String get settingsSectionData => 'Andmed';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privaatsus ja tugi';
+
+  @override
   String get deviceAccessTitle => 'Seadme juurdepääs';
 
   @override
@@ -900,6 +918,24 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Kaardipaanide serveri URL';
+
+  @override
+  String get mapTilesSettingsTitle => 'Kaardipaanid';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Paaniserver, millega kaarte joonistatakse';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Kehtib, kuni oled selle serveriga ühendatud. Uuesti sisselogimisel taastatakse sinu serveri paaniseade.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Kaardipaanide seadet ei õnnestunud laadida.';
+
+  @override
+  String get tryAgain => 'Proovi uuesti';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

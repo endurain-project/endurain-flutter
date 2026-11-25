@@ -797,6 +797,24 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsScreen => 'Inställningar';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Allmänt';
+
+  @override
+  String get settingsSectionRecording => 'Inspelning';
+
+  @override
+  String get settingsSectionDevices => 'Enheter och integrationer';
+
+  @override
+  String get settingsSectionData => 'Data';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Integritet och support';
+
+  @override
   String get deviceAccessTitle => 'Enhetsåtkomst';
 
   @override
@@ -903,6 +921,24 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL till kartruteserver';
+
+  @override
+  String get mapTilesSettingsTitle => 'Kartrutor';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Ruteserver som används för att rita kartor';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Gäller medan du är ansluten till den här servern. När du loggar in igen återställs serverns ruteinställning.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Inställningen för kartrutor kunde inte läsas in.';
+
+  @override
+  String get tryAgain => 'Försök igen';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

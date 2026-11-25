@@ -793,6 +793,24 @@ class AppLocalizationsNl extends AppLocalizations {
   String get settingsScreen => 'Instellingen';
 
   @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsSectionGeneral => 'Algemeen';
+
+  @override
+  String get settingsSectionRecording => 'Opnemen';
+
+  @override
+  String get settingsSectionDevices => 'Apparaten en integraties';
+
+  @override
+  String get settingsSectionData => 'Gegevens';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacy en ondersteuning';
+
+  @override
   String get deviceAccessTitle => 'Toegang tot apparaat';
 
   @override
@@ -902,6 +920,24 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL van kaarttegelserver';
+
+  @override
+  String get mapTilesSettingsTitle => 'Kaarttegels';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Tegelserver voor het tekenen van kaarten';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Geldt zolang je met deze server verbonden bent. Opnieuw inloggen zet de tegelinstelling van je server terug.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'De kaarttegelinstelling kon niet worden geladen.';
+
+  @override
+  String get tryAgain => 'Opnieuw proberen';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

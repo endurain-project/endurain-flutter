@@ -805,6 +805,24 @@ class AppLocalizationsHr extends AppLocalizations {
   String get settingsScreen => 'Postavke';
 
   @override
+  String get settingsSectionAccount => 'Račun';
+
+  @override
+  String get settingsSectionGeneral => 'Općenito';
+
+  @override
+  String get settingsSectionRecording => 'Snimanje';
+
+  @override
+  String get settingsSectionDevices => 'Uređaji i integracije';
+
+  @override
+  String get settingsSectionData => 'Podaci';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privatnost i podrška';
+
+  @override
   String get deviceAccessTitle => 'Pristup uređaju';
 
   @override
@@ -911,6 +929,24 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL poslužitelja pločica karte';
+
+  @override
+  String get mapTilesSettingsTitle => 'Pločice karte';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Poslužitelj pločica za crtanje karata';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Vrijedi dok ste povezani s ovim poslužiteljem. Ponovnom prijavom vraća se postavka pločica vašeg poslužitelja.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Postavka pločica karte nije se mogla učitati.';
+
+  @override
+  String get tryAgain => 'Pokušaj ponovno';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   build-android:
-    name: Build Android APK
+    name: Build Android APKs
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
@@ -136,44 +136,115 @@ jobs:
             --split-debug-info=build/debug-info \
             --dart-define=ENDURAIN_CRASH_REPORTING_DSN="${ENDURAIN_CRASH_REPORTING_DSN:-}"
 
-      - name: Verify signed APK
+      # The Wear OS app is a standalone Gradle build (android/wear), run with
+      # the wrapper the phone build just generated. It gets the phone's version
+      # name and build number; its version code adds 1,000,000 to the latter.
+      - name: Build release Wear OS APK
         shell: bash
         env:
-          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
+          GRADLE_OPTS: >-
+            -Xmx3072m
+            -XX:MaxMetaspaceSize=768m
+            -XX:ReservedCodeCacheSize=128m
+            -Dorg.gradle.daemon=false
+            -Dorg.gradle.workers.max=1
+            -Dkotlin.compiler.execution.strategy=in-process
+          JAVA_TOOL_OPTIONS: >-
+            -Xmx3072m
+            -XX:MaxMetaspaceSize=768m
+            -XX:ReservedCodeCacheSize=128m
         run: |
           set -euo pipefail
-          test -s "$APK_PATH"
+          pkill -f 'GradleDaemon' || true
+          cd android
+          ./gradlew -p wear assembleRelease --console=plain \
+            -Pendurain.buildName="$VERSION_NAME" \
+            -Pendurain.buildNumber="$VERSION_CODE"
+          cp wear/build/outputs/apk/release/endurain-wear-release.apk \
+            ../build/app/outputs/flutter-apk/wear-release.apk
+
+      # The Wearable Data Layer only connects the two apps when both are
+      # signed with the same key, so both must carry the upload certificate.
+      - name: Verify signed APKs
+        shell: bash
+        run: |
+          set -euo pipefail
           apksigner="$(find "$ANDROID_SDK_ROOT/build-tools" -path '*/apksigner' -type f | sort -V | tail -n 1)"
           test -n "$apksigner"
-          "$apksigner" verify --verbose --print-certs "$APK_PATH"
-          actual_fingerprint="$(
-            "$apksigner" verify --print-certs "$APK_PATH" |
-              awk -F': ' '/Signer #1 certificate SHA-256 digest:/{gsub(":", "", $2); print toupper($2); exit}'
-          )"
-          [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
+          for apk_path in \
+            build/app/outputs/flutter-apk/app-release.apk \
+            build/app/outputs/flutter-apk/wear-release.apk; do
+            test -s "$apk_path"
+            "$apksigner" verify --verbose --print-certs "$apk_path"
+            actual_fingerprint="$(
+              "$apksigner" verify --print-certs "$apk_path" |
+                awk -F': ' '/Signer #1 certificate SHA-256 digest:/{gsub(":", "", $2); print toupper($2); exit}'
+            )"
+            [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
+          done
 
-      - name: Upload APK as workflow artifact
+      - name: Upload APKs as workflow artifact
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: endurain-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/flutter-apk/wear-release.apk
           if-no-files-found: error
 
-      - name: Attach APK to the release
+      # A rerun after a partial upload finds some APKs already attached, and
+      # GitHub rejects a second asset with the same name. Replace them, so every
+      # APK on the release comes from this run.
+      - name: Attach APKs to the release
         if: github.event_name == 'release'
         shell: bash
         env:
           UPLOAD_URL: ${{ github.event.release.upload_url }}
+          RELEASE_ID: ${{ github.event.release.id }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
         run: |
           set -euo pipefail
           upload_url="${UPLOAD_URL%%\{*}"
-          curl --fail --show-error --location \
-            --request POST \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer $TOKEN" \
-            --header "Content-Type: application/vnd.android.package-archive" \
-            --data-binary "@$APK_PATH" \
-            "${upload_url}?name=app-release.apk"
+          releases_api="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases"
+          auth_headers=(
+            --header "Accept: application/vnd.github+json"
+            --header "Authorization: Bearer $TOKEN"
+          )
+          assets_json="$RUNNER_TEMP/release-assets.json"
+          curl --fail --show-error --location "${auth_headers[@]}" \
+            --output "$assets_json" \
+            "$releases_api/$RELEASE_ID/assets?per_page=100"
+
+          # The CI image has no jq, so the Flutter SDK's Dart reads the list.
+          # The id is printed behind a marker so other output is ignored.
+          asset_id_script="$RUNNER_TEMP/release_asset_id.dart"
+          cat > "$asset_id_script" <<'DART'
+          import 'dart:convert';
+          import 'dart:io';
+
+          void main(List<String> args) {
+            final assets = jsonDecode(File(args[0]).readAsStringSync()) as List;
+            for (final asset in assets) {
+              if (asset['name'] == args[1]) print('asset-id:${asset['id']}');
+            }
+          }
+          DART
+
+          for apk_name in app-release.apk wear-release.apk; do
+            existing_id="$(
+              dart "$asset_id_script" "$assets_json" "$apk_name" |
+                sed -n 's/^asset-id://p'
+            )"
+            if [[ -n "$existing_id" ]]; then
+              echo "Replacing the existing $apk_name (asset $existing_id)."
+              curl --fail --show-error --location "${auth_headers[@]}" \
+                --request DELETE \
+                "$releases_api/assets/$existing_id"
+            fi
+            curl --fail --show-error --location "${auth_headers[@]}" \
+              --request POST \
+              --header "Content-Type: application/vnd.android.package-archive" \
+              --data-binary "@build/app/outputs/flutter-apk/$apk_name" \
+              "${upload_url}?name=$apk_name"
+          done

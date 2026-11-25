@@ -1,9 +1,7 @@
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
-import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/features/settings/screens/server_settings_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -12,7 +10,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/widget_test_app.dart';
 
 void main() {
@@ -28,21 +25,16 @@ void main() {
   tearDown(PlatformUtils.debugResetOverrides);
 
   group('ServerSettingsScreen', () {
-    testWidgets('loads stored account and tile server settings', (
+    testWidgets('shows the stored account and no tile server field', (
       tester,
     ) async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://endurain.example.test');
       await storage.setUsername('joao');
-      final prefs = FakePreferencesStore();
-      await prefs.write(
-        key: 'tile_server_url',
-        value: 'https://tiles.example.test/{z}/{x}/{y}.png',
-      );
 
       await tester.pumpWidget(
         _SettingsTestApp(
-          child: ServerSettingsScreen(repository: _repository(storage, prefs)),
+          child: ServerSettingsScreen(repository: _repository(storage)),
         ),
       );
 
@@ -52,159 +44,35 @@ void main() {
       expect(find.text(l10n.loggedIn), findsOneWidget);
       expect(find.text('https://endurain.example.test'), findsOneWidget);
       expect(find.text('joao'), findsOneWidget);
-      expect(
-        find.widgetWithText(TextFormField, l10n.tileServerUrl),
-        findsOneWidget,
-      );
+      expect(find.text(l10n.logout), findsOneWidget);
+      // The tile server URL has its own Map tiles screen now.
+      expect(find.byType(TextFormField), findsNothing);
+      expect(find.text(l10n.save), findsNothing);
     });
 
-    testWidgets('validates and saves tile server settings', (tester) async {
-      final storage = SecureStorageService();
-      final prefs = FakePreferencesStore();
-
-      await tester.pumpWidget(
-        _SettingsTestApp(
-          child: ServerSettingsScreen(repository: _repository(storage, prefs)),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextFormField), 'not a url');
-      await tester.tap(find.text(l10n.save));
-      await tester.pump();
-
-      expect(find.text(l10n.invalidUrl), findsOneWidget);
-
-      const tileServerUrl = 'https://tiles.example.test/{z}/{x}/{y}.png';
-      await tester.enterText(find.byType(TextFormField), tileServerUrl);
-      await tester.tap(find.text(l10n.save));
-      await tester.pumpAndSettle();
-
-      expect(await prefs.read(key: 'tile_server_url'), tileServerUrl);
-    });
-
-    testWidgets('saves without warning when tile host matches server host', (
+    testWidgets('falls back to placeholders when nothing is stored', (
       tester,
     ) async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://endurain.example.test');
-      final prefs = FakePreferencesStore();
-      const sameTileUrl = 'https://endurain.example.test/tiles/{z}/{x}/{y}.png';
-
-      await tester.pumpWidget(
-        _SettingsTestApp(
-          child: ServerSettingsScreen(repository: _repository(storage, prefs)),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextFormField), sameTileUrl);
-      await tester.tap(find.text(l10n.save));
-      await tester.pumpAndSettle();
-
-      // No warning dialog visible — save succeeds directly.
-      expect(find.text(l10n.tileServerHostWarningTitle), findsNothing);
-      expect(await prefs.read(key: 'tile_server_url'), sameTileUrl);
-    });
-
-    testWidgets(
-      'shows warning dialog when tile host differs from server host',
-      (tester) async {
-        final storage = SecureStorageService();
-        await storage.setServerUrl('https://endurain.example.test');
-        final prefs = FakePreferencesStore();
-        const differentTileUrl = 'https://tiles.other.test/{z}/{x}/{y}.png';
-
-        await tester.pumpWidget(
-          _SettingsTestApp(
-            child: ServerSettingsScreen(
-              repository: _repository(storage, prefs),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        await tester.enterText(find.byType(TextFormField), differentTileUrl);
-        await tester.tap(find.text(l10n.save));
-        await tester.pumpAndSettle();
-
-        expect(find.text(l10n.tileServerHostWarningTitle), findsOneWidget);
-        expect(find.text(l10n.tileServerHostWarningMessage), findsOneWidget);
-        // Cancel — value should not be saved.
-        await tester.tap(find.text(l10n.cancel));
-        await tester.pumpAndSettle();
-
-        expect(await prefs.read(key: 'tile_server_url'), isNull);
-      },
-    );
-
-    testWidgets('saves when user confirms tile host warning', (tester) async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://endurain.example.test');
-      final prefs = FakePreferencesStore();
-      const differentTileUrl = 'https://tiles.other.test/{z}/{x}/{y}.png';
-
-      await tester.pumpWidget(
-        _SettingsTestApp(
-          child: ServerSettingsScreen(repository: _repository(storage, prefs)),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextFormField), differentTileUrl);
-      await tester.tap(find.text(l10n.save));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.tileServerHostWarningTitle), findsOneWidget);
-      // Confirm — value should be saved.
-      await tester.tap(find.text(l10n.save).last);
-      await tester.pumpAndSettle();
-
-      expect(await prefs.read(key: 'tile_server_url'), differentTileUrl);
-    });
-
-    testWidgets('rejects tile host not in managed allowlist', (tester) async {
-      final storage = SecureStorageService();
-      await storage.setServerUrl('https://endurain.example.test');
-      final prefs = FakePreferencesStore();
-      const blockedTileUrl = 'https://not-allowed.test/{z}/{x}/{y}.png';
-      const config = AppConfig(
-        allowedTileServerHosts: {'endurain.example.test'},
-      );
-
       await tester.pumpWidget(
         _SettingsTestApp(
           child: ServerSettingsScreen(
-            repository: _repository(storage, prefs),
-            config: config,
+            repository: _repository(SecureStorageService()),
           ),
         ),
       );
+
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextFormField), blockedTileUrl);
-      await tester.tap(find.text(l10n.save));
-      await tester.pumpAndSettle();
-
-      // Error dialog shown, value not saved.
-      expect(find.text(l10n.tileServerHostWarningTitle), findsOneWidget);
-      expect(await prefs.read(key: 'tile_server_url'), isNull);
-      // Dismiss error dialog.
-      await tester.tap(find.text(l10n.ok));
-      await tester.pumpAndSettle();
+      expect(find.text(l10n.notConfigured), findsOneWidget);
+      expect(find.text(l10n.notLoggedIn), findsOneWidget);
     });
   });
 }
 
-ServerSettingsRepository _repository(
-  SecureStorageService storage,
-  FakePreferencesStore prefs,
-) {
+ServerSettingsRepository _repository(SecureStorageService storage) {
   return ServerSettingsRepository(
     storage: storage,
     authService: AuthService(storage: storage),
-    mapSettingsRepository: MapSettingsRepository(preferences: prefs),
   );
 }
 

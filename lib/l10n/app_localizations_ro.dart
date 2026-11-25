@@ -807,6 +807,24 @@ class AppLocalizationsRo extends AppLocalizations {
   String get settingsScreen => 'Setări';
 
   @override
+  String get settingsSectionAccount => 'Cont';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionRecording => 'Înregistrare';
+
+  @override
+  String get settingsSectionDevices => 'Dispozitive și integrări';
+
+  @override
+  String get settingsSectionData => 'Date';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Confidențialitate și asistență';
+
+  @override
   String get deviceAccessTitle => 'Acces la dispozitiv';
 
   @override
@@ -915,6 +933,24 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL server de dale pentru hartă';
+
+  @override
+  String get mapTilesSettingsTitle => 'Dale pentru hartă';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Serverul de dale folosit pentru desenarea hărților';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Se aplică cât timp sunteți conectat la acest server. La o nouă autentificare se revine la setarea de dale a serverului.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Setarea dalelor pentru hartă nu a putut fi încărcată.';
+
+  @override
+  String get tryAgain => 'Încearcă din nou';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

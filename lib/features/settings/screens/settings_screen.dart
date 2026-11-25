@@ -10,6 +10,7 @@ import 'package:endurain/features/activity/screens/activity_history_screen.dart'
 import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
 import 'package:endurain/features/activity/screens/start_countdown_settings_screen.dart';
 import 'package:endurain/features/health/screens/health_sync_screen.dart';
+import 'package:endurain/features/map/screens/tile_server_settings_screen.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
@@ -123,201 +124,154 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
               padding: const EdgeInsets.all(UIConstants.paddingStandard),
               children: [
                 AdaptiveListSection(
+                  header: l10n.settingsSectionAccount,
                   children: [
                     if (widget.isGuest)
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.login,
-                          cupertinoIcon: CupertinoIcons.square_arrow_right,
-                        ),
+                      _SettingsNavTile(
+                        materialIcon: Icons.login,
+                        cupertinoIcon: CupertinoIcons.square_arrow_right,
                         title: l10n.signInConnectServer,
                         subtitle: l10n.signInConnectServerSubtitle,
                         onTap: widget.onSignIn,
                       )
                     else
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.dns,
-                          cupertinoIcon: CupertinoIcons.globe,
-                        ),
+                      _SettingsNavTile(
+                        materialIcon: Icons.dns,
+                        cupertinoIcon: CupertinoIcons.globe,
                         title: l10n.serverSettings,
                         subtitle: serverUrl == null || serverUrl.isEmpty
                             ? null
                             : l10n.connectedToServer(serverUrl),
-                        onTap: () {
-                          adaptivePush<void>(
-                            context,
-                            (context) =>
-                                ServerSettingsScreen(onLogout: widget.onLogout),
-                          );
-                        },
+                        destination: (context) =>
+                            ServerSettingsScreen(onLogout: widget.onLogout),
                       ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.language,
-                        cupertinoIcon: CupertinoIcons.textformat,
-                      ),
+                  ],
+                ),
+                const SizedBox(height: UIConstants.paddingStandard),
+                AdaptiveListSection(
+                  header: l10n.settingsSectionGeneral,
+                  children: [
+                    _SettingsNavTile(
+                      materialIcon: Icons.language,
+                      cupertinoIcon: CupertinoIcons.textformat,
                       title: l10n.language,
                       subtitle: languageSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const LanguageSettingsScreen(),
-                        );
-                      },
+                      destination: (context) => const LanguageSettingsScreen(),
                     ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.straighten,
-                        cupertinoIcon: CupertinoIcons.arrow_left_right,
-                      ),
+                    _SettingsNavTile(
+                      materialIcon: Icons.straighten,
+                      cupertinoIcon: CupertinoIcons.arrow_left_right,
                       title: l10n.unitsTitle,
                       subtitle: l10n.unitsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const UnitsSettingsScreen(),
-                        );
-                      },
+                      destination: (context) => const UnitsSettingsScreen(),
                     ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.history,
-                        cupertinoIcon: CupertinoIcons.time,
+                    // The tile URL is stored per connected server, so guests
+                    // (no server) have nothing to configure.
+                    if (!widget.isGuest)
+                      _SettingsNavTile(
+                        materialIcon: Icons.map_outlined,
+                        cupertinoIcon: CupertinoIcons.map,
+                        title: l10n.mapTilesSettingsTitle,
+                        subtitle: l10n.mapTilesSettingsSubtitle,
+                        destination: (context) =>
+                            const TileServerSettingsScreen(),
                       ),
-                      title: l10n.activityHistoryTitle,
-                      subtitle: l10n.activityHistorySettingsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const ActivityHistoryScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveSwitchListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.description,
-                        cupertinoIcon: CupertinoIcons.doc_text,
-                      ),
-                      title: l10n.activityRetainUploadedGpx,
-                      subtitle: l10n.activityRetainUploadedGpxSubtitle,
-                      value: _controller.retainUploadedGpx,
-                      onChanged: _controller.setRetainUploadedGpx,
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.pause_circle_outline,
-                        cupertinoIcon: CupertinoIcons.pause_circle,
-                      ),
-                      title: l10n.activityAutoPauseTitle,
-                      subtitle: l10n.activityAutoPauseSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const AutoPauseSettingsScreen(),
-                        );
-                      },
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.timer_outlined,
-                        cupertinoIcon: CupertinoIcons.timer,
-                      ),
+                  ],
+                ),
+                const SizedBox(height: UIConstants.paddingStandard),
+                AdaptiveListSection(
+                  header: l10n.settingsSectionRecording,
+                  children: [
+                    _SettingsNavTile(
+                      materialIcon: Icons.timer_outlined,
+                      cupertinoIcon: CupertinoIcons.timer,
                       title: l10n.startCountdownSettingsTitle,
                       subtitle: l10n.startCountdownSettingsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const StartCountdownSettingsScreen(),
-                        );
-                      },
+                      destination: (context) =>
+                          const StartCountdownSettingsScreen(),
                     ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.record_voice_over,
-                        cupertinoIcon: CupertinoIcons.speaker_2,
-                      ),
+                    _SettingsNavTile(
+                      materialIcon: Icons.pause_circle_outline,
+                      cupertinoIcon: CupertinoIcons.pause_circle,
+                      title: l10n.activityAutoPauseTitle,
+                      subtitle: l10n.activityAutoPauseSubtitle,
+                      destination: (context) => const AutoPauseSettingsScreen(),
+                    ),
+                    _SettingsNavTile(
+                      materialIcon: Icons.record_voice_over,
+                      cupertinoIcon: CupertinoIcons.speaker_2,
                       title: l10n.audioAnnouncementsTitle,
                       subtitle: l10n.audioAnnouncementsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const AudioAnnouncementSettingsScreen(),
-                        );
-                      },
+                      destination: (context) =>
+                          const AudioAnnouncementSettingsScreen(),
                     ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.admin_panel_settings_outlined,
-                        cupertinoIcon: CupertinoIcons.shield,
-                      ),
-                      title: l10n.deviceAccessTitle,
-                      subtitle: l10n.deviceAccessSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => DeviceAccessScreen(
-                            healthSyncEnabled: _healthSyncEnabled,
-                          ),
-                        );
-                      },
-                    ),
-                    if (_healthSyncEnabled && !widget.isGuest)
-                      AdaptiveListTile(
-                        leading: const AdaptiveIcon(
-                          materialIcon: Icons.monitor_heart,
-                          cupertinoIcon: CupertinoIcons.heart,
-                        ),
-                        title: l10n.healthSyncSettingsTitle,
-                        subtitle: l10n.healthSyncSettingsSubtitle,
-                        onTap: () {
-                          adaptivePush<void>(
-                            context,
-                            (context) => const HealthSyncScreen(),
-                          );
-                        },
-                      ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.sensors,
-                        cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
-                      ),
+                  ],
+                ),
+                const SizedBox(height: UIConstants.paddingStandard),
+                AdaptiveListSection(
+                  header: l10n.settingsSectionDevices,
+                  children: [
+                    _SettingsNavTile(
+                      materialIcon: Icons.sensors,
+                      cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
                       title: l10n.sensorsTitle,
                       subtitle: l10n.sensorsSettingsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => const SensorSettingsScreen(),
-                        );
-                      },
+                      destination: (context) => const SensorSettingsScreen(),
                     ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.bug_report,
-                        cupertinoIcon: CupertinoIcons.waveform_path_ecg,
+                    if (_healthSyncEnabled && !widget.isGuest)
+                      _SettingsNavTile(
+                        materialIcon: Icons.monitor_heart,
+                        cupertinoIcon: CupertinoIcons.heart,
+                        title: l10n.healthSyncSettingsTitle,
+                        subtitle: l10n.healthSyncSettingsSubtitle,
+                        destination: (context) => const HealthSyncScreen(),
                       ),
+                  ],
+                ),
+                const SizedBox(height: UIConstants.paddingStandard),
+                AdaptiveListSection(
+                  header: l10n.settingsSectionData,
+                  children: [
+                    _SettingsNavTile(
+                      materialIcon: Icons.history,
+                      cupertinoIcon: CupertinoIcons.time,
+                      title: l10n.activityHistoryTitle,
+                      subtitle: l10n.activityHistorySettingsSubtitle,
+                      destination: (context) => const ActivityHistoryScreen(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: UIConstants.paddingStandard),
+                AdaptiveListSection(
+                  header: l10n.settingsSectionPrivacySupport,
+                  children: [
+                    _SettingsNavTile(
+                      materialIcon: Icons.admin_panel_settings_outlined,
+                      cupertinoIcon: CupertinoIcons.shield,
+                      title: l10n.deviceAccessTitle,
+                      subtitle: l10n.deviceAccessSubtitle,
+                      destination: (context) => DeviceAccessScreen(
+                        healthSyncEnabled: _healthSyncEnabled,
+                      ),
+                    ),
+                    _SettingsNavTile(
+                      materialIcon: Icons.bug_report,
+                      cupertinoIcon: CupertinoIcons.waveform_path_ecg,
                       title: l10n.diagnostics,
                       subtitle: l10n.diagnosticsSubtitle,
-                      onTap: () {
-                        adaptivePush<void>(
-                          context,
-                          (context) => DiagnosticsScreen(
-                            diagnostics:
-                                widget.diagnostics ??
-                                AppScope.servicesOf(
-                                  context,
-                                  listen: false,
-                                ).diagnostics,
-                          ),
-                        );
-                      },
-                    ),
-                    AdaptiveListTile(
-                      leading: const AdaptiveIcon(
-                        materialIcon: Icons.code,
-                        cupertinoIcon:
-                            CupertinoIcons.chevron_left_slash_chevron_right,
+                      destination: (context) => DiagnosticsScreen(
+                        diagnostics:
+                            widget.diagnostics ??
+                            AppScope.servicesOf(
+                              context,
+                              listen: false,
+                            ).diagnostics,
                       ),
+                    ),
+                    _SettingsNavTile(
+                      materialIcon: Icons.code,
+                      cupertinoIcon:
+                          CupertinoIcons.chevron_left_slash_chevron_right,
                       title: l10n.sourceCode,
                       subtitle: l10n.sourceCodeSubtitle,
                       onTap: _openSourceCode,
@@ -353,6 +307,47 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// One row of the settings list: an icon, a title and an optional subtitle.
+///
+/// Give [destination] to push a settings sub-screen, or [onTap] for any other
+/// action (signing in, opening a link).
+class _SettingsNavTile extends StatelessWidget {
+  const _SettingsNavTile({
+    required this.materialIcon,
+    required this.cupertinoIcon,
+    required this.title,
+    this.subtitle,
+    this.destination,
+    this.onTap,
+  }) : assert(
+         destination == null || onTap == null,
+         'Pass either destination or onTap, not both.',
+       );
+
+  final IconData materialIcon;
+  final IconData cupertinoIcon;
+  final String title;
+  final String? subtitle;
+  final WidgetBuilder? destination;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final destination = this.destination;
+    return AdaptiveListTile(
+      leading: AdaptiveIcon(
+        materialIcon: materialIcon,
+        cupertinoIcon: cupertinoIcon,
+      ),
+      title: title,
+      subtitle: subtitle,
+      onTap: destination == null
+          ? onTap
+          : () => adaptivePush<void>(context, destination),
     );
   }
 }

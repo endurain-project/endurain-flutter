@@ -792,6 +792,24 @@ class AppLocalizationsUk extends AppLocalizations {
   String get settingsScreen => 'Налаштування';
 
   @override
+  String get settingsSectionAccount => 'Обліковий запис';
+
+  @override
+  String get settingsSectionGeneral => 'Загальні';
+
+  @override
+  String get settingsSectionRecording => 'Запис';
+
+  @override
+  String get settingsSectionDevices => 'Пристрої та інтеграції';
+
+  @override
+  String get settingsSectionData => 'Дані';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Конфіденційність і підтримка';
+
+  @override
   String get deviceAccessTitle => 'Доступ до пристрою';
 
   @override
@@ -899,6 +917,23 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL сервера картографічних плиток';
+
+  @override
+  String get mapTilesSettingsTitle => 'Картографічні плитки';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Сервер плиток для відображення карт';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Діє, поки ви підключені до цього сервера. Після повторного входу відновлюється налаштування плиток вашого сервера.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Не вдалося завантажити налаштування картографічних плиток.';
+
+  @override
+  String get tryAgain => 'Спробувати ще раз';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

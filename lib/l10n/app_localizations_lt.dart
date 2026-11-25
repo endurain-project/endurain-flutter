@@ -789,6 +789,24 @@ class AppLocalizationsLt extends AppLocalizations {
   String get settingsScreen => 'Nustatymai';
 
   @override
+  String get settingsSectionAccount => 'Paskyra';
+
+  @override
+  String get settingsSectionGeneral => 'Bendrieji';
+
+  @override
+  String get settingsSectionRecording => 'Įrašymas';
+
+  @override
+  String get settingsSectionDevices => 'Įrenginiai ir integracijos';
+
+  @override
+  String get settingsSectionData => 'Duomenys';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privatumas ir pagalba';
+
+  @override
   String get deviceAccessTitle => 'Prieiga prie įrenginio';
 
   @override
@@ -895,6 +913,24 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Žemėlapio išklotinės serverio URL';
+
+  @override
+  String get mapTilesSettingsTitle => 'Žemėlapio išklotinės';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Išklotinių serveris žemėlapiams piešti';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Galioja, kol esate prisijungę prie šio serverio. Prisijungus iš naujo, atkuriamas jūsų serverio išklotinių nustatymas.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nepavyko įkelti žemėlapio išklotinių nustatymo.';
+
+  @override
+  String get tryAgain => 'Bandyti dar kartą';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

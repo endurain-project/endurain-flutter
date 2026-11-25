@@ -1,12 +1,12 @@
+import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/auth/secure_storage_service.dart';
-import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
-import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/features/settings/controllers/server_settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -21,14 +21,12 @@ class ServerSettingsScreen extends StatefulWidget {
     this.storage,
     this.authService,
     this.repository,
-    this.config,
   });
 
   final VoidCallback? onLogout;
   final SecureStorageService? storage;
   final AuthService? authService;
   final ServerSettingsRepository? repository;
-  final AppConfig? config;
 
   @override
   State<ServerSettingsScreen> createState() => _ServerSettingsScreenState();
@@ -36,26 +34,21 @@ class ServerSettingsScreen extends StatefulWidget {
 
 class _ServerSettingsScreenState extends State<ServerSettingsScreen>
     with OwnedControllers {
-  final _formKey = GlobalKey<FormState>();
-  final _tileServerUrlController = TextEditingController();
   late final ServerSettingsController _controller;
-  late final AppConfig _config;
 
   @override
   void initState() {
     super.initState();
     final services = AppScope.servicesOf(context, listen: false);
-    _config = widget.config ?? services.config;
     // The screen always owns the controller; its test seam is the repository
     // (built here) rather than the controller itself.
     _controller = registerController(
       null,
       () => ServerSettingsController(
         repository: widget.repository ?? _createRepository(services),
-        config: _config,
       ),
     );
-    _initialize();
+    unawaited(_controller.load());
   }
 
   ServerSettingsRepository _createRepository(AppServices services) {
@@ -63,81 +56,7 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
     return ServerSettingsRepository(
       storage: storage,
       authService: widget.authService ?? services.auth,
-      mapSettingsRepository: services.createMapSettingsRepository(),
     );
-  }
-
-  @override
-  void dispose() {
-    _tileServerUrlController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _initialize() async {
-    await _controller.load();
-    if (mounted) {
-      _tileServerUrlController.text = _controller.tileServerUrl;
-    }
-  }
-
-  Future<void> _saveSettings() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-    final tileUrl = _tileServerUrlController.text.trim();
-
-    if (!await _confirmTileHostIfNeeded(tileUrl, l10n)) {
-      return;
-    }
-
-    try {
-      await _controller.saveTileServerUrl(tileUrl);
-
-      if (mounted) {
-        await DialogUtils.showSuccessDialog(
-          context,
-          l10n.savedSuccessfully,
-          onDismiss: () => Navigator.pop(context),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        await DialogUtils.showErrorDialog(context, e);
-      }
-    }
-  }
-
-  /// Applies the controller's tile-host policy and shows the matching UI.
-  /// Returns true when saving may proceed.
-  Future<bool> _confirmTileHostIfNeeded(
-    String tileUrl,
-    AppLocalizations l10n,
-  ) async {
-    switch (_controller.evaluateTileHost(tileUrl)) {
-      case TileServerHostDecision.allowed:
-        return true;
-      case TileServerHostDecision.blocked:
-        // Managed policy: reject disallowed hosts without any confirmation.
-        if (mounted) {
-          await DialogUtils.showErrorDialog(
-            context,
-            l10n.tileServerHostWarningTitle,
-          );
-        }
-        return false;
-      case TileServerHostDecision.needsConfirmation:
-        if (!mounted) {
-          return false;
-        }
-        return DialogUtils.showConfirmDialog(
-          context,
-          title: l10n.tileServerHostWarningTitle,
-          message: l10n.tileServerHostWarningMessage,
-          confirmText: l10n.save,
-        );
-    }
   }
 
   Future<void> _handleLogout() async {
@@ -183,53 +102,33 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
           if (_controller.isLoading) {
             return const Center(child: AdaptiveLoadingIndicator());
           }
-          return Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(UIConstants.paddingStandard),
-              children: [
-                AdaptiveListSection(
-                  header: l10n.loggedIn,
-                  children: [
-                    AdaptiveListTile(
-                      title: l10n.serverUrl,
-                      subtitle: _controller.serverUrl ?? l10n.notConfigured,
+          return ListView(
+            padding: const EdgeInsets.all(UIConstants.paddingStandard),
+            children: [
+              AdaptiveListSection(
+                header: l10n.loggedIn,
+                children: [
+                  AdaptiveListTile(
+                    title: l10n.serverUrl,
+                    subtitle: _controller.serverUrl ?? l10n.notConfigured,
+                  ),
+                  AdaptiveListTile(
+                    title: l10n.username,
+                    subtitle: _controller.username ?? l10n.notLoggedIn,
+                  ),
+                  AdaptiveListTile(
+                    leading: AdaptiveIcon(
+                      materialIcon: Icons.logout,
+                      cupertinoIcon: CupertinoIcons.square_arrow_right,
+                      color: Theme.of(context).colorScheme.error,
                     ),
-                    AdaptiveListTile(
-                      title: l10n.username,
-                      subtitle: _controller.username ?? l10n.notLoggedIn,
-                    ),
-                    AdaptiveListTile(
-                      leading: AdaptiveIcon(
-                        materialIcon: Icons.logout,
-                        cupertinoIcon: CupertinoIcons.square_arrow_right,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      title: l10n.logout,
-                      destructive: true,
-                      onTap: _handleLogout,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: UIConstants.paddingStandard),
-                AdaptiveTextFormField(
-                  label: l10n.tileServerUrl,
-                  placeholder: l10n.tileServerUrlHint,
-                  controller: _tileServerUrlController,
-                  keyboardType: TextInputType.url,
-                  textInputAction: TextInputAction.done,
-                  validator: (value) =>
-                      Validators.validateUrl(value, l10n, config: _config),
-                  onFieldSubmitted: (_) => _saveSettings(),
-                ),
-                const SizedBox(height: UIConstants.paddingLarge),
-                AdaptiveButton(
-                  label: l10n.save,
-                  onPressed: _saveSettings,
-                  expand: true,
-                ),
-              ],
-            ),
+                    title: l10n.logout,
+                    destructive: true,
+                    onTap: _handleLogout,
+                  ),
+                ],
+              ),
+            ],
           );
         },
       ),

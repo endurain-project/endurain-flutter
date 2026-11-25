@@ -804,6 +804,24 @@ class AppLocalizationsSk extends AppLocalizations {
   String get settingsScreen => 'Nastavenia';
 
   @override
+  String get settingsSectionAccount => 'Účet';
+
+  @override
+  String get settingsSectionGeneral => 'Všeobecné';
+
+  @override
+  String get settingsSectionRecording => 'Záznam';
+
+  @override
+  String get settingsSectionDevices => 'Zariadenia a integrácie';
+
+  @override
+  String get settingsSectionData => 'Údaje';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Súkromie a podpora';
+
+  @override
   String get deviceAccessTitle => 'Prístup k zariadeniu';
 
   @override
@@ -913,6 +931,23 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Adresa URL servera mapových dlaždíc';
+
+  @override
+  String get mapTilesSettingsTitle => 'Mapové dlaždice';
+
+  @override
+  String get mapTilesSettingsSubtitle => 'Server dlaždíc na vykresľovanie máp';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Platí, kým ste pripojení k tomuto serveru. Po opätovnom prihlásení sa obnoví nastavenie dlaždíc vášho servera.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Nastavenie mapových dlaždíc sa nepodarilo načítať.';
+
+  @override
+  String get tryAgain => 'Skúsiť znova';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

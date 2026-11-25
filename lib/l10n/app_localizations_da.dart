@@ -794,6 +794,24 @@ class AppLocalizationsDa extends AppLocalizations {
   String get settingsScreen => 'Indstillinger';
 
   @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get settingsSectionGeneral => 'Generelt';
+
+  @override
+  String get settingsSectionRecording => 'Optagelse';
+
+  @override
+  String get settingsSectionDevices => 'Enheder og integrationer';
+
+  @override
+  String get settingsSectionData => 'Data';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privatliv og support';
+
+  @override
   String get deviceAccessTitle => 'Enhedsadgang';
 
   @override
@@ -900,6 +918,24 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL til kortfliseserver';
+
+  @override
+  String get mapTilesSettingsTitle => 'Kortfliser';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Fliseserver, der bruges til at tegne kort';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Gælder, mens du er forbundet til denne server. Når du logger ind igen, nulstilles den til din servers fliseindstilling.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Indstillingen for kortfliser kunne ikke indlæses.';
+
+  @override
+  String get tryAgain => 'Prøv igen';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

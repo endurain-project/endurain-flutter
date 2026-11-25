@@ -784,6 +784,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsScreen => 'Ayarlar';
 
   @override
+  String get settingsSectionAccount => 'Hesap';
+
+  @override
+  String get settingsSectionGeneral => 'Genel';
+
+  @override
+  String get settingsSectionRecording => 'Kayıt';
+
+  @override
+  String get settingsSectionDevices => 'Cihazlar ve entegrasyonlar';
+
+  @override
+  String get settingsSectionData => 'Veriler';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Gizlilik ve destek';
+
+  @override
   String get deviceAccessTitle => 'Cihaz erişimi';
 
   @override
@@ -891,6 +909,23 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'Harita döşeme sunucusu URL\'si';
+
+  @override
+  String get mapTilesSettingsTitle => 'Harita döşemeleri';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Haritaları çizmek için kullanılan döşeme sunucusu';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Bu sunucuya bağlıyken geçerlidir. Yeniden oturum açınca sunucunuzun döşeme ayarına döner.';
+
+  @override
+  String get mapTilesSettingsLoadFailed => 'Harita döşemesi ayarı yüklenemedi.';
+
+  @override
+  String get tryAgain => 'Tekrar dene';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

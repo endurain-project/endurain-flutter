@@ -805,6 +805,24 @@ class AppLocalizationsEl extends AppLocalizations {
   String get settingsScreen => 'Ρυθμίσεις';
 
   @override
+  String get settingsSectionAccount => 'Λογαριασμός';
+
+  @override
+  String get settingsSectionGeneral => 'Γενικά';
+
+  @override
+  String get settingsSectionRecording => 'Καταγραφή';
+
+  @override
+  String get settingsSectionDevices => 'Συσκευές και ενσωματώσεις';
+
+  @override
+  String get settingsSectionData => 'Δεδομένα';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Απόρρητο και υποστήριξη';
+
+  @override
   String get deviceAccessTitle => 'Πρόσβαση στη συσκευή';
 
   @override
@@ -915,6 +933,24 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL διακομιστή πλακιδίων χάρτη';
+
+  @override
+  String get mapTilesSettingsTitle => 'Πλακίδια χάρτη';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Διακομιστής πλακιδίων για τη σχεδίαση χαρτών';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Ισχύει όσο είστε συνδεδεμένοι σε αυτόν τον διακομιστή. Με νέα σύνδεση επαναφέρεται η ρύθμιση πλακιδίων του διακομιστή σας.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση της ρύθμισης πλακιδίων χάρτη.';
+
+  @override
+  String get tryAgain => 'Δοκιμάστε ξανά';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

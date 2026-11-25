@@ -798,6 +798,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsScreen => 'Configuración';
 
   @override
+  String get settingsSectionAccount => 'Cuenta';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionRecording => 'Grabación';
+
+  @override
+  String get settingsSectionDevices => 'Dispositivos e integraciones';
+
+  @override
+  String get settingsSectionData => 'Datos';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacidad y soporte';
+
+  @override
   String get deviceAccessTitle => 'Acceso al dispositivo';
 
   @override
@@ -907,6 +925,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL del servidor de teselas del mapa';
+
+  @override
+  String get mapTilesSettingsTitle => 'Teselas del mapa';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Servidor de teselas para dibujar los mapas';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Se aplica mientras estés conectado a este servidor. Al volver a iniciar sesión, se restablece la configuración de teselas de tu servidor.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'No se pudo cargar la configuración de teselas del mapa.';
+
+  @override
+  String get tryAgain => 'Reintentar';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

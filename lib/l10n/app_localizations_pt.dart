@@ -799,6 +799,24 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsScreen => 'Configurações';
 
   @override
+  String get settingsSectionAccount => 'Conta';
+
+  @override
+  String get settingsSectionGeneral => 'Geral';
+
+  @override
+  String get settingsSectionRecording => 'Gravação';
+
+  @override
+  String get settingsSectionDevices => 'Dispositivos e integrações';
+
+  @override
+  String get settingsSectionData => 'Dados';
+
+  @override
+  String get settingsSectionPrivacySupport => 'Privacidade e suporte';
+
+  @override
   String get deviceAccessTitle => 'Acesso ao dispositivo';
 
   @override
@@ -907,6 +925,24 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get tileServerUrl => 'URL do servidor de mapas';
+
+  @override
+  String get mapTilesSettingsTitle => 'Mosaicos do mapa';
+
+  @override
+  String get mapTilesSettingsSubtitle =>
+      'Servidor usado para desenhar os mapas';
+
+  @override
+  String get mapTilesSettingsNote =>
+      'Aplica-se enquanto estiver ligado a este servidor. Ao iniciar sessão novamente, volta à definição de mapas do seu servidor.';
+
+  @override
+  String get mapTilesSettingsLoadFailed =>
+      'Não foi possível carregar a definição de mosaicos do mapa.';
+
+  @override
+  String get tryAgain => 'Tentar novamente';
 
   @override
   String get tileServerUrlHint => 'https://tile.openstreetmap.org/...';

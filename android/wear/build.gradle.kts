@@ -10,13 +10,21 @@ plugins {
 // The watch app ships with the same version as the phone app, read from
 // pubspec.yaml. Google Play needs a distinct version code for each APK of a
 // release, so the watch's is offset well above any phone build number.
+// Release builds can pass the phone's values instead, like `flutter build`'s
+// --build-name and --build-number:
+// -Pendurain.buildName=0.12.0 -Pendurain.buildNumber=22
 val pubspecVersion =
     rootProject.file("../../pubspec.yaml").readLines()
         .first { it.startsWith("version:") }
         .removePrefix("version:")
         .trim()
-val wearVersionName = pubspecVersion.substringBefore('+')
-val wearVersionCode = 1_000_000 + pubspecVersion.substringAfter('+').toInt()
+val wearVersionName =
+    providers.gradleProperty("endurain.buildName").orNull?.takeIf { it.isNotBlank() }
+        ?: pubspecVersion.substringBefore('+')
+val wearBuildNumber =
+    providers.gradleProperty("endurain.buildNumber").orNull?.takeIf { it.isNotBlank() }
+        ?: pubspecVersion.substringAfter('+')
+val wearVersionCode = 1_000_000 + wearBuildNumber.toInt()
 
 // Same upload key as the phone app: the Wearable Data Layer only connects
 // apps with the same package name and signing certificate.
