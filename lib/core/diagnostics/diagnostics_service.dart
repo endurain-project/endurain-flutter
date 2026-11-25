@@ -262,6 +262,8 @@ class DiagnosticsEvents {
   static const String healthInstallProviderRequested =
       'health.install_provider_requested';
   static const String healthReadWorkouts = 'health.read_workouts';
+  static const String healthHeartRateSeriesFailed =
+      'health.heart_rate_series_failed';
   static const String healthLoadStatusFailed = 'health.load_status_failed';
   static const String healthAutoSyncSettingFailed =
       'health.auto_sync_setting_failed';

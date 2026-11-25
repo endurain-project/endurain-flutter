@@ -39,6 +39,8 @@
 		AA00000000000000000000C6 /* AnnouncementStateCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */; };
 		AA00000000000000000000CC /* HealthKitHeartRateMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */; };
 		AA00000000000000000000CA /* HealthKitHeartRateMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000CB /* HealthKitHeartRateMonitorTests.swift */; };
+		AA00000000000000000000F2 /* HeartRateSeriesChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000F1 /* HeartRateSeriesChannel.swift */; };
+		AA00000000000000000000F4 /* HeartRateSeriesEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000F3 /* HeartRateSeriesEncodingTests.swift */; };
 		DD0000000000000000000001 /* WatchProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000000000000000000001 /* WatchProtocol.swift */; };
 		DD0000000000000000000002 /* WatchProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000000000000000000001 /* WatchProtocol.swift */; };
 		DD0000000000000000000003 /* HandoffFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000000000000000000002 /* HandoffFileStore.swift */; };
@@ -141,6 +143,8 @@
 		AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementStateCacheTests.swift; sourceTree = "<group>"; };
 		AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/HealthKitHeartRateMonitor.swift; sourceTree = "<group>"; };
 		AA00000000000000000000CB /* HealthKitHeartRateMonitorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HealthKitHeartRateMonitorTests.swift; sourceTree = "<group>"; };
+		AA00000000000000000000F1 /* HeartRateSeriesChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Health/HeartRateSeriesChannel.swift; sourceTree = "<group>"; };
+		AA00000000000000000000F3 /* HeartRateSeriesEncodingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeartRateSeriesEncodingTests.swift; sourceTree = "<group>"; };
 		CC0000000000000000000001 /* WatchProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Watch/WatchProtocol.swift; sourceTree = "<group>"; };
 		CC0000000000000000000002 /* HandoffFileStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Watch/HandoffFileStore.swift; sourceTree = "<group>"; };
 		CC0000000000000000000003 /* WatchRecording.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Watch/WatchRecording.swift; sourceTree = "<group>"; };
@@ -197,6 +201,7 @@
 				AA00000000000000000000C3 /* AnnouncementSchedulerTests.swift */,
 				AA00000000000000000000C7 /* AnnouncementStateCacheTests.swift */,
 				AA00000000000000000000CB /* HealthKitHeartRateMonitorTests.swift */,
+				AA00000000000000000000F3 /* HeartRateSeriesEncodingTests.swift */,
 				CC0000000000000000000010 /* WatchTransportTests.swift */,
 			);
 			path = RunnerTests;
@@ -262,6 +267,7 @@
 				AA00000000000000000000E1 /* StartCountdownWarmUp.swift */,
 				AA00000000000000000000C5 /* AnnouncementStateCache.swift */,
 				AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */,
+				AA00000000000000000000F1 /* HeartRateSeriesChannel.swift */,
 				CC0000000000000000000005 /* WatchConnectivityBridge.swift */,
 				CC0000000000000000000006 /* WatchTransportChannel.swift */,
 				CC0000000000000000000007 /* WatchLinkState.swift */,
@@ -481,6 +487,7 @@
 				AA00000000000000000000C2 /* AnnouncementSchedulerTests.swift in Sources */,
 				AA00000000000000000000C6 /* AnnouncementStateCacheTests.swift in Sources */,
 				AA00000000000000000000CA /* HealthKitHeartRateMonitorTests.swift in Sources */,
+				AA00000000000000000000F4 /* HeartRateSeriesEncodingTests.swift in Sources */,
 				DD0000000000000000000012 /* WatchTransportTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -506,6 +513,7 @@
 				AA00000000000000000000E2 /* StartCountdownWarmUp.swift in Sources */,
 				AA00000000000000000000C4 /* AnnouncementStateCache.swift in Sources */,
 				AA00000000000000000000CC /* HealthKitHeartRateMonitor.swift in Sources */,
+				AA00000000000000000000F2 /* HeartRateSeriesChannel.swift in Sources */,
 				DD0000000000000000000001 /* WatchProtocol.swift in Sources */,
 				DD0000000000000000000003 /* HandoffFileStore.swift in Sources */,
 				DD0000000000000000000005 /* WatchRecording.swift in Sources */,

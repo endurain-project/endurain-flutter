@@ -13,6 +13,9 @@ import UIKit
   /// Strong reference so the companion watch transport keeps its handlers.
   private var watchTransportChannel: WatchTransportChannel?
 
+  /// Strong reference so Health Sync's heart rate series reader stays registered.
+  private var heartRateSeriesChannel: HeartRateSeriesChannel?
+
   /// Whether iOS relaunched the process to deliver a location event.
   ///
   /// Set before the Flutter engine finishes initializing, and consumed in
@@ -87,6 +90,13 @@ import UIKit
       let channel = WatchTransportChannel()
       channel.register(with: registrar.messenger())
       watchTransportChannel = channel
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(
+      forPlugin: "EndurainHeartRateSeriesChannel"
+    ) {
+      let channel = HeartRateSeriesChannel()
+      channel.register(with: registrar.messenger())
+      heartRateSeriesChannel = channel
     }
     if let registrar = engineBridge.pluginRegistry.registrar(
       forPlugin: "EndurainActivityRecorderChannel"
