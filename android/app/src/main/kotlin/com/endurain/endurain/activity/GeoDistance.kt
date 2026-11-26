@@ -9,7 +9,11 @@ import kotlin.math.sqrt
  * Great-circle distance helper used by the on-device announcement scheduler.
  *
  * Pure math, no Android dependencies, so it is covered by plain JVM unit
- * tests. Mirrors the formula used by the Dart `geo_distance.dart` helper.
+ * tests. Same haversine as the iOS `GeoDistance` (shared vectors in
+ * test/fixtures/geo_distance_vectors.json). The Dart `geo_distance.dart`
+ * helper deliberately differs: it uses Vincenty on the WGS-84 ellipsoid to
+ * match the server, so live native distances can differ from the final
+ * stats by a fraction of a percent.
  */
 object GeoDistance {
     private const val EARTH_RADIUS_METERS = 6371000.0

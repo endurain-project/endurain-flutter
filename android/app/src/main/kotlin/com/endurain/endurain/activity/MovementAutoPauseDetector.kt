@@ -9,7 +9,7 @@ import kotlin.math.sqrt
  * Configuration for [MovementAutoPauseDetector].
  *
  * Mirrors the Dart `MovementAutoPauseConfig`
- * (lib/features/activity/services/movement_auto_pause_detector.dart); keep the
+ * (test/helpers/movement_auto_pause_detector.dart); keep the
  * two implementations in sync. Dart owns the canonical algorithm doc.
  */
 data class MovementAutoPauseConfig(
@@ -53,7 +53,7 @@ data class MovementSample(
  * when it should auto-resume once movement is observed again.
  *
  * Mirrors `MovementAutoPauseDetector` in
- * lib/features/activity/services/movement_auto_pause_detector.dart (the Dart
+ * test/helpers/movement_auto_pause_detector.dart (the Dart
  * geolocator fallback recorder implements the same algorithm); keep the two
  * implementations in sync.
  *

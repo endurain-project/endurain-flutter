@@ -1,16 +1,8 @@
 package com.endurain.endurain.activity
 
-import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
 import android.content.Context
-import android.os.Build
 import android.os.SystemClock
 import java.util.UUID
 
@@ -27,7 +19,7 @@ import java.util.UUID
  * between consecutive notifications, so that state is kept here; running cadence
  * is reported directly.
  */
-class CadenceGattClient(private val context: Context) {
+class CadenceGattClient(context: Context) : BleNotifyClient(context, "CadenceGatt") {
     private val reading = FreshReading()
 
     /**
@@ -37,89 +29,25 @@ class CadenceGattClient(private val context: Context) {
     val latestRpm: Int?
         get() = reading.value
 
-    private var gatt: BluetoothGatt? = null
-
     // Stateful CSC crank-revolution baseline for cadence derivation.
     private val crankCadence = CrankCadenceCalculator()
 
-    private val callback = object : BluetoothGattCallback() {
-        @SuppressLint("MissingPermission")
-        override fun onConnectionStateChange(
-            connectedGatt: BluetoothGatt,
-            status: Int,
-            newState: Int,
-        ) {
-            when (newState) {
-                BluetoothProfile.STATE_CONNECTED -> {
-                    try {
-                        connectedGatt.discoverServices()
-                    } catch (_: Exception) {
-                        // Ignore: a later reconnect will retry discovery.
-                    }
-                }
-                BluetoothProfile.STATE_DISCONNECTED -> {
-                    // Drop the stale reading and baseline; autoConnect restores.
-                    reading.clear()
-                    crankCadence.reset()
-                }
-            }
-        }
+    // Prefer whichever supported cadence profile the device exposes.
+    override fun selectCharacteristic(gatt: BluetoothGatt): BluetoothGattCharacteristic? =
+        gatt.getService(CSC_SERVICE)?.getCharacteristic(CSC_MEASUREMENT)
+            ?: gatt.getService(RSC_SERVICE)?.getCharacteristic(RSC_MEASUREMENT)
 
-        @SuppressLint("MissingPermission")
-        override fun onServicesDiscovered(discoveredGatt: BluetoothGatt, status: Int) {
-            if (status != BluetoothGatt.GATT_SUCCESS) {
-                return
-            }
-            // Prefer whichever supported cadence profile the device exposes.
-            val characteristic =
-                discoveredGatt.getService(CSC_SERVICE)?.getCharacteristic(CSC_MEASUREMENT)
-                    ?: discoveredGatt.getService(RSC_SERVICE)?.getCharacteristic(RSC_MEASUREMENT)
-                    ?: return
-            discoveredGatt.setCharacteristicNotification(characteristic, true)
-            val cccd = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG) ?: return
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    discoveredGatt.writeDescriptor(
-                        cccd,
-                        BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE,
-                    )
-                } else {
-                    @Suppress("DEPRECATION")
-                    cccd.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                    @Suppress("DEPRECATION")
-                    discoveredGatt.writeDescriptor(cccd)
-                }
-            } catch (_: Exception) {
-                // Notifications could not be enabled; no cadence will arrive.
-            }
-        }
-
-        // Android 13+ delivers the value directly.
-        override fun onCharacteristicChanged(
-            changedGatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-            value: ByteArray,
-        ) {
-            handleValue(characteristic.uuid, value)
-        }
-
-        // Pre-Android 13 reads the value off the characteristic.
-        @Deprecated("Deprecated in API 33")
-        override fun onCharacteristicChanged(
-            changedGatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-        ) {
-            @Suppress("DEPRECATION")
-            val value = characteristic.value ?: return
-            handleValue(characteristic.uuid, value)
-        }
-    }
-
-    private fun handleValue(uuid: UUID, value: ByteArray) {
+    override fun onValue(uuid: UUID, value: ByteArray) {
         when (uuid) {
             CSC_MEASUREMENT -> parseCscCadenceRpm(value)?.let { reading.update(it) }
             RSC_MEASUREMENT -> parseRscCadenceSpm(value)?.let { reading.update(it) }
         }
+    }
+
+    // Drop the stale reading and baseline so a new link starts a fresh derivation.
+    override fun onLinkLost() {
+        reading.clear()
+        crankCadence.reset()
     }
 
     /**
@@ -132,51 +60,6 @@ class CadenceGattClient(private val context: Context) {
         return crankCadence.onMeasurement(crank.first, crank.second, SystemClock.elapsedRealtime())
     }
 
-    /** Connects to [deviceId] (a BLE MAC address) and begins streaming cadence. */
-    @SuppressLint("MissingPermission")
-    fun start(deviceId: String) {
-        stop()
-        try {
-            val manager =
-                context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-                    ?: return
-            val adapter: BluetoothAdapter = manager.adapter ?: return
-            if (!adapter.isEnabled) {
-                return
-            }
-            val device = adapter.getRemoteDevice(deviceId)
-            gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                device.connectGatt(context, true, callback, BluetoothDevice.TRANSPORT_LE)
-            } else {
-                device.connectGatt(context, true, callback)
-            }
-        } catch (_: Exception) {
-            // Bluetooth unavailable, permission missing, or malformed address:
-            // degrade gracefully to recording without cadence.
-            gatt = null
-        }
-    }
-
-    /** Disconnects and releases the GATT connection. */
-    @SuppressLint("MissingPermission")
-    fun stop() {
-        reading.clear()
-        crankCadence.reset()
-        gatt?.let { active ->
-            try {
-                active.disconnect()
-            } catch (_: Exception) {
-                // Best effort.
-            }
-            try {
-                active.close()
-            } catch (_: Exception) {
-                // Best effort.
-            }
-        }
-        gatt = null
-    }
-
     companion object {
         private val CSC_SERVICE =
             UUID.fromString("00001816-0000-1000-8000-00805f9b34fb")
@@ -186,8 +69,6 @@ class CadenceGattClient(private val context: Context) {
             UUID.fromString("00001814-0000-1000-8000-00805f9b34fb")
         private val RSC_MEASUREMENT =
             UUID.fromString("00002a53-0000-1000-8000-00805f9b34fb")
-        private val CLIENT_CHARACTERISTIC_CONFIG =
-            UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
         private const val FLAG_WHEEL_DATA_PRESENT = 0x01
         private const val FLAG_CRANK_DATA_PRESENT = 0x02

@@ -9,7 +9,7 @@ import java.io.File
  * JVM unit tests for [MovementAutoPauseDetector].
  *
  * Mirrors the Dart test suite for
- * `lib/features/activity/services/movement_auto_pause_detector.dart`. A
+ * `test/helpers/movement_auto_pause_detector.dart`. A
  * regression here would either fail to auto-pause a stopped recording or
  * (worse) auto-resume when it should not, so every branch of the reliable-
  * movement heuristic and the pause/resume hysteresis is locked down.

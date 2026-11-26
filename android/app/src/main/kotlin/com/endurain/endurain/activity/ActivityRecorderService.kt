@@ -1,29 +1,19 @@
 package com.endurain.endurain.activity
 
 import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.os.PowerManager
-import android.os.SystemClock
-import com.endurain.endurain.MainActivity
-import com.endurain.endurain.R
+import android.util.Log
 import androidx.annotation.VisibleForTesting
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import java.util.Date
 
@@ -37,15 +27,15 @@ import java.util.Date
  */
 class ActivityRecorderService : Service() {
     private lateinit var store: ActiveActivityStore
-    private var locationManager: LocationManager? = null
-    private var locationListener: LocationListener? = null
     private var collectingSessionId: String? = null
 
-    /**
-     * Location listener of the start-countdown warm-up; its fixes are dropped.
-     * Non-null while the service only keeps the app alive for a countdown.
-     */
-    private var warmUpListener: LocationListener? = null
+    private lateinit var collector: RecorderLocationCollector
+    private lateinit var notifications: RecorderNotifications
+    private lateinit var announcements: RecorderAnnouncementDriver
+    private lateinit var wakeLock: RecordingWakeLock
+    private val handler = Handler(Looper.getMainLooper())
+
+    /** Whether the service only keeps the app alive for a start countdown. */
     private var isWarmingUp = false
     private var nextPointOffset = 0
 
@@ -59,15 +49,7 @@ class ActivityRecorderService : Service() {
     private var heartRateClient: HeartRateGattClient? = null
     private var powerClient: CyclingPowerGattClient? = null
     private var cadenceClient: CadenceGattClient? = null
-    private var wakeLock: PowerManager.WakeLock? = null
     private var autoPauseDetector: MovementAutoPauseDetector? = null
-    private val announcementStateCache = AnnouncementStateCache()
-    private val announcementHandler = Handler(Looper.getMainLooper())
-    private val timeAnnouncementRunnable = Runnable {
-        announceTimeIfDue(System.currentTimeMillis())
-        scheduleNextTimeAnnouncement()
-    }
-
     /** Ends a warm-up that no recording and no `endStartWarmUp` ever ended. */
     private val warmUpTimeoutRunnable = Runnable { finishWarmUp() }
 
@@ -75,9 +57,14 @@ class ActivityRecorderService : Service() {
         super.onCreate()
         activeInstance = this
         store = ActiveActivityStore.of(applicationContext)
-        locationManager =
-            getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-        createNotificationChannel()
+        collector = RecorderLocationCollector(
+            this,
+            getSystemService(Context.LOCATION_SERVICE) as? LocationManager,
+        )
+        notifications = RecorderNotifications(this)
+        announcements = RecorderAnnouncementDriver(this, store)
+        wakeLock = RecordingWakeLock(this)
+        notifications.createChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -98,12 +85,12 @@ class ActivityRecorderService : Service() {
     }
 
     private fun startRecording(requestedTitle: String?, requestedText: String?) {
-        stopWarmUpLocationUpdates()
-        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
+        collector.stopWarmUp()
+        handler.removeCallbacks(warmUpTimeoutRunnable)
         isWarmingUp = false
-        announcementStateCache.reset()
-        val title = requestedTitle ?: defaultTitle()
-        val text = requestedText ?: defaultText()
+        announcements.reset()
+        val title = requestedTitle ?: notifications.defaultTitle()
+        val text = requestedText ?: notifications.defaultText()
         activeNotificationTitle = title
         activeNotificationText = text
         resumedFromPause = false
@@ -160,8 +147,8 @@ class ActivityRecorderService : Service() {
             // from this service may then keep or drop the type, but never has
             // to add one while the app is in the background.
             startForegroundCompat(
-                defaultTitle(),
-                getString(R.string.activity_recording_notification_starting),
+                notifications.defaultTitle(),
+                notifications.startingText(),
                 connectedDevice = hasPermission(Manifest.permission.BLUETOOTH_CONNECT) ||
                     hasPermission(Manifest.permission.BLUETOOTH_SCAN),
             )
@@ -170,14 +157,14 @@ class ActivityRecorderService : Service() {
             return
         }
         isWarmingUp = true
-        startWarmUpLocationUpdates()
-        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
+        collector.startWarmUp()
+        handler.removeCallbacks(warmUpTimeoutRunnable)
         val countdownSeconds = if (intent.hasExtra(EXTRA_COUNTDOWN_SECONDS)) {
             intent.getLongExtra(EXTRA_COUNTDOWN_SECONDS, 0L)
         } else {
             null
         }
-        announcementHandler.postDelayed(
+        handler.postDelayed(
             warmUpTimeoutRunnable,
             warmUpTimeoutMillis(countdownSeconds),
         )
@@ -185,57 +172,14 @@ class ActivityRecorderService : Service() {
 
     /** Ends the warm-up when no recording started from it. */
     private fun finishWarmUp() {
-        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
+        handler.removeCallbacks(warmUpTimeoutRunnable)
         if (!isWarmingUp) {
             return
         }
         isWarmingUp = false
-        stopWarmUpLocationUpdates()
+        collector.stopWarmUp()
         stopForegroundCompat()
         stopSelf()
-    }
-
-    private fun startWarmUpLocationUpdates() {
-        val manager = locationManager ?: return
-        val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-        val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-        val listener = object : LocationListener {
-            // Dropped on purpose: nothing is recorded before the countdown ends.
-            override fun onLocationChanged(location: Location) {}
-
-            override fun onProviderEnabled(provider: String) {}
-
-            override fun onProviderDisabled(provider: String) {}
-
-            @Deprecated("Deprecated in Android API 29")
-            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-        }
-        for (provider in selectProviders(manager, hasFine, hasCoarse)) {
-            try {
-                manager.requestLocationUpdates(
-                    provider,
-                    MIN_UPDATE_INTERVAL_MS,
-                    0f,
-                    listener,
-                    Looper.getMainLooper(),
-                )
-                warmUpListener = listener
-            } catch (_: SecurityException) {
-                // The foreground service alone still keeps the countdown alive.
-            } catch (_: IllegalArgumentException) {
-                // Provider disappeared between discovery and subscription.
-            }
-        }
-    }
-
-    private fun stopWarmUpLocationUpdates() {
-        val listener = warmUpListener ?: return
-        warmUpListener = null
-        try {
-            locationManager?.removeUpdates(listener)
-        } catch (_: Exception) {
-            // Best effort; nothing to recover here.
-        }
     }
 
     private fun handleResume() {
@@ -250,8 +194,8 @@ class ActivityRecorderService : Service() {
             return
         }
         if (!startForegroundOrFail(
-            activeNotificationTitle ?: defaultTitle(),
-            activeNotificationText ?: defaultText(),
+            activeNotificationTitle ?: notifications.defaultTitle(),
+            activeNotificationText ?: notifications.defaultText(),
         )) {
             return
         }
@@ -266,7 +210,7 @@ class ActivityRecorderService : Service() {
 
     private fun handlePause() {
         AudioAnnouncer.stop()
-        flushAnnouncementState()
+        announcements.flush()
         stopCollection()
         // Keep the foreground notification so recording can resume cheaply.
     }
@@ -317,7 +261,7 @@ class ActivityRecorderService : Service() {
                 ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
             )
             if (stickyRestart) {
-                postInterruptedNotification()
+                notifications.postInterrupted()
                 stopSelf()
             } else {
                 stopBeforeForegroundWork()
@@ -328,8 +272,8 @@ class ActivityRecorderService : Service() {
         // background without background location, so a sticky restart can
         // fail here; the notification lets the user reopen and resume.
         if (!startForegroundOrFail(
-            activeNotificationTitle ?: defaultTitle(),
-            activeNotificationText ?: defaultText(),
+            activeNotificationTitle ?: notifications.defaultTitle(),
+            activeNotificationText ?: notifications.defaultText(),
             notifyInterrupted = stickyRestart,
         )) {
             return
@@ -339,7 +283,7 @@ class ActivityRecorderService : Service() {
                 store.lastPoint() != null
             if (!beginCollection()) {
                 if (stickyRestart) {
-                    postInterruptedNotification()
+                    notifications.postInterrupted()
                 }
                 stopAfterCollectionFailure()
                 return
@@ -355,54 +299,10 @@ class ActivityRecorderService : Service() {
      */
     private fun beginCollection(): Boolean {
         stopCollection()
-        val manager = locationManager
-        if (manager == null) {
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
-            )
+        collector.unavailability()?.let {
+            failCollection(it)
             return false
         }
-        val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-        val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-        if (!hasFine && !hasCoarse) {
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
-            )
-            return false
-        }
-        val providers = selectProviders(manager, hasFine, hasCoarse)
-        if (providers.isEmpty()) {
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
-            )
-            return false
-        }
-        val listener = object : LocationListener {
-            override fun onLocationChanged(location: Location) {
-                onLocationFix(location)
-            }
-
-            // Required no-op overrides for older API levels.
-            override fun onProviderEnabled(provider: String) {
-                handleProviderAvailabilityChanged()
-            }
-
-            override fun onProviderDisabled(provider: String) {
-                handleProviderAvailabilityChanged()
-            }
-
-            @Deprecated("Deprecated in Android API 29")
-            override fun onStatusChanged(
-                provider: String?,
-                status: Int,
-                extras: Bundle?,
-            ) {
-            }
-        }
-        locationListener = listener
         val session = store.loadSession()
         lastPointEpochMillis = store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis)
         // Anchor stillness to this collection (re)start, not the last stored
@@ -420,40 +320,32 @@ class ActivityRecorderService : Service() {
             MIN_UPDATE_DISTANCE_METERS
         }
         nextPointOffset = store.pointCount()
-        var registeredProvider = false
-        var permissionFailure = false
-        for (provider in providers) {
-            try {
-                manager.requestLocationUpdates(
-                    provider,
-                    MIN_UPDATE_INTERVAL_MS,
-                    minUpdateDistanceMeters,
-                    listener,
-                    Looper.getMainLooper(),
-                )
-                registeredProvider = true
-            } catch (_: SecurityException) {
-                permissionFailure = true
-            } catch (_: IllegalArgumentException) {
-                // Provider disappeared between discovery and subscription.
-            }
-        }
-        if (!registeredProvider) {
-            locationListener = null
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                if (permissionFailure) {
-                    ActivityRecorderCoordinator.REASON_PERMISSION_LOST
-                } else {
-                    ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE
-                },
-            )
+        val failure = collector.startActive(
+            minUpdateDistanceMeters,
+            onFix = ::onLocationFix,
+            onProviderToggled = ::handleProviderAvailabilityChanged,
+        )
+        if (failure != null) {
+            failCollection(failure)
             return false
         }
         collectingSessionId = store.loadSession()?.localSessionId
-        acquireWakeLock()
-        scheduleNextTimeAnnouncement()
+        wakeLock.acquire()
+        announcements.scheduleNextTimeAnnouncement()
         return true
+    }
+
+    /** Persists and reports why collection could not start. */
+    private fun failCollection(failure: RecorderLocationCollector.Failure) {
+        persistFailure()
+        ActivityRecorderCoordinator.emitFailed(
+            when (failure) {
+                RecorderLocationCollector.Failure.PERMISSION_LOST ->
+                    ActivityRecorderCoordinator.REASON_PERMISSION_LOST
+                RecorderLocationCollector.Failure.LOCATION_UNAVAILABLE ->
+                    ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE
+            },
+        )
     }
 
     /** Stops the service after [beginCollection] failed (and reported why). */
@@ -474,58 +366,12 @@ class ActivityRecorderService : Service() {
      */
     private fun stopBeforeForegroundWork() {
         try {
-            startForegroundCompat(defaultTitle(), defaultText(), connectedDevice = false)
+            startForegroundCompat(notifications.defaultTitle(), notifications.defaultText(), connectedDevice = false)
         } catch (_: RuntimeException) {
             // See above.
         }
         stopForegroundCompat()
         stopSelf()
-    }
-
-    /**
-     * Holds a partial wake lock for the duration of active collection.
-     *
-     * A foreground service is not kept awake by itself: between distance-
-     * filtered GPS fixes the AP can suspend, which drops BLE
-     * `onCharacteristicChanged` callbacks and delays the `points.jsonl` append
-     * that must happen on the same wake window. This is what the declared
-     * `WAKE_LOCK` permission is for.
-     *
-     * Deliberately acquired without a timeout: the lock's lifetime is bounded by
-     * [stopCollection]/[onDestroy] instead, because any fixed timeout long
-     * enough for an ultra-distance activity would be useless as a leak guard,
-     * and a shorter one would silently degrade a long recording.
-     */
-    private fun acquireWakeLock() {
-        if (wakeLock?.isHeld == true) {
-            return
-        }
-        val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
-        val lock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            WAKE_LOCK_TAG,
-        )
-        lock.setReferenceCounted(false)
-        try {
-            lock.acquire()
-        } catch (_: RuntimeException) {
-            // Losing the wake lock degrades sampling but must never abort the
-            // recording; GPS delivery still holds its own wakelock per fix.
-            return
-        }
-        wakeLock = lock
-    }
-
-    private fun releaseWakeLock() {
-        val lock = wakeLock ?: return
-        wakeLock = null
-        try {
-            if (lock.isHeld) {
-                lock.release()
-            }
-        } catch (_: RuntimeException) {
-            // Already released or never held.
-        }
     }
 
     /**
@@ -552,20 +398,14 @@ class ActivityRecorderService : Service() {
         // Released first and unconditionally: the listener may already be null
         // (e.g. a start that never registered a provider), and the wake lock
         // must never outlive collection.
-        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
-        releaseWakeLock()
+        announcements.cancelScheduled()
+        wakeLock.release()
         // A manual pause reaches here and must stop monitoring movement
         // entirely, so a manually paused recording can never auto-resume;
         // `beginCollection` always rebuilds a fresh detector for the next
         // active period.
         autoPauseDetector = null
-        val listener = locationListener ?: return
-        try {
-            locationManager?.removeUpdates(listener)
-        } catch (_: Exception) {
-            // Best effort; nothing to recover here.
-        }
-        locationListener = null
+        collector.stopActive()
     }
 
     /**
@@ -578,24 +418,9 @@ class ActivityRecorderService : Service() {
      * remains, the session is persisted as failed and the service is stopped.
      */
     private fun handleProviderAvailabilityChanged() {
-        val manager = locationManager ?: return
-        val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-        val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-        if (!hasFine && !hasCoarse) {
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                ActivityRecorderCoordinator.REASON_PERMISSION_LOST,
-            )
-            stopCollection()
-            stopSelf()
-            return
-        }
-        val remaining = selectProviders(manager, hasFine, hasCoarse)
-        if (remaining.isEmpty()) {
-            persistFailure()
-            ActivityRecorderCoordinator.emitFailed(
-                ActivityRecorderCoordinator.REASON_LOCATION_UNAVAILABLE,
-            )
+        val failure = collector.unavailability()
+        if (failure != null) {
+            failCollection(failure)
             stopCollection()
             stopSelf()
             return
@@ -635,6 +460,7 @@ class ActivityRecorderService : Service() {
     }
 
     private fun onLocationFix(location: Location) {
+        wakeLock.renew()
         val session = store.loadSession() ?: return
         when (session.status) {
             ActiveActivitySessionData.STATUS_RECORDING -> onActiveLocationFix(session, location)
@@ -729,153 +555,7 @@ class ActivityRecorderService : Service() {
             nextPointOffset,
         )
         nextPointOffset += 1
-        announceIfDue(nowMillis, location, isNewSegment)
-    }
-
-    /** Advances announcement progress and speaks threshold crossings. */
-    private fun announceIfDue(nowMillis: Long, location: Location, isNewSegment: Boolean) {
-        val announcementState = currentAnnouncementState() ?: return
-        if (!announcementState.enabled) {
-            return
-        }
-        val session = store.loadSession() ?: return
-        val elapsedSeconds = SessionTiming.elapsedSeconds(session, nowMillis)
-        val result = AnnouncementScheduler.onFix(
-            state = announcementState,
-            latitude = location.latitude,
-            longitude = location.longitude,
-            elapsedSeconds = elapsedSeconds,
-            isNewSegment = isNewSegment,
-        )
-        if (!cacheAnnouncementState(
-                result.state,
-                persistBeforeSpeech = result.announcements.isNotEmpty(),
-            )
-        ) {
-            return
-        }
-        for (text in result.announcements) {
-            AudioAnnouncer.speak(
-                applicationContext,
-                text,
-                announcementState.duckOtherAudio,
-                announcementState.languageTag,
-            )
-        }
-    }
-
-    /**
-     * Schedules one main-looper callback at the next elapsed-time threshold.
-     * One-shot scheduling avoids polling and serializes state with GPS fixes.
-     */
-    private fun scheduleNextTimeAnnouncement() {
-        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
-        val announcementState = currentAnnouncementState() ?: return
-        if (!announcementState.enabled || !announcementState.isTimeBased ||
-            announcementState.timeIntervalSeconds !in
-            MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS..MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS
-        ) {
-            return
-        }
-        val session = store.loadSession() ?: return
-        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
-            return
-        }
-        val elapsedSeconds = SessionTiming.elapsedSeconds(
-            session,
-            System.currentTimeMillis(),
-        )
-        val nextIndex = maxOf(1L, announcementState.lastAnnouncedTimeIndex.toLong() + 1L)
-        val nextThresholdSeconds =
-            nextIndex * announcementState.timeIntervalSeconds.toLong()
-        val remainingSeconds = nextThresholdSeconds - elapsedSeconds.toLong()
-        val delayMillis = maxOf(
-            TIME_ANNOUNCEMENT_RETRY_MILLIS,
-            remainingSeconds * 1000L,
-        )
-        announcementHandler.postDelayed(timeAnnouncementRunnable, delayMillis)
-    }
-
-    /** Advances a time-based schedule without waiting for another GPS fix. */
-    private fun announceTimeIfDue(referenceMillis: Long) {
-        val announcementState = currentAnnouncementState() ?: return
-        if (!announcementState.enabled || !announcementState.isTimeBased) {
-            return
-        }
-        val session = store.loadSession() ?: return
-        if (session.status != ActiveActivitySessionData.STATUS_RECORDING) {
-            return
-        }
-        val result = AnnouncementScheduler.onElapsedTime(
-            state = announcementState,
-            elapsedSeconds = SessionTiming.elapsedSeconds(session, referenceMillis),
-        )
-        if (result.state == announcementState) {
-            return
-        }
-        if (!cacheAnnouncementState(
-                result.state,
-                persistBeforeSpeech = result.announcements.isNotEmpty(),
-            )
-        ) {
-            return
-        }
-        for (text in result.announcements) {
-            AudioAnnouncer.speak(
-                applicationContext,
-                text,
-                announcementState.duckOtherAudio,
-                announcementState.languageTag,
-            )
-        }
-    }
-
-    private fun currentAnnouncementState(): AnnouncementStateData? {
-        announcementStateCache.state?.let { return it }
-        val state = store.loadAnnouncementState() ?: return null
-        announcementStateCache.restore(state, SystemClock.elapsedRealtime())
-        return state
-    }
-
-    /**
-     * Keeps normal GPS progress in memory, checkpoints it periodically, and
-     * makes threshold progress durable before the corresponding speech.
-     */
-    private fun cacheAnnouncementState(
-        state: AnnouncementStateData,
-        persistBeforeSpeech: Boolean,
-    ): Boolean {
-        val previousState = announcementStateCache.state
-        announcementStateCache.update(state)
-        val uptimeMillis = SystemClock.elapsedRealtime()
-        val stateToPersist = announcementStateCache.stateToPersist(
-            uptimeMillis,
-            force = persistBeforeSpeech,
-        ) ?: return true
-        return try {
-            store.saveAnnouncementState(stateToPersist)
-            announcementStateCache.markPersisted(uptimeMillis)
-            true
-        } catch (_: Exception) {
-            if (persistBeforeSpeech && previousState != null) {
-                announcementStateCache.update(previousState)
-            }
-            !persistBeforeSpeech
-        }
-    }
-
-    private fun flushAnnouncementState() {
-        val uptimeMillis = SystemClock.elapsedRealtime()
-        val state = announcementStateCache.stateToPersist(
-            uptimeMillis,
-            force = true,
-        ) ?: return
-        try {
-            store.saveAnnouncementState(state)
-            announcementStateCache.markPersisted(uptimeMillis)
-        } catch (_: Exception) {
-            // Announcement progress must never make recording teardown fail.
-        }
+        announcements.onFix(nowMillis, location, isNewSegment)
     }
 
     /**
@@ -904,12 +584,12 @@ class ActivityRecorderService : Service() {
             resumed,
         )
         // Queue the state cue before this fix can enqueue a progress update.
-        speakTransitionCue(autoPaused = false)
+        announcements.speakTransitionCue(autoPaused = false)
         // Persist this same triggering fix as the first point of the new
         // segment, matching the manual resume flow (`resumedFromPause` forces
         // a segment break above).
         onActiveLocationFix(resumed, location)
-        scheduleNextTimeAnnouncement()
+        announcements.scheduleNextTimeAnnouncement()
     }
 
     private fun transitionToAutoPaused(session: ActiveActivitySessionData, nowMillis: Long) {
@@ -932,24 +612,13 @@ class ActivityRecorderService : Service() {
         )
         // Cancel queued progress speech before announcing the state change.
         AudioAnnouncer.stop()
-        speakTransitionCue(autoPaused = true)
-        flushAnnouncementState()
-        announcementHandler.removeCallbacks(timeAnnouncementRunnable)
+        announcements.speakTransitionCue(autoPaused = true)
+        announcements.flush()
+        announcements.cancelScheduled()
         // Deliberately does not call `stopCollection()`: an automatic pause
         // must keep monitoring location so movement can resume the recording
         // without user interaction, unlike a manual pause which stops
         // collection entirely (see `stopCollection`).
-    }
-
-    private fun speakTransitionCue(autoPaused: Boolean) {
-        val announcementState = currentAnnouncementState() ?: return
-        val message = announcementState.transitionMessage(autoPaused) ?: return
-        AudioAnnouncer.speak(
-            applicationContext,
-            message,
-            announcementState.duckOtherAudio,
-            announcementState.languageTag,
-        )
     }
 
     private fun movementSample(location: Location, nowMillis: Long): MovementSample {
@@ -963,68 +632,16 @@ class ActivityRecorderService : Service() {
         )
     }
 
-    /**
-     * Selects a single location provider, preferring GPS for its precision.
-     *
-     * The network provider is used only as a fallback when GPS is unavailable.
-     * Subscribing to both simultaneously interleaves a precise GPS stream with
-     * low-accuracy WiFi/cell triangulation, which surfaces as "ghost" points
-     * hundreds of meters to kilometers off the real track (the network fixes
-     * also lack altitude). Picking one provider avoids that artifact; the
-     * accuracy gate in [onLocationFix] guards the remaining fallback case.
-     */
-    private fun selectProviders(
-        manager: LocationManager,
-        hasFine: Boolean,
-        hasCoarse: Boolean,
-    ): List<String> {
-        val gpsEnabled = isProviderEnabled(manager, LocationManager.GPS_PROVIDER)
-        if (hasFine && gpsEnabled) {
-            return listOf(LocationManager.GPS_PROVIDER)
-        }
-        val networkEnabled = isProviderEnabled(manager, LocationManager.NETWORK_PROVIDER)
-        if ((hasFine || hasCoarse) && networkEnabled) {
-            return listOf(LocationManager.NETWORK_PROVIDER)
-        }
-        return emptyList()
-    }
-
-    private fun isProviderEnabled(manager: LocationManager, provider: String): Boolean {
-        return try {
-            manager.isProviderEnabled(provider)
-        } catch (_: Exception) {
-            false
-        }
-    }
-
     private fun verticalAccuracy(location: Location): Double? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-            location.hasVerticalAccuracy()
-        ) {
-            location.verticalAccuracyMeters.toDouble()
-        } else {
-            null
-        }
+        return if (location.hasVerticalAccuracy()) location.verticalAccuracyMeters.toDouble() else null
     }
 
     private fun bearingAccuracy(location: Location): Double? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-            location.hasBearingAccuracy()
-        ) {
-            location.bearingAccuracyDegrees.toDouble()
-        } else {
-            null
-        }
+        return if (location.hasBearingAccuracy()) location.bearingAccuracyDegrees.toDouble() else null
     }
 
     private fun speedAccuracy(location: Location): Double? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-            location.hasSpeedAccuracy()
-        ) {
-            location.speedAccuracyMetersPerSecond.toDouble()
-        } else {
-            null
-        }
+        return if (location.hasSpeedAccuracy()) location.speedAccuracyMetersPerSecond.toDouble() else null
     }
 
     private fun hasPermission(permission: String): Boolean {
@@ -1063,7 +680,7 @@ class ActivityRecorderService : Service() {
         text: String,
         connectedDevice: Boolean = canDeclareConnectedDeviceType(store.loadSession()),
     ) {
-        val notification = buildNotification(title, text)
+        val notification = notifications.build(title, text)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // `location` is always required; `connectedDevice` is added only
             // when it is both needed and permitted (see the doc above).
@@ -1071,9 +688,9 @@ class ActivityRecorderService : Service() {
             if (connectedDevice) {
                 types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
             }
-            startForeground(NOTIFICATION_ID, notification, types)
+            startForeground(RecorderNotifications.NOTIFICATION_ID, notification, types)
         } else {
-            startForeground(NOTIFICATION_ID, notification)
+            startForeground(RecorderNotifications.NOTIFICATION_ID, notification)
         }
         inForeground = true
     }
@@ -1090,7 +707,7 @@ class ActivityRecorderService : Service() {
     ): Boolean {
         val reason = try {
             startForegroundCompat(title, text)
-            cancelInterruptedNotification()
+            notifications.cancelInterrupted()
             return true
         } catch (_: SecurityException) {
             ActivityRecorderCoordinator.REASON_PERMISSION_LOST
@@ -1100,129 +717,15 @@ class ActivityRecorderService : Service() {
         persistFailure()
         ActivityRecorderCoordinator.emitFailed(reason)
         if (notifyInterrupted) {
-            postInterruptedNotification()
+            notifications.postInterrupted()
         }
         stopSelf()
         return false
     }
 
-    /**
-     * Tells the user a recording stopped while the app was in the background.
-     * Tapping it opens the app, whose recovery offers to resume.
-     */
-    private fun postInterruptedNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            !hasPermission(Manifest.permission.POST_NOTIFICATIONS)
-        ) {
-            return
-        }
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
-        try {
-            createAlertNotificationChannel(manager)
-            val openApp = PendingIntent.getActivity(
-                this,
-                0,
-                Intent(this, MainActivity::class.java)
-                    .setAction(Intent.ACTION_MAIN)
-                    .addCategory(Intent.CATEGORY_LAUNCHER)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-            val notification = NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
-                .setContentTitle(getString(R.string.activity_recording_interrupted_title))
-                .setContentText(getString(R.string.activity_recording_interrupted_text))
-                .setSmallIcon(applicationInfo.icon)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_STATUS)
-                .setAutoCancel(true)
-                .setContentIntent(openApp)
-                .build()
-            manager.notify(INTERRUPTED_NOTIFICATION_ID, notification)
-        } catch (_: RuntimeException) {
-            // Best effort: the failed session is persisted either way.
-        }
-    }
-
-    private fun cancelInterruptedNotification() {
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
-        try {
-            manager.cancel(INTERRUPTED_NOTIFICATION_ID)
-        } catch (_: RuntimeException) {
-            // Best effort.
-        }
-    }
-
-    private fun createAlertNotificationChannel(manager: NotificationManager) {
-        if (manager.getNotificationChannel(ALERT_CHANNEL_ID) != null) {
-            return
-        }
-        val channel = NotificationChannel(
-            ALERT_CHANNEL_ID,
-            getString(R.string.activity_recording_alert_channel_name),
-            NotificationManager.IMPORTANCE_HIGH,
-        ).apply {
-            description = getString(R.string.activity_recording_alert_channel_description)
-        }
-        manager.createNotificationChannel(channel)
-    }
-
     private fun stopForegroundCompat() {
         inForeground = false
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
-    }
-
-    private fun buildNotification(title: String, text: String): Notification {
-        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-        val contentIntent = launchIntent?.let {
-            PendingIntent.getActivity(
-                this,
-                0,
-                it,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-        }
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setSmallIcon(applicationInfo.icon)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setCategory(NotificationCompat.CATEGORY_SERVICE)
-            .apply { contentIntent?.let { setContentIntent(it) } }
-            .build()
-    }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return
-        }
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (manager.getNotificationChannel(CHANNEL_ID) != null) {
-            return
-        }
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            getString(R.string.activity_recording_channel_name),
-            NotificationManager.IMPORTANCE_LOW,
-        ).apply {
-            description = getString(R.string.activity_recording_channel_description)
-            setShowBadge(false)
-        }
-        manager.createNotificationChannel(channel)
-    }
-
-    private fun defaultTitle(): String {
-        return getString(R.string.activity_recording_notification_title)
-    }
-
-    private fun defaultText(): String {
-        return getString(R.string.activity_recording_notification_text)
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     /** Swiping the app away ends a countdown's warm-up; a recording keeps running. */
@@ -1232,16 +735,16 @@ class ActivityRecorderService : Service() {
     }
 
     override fun onDestroy() {
-        announcementHandler.removeCallbacks(warmUpTimeoutRunnable)
+        handler.removeCallbacks(warmUpTimeoutRunnable)
         AudioAnnouncer.stop()
         if (store.loadSession()?.isActive == true) {
-            flushAnnouncementState()
+            announcements.flush()
         }
         stopCollection()
-        stopWarmUpLocationUpdates()
+        collector.stopWarmUp()
         isWarmingUp = false
         stopSensorCapture()
-        releaseWakeLock()
+        wakeLock.release()
         if (activeInstance === this) {
             activeInstance = null
         }
@@ -1251,6 +754,9 @@ class ActivityRecorderService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
+        private const val TAG = "ActivityRecorder"
+
+        @Volatile
         private var activeInstance: ActivityRecorderService? = null
 
         const val ACTION_START = "com.endurain.endurain.activity.action.START"
@@ -1267,10 +773,6 @@ class ActivityRecorderService : Service() {
         /** Full length of the start countdown, in seconds (a `Long` extra). */
         const val EXTRA_COUNTDOWN_SECONDS = "countdownSeconds"
 
-        private const val CHANNEL_ID = "activity_recording"
-        private const val NOTIFICATION_ID = 4711
-        private const val ALERT_CHANNEL_ID = "activity_recording_alerts"
-        private const val INTERRUPTED_NOTIFICATION_ID = 4712
 
         /**
          * Leak guard for a warm-up nobody ended (Dart died mid-countdown), used
@@ -1325,73 +827,31 @@ class ActivityRecorderService : Service() {
                 ) == PackageManager.PERMISSION_GRANTED
         }
 
-        /** Namespaced so this lock is attributable in `dumpsys power`. */
-        private const val WAKE_LOCK_TAG = "endurain:activity-recording"
-
         // Mirror the Dart location/segment policy constants.
-        private const val MIN_UPDATE_INTERVAL_MS = 1000L
         private const val MIN_UPDATE_DISTANCE_METERS = 3f
         private const val MAX_TIME_GAP_MILLIS = 30_000L
         private const val MAX_ACCURACY_METERS = 100f
         private const val MAX_SPEED_METERS_PER_SECOND = 90f
-        private const val MIN_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 60
-        private const val MAX_TIME_ANNOUNCEMENT_INTERVAL_SECONDS = 3600
-        private const val TIME_ANNOUNCEMENT_RETRY_MILLIS = 1000L
 
         private fun baseIntent(context: Context, action: String): Intent {
             return Intent(context, ActivityRecorderService::class.java).setAction(action)
         }
 
-        fun recover(context: Context): ActiveActivitySessionData? {
-            val store = ActiveActivityStore.of(context)
-            val session = store.loadSession() ?: return null
-            if (session.status == ActiveActivitySessionData.STATUS_FAILED) {
-                val paused = session.copy(
-                    status = ActiveActivitySessionData.STATUS_PAUSED,
-                    pausedAt = IsoTime.nowUtc(),
-                    endedAt = null,
-                )
-                store.saveSession(paused)
-                activeInstance?.handlePause()
-                return paused
-            }
-            if (!session.requiresLocationMonitoring ||
-                activeInstance?.collectingSessionId == session.localSessionId
-            ) {
-                return session
-            }
-            val recovered = SessionTiming.afterInterruption(
-                session,
-                store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
-                System.currentTimeMillis(),
-            )
-            store.saveSession(recovered)
-            // Checked before `startForegroundService`: without location the
-            // service could not enter the foreground on Android 14+, and the
-            // app would crash for not calling `startForeground` in time.
-            val failureReason = if (!hasLocationPermission(context)) {
-                ActivityRecorderCoordinator.REASON_PERMISSION_LOST
-            } else {
-                try {
-                    ContextCompat.startForegroundService(
-                        context,
-                        baseIntent(context, ACTION_RECONNECT),
-                    )
-                    null
-                } catch (_: RuntimeException) {
-                    ActivityRecorderCoordinator.REASON_LOCATION_STREAM_FAILED
-                }
-            }
-            if (failureReason != null) {
-                val paused = recovered.copy(
-                    status = ActiveActivitySessionData.STATUS_PAUSED,
-                    pausedAt = IsoTime.nowUtc(),
-                )
-                store.saveSession(paused)
-                ActivityRecorderCoordinator.emitFailed(failureReason)
-                return paused
-            }
-            return recovered
+        /** Pauses collection in the running service, if any (see `recover`). */
+        internal fun pauseActiveInstance() {
+            activeInstance?.handlePause()
+        }
+
+        /** Whether the running service is already collecting [sessionId]. */
+        internal fun isCollecting(sessionId: String): Boolean =
+            activeInstance?.collectingSessionId == sessionId
+
+        /**
+         * Asks the service to reattach to the stored session. May throw a
+         * [RuntimeException] when Android refuses the foreground start.
+         */
+        internal fun reconnect(context: Context) {
+            ContextCompat.startForegroundService(context, baseIntent(context, ACTION_RECONNECT))
         }
 
         fun start(context: Context, title: String?, text: String?) {
@@ -1425,8 +885,12 @@ class ActivityRecorderService : Service() {
             activeInstance?.finishWarmUp()
         }
 
+        /**
+         * Pauses collection. Always delivered, even before the service's
+         * onCreate ran: a pause sent right after [start] must not be dropped.
+         */
         fun pause(context: Context) {
-            context.startService(baseIntent(context, ACTION_PAUSE))
+            sendToRunningService(context, ACTION_PAUSE)
         }
 
         fun resume(context: Context) {
@@ -1436,8 +900,22 @@ class ActivityRecorderService : Service() {
             )
         }
 
+        /** Stops the service; delivered like [pause]. */
         fun stop(context: Context) {
-            context.startService(baseIntent(context, ACTION_STOP))
+            sendToRunningService(context, ACTION_STOP)
+        }
+
+        // No activeInstance check: it is set in onCreate, so a pause or stop
+        // sent right after start() would be lost. Starting the service just to
+        // stop it is harmless, and from the background it is refused below.
+        private fun sendToRunningService(context: Context, action: String) {
+            try {
+                context.startService(baseIntent(context, action))
+            } catch (error: IllegalStateException) {
+                // Includes ForegroundServiceStartNotAllowedException: the app is
+                // in the background and the service is no longer startable.
+                Log.w(TAG, "Could not deliver $action to the recorder service", error)
+            }
         }
     }
 }

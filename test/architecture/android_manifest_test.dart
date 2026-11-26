@@ -28,11 +28,20 @@ void main() {
     );
   });
 
-  test('Android enables user-approved self-hosted cleartext transport', () {
+  test('Android leaves cleartext policy to the network security config', () {
     final manifest = File('android/app/src/main/AndroidManifest.xml')
         .readAsStringSync();
 
-    expect(manifest, contains('android:usesCleartextTraffic="true"'));
+    // The config's base-config (tested below) is the single source; the
+    // manifest attribute would be ignored while a config is referenced.
+    expect(manifest, isNot(contains('android:usesCleartextTraffic')));
+  });
+
+  test('Android opts in to predictive back', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
+
+    expect(manifest, contains('android:enableOnBackInvokedCallback="true"'));
   });
 
   test('Android references the network security config', () {
