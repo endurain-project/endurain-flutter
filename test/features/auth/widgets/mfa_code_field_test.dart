@@ -41,6 +41,37 @@ void main() {
     });
   }
 
+  testWidgets('screen readers reach the hidden input as a text field', (
+    tester,
+  ) async {
+    PlatformUtils.debugIsApplePlatformOverride = false;
+    final semantics = tester.ensureSemantics();
+    final controller = TextEditingController(text: '123');
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      TestScaffoldApp(
+        child: MfaCodeField(
+          controller: controller,
+          kind: MfaCodeKind.totp,
+          label: 'MFA code',
+          instruction: 'Enter the code',
+        ),
+      ),
+    );
+
+    expect(
+      tester.getSemantics(find.byType(TextField)),
+      isSemantics(
+        label: 'MFA code',
+        value: '123',
+        isTextField: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
+  });
+
   testWidgets('reports a completed code once per completion', (tester) async {
     PlatformUtils.debugIsApplePlatformOverride = false;
     final controller = TextEditingController();

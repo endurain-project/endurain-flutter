@@ -244,10 +244,16 @@ class _MfaCodeFieldState extends State<MfaCodeField> {
             ),
             // The real input covers the boxes, so tapping them focuses it
             // and autofill and paste reach it, but it is never painted.
+            // Screen readers still reach it: a transparent Opacity would
+            // otherwise drop its value and editing actions.
             Positioned.fill(
               child: Semantics(
                 label: widget.label,
-                child: Opacity(opacity: 0, child: _buildInput()),
+                child: Opacity(
+                  opacity: 0,
+                  alwaysIncludeSemantics: true,
+                  child: _buildInput(),
+                ),
               ),
             ),
           ],

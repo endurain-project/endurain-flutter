@@ -9,7 +9,7 @@ import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
-import 'package:endurain/features/auth/widgets/mfa_code_field.dart';
+import 'package:endurain/features/auth/widgets/mfa_step.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -53,14 +53,10 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   final _serverHostController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _mfaCodeController = TextEditingController();
+  final _mfaEntry = MfaCodeEntry();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _serverScheme = 'https';
-  MfaCodeKind _mfaCodeKind = MfaCodeKind.totp;
-
-  /// Why the last MFA code failed, shown under the code boxes.
-  String? _mfaError;
 
   @override
   void initState() {
@@ -70,7 +66,6 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       () => widget.createController!(),
       onChanged: _handleControllerChanged,
     );
-    _mfaCodeController.addListener(_clearMfaErrorOnInput);
     _controller.startSsoCallbackListener(
       onLoginSuccess: () => widget.onLoginSuccess?.call(),
       onError: _showError,
@@ -155,34 +150,16 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     if (_controller.isLoading) {
       return;
     }
-    final l10n = AppLocalizations.of(context)!;
-    final code = _mfaCodeKind.normalize(_mfaCodeController.text);
-    if (code.length != _mfaCodeKind.length) {
-      await _showError(l10n.mfaCodeRequired);
+    final code = _mfaEntry.completeCode;
+    if (code == null) {
+      await _showError(AppLocalizations.of(context)!.mfaCodeRequired);
       return;
     }
-
-    setState(() => _mfaError = null);
-    await _controller.submitMfa(_mfaCodeKind.toSubmission(code));
+    _mfaEntry.error = null;
+    await _controller.submitMfa(code);
     if (mounted) {
-      _mfaCodeController.clear();
+      _mfaEntry.code.clear();
     }
-  }
-
-  void _clearMfaErrorOnInput() {
-    if (_mfaError != null && _mfaCodeController.text.isNotEmpty) {
-      setState(() => _mfaError = null);
-    }
-  }
-
-  void _toggleMfaCodeKind() {
-    setState(() {
-      _mfaError = null;
-      _mfaCodeController.clear();
-      _mfaCodeKind = _mfaCodeKind == MfaCodeKind.totp
-          ? MfaCodeKind.backupCode
-          : MfaCodeKind.totp;
-    });
   }
 
   Future<void> _handlePasswordChange() async {
@@ -207,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
         );
       }
       final l10n = AppLocalizations.of(context)!;
-      setState(() => _mfaError = localizedErrorMessage(message, l10n));
+      _mfaEntry.error = localizedErrorMessage(message, l10n);
       return;
     }
     await DialogUtils.showErrorDialog(context, message);
@@ -218,9 +195,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   }
 
   void _goBackFromMfa() {
-    _mfaCodeController.clear();
-    _mfaCodeKind = MfaCodeKind.totp;
-    _mfaError = null;
+    _mfaEntry.reset();
     _controller.backFromMfa();
   }
 
@@ -307,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     _serverHostController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
-    _mfaCodeController.dispose();
+    _mfaEntry.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -345,7 +320,12 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
                     ),
                     const SizedBox(height: 40),
                     if (_controller.showMfaInput)
-                      ..._buildMfaFields(l10n)
+                      MfaStep(
+                        entry: _mfaEntry,
+                        acceptsBackupCodes: _controller.mfaAcceptsBackupCodes,
+                        onSubmit: _handleMfaVerification,
+                        onBack: _goBackFromMfa,
+                      )
                     else if (_controller.showPasswordChange)
                       ..._buildPasswordChangeFields(l10n)
                     else if (_controller.isStep2)
@@ -534,51 +514,6 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       AdaptiveButton(
         label: l10n.back,
         onPressed: _goBackFromPasswordChange,
-        variant: AdaptiveButtonVariant.secondary,
-        expand: true,
-      ),
-    ];
-  }
-
-  List<Widget> _buildMfaFields(AppLocalizations l10n) {
-    final usingBackupCode = _mfaCodeKind == MfaCodeKind.backupCode;
-    return [
-      MfaCodeField(
-        // A new field per kind, so the keyboard switches with it.
-        key: ValueKey(_mfaCodeKind),
-        controller: _mfaCodeController,
-        kind: _mfaCodeKind,
-        label: usingBackupCode ? l10n.mfaBackupCode : l10n.mfaCode,
-        instruction: usingBackupCode
-            ? l10n.mfaBackupCodeHint
-            : l10n.mfaCodeHint,
-        errorText: _mfaError,
-        autofocus: true,
-        onCompleted: _handleMfaVerification,
-        onSubmitted: _handleMfaVerification,
-      ),
-      if (_controller.mfaAcceptsBackupCodes || usingBackupCode) ...[
-        const SizedBox(height: UIConstants.paddingCompact),
-        Center(
-          child: AdaptiveButton(
-            label: usingBackupCode
-                ? l10n.mfaUseAuthenticatorCode
-                : l10n.mfaUseBackupCode,
-            onPressed: _toggleMfaCodeKind,
-            variant: AdaptiveButtonVariant.secondary,
-          ),
-        ),
-      ],
-      const SizedBox(height: UIConstants.paddingLarge),
-      AdaptiveButton(
-        label: l10n.verify,
-        onPressed: _handleMfaVerification,
-        expand: true,
-      ),
-      const SizedBox(height: UIConstants.paddingStandard),
-      AdaptiveButton(
-        label: l10n.back,
-        onPressed: _goBackFromMfa,
         variant: AdaptiveButtonVariant.secondary,
         expand: true,
       ),
