@@ -405,6 +405,20 @@ class AppLocalizationsGl extends AppLocalizations {
   String get mfaCodeRequired => 'Introduce o código MFA';
 
   @override
+  String get mfaBackupCode => 'Código de reserva';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Introduce un dos teus códigos de reserva de 8 caracteres';
+
+  @override
+  String get mfaUseBackupCode => 'Usar un código de reserva';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Usar un código da app de autenticación';
+
+  @override
   String get verify => 'Verificar';
 
   @override

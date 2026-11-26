@@ -404,6 +404,20 @@ class AppLocalizationsIt extends AppLocalizations {
   String get mfaCodeRequired => 'Inserisci il codice MFA';
 
   @override
+  String get mfaBackupCode => 'Codice di backup';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Inserisci uno dei tuoi codici di backup di 8 caratteri';
+
+  @override
+  String get mfaUseBackupCode => 'Usa un codice di backup';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Usa un codice dell\'app di autenticazione';
+
+  @override
   String get verify => 'Verifica';
 
   @override

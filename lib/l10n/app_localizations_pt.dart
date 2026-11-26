@@ -405,6 +405,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get mfaCodeRequired => 'Por favor, insira o código MFA';
 
   @override
+  String get mfaBackupCode => 'Código de cópia de segurança';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Insira um dos seus códigos de cópia de segurança de 8 caracteres';
+
+  @override
+  String get mfaUseBackupCode => 'Usar um código de cópia de segurança';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Usar um código da aplicação de autenticação';
+
+  @override
   String get verify => 'Verificar';
 
   @override

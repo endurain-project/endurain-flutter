@@ -398,6 +398,19 @@ class AppLocalizationsNb extends AppLocalizations {
   String get mfaCodeRequired => 'Skriv inn MFA-koden';
 
   @override
+  String get mfaBackupCode => 'Reservekode';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Skriv inn en av reservekodene dine på 8 tegn';
+
+  @override
+  String get mfaUseBackupCode => 'Bruk en reservekode';
+
+  @override
+  String get mfaUseAuthenticatorCode => 'Bruk en kode fra autentiseringsappen';
+
+  @override
   String get verify => 'Verifiser';
 
   @override

@@ -404,6 +404,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get mfaCodeRequired => 'Veuillez saisir le code MFA';
 
   @override
+  String get mfaBackupCode => 'Code de secours';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Saisissez l\'un de vos codes de secours à 8 caractères';
+
+  @override
+  String get mfaUseBackupCode => 'Utiliser un code de secours';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Utiliser un code d\'application d\'authentification';
+
+  @override
   String get verify => 'Vérifier';
 
   @override

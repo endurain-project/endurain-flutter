@@ -399,6 +399,20 @@ class AppLocalizationsUk extends AppLocalizations {
   String get mfaCodeRequired => 'Введіть код MFA';
 
   @override
+  String get mfaBackupCode => 'Резервний код';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Введіть один зі своїх 8-символьних резервних кодів';
+
+  @override
+  String get mfaUseBackupCode => 'Використати резервний код';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Використати код із застосунку автентифікації';
+
+  @override
   String get verify => 'Перевірити';
 
   @override

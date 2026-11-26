@@ -402,6 +402,18 @@ class AppLocalizationsFi extends AppLocalizations {
   String get mfaCodeRequired => 'Anna MFA-koodi';
 
   @override
+  String get mfaBackupCode => 'Varakoodi';
+
+  @override
+  String get mfaBackupCodeHint => 'Anna yksi 8-merkkisistä varakoodeistasi';
+
+  @override
+  String get mfaUseBackupCode => 'Käytä varakoodia';
+
+  @override
+  String get mfaUseAuthenticatorCode => 'Käytä todennussovelluksen koodia';
+
+  @override
   String get verify => 'Vahvista';
 
   @override

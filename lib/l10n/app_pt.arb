@@ -505,6 +505,22 @@
   "@mfaCodeRequired": {
     "description": "Mensagem de erro de validação do código MFA"
   },
+  "mfaBackupCode": "Código de cópia de segurança",
+  "@mfaBackupCode": {
+    "description": "MFA backup code field label"
+  },
+  "mfaBackupCodeHint": "Insira um dos seus códigos de cópia de segurança de 8 caracteres",
+  "@mfaBackupCodeHint": {
+    "description": "Helper text under the MFA backup code field"
+  },
+  "mfaUseBackupCode": "Usar um código de cópia de segurança",
+  "@mfaUseBackupCode": {
+    "description": "Button that switches the MFA step to a backup code"
+  },
+  "mfaUseAuthenticatorCode": "Usar um código da aplicação de autenticação",
+  "@mfaUseAuthenticatorCode": {
+    "description": "Button that switches the MFA step back to an authenticator app code"
+  },
   "verify": "Verificar",
   "@verify": {
     "description": "Rótulo do botão de verificação MFA"

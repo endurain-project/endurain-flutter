@@ -399,6 +399,19 @@ class AppLocalizationsEt extends AppLocalizations {
   String get mfaCodeRequired => 'Sisestage MFA-kood';
 
   @override
+  String get mfaBackupCode => 'Varukood';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Sisestage üks oma 8-märgilistest varukoodidest';
+
+  @override
+  String get mfaUseBackupCode => 'Kasuta varukoodi';
+
+  @override
+  String get mfaUseAuthenticatorCode => 'Kasuta autentimisrakenduse koodi';
+
+  @override
   String get verify => 'Kinnita';
 
   @override

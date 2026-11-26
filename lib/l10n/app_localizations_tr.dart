@@ -393,6 +393,20 @@ class AppLocalizationsTr extends AppLocalizations {
   String get mfaCodeRequired => 'Lütfen MFA kodunu girin';
 
   @override
+  String get mfaBackupCode => 'Yedek kod';
+
+  @override
+  String get mfaBackupCodeHint =>
+      '8 karakterli yedek kodlarınızdan birini girin';
+
+  @override
+  String get mfaUseBackupCode => 'Yedek kod kullan';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Kimlik doğrulama uygulaması kodu kullan';
+
+  @override
   String get verify => 'Doğrula';
 
   @override

@@ -403,6 +403,20 @@ class AppLocalizationsRo extends AppLocalizations {
   String get mfaCodeRequired => 'Introduceți codul MFA';
 
   @override
+  String get mfaBackupCode => 'Cod de rezervă';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Introduceți unul dintre codurile de rezervă de 8 caractere';
+
+  @override
+  String get mfaUseBackupCode => 'Folosește un cod de rezervă';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Folosește un cod din aplicația de autentificare';
+
+  @override
   String get verify => 'Verifică';
 
   @override

@@ -403,6 +403,20 @@ class AppLocalizationsPl extends AppLocalizations {
   String get mfaCodeRequired => 'Wprowadź kod MFA';
 
   @override
+  String get mfaBackupCode => 'Kod zapasowy';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Wprowadź jeden ze swoich 8-znakowych kodów zapasowych';
+
+  @override
+  String get mfaUseBackupCode => 'Użyj kodu zapasowego';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Użyj kodu z aplikacji uwierzytelniającej';
+
+  @override
   String get verify => 'Zweryfikuj';
 
   @override

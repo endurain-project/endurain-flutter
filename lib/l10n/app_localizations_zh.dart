@@ -357,6 +357,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mfaCodeRequired => '请输入 MFA 代码';
 
   @override
+  String get mfaBackupCode => '备用代码';
+
+  @override
+  String get mfaBackupCodeHint => '请输入一个 8 位备用代码';
+
+  @override
+  String get mfaUseBackupCode => '使用备用代码';
+
+  @override
+  String get mfaUseAuthenticatorCode => '使用身份验证器代码';
+
+  @override
   String get verify => '验证';
 
   @override
@@ -1733,6 +1745,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get mfaCodeRequired => '請輸入 MFA 代碼';
+
+  @override
+  String get mfaBackupCode => '備用代碼';
+
+  @override
+  String get mfaBackupCodeHint => '請輸入一組 8 位備用代碼';
+
+  @override
+  String get mfaUseBackupCode => '使用備用代碼';
+
+  @override
+  String get mfaUseAuthenticatorCode => '使用驗證器代碼';
 
   @override
   String get verify => '驗證';

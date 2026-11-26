@@ -400,6 +400,19 @@ class AppLocalizationsCs extends AppLocalizations {
   String get mfaCodeRequired => 'Zadejte kód MFA';
 
   @override
+  String get mfaBackupCode => 'Záložní kód';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Zadejte jeden ze svých 8znakových záložních kódů';
+
+  @override
+  String get mfaUseBackupCode => 'Použít záložní kód';
+
+  @override
+  String get mfaUseAuthenticatorCode => 'Použít kód z ověřovací aplikace';
+
+  @override
   String get verify => 'Ověřit';
 
   @override

@@ -401,6 +401,19 @@ class AppLocalizationsSk extends AppLocalizations {
   String get mfaCodeRequired => 'Zadajte kód MFA';
 
   @override
+  String get mfaBackupCode => 'Záložný kód';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Zadajte jeden zo svojich 8-znakových záložných kódov';
+
+  @override
+  String get mfaUseBackupCode => 'Použiť záložný kód';
+
+  @override
+  String get mfaUseAuthenticatorCode => 'Použiť kód z overovacej aplikácie';
+
+  @override
   String get verify => 'Overiť';
 
   @override
