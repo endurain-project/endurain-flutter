@@ -4,7 +4,7 @@ import java.util.Properties
 // built into AGP 9, so unlike the Flutter phone build (whose Gradle plugin still
 // needs the legacy variant API) this build needs no kotlin-android plugin.
 plugins {
-    id("com.android.application") version "9.5.2"
+    id("com.android.application") version "9.5.3"
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.21"
 }
 
