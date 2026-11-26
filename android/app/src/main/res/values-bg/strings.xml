@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Известия за записа</string>
     <string name="activity_recording_alert_channel_description">Показва се, когато записът спре, докато Endurain е във фонов режим.</string>
     <string name="health_rationale_title">Здравни данни в Endurain</string>
-    <string name="health_rationale_usage">Endurain чете тренировки, маршрути, пулс, разстояние, калории и стъпки само за да импортира избрани дейности.</string>
+    <string name="health_rationale_usage">Endurain чете тренировки, маршрути, пулс и разстояние само за да импортира избрани дейности.</string>
     <string name="health_rationale_storage">Данните за избраните маршрути се съхраняват на това устройство и се качват само на сървъра на Endurain, към който се свържете.</string>
 </resources>

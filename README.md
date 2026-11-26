@@ -92,7 +92,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 
 ✅ **Health Data Sync**
 - Import route-bearing workouts from Apple HealthKit on iOS and Health Connect on Android
-- Review and request access to workouts, workout routes, heart rate, and the distance, calories, and steps that Health Connect uses to summarize workouts
+- Review and request access to workouts, workout routes, heart rate, and, on Android, the distance of each workout
 - Browse the last 30 days by default, or choose three months, six months, one year, all history, or a custom date range; older history is read in 30-day pages so wide searches do not become a single expensive platform query
 - Select one or more eligible workouts, use `Select all` for the currently loaded page set, and commit them through one explicit import action; unavailable workouts remain informational rows without selection controls
 - Review imported workouts for the active connection, including their local upload status, and open records that are still available on the device
@@ -238,16 +238,19 @@ Health app or iOS Settings.
 On Android, the manifest declares these Health Connect permissions:
 
 - `READ_EXERCISE`, to discover exercise sessions.
-- `READ_DISTANCE`, `READ_TOTAL_CALORIES_BURNED`, and `READ_STEPS`, because the
-  pinned `health` package reads those records while constructing every workout
-  summary. Omitting any of them can make its Android workout query return an
-  empty list.
+- `READ_DISTANCE`, for the distance of each imported workout.
 - `READ_HEART_RATE`, to attach available samples to GPX track points.
 - `READ_EXERCISE_ROUTES`, to retrieve the GPS route. Health Connect may require
   separate user consent for routes written by another app.
 - `READ_HEALTH_DATA_HISTORY`, to read beyond Health Connect's standard 30-day
   window. Endurain requests this only when the selected range reaches older
   data and falls back to the readable recent window if the user declines.
+
+Endurain does not request `READ_STEPS` or `READ_TOTAL_CALORIES_BURNED`:
+nothing in the app uses step counts or calories, and Google Play rejects Health
+Connect permissions that no feature uses. The `health` package leaves a total
+it may not read empty instead of dropping the workout. Add a permission only in
+the release whose feature uses it.
 
 After an app update adds a new Health Connect permission, existing users must
 open Health sync and authorize access again; Android does not add the new grant

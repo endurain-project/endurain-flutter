@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Alerty nagrywania</string>
     <string name="activity_recording_alert_channel_description">Wyświetlane, gdy nagrywanie zatrzyma się, gdy Endurain działa w tle.</string>
     <string name="health_rationale_title">Dane dotyczące zdrowia w Endurain</string>
-    <string name="health_rationale_usage">Endurain odczytuje treningi, trasy, tętno, dystans, kalorie i kroki wyłącznie w celu importu wybranych aktywności.</string>
+    <string name="health_rationale_usage">Endurain odczytuje treningi, trasy, tętno i dystans wyłącznie w celu importu wybranych aktywności.</string>
     <string name="health_rationale_storage">Dane wybranych tras są przechowywane na tym urządzeniu i przesyłane tylko na serwer Endurain, z którym się łączysz.</string>
 </resources>

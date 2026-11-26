@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Kayıt uyarıları</string>
     <string name="activity_recording_alert_channel_description">Endurain arka plandayken bir kayıt durduğunda gösterilir.</string>
     <string name="health_rationale_title">Endurain sağlık verileri</string>
-    <string name="health_rationale_usage">Endurain antrenmanları, rotaları, nabzı, mesafeyi, kalorileri ve adımları yalnızca seçilen etkinlikleri içe aktarmak için okur.</string>
+    <string name="health_rationale_usage">Endurain antrenmanları, rotaları, nabzı ve mesafeyi yalnızca seçilen etkinlikleri içe aktarmak için okur.</string>
     <string name="health_rationale_storage">Seçilen rota verileri bu cihazda saklanır ve yalnızca bağlandığınız Endurain sunucusuna yüklenir.</string>
 </resources>

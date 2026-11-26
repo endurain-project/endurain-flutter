@@ -78,12 +78,8 @@ void main() {
         HealthDataType.WORKOUT_ROUTE,
         HealthDataType.HEART_RATE,
         HealthDataType.DISTANCE_DELTA,
-        HealthDataType.TOTAL_CALORIES_BURNED,
-        HealthDataType.STEPS,
       ]);
       expect(health.lastHasPermissionAccess, [
-        HealthDataAccess.READ,
-        HealthDataAccess.READ,
         HealthDataAccess.READ,
         HealthDataAccess.READ,
         HealthDataAccess.READ,
@@ -111,12 +107,8 @@ void main() {
           HealthDataType.WORKOUT_ROUTE,
           HealthDataType.HEART_RATE,
           HealthDataType.DISTANCE_DELTA,
-          HealthDataType.TOTAL_CALORIES_BURNED,
-          HealthDataType.STEPS,
         ]);
         expect(health.lastRequestAuthorizationAccess, [
-          HealthDataAccess.READ,
-          HealthDataAccess.READ,
           HealthDataAccess.READ,
           HealthDataAccess.READ,
           HealthDataAccess.READ,

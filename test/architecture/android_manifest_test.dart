@@ -15,9 +15,7 @@ void main() {
       containsAll(<String>{
         'android.permission.health.READ_EXERCISE',
         'android.permission.health.READ_DISTANCE',
-        'android.permission.health.READ_TOTAL_CALORIES_BURNED',
-        'android.permission.health.READ_STEPS',
-        'android.permission.health.READ_HEART_RATE',
+          'android.permission.health.READ_HEART_RATE',
         'android.permission.health.READ_EXERCISE_ROUTES',
         'android.permission.health.READ_HEALTH_DATA_HISTORY',
       }),
@@ -26,6 +24,24 @@ void main() {
       permissions,
       isNot(contains('android.permission.health.READ_EXERCISE_ROUTE')),
     );
+  });
+
+  test('Android requests no Health Connect data the app does not use', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
+    final healthPermissions = RegExp(
+      r'android\.permission\.health\.[A-Z_]+',
+    ).allMatches(manifest).map((match) => match.group(0)).toSet();
+
+    // Play rejects Health Connect permissions that no feature uses (minimum
+    // scope), so a new one must be added here with the feature that needs it.
+    expect(healthPermissions, <String>{
+      'android.permission.health.READ_EXERCISE',
+      'android.permission.health.READ_DISTANCE',
+      'android.permission.health.READ_HEART_RATE',
+      'android.permission.health.READ_EXERCISE_ROUTES',
+      'android.permission.health.READ_HEALTH_DATA_HISTORY',
+    });
   });
 
   test('Android leaves cleartext policy to the network security config', () {

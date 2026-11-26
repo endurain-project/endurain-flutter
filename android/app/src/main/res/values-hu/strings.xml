@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Rögzítési figyelmeztetések</string>
     <string name="activity_recording_alert_channel_description">Akkor jelenik meg, ha egy rögzítés leáll, miközben az Endurain a háttérben fut.</string>
     <string name="health_rationale_title">Az Endurain egészségügyi adatai</string>
-    <string name="health_rationale_usage">Az Endurain csak a kiválasztott tevékenységek importálásához olvassa az edzéseket, útvonalakat, pulzust, távolságot, kalóriát és lépéseket.</string>
+    <string name="health_rationale_usage">Az Endurain csak a kiválasztott tevékenységek importálásához olvassa az edzéseket, útvonalakat, pulzust és távolságot.</string>
     <string name="health_rationale_storage">A kiválasztott útvonalak adatai ezen az eszközön tárolódnak, és csak arra az Endurain-szerverre töltődnek fel, amelyhez csatlakozik.</string>
 </resources>

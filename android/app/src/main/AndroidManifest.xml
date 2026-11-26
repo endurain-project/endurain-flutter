@@ -16,17 +16,14 @@
     <!-- Shows the ongoing recording notification on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Health Connect permissions (health sync feature).
-         The health package enriches every exercise with distance, total
-         calories, and steps, so those reads are required for workouts to load:
+    <!-- Health Connect permissions (health sync feature). Request only the
+         data types the import uses (Play's Health Connect minimum-scope policy):
          - READ_EXERCISE: workout sessions.
-         - READ_DISTANCE, READ_TOTAL_CALORIES_BURNED, READ_STEPS: summary.
+         - READ_DISTANCE: the imported workout's distance.
          - READ_HEART_RATE: HR samples merged into the GPX route.
          - READ_EXERCISE_ROUTES: route access surfaced by Health Connect. -->
     <uses-permission android:name="android.permission.health.READ_EXERCISE" />
     <uses-permission android:name="android.permission.health.READ_DISTANCE" />
-    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
-    <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <!-- Required to read GPS exercise routes from Health Connect. -->
     <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />

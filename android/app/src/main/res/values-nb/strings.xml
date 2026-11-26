@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Registreringsvarsler</string>
     <string name="activity_recording_alert_channel_description">Vises når en registrering stopper mens Endurain kjører i bakgrunnen.</string>
     <string name="health_rationale_title">Helsedata i Endurain</string>
-    <string name="health_rationale_usage">Endurain leser treninger, ruter, puls, distanse, kalorier og skritt bare for å importere valgte aktiviteter.</string>
+    <string name="health_rationale_usage">Endurain leser treninger, ruter, puls og distanse bare for å importere valgte aktiviteter.</string>
     <string name="health_rationale_storage">Data for valgte ruter lagres på denne enheten og lastes bare opp til Endurain-serveren du kobler til.</string>
 </resources>

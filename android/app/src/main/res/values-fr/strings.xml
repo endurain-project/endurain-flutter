@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Alertes d\'enregistrement</string>
     <string name="activity_recording_alert_channel_description">Affichée lorsqu\'un enregistrement s\'arrête alors qu\'Endurain est en arrière-plan.</string>
     <string name="health_rationale_title">Données de santé d\'Endurain</string>
-    <string name="health_rationale_usage">Endurain lit les entraînements, itinéraires, fréquence cardiaque, distance, calories et pas uniquement pour importer les activités sélectionnées.</string>
+    <string name="health_rationale_usage">Endurain lit les entraînements, itinéraires, fréquence cardiaque et distance uniquement pour importer les activités sélectionnées.</string>
     <string name="health_rationale_storage">Les données des itinéraires sélectionnés sont stockées sur cet appareil et envoyées uniquement au serveur Endurain auquel vous vous connectez.</string>
 </resources>

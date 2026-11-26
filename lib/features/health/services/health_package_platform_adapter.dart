@@ -20,11 +20,8 @@ const _coreReadTypes = [
   HealthDataType.HEART_RATE,
 ];
 
-const _androidWorkoutSummaryReadTypes = [
-  HealthDataType.DISTANCE_DELTA,
-  HealthDataType.TOTAL_CALORIES_BURNED,
-  HealthDataType.STEPS,
-];
+/// Only what the import uses: Play rejects unused Health Connect reads.
+const _androidWorkoutSummaryReadTypes = [HealthDataType.DISTANCE_DELTA];
 
 const _healthConnectHistoryWindow = Duration(days: 30);
 
@@ -635,17 +632,6 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       };
     }
 
-    // Convert total energy to kilocalories.
-    double? energyKcal;
-    final rawEnergy = value.totalEnergyBurned;
-    if (rawEnergy != null) {
-      energyKcal = switch (value.totalEnergyBurnedUnit) {
-        HealthDataUnit.KILOCALORIE => rawEnergy.toDouble(),
-        HealthDataUnit.JOULE => rawEnergy / 4184.0,
-        _ => rawEnergy.toDouble(), // default: assume kcal
-      };
-    }
-
     final workoutStart = point.dateFrom.toUtc();
     final workoutEnd = point.dateTo.toUtc();
 
@@ -663,7 +649,6 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       startedAt: workoutStart,
       endedAt: workoutEnd,
       distanceMeters: distanceMeters,
-      energyKilocalories: energyKcal,
       route: route,
     );
   }
