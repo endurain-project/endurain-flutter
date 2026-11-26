@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Alusta kohe</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">GPS-i otsimine…</string>
+    <string name="gps_lost">GPS-signaal kadus</string>
+    <string name="hr_unavailable">Pulss pole saadaval</string>
+    <string name="restore_failed">Treeningut ei õnnestunud kontrollida. Proovimiseks puuduta OK.</string>
 </resources>

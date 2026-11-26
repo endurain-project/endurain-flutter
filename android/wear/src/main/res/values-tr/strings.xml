@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Şimdi başlat</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">GPS aranıyor…</string>
+    <string name="gps_lost">GPS sinyali kaybedildi</string>
+    <string name="hr_unavailable">Kalp atış hızı kullanılamıyor</string>
+    <string name="restore_failed">Antrenman kontrol edilemedi. Tekrar denemek için Tamam\'a dokunun.</string>
 </resources>

@@ -1,5 +1,7 @@
 package com.endurain.endurain.watchlink
 
+import android.net.Uri
+import java.io.InputStream
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -31,7 +33,16 @@ object WatchProtocol {
     const val KEY_SESSION_ID = "sessionId"
     const val KEY_VERSION = "version"
     const val KEY_PAYLOAD = "payload"
-    const val KEY_TIMESTAMP = "timestamp"
+
+    /** `PutDataRequest.WEAR_URI_SCHEME`, spelled out so the build without Play Services compiles too. */
+    private const val DATA_LAYER_SCHEME = "wear"
+
+    /**
+     * The largest handoff payload read into memory. A real session (hours of
+     * one-second GPS fixes) is a few MB, so anything beyond this is corrupt or
+     * hostile and is dropped instead of exhausting the heap.
+     */
+    const val MAX_PAYLOAD_BYTES = 32 * 1024 * 1024
 
     /** Capability the watch app advertises (`res/values/wear.xml`). */
     const val WEAR_APP_CAPABILITY = "endurain_wear_app"
@@ -41,6 +52,31 @@ object WatchProtocol {
 
     fun ackPath(sessionId: String): String =
         ACK_PATH_PREFIX + HandoffFileStore.encode(sessionId)
+
+    /** The Data Layer URI of an item at [path], for `getDataItems` and `deleteDataItems`. */
+    fun dataLayerUri(path: String): Uri = Uri.Builder().scheme(DATA_LAYER_SCHEME).path(path).build()
+
+    /**
+     * Whether a receiver can process an item written with [version]. Older
+     * versions stay readable; a newer one comes from an app this build does not
+     * understand yet, so it is neither processed nor acknowledged.
+     */
+    fun isSupportedVersion(version: Int): Boolean = version <= PAYLOAD_VERSION
+
+    /**
+     * Reads [stream] fully, or returns null once it holds more than
+     * [maxBytes], without ever buffering more than that.
+     */
+    fun readCapped(stream: InputStream, maxBytes: Int = MAX_PAYLOAD_BYTES): ByteArray? {
+        val buffer = java.io.ByteArrayOutputStream()
+        val chunk = ByteArray(8192)
+        while (true) {
+            val read = stream.read(chunk)
+            if (read < 0) return buffer.toByteArray()
+            if (buffer.size() + read > maxBytes) return null
+            buffer.write(chunk, 0, read)
+        }
+    }
 
     /** The session id a handoff or acknowledgement path names, or null. */
     fun sessionIdFromPath(path: String?, prefix: String): String? {

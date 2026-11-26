@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Démarrer maintenant</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Recherche du GPS…</string>
+    <string name="gps_lost">Signal GPS perdu</string>
+    <string name="hr_unavailable">Fréquence cardiaque indisponible</string>
+    <string name="restore_failed">Impossible de vérifier votre séance. Appuyez sur OK pour réessayer.</string>
 </resources>

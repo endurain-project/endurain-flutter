@@ -42,10 +42,6 @@ class ExerciseService : Service() {
                     R.string.notification_recording
                 },
             )
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW),
-        )
         val openApp =
             PendingIntent.getActivity(
                 this,
@@ -101,6 +97,17 @@ class ExerciseService : Service() {
         private const val CHANNEL_ID = "workout"
         private const val NOTIFICATION_ID = 1
         private const val EXTRA_COUNTING_DOWN = "countingDown"
+
+        /** Creates the notification channel; once per process, from the Application. */
+        fun createNotificationChannel(context: Context) {
+            context.getSystemService(NotificationManager::class.java).createNotificationChannel(
+                NotificationChannel(
+                    CHANNEL_ID,
+                    context.getString(R.string.notification_channel),
+                    NotificationManager.IMPORTANCE_LOW,
+                ),
+            )
+        }
 
         fun start(
             context: Context,

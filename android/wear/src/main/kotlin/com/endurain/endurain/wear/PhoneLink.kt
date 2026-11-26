@@ -1,13 +1,13 @@
 package com.endurain.endurain.wear
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import com.endurain.endurain.watchlink.HandoffFileStore
 import com.endurain.endurain.watchlink.WatchProtocol
 import com.google.android.gms.wearable.Asset
 import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.PutDataRequest
+import com.google.android.gms.wearable.DataClient
+import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit
  * phone never confirms are dropped after [RETENTION_MILLIS]; by then the
  * phone has long had its own copy.
  */
-class PhoneLink(context: Context) {
+class PhoneLink(context: Context) : HandoffSink {
     private val appContext = context.applicationContext
     private val dataClient by lazy { Wearable.getDataClient(appContext) }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -47,19 +47,23 @@ class PhoneLink(context: Context) {
     val waitingCount: StateFlow<Int> = waiting.asStateFlow()
 
     @Throws(IOException::class)
-    fun enqueue(data: ByteArray, sessionId: String) {
+    override fun enqueue(data: ByteArray, sessionId: String) {
         outbox.save(data, sessionId)
         refreshWaitingCount()
         scope.launch { publish(sessionId, data) }
     }
 
     /**
-     * Publishes every outbox entry again. Publishing an unchanged item is a
-     * no-op for the Data Layer, so this only matters for an item that was
-     * lost (for example after Play Services data was cleared).
+     * Reconciles with the phone at launch: drops what the phone already
+     * acknowledged (an ack event missed while the app was not running would
+     * otherwise keep the workout in the outbox for [RETENTION_MILLIS]), then
+     * publishes every remaining outbox entry again. Publishing an unchanged
+     * item is a no-op for the Data Layer, so that only matters for an item
+     * that was lost (for example after Play Services data was cleared).
      */
     fun republishPending() {
         scope.launch {
+            readAcknowledgedSessions().forEach { acknowledged(it) }
             val cutoff = System.currentTimeMillis() - RETENTION_MILLIS
             outbox.pruneSavedBefore(cutoff).forEach { deleteHandoffItem(it) }
             for (entry in outbox.entries()) {
@@ -97,12 +101,26 @@ class PhoneLink(context: Context) {
         }
     }
 
+    /** Session ids of the acknowledgement items the phone left in the Data Layer. */
+    private suspend fun readAcknowledgedSessions(): List<String> {
+        val uri = WatchProtocol.dataLayerUri(WatchProtocol.ACK_PATH_PREFIX)
+        return try {
+            val buffer = dataClient.getDataItems(uri, DataClient.FILTER_PREFIX).await()
+            try {
+                AcknowledgementReader.sessionIds(
+                    buffer.map { it.uri.path to DataMapItem.fromDataItem(it).dataMap.getInt(WatchProtocol.KEY_VERSION) },
+                )
+            } finally {
+                buffer.release()
+            }
+        } catch (error: Exception) {
+            Log.w(TAG, "Could not read the phone's acknowledgements", error)
+            emptyList()
+        }
+    }
+
     private suspend fun deleteHandoffItem(sessionId: String) {
-        val uri =
-            Uri.Builder()
-                .scheme(PutDataRequest.WEAR_URI_SCHEME)
-                .path(WatchProtocol.handoffPath(sessionId))
-                .build()
+        val uri = WatchProtocol.dataLayerUri(WatchProtocol.handoffPath(sessionId))
         try {
             dataClient.deleteDataItems(uri).await()
         } catch (error: Exception) {

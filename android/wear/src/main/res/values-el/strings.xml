@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Έναρξη τώρα</string>
     <string name="distance_km">%1$s χλμ</string>
     <string name="distance_mi">%1$s μί</string>
+    <string name="gps_acquiring">Αναζήτηση GPS…</string>
+    <string name="gps_lost">Χάθηκε το σήμα GPS</string>
+    <string name="hr_unavailable">Ο καρδιακός ρυθμός δεν είναι διαθέσιμος</string>
+    <string name="restore_failed">Δεν ήταν δυνατός ο έλεγχος της προπόνησης. Πατήστε OK για νέα προσπάθεια.</string>
 </resources>

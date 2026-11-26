@@ -31,4 +31,8 @@
     <string name="countdown_start_now">立即開始</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">正在取得 GPS…</string>
+    <string name="gps_lost">GPS 訊號遺失</string>
+    <string name="hr_unavailable">無法取得心率</string>
+    <string name="restore_failed">無法檢查你的運動。點按「確定」重試。</string>
 </resources>

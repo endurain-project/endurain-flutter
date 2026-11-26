@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Почати зараз</string>
     <string name="distance_km">%1$s км</string>
     <string name="distance_mi">%1$s ми</string>
+    <string name="gps_acquiring">Пошук GPS…</string>
+    <string name="gps_lost">Сигнал GPS втрачено</string>
+    <string name="hr_unavailable">Пульс недоступний</string>
+    <string name="restore_failed">Не вдалося перевірити тренування. Торкніться OK, щоб повторити.</string>
 </resources>

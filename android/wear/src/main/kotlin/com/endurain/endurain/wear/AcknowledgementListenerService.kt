@@ -2,6 +2,7 @@ package com.endurain.endurain.wear
 
 import com.endurain.endurain.watchlink.WatchProtocol
 import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.WearableListenerService
 
@@ -11,8 +12,9 @@ class AcknowledgementListenerService : WearableListenerService() {
         val phoneLink = (application as EndurainWearApplication).phoneLink
         for (event in dataEvents) {
             if (event.type != DataEvent.TYPE_CHANGED) continue
+            val version = DataMapItem.fromDataItem(event.dataItem).dataMap.getInt(WatchProtocol.KEY_VERSION)
             val sessionId =
-                WatchProtocol.sessionIdFromPath(event.dataItem.uri.path, WatchProtocol.ACK_PATH_PREFIX)
+                AcknowledgementReader.sessionIds(listOf(event.dataItem.uri.path to version)).firstOrNull()
                     ?: continue
             phoneLink.acknowledged(sessionId)
         }

@@ -31,12 +31,17 @@ object StartCountdown {
     }
 }
 
+/** Where the chosen countdown length lives. */
+interface CountdownSetting {
+    var seconds: Int
+}
+
 /** The countdown length chosen on the watch, kept in shared preferences. */
-class StartCountdownSettings(context: Context) {
+class StartCountdownSettings(context: Context) : CountdownSetting {
     private val preferences =
         context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
-    var seconds: Int
+    override var seconds: Int
         get() = StartCountdown.sanitize(preferences.getInt(KEY_SECONDS, 0))
         set(value) {
             preferences.edit().putInt(KEY_SECONDS, StartCountdown.sanitize(value)).apply()

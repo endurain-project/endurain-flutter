@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Starta nu</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Söker efter GPS…</string>
+    <string name="gps_lost">GPS-signal förlorad</string>
+    <string name="hr_unavailable">Puls inte tillgänglig</string>
+    <string name="restore_failed">Det gick inte att kontrollera träningspasset. Tryck på OK för att försöka igen.</string>
 </resources>

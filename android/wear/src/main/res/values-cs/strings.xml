@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Spustit hned</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Hledání GPS…</string>
+    <string name="gps_lost">Signál GPS ztracen</string>
+    <string name="hr_unavailable">Tepová frekvence není k dispozici</string>
+    <string name="restore_failed">Trénink se nepodařilo zkontrolovat. Klepnutím na OK to zkuste znovu.</string>
 </resources>

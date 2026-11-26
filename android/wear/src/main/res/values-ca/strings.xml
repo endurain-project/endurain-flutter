@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Comença ara</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Cercant el GPS…</string>
+    <string name="gps_lost">S\'ha perdut el senyal GPS</string>
+    <string name="hr_unavailable">Freqüència cardíaca no disponible</string>
+    <string name="restore_failed">No s\'ha pogut comprovar l\'entrenament. Toca D\'acord per tornar-ho a provar.</string>
 </resources>

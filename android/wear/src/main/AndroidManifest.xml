@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Ambient mode (AmbientLifecycleObserver). -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".EndurainWearApplication"
@@ -24,6 +26,10 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.DeviceDefault">
+
+        <uses-library
+            android:name="com.google.android.wearable"
+            android:required="false" />
 
         <!-- The watch app needs the phone app: it hands every workout to it. -->
         <meta-data

@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Počni odmah</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Traženje GPS-a…</string>
+    <string name="gps_lost">GPS signal izgubljen</string>
+    <string name="hr_unavailable">Puls nije dostupan</string>
+    <string name="restore_failed">Trening nije bilo moguće provjeriti. Dodirnite U redu za ponovni pokušaj.</string>
 </resources>

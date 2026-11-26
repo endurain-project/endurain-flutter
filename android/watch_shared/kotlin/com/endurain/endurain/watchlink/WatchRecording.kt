@@ -34,6 +34,8 @@ data class WatchRecording(
     val activeMillisBeforeCurrentRun: Long = 0,
     /** When the clock last started; null while paused. */
     val currentRunStartedAtMillis: Long? = startedAtMillis,
+    /** Last total distance reported, so a re-attached recording does not show 0. */
+    val lastDistanceMeters: Double? = null,
 ) {
     val isPaused: Boolean
         get() = currentRunStartedAtMillis == null
@@ -62,6 +64,7 @@ data class WatchRecording(
             put("segmentIndex", segmentIndex)
             put("activeMillisBeforeCurrentRun", activeMillisBeforeCurrentRun)
             currentRunStartedAtMillis?.let { put("currentRunStartedAt", it) }
+            lastDistanceMeters?.let { put("lastDistanceMeters", it) }
         }
 
     companion object {
@@ -77,6 +80,8 @@ data class WatchRecording(
                 activeMillisBeforeCurrentRun = json.optLong("activeMillisBeforeCurrentRun", 0),
                 currentRunStartedAtMillis =
                     if (json.has("currentRunStartedAt")) json.optLong("currentRunStartedAt") else null,
+                lastDistanceMeters =
+                    json.optDouble("lastDistanceMeters", Double.NaN).takeIf { it.isFinite() },
             )
         }
     }

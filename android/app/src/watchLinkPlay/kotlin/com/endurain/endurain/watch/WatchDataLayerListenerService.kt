@@ -1,11 +1,9 @@
 package com.endurain.endurain.watch
 
-import android.net.Uri
 import android.util.Log
 import com.endurain.endurain.watchlink.WatchProtocol
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
-import com.google.android.gms.wearable.PutDataRequest
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
 
@@ -37,11 +35,7 @@ class WatchDataLayerListenerService : WearableListenerService() {
     }
 
     private fun deleteAcknowledgement(sessionId: String) {
-        val uri =
-            Uri.Builder()
-                .scheme(PutDataRequest.WEAR_URI_SCHEME)
-                .path(WatchProtocol.ackPath(sessionId))
-                .build()
+        val uri = WatchProtocol.dataLayerUri(WatchProtocol.ackPath(sessionId))
         Wearable.getDataClient(applicationContext).deleteDataItems(uri).addOnFailureListener { error ->
             Log.w("EndurainWatch", "Could not drop a watch acknowledgement", error)
         }

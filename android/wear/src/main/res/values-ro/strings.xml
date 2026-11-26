@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Pornește acum</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Se caută GPS…</string>
+    <string name="gps_lost">Semnal GPS pierdut</string>
+    <string name="hr_unavailable">Ritmul cardiac nu este disponibil</string>
+    <string name="restore_failed">Antrenamentul nu a putut fi verificat. Atingeți OK pentru a încerca din nou.</string>
 </resources>

@@ -64,7 +64,7 @@ class LocationSampleMapperTest {
 
     @Test
     fun mapsActivityTypesToExercises() {
-        WatchActivityType.entries.forEach { assertNotNull(WorkoutRecorder.exerciseType(it)) }
+        WatchActivityType.entries.forEach { assertNotNull(HealthServicesExerciseGateway.exerciseType(it)) }
     }
 
     @Test
