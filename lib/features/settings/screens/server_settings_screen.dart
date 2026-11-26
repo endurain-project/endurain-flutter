@@ -1,12 +1,9 @@
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/app/app_services.dart';
-import 'package:endurain/core/auth/auth_service.dart';
-import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
+import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/features/settings/controllers/server_settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -18,16 +15,12 @@ import 'package:material_ui/material_ui.dart';
 class ServerSettingsScreen extends StatefulWidget {
   const ServerSettingsScreen({
     super.key,
+    required this.repository,
     this.onLogout,
-    this.storage,
-    this.authService,
-    this.repository,
   });
 
   final VoidCallback? onLogout;
-  final SecureStorageService? storage;
-  final AuthService? authService;
-  final ServerSettingsRepository? repository;
+  final ServerSettingsRepository repository;
 
   @override
   State<ServerSettingsScreen> createState() => _ServerSettingsScreenState();
@@ -40,24 +33,13 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
   @override
   void initState() {
     super.initState();
-    final services = AppScope.servicesOf(context, listen: false);
-    // The screen always owns the controller; its test seam is the repository
-    // (built here) rather than the controller itself.
+    // The screen always owns the controller; its seam is the repository
+    // rather than the controller itself.
     _controller = registerController(
       null,
-      () => ServerSettingsController(
-        repository: widget.repository ?? _createRepository(services),
-      ),
+      () => ServerSettingsController(repository: widget.repository),
     );
     unawaited(_controller.load());
-  }
-
-  ServerSettingsRepository _createRepository(AppServices services) {
-    final storage = widget.storage ?? services.secureStorage;
-    return ServerSettingsRepository(
-      storage: storage,
-      authService: widget.authService ?? services.auth,
-    );
   }
 
   Future<void> _handleLogout() async {
@@ -122,6 +104,17 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
                     title: l10n.serverUrl,
                     subtitle: _controller.serverUrl ?? l10n.notConfigured,
                   ),
+                  if (ServerUrlResolver.isPlainHttp(_controller.serverUrl))
+                    AdaptiveListTile(
+                      key: const ValueKey('serverNotSecureTile'),
+                      leading: AdaptiveIcon(
+                        materialIcon: Icons.warning_amber_rounded,
+                        cupertinoIcon:
+                            CupertinoIcons.exclamationmark_triangle_fill,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      title: l10n.serverNotSecure,
+                    ),
                   AdaptiveListTile(
                     title: l10n.username,
                     subtitle: _controller.username ?? l10n.notLoggedIn,

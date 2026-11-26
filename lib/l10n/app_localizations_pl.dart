@@ -129,6 +129,10 @@ class AppLocalizationsPl extends AppLocalizations {
       'Odmówiono dostępu do danych zdrowotnych';
 
   @override
+  String get errorHealthUnavailable =>
+      'Dane zdrowotne nie są dostępne na tym urządzeniu';
+
+  @override
   String get errorHealthReadFailed =>
       'Nie udało się odczytać danych zdrowotnych';
 
@@ -899,6 +903,9 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get loggedIn => 'Zalogowano';
+
+  @override
+  String get serverNotSecure => 'Niezabezpieczone (HTTP)';
 
   @override
   String get notConfigured => 'Nie skonfigurowano';

@@ -118,7 +118,7 @@ class AuthService {
       return existing;
     }
     final refresh = _refreshToken(session).whenComplete(() {
-      _inFlightRefreshes.remove(session.revision);
+      unawaited(_inFlightRefreshes.remove(session.revision));
     });
     _inFlightRefreshes[session.revision] = refresh;
     return refresh;

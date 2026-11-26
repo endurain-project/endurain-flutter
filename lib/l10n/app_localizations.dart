@@ -339,6 +339,12 @@ abstract class AppLocalizations {
   /// **'Health data access was denied'**
   String get errorHealthPermissionDenied;
 
+  /// Health platform missing or unsupported error - Used in: error_localizations.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health data is not available on this device'**
+  String get errorHealthUnavailable;
+
   /// Health data read error - Used in: error_localizations.dart
   ///
   /// In en, this message translates to:
@@ -1670,6 +1676,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Logged in'**
   String get loggedIn;
+
+  /// Badge shown beside a server address that uses plain HTTP - Used in: settings_screen.dart, server_settings_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not secure (HTTP)'**
+  String get serverNotSecure;
 
   /// Fallback shown when server settings have no configured value - Used in: server_settings_screen.dart
   ///

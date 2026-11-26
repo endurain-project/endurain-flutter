@@ -129,6 +129,10 @@ class AppLocalizationsHu extends AppLocalizations {
       'Az egészségügyi adatokhoz való hozzáférés megtagadva';
 
   @override
+  String get errorHealthUnavailable =>
+      'Az egészségügyi adatok nem érhetők el ezen az eszközön';
+
+  @override
   String get errorHealthReadFailed =>
       'Nem sikerült beolvasni az egészségügyi adatokat';
 
@@ -898,6 +902,9 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get loggedIn => 'Bejelentkezve';
+
+  @override
+  String get serverNotSecure => 'Nem biztonságos (HTTP)';
 
   @override
   String get notConfigured => 'Nincs beállítva';

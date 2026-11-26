@@ -38,4 +38,70 @@ void main() {
       );
     });
   });
+
+  group('redactDiagnosticText URLs and keys', () {
+    test('redacts the host and path ids of a URL', () {
+      final redacted = redactDiagnosticText(
+        'failed uri=https://my.server.test:8443/api/v1/sessions/'
+        '3f2b8c1e-aaaa-bbbb-cccc-1234567890ab/activities/42?page=2 now',
+      );
+
+      expect(redacted, isNot(contains('my.server.test')));
+      expect(redacted, isNot(contains('3f2b8c1e')));
+      expect(redacted, isNot(contains('/42')));
+      expect(
+        redacted,
+        'failed uri=https://<host>/api/v1/sessions/<id>/activities/<id>'
+        '?page=<redacted> now',
+      );
+    });
+
+    test('redacts ids in a bare path and keeps plain segments', () {
+      expect(
+        redactDiagnosticText('GET /api/v1/auth/sessions/1234/tokens failed'),
+        'GET /api/v1/auth/sessions/<id>/tokens failed',
+      );
+      expect(
+        redactDiagnosticText('GET /api/v1/auth/password-change ok'),
+        'GET /api/v1/auth/password-change ok',
+      );
+    });
+
+    test('redacts opaque tokens in a path but not a long plain word', () {
+      expect(
+        redactDiagnosticText('/api/v1/idp/Ab3_x-Q9Zk2LmN8pQr/icon'),
+        '/api/v1/idp/<id>/icon',
+      );
+      expect(
+        redactDiagnosticText('/api/v1/internationalization/x'),
+        '/api/v1/internationalization/x',
+      );
+    });
+
+    test('leaves a fraction or date outside a path alone', () {
+      expect(
+        redactDiagnosticText('step 1/2 on 2026/06/01'),
+        'step 1/2 on 2026/06/01',
+      );
+    });
+
+    test('redacts session_id, sessionId, code_verifier and friends', () {
+      for (final key in [
+        'session_id',
+        'sessionId',
+        'code_verifier',
+        'refresh_token',
+        'client_secret',
+        'X-Auth-Cookie',
+      ]) {
+        final redacted = redactDiagnosticText('$key=abc123 next');
+        expect(redacted, isNot(contains('abc123')), reason: key);
+        expect(redacted, '$key=<redacted> next', reason: key);
+      }
+      expect(
+        redactDiagnosticText('{"sessionId":"abc-1","user":"bob"}'),
+        '{"sessionId=<redacted>,"user":"bob"}',
+      );
+    });
+  });
 }

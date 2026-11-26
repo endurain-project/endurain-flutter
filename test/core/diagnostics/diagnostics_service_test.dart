@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('DiagnosticsService', () {
     late Directory tempDirectory;
+    Directory privateDirectory() =>
+        Directory('${tempDirectory.path}/endurain_private');
     late List<DiagnosticsService> services;
 
     DiagnosticsService createService({
@@ -274,6 +276,80 @@ void main() {
       expect(report!.errors.single.type, 'StateError');
     });
 
+    test('keeps the report in the backup-excluded private directory', () async {
+      final service = createService();
+      await service.initialize();
+      await service.setEnabled(true);
+
+      expect(
+        File('${privateDirectory().path}/endurain_diagnostics.json')
+            .existsSync(),
+        isTrue,
+      );
+      expect(
+        File('${tempDirectory.path}/endurain_diagnostics.json').existsSync(),
+        isFalse,
+      );
+    });
+
+    test('moves a report from the old backed-up location once', () async {
+      final legacy = File('${tempDirectory.path}/endurain_diagnostics.json');
+      legacy.writeAsStringSync(
+        jsonEncode({
+          'schemaVersion': 2,
+          'app': 'Endurain',
+          'enabled': true,
+          'breadcrumbs': [
+            {'at': '2026-06-01T00:00:00.000Z', 'event': 'legacy.event'},
+          ],
+          'errors': <Object?>[],
+        }),
+      );
+      File('${tempDirectory.path}/endurain_diagnostics.json.async.tmp')
+          .writeAsStringSync('partial');
+
+      final service = createService();
+      await service.initialize();
+
+      expect(service.isEnabled, isTrue);
+      final report = await service.readReport();
+      expect(report!.breadcrumbs.single.event, 'legacy.event');
+      expect(legacy.existsSync(), isFalse);
+      expect(
+        File('${tempDirectory.path}/endurain_diagnostics.json.async.tmp')
+            .existsSync(),
+        isFalse,
+      );
+      expect(
+        File('${privateDirectory().path}/endurain_diagnostics.json')
+            .existsSync(),
+        isTrue,
+      );
+    });
+
+    test(
+      'keeps the private report when an old one is also left over',
+      () async {
+        final first = createService();
+        await first.initialize();
+        await first.setEnabled(true);
+        first.recordBreadcrumbSync('current.event');
+        await first.flush();
+        final legacy = File('${tempDirectory.path}/endurain_diagnostics.json')
+          ..writeAsStringSync('{"breadcrumbs": []}');
+
+        final second = createService();
+        await second.initialize();
+
+        expect(legacy.existsSync(), isFalse);
+        final report = await second.readReport();
+        expect(
+          report!.breadcrumbs.map((breadcrumb) => breadcrumb.event),
+          contains('current.event'),
+        );
+      },
+    );
+
     test('writes leave the report whole and no staging files', () async {
       final first = createService();
       await first.initialize();
@@ -282,7 +358,7 @@ void main() {
       await first.flush();
       first.recordErrorSync(StateError('boom'), StackTrace.empty);
 
-      final names = tempDirectory
+      final names = privateDirectory()
           .listSync()
           .map((entity) => entity.uri.pathSegments.last)
           .toList();
@@ -300,7 +376,7 @@ void main() {
 
         // What a process killed mid-write leaves: a truncated staging file
         // beside the last complete report.
-        File('${tempDirectory.path}/endurain_diagnostics.json.async.tmp')
+        File('${privateDirectory().path}/endurain_diagnostics.json.async.tmp')
             .writeAsStringSync('{"schemaVersion": 1, "enab');
 
         final second = createService();
@@ -319,19 +395,21 @@ void main() {
       final service = createService();
       await service.initialize();
       await service.setEnabled(true);
-      File('${tempDirectory.path}/endurain_diagnostics.json.sync.tmp')
+      File('${privateDirectory().path}/endurain_diagnostics.json.sync.tmp')
           .writeAsStringSync('partial');
 
       await service.setEnabled(false);
 
-      expect(tempDirectory.listSync(), isEmpty);
+      expect(privateDirectory().listSync(), isEmpty);
     });
 
     test('an error stays on disk while an older breadcrumb write lands', () async {
       final service = createService();
       await service.initialize();
       await service.setEnabled(true);
-      final report = File('${tempDirectory.path}/endurain_diagnostics.json');
+      final report = File(
+        '${privateDirectory().path}/endurain_diagnostics.json',
+      );
 
       // The breadcrumb starts an async write that snapshots the report without
       // the error; the error is then written synchronously mid-flight.

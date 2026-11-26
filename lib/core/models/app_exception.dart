@@ -18,6 +18,10 @@ enum AppErrorCode {
   healthPermissionDenied,
   healthReadFailed,
 
+  /// The health platform is missing or unsupported (for example Health
+  /// Connect is not installed), as opposed to access being denied.
+  healthUnavailable,
+
   /// A redirect tried to downgrade an `https` request to plain `http`.
   /// Refused outright rather than followed, because it is the standard way to
   /// strip TLS before harvesting a credential.

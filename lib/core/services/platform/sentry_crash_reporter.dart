@@ -85,9 +85,9 @@ class SentryCrashReporter implements CrashReporter {
       await Sentry.captureException(
         error,
         stackTrace: stackTrace,
-        withScope: (scope) {
+        withScope: (scope) async {
           if (source != null) {
-            scope.setTag('source', source);
+            await scope.setTag('source', source);
           }
         },
       );

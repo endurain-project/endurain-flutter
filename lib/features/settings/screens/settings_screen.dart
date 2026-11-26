@@ -1,25 +1,14 @@
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
-import 'package:endurain/features/activity/screens/activity_history_screen.dart';
-import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
-import 'package:endurain/features/activity/screens/start_countdown_settings_screen.dart';
-import 'package:endurain/features/health/screens/health_sync_screen.dart';
-import 'package:endurain/features/map/screens/tile_server_settings_screen.dart';
-import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
+import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
-import 'package:endurain/features/settings/screens/audio_announcement_settings_screen.dart';
-import 'package:endurain/features/settings/screens/device_access_screen.dart';
-import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
-import 'package:endurain/features/settings/screens/server_settings_screen.dart';
-import 'package:endurain/features/settings/screens/units_settings_screen.dart';
+import 'package:endurain/features/settings/screens/settings_destinations.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -32,16 +21,25 @@ const String _sourceCodeUrl = 'https://github.com/endurain-project';
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
-    this.onLogout,
+    required this.destinations,
+    required this.localeController,
+    required this.urlLauncherService,
+    required this.healthSyncEnabled,
     this.isGuest = false,
     this.onSignIn,
     this.controller,
-    this.diagnostics,
-    this.localeController,
-    this.urlLauncherService,
-  });
+    this.createController,
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
-  final VoidCallback? onLogout;
+  /// The screens the list opens.
+  final SettingsDestinations destinations;
+
+  /// Whether the Health Sync entry (and the health permissions in Device
+  /// access) are offered in this build.
+  final bool healthSyncEnabled;
 
   /// Whether the app is running in local-only guest mode (no server session).
   /// Guests see a "sign in / connect a server" entry instead of server
@@ -51,12 +49,14 @@ class SettingsScreen extends StatefulWidget {
   /// Invoked when a guest chooses to connect a server / sign in.
   final VoidCallback? onSignIn;
 
-  /// Optional route-owned controller override (tests).
+  /// Injected controller (tests); otherwise one is built with
+  /// [createController] and owned by the screen.
   final SettingsController? controller;
+  final SettingsController Function()? createController;
 
-  final DiagnosticsStore? diagnostics;
-  final LocaleController? localeController;
-  final UrlLauncherService? urlLauncherService;
+  /// Read for the language subtitle, which follows the user's choice.
+  final LocaleController localeController;
+  final UrlLauncherService urlLauncherService;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -64,18 +64,13 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
   late final SettingsController _controller;
-  late final bool _healthSyncEnabled;
-  late final UrlLauncherService _urlLauncherService;
 
   @override
   void initState() {
     super.initState();
-    final services = AppScope.servicesOf(context, listen: false);
-    _healthSyncEnabled = services.config.healthSyncEnabled;
-    _urlLauncherService = widget.urlLauncherService ?? services.urlLauncher;
     _controller = registerController(
       widget.controller,
-      services.createSettingsController,
+      () => widget.createController!(),
       onChanged: _onControllerChanged,
     );
     unawaited(_controller.load());
@@ -89,7 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
 
   Future<void> _openSourceCode() async {
     final l10n = AppLocalizations.of(context)!;
-    final launched = await _urlLauncherService.launchExternalApplication(
+    final launched = await widget.urlLauncherService.launchExternalApplication(
       Uri.parse(_sourceCodeUrl),
     );
     if (!launched && mounted) {
@@ -100,10 +95,7 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final localeController =
-        widget.localeController ??
-        AppScope.servicesOf(context, listen: false).localeController;
-    final currentLocale = localeController.locale;
+    final currentLocale = widget.localeController.locale;
     final languageSubtitle = currentLocale == null
         ? l10n.languageSystemDefault
         : languageDisplayName(currentLocale);
@@ -142,9 +134,11 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         title: l10n.serverSettings,
                         subtitle: serverUrl == null || serverUrl.isEmpty
                             ? null
+                            : ServerUrlResolver.isPlainHttp(serverUrl)
+                            ? '${l10n.connectedToServer(serverUrl)}\n'
+                                  '${l10n.serverNotSecure}'
                             : l10n.connectedToServer(serverUrl),
-                        destination: (context) =>
-                            ServerSettingsScreen(onLogout: widget.onLogout),
+                        destination: widget.destinations.serverSettings,
                       ),
                   ],
                 ),
@@ -157,14 +151,14 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       cupertinoIcon: CupertinoIcons.textformat,
                       title: l10n.language,
                       subtitle: languageSubtitle,
-                      destination: (context) => const LanguageSettingsScreen(),
+                      destination: widget.destinations.language,
                     ),
                     _SettingsNavTile(
                       materialIcon: Icons.straighten,
                       cupertinoIcon: CupertinoIcons.arrow_left_right,
                       title: l10n.unitsTitle,
                       subtitle: l10n.unitsSubtitle,
-                      destination: (context) => const UnitsSettingsScreen(),
+                      destination: widget.destinations.units,
                     ),
                     // The tile URL is stored per connected server, so guests
                     // (no server) have nothing to configure.
@@ -174,8 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                         cupertinoIcon: CupertinoIcons.map,
                         title: l10n.mapTilesSettingsTitle,
                         subtitle: l10n.mapTilesSettingsSubtitle,
-                        destination: (context) =>
-                            const TileServerSettingsScreen(),
+                        destination: widget.destinations.tileServer,
                       ),
                   ],
                 ),
@@ -188,23 +181,21 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       cupertinoIcon: CupertinoIcons.timer,
                       title: l10n.startCountdownSettingsTitle,
                       subtitle: l10n.startCountdownSettingsSubtitle,
-                      destination: (context) =>
-                          const StartCountdownSettingsScreen(),
+                      destination: widget.destinations.startCountdown,
                     ),
                     _SettingsNavTile(
                       materialIcon: Icons.pause_circle_outline,
                       cupertinoIcon: CupertinoIcons.pause_circle,
                       title: l10n.activityAutoPauseTitle,
                       subtitle: l10n.activityAutoPauseSubtitle,
-                      destination: (context) => const AutoPauseSettingsScreen(),
+                      destination: widget.destinations.autoPause,
                     ),
                     _SettingsNavTile(
                       materialIcon: Icons.record_voice_over,
                       cupertinoIcon: CupertinoIcons.speaker_2,
                       title: l10n.audioAnnouncementsTitle,
                       subtitle: l10n.audioAnnouncementsSubtitle,
-                      destination: (context) =>
-                          const AudioAnnouncementSettingsScreen(),
+                      destination: widget.destinations.audioAnnouncements,
                     ),
                   ],
                 ),
@@ -217,15 +208,15 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       cupertinoIcon: CupertinoIcons.dot_radiowaves_left_right,
                       title: l10n.sensorsTitle,
                       subtitle: l10n.sensorsSettingsSubtitle,
-                      destination: (context) => const SensorSettingsScreen(),
+                      destination: widget.destinations.sensors,
                     ),
-                    if (_healthSyncEnabled && !widget.isGuest)
+                    if (widget.healthSyncEnabled && !widget.isGuest)
                       _SettingsNavTile(
                         materialIcon: Icons.monitor_heart,
                         cupertinoIcon: CupertinoIcons.heart,
                         title: l10n.healthSyncSettingsTitle,
                         subtitle: l10n.healthSyncSettingsSubtitle,
-                        destination: (context) => const HealthSyncScreen(),
+                        destination: widget.destinations.healthSync,
                       ),
                   ],
                 ),
@@ -238,7 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       cupertinoIcon: CupertinoIcons.time,
                       title: l10n.activityHistoryTitle,
                       subtitle: l10n.activityHistorySettingsSubtitle,
-                      destination: (context) => const ActivityHistoryScreen(),
+                      destination: widget.destinations.activityHistory,
                     ),
                   ],
                 ),
@@ -251,23 +242,14 @@ class _SettingsScreenState extends State<SettingsScreen> with OwnedControllers {
                       cupertinoIcon: CupertinoIcons.shield,
                       title: l10n.deviceAccessTitle,
                       subtitle: l10n.deviceAccessSubtitle,
-                      destination: (context) => DeviceAccessScreen(
-                        healthSyncEnabled: _healthSyncEnabled,
-                      ),
+                      destination: widget.destinations.deviceAccess,
                     ),
                     _SettingsNavTile(
                       materialIcon: Icons.bug_report,
                       cupertinoIcon: CupertinoIcons.waveform_path_ecg,
                       title: l10n.diagnostics,
                       subtitle: l10n.diagnosticsSubtitle,
-                      destination: (context) => DiagnosticsScreen(
-                        diagnostics:
-                            widget.diagnostics ??
-                            AppScope.servicesOf(
-                              context,
-                              listen: false,
-                            ).diagnostics,
-                      ),
+                      destination: widget.destinations.diagnostics,
                     ),
                     _SettingsNavTile(
                       materialIcon: Icons.code,

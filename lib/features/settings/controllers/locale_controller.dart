@@ -5,8 +5,8 @@ import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// App-wide selected [Locale], persisted as a BCP 47 tag.
 ///
-/// A `null` [locale] means "follow the system locale". Owned by `AppServices`
-/// so the root `App` can listen and rebuild the localized widget tree when the
+/// A `null` [locale] means "follow the system locale". Owned by the composition
+/// root so the root `App` can listen and rebuild the localized widget tree when the
 /// user changes languages in Settings.
 class LocaleController extends SafeNotifier {
   LocaleController({required this._repository});

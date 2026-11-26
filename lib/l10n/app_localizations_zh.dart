@@ -111,6 +111,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorHealthPermissionDenied => '健康数据访问被拒绝';
 
   @override
+  String get errorHealthUnavailable => '此设备上无法使用健康数据';
+
+  @override
   String get errorHealthReadFailed => '无法读取健康数据';
 
   @override
@@ -824,6 +827,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loggedIn => '已登录';
 
   @override
+  String get serverNotSecure => '不安全 (HTTP)';
+
+  @override
   String get notConfigured => '未配置';
 
   @override
@@ -1481,6 +1487,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorHealthPermissionDenied => '健康資料存取遭拒';
+
+  @override
+  String get errorHealthUnavailable => '此裝置無法使用健康資料';
 
   @override
   String get errorHealthReadFailed => '無法讀取健康資料';
@@ -2195,6 +2204,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get loggedIn => '已登入';
+
+  @override
+  String get serverNotSecure => '不安全 (HTTP)';
 
   @override
   String get notConfigured => '未設定';

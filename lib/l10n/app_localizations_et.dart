@@ -128,6 +128,10 @@ class AppLocalizationsEt extends AppLocalizations {
       'Juurdepääs terviseandmetele keelati';
 
   @override
+  String get errorHealthUnavailable =>
+      'Terviseandmed pole selles seadmes saadaval';
+
+  @override
   String get errorHealthReadFailed => 'Terviseandmeid ei õnnestunud lugeda';
 
   @override
@@ -891,6 +895,9 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get loggedIn => 'Sisse logitud';
+
+  @override
+  String get serverNotSecure => 'Pole turvaline (HTTP)';
 
   @override
   String get notConfigured => 'Pole seadistatud';

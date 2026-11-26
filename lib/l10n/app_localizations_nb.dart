@@ -128,6 +128,10 @@ class AppLocalizationsNb extends AppLocalizations {
   String get errorHealthPermissionDenied => 'Helsedatatilgang ble nektet';
 
   @override
+  String get errorHealthUnavailable =>
+      'Helsedata er ikke tilgjengelig på denne enheten';
+
+  @override
   String get errorHealthReadFailed => 'Kunne ikke lese helsedata';
 
   @override
@@ -890,6 +894,9 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get loggedIn => 'Pålogget';
+
+  @override
+  String get serverNotSecure => 'Ikke sikker (HTTP)';
 
   @override
   String get notConfigured => 'Ikke konfigurert';

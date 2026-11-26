@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
@@ -16,12 +18,28 @@ class DeviceAccessScreen extends StatefulWidget {
   const DeviceAccessScreen({
     super.key,
     this.controller,
+    this.locationService,
     this.healthController,
+    this.createHealthController,
     required this.healthSyncEnabled,
-  });
+  }) : assert(
+         controller != null || locationService != null,
+         'Pass a controller or the location service to build one.',
+       ),
+       assert(
+         healthController != null || createHealthController != null,
+         'Pass a health controller or a factory for one.',
+       );
 
+  /// Injected controller (tests); otherwise one is built from
+  /// [locationService] and owned by the screen.
   final DeviceAccessController? controller;
+  final LocationService? locationService;
+
+  /// Injected health controller (tests); otherwise built with
+  /// [createHealthController] and owned by the screen.
   final HealthSyncController? healthController;
+  final HealthSyncController Function()? createHealthController;
   final bool healthSyncEnabled;
 
   @override
@@ -38,14 +56,13 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    final services = AppScope.servicesOf(context, listen: false);
     _controller =
         widget.controller ??
-        DeviceAccessController(locationService: services.location);
+        DeviceAccessController(locationService: widget.locationService!);
     _ownsHealthController = widget.healthController == null;
     _healthController =
-        widget.healthController ?? services.createHealthSyncController();
-    _refresh();
+        widget.healthController ?? widget.createHealthController!();
+    unawaited(_refresh());
   }
 
   @override
@@ -63,7 +80,7 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _refresh();
+      unawaited(_refresh());
     }
   }
 
@@ -140,9 +157,11 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
       title: l10n.deviceAccessHealthTitle,
       subtitle: _healthStatus(l10n),
       onTap: () {
-        adaptivePush<void>(
-          context,
-          (context) => HealthAccessScreen(controller: _healthController),
+        unawaited(
+          adaptivePush<void>(
+            context,
+            (context) => HealthAccessScreen(controller: _healthController),
+          ),
         );
       },
     );

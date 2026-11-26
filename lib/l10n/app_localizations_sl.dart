@@ -128,6 +128,10 @@ class AppLocalizationsSl extends AppLocalizations {
       'Dostop do zdravstvenih podatkov je bil zavrnjen';
 
   @override
+  String get errorHealthUnavailable =>
+      'Zdravstveni podatki v tej napravi niso na voljo';
+
+  @override
   String get errorHealthReadFailed =>
       'Ni bilo mogoče prebrati zdravstvenih podatkov';
 
@@ -908,6 +912,9 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get loggedIn => 'Prijavljeni';
+
+  @override
+  String get serverNotSecure => 'Ni varno (HTTP)';
 
   @override
   String get notConfigured => 'Ni nastavljeno';

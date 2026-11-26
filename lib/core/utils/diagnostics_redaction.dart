@@ -5,7 +5,9 @@
 /// persisted or transmitted, so the rules live here once rather than being
 /// duplicated (and drifting) between the two. The redaction is deliberately
 /// conservative: it strips bearer tokens and JWTs, secret-like `key=value`
-/// pairs and JSON members, any query-string values, absolute on-device file
+/// pairs and JSON members, any query-string values, URL hosts and path ids
+/// (a server address and the ids in `/sessions/<id>` identify the user),
+/// absolute on-device file
 /// paths (iOS/desktop home and container dirs, Android app-data and
 /// external-storage dirs), and coordinate-looking pairs, then truncates to a
 /// bounded length.
@@ -26,7 +28,7 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
       // the key and the separator, and a quoted value is redacted whole.
       .replaceAllMapped(
         RegExp(
-          r'''(token|password|secret|authorization|cookie|session)["']?\s*[=:]\s*("[^"]*"|'[^']*'|[^,\s]+)''',
+          r'''([\w-]*(?:token|password|secret|authorization|cookie|session|verifier)[\w-]*)["']?\s*[=:]\s*("[^"]*"|'[^']*'|[^,\s]+)''',
           caseSensitive: false,
         ),
         (match) => '${match.group(1)}=<redacted>',
@@ -35,6 +37,7 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
         RegExp(r'([?&][^=\s]+)=([^&\s]+)'),
         (match) => '${match.group(1)}=<redacted>',
       )
+      .replaceAllMapped(_urlOrPath, (match) => _redactUrlOrPath(match[0]!))
       .replaceAll(RegExp(r'/Users/[^\s:]+'), '<path>')
       .replaceAll(RegExp(r'/private/var/containers/[^\s:]+'), '<path>')
       .replaceAll(RegExp(r'/data/user/[^\s:]+'), '<path>')
@@ -49,4 +52,47 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
     sanitized = '${sanitized.substring(0, maxLength)}...';
   }
   return sanitized;
+}
+
+// A URL, or an absolute path starting with a letter (not `/Users`-style
+// device paths, which are redacted whole afterwards).
+final RegExp _urlOrPath = RegExp(
+  r'''https?://[^\s"'<>]+|(?<![\w<>/.])/[A-Za-z][^\s"'<>?#,;)]*''',
+  caseSensitive: false,
+);
+
+final RegExp _idSegment = RegExp(
+  r'^(?:\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{16,})$',
+  caseSensitive: false,
+);
+
+// A long opaque token such as `Ab3_x-Q9...`: needs a digit and a letter so a
+// long plain word stays readable.
+final RegExp _opaqueSegment = RegExp(r'^(?=.*\d)(?=.*[A-Za-z])[\w-]{16,}$');
+
+/// Replaces the host of a URL and the id-like segments of its path; the query
+/// is left for the query-value rule.
+String _redactUrlOrPath(String token) {
+  var rest = token;
+  var prefix = '';
+  final scheme = RegExp(r'^https?://', caseSensitive: false).firstMatch(rest);
+  if (scheme != null) {
+    final afterScheme = rest.substring(scheme.end);
+    final authorityEnd = afterScheme.indexOf(RegExp(r'[/?#]'));
+    prefix = '${scheme[0]}<host>';
+    rest = authorityEnd == -1 ? '' : afterScheme.substring(authorityEnd);
+  }
+  final suffixStart = rest.indexOf(RegExp(r'[?#]'));
+  final path = suffixStart == -1 ? rest : rest.substring(0, suffixStart);
+  final suffix = suffixStart == -1 ? '' : rest.substring(suffixStart);
+  final redactedPath = path
+      .split('/')
+      .map(
+        (segment) =>
+            _idSegment.hasMatch(segment) || _opaqueSegment.hasMatch(segment)
+            ? '<id>'
+            : segment,
+      )
+      .join('/');
+  return '$prefix$redactedPath$suffix';
 }

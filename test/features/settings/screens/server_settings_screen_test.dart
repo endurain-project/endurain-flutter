@@ -68,6 +68,34 @@ void main() {
       expect(find.text(l10n.notLoggedIn), findsOneWidget);
     });
 
+    testWidgets('flags a plain HTTP server as not secure', (tester) async {
+      final storage = SecureStorageService();
+      await storage.setServerUrl('http://192.168.1.10:8080');
+
+      await tester.pumpWidget(
+        _SettingsTestApp(
+          child: ServerSettingsScreen(repository: _repository(storage)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.serverNotSecure), findsOneWidget);
+    });
+
+    testWidgets('shows no insecure badge for an HTTPS server', (tester) async {
+      final storage = SecureStorageService();
+      await storage.setServerUrl('https://endurain.example.test');
+
+      await tester.pumpWidget(
+        _SettingsTestApp(
+          child: ServerSettingsScreen(repository: _repository(storage)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.serverNotSecure), findsNothing);
+    });
+
     testWidgets('signs out of the app even when the local clear fails', (
       tester,
     ) async {
@@ -143,7 +171,7 @@ class _SettingsTestApp extends StatelessWidget {
     return MaterialApp(
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: TestAppScope(child: child),
+      home: child,
     );
   }
 }

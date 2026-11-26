@@ -128,6 +128,10 @@ class AppLocalizationsUk extends AppLocalizations {
       'У доступі до даних про здоров’я відмовлено';
 
   @override
+  String get errorHealthUnavailable =>
+      'Дані про здоров’я недоступні на цьому пристрої';
+
+  @override
   String get errorHealthReadFailed =>
       'Не вдалося прочитати дані про стан здоров\'я';
 
@@ -890,6 +894,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get loggedIn => 'Ви ввійшли';
+
+  @override
+  String get serverNotSecure => 'Незахищено (HTTP)';
 
   @override
   String get notConfigured => 'Не налаштовано';

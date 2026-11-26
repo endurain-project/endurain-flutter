@@ -127,6 +127,10 @@ class AppLocalizationsLv extends AppLocalizations {
       'Piekļuve veselības datiem tika liegta';
 
   @override
+  String get errorHealthUnavailable =>
+      'Veselības dati šajā ierīcē nav pieejami';
+
+  @override
   String get errorHealthReadFailed => 'Nevarēja nolasīt veselības datus';
 
   @override
@@ -890,6 +894,9 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get loggedIn => 'Pieteicies';
+
+  @override
+  String get serverNotSecure => 'Nav drošs (HTTP)';
 
   @override
   String get notConfigured => 'Nav konfigurēts';

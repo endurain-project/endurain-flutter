@@ -48,6 +48,13 @@ class ServerUrlResolver {
     return url;
   }
 
+  /// Whether [url] is a plain `http://` address, which the UI flags as not
+  /// secure wherever the server is shown.
+  static bool isPlainHttp(String? url) {
+    final uri = url == null ? null : Uri.tryParse(url.trim());
+    return uri != null && uri.isScheme('http');
+  }
+
   static String normalize(String value, {required AppConfig config}) {
     final uri = Uri.tryParse(value.trim());
     if (uri == null ||

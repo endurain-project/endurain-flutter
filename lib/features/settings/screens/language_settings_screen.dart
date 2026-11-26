@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/localization/app_locales.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -127,17 +126,15 @@ const Map<String, String> _latinSortReplacements = {
 /// Lets the user override the app language, following the device locale by
 /// default. Selections are persisted as BCP 47 tags via [LocaleController].
 class LanguageSettingsScreen extends StatelessWidget {
-  const LanguageSettingsScreen({super.key, this.localeController});
+  const LanguageSettingsScreen({super.key, required this.localeController});
 
-  /// Overrides the app-scoped controller (used in tests).
-  final LocaleController? localeController;
+  /// The app-lifetime locale preference this screen edits.
+  final LocaleController localeController;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final controller =
-        localeController ??
-        AppScope.servicesOf(context, listen: false).localeController;
+    final controller = localeController;
 
     return AdaptiveScaffold(
       title: l10n.language,

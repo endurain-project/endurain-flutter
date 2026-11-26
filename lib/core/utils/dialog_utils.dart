@@ -6,8 +6,76 @@ import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
+/// One button of a dialog shown by [DialogUtils.showActionDialog].
+class DialogChoice<T> {
+  const DialogChoice({
+    required this.label,
+    required this.value,
+    this.isDestructive = false,
+  });
+
+  final String label;
+
+  /// What the dialog resolves with when this button is pressed.
+  final T value;
+
+  /// Styled as a destructive action (red on Apple, the error colour on Material).
+  final bool isDestructive;
+}
+
 /// Utility class for showing platform-adaptive dialogs
 class DialogUtils {
+  /// The single place that branches between Cupertino and Material alerts.
+  ///
+  /// Every other dialog here is built on it so they stay visually consistent.
+  /// A button with a `null` value pops without a result.
+  static Future<T?> _showAdaptiveAlert<T>(
+    BuildContext context, {
+    String? title,
+    required Widget content,
+    required List<DialogChoice<T?>> choices,
+    bool? barrierDismissible,
+  }) {
+    if (PlatformUtils.isApplePlatform) {
+      return showCupertinoDialog<T>(
+        context: context,
+        barrierDismissible: barrierDismissible ?? false,
+        builder: (context) => CupertinoAlertDialog(
+          title: title == null ? null : Text(title),
+          content: content,
+          actions: [
+            for (final choice in choices)
+              CupertinoDialogAction(
+                isDestructiveAction: choice.isDestructive,
+                onPressed: () => Navigator.pop(context, choice.value),
+                child: Text(choice.label),
+              ),
+          ],
+        ),
+      );
+    }
+    return showDialog<T>(
+      context: context,
+      barrierDismissible: barrierDismissible ?? true,
+      builder: (context) => AlertDialog(
+        title: title == null ? null : Text(title),
+        content: content,
+        actions: [
+          for (final choice in choices)
+            TextButton(
+              style: choice.isDestructive
+                  ? TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    )
+                  : null,
+              onPressed: () => Navigator.pop(context, choice.value),
+              child: Text(choice.label),
+            ),
+        ],
+      ),
+    );
+  }
+
   /// Show an error dialog with platform-adaptive UI
   ///
   /// Records a breadcrumb for every error the user is shown, so a report
@@ -25,38 +93,13 @@ class DialogUtils {
           : diagnosticErrorDetails(message),
     );
     final l10n = AppLocalizations.of(context)!;
-    final errorTitle = title ?? l10n.error;
-    final errorMessage = localizedErrorMessage(message, l10n);
 
-    if (PlatformUtils.isApplePlatform) {
-      await showCupertinoDialog<void>(
-        context: context,
-        builder: (context) => CupertinoAlertDialog(
-          title: Text(errorTitle),
-          content: SelectableText(errorMessage),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.ok),
-            ),
-          ],
-        ),
-      );
-    } else {
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(errorTitle),
-          content: SelectableText(errorMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.ok),
-            ),
-          ],
-        ),
-      );
-    }
+    await _showAdaptiveAlert<void>(
+      context,
+      title: title ?? l10n.error,
+      content: SelectableText(localizedErrorMessage(message, l10n)),
+      choices: [DialogChoice(label: l10n.ok, value: null)],
+    );
   }
 
   /// Show a success dialog with platform-adaptive UI
@@ -68,26 +111,16 @@ class DialogUtils {
     final l10n = AppLocalizations.of(context)!;
 
     if (PlatformUtils.isApplePlatform) {
-      await showCupertinoDialog<void>(
-        context: context,
-        builder: (context) => CupertinoAlertDialog(
-          content: Text(message),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () {
-                Navigator.pop(context);
-                onDismiss?.call();
-              },
-              child: Text(l10n.ok),
-            ),
-          ],
-        ),
+      await _showAdaptiveAlert<void>(
+        context,
+        content: Text(message),
+        choices: [DialogChoice(label: l10n.ok, value: null)],
       );
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(message)));
-      onDismiss?.call();
     }
+    onDismiss?.call();
   }
 
   /// Show a short platform-adaptive message.
@@ -95,18 +128,11 @@ class DialogUtils {
     final l10n = AppLocalizations.of(context)!;
 
     if (PlatformUtils.isApplePlatform) {
-      await showCupertinoDialog<void>(
-        context: context,
+      await _showAdaptiveAlert<void>(
+        context,
+        content: Text(message),
+        choices: [DialogChoice(label: l10n.ok, value: null)],
         barrierDismissible: true,
-        builder: (context) => CupertinoAlertDialog(
-          content: Text(message),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.ok),
-            ),
-          ],
-        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,47 +174,48 @@ class DialogUtils {
     bool isDestructive = false,
     bool? barrierDismissible,
   }) {
-    final l10n = AppLocalizations.of(context)!;
-    final cancelLabel = cancelText ?? l10n.cancel;
-
-    if (PlatformUtils.isApplePlatform) {
-      return showCupertinoDialog<bool>(
-        context: context,
-        barrierDismissible: barrierDismissible ?? false,
-        builder: (context) => CupertinoAlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(cancelLabel),
-            ),
-            CupertinoDialogAction(
-              isDestructiveAction: isDestructive,
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(confirmText),
-            ),
-          ],
+    return showActionDialog<bool>(
+      context,
+      title: title,
+      message: message,
+      choices: [
+        DialogChoice(
+          label: cancelText ?? AppLocalizations.of(context)!.cancel,
+          value: false,
         ),
-      );
-    }
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: barrierDismissible ?? true,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(cancelLabel),
+        DialogChoice(
+          label: confirmText,
+          value: true,
+          isDestructive: isDestructive,
+        ),
+      ],
+      barrierDismissible: barrierDismissible,
+    );
+  }
+
+  /// Shows a platform-adaptive dialog with any number of [choices], shown in
+  /// the given order, and resolves with the pressed choice's value (`null`
+  /// when dismissed without one).
+  static Future<T?> showActionDialog<T>(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required List<DialogChoice<T>> choices,
+    bool? barrierDismissible,
+  }) {
+    return _showAdaptiveAlert<T>(
+      context,
+      title: title,
+      content: Text(message),
+      choices: [
+        for (final choice in choices)
+          DialogChoice<T?>(
+            label: choice.label,
+            value: choice.value,
+            isDestructive: choice.isDestructive,
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(confirmText),
-          ),
-        ],
-      ),
+      ],
+      barrierDismissible: barrierDismissible,
     );
   }
 }

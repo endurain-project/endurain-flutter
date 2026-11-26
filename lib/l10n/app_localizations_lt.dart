@@ -126,6 +126,10 @@ class AppLocalizationsLt extends AppLocalizations {
       'Prieiga prie sveikatos duomenų buvo uždrausta';
 
   @override
+  String get errorHealthUnavailable =>
+      'Sveikatos duomenys šiame įrenginyje nepasiekiami';
+
+  @override
   String get errorHealthReadFailed => 'Nepavyko perskaityti sveikatos duomenų';
 
   @override
@@ -886,6 +890,9 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get loggedIn => 'Prisijungta';
+
+  @override
+  String get serverNotSecure => 'Nesaugu (HTTP)';
 
   @override
   String get notConfigured => 'Nesukonfigūruota';

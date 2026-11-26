@@ -131,6 +131,10 @@ class AppLocalizationsEl extends AppLocalizations {
       'Απορρίφθηκε η πρόσβαση στα δεδομένα υγείας';
 
   @override
+  String get errorHealthUnavailable =>
+      'Τα δεδομένα υγείας δεν είναι διαθέσιμα σε αυτή τη συσκευή';
+
+  @override
   String get errorHealthReadFailed =>
       'Δεν ήταν δυνατή η ανάγνωση των δεδομένων υγείας';
 
@@ -906,6 +910,9 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get loggedIn => 'Συνδεδεμένος';
+
+  @override
+  String get serverNotSecure => 'Μη ασφαλές (HTTP)';
 
   @override
   String get notConfigured => 'Δεν έχει ρυθμιστεί';

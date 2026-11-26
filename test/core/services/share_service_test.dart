@@ -63,7 +63,7 @@ class _FakeShareAdapter implements ShareAdapter {
   @override
   Future<void> share(ShareParams params) async {
     if (error != null) {
-      throw error!;
+      Error.throwWithStackTrace(error!, StackTrace.current);
     }
     calls.add(params);
   }

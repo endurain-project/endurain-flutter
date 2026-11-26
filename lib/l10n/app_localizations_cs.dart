@@ -129,6 +129,10 @@ class AppLocalizationsCs extends AppLocalizations {
       'Přístup ke zdravotním údajům byl odepřen';
 
   @override
+  String get errorHealthUnavailable =>
+      'Zdravotní data nejsou na tomto zařízení k dispozici';
+
+  @override
   String get errorHealthReadFailed => 'Nepodařilo se přečíst zdravotní údaje';
 
   @override
@@ -909,6 +913,9 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get loggedIn => 'Přihlášeno';
+
+  @override
+  String get serverNotSecure => 'Nezabezpečeno (HTTP)';
 
   @override
   String get notConfigured => 'Nenastaveno';

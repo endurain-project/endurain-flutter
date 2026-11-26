@@ -130,6 +130,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'L\'accès aux données de santé a été refusé';
 
   @override
+  String get errorHealthUnavailable =>
+      'Les données de santé ne sont pas disponibles sur cet appareil';
+
+  @override
   String get errorHealthReadFailed => 'Impossible de lire les données de santé';
 
   @override
@@ -899,6 +903,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get loggedIn => 'Connecté';
+
+  @override
+  String get serverNotSecure => 'Non sécurisé (HTTP)';
 
   @override
   String get notConfigured => 'Non configuré';

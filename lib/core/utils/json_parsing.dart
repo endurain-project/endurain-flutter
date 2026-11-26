@@ -60,18 +60,6 @@ String jsonRequiredString(Object? value, String field) {
   throw FormatException('Missing required field: $field');
 }
 
-/// Returns [value] as an [int] (coercing [num] via truncation), throwing
-/// [FormatException] when it is missing or non-numeric. Use for required
-/// integer fields during model deserialization; [field] names the offending
-/// field in the message.
-int jsonRequiredInt(Object? value, String field) {
-  final parsed = jsonInt(value);
-  if (parsed != null) {
-    return parsed;
-  }
-  throw FormatException('Missing required field: $field');
-}
-
 /// Returns [value] as a UTC [DateTime], throwing [FormatException] when it is
 /// missing or not a valid ISO-8601 string. Use for required timestamps during
 /// model deserialization; [field] names the offending field in the message.

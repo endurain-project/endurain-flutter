@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
@@ -15,10 +16,14 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 class DiagnosticsScreen extends StatefulWidget {
-  const DiagnosticsScreen({super.key, this.diagnostics, this.crashReporting});
+  const DiagnosticsScreen({
+    super.key,
+    required this.diagnostics,
+    required this.crashReporting,
+  });
 
-  final DiagnosticsStore? diagnostics;
-  final CrashReportingService? crashReporting;
+  final DiagnosticsStore diagnostics;
+  final CrashReportingService crashReporting;
 
   @override
   State<DiagnosticsScreen> createState() => _DiagnosticsScreenState();
@@ -31,26 +36,16 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen>
   @override
   void initState() {
     super.initState();
-    // The screen always owns the controller; its test seams are the diagnostics
-    // store and crash-reporting service (injected here) rather than the
-    // controller itself. Only resolve the scope when a seam is not injected, so
-    // fully-injected widget tests need no AppScope.
-    _controller = registerController(null, () {
-      final diagnostics = widget.diagnostics;
-      final crashReporting = widget.crashReporting;
-      if (diagnostics != null && crashReporting != null) {
-        return DiagnosticsController(
-          diagnostics: diagnostics,
-          crashReporting: crashReporting,
-        );
-      }
-      final services = AppScope.servicesOf(context, listen: false);
-      return DiagnosticsController(
-        diagnostics: diagnostics ?? services.diagnostics,
-        crashReporting: crashReporting ?? services.crashReporting,
-      );
-    });
-    _controller.load();
+    // The screen always owns the controller; its seams are the diagnostics
+    // store and crash-reporting service rather than the controller itself.
+    _controller = registerController(
+      null,
+      () => DiagnosticsController(
+        diagnostics: widget.diagnostics,
+        crashReporting: widget.crashReporting,
+      ),
+    );
+    unawaited(_controller.load());
   }
 
   Future<void> _setEnabled(bool value) => _controller.setEnabled(value);

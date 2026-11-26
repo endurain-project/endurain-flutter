@@ -16,7 +16,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/fake_url_launcher_service.dart';
-import '../../../helpers/widget_test_app.dart';
+import '../../../helpers/settings_destinations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -58,12 +58,12 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: SettingsScreen(
-            controller: buildSettingsController(),
-            localeController: localeController,
-            urlLauncherService: FakeUrlLauncherService(launched: true),
-          ),
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(),
+          healthSyncEnabled: true,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
         ),
       ),
     );
@@ -89,6 +89,38 @@ void main() {
     expect(find.text(l10n.endurainTrademarkNotice), findsOneWidget);
   });
 
+  testWidgets('SettingsScreen flags a plain HTTP server as not secure', (
+    tester,
+  ) async {
+    FlutterSecureStorage.setMockInitialValues(<String, String>{
+      'server_url': 'http://192.168.1.10:8080',
+    });
+    final localeController = buildLocaleController();
+    addTearDown(localeController.dispose);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(),
+          healthSyncEnabled: true,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        '${l10n.connectedToServer('http://192.168.1.10:8080')}\n'
+        '${l10n.serverNotSecure}',
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('SettingsScreen groups entries under section headers', (
     tester,
   ) async {
@@ -100,12 +132,12 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: SettingsScreen(
-            controller: buildSettingsController(),
-            localeController: localeController,
-            urlLauncherService: FakeUrlLauncherService(launched: true),
-          ),
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(),
+          healthSyncEnabled: true,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
         ),
       ),
     );
@@ -159,12 +191,12 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: SettingsScreen(
-            controller: buildSettingsController(),
-            localeController: localeController,
-            urlLauncherService: launcher,
-          ),
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(),
+          healthSyncEnabled: true,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: launcher,
         ),
       ),
     );
@@ -194,12 +226,12 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: SettingsScreen(
-            controller: buildSettingsController(),
-            localeController: localeController,
-            urlLauncherService: launcher,
-          ),
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(),
+          healthSyncEnabled: true,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: launcher,
         ),
       ),
     );
@@ -228,14 +260,14 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: SettingsScreen(
-            isGuest: true,
-            onSignIn: () => signInTapped = true,
-            controller: buildSettingsController(),
-            localeController: localeController,
-            urlLauncherService: FakeUrlLauncherService(launched: true),
-          ),
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(),
+          healthSyncEnabled: true,
+          isGuest: true,
+          onSignIn: () => signInTapped = true,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
         ),
       ),
     );
@@ -251,6 +283,64 @@ void main() {
     await tester.tap(find.text(l10n.signInConnectServer));
     await tester.pumpAndSettle();
     expect(signInTapped, isTrue);
+  });
+
+  testWidgets('SettingsScreen opens the destination its entry names', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final localeController = buildLocaleController();
+    addTearDown(localeController.dispose);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(
+            language: (_) => const Text('language destination'),
+            units: (_) => const Text('units destination'),
+          ),
+          healthSyncEnabled: true,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(l10n.unitsTitle));
+    await tester.pumpAndSettle();
+
+    expect(find.text('units destination'), findsOneWidget);
+    expect(find.text('language destination'), findsNothing);
+  });
+
+  testWidgets('SettingsScreen hides Health Sync when the build omits it', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final localeController = buildLocaleController();
+    addTearDown(localeController.dispose);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: SettingsScreen(
+          destinations: placeholderSettingsDestinations(),
+          healthSyncEnabled: false,
+          controller: buildSettingsController(),
+          localeController: localeController,
+          urlLauncherService: FakeUrlLauncherService(launched: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.healthSyncSettingsTitle), findsNothing);
+    expect(find.text(l10n.sensorsTitle), findsOneWidget);
   });
 }
 

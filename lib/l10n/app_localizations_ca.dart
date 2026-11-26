@@ -130,6 +130,10 @@ class AppLocalizationsCa extends AppLocalizations {
       'S\'ha denegat l\'accés a les dades de salut';
 
   @override
+  String get errorHealthUnavailable =>
+      'Les dades de salut no estan disponibles en aquest dispositiu';
+
+  @override
   String get errorHealthReadFailed =>
       'No s\'han pogut llegir les dades de salut';
 
@@ -903,6 +907,9 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get loggedIn => 'Sessió iniciada';
+
+  @override
+  String get serverNotSecure => 'No segur (HTTP)';
 
   @override
   String get notConfigured => 'No configurat';

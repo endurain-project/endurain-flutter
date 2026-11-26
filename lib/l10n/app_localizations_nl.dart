@@ -128,6 +128,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Toegang tot gezondheidsgegevens werd geweigerd';
 
   @override
+  String get errorHealthUnavailable =>
+      'Gezondheidsgegevens zijn niet beschikbaar op dit apparaat';
+
+  @override
   String get errorHealthReadFailed => 'Kan gezondheidsgegevens niet lezen';
 
   @override
@@ -893,6 +897,9 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get loggedIn => 'Aangemeld';
+
+  @override
+  String get serverNotSecure => 'Niet beveiligd (HTTP)';
 
   @override
   String get notConfigured => 'Niet geconfigureerd';
