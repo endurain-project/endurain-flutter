@@ -64,13 +64,26 @@ class ActivityUploadQueue {
   /// - **cleanup**: an already-`uploaded` record whose post-upload GPX cleanup
   ///   was deferred (`gpxCleanupPending`) and must be retried, with no network
   ///   upload.
-  static bool _requiresDrainPass(LocalActivityRecord record) {
+  bool _requiresDrainPass(LocalActivityRecord record) {
+    if (_isBackingOff(record)) {
+      return false;
+    }
     return switch (record.uploadStatus) {
       LocalActivityUploadStatus.pending => true,
       LocalActivityUploadStatus.failed =>
         record.autoRetryEligible || record.gpxCleanupPending,
       LocalActivityUploadStatus.uploaded => record.gpxCleanupPending,
     };
+  }
+
+  /// Whether [record] failed transiently and its persisted backoff has not
+  /// elapsed. Only uploads wait: a deferred GPX cleanup involves no server.
+  /// A manual retry calls the upload service directly and so ignores it.
+  bool _isBackingOff(LocalActivityRecord record) {
+    final next = record.nextUploadAttemptAt;
+    return record.uploadStatus != LocalActivityUploadStatus.uploaded &&
+        next != null &&
+        next.isAfter(_now());
   }
 
   final LocalActivityRepository _repository;
@@ -115,7 +128,17 @@ class ActivityUploadQueue {
   Future<void> _drainUntilSettled() async {
     do {
       _followUpRequested = false;
-      await _drain();
+      try {
+        await _drain();
+      } catch (error) {
+        // Per-record failures are handled inside the drain; this catches what
+        // is left (storage, profile lookup), so a failed drain is observable
+        // and never an unhandled error from a fire-and-forget trigger.
+        _diagnostics.recordBreadcrumbSync(
+          DiagnosticsEvents.activityUploadQueueDrainFailed,
+          details: diagnosticErrorDetails(error),
+        );
+      }
     } while (_followUpRequested);
   }
 

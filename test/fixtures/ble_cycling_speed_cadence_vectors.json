@@ -1,0 +1,74 @@
+{
+  "description": "Shared BLE GATT parse vectors. Loaded by the Dart parser tests and meant for the Kotlin GATT client unit tests, so both decoders agree on the wire format. 'hex' is the raw characteristic value, two hex digits per byte, no separators (empty string = empty payload). Keys outside 'dartOnly' are produced by BOTH implementations; a null value means the parser must return null. 'dartOnly' lists fields only the Dart layer decodes (it owns them while the phone app records). Cadence in RPM is derived statefully from two consecutive notifications and is not part of these vectors; they cover the stateless crank-field parse only. Wheel fields are skipped, never decoded, by both layers.",
+  "characteristic": "0x2A5B CSC Measurement",
+  "kotlinFunction": "CadenceGattClient.parseCscCrank",
+  "dartFunction": "CyclingSpeedCadenceMeasurementParser.parseCrank",
+  "cases": [
+    {
+      "name": "crank data only",
+      "hex": "0210000004",
+      "crankRevolutions": 16,
+      "lastCrankEventTime": 1024
+    },
+    {
+      "name": "wheel and crank data",
+      "hex": "0364000000000220000008",
+      "crankRevolutions": 32,
+      "lastCrankEventTime": 2048
+    },
+    {
+      "name": "crank counters at their UINT16 maximum",
+      "hex": "02FFFFFFFF",
+      "crankRevolutions": 65535,
+      "lastCrankEventTime": 65535
+    },
+    {
+      "name": "wheel counter and time at maximum before crank data",
+      "hex": "03FFFFFFFFFFFF01000000",
+      "crankRevolutions": 1,
+      "lastCrankEventTime": 0
+    },
+    {
+      "name": "crank counters just rolled over to zero",
+      "hex": "0200001000",
+      "crankRevolutions": 0,
+      "lastCrankEventTime": 16
+    },
+    {
+      "name": "reserved flag bits are ignored",
+      "hex": "FA05001000",
+      "crankRevolutions": 5,
+      "lastCrankEventTime": 16
+    },
+    {
+      "name": "wheel data only carries no crank data",
+      "hex": "01640000000002",
+      "crankRevolutions": null,
+      "lastCrankEventTime": null
+    },
+    {
+      "name": "no data flags",
+      "hex": "0010000004",
+      "crankRevolutions": null,
+      "lastCrankEventTime": null
+    },
+    {
+      "name": "crank data truncated",
+      "hex": "02100000",
+      "crankRevolutions": null,
+      "lastCrankEventTime": null
+    },
+    {
+      "name": "wheel data present but crank data missing",
+      "hex": "03640000000002",
+      "crankRevolutions": null,
+      "lastCrankEventTime": null
+    },
+    {
+      "name": "empty payload",
+      "hex": "",
+      "crankRevolutions": null,
+      "lastCrankEventTime": null
+    }
+  ]
+}

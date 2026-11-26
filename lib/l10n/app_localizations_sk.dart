@@ -129,6 +129,10 @@ class AppLocalizationsSk extends AppLocalizations {
       'Prístup k zdravotným údajom bol odmietnutý';
 
   @override
+  String get errorHealthUnavailable =>
+      'Zdravotné údaje nie sú na tomto zariadení k dispozícii';
+
+  @override
   String get errorHealthReadFailed => 'Nepodarilo sa prečítať zdravotné údaje';
 
   @override
@@ -912,6 +916,9 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get loggedIn => 'Prihlásené';
+
+  @override
+  String get serverNotSecure => 'Nezabezpečené (HTTP)';
 
   @override
   String get notConfigured => 'Nenastavené';

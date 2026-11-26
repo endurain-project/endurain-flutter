@@ -1,0 +1,4 @@
+{
+  "description": "Regions that default to imperial units. Mirrored by MeasurementSystem.forLocale (Dart) and WorkoutFormat.IMPERIAL_REGIONS (Wear OS); both are tested against this file.",
+  "regions": ["AS", "GB", "GU", "LR", "MM", "MP", "PR", "US", "VI"]
+}

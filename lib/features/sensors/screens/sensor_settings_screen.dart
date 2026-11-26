@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/sensors/controllers/sensor_section_controller.dart';
@@ -7,6 +8,7 @@ import 'package:endurain/features/sensors/controllers/sensor_section_view.dart';
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
+import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -22,19 +24,37 @@ class SensorSettingsScreen extends StatefulWidget {
     this.controller,
     this.powerController,
     this.cadenceController,
-  });
+    this.heartRateService,
+    this.powerService,
+    this.cadenceService,
+  }) : assert(
+         controller != null || heartRateService != null,
+         'Pass a heart-rate controller or its service.',
+       ),
+       assert(
+         powerController != null || powerService != null,
+         'Pass a power controller or its service.',
+       ),
+       assert(
+         cadenceController != null || cadenceService != null,
+         'Pass a cadence controller or its service.',
+       );
 
-  /// Heart-rate section controller. Injected in tests; built from the app scope
-  /// otherwise.
+  /// Heart-rate section controller. Injected in tests; built from
+  /// [heartRateService] otherwise.
   final SensorSectionController? controller;
 
-  /// Power section controller. Injected in tests; built from the app scope
+  /// Power section controller. Injected in tests; built from [powerService]
   /// otherwise.
   final SensorSectionController? powerController;
 
-  /// Cadence section controller. Injected in tests; built from the app scope
-  /// otherwise.
+  /// Cadence section controller. Injected in tests; built from
+  /// [cadenceService] otherwise.
   final SensorSectionController? cadenceController;
+
+  final SensorService? heartRateService;
+  final SensorService? powerService;
+  final SensorService? cadenceService;
 
   @override
   State<SensorSettingsScreen> createState() => _SensorSettingsScreenState();
@@ -52,23 +72,21 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    final services = AppScope.servicesOf(context, listen: false);
     _ownsHeartRate = widget.controller == null;
     _ownsPower = widget.powerController == null;
     _ownsCadence = widget.cadenceController == null;
     _heartRate =
         widget.controller ??
-        SensorSectionController(service: services.heartRateSensorService);
+        SensorSectionController(service: widget.heartRateService!);
     _power =
         widget.powerController ??
-        SensorSectionController(service: services.powerSensorService);
+        SensorSectionController(service: widget.powerService!);
     _cadence =
         widget.cadenceController ??
-        SensorSectionController(service: services.cadenceSensorService);
-    _sections = Listenable.merge([_heartRate, _power, _cadence]);
-    _heartRate.initialize();
-    _power.initialize();
-    _cadence.initialize();
+        SensorSectionController(service: widget.cadenceService!);
+    final controllers = [_heartRate, _power, _cadence];
+    controllers.map((c) => c.initialize()).forEach(unawaited);
+    _sections = Listenable.merge(controllers);
   }
 
   @override
@@ -90,15 +108,13 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     return AnimatedBuilder(
       animation: _sections,
-      builder: (context, _) {
-        return AdaptiveScaffold(
-          title: l10n.sensorsTitle,
-          body: ListView(
-            padding: readableContentPadding(context),
-            children: _buildChildren(context, l10n),
-          ),
-        );
-      },
+      builder: (context, _) => AdaptiveScaffold(
+        title: l10n.sensorsTitle,
+        body: ListView(
+          padding: readableContentPadding(context),
+          children: _buildChildren(context, l10n),
+        ),
+      ),
     );
   }
 

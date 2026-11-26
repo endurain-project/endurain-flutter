@@ -128,6 +128,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get errorHealthPermissionDenied => 'Terveystietoihin pääsy evättiin';
 
   @override
+  String get errorHealthUnavailable =>
+      'Terveystiedot eivät ole saatavilla tällä laitteella';
+
+  @override
   String get errorHealthReadFailed => 'Terveystietoja ei voitu lukea';
 
   @override
@@ -895,6 +899,9 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get loggedIn => 'Kirjautunut sisään';
+
+  @override
+  String get serverNotSecure => 'Ei suojattu (HTTP)';
 
   @override
   String get notConfigured => 'Ei määritetty';

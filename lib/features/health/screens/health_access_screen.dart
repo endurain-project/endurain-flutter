@@ -1,4 +1,5 @@
-import 'package:endurain/app/app_scope.dart';
+import 'dart:async';
+
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
@@ -16,9 +17,16 @@ import 'package:material_ui/material_ui.dart';
 /// Importing workouts remains in the Health Sync screen. This screen only
 /// manages the read access needed for that workflow.
 class HealthAccessScreen extends StatefulWidget {
-  const HealthAccessScreen({super.key, this.controller});
+  const HealthAccessScreen({super.key, this.controller, this.createController})
+    : assert(
+        controller != null || createController != null,
+        'Pass a controller or a factory for one.',
+      );
 
+  /// Injected controller (shared by the caller, or tests); otherwise one is
+  /// built with [createController] and owned by the screen.
   final HealthSyncController? controller;
+  final HealthSyncController Function()? createController;
 
   @override
   State<HealthAccessScreen> createState() => _HealthAccessScreenState();
@@ -33,12 +41,9 @@ class _HealthAccessScreenState extends State<HealthAccessScreen>
     super.initState();
     _controller = registerController(
       widget.controller,
-      () => AppScope.servicesOf(
-        context,
-        listen: false,
-      ).createHealthSyncController(),
+      () => widget.createController!(),
     );
-    _controller.loadStatus();
+    unawaited(_controller.loadStatus());
   }
 
   @override

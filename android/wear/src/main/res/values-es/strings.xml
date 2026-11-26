@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Empezar ahora</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Buscando GPS…</string>
+    <string name="gps_lost">Señal GPS perdida</string>
+    <string name="hr_unavailable">Frecuencia cardíaca no disponible</string>
+    <string name="restore_failed">No se pudo comprobar el entrenamiento. Toca Aceptar para reintentarlo.</string>
 </resources>

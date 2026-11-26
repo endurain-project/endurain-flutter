@@ -4,9 +4,10 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/file_active_activity_store.dart';
 
 void main() {
   group('FileActiveActivityStore', () {

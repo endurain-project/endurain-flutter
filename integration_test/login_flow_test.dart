@@ -29,12 +29,12 @@ void main() {
     unawaited(server.forEach(_handleRequest));
     services = AppServices();
     // Devices keep secure storage between runs; start signed out.
-    await services.secureStorage.resetAll();
+    await services.infra.secureStorage.resetAll();
   });
 
   tearDown(() async {
     await server.close(force: true);
-    await services.secureStorage.resetAll();
+    await services.infra.secureStorage.resetAll();
   });
 
   testWidgets('signs in with username and password', (tester) async {
@@ -81,7 +81,7 @@ void main() {
     // itself, not its fields: the form is swapped for a spinner as soon as
     // login starts, long before the session has been stored.
     await _pumpUntil(tester, find.byType(LoginScreen), present: false);
-    expect(await services.auth.hasStoredSession(), isTrue);
+    expect(await services.auth.service.hasStoredSession(), isTrue);
   });
 }
 

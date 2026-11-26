@@ -18,6 +18,8 @@ class MapStateController extends SafeNotifier {
 
   StreamSubscription<Position>? _positionSubscription;
   bool _initialized = false;
+  bool _recordingActive = false;
+  bool _appInForeground = true;
 
   /// Bumped by each [_loadSettings], so a slower earlier read cannot
   /// overwrite the result of a later one.
@@ -95,7 +97,7 @@ class MapStateController extends SafeNotifier {
       _hasLocationError = false;
       _isLoadingLocation = false;
       notify();
-      _startPositionUpdates();
+      _syncPositionStream();
       return;
     }
 
@@ -104,12 +106,34 @@ class MapStateController extends SafeNotifier {
     notify();
   }
 
-  void _startPositionUpdates() {
-    _positionSubscription?.cancel();
+  /// Keeps the position subscription in step with the state that decides
+  /// whether it should exist: permission granted, no recording (the native
+  /// recorder owns the durable stream then) and the app in the foreground
+  /// (nothing is drawn in the background, so the GPS would only burn battery).
+  void _syncPositionStream() {
+    final shouldRun =
+        _hasLocationPermission && !_recordingActive && _appInForeground;
+    if (!shouldRun) {
+      _cancelPositionStream();
+      return;
+    }
+    if (_positionSubscription != null) {
+      return;
+    }
     _positionSubscription = _locationService.getPositionStream().listen(
       _handlePositionUpdate,
       onError: _handlePositionError,
     );
+  }
+
+  void _cancelPositionStream() {
+    final cancelled = _positionSubscription?.cancel();
+    _positionSubscription = null;
+    if (cancelled != null) {
+      // A cancel failure has nothing to recover; it only must not surface as
+      // an unhandled async error.
+      unawaited(cancelled.catchError((Object _) {}));
+    }
   }
 
   void _handlePositionUpdate(Position position) {
@@ -155,20 +179,21 @@ class MapStateController extends SafeNotifier {
   /// stream). Call with [isRecording] = false when recording stops to resume
   /// map position updates.
   void setRecordingActive(bool isRecording) {
-    if (isRecording) {
-      _positionSubscription?.cancel();
-      _positionSubscription = null;
-      return;
-    }
-    if (_positionSubscription == null && _hasLocationPermission) {
-      _startPositionUpdates();
-    }
+    _recordingActive = isRecording;
+    _syncPositionStream();
+  }
+
+  /// Pauses the position stream while the app is backgrounded and resumes it
+  /// when it returns to the foreground (unless a recording is active).
+  void setAppInForeground(bool inForeground) {
+    _appInForeground = inForeground;
+    _syncPositionStream();
   }
 
   @override
   void dispose() {
     _mapSettingsRepository.changes?.removeListener(_handleSettingsChanged);
-    _positionSubscription?.cancel();
+    _cancelPositionStream();
     super.dispose();
   }
 }

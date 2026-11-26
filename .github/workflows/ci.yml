@@ -7,8 +7,8 @@ on:
   pull_request:
 
 env:
-  # Keep in sync with docker/flutter-build/Dockerfile, the image workflow and
-  # ios.yml.
+  # Source of truth: .flutter-version. The `versions` job fails when this, the
+  # other workflows or the Dockerfile drift from it.
   FLUTTER_VERSION: 3.50.1
 
 concurrency:
@@ -21,9 +21,24 @@ permissions:
   packages: read
 
 jobs:
+  versions:
+    name: Version pins
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Check Flutter version pins
+        run: .github/scripts/check_flutter_version.sh
+
   format:
     name: Format
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
@@ -31,6 +46,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
@@ -41,6 +57,7 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
@@ -48,6 +65,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
@@ -58,6 +76,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
@@ -65,6 +84,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
@@ -72,22 +92,15 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage
 
+      # Thresholds and the exclusion list (with rationale) are in
+      # .github/scripts/check_coverage.sh and .github/coverage-excludes.txt.
       - name: Check coverage threshold
-        run: >-
-          dart run tool/check_coverage.dart
-          --min-line-coverage 80
-          --min-file-line-coverage 60
-          --exclude 'lib/l10n/app_localizations*.dart'
-          --exclude 'lib/core/theme/app_theme_tokens.dart'
-          --exclude 'lib/app/navigation/app_routes.dart'
-          --exclude 'lib/app/widgets/app_bottom_nav.dart'
-          --exclude 'lib/core/services/platform/*.dart'
-          --exclude 'lib/features/health/services/health_package_platform_adapter.dart'
-          --exclude 'lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart'
+        run: .github/scripts/check_coverage.sh
 
   android-unit-test:
     name: Android unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
@@ -95,9 +108,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
+
+      - name: Cache Gradle dependencies
+        uses: ./.github/actions/gradle-cache
 
       - name: Generate Gradle config
         shell: bash
@@ -138,6 +155,7 @@ jobs:
   android-build:
     name: Android build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
@@ -145,9 +163,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
+
+      - name: Cache Gradle dependencies
+        uses: ./.github/actions/gradle-cache
 
       # Debug signing keeps this gate safe for forks and pull requests.
       - name: Build debug APK

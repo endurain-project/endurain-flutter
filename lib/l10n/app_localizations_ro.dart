@@ -129,6 +129,10 @@ class AppLocalizationsRo extends AppLocalizations {
       'Accesul la datele de sănătate a fost refuzat';
 
   @override
+  String get errorHealthUnavailable =>
+      'Datele de sănătate nu sunt disponibile pe acest dispozitiv';
+
+  @override
   String get errorHealthReadFailed => 'Nu s-au putut citi datele de sănătate';
 
   @override
@@ -913,6 +917,9 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get loggedIn => 'Autentificat';
+
+  @override
+  String get serverNotSecure => 'Nesecurizat (HTTP)';
 
   @override
   String get notConfigured => 'Neconfigurat';

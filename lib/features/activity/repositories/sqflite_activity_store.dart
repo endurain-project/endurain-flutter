@@ -21,7 +21,7 @@ class SqfliteActivityStore implements LocalActivityStore {
     : _factory = databaseFactory ?? _platformFactory(),
       _path = databasePath;
 
-  static const int _schemaVersion = 9;
+  static const int _schemaVersion = 10;
   static const String _dbFileName = 'activity.db';
   static const String _tableVersion = 'schema_version';
   static const String _tableActivity = 'local_activity';
@@ -54,6 +54,7 @@ class SqfliteActivityStore implements LocalActivityStore {
       7: _migrateToV7,
       8: _migrateToV8,
       9: _migrateToV9,
+      10: _migrateToV10,
     },
     recordVersion: _recordSchemaVersion,
   );
@@ -230,6 +231,20 @@ class SqfliteActivityStore implements LocalActivityStore {
       'UPDATE $_tableActivity '
       "SET connection_profile_id = connection_origin || '#' || connection_profile_id "
       'WHERE connection_origin IS NOT NULL AND connection_profile_id IS NOT NULL',
+    );
+  }
+
+  /// Schema version 10: persists the upload queue's retry state. `attempt_count`
+  /// counts consecutive transient failures and `next_attempt_at` is the
+  /// earliest time the queue may retry the record by itself (null: no backoff).
+  /// Existing rows start with no backoff, so they stay immediately eligible.
+  Future<void> _migrateToV10(Database db) async {
+    await db.execute(
+      'ALTER TABLE $_tableActivity '
+      'ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0',
+    );
+    await db.execute(
+      'ALTER TABLE $_tableActivity ADD COLUMN next_attempt_at TEXT',
     );
   }
 
@@ -454,6 +469,8 @@ class SqfliteActivityStore implements LocalActivityStore {
       'last_upload_error_code': r.lastUploadErrorCode?.name,
       'auto_retry_eligible': r.autoRetryEligible ? 1 : 0,
       'gpx_cleanup_pending': r.gpxCleanupPending ? 1 : 0,
+      'attempt_count': r.uploadAttemptCount,
+      'next_attempt_at': r.nextUploadAttemptAt?.toUtcIso8601(),
       'idempotency_key': r.idempotencyKey,
       'connection_origin': r.connectionOrigin,
       'connection_profile_id': r.connectionProfileId,
@@ -483,6 +500,8 @@ class SqfliteActivityStore implements LocalActivityStore {
       lastUploadErrorCode: _errorCode(row['last_upload_error_code']),
       autoRetryEligible: (row['auto_retry_eligible'] as int? ?? 1) == 1,
       gpxCleanupPending: (row['gpx_cleanup_pending'] as int? ?? 0) == 1,
+      uploadAttemptCount: row['attempt_count'] as int? ?? 0,
+      nextUploadAttemptAt: jsonDateTime(row['next_attempt_at']),
       idempotencyKey: row['idempotency_key'] as String?,
       connectionOrigin: row['connection_origin'] as String?,
       connectionProfileId: row['connection_profile_id'] as String?,

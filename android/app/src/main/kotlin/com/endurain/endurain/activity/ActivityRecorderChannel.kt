@@ -278,7 +278,7 @@ class ActivityRecorderChannel(context: Context) :
 
     private fun handleRecover(result: MethodChannel.Result) {
         try {
-            result.success(ActivityRecorderService.recover(appContext)?.toMap())
+            result.success(ActivityRecorderCoordinator.recover(appContext)?.toMap())
         } catch (_: Exception) {
             result.error(ERROR_STORE, "Unable to recover recording", null)
         }

@@ -142,7 +142,7 @@ class ApiClient {
         ApiConstants.idempotencyKeyHeader: idempotencyKey,
     };
 
-    http.StreamedResponse response = await _uploadAdapter
+    Future<http.StreamedResponse> upload() => _uploadAdapter
         .uploadFile(
           url: url,
           headers: headers,
@@ -155,6 +155,8 @@ class ApiClient {
               throw const AppException(AppErrorCode.requestTimeout),
         );
 
+    http.StreamedResponse response = await upload();
+
     if (response.statusCode == 401) {
       await response.stream.drain<void>();
       final refreshedSession = await _refreshSessionAfter401(
@@ -164,18 +166,7 @@ class ApiClient {
       );
       headers[ApiConstants.authorizationHeader] =
           'Bearer ${refreshedSession.accessToken}';
-      response = await _uploadAdapter
-          .uploadFile(
-            url: url,
-            headers: headers,
-            filePath: filePath,
-            fieldName: fieldName,
-          )
-          .timeout(
-            _uploadTimeout,
-            onTimeout: () =>
-                throw const AppException(AppErrorCode.requestTimeout),
-          );
+      response = await upload();
     }
 
     return response;
@@ -192,16 +183,14 @@ class ApiClient {
     String? expectedOrigin,
     String? expectedProfileId,
   }) async {
-    final response = await _sendAuthorized(
+    return _sendAndDecode(
       'GET',
       endpoint,
+      failureCode: failureCode,
+      decode: ApiResponse.decodeJsonObject,
       expectedOrigin: expectedOrigin,
       expectedProfileId: expectedProfileId,
     );
-    if (response.statusCode == 200) {
-      return ApiResponse.decodeJsonObject(response);
-    }
-    throw ApiResponse.failure(response, failureCode);
   }
 
   /// Sends an authenticated `GET` and returns the decoded JSON object with the
@@ -216,19 +205,17 @@ class ApiClient {
     String? expectedOrigin,
     String? expectedProfileId,
   }) async {
-    final response = await _sendAuthorized(
+    return _sendAndDecode(
       'GET',
       endpoint,
+      failureCode: failureCode,
+      decode: (response) => (
+        body: ApiResponse.decodeJsonObject(response),
+        headers: response.headers,
+      ),
       expectedOrigin: expectedOrigin,
       expectedProfileId: expectedProfileId,
     );
-    if (response.statusCode == 200) {
-      return (
-        body: ApiResponse.decodeJsonObject(response),
-        headers: response.headers,
-      );
-    }
-    throw ApiResponse.failure(response, failureCode);
   }
 
   /// Sends an authenticated `GET` and returns the decoded JSON value (object or
@@ -241,16 +228,14 @@ class ApiClient {
     String? expectedOrigin,
     String? expectedProfileId,
   }) async {
-    final response = await _sendAuthorized(
+    return _sendAndDecode(
       'GET',
       endpoint,
+      failureCode: failureCode,
+      decode: ApiResponse.decodeJson,
       expectedOrigin: expectedOrigin,
       expectedProfileId: expectedProfileId,
     );
-    if (response.statusCode == 200) {
-      return ApiResponse.decodeJson(response);
-    }
-    throw ApiResponse.failure(response, failureCode);
   }
 
   /// Sends an authenticated `POST` with an optional JSON [body] and returns the
@@ -295,16 +280,15 @@ class ApiClient {
     String? expectedOrigin,
     String? expectedProfileId,
   }) async {
-    final response = await _sendAuthorized(
+    await _sendAndDecode<void>(
       'DELETE',
       endpoint,
+      failureCode: failureCode,
+      expectedStatuses: const {200, 204},
+      decode: (_) {},
       expectedOrigin: expectedOrigin,
       expectedProfileId: expectedProfileId,
     );
-    if (response.statusCode == 200 || response.statusCode == 204) {
-      return;
-    }
-    throw ApiResponse.failure(response, failureCode);
   }
 
   Future<Map<String, dynamic>> _sendJsonForObject(
@@ -315,7 +299,7 @@ class ApiClient {
     String? expectedOrigin,
     String? expectedProfileId,
   }) async {
-    final response = await _sendAuthorized(
+    return _sendAndDecode(
       method,
       endpoint,
       body: body == null ? null : jsonEncode(body),
@@ -324,11 +308,37 @@ class ApiClient {
           : const {
               ApiConstants.contentTypeHeader: ApiConstants.contentTypeJson,
             },
+      failureCode: failureCode,
+      decode: ApiResponse.decodeJsonObject,
       expectedOrigin: expectedOrigin,
       expectedProfileId: expectedProfileId,
     );
-    if (response.statusCode == 200) {
-      return ApiResponse.decodeJsonObject(response);
+  }
+
+  /// Sends an authorized request and decodes the response with [decode] when
+  /// its status is in [expectedStatuses]; any other status throws
+  /// [ApiResponse.failure] with [failureCode].
+  Future<T> _sendAndDecode<T>(
+    String method,
+    String endpoint, {
+    Object? body,
+    Map<String, String>? extraHeaders,
+    required AppErrorCode failureCode,
+    required T Function(http.Response response) decode,
+    Set<int> expectedStatuses = const {200},
+    String? expectedOrigin,
+    String? expectedProfileId,
+  }) async {
+    final response = await _sendAuthorized(
+      method,
+      endpoint,
+      body: body,
+      extraHeaders: extraHeaders,
+      expectedOrigin: expectedOrigin,
+      expectedProfileId: expectedProfileId,
+    );
+    if (expectedStatuses.contains(response.statusCode)) {
+      return decode(response);
     }
     throw ApiResponse.failure(response, failureCode);
   }

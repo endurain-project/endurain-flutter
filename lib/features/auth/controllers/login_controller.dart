@@ -380,7 +380,7 @@ class LoginController extends SafeNotifier {
 
   @override
   void dispose() {
-    _linkSubscription?.cancel();
+    unawaited(_linkSubscription?.cancel());
     super.dispose();
   }
 }

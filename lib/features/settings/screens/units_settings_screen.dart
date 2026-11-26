@@ -1,4 +1,3 @@
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
@@ -14,17 +13,15 @@ import 'package:material_ui/material_ui.dart';
 /// the app-lifetime [MeasurementSystemController], which the root `App`
 /// listens to, so every screen re-renders without a restart.
 class UnitsSettingsScreen extends StatelessWidget {
-  const UnitsSettingsScreen({super.key, this.controller});
+  const UnitsSettingsScreen({super.key, required this.controller});
 
-  /// Optional override for tests; otherwise resolved from [AppScope].
-  final MeasurementSystemController? controller;
+  /// The app-lifetime unit preference this screen edits.
+  final MeasurementSystemController controller;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final measurement =
-        controller ??
-        AppScope.servicesOf(context, listen: false).measurementSystemController;
+    final measurement = controller;
     // The device locale (with region), not the app's resolved language-only
     // locale — see `ActivityStatsFormatterScope.deviceLocale`.
     final deviceDefault = measurement.deviceDefault(context.deviceLocale);

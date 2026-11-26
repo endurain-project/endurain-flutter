@@ -151,6 +151,10 @@
   "@errorHealthPermissionDenied": {
     "description": "Health authorization denied error - Used in: error_localizations.dart"
   },
+  "errorHealthUnavailable": "Health data is not available on this device",
+  "@errorHealthUnavailable": {
+    "description": "Health platform missing or unsupported error - Used in: error_localizations.dart"
+  },
   "errorHealthReadFailed": "Could not read health data",
   "@errorHealthReadFailed": {
     "description": "Health data read error - Used in: error_localizations.dart"
@@ -1160,6 +1164,10 @@
   "loggedIn": "Logged in",
   "@loggedIn": {
     "description": "Logged in section header - Used in: server_settings_screen.dart"
+  },
+  "serverNotSecure": "Not secure (HTTP)",
+  "@serverNotSecure": {
+    "description": "Badge shown beside a server address that uses plain HTTP - Used in: settings_screen.dart, server_settings_screen.dart"
   },
   "notConfigured": "Not configured",
   "@notConfigured": {

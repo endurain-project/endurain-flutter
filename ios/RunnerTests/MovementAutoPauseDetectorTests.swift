@@ -5,7 +5,7 @@ import XCTest
 /// Unit tests for `MovementAutoPauseDetector`.
 ///
 /// Mirrors the Dart test suite for
-/// `lib/features/activity/services/movement_auto_pause_detector.dart` and the
+/// `test/helpers/movement_auto_pause_detector.dart` and the
 /// Android `MovementAutoPauseDetectorTest`. A regression here would either
 /// fail to auto-pause a stopped recording or (worse) auto-resume when it
 /// should not, so every branch of the reliable-movement heuristic and the

@@ -1,8 +1,10 @@
-import Flutter
+// Flutter's Objective-C headers carry no concurrency annotations; the engine
+// calls this delegate and every channel handler on the main thread.
+@preconcurrency import Flutter
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+@objc class AppDelegate: FlutterAppDelegate, @preconcurrency FlutterImplicitEngineDelegate {
   /// Strong reference so the native activity recorder channel outlives engine
   /// setup and keeps its method/event handlers registered.
   private var activityRecorderChannel: ActivityRecorderChannel?

@@ -16,17 +16,17 @@ import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
-import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
 import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
+import 'package:endurain/features/activity/services/activity_finalizer.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/audio_announcement_preview_adapter.dart';
-import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
+import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
@@ -87,6 +87,13 @@ class ActivityModule {
   late final LocalActivityRepository localActivities = LocalActivityRepository(
     gpxStorage: gpxStorage,
     store: SqfliteActivityStore(),
+  );
+
+  /// Builds the GPX, summary and pending record of a completed activity; shared
+  /// by the phone recorder and the watch ingestion.
+  late final ActivityFinalizer finalizer = ActivityFinalizer(
+    repository: localActivities,
+    summaryBuilder: LocalActivitySummaryBuilder(),
   );
 
   late final ActivityRetentionSettingsRepository retentionSettings =
@@ -154,6 +161,7 @@ class ActivityModule {
       recordingService: createRecordingService(),
       uploadService: upload,
       localActivityRepository: localActivities,
+      finalizer: finalizer,
       retentionSettingsRepository: retentionSettings,
       autoPauseSettingsRepository: autoPauseSettings,
       isUploadAuthorized: _auth.service.isAuthenticated,
@@ -194,11 +202,12 @@ class ActivityModule {
     );
   }
 
-  /// Builds the active-recording recorder for the current platform.
+  /// Builds the active-recording recorder: the native background-capable
+  /// recorder on Android and iOS, the only platforms the app ships on.
   ///
-  /// Android and iOS use the native background-capable recorder. Other
-  /// environments (such as the test/host runtime) fall back to the geolocator
-  /// recorder backed by the durable [FileActiveActivityStore].
+  /// The Dart geolocator recorder and file store that used to back other
+  /// platforms live in `test/helpers`; tests inject them through
+  /// [ActivityRecordingService] directly.
   ActivityLocationRecorder createLocationRecorder({
     LocationService? locationService,
   }) {
@@ -206,10 +215,8 @@ class ActivityModule {
         defaultTargetPlatform == TargetPlatform.iOS) {
       return NativeActivityRecorderChannel();
     }
-    return GeolocatorActivityLocationRecorder(
-      store: FileActiveActivityStore(diagnostics: _infra.diagnostics),
-      locationService: locationService ?? _infra.location,
-      diagnostics: _infra.diagnostics,
+    throw UnsupportedError(
+      'Activity recording is only supported on Android and iOS.',
     );
   }
 

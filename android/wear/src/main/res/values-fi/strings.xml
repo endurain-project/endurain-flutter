@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Aloita nyt</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Haetaan GPS:ää…</string>
+    <string name="gps_lost">GPS-signaali katosi</string>
+    <string name="hr_unavailable">Syke ei ole saatavilla</string>
+    <string name="restore_failed">Harjoitusta ei voitu tarkistaa. Yritä uudelleen napauttamalla OK.</string>
 </resources>

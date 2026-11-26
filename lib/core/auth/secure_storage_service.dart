@@ -148,10 +148,12 @@ class SecureStorageService {
   Future<String?> getServerUrl() async {
     String? secureValue;
     Object? secureError;
+    StackTrace? secureStackTrace;
     try {
       secureValue = await read(key: _serverUrlKey);
-    } catch (e) {
+    } catch (e, stackTrace) {
       secureError = e;
+      secureStackTrace = stackTrace;
     }
     if (secureValue != null && secureValue.isNotEmpty) {
       return secureValue;
@@ -177,7 +179,8 @@ class SecureStorageService {
       return mirrored;
     }
     if (secureError != null) {
-      throw secureError;
+      // Rethrow with the original stack; the stored error is typed Object.
+      Error.throwWithStackTrace(secureError, secureStackTrace!);
     }
     return secureValue;
   }

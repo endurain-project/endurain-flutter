@@ -5,8 +5,7 @@ import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
-import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
-import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
+import 'package:endurain/features/activity/services/activity_finalizer.dart';
 import 'package:endurain/features/watch/models/watch_session_handoff.dart';
 import 'package:endurain/features/watch/repositories/watch_ingestion_ledger.dart';
 
@@ -72,23 +71,17 @@ class WatchSessionIngestionService {
   WatchSessionIngestionService({
     required LocalActivityRepository repository,
     required WatchIngestionLedger ledger,
-    ActivityGpxBuilder gpxBuilder = const ActivityGpxBuilder(),
-    LocalActivitySummaryBuilder? summaryBuilder,
+    required ActivityFinalizer finalizer,
     DiagnosticsRecorder? diagnostics,
-    DateTime Function()? now,
   }) : _repository = repository,
        _ledger = ledger,
-       _gpxBuilder = gpxBuilder,
-       _summaryBuilder = summaryBuilder ?? LocalActivitySummaryBuilder(),
-       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
-       _now = now ?? DateTime.now;
+       _finalizer = finalizer,
+       _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
   final LocalActivityRepository _repository;
   final WatchIngestionLedger _ledger;
-  final ActivityGpxBuilder _gpxBuilder;
-  final LocalActivitySummaryBuilder _summaryBuilder;
+  final ActivityFinalizer _finalizer;
   final DiagnosticsRecorder _diagnostics;
-  final DateTime Function() _now;
 
   /// Deterministic local activity id for a watch session.
   ///
@@ -155,23 +148,12 @@ class WatchSessionIngestionService {
         return WatchIngestionResult(outcome);
       }
 
-      final createdAt = _now().toUtc();
-      final gpxFileName = await _repository.writeGpx(
+      await _finalizer.finalize(
+        state: state,
         id: localActivityId,
-        gpx: _gpxBuilder.build(state),
+        connectionOrigin: handoff.session.connectionOrigin,
+        connectionProfileId: handoff.session.connectionProfileId,
       );
-      final record = _summaryBuilder
-          .build(
-            state: state,
-            id: localActivityId,
-            gpxFileName: gpxFileName,
-            createdAt: createdAt,
-          )
-          .copyWith(
-            connectionOrigin: handoff.session.connectionOrigin,
-            connectionProfileId: handoff.session.connectionProfileId,
-          );
-      await _repository.upsert(record);
       await _ledger.record(
         localActivityId,
         healthWorkoutId: handoff.healthWorkoutId,

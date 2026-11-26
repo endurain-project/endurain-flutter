@@ -3,8 +3,10 @@ import Foundation
 /// Great-circle distance helper used by the on-device announcement scheduler.
 ///
 /// Pure math, no CoreLocation dependency, so it is covered by plain XCTest
-/// unit tests. Mirrors the formula used by the Android `GeoDistance` object
-/// and the Dart `geo_distance.dart` helper.
+/// unit tests. Same haversine as the Android `GeoDistance` object (shared
+/// vectors in test/fixtures/geo_distance_vectors.json). The Dart
+/// `geo_distance.dart` helper deliberately differs: it uses Vincenty on the
+/// WGS-84 ellipsoid to match the server.
 enum GeoDistance {
     private static let earthRadiusMeters = 6_371_000.0
 

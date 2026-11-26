@@ -17,20 +17,21 @@ import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
-import 'package:endurain/features/activity/repositories/file_active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
-import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
-import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/file_active_activity_store.dart';
+import '../../../helpers/geolocator_activity_location_recorder.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
+import '../../../helpers/recording_controller_factory.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
@@ -51,7 +52,9 @@ void main() {
     test('starts recording with selected type', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(recordingService: service);
+      final controller = createTestRecordingController(
+        recordingService: service,
+      );
       addTearDown(controller.dispose);
 
       await controller.start(ActivityType.ride);
@@ -71,7 +74,7 @@ void main() {
           ..configureAutoPause(
             const MovementAutoPauseConfig(pauseDelay: Duration(seconds: 60)),
           );
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
           autoPauseSettingsRepository: AutoPauseSettingsRepository(
             preferences: AppPreferencesStore(
@@ -263,7 +266,7 @@ void main() {
             _recordedPoint(segmentIndex: 0, latitude: 41.2),
           ]);
           var uploadCount = 0;
-          final controller = ActivityRecordingController(
+          final controller = createTestRecordingController(
             recordingService: _recordingService(store: store),
             localActivityRepository: repository,
             isUploadAuthorized: () async => true,
@@ -341,7 +344,9 @@ void main() {
     test('ignores type changes while active', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(recordingService: service);
+      final controller = createTestRecordingController(
+        recordingService: service,
+      );
       addTearDown(controller.dispose);
 
       await controller.start(ActivityType.run);
@@ -361,7 +366,7 @@ void main() {
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _repositoryFor(tempDirectory);
         final service = _recordingService(adapter: adapter);
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
           localActivityRepository: repository,
           localActivityIdProvider: () => 'local_complete',
@@ -391,7 +396,9 @@ void main() {
     test('does not generate GPX for discarded recordings', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(recordingService: service);
+      final controller = createTestRecordingController(
+        recordingService: service,
+      );
       addTearDown(controller.dispose);
 
       await controller.start(ActivityType.run);
@@ -406,7 +413,9 @@ void main() {
     test('leaves empty recordings without GPX content', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(recordingService: service);
+      final controller = createTestRecordingController(
+        recordingService: service,
+      );
       addTearDown(controller.dispose);
 
       await controller.start(ActivityType.run);
@@ -421,7 +430,7 @@ void main() {
       final adapter = RecordingLocationPlatformAdapter();
       final service = _recordingService(adapter: adapter);
       final diagnostics = _CapturingDiagnosticsRecorder();
-      final controller = ActivityRecordingController(
+      final controller = createTestRecordingController(
         recordingService: service,
         gpxBuilder: const _ThrowingGpxBuilder(),
         diagnostics: diagnostics,
@@ -459,7 +468,7 @@ void main() {
         final store = InMemoryActiveActivityStore();
         final adapter = RecordingLocationPlatformAdapter();
         final builder = _RetryableGpxBuilder();
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: _recordingService(adapter: adapter, store: store),
           gpxBuilder: builder,
           localActivityRepository: repository,
@@ -489,7 +498,7 @@ void main() {
     test('surfaces local save failures before upload starts', () async {
       final adapter = RecordingLocationPlatformAdapter();
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(
+      final controller = createTestRecordingController(
         recordingService: service,
         localActivityRepository: _ThrowingLocalActivityRepository(),
         uploadService: _uploadServiceReturning(201),
@@ -522,7 +531,7 @@ void main() {
       () async {
         final adapter = RecordingLocationPlatformAdapter();
         final service = _recordingService(adapter: adapter);
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
           localActivityRepository: _ThrowingLocalActivityRepository(),
           uploadService: _uploadServiceReturning(201),
@@ -551,7 +560,7 @@ void main() {
         // status is not `completed`, so the guard is never evaluated and the
         // assertion would hold even with the guard deleted.
         final service = _StatePushingRecordingService();
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
         );
         addTearDown(controller.dispose);
@@ -601,7 +610,7 @@ void main() {
       'gpxGenerationFailed is terminal: stopping/completed are ignored',
       () async {
         final service = _StatePushingRecordingService();
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
         );
         addTearDown(controller.dispose);
@@ -637,7 +646,7 @@ void main() {
         // Guard scope check: only localSaveFailed/gpxGenerationFailed are
         // terminal. Any other failure must not block a subsequent completion.
         final service = _StatePushingRecordingService();
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
         );
         addTearDown(controller.dispose);
@@ -670,7 +679,7 @@ void main() {
         // Covers the carry-forward branch: a completed state that arrives
         // without a localActivityId must inherit the one already held.
         final service = _StatePushingRecordingService();
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
         );
         addTearDown(controller.dispose);
@@ -708,7 +717,7 @@ void main() {
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _repositoryFor(tempDirectory);
         final service = _recordingService(adapter: adapter);
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
           localActivityRepository: repository,
           localActivityIdProvider: () => 'upload_success',
@@ -742,7 +751,7 @@ void main() {
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _repositoryFor(tempDirectory);
         final service = _recordingService(adapter: adapter);
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
           localActivityRepository: repository,
           localActivityIdProvider: () => 'guest_activity',
@@ -780,7 +789,7 @@ void main() {
           origin: 'https://same.example',
           kind: ConnectionKind.selfHosted,
         );
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: _recordingService(adapter: adapter),
           localActivityRepository: repository,
           localActivityIdProvider: () => 'owned-recording',
@@ -813,7 +822,7 @@ void main() {
       addTearDown(() => tempDirectory.deleteSync(recursive: true));
       final repository = _repositoryFor(tempDirectory);
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(
+      final controller = createTestRecordingController(
         recordingService: service,
         localActivityRepository: repository,
         localActivityIdProvider: () => 'upload_auth_failed',
@@ -845,7 +854,7 @@ void main() {
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _repositoryFor(tempDirectory);
         final service = _recordingService(adapter: adapter);
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
           localActivityRepository: repository,
           localActivityIdProvider: () => 'clear_completed',
@@ -876,7 +885,7 @@ void main() {
       addTearDown(() => tempDirectory.deleteSync(recursive: true));
       final repository = _repositoryFor(tempDirectory);
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(
+      final controller = createTestRecordingController(
         recordingService: service,
         localActivityRepository: repository,
         localActivityIdProvider: () => 'discard_retained',
@@ -905,7 +914,7 @@ void main() {
       addTearDown(() => tempDirectory.deleteSync(recursive: true));
       final repository = _repositoryFor(tempDirectory);
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(
+      final controller = createTestRecordingController(
         recordingService: service,
         localActivityRepository: repository,
         localActivityIdProvider: () => 'retention_disabled',
@@ -936,7 +945,7 @@ void main() {
         addTearDown(() => tempDirectory.deleteSync(recursive: true));
         final repository = _DeleteGpxThrowingRepository(tempDirectory);
         final service = _recordingService(adapter: adapter);
-        final controller = ActivityRecordingController(
+        final controller = createTestRecordingController(
           recordingService: service,
           localActivityRepository: repository,
           localActivityIdProvider: () => 'cleanup_failed',
@@ -975,7 +984,7 @@ void main() {
       addTearDown(() => tempDirectory.deleteSync(recursive: true));
       final repository = _repositoryFor(tempDirectory);
       final service = _recordingService(adapter: adapter);
-      final controller = ActivityRecordingController(
+      final controller = createTestRecordingController(
         recordingService: service,
         localActivityRepository: repository,
         localActivityIdProvider: () => 'retry_5xx',
@@ -1169,7 +1178,7 @@ ActivityRecordingController _controllerWithActiveStore(
   ActiveActivityStore store, {
   LocalActivityRepository? repository,
 }) {
-  return ActivityRecordingController(
+  return createTestRecordingController(
     recordingService: _recordingService(store: store),
     localActivityRepository: repository,
   );

@@ -8,9 +8,11 @@ import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
-import 'package:endurain/features/activity/services/activity_segment_policy.dart';
-import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 import 'package:geolocator/geolocator.dart';
+
+import 'activity_segment_policy.dart';
+import 'movement_auto_pause_detector.dart';
 
 /// Foreground/fallback [ActivityLocationRecorder] backed by the `geolocator`
 /// position stream.

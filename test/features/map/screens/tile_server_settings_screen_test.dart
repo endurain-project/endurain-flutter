@@ -10,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
-import '../../../helpers/widget_test_app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -256,7 +255,7 @@ class _SettingsTestApp extends StatelessWidget {
     return MaterialApp(
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: TestAppScope(child: child),
+      home: child,
     );
   }
 }

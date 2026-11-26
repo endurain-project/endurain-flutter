@@ -123,6 +123,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorHealthPermissionDenied => 'Health data access was denied';
 
   @override
+  String get errorHealthUnavailable =>
+      'Health data is not available on this device';
+
+  @override
   String get errorHealthReadFailed => 'Could not read health data';
 
   @override
@@ -881,6 +885,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loggedIn => 'Logged in';
+
+  @override
+  String get serverNotSecure => 'Not secure (HTTP)';
 
   @override
   String get notConfigured => 'Not configured';

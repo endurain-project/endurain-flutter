@@ -16,7 +16,7 @@ import 'package:endurain/features/sensors/services/sensor_connection_adapter.dar
 /// created per measurement (heart rate, power, cadence), each remembering its
 /// device under a distinct preferences `rememberedKey`.
 ///
-/// It is owned by `AppServices` so a live connection survives navigation between
+/// It is owned by the composition root so a live connection survives navigation between
 /// screens. Route controllers observe it; they must not dispose it.
 class SensorService {
   SensorService({

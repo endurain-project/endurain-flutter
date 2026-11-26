@@ -356,7 +356,7 @@ void main() {
       final db = await databaseFactoryFfi.openDatabase(dbPath);
       final rows = await db.query('schema_version');
       expect(rows, hasLength(1));
-      expect(rows.first['version'], 9);
+      expect(rows.first['version'], 10);
       final columns = await db.rawQuery('PRAGMA table_info(local_activity)');
       final columnNames = columns.map((column) => column['name']);
       expect(columnNames, isNot(contains('server_activity_id')));
@@ -569,6 +569,81 @@ void main() {
       final guest = await store.get('guest');
       expect(guest?.connectionOrigin, isNull);
       expect(guest?.connectionProfileId, isNull);
+
+      await store.close();
+    });
+
+    test('v10 adds retry state with no backoff for existing rows', () async {
+      final dbPath = '${tempDir.path}${Platform.pathSeparator}activity.db';
+      final v9 = await databaseFactoryFfi.openDatabase(
+        dbPath,
+        options: OpenDatabaseOptions(
+          version: 9,
+          onCreate: (db, version) async {
+            await db.execute(
+              'CREATE TABLE schema_version (version INTEGER NOT NULL)',
+            );
+            await db.insert('schema_version', {'version': 9});
+            await db.execute('''
+                CREATE TABLE local_activity (
+                  id                               TEXT PRIMARY KEY,
+                  activity_type                    TEXT NOT NULL,
+                  started_at                       TEXT NOT NULL,
+                  ended_at                         TEXT NOT NULL,
+                  elapsed_duration_seconds         INTEGER NOT NULL,
+                  distance_meters                  REAL NOT NULL,
+                  average_speed_meters_per_second  REAL,
+                  point_count                      INTEGER NOT NULL,
+                  gpx_file_name                    TEXT NOT NULL,
+                  upload_status                    TEXT NOT NULL,
+                  created_at                       TEXT NOT NULL,
+                  updated_at                       TEXT NOT NULL,
+                  uploaded_at                      TEXT,
+                  last_upload_attempt_at           TEXT,
+                  last_upload_error_code           TEXT,
+                  idempotency_key                  TEXT,
+                  connection_origin                TEXT,
+                  connection_profile_id            TEXT,
+                  auto_retry_eligible              INTEGER NOT NULL DEFAULT 1,
+                  gpx_cleanup_pending              INTEGER NOT NULL DEFAULT 0,
+                  max_speed_meters_per_second      REAL,
+                  elevation_gain_meters            REAL
+                )
+              ''');
+            await db.insert('local_activity', {
+              'id': 'queued',
+              'activity_type': 'run',
+              'started_at': '2026-06-02T10:00:00.000Z',
+              'ended_at': '2026-06-02T10:05:00.000Z',
+              'elapsed_duration_seconds': 300,
+              'distance_meters': 1200.0,
+              'point_count': 8,
+              'gpx_file_name': 'queued.gpx',
+              'upload_status': 'failed',
+              'created_at': '2026-06-02T10:05:00.000Z',
+              'updated_at': '2026-06-02T10:05:00.000Z',
+            });
+          },
+        ),
+      );
+      await v9.close();
+
+      final store = SqfliteActivityStore(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: dbPath,
+      );
+
+      final migrated = await store.get('queued');
+      expect(migrated?.uploadAttemptCount, 0);
+      expect(migrated?.nextUploadAttemptAt, isNull);
+
+      final retryAt = DateTime.utc(2026, 6, 3, 12);
+      await store.upsert(
+        migrated!.copyWith(uploadAttemptCount: 3, nextUploadAttemptAt: retryAt),
+      );
+      final reloaded = await store.get('queued');
+      expect(reloaded?.uploadAttemptCount, 3);
+      expect(reloaded?.nextUploadAttemptAt, retryAt);
 
       await store.close();
     });

@@ -62,6 +62,15 @@
 		DD0000000000000000000013 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CC0000000000000000000011 /* InfoPlist.xcstrings */; };
 		DD0000000000000000000014 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CC0000000000000000000012 /* Localizable.xcstrings */; };
 		DD0000000000000000000015 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CC0000000000000000000013 /* InfoPlist.xcstrings */; };
+		FF0000000000000000000101 /* LocationFixPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000001 /* LocationFixPolicy.swift */; };
+		FF0000000000000000000102 /* ActivityAnnouncementController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000002 /* ActivityAnnouncementController.swift */; };
+		FF0000000000000000000103 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000003 /* PrivacyInfo.xcprivacy */; };
+		FF0000000000000000000104 /* WorkoutRouteRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000004 /* WorkoutRouteRecorder.swift */; };
+		FF0000000000000000000105 /* WorkoutLocationSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000005 /* WorkoutLocationSource.swift */; };
+		FF0000000000000000000106 /* WorkoutHealthKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000006 /* WorkoutHealthKit.swift */; };
+		FF0000000000000000000107 /* WorkoutCountdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000007 /* WorkoutCountdown.swift */; };
+		FF0000000000000000000108 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000000008 /* PrivacyInfo.xcprivacy */; };
+		EE0000000000000000000A02 /* NativeSharedVectorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000000000000000000A01 /* NativeSharedVectorsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -167,6 +176,15 @@
 		CC0000000000000000000011 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		CC0000000000000000000012 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		CC0000000000000000000013 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		FF0000000000000000000001 /* LocationFixPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/LocationFixPolicy.swift; sourceTree = "<group>"; };
+		FF0000000000000000000002 /* ActivityAnnouncementController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/ActivityAnnouncementController.swift; sourceTree = "<group>"; };
+		FF0000000000000000000003 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		FF0000000000000000000004 /* WorkoutRouteRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutRouteRecorder.swift; sourceTree = "<group>"; };
+		FF0000000000000000000005 /* WorkoutLocationSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutLocationSource.swift; sourceTree = "<group>"; };
+		FF0000000000000000000006 /* WorkoutHealthKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutHealthKit.swift; sourceTree = "<group>"; };
+		FF0000000000000000000007 /* WorkoutCountdown.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutCountdown.swift; sourceTree = "<group>"; };
+		FF0000000000000000000008 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EE0000000000000000000A01 /* NativeSharedVectorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSharedVectorsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +219,7 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 				BB00000000000000000000A1 /* MovementAutoPauseDetectorTests.swift */,
 				AA00000000000000000000AD /* GeoDistanceTests.swift */,
+				EE0000000000000000000A01 /* NativeSharedVectorsTests.swift */,
 				AA00000000000000000000AE /* AnnouncementThresholdCalculatorTests.swift */,
 				AA00000000000000000000AF /* AnnouncementSpeechBuilderTests.swift */,
 				AA00000000000000000000C1 /* AnnouncementModelsTests.swift */,
@@ -278,6 +297,9 @@
 				CC0000000000000000000005 /* WatchConnectivityBridge.swift */,
 				CC0000000000000000000006 /* WatchTransportChannel.swift */,
 				CC0000000000000000000007 /* WatchLinkState.swift */,
+				FF0000000000000000000003 /* PrivacyInfo.xcprivacy */,
+				FF0000000000000000000002 /* ActivityAnnouncementController.swift */,
+				FF0000000000000000000001 /* LocationFixPolicy.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -290,6 +312,11 @@
 				CC0000000000000000000009 /* WorkoutManager.swift */,
 				CC000000000000000000000A /* PhoneLink.swift */,
 				CC000000000000000000000B /* WorkoutViews.swift */,
+				FF0000000000000000000008 /* PrivacyInfo.xcprivacy */,
+				FF0000000000000000000007 /* WorkoutCountdown.swift */,
+				FF0000000000000000000006 /* WorkoutHealthKit.swift */,
+				FF0000000000000000000005 /* WorkoutLocationSource.swift */,
+				FF0000000000000000000004 /* WorkoutRouteRecorder.swift */,
 				CC000000000000000000000C /* Assets.xcassets */,
 				CC000000000000000000000D /* Info.plist */,
 				CC0000000000000000000013 /* InfoPlist.xcstrings */,
@@ -466,6 +493,7 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				DD0000000000000000000013 /* InfoPlist.xcstrings in Resources */,
+				FF0000000000000000000103 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,6 +504,7 @@
 				DD0000000000000000000010 /* Assets.xcassets in Resources */,
 				DD0000000000000000000014 /* Localizable.xcstrings in Resources */,
 				DD0000000000000000000015 /* InfoPlist.xcstrings in Resources */,
+				FF0000000000000000000108 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -523,6 +552,7 @@
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
 				BB00000000000000000000B1 /* MovementAutoPauseDetectorTests.swift in Sources */,
 				AA00000000000000000000BD /* GeoDistanceTests.swift in Sources */,
+				EE0000000000000000000A02 /* NativeSharedVectorsTests.swift in Sources */,
 				AA00000000000000000000BE /* AnnouncementThresholdCalculatorTests.swift in Sources */,
 				AA00000000000000000000BF /* AnnouncementSpeechBuilderTests.swift in Sources */,
 				AA00000000000000000000C0 /* AnnouncementModelsTests.swift in Sources */,
@@ -563,6 +593,8 @@
 				DD0000000000000000000009 /* WatchConnectivityBridge.swift in Sources */,
 				DD000000000000000000000A /* WatchTransportChannel.swift in Sources */,
 				DD000000000000000000000B /* WatchLinkState.swift in Sources */,
+				FF0000000000000000000102 /* ActivityAnnouncementController.swift in Sources */,
+				FF0000000000000000000101 /* LocationFixPolicy.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -579,6 +611,10 @@
 				DD000000000000000000000D /* WorkoutManager.swift in Sources */,
 				DD000000000000000000000E /* PhoneLink.swift in Sources */,
 				DD000000000000000000000F /* WorkoutViews.swift in Sources */,
+				FF0000000000000000000107 /* WorkoutCountdown.swift in Sources */,
+				FF0000000000000000000106 /* WorkoutHealthKit.swift in Sources */,
+				FF0000000000000000000105 /* WorkoutLocationSource.swift in Sources */,
+				FF0000000000000000000104 /* WorkoutRouteRecorder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -689,7 +725,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.endurain.endurain;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Profile;
@@ -706,7 +742,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
 			};
 			name = Debug;
@@ -721,7 +757,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.endurain.endurain.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
 			};
 			name = Release;
@@ -736,7 +772,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.endurain.endurain.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
 			};
 			name = Profile;
@@ -873,7 +909,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -898,7 +934,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.endurain.endurain;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -928,7 +964,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
@@ -959,7 +995,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
@@ -990,7 +1026,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};

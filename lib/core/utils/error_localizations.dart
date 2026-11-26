@@ -69,6 +69,7 @@ String _localizedAppException(AppException error, AppLocalizations l10n) {
           : l10n.errorHealthImportFailedWithDetails(details),
     AppErrorCode.healthPermissionDenied => l10n.errorHealthPermissionDenied,
     AppErrorCode.healthReadFailed => l10n.errorHealthReadFailed,
+    AppErrorCode.healthUnavailable => l10n.errorHealthUnavailable,
     AppErrorCode.insecureRedirectRejected => l10n.errorInsecureRedirectRejected,
     AppErrorCode.insecureTransportNotAllowed =>
       l10n.errorInsecureTransportNotAllowed,

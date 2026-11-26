@@ -349,11 +349,12 @@ threshold, the Kotlin unit tests, and a debug Android build. It also builds,
 tests and lints the Wear OS app (a separate Gradle build, see
 [Wear OS app](#wear-os-app)).
 
-A separate iOS workflow builds the app for the simulator and runs the native
-XCTests in `ios/RunnerTests` on a macOS runner. Pull requests only run it when
-they change `ios/**`, `pubspec.yaml`, `pubspec.lock`, the workflow or its
-shared actions; pushes to `main` always run it. It takes about 15 minutes, so
-for quicker feedback while changing `ios/**`, build locally first:
+A separate iOS workflow builds the app for the simulator, runs the native
+XCTests in `ios/RunnerTests` and the integration tests on a macOS runner. macOS
+runners are the most expensive, so it does not run on pull requests: it runs on
+pushes to `main` and can be started by hand from the Actions tab
+(`workflow_dispatch`) to check a branch before merging. It takes about 15
+minutes, so for quicker feedback while changing `ios/**`, build locally first:
 
 ```bash
 # Compiles the Swift sources, the embedded Apple Watch app and the Xcode
@@ -365,21 +366,21 @@ flutter build ios --simulator --debug -d <simulator-id>
 CI does not sign the app or run it on a device, so check device-only behaviour
 (HealthKit, background location, entitlements) on a real iPhone.
 
-Collect coverage and check a minimum line coverage threshold:
+Collect coverage and check the minimum line coverage thresholds. The script
+applies the exclusion list in `.github/coverage-excludes.txt` (with the reason
+for each entry), which CI uses too:
 
 ```bash
 flutter test --coverage
-dart run tool/check_coverage.dart \
-  --min-line-coverage 80 \
-  --min-file-line-coverage 60 \
-  --exclude "lib/l10n/app_localizations*.dart" \
-  --exclude "lib/core/theme/app_theme_tokens.dart" \
-  --exclude "lib/app/navigation/app_routes.dart" \
-  --exclude "lib/app/widgets/app_bottom_nav.dart" \
-  --exclude "lib/core/services/platform/*.dart" \
-  --exclude "lib/features/health/services/health_package_platform_adapter.dart" \
-  --exclude "lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart"
+.github/scripts/check_coverage.sh
 ```
+
+The Flutter version is pinned in several places (the workflows, the CI builder
+image's Dockerfile). `.flutter-version` is the source of truth and CI fails when
+a pin drifts from it. After changing the Dockerfile or the Flutter version,
+rebuild the CI builder image with the "Build CI builder image" workflow, then
+pin the digest it prints in its run summary with
+`.github/scripts/pin_ci_image_digest.sh sha256:<digest>`.
 
 Regenerate localization classes after changing ARB files:
 

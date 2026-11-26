@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -34,6 +32,9 @@ void main() {
   );
 
   testWidgets('Cupertino section aligns with form field width', (tester) async {
+    PlatformUtils.debugIsApplePlatformOverride = true;
+    addTearDown(PlatformUtils.debugResetOverrides);
+
     await tester.pumpWidget(
       CupertinoApp(
         home: SizedBox(
@@ -64,5 +65,5 @@ void main() {
     expect(headerRect.left, fieldRect.left);
     expect(sectionTileRect.left, fieldRect.left);
     expect(sectionTileRect.right, fieldRect.right);
-  }, skip: !Platform.isMacOS && !Platform.isIOS);
+  });
 }

@@ -1,11 +1,17 @@
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:endurain/core/diagnostics/diagnostics_events.dart';
+import 'package:endurain/core/diagnostics/diagnostics_report.dart';
+import 'package:endurain/core/diagnostics/diagnostics_sanitizer.dart';
+import 'package:endurain/core/diagnostics/diagnostics_storage.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/utils/diagnostics_redaction.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+
+// Callers import this file for the whole diagnostics API.
+export 'package:endurain/core/diagnostics/diagnostics_events.dart';
+export 'package:endurain/core/diagnostics/diagnostics_report.dart';
 
 abstract class DiagnosticsRecorder {
   void recordBreadcrumbSync(
@@ -62,117 +68,6 @@ Map<String, Object?> diagnosticErrorDetails(Object error) {
   };
 }
 
-class DiagnosticsReport {
-  const DiagnosticsReport({
-    required this.rawText,
-    required this.app,
-    required this.schemaVersion,
-    required this.lastUpdatedAt,
-    required this.breadcrumbs,
-    required this.errors,
-    this.context = const {},
-  });
-
-  final String rawText;
-  final String app;
-  final int schemaVersion;
-  final DateTime? lastUpdatedAt;
-  final List<DiagnosticsBreadcrumb> breadcrumbs;
-  final List<DiagnosticsErrorEntry> errors;
-
-  /// The app and device the report was last written from (version, platform,
-  /// OS), so a report can be read without asking which build produced it.
-  final Map<String, Object?> context;
-
-  bool get isEmpty => breadcrumbs.isEmpty && errors.isEmpty;
-
-  factory DiagnosticsReport.fromPayload(Map<String, Object?> payload) {
-    final rawText = const JsonEncoder.withIndent('  ').convert(payload);
-    final breadcrumbs = payload['breadcrumbs'];
-    final errors = payload['errors'];
-    final context = payload['context'];
-
-    return DiagnosticsReport(
-      rawText: rawText,
-      app: _stringValue(payload['app']) ?? 'Endurain',
-      schemaVersion: _intValue(payload['schemaVersion']) ?? 1,
-      lastUpdatedAt: _dateTimeValue(payload['lastUpdatedAt']),
-      breadcrumbs: breadcrumbs is List
-          ? breadcrumbs
-                .whereType<Map<dynamic, dynamic>>()
-                .map(DiagnosticsBreadcrumb.fromJson)
-                .toList(growable: false)
-          : const [],
-      errors: errors is List
-          ? errors
-                .whereType<Map<dynamic, dynamic>>()
-                .map(DiagnosticsErrorEntry.fromJson)
-                .toList(growable: false)
-          : const [],
-      context: context is Map<dynamic, dynamic>
-          ? Map<String, Object?>.fromEntries(
-              context.entries.map(
-                (entry) => MapEntry(entry.key.toString(), entry.value),
-              ),
-            )
-          : const {},
-    );
-  }
-}
-
-class DiagnosticsBreadcrumb {
-  const DiagnosticsBreadcrumb({
-    required this.at,
-    required this.event,
-    required this.details,
-  });
-
-  final DateTime? at;
-  final String event;
-  final Map<String, Object?> details;
-
-  factory DiagnosticsBreadcrumb.fromJson(Map<dynamic, dynamic> json) {
-    final details = json['details'];
-    return DiagnosticsBreadcrumb(
-      at: _dateTimeValue(json['at']),
-      event: _stringValue(json['event']) ?? 'event',
-      details: details is Map<dynamic, dynamic>
-          ? Map<String, Object?>.fromEntries(
-              details.entries.map(
-                (entry) => MapEntry(entry.key.toString(), entry.value),
-              ),
-            )
-          : const {},
-    );
-  }
-}
-
-class DiagnosticsErrorEntry {
-  const DiagnosticsErrorEntry({
-    required this.at,
-    required this.source,
-    required this.type,
-    required this.message,
-    required this.stack,
-  });
-
-  final DateTime? at;
-  final String source;
-  final String type;
-  final String message;
-  final String stack;
-
-  factory DiagnosticsErrorEntry.fromJson(Map<dynamic, dynamic> json) {
-    return DiagnosticsErrorEntry(
-      at: _dateTimeValue(json['at']),
-      source: _stringValue(json['source']) ?? DiagnosticsSources.uncaught,
-      type: _stringValue(json['type']) ?? 'Error',
-      message: _stringValue(json['message']) ?? '',
-      stack: _stringValue(json['stack']) ?? '',
-    );
-  }
-}
-
 class NoopDiagnosticsRecorder implements DiagnosticsRecorder {
   const NoopDiagnosticsRecorder();
 
@@ -190,131 +85,6 @@ class NoopDiagnosticsRecorder implements DiagnosticsRecorder {
   }) {}
 }
 
-class DiagnosticsSources {
-  const DiagnosticsSources._();
-
-  static const String flutter = 'flutter';
-  static const String platformDispatcher = 'platform_dispatcher';
-  static const String rootZone = 'root_zone';
-  static const String uncaught = 'uncaught';
-  static const String activityLocationStream = 'activity_location_stream';
-  static const String activityRecorder = 'activity_recorder';
-}
-
-class DiagnosticsEvents {
-  const DiagnosticsEvents._();
-
-  static const String appStarted = 'app.started';
-  static const String appLifecycleChanged = 'app.lifecycle_changed';
-  static const String activityStartRequested = 'activity.start_requested';
-  static const String activityStarted = 'activity.started';
-  static const String activityStartFailed = 'activity.start_failed';
-  static const String activityPaused = 'activity.paused';
-  static const String activityResumed = 'activity.resumed';
-  static const String activityAutoPaused = 'activity.auto_paused';
-  static const String activityAutoResumed = 'activity.auto_resumed';
-  static const String activityStopped = 'activity.stopped';
-  static const String activityStopFailed = 'activity.stop_failed';
-  static const String secureStorageServerUrlFallback =
-      'secure_storage.server_url_fallback';
-  static const String activityDiscarded = 'activity.discarded';
-  static const String activityFailed = 'activity.failed';
-  static const String activityGpxGenerationFailed =
-      'activity.gpx_generation_failed';
-  static const String activityPointMilestone = 'activity.point_milestone';
-  static const String activityLocationStreamDone =
-      'activity.location_stream_done';
-  static const String activityRecorderStarted = 'activity.recorder_started';
-  static const String activityRecorderPaused = 'activity.recorder_paused';
-  static const String activityRecorderResumed = 'activity.recorder_resumed';
-  static const String activityRecorderAutoPaused =
-      'activity.recorder_auto_paused';
-  static const String activityRecorderAutoResumed =
-      'activity.recorder_auto_resumed';
-  static const String activityRecorderStopped = 'activity.recorder_stopped';
-  static const String activityRecorderFailed = 'activity.recorder_failed';
-  static const String activityActiveSessionRecovered =
-      'activity.active_session_recovered';
-  static const String activityStaleSessionCleared =
-      'activity.stale_session_cleared';
-  static const String activityPointBatchDrained =
-      'activity.point_batch_drained';
-  static const String activityTrackingStall = 'activity.tracking_stall';
-  static const String activityUploadQueueDrainStarted =
-      'activity.upload_queue_drain_started';
-  static const String activityUploadQueueDrainFinished =
-      'activity.upload_queue_drain_finished';
-  static const String activityUploadQueueRecordFailed =
-      'activity.upload_queue_record_failed';
-  static const String activityUploadRetryFailed =
-      'activity.upload_retry_failed';
-  static const String healthAutoSyncFailed = 'health.auto_sync_failed';
-  static const String healthAuthRequested = 'health.auth_requested';
-  static const String healthListImportable = 'health.list_importable';
-  static const String healthImportWorkouts = 'health.import_workouts';
-  static const String healthImportWorkoutFailed =
-      'health.import_workout_failed';
-  static const String healthConnectSdkStatus = 'health.connect_sdk_status';
-  static const String healthRequestAuthorization =
-      'health.request_authorization';
-  static const String healthRequestAuthorizationError =
-      'health.request_authorization_error';
-  static const String healthInstallProviderRequested =
-      'health.install_provider_requested';
-  static const String healthReadWorkouts = 'health.read_workouts';
-  static const String healthHeartRateSeriesFailed =
-      'health.heart_rate_series_failed';
-  static const String healthLoadStatusFailed = 'health.load_status_failed';
-  static const String healthAutoSyncSettingFailed =
-      'health.auto_sync_setting_failed';
-  static const String healthRequestAccessFailed =
-      'health.request_access_failed';
-  static const String healthInstallProviderFailed =
-      'health.install_provider_failed';
-  static const String healthDisconnectFailed = 'health.disconnect_failed';
-  static const String healthLoadImportableFailed =
-      'health.load_importable_failed';
-  static const String healthImportSelectedFailed =
-      'health.import_selected_failed';
-  static const String ssoProvidersFetchFailed = 'sso.providers_fetch_failed';
-  static const String watchSyncStarted = 'watch.sync_started';
-  static const String watchSyncFinished = 'watch.sync_finished';
-  static const String watchSyncFailed = 'watch.sync_failed';
-  static const String watchSessionIngested = 'watch.session_ingested';
-  static const String watchSessionIngestFailed = 'watch.session_ingest_failed';
-  static const String watchSessionDeferred = 'watch.session_deferred';
-  static const String ssoRedirectNotAllowed = 'sso.redirect_not_allowed';
-  static const String ssoLoginStarted = 'sso.login_started';
-  static const String ssoBrowserLaunchFailed = 'sso.browser_launch_failed';
-  static const String ssoCallbackIgnored = 'sso.callback_ignored';
-  static const String ssoCallbackReceived = 'sso.callback_received';
-  static const String ssoCallbackError = 'sso.callback_error';
-  static const String ssoCallbackMissingSession =
-      'sso.callback_missing_session';
-  static const String ssoExchangeSucceeded = 'sso.exchange_succeeded';
-  static const String ssoExchangeFailed = 'sso.exchange_failed';
-  static const String navigationChanged = 'nav.changed';
-  static const String navigationRedirected = 'nav.redirected';
-  static const String navigationTabChanged = 'nav.tab_changed';
-  static const String uiErrorShown = 'ui.error_shown';
-  static const String sessionModeChanged = 'session.mode_changed';
-  static const String sessionRevalidateFailed = 'session.revalidate_failed';
-  static const String authRefreshFailed = 'auth.refresh_failed';
-  static const String authSessionCleared = 'auth.session_cleared';
-
-  /// A refresh succeeded but secure storage rejected the new tokens; they stay
-  /// current in memory and the write is retried on the next read.
-  static const String authRefreshPersistPending =
-      'auth.refresh_persist_pending';
-  static const String authServerSettingsSaveFailed =
-      'auth.server_settings_save_failed';
-  static const String httpRequestFailed = 'http.request_failed';
-  static const String legacyProfileAdopted = 'account.legacy_profile_adopted';
-  static const String legacyProfileDeclined = 'account.legacy_profile_declined';
-  static const String legacyProfileMigrationFailed =
-      'account.legacy_profile_migration_failed';
-}
-
 class DiagnosticsService implements DiagnosticsStore {
   DiagnosticsService({
     Future<Directory> Function()? supportDirectoryProvider,
@@ -330,7 +100,7 @@ class DiagnosticsService implements DiagnosticsStore {
   final int maxBreadcrumbs;
   final int maxErrors;
 
-  File? _reportFile;
+  DiagnosticsStorage? _storage;
   bool _initialized = false;
   bool _enabled = false;
 
@@ -363,10 +133,8 @@ class DiagnosticsService implements DiagnosticsStore {
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
     }
-    _reportFile = File(
-      '${directory.path}${Platform.pathSeparator}endurain_diagnostics.json',
-    );
-    final payload = _readPayloadSync();
+    _storage = DiagnosticsStorage.open(directory);
+    final payload = _storage!.readPayloadSync();
     _enabled = payload['enabled'] == true;
     _loadInMemory(payload);
     _initialized = true;
@@ -379,7 +147,7 @@ class DiagnosticsService implements DiagnosticsStore {
   /// OS). Values are sanitized like breadcrumb details. It is written with the
   /// next breadcrumb, so it never creates a report on its own.
   void setContext(Map<String, Object?> context) {
-    _context = _sanitizeDetails(context);
+    _context = DiagnosticsSanitizer.details(context);
   }
 
   @override
@@ -390,8 +158,8 @@ class DiagnosticsService implements DiagnosticsStore {
     }
     _enabled = enabled;
 
-    final file = _reportFile;
-    if (file == null) {
+    final storage = _storage;
+    if (storage == null) {
       return;
     }
 
@@ -407,7 +175,7 @@ class DiagnosticsService implements DiagnosticsStore {
       _errors.clear();
       _dirty = false;
       _lastUpdatedAt = null;
-      _deleteReportFiles(file);
+      storage.deleteAll();
     }
   }
 
@@ -423,7 +191,7 @@ class DiagnosticsService implements DiagnosticsStore {
     final at = _now().toUtcIso8601();
     final sanitizedDetails = details.isEmpty
         ? const <String, Object?>{}
-        : _sanitizeDetails(details);
+        : DiagnosticsSanitizer.details(details);
     if (event == DiagnosticsEvents.appLifecycleChanged &&
         _mergeLifecycle(at, sanitizedDetails)) {
       _scheduleFlush();
@@ -431,7 +199,7 @@ class DiagnosticsService implements DiagnosticsStore {
     }
     _breadcrumbs.add(<String, Object?>{
       'at': at,
-      'event': _sanitize(event),
+      'event': DiagnosticsSanitizer.text(event),
       if (sanitizedDetails.isNotEmpty) 'details': sanitizedDetails,
     });
     _trimInPlace(_breadcrumbs, maxBreadcrumbs);
@@ -498,10 +266,13 @@ class DiagnosticsService implements DiagnosticsStore {
 
     _errors.add({
       'at': _now().toUtcIso8601(),
-      'source': _sanitize(source),
-      'type': _sanitize(error.runtimeType.toString()),
-      'message': _sanitize(error.toString(), maxLength: 800),
-      'stack': _sanitize(stackTrace.toString(), maxLength: 8000),
+      'source': DiagnosticsSanitizer.text(source),
+      'type': DiagnosticsSanitizer.text(error.runtimeType.toString()),
+      'message': DiagnosticsSanitizer.text(error.toString(), maxLength: 800),
+      'stack': DiagnosticsSanitizer.text(
+        stackTrace.toString(),
+        maxLength: 8000,
+      ),
     });
     _trimInPlace(_errors, maxErrors);
     // Errors are rare and are the crash context we most want to survive a hard
@@ -530,8 +301,8 @@ class DiagnosticsService implements DiagnosticsStore {
   @override
   Future<void> clearReport() async {
     await initialize();
-    final file = _reportFile;
-    if (file == null) {
+    final storage = _storage;
+    if (storage == null) {
       return;
     }
     // Settle any in-flight async flush before mutating so a pending write
@@ -544,24 +315,7 @@ class DiagnosticsService implements DiagnosticsStore {
       // Keep collection enabled but drop the captured breadcrumbs and errors.
       _writeSync();
     } else {
-      _deleteReportFiles(file);
-    }
-  }
-
-  /// Deletes the report and any staging file a killed write left behind.
-  void _deleteReportFiles(File file) {
-    for (final target in [
-      file,
-      _stagingFile(file, _syncStagingSuffix),
-      _stagingFile(file, _asyncStagingSuffix),
-    ]) {
-      try {
-        if (target.existsSync()) {
-          target.deleteSync();
-        }
-      } catch (_) {
-        // Best-effort: deletion failure must not surface to the app.
-      }
+      storage.deleteAll();
     }
   }
 
@@ -576,33 +330,6 @@ class DiagnosticsService implements DiagnosticsStore {
       _scheduleFlush();
       await _activeFlush;
     }
-  }
-
-  Map<String, Object?> _emptyPayload() {
-    return {
-      'schemaVersion': 1,
-      'app': 'Endurain',
-      'breadcrumbs': <Object?>[],
-      'errors': <Object?>[],
-    };
-  }
-
-  Map<String, Object?> _readPayloadSync() {
-    final file = _reportFile;
-    if (file == null || !file.existsSync()) {
-      return _emptyPayload();
-    }
-
-    try {
-      final decoded = jsonDecode(file.readAsStringSync());
-      if (decoded is Map<String, dynamic>) {
-        return Map<String, Object?>.from(decoded);
-      }
-    } catch (_) {
-      return _emptyPayload();
-    }
-
-    return _emptyPayload();
   }
 
   void _loadInMemory(Map<String, Object?> payload) {
@@ -642,40 +369,15 @@ class DiagnosticsService implements DiagnosticsStore {
     };
   }
 
-  String _encodePayload(Map<String, Object?> payload) =>
-      const JsonEncoder.withIndent('  ').convert(payload);
-
-  // Every write goes to a staging file that is then renamed over the report.
-  // Writing the report in place truncates it first, so a process killed
-  // mid-write (as when the app is swiped away right after the `detached`
-  // breadcrumb) left an empty or partial file; the next launch could not parse
-  // it and came back with collection off, since the opt-in lives in the same
-  // file. A rename either fully happens or not at all, so the last complete
-  // report survives. The sync and async paths stage to separate files because
-  // a sync write can run while an async one is part-way through.
-  static const String _syncStagingSuffix = '.sync.tmp';
-  static const String _asyncStagingSuffix = '.async.tmp';
-
-  File _stagingFile(File file, String suffix) => File('${file.path}$suffix');
-
-  /// Writes the current state synchronously (fsync).
-  ///
-  /// Used for errors — which must survive a hard crash — and for the opt-in and
-  /// clear transitions, where a durable write is both cheap and expected.
+  /// Writes the current state synchronously (see [DiagnosticsStorage.writeSync]).
   void _writeSync() {
-    final file = _reportFile;
-    if (file == null) {
+    final storage = _storage;
+    if (storage == null) {
       return;
     }
     _lastUpdatedAt = _now();
     _syncWriteGeneration++;
-    try {
-      _stagingFile(file, _syncStagingSuffix)
-        ..writeAsStringSync(_encodePayload(_currentPayload()), flush: true)
-        ..renameSync(file.path);
-    } catch (_) {
-      // Best-effort: diagnostics must never surface I/O errors to the app.
-    }
+    storage.writeSync(DiagnosticsStorage.encode(_currentPayload()));
   }
 
   /// Kicks a coalesced async flush for buffered breadcrumbs.
@@ -697,28 +399,20 @@ class DiagnosticsService implements DiagnosticsStore {
   }
 
   Future<void> _writeAsync() async {
-    final file = _reportFile;
-    if (file == null) {
+    final storage = _storage;
+    if (storage == null) {
       return;
     }
     _lastUpdatedAt = _now();
     final generation = _syncWriteGeneration;
-    final content = _encodePayload(_currentPayload());
-    try {
-      final staging = _stagingFile(file, _asyncStagingSuffix);
-      await staging.writeAsString(content, flush: true);
-      // A sync write (an error) during the await above published a newer
-      // report; this snapshot predates it, so drop it. The sync write marked
-      // the flush loop dirty, so the next pass writes the current state. The
-      // check and the rename run with no await between them, so no sync write
-      // can land in between; the rename is a metadata change, cheap to block on.
-      if (generation != _syncWriteGeneration) {
-        return;
-      }
-      staging.renameSync(file.path);
-    } catch (_) {
-      // Best-effort: diagnostics must never surface I/O errors to the app.
-    }
+    final content = DiagnosticsStorage.encode(_currentPayload());
+    // A sync write (an error) during the await published a newer report; this
+    // snapshot predates it, so drop it. The sync write marked the flush loop
+    // dirty, so the next pass writes the current state.
+    await storage.writeAsync(
+      content,
+      isStale: () => generation != _syncWriteGeneration,
+    );
   }
 
   List<Object?> _listFromPayload(Map<String, Object?> payload, String key) {
@@ -732,42 +426,4 @@ class DiagnosticsService implements DiagnosticsStore {
     }
     values.removeRange(0, values.length - maxLength);
   }
-
-  Map<String, Object?> _sanitizeDetails(Map<String, Object?> details) {
-    final sanitized = <String, Object?>{};
-    for (final entry in details.entries.take(12)) {
-      sanitized[_sanitize(entry.key, maxLength: 80)] = _safeJsonValue(
-        entry.value,
-      );
-    }
-    return sanitized;
-  }
-
-  Object? _safeJsonValue(Object? value) {
-    return switch (value) {
-      null => null,
-      bool() => value,
-      num() => value,
-      DateTime() => value.toUtcIso8601(),
-      String() => _sanitize(value),
-      _ => _sanitize(value.toString()),
-    };
-  }
-
-  String _sanitize(String value, {int maxLength = 500}) {
-    return redactDiagnosticText(value, maxLength: maxLength);
-  }
-}
-
-String? _stringValue(Object? value) => jsonString(value);
-
-int? _intValue(Object? value) => jsonInt(value);
-
-// Intentionally toLocal(): diagnostic timestamps are shown to the user in
-// local time, unlike activity model timestamps which are stored as UTC.
-DateTime? _dateTimeValue(Object? value) {
-  if (value is! String) {
-    return null;
-  }
-  return DateTime.tryParse(value)?.toLocal();
 }

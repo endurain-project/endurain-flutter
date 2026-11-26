@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -31,6 +32,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.ambient.AmbientLifecycleObserver
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.AppScaffold
@@ -42,16 +44,49 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import com.endurain.endurain.watchlink.WatchActivityType
 import kotlinx.coroutines.delay
-import java.util.Locale
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+
+/**
+ * Whether the watch is in ambient mode. [updateCount] changes with every
+ * enter, exit and ambient update, so the ambient layout redraws once per
+ * system update instead of on its own timers.
+ */
+data class AmbientState(
+    val isAmbient: Boolean = false,
+    val updateCount: Int = 0,
+)
 
 class MainActivity : ComponentActivity() {
+    private val ambient = MutableStateFlow(AmbientState())
+
+    private val ambientObserver =
+        AmbientLifecycleObserver(
+            this,
+            object : AmbientLifecycleObserver.AmbientLifecycleCallback {
+                override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {
+                    ambient.update { AmbientState(isAmbient = true, updateCount = it.updateCount + 1) }
+                }
+
+                override fun onExitAmbient() {
+                    ambient.update { AmbientState(isAmbient = false, updateCount = it.updateCount + 1) }
+                }
+
+                override fun onUpdateAmbient() {
+                    ambient.update { it.copy(updateCount = it.updateCount + 1) }
+                }
+            },
+        )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(ambientObserver)
         val app = application as EndurainWearApplication
         setContent {
             MaterialTheme {
                 AppScaffold {
-                    EndurainWearScreen(app.recorder, app.phoneLink)
+                    EndurainWearScreen(app.recorder, app.phoneLink, ambient)
                 }
             }
         }
@@ -62,8 +97,10 @@ class MainActivity : ComponentActivity() {
 private fun EndurainWearScreen(
     recorder: WorkoutRecorder,
     phoneLink: PhoneLink,
+    ambientState: StateFlow<AmbientState>,
 ) {
     val state by recorder.state.collectAsStateWithLifecycle()
+    val ambient by ambientState.collectAsStateWithLifecycle()
     val waiting by phoneLink.waitingCount.collectAsStateWithLifecycle()
     val countdownSeconds by recorder.countdownSeconds.collectAsStateWithLifecycle()
     val error = state.errorMessage
@@ -82,6 +119,7 @@ private fun EndurainWearScreen(
                 is WorkoutPhase.CountingDown ->
                     CountdownScreen(
                         state = state,
+                        ambient = ambient,
                         endsAtMillis = phase.endsAtMillis,
                         onCancel = recorder::cancelCountdown,
                         onStartNow = recorder::skipCountdown,
@@ -89,6 +127,7 @@ private fun EndurainWearScreen(
                 is WorkoutPhase.Active, WorkoutPhase.Ending ->
                     ActiveScreen(
                         state = state,
+                        ambient = ambient,
                         onPause = recorder::pause,
                         onResume = recorder::resume,
                         onEnd = recorder::end,
@@ -173,15 +212,18 @@ private fun StartScreen(
 @Composable
 private fun CountdownScreen(
     state: WorkoutUiState,
+    ambient: AmbientState,
     endsAtMillis: Long,
     onCancel: () -> Unit,
     onStartNow: () -> Unit,
 ) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(endsAtMillis) {
-        while (true) {
-            now = System.currentTimeMillis()
+    // Ambient mode refreshes once per system update instead of every 200 ms.
+    LaunchedEffect(endsAtMillis, ambient) {
+        now = System.currentTimeMillis()
+        while (!ambient.isAmbient) {
             delay(200)
+            now = System.currentTimeMillis()
         }
     }
     val remaining = StartCountdown.remainingSeconds(endsAtMillis, now)
@@ -223,6 +265,7 @@ private fun CountdownScreen(
 @Composable
 private fun ActiveScreen(
     state: WorkoutUiState,
+    ambient: AmbientState,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onEnd: () -> Unit,
@@ -230,6 +273,11 @@ private fun ActiveScreen(
     val paused = (state.phase as? WorkoutPhase.Active)?.paused == true
     val ending = state.phase == WorkoutPhase.Ending
     var confirmingEnd by remember { mutableStateOf(false) }
+    if (ambient.isAmbient) {
+        // Only the metrics, dimmed: no buttons to press with the screen off.
+        ScreenScaffold { MetricsPage(state, ambient, paused, ending) }
+        return
+    }
     if (confirmingEnd) {
         ConfirmEndScreen(
             onConfirm = {
@@ -267,7 +315,7 @@ private fun ActiveScreen(
                     )
                 }
             } else {
-                MetricsPage(state, paused, ending)
+                MetricsPage(state, ambient, paused, ending)
             }
         }
     }
@@ -276,17 +324,21 @@ private fun ActiveScreen(
 @Composable
 private fun MetricsPage(
     state: WorkoutUiState,
+    ambient: AmbientState,
     paused: Boolean,
     ending: Boolean,
 ) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = System.currentTimeMillis()
+    // Ambient mode refreshes once per system update instead of every second.
+    LaunchedEffect(ambient) {
+        now = System.currentTimeMillis()
+        while (!ambient.isAmbient) {
             delay(1_000)
+            now = System.currentTimeMillis()
         }
     }
     val elapsed = state.recording?.elapsedMillis(now) ?: 0
+    val dimmed = MaterialTheme.colorScheme.onSurfaceVariant
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.Center,
@@ -298,10 +350,24 @@ private fun MetricsPage(
         Text(
             WorkoutFormat.duration(elapsed),
             style = MaterialTheme.typography.displaySmall,
-            color = if (paused) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface,
+            color =
+                when {
+                    ambient.isAmbient -> dimmed
+                    paused -> MaterialTheme.colorScheme.tertiary
+                    else -> MaterialTheme.colorScheme.onSurface
+                },
         )
-        Text(distanceText(state.distanceMeters), style = MaterialTheme.typography.titleMedium)
-        Text("♥ ${state.heartRateBpm ?: "--"}", style = MaterialTheme.typography.titleMedium)
+        val ambientColor = if (ambient.isAmbient) dimmed else Color.Unspecified
+        Text(distanceText(state.distanceMeters), style = MaterialTheme.typography.titleMedium, color = ambientColor)
+        Text("♥ ${state.heartRateBpm ?: "--"}", style = MaterialTheme.typography.titleMedium, color = ambientColor)
+        when (state.locationStatus) {
+            SensorStatus.ACQUIRING -> FootnoteText(stringResource(R.string.gps_acquiring))
+            SensorStatus.UNAVAILABLE -> FootnoteText(stringResource(R.string.gps_lost))
+            else -> Unit
+        }
+        if (state.heartRateStatus == SensorStatus.UNAVAILABLE) {
+            FootnoteText(stringResource(R.string.hr_unavailable))
+        }
         if (ending) {
             Text(stringResource(R.string.saving), style = MaterialTheme.typography.labelSmall)
         }
@@ -403,31 +469,3 @@ private val WatchActivityType.label: Int
             WatchActivityType.WALK -> R.string.activity_walk
             WatchActivityType.HIKE -> R.string.activity_hike
         }
-
-object WorkoutFormat {
-    fun duration(millis: Long): String {
-        val total = maxOf(0L, millis / 1000)
-        val hours = total / 3600
-        val minutes = (total % 3600) / 60
-        val seconds = total % 60
-        return if (hours > 0) {
-            String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            String.format(Locale.ROOT, "%02d:%02d", minutes, seconds)
-        }
-    }
-
-    /** A distance formatted without its unit, which the string resources add. */
-    data class Distance(val value: String, val imperial: Boolean)
-
-    /** Kilometres, or miles in the regions that use them. */
-    fun distance(meters: Double?, locale: Locale = Locale.getDefault()): Distance {
-        val value = meters ?: 0.0
-        val imperial = locale.country in IMPERIAL_REGIONS
-        val converted = if (imperial) value / 1609.344 else value / 1000
-        return Distance(String.format(locale, "%.2f", converted), imperial)
-    }
-
-    // Mirrors MeasurementSystem.forLocale in the phone app.
-    private val IMPERIAL_REGIONS = setOf("US", "AS", "GU", "MP", "PR", "VI", "LR", "MM", "GB")
-}

@@ -6,11 +6,77 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v0.12.2+24] - 2026-11-26
+
+This release adapts the app to large screens and fixes the findings of a full review of the app, its native code and CI. Recording stays smooth on long activities, watch workouts are safer, and the iOS app meets App Store privacy requirements.
+
+### Added
+
+- Privacy manifests (`PrivacyInfo.xcprivacy`) for the iPhone and Apple Watch apps, which App Store Connect requires. They declare the required-reason APIs the apps use (file timestamps, system boot time and `UserDefaults`), and the health and location data they collect.
+- Ambient (always-on) mode in the Wear OS app. During a workout the dimmed screen shows only the metrics and updates on each ambient tick instead of every second.
+- The Wear OS workout screen shows when GPS is acquiring or lost, and when heart rate is unavailable.
+- Settings shows "Not secure (HTTP)" for a server that uses plain HTTP, under the account and in Server settings.
+- Shared test vectors (`test/fixtures/*_vectors.json`) for logic implemented on more than one platform. They cover distance, session timing, audio announcement thresholds, scheduling and speech, and BLE sensor parsing, and the Dart, Kotlin and Swift tests load the same files.
+- Architecture tests that:
+  - stop features from reaching into `AppServices`;
+  - limit what the map imports from the activity feature;
+  - cap source file size, so large files can only shrink.
+
 ### Changed
 
 - Screens fit large displays such as an unfolded iPhone Duo, a tablet or a phone in landscape. Settings, sign-in, health and activity screens keep their content at most 640pt wide and centred instead of stretching edge to edge, and the side margins still scroll.
 - When there is room for both (840pt or wider, such as an unfolded iPhone Duo in landscape), the activity history shows the list and the selected activity side by side. Narrower windows open an activity on its own page as before, and the list keeps its scroll position when the device is folded, unfolded or rotated.
 - The iOS workflow builds and tests with Xcode 27.2 on GitHub's Xcode 27 runner image and runs on an iPhone Duo simulator when one is available. The macOS 26 image only has Xcode 26, and from April 2027 App Store uploads must be built with the iOS 27 SDK.
+- The map no longer rebuilds every second during a recording. Only the stats update each second, and the route is redrawn when it gains points. New points are appended without copying the whole track, so long recordings stay smooth.
+- Large GPX files are built and parsed off the UI thread. Route parsing accepts track point attributes in any order and with either quote style.
+- Health Sync's auto-sync on resume reads only workouts since the last successful sync, with a 48-hour overlap, instead of the whole default range.
+- Failed uploads wait before retrying: 1 minute at first, doubling up to 6 hours. The retry state survives restarts (database schema version 10), and a manual retry is never delayed.
+- The map stops its location updates while the app is in the background.
+- Changing units updates only the screens that show units, instead of rebuilding the whole app.
+- On Android:
+  - The recorder service renews its wake lock every few minutes instead of holding one with no timeout.
+  - BLE sensors reconnect with backoff after a connection error.
+  - The app declares support for predictive back.
+  - The stop-recording dialog lists its buttons in the same order as on iPhone.
+- The diagnostics file moved into the app's private folder, which is excluded from device backups. An existing file is moved there on first launch.
+- The native iOS and watchOS code builds in Swift 6 language mode, with strict concurrency checks.
+- Internal changes:
+  - Screens receive their dependencies through their constructors.
+  - The BLE clients, dialogs, API requests and diagnostics each share one implementation instead of copies.
+  - The largest files are split.
+  - The geolocator recorder, used only by tests, moved to test helpers.
+- CI changes:
+  - Every job has a timeout.
+  - Android builds cache Gradle dependencies.
+  - Dependabot also updates the Wear OS build.
+  - The Flutter version lives in `.flutter-version`, and the coverage exclusions in `.github/coverage-excludes.txt`, each with one source of truth.
+  - The Gradle wrapper is checked against its checksum.
+  - The iOS workflow pins Flutter to a commit.
+  - The `discarded_futures` and `only_throw_errors` lints are on.
+- The README says the iOS workflow runs only on pushes to `main` and on manual runs, not on pull requests.
+
+### Fixed
+
+- A Wear OS workout is no longer cut short when Health Services reports a temporary error while the watch app relaunches. The app retries, keeps the saved workout, and does not let a new workout replace it.
+- Workouts no longer stay on the watch when a confirmation from the phone was missed. The Wear OS app checks for the phone's confirmations when it launches, and both watch apps accept confirmations from a newer phone app.
+- Spoken distances and speeds round the same way on Android and iPhone. For 1.25 km, Android said "1.3 km" and iPhone said "1.2 km".
+- On Android, a BLE heart-rate packet whose energy field is cut short is now rejected, as the app's other parser already did.
+- On Android, destructive confirmations show their action in the error colour.
+- On iPhone, a watch confirmation is no longer lost if the app stops while sending it.
+- Health Connect being missing or unavailable is reported as such, not as permission denied.
+- A route that fails to load, or a failure while processing the upload queue, is recorded in diagnostics instead of failing silently or as an unhandled error.
+
+### Security
+
+- Release builds pass the signing passwords only to the steps that sign, check out without saved credentials, and attach APKs from a separate job that is the only one allowed to write to the repository.
+- Diagnostics redact server hostnames and ids in URL paths, and more credential keys such as `session_id` and `code_verifier`.
+- Watch payloads larger than 32 MB are dropped instead of being read into memory. Payloads from a newer watch protocol version stay on the watch until the phone app can read them.
+
+### Removed
+
+- The legacy `NSLocationAlwaysUsageDescription` key on iPhone.
+- `android:usesCleartextTraffic` from the Android manifest. The network security config still allows HTTP for self-hosted servers.
+- Unused helpers and the Wear OS app's unused `lifecycle-service` dependency.
 
 ## [v0.12.1+23] - 2026-11-25
 

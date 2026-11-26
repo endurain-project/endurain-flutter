@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// derives its own store — for the same secure storage, those writes would no
 /// longer serialize against the shared store and a rotating refresh token could
 /// be lost. Feature code must therefore obtain these from the composition root
-/// via `AppScope.servicesOf(context)` rather than constructing them.
+/// through constructor parameters rather than constructing them.
 ///
 /// This complements `app_services_instance_guard_test.dart`: that guard keeps
 /// `AppServices` single and injected; this one keeps the auth session single
@@ -75,8 +75,8 @@ void main() {
         offenders,
         isEmpty,
         reason:
-            '$typeName must be obtained via AppScope.servicesOf(context) in '
-            'feature code, not constructed directly. Constructing a second '
+            '$typeName must be received through a constructor in feature '
+            'code, not constructed directly. Constructing a second '
             'AuthSessionStore (directly or via a session-mutating service that '
             'derives its own) breaks session-write serialization. Offending '
             'files: ${offenders.join(', ')}',

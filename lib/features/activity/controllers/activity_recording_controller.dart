@@ -18,20 +18,18 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
-import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
+import 'package:endurain/features/activity/services/activity_finalizer.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
-import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
-import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
 class ActivityRecordingController extends SafeNotifier {
   ActivityRecordingController({
     required this._recordingService,
-    ActivityGpxBuilder gpxBuilder = const ActivityGpxBuilder(),
-    ActivityUploadService? uploadService,
-    LocalActivityRepository? localActivityRepository,
-    LocalActivitySummaryBuilder? localActivitySummaryBuilder,
+    required this._uploadService,
+    required this._localActivityRepository,
+    required this._finalizer,
     this._retentionSettingsRepository,
     this._autoPauseSettingsRepository,
     Future<bool> Function()? isUploadAuthorized,
@@ -40,13 +38,7 @@ class ActivityRecordingController extends SafeNotifier {
     String Function()? localActivityIdProvider,
     DateTime Function()? now,
     this._ownsService = true,
-  }) : _gpxBuilder = gpxBuilder,
-       _uploadService = uploadService ?? ActivityUploadService(),
-       _localActivityRepository =
-           localActivityRepository ?? LocalActivityRepository(),
-       _localActivitySummaryBuilder =
-           localActivitySummaryBuilder ?? LocalActivitySummaryBuilder(),
-       _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
+  }) : _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
        _activeConnectionProfile = activeConnectionProfile ?? _noActiveProfile,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
@@ -58,10 +50,9 @@ class ActivityRecordingController extends SafeNotifier {
   static Future<ConnectionProfile?> _noActiveProfile() async => null;
 
   final ActivityRecordingService _recordingService;
-  final ActivityGpxBuilder _gpxBuilder;
   final ActivityUploadService _uploadService;
   final LocalActivityRepository _localActivityRepository;
-  final LocalActivitySummaryBuilder _localActivitySummaryBuilder;
+  final ActivityFinalizer _finalizer;
   final ActivityRetentionSettingsRepository? _retentionSettingsRepository;
   final AutoPauseSettingsRepository? _autoPauseSettingsRepository;
   final Future<bool> Function() _isUploadAuthorized;
@@ -228,7 +219,7 @@ class ActivityRecordingController extends SafeNotifier {
   Future<void> _finalizeCompletedState(
     ActivityRecordingState completedState,
   ) async {
-    final gpx = _buildCompletedGpx(completedState);
+    final gpx = await _buildCompletedGpx(completedState);
     if (gpx == null) {
       return;
     }
@@ -305,9 +296,11 @@ class ActivityRecordingController extends SafeNotifier {
     return _recordingService.isLocationReady();
   }
 
-  String? _buildCompletedGpx(ActivityRecordingState completedState) {
+  Future<String?> _buildCompletedGpx(
+    ActivityRecordingState completedState,
+  ) async {
     try {
-      final gpx = _gpxBuilder.build(completedState);
+      final gpx = await _finalizer.buildGpx(completedState);
       _completedGpx = gpx;
       return gpx;
     } catch (error) {
@@ -334,7 +327,6 @@ class ActivityRecordingController extends SafeNotifier {
     String gpx,
   ) async {
     try {
-      final createdAt = _now().toUtc();
       final localActivityId =
           _recordingService.localSessionId ?? _localActivityIdProvider();
       // A recovered completed session can be finalized again when the app
@@ -347,22 +339,13 @@ class ActivityRecordingController extends SafeNotifier {
         _completedLocalActivityRecord = existing;
         return existing;
       }
-      final gpxFileName = await _localActivityRepository.writeGpx(
+      final localRecord = await _finalizer.persist(
+        state: completedState,
         id: localActivityId,
         gpx: gpx,
+        connectionOrigin: _recordingService.connectionOrigin,
+        connectionProfileId: _recordingService.connectionProfileId,
       );
-      final localRecord = _localActivitySummaryBuilder
-          .build(
-            state: completedState,
-            id: localActivityId,
-            gpxFileName: gpxFileName,
-            createdAt: createdAt,
-          )
-          .copyWith(
-            connectionOrigin: _recordingService.connectionOrigin,
-            connectionProfileId: _recordingService.connectionProfileId,
-          );
-      await _localActivityRepository.upsert(localRecord);
       _completedLocalActivityId = localRecord.id;
       _completedLocalActivityRecord = localRecord;
       return localRecord;

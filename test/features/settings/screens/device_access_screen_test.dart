@@ -9,7 +9,6 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../../../helpers/widget_test_app.dart';
 import '../../health/fakes/fake_health_sync_service.dart';
 
 void main() {
@@ -30,11 +29,10 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: DeviceAccessScreen(
-            controller: controller,
-            healthSyncEnabled: false,
-          ),
+        home: DeviceAccessScreen(
+          controller: controller,
+          healthController: _idleHealthController(),
+          healthSyncEnabled: false,
         ),
       ),
     );
@@ -65,11 +63,10 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: DeviceAccessScreen(
-            controller: controller,
-            healthSyncEnabled: false,
-          ),
+        home: DeviceAccessScreen(
+          controller: controller,
+          healthController: _idleHealthController(),
+          healthSyncEnabled: false,
         ),
       ),
     );
@@ -96,11 +93,10 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: DeviceAccessScreen(
-            controller: controller,
-            healthSyncEnabled: false,
-          ),
+        home: DeviceAccessScreen(
+          controller: controller,
+          healthController: _idleHealthController(),
+          healthSyncEnabled: false,
         ),
       ),
     );
@@ -131,12 +127,10 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: DeviceAccessScreen(
-            controller: controller,
-            healthController: healthController,
-            healthSyncEnabled: true,
-          ),
+        home: DeviceAccessScreen(
+          controller: controller,
+          healthController: healthController,
+          healthSyncEnabled: true,
         ),
       ),
     );
@@ -200,3 +194,9 @@ class _FakeLocationPlatformAdapter implements LocationPlatformAdapter {
     return permission;
   }
 }
+
+/// A health controller for screens that take one but do not show it (Health
+/// Sync is off). Never loaded, so it needs no teardown.
+HealthSyncController _idleHealthController() => HealthSyncController(
+  service: FakeHealthSyncService(sdkStatus: HealthSdkStatus.unsupported),
+);

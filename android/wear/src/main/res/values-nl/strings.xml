@@ -31,4 +31,8 @@
     <string name="countdown_start_now">Nu starten</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">GPS zoeken…</string>
+    <string name="gps_lost">GPS-signaal verloren</string>
+    <string name="hr_unavailable">Hartslag niet beschikbaar</string>
+    <string name="restore_failed">De training kon niet worden gecontroleerd. Tik op OK om het opnieuw te proberen.</string>
 </resources>

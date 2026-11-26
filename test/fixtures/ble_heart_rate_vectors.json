@@ -1,0 +1,182 @@
+{
+  "description": "Shared BLE GATT parse vectors. Loaded by the Dart parser tests and meant for the Kotlin GATT client unit tests, so both decoders agree on the wire format. 'hex' is the raw characteristic value, two hex digits per byte, no separators (empty string = empty payload). Keys outside 'dartOnly' are produced by BOTH implementations; a null value means the parser must return null. 'dartOnly' lists fields only the Dart layer decodes (it owns them while the phone app records).",
+  "characteristic": "0x2A37 Heart Rate Measurement",
+  "kotlinFunction": "HeartRateGattClient.parseHeartRate",
+  "cases": [
+    {
+      "name": "8-bit value",
+      "hex": "0048",
+      "bpm": 72,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "8-bit maximum",
+      "hex": "00FF",
+      "bpm": 255,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "16-bit value above 255",
+      "hex": "012C01",
+      "bpm": 300,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "16-bit value that fits a byte",
+      "hex": "01FF00",
+      "bpm": 255,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "contact supported but not detected",
+      "hex": "0450",
+      "bpm": 80,
+      "dartOnly": {
+        "sensorContact": "notDetected",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "contact supported and detected",
+      "hex": "0650",
+      "bpm": 80,
+      "dartOnly": {
+        "sensorContact": "detected",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "contact detected bit without support bit is ignored",
+      "hex": "0250",
+      "bpm": 80,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "energy expended present",
+      "hex": "083C0001",
+      "bpm": 60,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": 256.0,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "two RR intervals",
+      "hex": "106400040002",
+      "bpm": 100,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": [
+          1000000,
+          500000
+        ]
+      }
+    },
+    {
+      "name": "RR interval rounds down to whole microseconds",
+      "hex": "10643303",
+      "bpm": 100,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": [
+          799804
+        ]
+      }
+    },
+    {
+      "name": "8-bit with contact, energy and RR",
+      "hex": "1E5A10003303",
+      "bpm": 90,
+      "dartOnly": {
+        "sensorContact": "detected",
+        "energyKilojoules": 16.0,
+        "rrIntervalsMicros": [
+          799804
+        ]
+      }
+    },
+    {
+      "name": "16-bit with RR",
+      "hex": "11B4000004",
+      "bpm": 180,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": [
+          1000000
+        ]
+      }
+    },
+    {
+      "name": "trailing odd RR byte is ignored",
+      "hex": "10640004FF",
+      "bpm": 100,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": [
+          1000000
+        ]
+      }
+    },
+    {
+      "name": "reserved flag bits are ignored",
+      "hex": "E041",
+      "bpm": 65,
+      "dartOnly": {
+        "sensorContact": "notSupported",
+        "energyKilojoules": null,
+        "rrIntervalsMicros": []
+      }
+    },
+    {
+      "name": "empty payload",
+      "hex": "",
+      "bpm": null,
+      "dartOnly": null
+    },
+    {
+      "name": "flags only",
+      "hex": "00",
+      "bpm": null,
+      "dartOnly": null
+    },
+    {
+      "name": "16-bit value truncated",
+      "hex": "0150",
+      "bpm": null,
+      "dartOnly": null
+    },
+    {
+      "name": "energy flag set but energy field truncated",
+      "hex": "083C00",
+      "bpm": null,
+      "dartOnly": null
+    }
+  ]
+}

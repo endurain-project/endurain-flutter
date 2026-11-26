@@ -6,10 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 /// root, and the former `AppServices.instance` global is never reintroduced.
 ///
 /// The composition root (`main`) constructs its own `AppServices` and injects
-/// it into the root `App`, which exposes it through `AppScope`. Feature code,
-/// services, controllers, and widgets MUST obtain services via
-/// `AppScope.servicesOf(context)` so future managed, multi-environment, or
-/// account-scoped builds can isolate service instances.
+/// it into the root `App`, which composes every screen from it (see
+/// `AppScreens`). Feature code, services, controllers, and widgets receive
+/// their dependencies through constructors and never see `AppServices` (see
+/// `feature_service_locator_guard_test.dart`), so future managed,
+/// multi-environment, or account-scoped builds can isolate service instances.
 void main() {
   final libDir = Directory('lib');
 
@@ -40,7 +41,7 @@ void main() {
       isEmpty,
       reason:
           'AppServices must not expose a global instance. Inject it from the '
-          'composition root and obtain services via AppScope.servicesOf. '
+          'composition root and compose screens from it in lib/app. '
           'Offending files: ${offenders.join(', ')}',
     );
   });
@@ -67,8 +68,8 @@ void main() {
       isEmpty,
       reason:
           'AppServices() must only be constructed by the composition root '
-          '(main.dart / app.dart). Feature code must use '
-          'AppScope.servicesOf(context). Offending files: '
+          '(main.dart / app.dart). Feature code takes its dependencies as '
+          'constructor parameters. Offending files: '
           '${offenders.join(', ')}',
     );
   });

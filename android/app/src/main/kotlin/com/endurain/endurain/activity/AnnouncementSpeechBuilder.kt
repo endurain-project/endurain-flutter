@@ -1,5 +1,7 @@
 package com.endurain.endurain.activity
 
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.DecimalFormatSymbols
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -147,7 +149,11 @@ object AnnouncementSpeechBuilder {
             Locale.forLanguageTag(languageTag)
         }
         val separator = DecimalFormatSymbols.getInstance(locale).decimalSeparator
-        return String.format(Locale.US, "%.1f", value).replace('.', separator)
+        // Round the shortest decimal form with ties to even, as the Swift
+        // builder's String(format:) does. String.format rounds half-up, which
+        // would speak 1.25 km as "1.3" on Android only.
+        return BigDecimal.valueOf(value).setScale(1, RoundingMode.HALF_EVEN).toPlainString()
+            .replace('.', separator)
     }
 
     /** `H:MM:SS` once an hour has elapsed, otherwise `M:SS`. */

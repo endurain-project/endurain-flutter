@@ -1,6 +1,4 @@
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
-import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -28,59 +26,24 @@ Future<ActivityStopAction> _showStopDialog(
   BuildContext context,
   AppLocalizations l10n,
 ) async {
-  if (PlatformUtils.isApplePlatform) {
-    return await showCupertinoDialog<ActivityStopAction>(
-          context: context,
-          builder: (context) => CupertinoAlertDialog(
-            title: Text(l10n.activityStopConfirmTitle),
-            content: Text(l10n.activityStopConfirmMessage),
-            actions: [
-              CupertinoDialogAction(
-                onPressed: () =>
-                    Navigator.pop(context, ActivityStopAction.cancel),
-                child: Text(l10n.cancel),
-              ),
-              CupertinoDialogAction(
-                onPressed: () =>
-                    Navigator.pop(context, ActivityStopAction.stop),
-                child: Text(l10n.activityStopAndSave),
-              ),
-              CupertinoDialogAction(
-                isDestructiveAction: true,
-                onPressed: () =>
-                    Navigator.pop(context, ActivityStopAction.discard),
-                child: Text(l10n.activityDiscard),
-              ),
-            ],
-          ),
-        ) ??
-        ActivityStopAction.cancel;
-  }
-
-  return await showDialog<ActivityStopAction>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l10n.activityStopConfirmTitle),
-          content: Text(l10n.activityStopConfirmMessage),
-          actions: [
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(context, ActivityStopAction.cancel),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(context, ActivityStopAction.discard),
-              child: Text(l10n.activityDiscard),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, ActivityStopAction.stop),
-              child: Text(l10n.activityStopAndSave),
-            ),
-          ],
-        ),
-      ) ??
-      ActivityStopAction.cancel;
+  final action = await DialogUtils.showActionDialog<ActivityStopAction>(
+    context,
+    title: l10n.activityStopConfirmTitle,
+    message: l10n.activityStopConfirmMessage,
+    choices: [
+      DialogChoice(label: l10n.cancel, value: ActivityStopAction.cancel),
+      DialogChoice(
+        label: l10n.activityStopAndSave,
+        value: ActivityStopAction.stop,
+      ),
+      DialogChoice(
+        label: l10n.activityDiscard,
+        value: ActivityStopAction.discard,
+        isDestructive: true,
+      ),
+    ],
+  );
+  return action ?? ActivityStopAction.cancel;
 }
 
 Future<bool> _showDiscardDialog(BuildContext context, AppLocalizations l10n) {

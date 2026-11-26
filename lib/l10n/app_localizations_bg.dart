@@ -128,6 +128,10 @@ class AppLocalizationsBg extends AppLocalizations {
       'Достъпът до здравни данни беше отказан';
 
   @override
+  String get errorHealthUnavailable =>
+      'Данните за здравето не са налични на това устройство';
+
+  @override
   String get errorHealthReadFailed =>
       'Здравните данни не можаха да бъдат прочетени';
 
@@ -894,6 +898,9 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get loggedIn => 'Влезли сте';
+
+  @override
+  String get serverNotSecure => 'Не е защитено (HTTP)';
 
   @override
   String get notConfigured => 'Не е конфигурирано';

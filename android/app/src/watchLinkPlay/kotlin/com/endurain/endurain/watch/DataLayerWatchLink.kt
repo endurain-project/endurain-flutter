@@ -1,7 +1,6 @@
 package com.endurain.endurain.watch
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import com.endurain.endurain.watchlink.HandoffFileStore
 import com.endurain.endurain.watchlink.WatchProtocol
@@ -12,7 +11,6 @@ import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.DataItem
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.PutDataRequest
 import com.google.android.gms.wearable.Wearable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -78,7 +76,6 @@ class DataLayerWatchLink(private val context: Context) : WatchLink {
             PutDataMapRequest.create(WatchProtocol.ackPath(sessionId)).apply {
                 dataMap.putString(WatchProtocol.KEY_SESSION_ID, sessionId)
                 dataMap.putInt(WatchProtocol.KEY_VERSION, WatchProtocol.PAYLOAD_VERSION)
-                dataMap.putLong(WatchProtocol.KEY_TIMESTAMP, System.currentTimeMillis())
             }
         // Stored locally by Play Services right away and synced when the
         // watch connects, so it survives the app closing in between.
@@ -101,8 +98,7 @@ class DataLayerWatchLink(private val context: Context) : WatchLink {
     }
 
     private fun items(prefix: String): List<DataItem> {
-        val uri = Uri.Builder().scheme(PutDataRequest.WEAR_URI_SCHEME).path(prefix).build()
-        val buffer = await(dataClient.getDataItems(uri, DataClient.FILTER_PREFIX))
+        val buffer = await(dataClient.getDataItems(WatchProtocol.dataLayerUri(prefix), DataClient.FILTER_PREFIX))
         return try {
             buffer.map { it.freeze() }
         } finally {
@@ -120,10 +116,21 @@ class DataLayerWatchLink(private val context: Context) : WatchLink {
          */
         fun storeHandoff(context: Context, item: DataItem, inbox: HandoffFileStore): Boolean {
             val sessionId = WatchProtocol.sessionIdFromPath(item.uri.path, WatchProtocol.HANDOFF_PATH_PREFIX) ?: return false
-            val asset = DataMapItem.fromDataItem(item).dataMap.getAsset(WatchProtocol.KEY_PAYLOAD) ?: return false
+            val dataMap = DataMapItem.fromDataItem(item).dataMap
+            val version = dataMap.getInt(WatchProtocol.KEY_VERSION)
+            if (!WatchProtocol.isSupportedVersion(version)) {
+                // Left in the Data Layer, unacknowledged, for an app version that understands it.
+                Log.w(TAG, "Ignoring a session with unsupported version $version")
+                return false
+            }
+            val asset = dataMap.getAsset(WatchProtocol.KEY_PAYLOAD) ?: return false
             return try {
                 val response = await(Wearable.getDataClient(context).getFdForAsset(asset))
-                val bytes = response.inputStream.use { it.readBytes() }
+                val bytes = response.inputStream.use { WatchProtocol.readCapped(it) }
+                if (bytes == null) {
+                    Log.w(TAG, "Dropping a session larger than ${WatchProtocol.MAX_PAYLOAD_BYTES} bytes")
+                    return false
+                }
                 inbox.save(bytes, sessionId)
                 true
             } catch (error: Exception) {

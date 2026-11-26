@@ -377,8 +377,8 @@ class ActivityRecorderServiceTest {
         assertEquals(1, store.pointCount())
 
         controller.get().onTaskRemoved(Intent())
-        assertEquals(original, ActivityRecorderService.recover(application))
-        assertEquals(original, ActivityRecorderService.recover(application))
+        assertEquals(original, ActivityRecorderCoordinator.recover(application))
+        assertEquals(original, ActivityRecorderCoordinator.recover(application))
         assertNull(shadowOf(application).nextStartedService)
         assertFalse(shadowOf(controller.get()).isStoppedBySelf)
         fix(41.2, System.currentTimeMillis() + 1_000)
@@ -398,7 +398,7 @@ class ActivityRecorderServiceTest {
             segmentIndex = 0,
         )))
 
-        val recovered = ActivityRecorderService.recover(application)!!
+        val recovered = ActivityRecorderCoordinator.recover(application)!!
         assertEquals(original.localSessionId, recovered.localSessionId)
         assertEquals(original.connectionProfileId, recovered.connectionProfileId)
         assertEquals(ActiveActivitySessionData.STATUS_RECORDING, recovered.status)
@@ -429,7 +429,7 @@ class ActivityRecorderServiceTest {
             ActiveActivitySessionData.STATUS_FAILED,
         )) {
             store.saveSession(session(status))
-            val recovered = ActivityRecorderService.recover(application)!!
+            val recovered = ActivityRecorderCoordinator.recover(application)!!
             assertEquals(ActiveActivitySessionData.STATUS_PAUSED, recovered.status)
             assertEquals("existing_session", recovered.localSessionId)
             assertNull(shadowOf(application).nextStartedService)
@@ -439,7 +439,7 @@ class ActivityRecorderServiceTest {
     @Test
     fun recoveryBeforeFirstFixDoesNotDiscardTheSession() {
         store.saveSession(session())
-        val recovered = ActivityRecorderService.recover(application)!!
+        val recovered = ActivityRecorderCoordinator.recover(application)!!
         assertEquals(ActiveActivitySessionData.STATUS_RECORDING, recovered.status)
         assertEquals(0, store.pointCount())
         assertNotNull(store.loadSession())
@@ -460,7 +460,7 @@ class ActivityRecorderServiceTest {
             Manifest.permission.ACCESS_COARSE_LOCATION,
         )
 
-        val recovered = ActivityRecorderService.recover(application)
+        val recovered = ActivityRecorderCoordinator.recover(application)
 
         assertEquals(ActiveActivitySessionData.STATUS_PAUSED, recovered?.status)
         assertEquals(ActiveActivitySessionData.STATUS_PAUSED, store.loadSession()?.status)
@@ -491,7 +491,7 @@ class ActivityRecorderServiceTest {
         assertTrue(shadowOf(controller.get()).isStoppedBySelf)
         assertEquals(
             ActiveActivitySessionData.STATUS_PAUSED,
-            ActivityRecorderService.recover(application)?.status,
+            ActivityRecorderCoordinator.recover(application)?.status,
         )
     }
 
@@ -515,5 +515,51 @@ class ActivityRecorderServiceTest {
         assertEquals(listOf(0, 1), batches.map { it["pointOffset"] })
         assertTrue(batches.all { it["localSessionId"] == "existing_session" })
         assertTrue(batches.all { it["version"] == ActivityRecorderChannel.PAYLOAD_VERSION })
+    }
+
+    @Test
+    fun pauseAndStopAreDeliveredBeforeTheServiceIsCreated() {
+        // start() hands the intent to the system; onCreate runs later. A stop
+        // sent in that window must still reach the service.
+        ActivityRecorderService.pause(application)
+        ActivityRecorderService.stop(application)
+
+        assertEquals(
+            ActivityRecorderService.ACTION_PAUSE,
+            shadowOf(application).nextStartedService?.action,
+        )
+        assertEquals(
+            ActivityRecorderService.ACTION_STOP,
+            shadowOf(application).nextStartedService?.action,
+        )
+    }
+
+    @Test
+    fun pauseAndStopReachARunningService() {
+        service()
+
+        ActivityRecorderService.pause(application)
+        ActivityRecorderService.stop(application)
+
+        assertEquals(
+            ActivityRecorderService.ACTION_PAUSE,
+            shadowOf(application).nextStartedService?.action,
+        )
+        assertEquals(
+            ActivityRecorderService.ACTION_STOP,
+            shadowOf(application).nextStartedService?.action,
+        )
+    }
+
+    @Test
+    fun pauseSurvivesAnApplicationThatCannotStartServices() {
+        service()
+        val refusing = object : android.content.ContextWrapper(application) {
+            override fun startService(service: Intent?): android.content.ComponentName? =
+                throw IllegalStateException("app is in the background")
+        }
+
+        ActivityRecorderService.pause(refusing)
+        ActivityRecorderService.stop(refusing)
     }
 }

@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/navigation/app_router.dart';
 import 'package:endurain/app/navigation/app_routes.dart';
+import 'package:endurain/app/navigation/app_screens.dart';
 import 'package:endurain/core/auth/auth_service.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
@@ -96,12 +96,13 @@ void main() {
     final services = AppServices();
     final diagnostics = RecordingDiagnostics();
     final session = AuthSessionController(
-      authService: AuthService(storage: services.secureStorage),
+      authService: AuthService(storage: services.infra.secureStorage),
     );
     addTearDown(session.dispose);
     session.continueAsGuest();
     final router = buildAppRouter(
       session: session,
+      screens: AppScreens(services),
       onLoginSuccess: (_) async {},
       onLogout: session.continueAsGuest,
       diagnostics: diagnostics,
@@ -109,10 +110,7 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(
-      AppScope(
-        services: services,
-        child: AdaptiveApp.router(title: 'Test', routerConfig: router),
-      ),
+      AdaptiveApp.router(title: 'Test', routerConfig: router),
     );
     await tester.pump();
 
@@ -147,25 +145,23 @@ void main() {
   });
 
   testWidgets('updates Settings when logout enters guest mode', (tester) async {
+    final services = AppServices();
     final session = AuthSessionController(
-      authService: AuthService(storage: AppServices().secureStorage),
+      authService: AuthService(storage: services.infra.secureStorage),
     );
     addTearDown(session.dispose);
     session.markAuthenticated();
     final router = buildAppRouter(
       session: session,
+      screens: AppScreens(services),
       onLoginSuccess: (_) async {},
       onLogout: session.continueAsGuest,
     );
     addTearDown(router.dispose);
-    final services = AppServices();
     final l10n = AppLocalizationsEn();
 
     await tester.pumpWidget(
-      AppScope(
-        services: services,
-        child: AdaptiveApp.router(title: 'Test', routerConfig: router),
-      ),
+      AdaptiveApp.router(title: 'Test', routerConfig: router),
     );
     await tester.pump();
 
@@ -183,22 +179,20 @@ void main() {
   testWidgets('returns home after a pushed login succeeds', (tester) async {
     final services = AppServices();
     final session = AuthSessionController(
-      authService: AuthService(storage: services.secureStorage),
+      authService: AuthService(storage: services.infra.secureStorage),
     );
     addTearDown(session.dispose);
     session.continueAsGuest();
     final router = buildAppRouter(
       session: session,
+      screens: AppScreens(services),
       onLoginSuccess: (_) async => session.markAuthenticated(),
       onLogout: session.continueAsGuest,
     );
     addTearDown(router.dispose);
 
     await tester.pumpWidget(
-      AppScope(
-        services: services,
-        child: AdaptiveApp.router(title: 'Test', routerConfig: router),
-      ),
+      AdaptiveApp.router(title: 'Test', routerConfig: router),
     );
     await tester.pump();
     await tester.pump();

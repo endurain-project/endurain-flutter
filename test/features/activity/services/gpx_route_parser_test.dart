@@ -29,6 +29,32 @@ void main() {
       expect(route.end!.latitude, closeTo(41.3, 1e-6));
     });
 
+    test('reads lon before lat and single-quoted attributes', () {
+      const gpx = '''
+<gpx><trk><trkseg>
+<trkpt lon="-8.6" lat="41.1"><ele>3</ele></trkpt>
+<trkpt lat='41.2' lon='-8.5'/>
+<trkpt  extra="x"  lon = '-8.4'  lat = "41.3" >
+</trkpt>
+</trkseg></trk></gpx>''';
+
+      final route = parser.parse(gpx)!;
+
+      expect(route.points, hasLength(3));
+      expect(route.points[0].latitude, closeTo(41.1, 1e-9));
+      expect(route.points[0].longitude, closeTo(-8.6, 1e-9));
+      expect(route.points[1].latitude, closeTo(41.2, 1e-9));
+      expect(route.points[2].longitude, closeTo(-8.4, 1e-9));
+    });
+
+    test('skips a track point missing one coordinate', () {
+      const gpx =
+          '<trkseg><trkpt lat="41.1"></trkpt>'
+          '<trkpt lat="41.2" lon="-8.5"></trkpt></trkseg>';
+
+      expect(parser.parse(gpx)!.points, hasLength(1));
+    });
+
     test('returns null when the document has no track points', () {
       expect(parser.parse(buildGpx([[]])), isNull);
     });

@@ -32,4 +32,8 @@
     <string name="countdown_start_now">Start now</string>
     <string name="distance_km">%1$s km</string>
     <string name="distance_mi">%1$s mi</string>
+    <string name="gps_acquiring">Acquiring GPS…</string>
+    <string name="gps_lost">GPS signal lost</string>
+    <string name="hr_unavailable">Heart rate unavailable</string>
+    <string name="restore_failed">Couldn\'t check your workout. Tap OK to try again.</string>
 </resources>

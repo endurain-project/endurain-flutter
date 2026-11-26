@@ -12,6 +12,9 @@ import WatchKit
 /// [WatchRecordingStore] as they arrive, so a crash costs at most a few
 /// seconds of track. On finish the session is turned into a handoff envelope
 /// and queued in [PhoneLink]'s outbox.
+///
+/// The track is kept by [WorkoutRouteRecorder], the GPS stream by
+/// [WorkoutLocationSource], and the HealthKit mapping by [WorkoutHealthKit].
 @MainActor
 final class WorkoutManager: NSObject, ObservableObject {
     static let shared = WorkoutManager()
@@ -35,21 +38,6 @@ final class WorkoutManager: NSObject, ObservableObject {
         let hasRoute: Bool
     }
 
-    /// GPS fixes less accurate than this are not recorded.
-    static let maxHorizontalAccuracyMeters: CLLocationAccuracy = 50
-
-    /// A heart rate reading older than this is not attached to a point.
-    static let heartRateFreshness: TimeInterval = 10
-
-    /// Points are written to disk in batches of this size.
-    static let pointFlushThreshold = 10
-
-    /// Start countdown choices in seconds; 0 starts right away.
-    static let countdownOptions = [0, 3, 5, 10]
-
-    /// The last seconds of the countdown that tap the wrist.
-    static let countdownCueSeconds = 3
-
     private static let countdownSecondsKey = "startCountdownSeconds"
 
     /// Seconds counted down before a workout starts, saved on the watch.
@@ -67,27 +55,28 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var errorMessage: String?
 
     private let healthStore = HKHealthStore()
-    private let locationManager = CLLocationManager()
+    private let location = WorkoutLocationSource()
     private let store: WatchRecordingStore
+    private let route: WorkoutRouteRecorder
     private var session: HKWorkoutSession?
     private var builder: HKLiveWorkoutBuilder?
-    private var routeBuilder: HKWorkoutRouteBuilder?
-    private var routeHasData = false
     private var recording: WatchRecording?
-    private var points: [WatchRecordedPoint] = []
-    private var unsavedPoints: [WatchRecordedPoint] = []
-    private var lastHeartRate: (bpm: Int, at: Date)?
-    private var isUpdatingLocation = false
     private var pendingStart: (session: HKWorkoutSession, builder: HKLiveWorkoutBuilder, type: WatchActivityType)?
     private var countdownTask: Task<Void, Never>?
 
     init(store: WatchRecordingStore = WatchRecordingStore(directory: WorkoutManager.defaultRecordingDirectory())) {
         self.store = store
-        self.locationAuthorization = locationManager.authorizationStatus
+        self.route = WorkoutRouteRecorder(healthStore: healthStore, store: store)
+        self.locationAuthorization = location.authorizationStatus
         let savedCountdown = UserDefaults.standard.integer(forKey: Self.countdownSecondsKey)
-        self.countdownSeconds = Self.countdownOptions.contains(savedCountdown) ? savedCountdown : 0
+        self.countdownSeconds = WorkoutCountdown.options.contains(savedCountdown) ? savedCountdown : 0
         super.init()
-        locationManager.delegate = self
+        location.onLocations = { [weak self] locations in
+            self?.record(locations)
+        }
+        location.onAuthorizationChange = { [weak self] status in
+            self?.locationAuthorization = status
+        }
     }
 
     nonisolated static func defaultRecordingDirectory() -> URL {
@@ -118,11 +107,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         phase = .starting
         var startedSession: HKWorkoutSession?
         do {
-            try await requestHealthAuthorization()
-            if locationManager.authorizationStatus == .notDetermined {
-                locationManager.requestWhenInUseAuthorization()
-            }
-            let configuration = Self.configuration(for: type)
+            try await WorkoutHealthKit.requestAuthorization(healthStore)
+            location.requestAuthorizationIfNeeded()
+            let configuration = WorkoutHealthKit.configuration(for: type)
             let session = try HKWorkoutSession(
                 healthStore: healthStore,
                 configuration: configuration
@@ -160,7 +147,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         countdownTask = nil
         pendingStart?.session.end()
         pendingStart = nil
-        stopLocationUpdates()
+        location.stop()
         activityType = nil
         phase = .idle
     }
@@ -178,7 +165,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         // and warms up the sensors; collection only begins at zero.
         session.prepare()
         // Warm up GPS too. `record` ignores fixes until the workout runs.
-        startLocationUpdates()
+        location.start()
         let endsAt = Date().addingTimeInterval(TimeInterval(countdownSeconds))
         phase = .countingDown(endsAt: endsAt)
         countdownTask = Task { [weak self] in
@@ -187,19 +174,7 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     private func runCountdown(until endsAt: Date) async {
-        var lastCue: Int?
-        while !Task.isCancelled {
-            let left = endsAt.timeIntervalSinceNow
-            if left <= 0 {
-                break
-            }
-            let seconds = Int(left.rounded(.up))
-            if seconds <= Self.countdownCueSeconds, seconds != lastCue {
-                lastCue = seconds
-                WKInterfaceDevice.current().play(.click)
-            }
-            try? await Task.sleep(for: .milliseconds(200))
-        }
+        await WorkoutCountdown.run(until: endsAt)
         guard !Task.isCancelled else { return }
         countdownTask = nil
         await finishCountdown()
@@ -236,7 +211,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         session.startActivity(with: start)
         try await builder.beginCollection(at: start)
         phase = .running
-        startLocationUpdates()
+        location.start()
     }
 
     private func failStart(session: HKWorkoutSession?, error: Error) {
@@ -328,7 +303,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             // after it started): record it from here on.
             recording = WatchRecording(
                 sessionId: UUID().uuidString,
-                activityType: Self.activityType(for: session.workoutConfiguration),
+                activityType: WorkoutHealthKit.activityType(for: session.workoutConfiguration),
                 startedAt: session.startDate ?? Date()
             )
             try? store.begin(recording)
@@ -361,7 +336,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             Task { await finish(at: session.endDate ?? now) }
         default:
             phase = .running
-            startLocationUpdates()
+            location.start()
         }
     }
 
@@ -396,29 +371,18 @@ final class WorkoutManager: NSObject, ObservableObject {
         session.delegate = self
         builder.delegate = self
         self.recording = recording
-        self.points = points
-        unsavedPoints = []
         activityType = recording.activityType
         distanceMeters = nil
         heartRateBpm = nil
-        lastHeartRate = nil
-        routeBuilder = HKWorkoutRouteBuilder(healthStore: healthStore, device: nil)
-        routeHasData = false
-        // A recovered workout starts a new route builder: re-insert the track
-        // recorded before the relaunch so the saved route is complete.
-        insertIntoRoute(points.map(Self.location(from:)))
+        route.begin(with: points)
     }
 
     private func detach() {
-        stopLocationUpdates()
+        location.stop()
         session = nil
         builder = nil
-        routeBuilder = nil
-        routeHasData = false
         recording = nil
-        points = []
-        unsavedPoints = []
-        lastHeartRate = nil
+        route.reset()
     }
 
     private func handle(state: HKWorkoutSessionState, date: Date) {
@@ -432,9 +396,9 @@ final class WorkoutManager: NSObject, ObservableObject {
             if phase == .paused || phase == .starting {
                 phase = .running
             }
-            startLocationUpdates()
+            location.start()
         case .paused:
-            flushPoints()
+            route.flush()
             if var recording {
                 recording.pause(at: date)
                 self.recording = recording
@@ -454,8 +418,8 @@ final class WorkoutManager: NSObject, ObservableObject {
             phase = .idle
             return
         }
-        stopLocationUpdates()
-        flushPoints()
+        location.stop()
+        route.flush()
 
         var elapsed = recording.elapsedSeconds(at: endDate)
         var healthWorkoutId: String?
@@ -465,9 +429,7 @@ final class WorkoutManager: NSObject, ObservableObject {
                 elapsed = builder.elapsedTime
                 if let workout = try await builder.finishWorkout() {
                     healthWorkoutId = workout.uuid.uuidString
-                    if routeHasData, let routeBuilder {
-                        _ = try? await routeBuilder.finishRoute(with: workout, metadata: nil)
-                    }
+                    await route.finishRoute(with: workout)
                 }
             } catch {
                 // Saving to HealthKit is not required to keep the workout:
@@ -476,7 +438,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             }
         }
 
-        let recordedPoints = points
+        let recordedPoints = route.points
         enqueueHandoff(
             recording: recording,
             points: recordedPoints,
@@ -520,75 +482,11 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     // MARK: - Location
 
-    private func startLocationUpdates() {
-        guard !isUpdatingLocation else { return }
-        isUpdatingLocation = true
-        locationManager.activityType = .fitness
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.distanceFilter = kCLDistanceFilterNone
-        locationManager.allowsBackgroundLocationUpdates = true
-        locationManager.startUpdatingLocation()
-    }
-
-    private func stopLocationUpdates() {
-        guard isUpdatingLocation else { return }
-        isUpdatingLocation = false
-        locationManager.stopUpdatingLocation()
-    }
-
     private func record(_ locations: [CLLocation]) {
         guard phase == .running, let recording, !recording.isPaused else {
             return
         }
-        let accepted = locations.filter { location in
-            location.horizontalAccuracy >= 0
-                && location.horizontalAccuracy <= Self.maxHorizontalAccuracyMeters
-                && location.timestamp >= recording.startedAt
-        }
-        guard !accepted.isEmpty else { return }
-        let newPoints = accepted.map { location in
-            Self.point(
-                from: location,
-                segmentIndex: recording.segmentIndex,
-                heartRateBpm: freshHeartRate(at: location.timestamp)
-            )
-        }
-        points.append(contentsOf: newPoints)
-        unsavedPoints.append(contentsOf: newPoints)
-        insertIntoRoute(accepted)
-        if unsavedPoints.count >= Self.pointFlushThreshold {
-            flushPoints()
-        }
-    }
-
-    private func freshHeartRate(at date: Date) -> Int? {
-        guard let lastHeartRate,
-              abs(date.timeIntervalSince(lastHeartRate.at)) <= Self.heartRateFreshness
-        else {
-            return nil
-        }
-        return lastHeartRate.bpm
-    }
-
-    private func insertIntoRoute(_ locations: [CLLocation]) {
-        guard !locations.isEmpty, let routeBuilder else { return }
-        routeHasData = true
-        routeBuilder.insertRouteData(locations) { _, error in
-            if let error {
-                NSLog("Endurain watch: could not add to the workout route: %@", error.localizedDescription)
-            }
-        }
-    }
-
-    private func flushPoints() {
-        guard !unsavedPoints.isEmpty else { return }
-        do {
-            try store.append(unsavedPoints)
-            unsavedPoints = []
-        } catch {
-            // Kept in memory and retried with the next batch.
-            NSLog("Endurain watch: could not save workout points")
-        }
+        route.record(locations, for: recording)
     }
 
     private func persistRecording() {
@@ -598,91 +496,6 @@ final class WorkoutManager: NSObject, ObservableObject {
         } catch {
             NSLog("Endurain watch: could not save the workout state")
         }
-    }
-
-    // MARK: - HealthKit
-
-    private func requestHealthAuthorization() async throws {
-        let share: Set<HKSampleType> = [
-            HKObjectType.workoutType(),
-            HKSeriesType.workoutRoute(),
-            HKQuantityType(.activeEnergyBurned),
-            HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.distanceCycling),
-        ]
-        let read: Set<HKObjectType> = [
-            HKObjectType.workoutType(),
-            HKQuantityType(.heartRate),
-            HKQuantityType(.activeEnergyBurned),
-            HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.distanceCycling),
-        ]
-        try await healthStore.requestAuthorization(toShare: share, read: read)
-    }
-
-    static func configuration(for type: WatchActivityType) -> HKWorkoutConfiguration {
-        let configuration = HKWorkoutConfiguration()
-        switch type {
-        case .run:
-            configuration.activityType = .running
-        case .ride:
-            configuration.activityType = .cycling
-        case .walk:
-            configuration.activityType = .walking
-        case .hike:
-            configuration.activityType = .hiking
-        }
-        configuration.locationType = .outdoor
-        return configuration
-    }
-
-    static func activityType(for configuration: HKWorkoutConfiguration) -> WatchActivityType {
-        switch configuration.activityType {
-        case .cycling:
-            return .ride
-        case .walking:
-            return .walk
-        case .hiking:
-            return .hike
-        default:
-            return .run
-        }
-    }
-
-    static func point(
-        from location: CLLocation,
-        segmentIndex: Int,
-        heartRateBpm: Int?
-    ) -> WatchRecordedPoint {
-        let hasAltitude = location.verticalAccuracy >= 0
-        return WatchRecordedPoint(
-            timestamp: location.timestamp,
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude,
-            segmentIndex: segmentIndex,
-            elevationMeters: hasAltitude ? location.altitude : nil,
-            horizontalAccuracyMeters: location.horizontalAccuracy,
-            verticalAccuracyMeters: hasAltitude ? location.verticalAccuracy : nil,
-            headingDegrees: location.course >= 0 ? location.course : nil,
-            speedMetersPerSecond: location.speed >= 0 ? location.speed : nil,
-            speedAccuracyMetersPerSecond: location.speedAccuracy >= 0 ? location.speedAccuracy : nil,
-            heartRateBpm: heartRateBpm
-        )
-    }
-
-    static func location(from point: WatchRecordedPoint) -> CLLocation {
-        return CLLocation(
-            coordinate: CLLocationCoordinate2D(
-                latitude: point.latitude,
-                longitude: point.longitude
-            ),
-            altitude: point.elevationMeters ?? 0,
-            horizontalAccuracy: point.horizontalAccuracyMeters ?? 10,
-            verticalAccuracy: point.elevationMeters == nil ? -1 : (point.verticalAccuracyMeters ?? 10),
-            course: point.headingDegrees ?? -1,
-            speed: point.speedMetersPerSecond ?? -1,
-            timestamp: point.timestamp
-        )
     }
 }
 
@@ -733,35 +546,11 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
             if let heartRate {
                 let bpm = Int(heartRate.rounded())
                 self.heartRateBpm = bpm
-                self.lastHeartRate = (bpm, now)
+                self.route.noteHeartRate(bpm, at: now)
             }
             if let distance {
                 self.distanceMeters = distance
             }
-        }
-    }
-}
-
-// MARK: - CLLocationManagerDelegate
-
-extension WorkoutManager: CLLocationManagerDelegate {
-    nonisolated func locationManager(
-        _ manager: CLLocationManager,
-        didUpdateLocations locations: [CLLocation]
-    ) {
-        Task { @MainActor in
-            self.record(locations)
-        }
-    }
-
-    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        NSLog("Endurain watch: location update failed: %@", error.localizedDescription)
-    }
-
-    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        let status = manager.authorizationStatus
-        Task { @MainActor in
-            self.locationAuthorization = status
         }
     }
 }

@@ -1,29 +1,17 @@
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/location/location_settings_builder.dart';
-import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
-import 'package:endurain/features/activity/models/activity_recording_state.dart';
-import 'package:endurain/features/activity/models/activity_type.dart';
-import 'package:endurain/features/activity/models/audio_announcement_config.dart';
-import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
-import 'package:endurain/features/activity/screens/activity_history_screen.dart';
-import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
-import 'package:endurain/features/activity/services/start_countdown.dart';
-import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
-import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
-import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
-import 'package:endurain/features/activity/widgets/start_countdown_dialog.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/widgets/location_marker.dart';
 import 'package:endurain/features/map/widgets/map_sensor_indicators.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
@@ -34,34 +22,58 @@ import 'package:material_ui/material_ui.dart';
 class MapScreen extends StatefulWidget {
   const MapScreen({
     super.key,
+    required this.activityController,
+    required this.recordingOverlayBuilder,
     this.controller,
-    this.activityController,
-    this.sensorControllers,
     this.locationService,
     this.mapSettings,
-    this.startCountdownSettings,
-    this.startCountdownPlatform,
-    this.countdownClock,
-  });
+    this.sensorServices = const {},
+    this.sensorControllers,
+    this.recoverActiveRecordingOnOpen = false,
+  }) : assert(
+         controller != null || (locationService != null && mapSettings != null),
+         'Pass a controller, or the location service and map settings to '
+         'build one.',
+       );
 
+  /// The app-lifetime recording the map draws and the overlay drives. The map
+  /// only observes it.
+  final ActivityRecordingController activityController;
+
+  /// Builds the recording UI laid over the map, so the map does not depend on
+  /// the activity feature's widgets.
+  final Widget Function(
+    BuildContext context,
+    ActivityRecordingController controller,
+    double trailingReservedWidth,
+  )
+  recordingOverlayBuilder;
+
+  /// Injected controller (tests); otherwise one is built from
+  /// [locationService] and [mapSettings] and owned by the screen.
   final MapStateController? controller;
-  final ActivityRecordingController? activityController;
-  final Map<SensorMeasurementKind, MapSensorController>? sensorControllers;
   final LocationService? locationService;
   final MapSettingsRepository? mapSettings;
 
-  /// Test overrides for the start countdown; otherwise from [AppScope].
-  final StartCountdownSettingsRepository? startCountdownSettings;
-  final StartCountdownPlatformAdapter? startCountdownPlatform;
+  /// The sensor coordinators the top-of-map indicators show, one controller
+  /// each.
+  final Map<SensorMeasurementKind, SensorService> sensorServices;
 
-  /// Clock for the start countdown (tests pass the fake test clock).
-  final DateTime Function()? countdownClock;
+  /// Injected per-kind controllers (tests); a kind without one gets a
+  /// controller built from its entry in [sensorServices].
+  final Map<SensorMeasurementKind, MapSensorController>? sensorControllers;
+
+  /// Whether opening the map resumes a recording that was interrupted (the
+  /// app was killed mid-activity). The real app's map does; a map shown
+  /// beside a stub controller must not.
+  final bool recoverActiveRecordingOnOpen;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> with OwnedControllers {
+class _MapScreenState extends State<MapScreen>
+    with OwnedControllers, WidgetsBindingObserver {
   static const double _activityOverlayTrailingReservedWidth =
       LocationMarkerConstants.buttonSize +
       LocationMarkerConstants.buttonOuterPadding * 2;
@@ -72,66 +84,89 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
   late final Map<SensorMeasurementKind, MapSensorController> _sensorControllers;
   LatLng? _lastFollowedLocation;
   bool _centeredInitialLocation = false;
-  bool _isStopConfirmationOpen = false;
 
-  /// Set for the whole start flow (permission dialogs, countdown, start), from
-  /// before its first await, so a second tap cannot start a second flow.
-  bool _isStartFlowRunning = false;
+  // What the map layers were last built from. The recording controller
+  // notifies every second for the elapsed time, which only the stats overlay
+  // shows, so the map rebuilds only when one of these changes.
+  Object? _builtPoints;
+  Object? _builtSegments;
+  bool _builtIsActive = false;
+
+  List<Polyline> _routePolylines = const [];
+  Object? _polylinesSource;
+
+  /// One polyline per segment, reused while the segment is unchanged: a new
+  /// GPS point only replaces the last segment, so finished segments are never
+  /// converted to [LatLng] again.
+  final Expando<Polyline> _polylineCache = Expando<Polyline>();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = registerController(
       widget.controller,
       _createController,
       onChanged: _handleControllerChanged,
     );
     _activityController = observeController(
-      widget.activityController ??
-          AppScope.servicesOf(
-            context,
-            listen: false,
-          ).activityRecordingController,
-      onChanged: _handleControllerChanged,
+      widget.activityController,
+      onChanged: _handleRecordingChanged,
     );
+    _rememberBuiltTrack();
     final injectedSensorControllers = widget.sensorControllers;
-    final sensorServices = AppScope.servicesOf(
-      context,
-      listen: false,
-    ).sensorServices;
+    final sensorServices = widget.sensorServices;
     _sensorControllers = {
-      for (final entry in sensorServices.entries)
-        entry.key: registerController(
-          injectedSensorControllers?[entry.key],
-          () => MapSensorController(service: entry.value, kind: entry.key),
+      for (final kind in {
+        ...sensorServices.keys,
+        ...?injectedSensorControllers?.keys,
+      })
+        kind: registerController(
+          injectedSensorControllers?[kind],
+          () => MapSensorController(service: sensorServices[kind]!, kind: kind),
         ),
     };
     // Reconnect any remembered sensors on map open so the user does not have to
     // visit the Sensors screen first; drives the top-of-map indicators (one
     // pill per connected/searching sensor).
     for (final controller in _sensorControllers.values) {
-      controller.initialize();
+      unawaited(controller.initialize());
     }
-    _controller.initialize();
-    if (widget.activityController == null) {
+    unawaited(_controller.initialize());
+    if (widget.recoverActiveRecordingOnOpen) {
       unawaited(_activityController.recoverActiveRecording());
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // OwnedControllers.dispose() (via super) tears down the registered
     // controllers; the MapController is owned directly here, so dispose it too.
     _mapController.dispose();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // No map is visible in the background, so the map's own position stream
+    // (separate from the native recorder) is paused until the app returns.
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _controller.setAppInForeground(true);
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+        _controller.setAppInForeground(false);
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
+
   MapStateController _createController() {
-    final services = AppScope.servicesOf(context, listen: false);
     return MapStateController(
-      locationService: widget.locationService ?? services.location,
-      mapSettingsRepository:
-          widget.mapSettings ?? services.createMapSettingsRepository(),
+      locationService: widget.locationService!,
+      mapSettingsRepository: widget.mapSettings!,
     );
   }
 
@@ -141,8 +176,29 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     }
 
     _controller.setRecordingActive(_activityController.state.isActive);
-    setState(() {});
+    setState(_rememberBuiltTrack);
     _syncMapToLocationState();
+  }
+
+  void _handleRecordingChanged() {
+    if (!mounted) {
+      return;
+    }
+    final state = _activityController.state;
+    final mapChanged =
+        !identical(state.points, _builtPoints) ||
+        !identical(state.segments, _builtSegments) ||
+        state.isActive != _builtIsActive;
+    if (mapChanged) {
+      _handleControllerChanged();
+    }
+  }
+
+  void _rememberBuiltTrack() {
+    final state = _activityController.state;
+    _builtPoints = state.points;
+    _builtSegments = state.segments;
+    _builtIsActive = state.isActive;
   }
 
   void _syncMapToLocationState() {
@@ -191,209 +247,6 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
     _controller.unlockLocation();
   }
 
-  Future<void> _confirmStopActivity() async {
-    final state = _activityController.state;
-    if (_isStopConfirmationOpen || (!state.isActive && !state.canRecover)) {
-      return;
-    }
-
-    _isStopConfirmationOpen = true;
-    final action = await showActivityStopConfirmationDialog(context);
-    _isStopConfirmationOpen = false;
-
-    if (!mounted) {
-      return;
-    }
-
-    switch (action) {
-      case ActivityStopAction.cancel:
-        return;
-      case ActivityStopAction.stop:
-        await _activityController.stop();
-      case ActivityStopAction.discard:
-        await _activityController.discard();
-    }
-  }
-
-  Future<void> _startActivity(ActivityType type) async {
-    if (_isStartFlowRunning) {
-      return;
-    }
-    _isStartFlowRunning = true;
-    try {
-      await _runStartFlow(type);
-    } finally {
-      _isStartFlowRunning = false;
-    }
-  }
-
-  Future<void> _runStartFlow(ActivityType type) async {
-    final l10n = AppLocalizations.of(context)!;
-    final backgroundTrackingReady = await _activityController
-        .isBackgroundTrackingReady();
-    if (!mounted) {
-      return;
-    }
-
-    if (!backgroundTrackingReady) {
-      final shouldContinue = await DialogUtils.showConfirmDialog(
-        context,
-        title: l10n.activityBackgroundPermissionTitle,
-        message: l10n.activityBackgroundPermissionMessage,
-        confirmText: l10n.activityBackgroundPermissionContinue,
-      );
-      if (!mounted || !shouldContinue) {
-        return;
-      }
-
-      final permissionReady = await _activityController
-          .requestBackgroundTrackingPermission();
-      if (!mounted) {
-        return;
-      }
-      if (!permissionReady) {
-        final openSettings = await DialogUtils.showConfirmDialog(
-          context,
-          title: l10n.activityBackgroundPermissionSettingsTitle,
-          message: l10n.activityBackgroundPermissionSettingsMessage,
-          confirmText: l10n.activityOpenSettings,
-        );
-        if (mounted && openSettings) {
-          await _activityController.openLocationSettings();
-        }
-        return;
-      }
-    }
-
-    final services = AppScope.servicesOf(context, listen: false);
-    final announcements = AudioAnnouncementConfig.build(
-      l10n: l10n,
-      settings: services.audioAnnouncementSettingsController.settings,
-      activityType: type,
-      measurementSystem: context.measurementSystem,
-      languageTag: context.numberFormatLocale,
-    );
-    final countdown =
-        await (widget.startCountdownSettings ??
-                services.activityStartCountdownSettings)
-            .getConfig();
-    if (!mounted) {
-      return;
-    }
-
-    final countdownPlatform =
-        widget.startCountdownPlatform ??
-        services.activityStartCountdownPlatform;
-    var countedDown = false;
-    if (countdown.enabled) {
-      final outcome = await _runStartCountdown(
-        type: type,
-        config: countdown,
-        announcements: announcements,
-        platform: countdownPlatform,
-      );
-      if (outcome == null) {
-        // Skipped: location is not ready, so start right away and let the
-        // recording report the problem as usual.
-      } else if (outcome == StartCountdownOutcome.cancel || !mounted) {
-        await _safely(countdownPlatform.endWarmUp);
-        return;
-      } else {
-        countedDown = true;
-      }
-    }
-
-    _activityController.configureAudioAnnouncements(announcements);
-    try {
-      await _activityController.start(type);
-    } finally {
-      // Ended only after the recorder has started, so the app stays awake
-      // (and GPS warm) right up to the first point. On Android the recording
-      // has taken over the warm-up's service by now, so this leaves it alone.
-      if (countedDown) {
-        await _safely(countdownPlatform.endWarmUp);
-      }
-    }
-    if (countedDown &&
-        countdown.voiceEnabled &&
-        _activityController.state.status == ActivityRecordingStatus.recording) {
-      await _safely(
-        () => countdownPlatform.speakCue(
-          l10n.audioAnnouncementsRecordingStarted,
-          duckOtherAudio: announcements.duckOtherAudio,
-          languageTag: announcements.languageTag,
-        ),
-      );
-    }
-  }
-
-  /// Shows the start countdown. Returns null when it was skipped because
-  /// location is not ready, otherwise how it ended.
-  Future<StartCountdownOutcome?> _runStartCountdown({
-    required ActivityType type,
-    required StartCountdownConfig config,
-    required AudioAnnouncementConfig announcements,
-    required StartCountdownPlatformAdapter platform,
-  }) async {
-    // Settle any location prompt now, while the phone is still in hand.
-    final locationReady = await _activityController.isLocationReady();
-    if (!mounted) {
-      // The user left the screen: do not start anything.
-      return StartCountdownOutcome.cancel;
-    }
-    if (!locationReady) {
-      return null;
-    }
-    await _safely(() => platform.beginWarmUp(countdownSeconds: config.seconds));
-    if (!mounted) {
-      return StartCountdownOutcome.cancel;
-    }
-    return showStartCountdownDialog(
-      context,
-      seconds: config.seconds,
-      activityType: type,
-      now: widget.countdownClock,
-      onCue: config.voiceEnabled
-          ? (secondsLeft) => unawaited(
-              _safely(
-                () => platform.speakCue(
-                  '$secondsLeft',
-                  duckOtherAudio: announcements.duckOtherAudio,
-                  languageTag: announcements.languageTag,
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-
-  /// Runs a best-effort native countdown call: a missing speech engine or
-  /// warm-up must never block starting a recording.
-  Future<void> _safely(Future<void> Function() call) async {
-    try {
-      await call();
-    } catch (_) {}
-  }
-
-  Future<void> _deleteCompletedActivity() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await DialogUtils.showConfirmDialog(
-      context,
-      title: l10n.activityDeleteLocalConfirmTitle,
-      message: l10n.activityDeleteLocalConfirmMessage,
-      confirmText: l10n.activityDeleteLocal,
-      isDestructive: true,
-    );
-    if (!mounted || !confirmed) {
-      return;
-    }
-    await _activityController.discard();
-  }
-
-  void _openActivityHistory() {
-    adaptivePush<void>(context, (context) => const ActivityHistoryScreen());
-  }
-
   /// Build map options with common configuration
   MapOptions _buildMapOptions() {
     return MapOptions(
@@ -412,19 +265,7 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
 
   /// Build map layers (tile + marker)
   List<Widget> _buildMapLayers(BuildContext context) {
-    final routePolylines = _activityController.state.segments
-        .where((segment) => segment.points.length > 1)
-        .map(
-          (segment) => Polyline(
-            points: [
-              for (final point in segment.points)
-                LatLng(point.latitude, point.longitude),
-            ],
-            strokeWidth: ActivityRouteConstants.strokeWidth,
-            color: LocationMarkerConstants.activityBlue,
-          ),
-        )
-        .toList(growable: false);
+    final routePolylines = _polylines();
 
     return [
       TileLayer(
@@ -444,6 +285,26 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
             ),
           ],
         ),
+    ];
+  }
+
+  List<Polyline> _polylines() {
+    final segments = _activityController.state.segments;
+    if (identical(segments, _polylinesSource)) {
+      return _routePolylines;
+    }
+    _polylinesSource = segments;
+    return _routePolylines = [
+      for (final segment in segments)
+        if (segment.points.length > 1)
+          _polylineCache[segment] ??= Polyline(
+            points: [
+              for (final point in segment.points)
+                LatLng(point.latitude, point.longitude),
+            ],
+            strokeWidth: ActivityRouteConstants.strokeWidth,
+            color: LocationMarkerConstants.activityBlue,
+          ),
     ];
   }
 
@@ -514,22 +375,10 @@ class _MapScreenState extends State<MapScreen> with OwnedControllers {
                 ),
               ),
             ),
-          ActivityRecordingControls(
-            state: _activityController.state,
-            selectedActivityType: _activityController.selectedActivityType,
-            trailingReservedWidth: _activityOverlayTrailingReservedWidth,
-            onActivityTypeChanged: _activityController.selectActivityType,
-            onStart: _startActivity,
-            onPause: _activityController.pause,
-            onResume: _activityController.resume,
-            onStop: _confirmStopActivity,
-            uploadStatus: _activityController.uploadStatus,
-            uploadError: _activityController.uploadError,
-            onRetryUpload: _activityController.uploadCompletedGpx,
-            onDone: _activityController.clearCompleted,
-            onDelete: _deleteCompletedActivity,
-            onViewHistory: _openActivityHistory,
-            onOpenLocationSettings: _activityController.openLocationSettings,
+          widget.recordingOverlayBuilder(
+            context,
+            _activityController,
+            _activityOverlayTrailingReservedWidth,
           ),
         ],
       ),

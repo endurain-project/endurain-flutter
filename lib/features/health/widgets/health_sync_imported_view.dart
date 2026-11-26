@@ -2,7 +2,6 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
-import 'package:endurain/features/activity/screens/activity_details_screen.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_imported_workout.dart';
@@ -20,10 +19,16 @@ class HealthSyncImportedView extends StatelessWidget {
     super.key,
     required this.controller,
     required this.state,
+    required this.activityDetailsBuilder,
   });
 
   final HealthSyncController controller;
   final HealthSyncState state;
+
+  /// The page for an imported workout's local activity, supplied by the
+  /// caller so Health does not build activity screens itself.
+  final Widget Function(BuildContext context, String recordId)
+  activityDetailsBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +72,9 @@ class HealthSyncImportedView extends StatelessWidget {
                         ? null
                         : () => adaptivePush<void>(
                             context,
-                            (_) => ActivityDetailsScreen(
-                              recordId: imported.localActivityId,
+                            (context) => activityDetailsBuilder(
+                              context,
+                              imported.localActivityId,
                             ),
                           ),
                     onRestore: imported.localActivity == null

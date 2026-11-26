@@ -1,9 +1,12 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
+import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
+import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_import_range.dart';
@@ -19,6 +22,7 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../helpers/fake_share_service.dart';
 import '../../../helpers/widget_test_app.dart';
 import '../fakes/fake_health_sync_service.dart';
 
@@ -76,7 +80,12 @@ void main() {
     controller = makeController();
     PlatformUtils.debugIsApplePlatformOverride = false;
     await tester.pumpWidget(
-      TestMaterialApp(child: HealthSyncScreen(controller: controller)),
+      TestMaterialApp(
+        child: HealthSyncScreen(
+          controller: controller,
+          activityDetailsBuilder: _detailsFor,
+        ),
+      ),
     );
     await tester.pumpAndSettle();
   }
@@ -98,7 +107,10 @@ void main() {
         ),
         child: AdaptiveApp(
           title: 'Test',
-          home: HealthSyncScreen(controller: controller),
+          home: HealthSyncScreen(
+            controller: controller,
+            activityDetailsBuilder: _detailsFor,
+          ),
         ),
       ),
     );
@@ -573,4 +585,27 @@ void main() {
       addTearDown(controller.dispose);
     });
   });
+}
+
+/// The details page the imported list opens, backed by a controller that
+/// never touches storage: these tests only check that the tap navigates.
+Widget _detailsFor(BuildContext context, String recordId) {
+  return ActivityDetailsScreen(
+    recordId: recordId,
+    createController: _StubHistoryController.new,
+  );
+}
+
+class _StubHistoryController extends LocalActivityHistoryController {
+  _StubHistoryController()
+    : super(
+        repository: LocalActivityRepository(
+          supportDirectoryProvider: () async => throw StateError('unused'),
+        ),
+        uploadService: ActivityUploadService(),
+        shareService: FakeShareService(),
+      );
+
+  @override
+  Future<void> loadRecord(String id) async {}
 }

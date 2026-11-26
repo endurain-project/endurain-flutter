@@ -129,6 +129,10 @@ class AppLocalizationsGl extends AppLocalizations {
       'Denegouse o acceso aos datos de saúde';
 
   @override
+  String get errorHealthUnavailable =>
+      'Os datos de saúde non están dispoñibles neste dispositivo';
+
+  @override
   String get errorHealthReadFailed => 'Non se puideron ler os datos de saúde';
 
   @override
@@ -898,6 +902,9 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get loggedIn => 'Sesión iniciada';
+
+  @override
+  String get serverNotSecure => 'Non seguro (HTTP)';
 
   @override
   String get notConfigured => 'Non configurado';

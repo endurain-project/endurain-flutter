@@ -1,0 +1,102 @@
+{
+  "description": "Shared GeoDistance.haversineMeters vectors (sphere radius 6371000 m). Loaded by the Kotlin and Swift tests; Dart is not a consumer: lib/features/activity/services/geo_distance.dart uses Vincenty on the WGS-84 ellipsoid (to match the server), not this haversine. Expected values come from an independent Python haversine and are hand-checked: one degree of arc on that sphere is 6371000*pi/180 = 111194.93 m, so one arc-minute is 1853.25 m and an antipodal pair is pi*6371000 = 20015086.80 m. Compare with toleranceMeters.",
+  "toleranceMeters": 0.01,
+  "cases": [
+    {
+      "name": "same point is zero",
+      "lat1": 38.7169,
+      "lon1": -9.1399,
+      "lat2": 38.7169,
+      "lon2": -9.1399,
+      "meters": 0.0
+    },
+    {
+      "name": "one arc-minute of latitude",
+      "lat1": 0,
+      "lon1": 0,
+      "lat2": 0.016666666666666666,
+      "lon2": 0,
+      "meters": 1853.2488
+    },
+    {
+      "name": "one degree of latitude",
+      "lat1": 0,
+      "lon1": 0,
+      "lat2": 1,
+      "lon2": 0,
+      "meters": 111194.9266
+    },
+    {
+      "name": "one degree of longitude on the equator",
+      "lat1": 0,
+      "lon1": 0,
+      "lat2": 0,
+      "lon2": 1,
+      "meters": 111194.9266
+    },
+    {
+      "name": "one degree of longitude at 60 degrees north",
+      "lat1": 60,
+      "lon1": 0,
+      "lat2": 60,
+      "lon2": 1,
+      "meters": 55596.9341
+    },
+    {
+      "name": "Lisbon to Porto",
+      "lat1": 38.7169,
+      "lon1": -9.1399,
+      "lat2": 41.1579,
+      "lon2": -8.6291,
+      "meters": 274896.7408
+    },
+    {
+      "name": "London to Paris",
+      "lat1": 51.5074,
+      "lon1": -0.1278,
+      "lat2": 48.8566,
+      "lon2": 2.3522,
+      "meters": 343556.0603
+    },
+    {
+      "name": "crossing the antimeridian",
+      "lat1": 0,
+      "lon1": 179.5,
+      "lat2": 0,
+      "lon2": -179.5,
+      "meters": 111194.9266
+    },
+    {
+      "name": "antipodal points are half the circumference",
+      "lat1": 0,
+      "lon1": 0,
+      "lat2": 0,
+      "lon2": 180,
+      "meters": 20015086.796
+    },
+    {
+      "name": "pole to pole",
+      "lat1": 90,
+      "lon1": 0,
+      "lat2": -90,
+      "lon2": 0,
+      "meters": 20015086.796
+    },
+    {
+      "name": "southern hemisphere short hop",
+      "lat1": -33.8688,
+      "lon1": 151.2093,
+      "lat2": -33.87,
+      "lon2": 151.21,
+      "meters": 148.2614
+    },
+    {
+      "name": "distance is symmetric (reverse of Lisbon to Porto)",
+      "lat1": 41.1579,
+      "lon1": -8.6291,
+      "lat2": 38.7169,
+      "lon2": -9.1399,
+      "meters": 274896.7408
+    }
+  ]
+}

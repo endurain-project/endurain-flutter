@@ -1,52 +1,26 @@
 package com.endurain.endurain.wear
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import android.os.SystemClock
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import android.util.Log
 import androidx.annotation.StringRes
-import androidx.core.content.ContextCompat
-import androidx.health.services.client.ExerciseClient
-import androidx.health.services.client.ExerciseUpdateCallback
-import androidx.health.services.client.HealthServices
-import androidx.health.services.client.data.Availability
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.DeltaDataType
-import androidx.health.services.client.data.ExerciseConfig
-import androidx.health.services.client.data.ExerciseLapSummary
-import androidx.health.services.client.data.ExerciseState
-import androidx.health.services.client.data.ExerciseTrackedStatus
-import androidx.health.services.client.data.ExerciseType
-import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.LocationAccuracy
-import androidx.health.services.client.data.LocationData
-import androidx.health.services.client.data.WarmUpConfig
 import com.endurain.endurain.watchlink.WatchActivityType
 import com.endurain.endurain.watchlink.WatchHandoffBuilder
 import com.endurain.endurain.watchlink.WatchRecordedPoint
 import com.endurain.endurain.watchlink.WatchRecording
 import com.endurain.endurain.watchlink.WatchRecordingStore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
-import java.time.Instant
 import java.util.UUID
-import kotlin.math.roundToInt
 
 sealed interface WorkoutPhase {
     data object Idle : WorkoutPhase
@@ -79,95 +53,115 @@ data class WorkoutUiState(
     val recording: WatchRecording? = null,
     val distanceMeters: Double? = null,
     val heartRateBpm: Int? = null,
+    val locationStatus: SensorStatus = SensorStatus.UNKNOWN,
+    val heartRateStatus: SensorStatus = SensorStatus.UNKNOWN,
     @StringRes val errorMessage: Int? = null,
 )
 
+/** Receives the finished workout's handoff envelope. */
+fun interface HandoffSink {
+    @Throws(IOException::class)
+    fun enqueue(
+        data: ByteArray,
+        sessionId: String,
+    )
+}
+
 /**
- * Records one outdoor workout with Health Services and hands it to the phone.
+ * Records one outdoor workout through an [ExerciseGateway] (Health Services)
+ * and hands it to the phone.
  *
  * Health Services owns the exercise (GPS, heart rate, distance) and keeps it
  * running even if this process dies; [ExerciseService] keeps the process in
  * the foreground meanwhile. GPS fixes are written to a durable
  * [WatchRecordingStore] as they arrive, so a crash costs at most a few
  * seconds of track. On finish the session is turned into a handoff envelope
- * and queued in [PhoneLink]'s outbox.
+ * and queued in the [HandoffSink] (the [PhoneLink] outbox).
  */
 class WorkoutRecorder(
-    context: Context,
-    private val phoneLink: PhoneLink,
+    private val gateway: ExerciseGateway,
+    private val store: WatchRecordingStore,
+    private val handoffs: HandoffSink,
+    private val platform: WorkoutPlatform,
+    private val countdownSetting: CountdownSetting,
+    private val scope: CoroutineScope,
+    private val restoreBackoffMillis: List<Long> = RESTORE_BACKOFF_MILLIS,
+    countdownTickMillis: Long = CountdownController.TICK_MILLIS,
 ) {
-    private val appContext = context.applicationContext
-    private val exerciseClient: ExerciseClient by lazy { HealthServices.getClient(appContext).exerciseClient }
-    private val store = WatchRecordingStore(File(appContext.noBackupFilesDir, "watch_recording"))
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    constructor(context: Context, phoneLink: PhoneLink) : this(
+        gateway = HealthServicesExerciseGateway(context),
+        store = WatchRecordingStore(File(context.applicationContext.noBackupFilesDir, "watch_recording")),
+        handoffs = phoneLink,
+        platform = AndroidWorkoutPlatform(context),
+        countdownSetting = StartCountdownSettings(context),
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+    )
 
     private val mutableState = MutableStateFlow(WorkoutUiState())
     val state: StateFlow<WorkoutUiState> = mutableState.asStateFlow()
 
-    private val countdownSettings = StartCountdownSettings(appContext)
-    private val mutableCountdownSeconds = MutableStateFlow(countdownSettings.seconds)
+    private val mutableCountdownSeconds = MutableStateFlow(countdownSetting.seconds)
 
     /** Seconds counted down before a workout starts, saved on the watch. */
     val countdownSeconds: StateFlow<Int> = mutableCountdownSeconds.asStateFlow()
 
-    private val vibrator: Vibrator? by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            appContext.getSystemService(VibratorManager::class.java)?.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            appContext.getSystemService(Vibrator::class.java)
-        }
-    }
+    private val countdown =
+        CountdownController(
+            scope = scope,
+            nowMillis = platform::nowMillis,
+            onCue = platform::vibrateTick,
+            onFinished = ::finishCountdown,
+            tickMillis = countdownTickMillis,
+        )
 
-    private var pendingStart: Pair<WatchActivityType, ExerciseConfig>? = null
-    private var countdownJob: Job? = null
+    private var pendingStart: Pair<WatchActivityType, Set<WorkoutMetric>>? = null
 
     private var recording: WatchRecording? = null
     private val points = mutableListOf<WatchRecordedPoint>()
     private val unsavedPoints = mutableListOf<WatchRecordedPoint>()
     private var lastHeartRate: Pair<Int, Long>? = null
     private var activeDurationMillis: Long? = null
+    private var persistedDistance: Double? = null
     private var callbackRegistered = false
     private var finishing = false
+
+    /** Set while a restore could not tell whether the exercise still runs; dismissing its message retries. */
+    private var restoreFailed = false
 
     /** Whether the start flow prepared or started an exercise that [failStart] must end. */
     private var exerciseNeedsEnding = false
 
     fun start(type: WatchActivityType) {
         if (mutableState.value.phase != WorkoutPhase.Idle) return
+        // A saved recording whose restore failed is still on disk; a new
+        // workout would overwrite it. Dismissing the error retries the restore.
+        if (restoreFailed) return
         mutableState.update { it.copy(phase = WorkoutPhase.Starting, errorMessage = null) }
         exerciseNeedsEnding = false
         scope.launch {
             try {
-                val exerciseType = exerciseType(type)
-                val capabilities = exerciseClient.getCapabilitiesAsync().await()
-                if (exerciseType !in capabilities.supportedExerciseTypes) {
+                val supported = gateway.supportedMetrics(type)
+                if (supported == null) {
                     fail(R.string.exercise_unsupported)
                     return@launch
                 }
-                val supported = capabilities.getExerciseTypeCapabilities(exerciseType).supportedDataTypes
                 // Only location is required to start, so leave out what the
                 // user declined: Health Services rejects the whole exercise
                 // when a requested data type lacks its permission. The warm-up
                 // types derive from these, so they are filtered too.
-                val dataTypes =
-                    ExercisePermissions.permitted(Build.VERSION.SDK_INT, ::isGranted)
-                        .map(::dataType)
+                val metrics =
+                    ExercisePermissions.permitted(platform.sdkInt, platform::isGranted)
                         .filter { it in supported }
                         .toSet()
-                val config =
-                    ExerciseConfig.builder(exerciseType)
-                        .setDataTypes(dataTypes)
-                        .setIsAutoPauseAndResumeEnabled(false)
-                        .setIsGpsEnabled(DataType.LOCATION in dataTypes)
-                        .build()
 
                 val seconds = countdownSeconds.value
                 if (seconds > 0) {
-                    beginCountdown(type, exerciseType, dataTypes, config, seconds)
+                    beginCountdown(type, metrics, seconds)
                     return@launch
                 }
-                beginExercise(type, config)
+                beginExercise(type, metrics)
+            } catch (error: CancellationException) {
+                throw error
             } catch (error: Exception) {
                 failStart(error)
             }
@@ -180,106 +174,86 @@ class WorkoutRecorder(
     /** Cycles the countdown through [StartCountdown.OPTIONS]. */
     fun cycleCountdown() {
         val next = StartCountdown.next(countdownSeconds.value)
-        countdownSettings.seconds = next
+        countdownSetting.seconds = next
         mutableCountdownSeconds.value = next
     }
 
     /** Starts the workout now instead of waiting for the countdown. */
     fun skipCountdown() {
         if (mutableState.value.phase !is WorkoutPhase.CountingDown) return
-        countdownJob?.cancel()
-        countdownJob = null
+        countdown.cancel()
         scope.launch { finishCountdown() }
     }
 
     /** Stops the countdown without recording anything. */
     fun cancelCountdown() {
         if (mutableState.value.phase !is WorkoutPhase.CountingDown) return
-        countdownJob?.cancel()
-        countdownJob = null
+        countdown.cancel()
         pendingStart = null
         mutableState.update { WorkoutUiState() }
-        ExerciseService.stop(appContext)
+        platform.stopService()
         // Ends the prepared exercise so the sensors stop warming up.
-        scope.launch { runCatching { exerciseClient.endExerciseAsync().await() } }
+        scope.launch { runCatching { gateway.end() } }
     }
 
     // MARK: - Countdown
 
     private suspend fun beginCountdown(
         type: WatchActivityType,
-        exerciseType: ExerciseType,
-        dataTypes: Set<DataType<*, *>>,
-        config: ExerciseConfig,
+        metrics: Set<WorkoutMetric>,
         seconds: Int,
     ) {
-        val warmUpTypes = dataTypes.filterIsInstance<DeltaDataType<*, *>>().toSet()
         try {
-            exerciseClient.prepareExerciseAsync(WarmUpConfig(exerciseType, warmUpTypes)).await()
+            gateway.prepare(type, metrics)
             exerciseNeedsEnding = true
+        } catch (error: CancellationException) {
+            throw error
         } catch (error: Exception) {
             // Only the warm-up is lost: the countdown and the workout still run.
             Log.w(TAG, "Could not prepare the exercise", error)
         }
         // Keeps the app alive while the wrist is down during the countdown.
-        ExerciseService.start(appContext, countingDown = true)
-        pendingStart = type to config
-        val endsAt = System.currentTimeMillis() + seconds * 1000L
+        platform.startService(countingDown = true)
+        pendingStart = type to metrics
+        val endsAt = platform.nowMillis() + seconds * 1000L
         mutableState.update {
             it.copy(phase = WorkoutPhase.CountingDown(endsAt), activityType = type)
         }
-        countdownJob = scope.launch { runCountdown(endsAt) }
-    }
-
-    private suspend fun runCountdown(endsAtMillis: Long) {
-        var lastCue: Int? = null
-        while (true) {
-            val seconds = StartCountdown.remainingSeconds(endsAtMillis, System.currentTimeMillis())
-            if (seconds <= 0) break
-            if (seconds <= StartCountdown.CUE_SECONDS && seconds != lastCue) {
-                lastCue = seconds
-                vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
-            }
-            delay(COUNTDOWN_TICK_MILLIS)
-        }
-        countdownJob = null
-        finishCountdown()
+        countdown.start(endsAt)
     }
 
     private suspend fun finishCountdown() {
         if (mutableState.value.phase !is WorkoutPhase.CountingDown) return
-        val (type, config) = pendingStart ?: return
+        val (type, metrics) = pendingStart ?: return
         pendingStart = null
         mutableState.update { it.copy(phase = WorkoutPhase.Starting) }
         try {
-            beginExercise(type, config)
-            vibrate(VibrationEffect.createOneShot(START_VIBRATION_MILLIS, VibrationEffect.DEFAULT_AMPLITUDE))
+            beginExercise(type, metrics)
+            platform.vibrateStart()
+        } catch (error: CancellationException) {
+            throw error
         } catch (error: Exception) {
             failStart(error)
         }
-    }
-
-    private fun vibrate(effect: VibrationEffect) {
-        runCatching { vibrator?.vibrate(effect) }
     }
 
     // MARK: - Starting
 
     private suspend fun beginExercise(
         type: WatchActivityType,
-        config: ExerciseConfig,
+        metrics: Set<WorkoutMetric>,
     ) {
-        val newRecording = WatchRecording(UUID.randomUUID().toString(), type, System.currentTimeMillis())
+        val newRecording = WatchRecording(UUID.randomUUID().toString(), type, platform.nowMillis())
         store.begin(newRecording)
         attach(newRecording, emptyList())
         registerCallback()
-        exerciseClient.startExerciseAsync(config).await()
+        gateway.start(type, metrics)
         exerciseNeedsEnding = true
         // After a countdown the service is already in the foreground; this
         // only switches its notification to "recording". Android can refuse
         // the call when the countdown ended with the app in the background,
         // which must not fail a workout Health Services is already recording.
-        runCatching { ExerciseService.start(appContext) }
+        runCatching { platform.startService() }
             .onFailure { Log.w(TAG, "Could not update the workout foreground service", it) }
         exerciseNeedsEnding = false
         mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = false)) }
@@ -287,7 +261,7 @@ class WorkoutRecorder(
 
     private fun failStart(error: Exception) {
         Log.w(TAG, "Could not start a workout", error)
-        ExerciseService.stop(appContext)
+        platform.stopService()
         store.clear()
         detach()
         if (exerciseNeedsEnding) {
@@ -295,20 +269,17 @@ class WorkoutRecorder(
             // exercise so Health Services does not keep the sensors on.
             exerciseNeedsEnding = false
             unregisterCallback()
-            scope.launch { runCatching { exerciseClient.endExerciseAsync().await() } }
+            scope.launch { runCatching { gateway.end() } }
         }
         fail(R.string.start_failed)
     }
 
-    private fun isGranted(permission: String): Boolean =
-        ContextCompat.checkSelfPermission(appContext, permission) == PackageManager.PERMISSION_GRANTED
-
     fun pause() {
-        scope.launch { runCatching { exerciseClient.pauseExerciseAsync().await() } }
+        scope.launch { runCatching { gateway.pause() } }
     }
 
     fun resume() {
-        scope.launch { runCatching { exerciseClient.resumeExerciseAsync().await() } }
+        scope.launch { runCatching { gateway.resume() } }
     }
 
     fun end() {
@@ -317,7 +288,9 @@ class WorkoutRecorder(
         mutableState.update { it.copy(phase = WorkoutPhase.Ending) }
         scope.launch {
             try {
-                exerciseClient.endExerciseAsync().await()
+                gateway.end()
+            } catch (error: CancellationException) {
+                throw error
             } catch (error: Exception) {
                 // The exercise is gone already: finish with what was recorded.
                 Log.w(TAG, "Could not end the exercise", error)
@@ -334,99 +307,121 @@ class WorkoutRecorder(
 
     fun dismissError() {
         mutableState.update { it.copy(errorMessage = null) }
+        if (restoreFailed) {
+            restoreFailed = false
+            restoreUnfinishedRecording()
+        }
     }
 
     /**
      * Called at launch: re-attaches to an exercise Health Services kept
      * running while the process was dead, or finishes and sends a recording
      * whose exercise is gone.
+     *
+     * A failure to ask Health Services is not "the exercise is gone": it is
+     * retried with backoff, and when it keeps failing the saved recording is
+     * left untouched and a message offers another try.
      */
-    // The ExerciseTrackedStatus constants are public API; lint misreads the
-    // library's restriction on their companion object.
-    @SuppressLint("RestrictedApi")
     fun restoreUnfinishedRecording() {
         val (saved, savedPoints) = store.load() ?: return
+        // Blocks starting a new workout, which would overwrite the saved one.
+        mutableState.update { it.copy(phase = WorkoutPhase.Starting) }
         scope.launch {
-            val owned =
-                try {
-                    exerciseClient.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus ==
-                        ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
-                } catch (error: Exception) {
-                    Log.w(TAG, "Could not read the current exercise", error)
-                    false
+            val owned = readOwnership()
+            when (owned) {
+                null -> {
+                    restoreFailed = true
+                    mutableState.update { WorkoutUiState(errorMessage = R.string.restore_failed) }
                 }
-            if (!owned) {
-                finishInterrupted(saved, savedPoints)
-                return@launch
+                false -> {
+                    finishInterrupted(saved, savedPoints)
+                    mutableState.update { WorkoutUiState(errorMessage = it.errorMessage) }
+                }
+                true -> {
+                    attach(saved, savedPoints)
+                    registerCallback()
+                    runCatching { platform.startService() }
+                    mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = saved.isPaused)) }
+                }
             }
-            attach(saved, savedPoints)
-            registerCallback()
-            runCatching { ExerciseService.start(appContext) }
-            mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = saved.isPaused)) }
+        }
+    }
+
+    /** Whether Health Services runs our exercise, or null when it could not be asked. */
+    private suspend fun readOwnership(): Boolean? {
+        var attempt = 0
+        while (true) {
+            try {
+                return gateway.ownsRunningExercise()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.w(TAG, "Could not read the current exercise", error)
+            }
+            if (attempt >= restoreBackoffMillis.size) return null
+            delay(restoreBackoffMillis[attempt++])
         }
     }
 
     // MARK: - Exercise updates
 
-    private val callback =
-        object : ExerciseUpdateCallback {
-            override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
-                handle(update)
+    private val listener =
+        object : ExerciseListener {
+            override fun onUpdate(snapshot: ExerciseSnapshot) {
+                handle(snapshot)
             }
 
-            override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
-
-            override fun onRegistered() {}
-
-            override fun onRegistrationFailed(throwable: Throwable) {
-                Log.w(TAG, "Could not receive exercise updates", throwable)
+            override fun onAvailabilityChanged(
+                metric: WorkoutMetric,
+                status: SensorStatus,
+            ) {
+                when (metric) {
+                    WorkoutMetric.LOCATION -> mutableState.update { it.copy(locationStatus = status) }
+                    WorkoutMetric.HEART_RATE -> mutableState.update { it.copy(heartRateStatus = status) }
+                    WorkoutMetric.DISTANCE -> Unit
+                }
             }
 
-            override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) {}
+            override fun onRegistrationFailed(error: Throwable) {
+                Log.w(TAG, "Could not receive exercise updates", error)
+            }
         }
 
     private fun registerCallback() {
         if (callbackRegistered) return
-        exerciseClient.setUpdateCallback(callback)
+        gateway.setListener(listener)
         callbackRegistered = true
     }
 
     private fun unregisterCallback() {
         if (!callbackRegistered) return
         callbackRegistered = false
-        scope.launch { runCatching { exerciseClient.clearUpdateCallbackAsync(callback).await() } }
+        scope.launch { runCatching { gateway.clearListener() } }
     }
 
-    private fun handle(update: ExerciseUpdate) {
+    private fun handle(snapshot: ExerciseSnapshot) {
         val current = recording ?: return
-        val bootInstant = Instant.ofEpochMilli(System.currentTimeMillis() - SystemClock.elapsedRealtime())
-        val metrics = update.latestMetrics
 
-        metrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.let { sample ->
-            val bpm = sample.value.roundToInt()
-            lastHeartRate = bpm to sample.getTimeInstant(bootInstant).toEpochMilli()
+        snapshot.heartRateBpm?.let { bpm ->
+            snapshot.heartRateAtMillis?.let { lastHeartRate = bpm to it }
             mutableState.update { it.copy(heartRateBpm = bpm) }
         }
-        metrics.getData(DataType.DISTANCE_TOTAL)?.let { total ->
-            mutableState.update { it.copy(distanceMeters = total.total) }
+        snapshot.distanceTotalMeters?.let { total ->
+            mutableState.update { it.copy(distanceMeters = total) }
         }
-        update.activeDurationCheckpoint?.let { activeDurationMillis = it.activeDuration.toMillis() }
+        snapshot.activeDurationMillis?.let { activeDurationMillis = it }
 
-        val state = update.exerciseStateInfo.state
-        if (!current.isPaused && state == ExerciseState.ACTIVE) {
+        if (!current.isPaused && snapshot.state == GatewayExerciseState.ACTIVE) {
             val newPoints =
-                metrics.getData(DataType.LOCATION).mapNotNull { sample ->
-                    val location: LocationData = sample.value
-                    val accuracy = sample.accuracy as? LocationAccuracy
+                snapshot.locations.mapNotNull { fix ->
                     LocationSampleMapper.point(
-                        timestampMillis = sample.getTimeInstant(bootInstant).toEpochMilli(),
-                        latitude = location.latitude,
-                        longitude = location.longitude,
-                        // Unavailable values are NaN, which the mapper drops.
-                        altitude = location.altitude,
-                        bearing = location.bearing,
-                        horizontalErrorMeters = accuracy?.horizontalPositionErrorMeters,
-                        verticalErrorMeters = accuracy?.verticalPositionErrorMeters,
+                        timestampMillis = fix.timestampMillis,
+                        latitude = fix.latitude,
+                        longitude = fix.longitude,
+                        altitude = fix.altitude,
+                        bearing = fix.bearing,
+                        horizontalErrorMeters = fix.horizontalErrorMeters,
+                        verticalErrorMeters = fix.verticalErrorMeters,
                         segmentIndex = current.segmentIndex,
                         lastHeartRate = lastHeartRate,
                     )
@@ -436,15 +431,15 @@ class WorkoutRecorder(
             if (unsavedPoints.size >= POINT_FLUSH_THRESHOLD) flushPoints()
         }
 
-        val now = System.currentTimeMillis()
+        val now = platform.nowMillis()
         when {
-            state.isEnded -> scope.launch { finish() }
-            state.isPaused && !current.isPaused -> {
+            snapshot.state == GatewayExerciseState.ENDED -> scope.launch { finish() }
+            snapshot.state == GatewayExerciseState.PAUSED && !current.isPaused -> {
                 flushPoints()
                 setRecording(current.paused(now))
                 mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = true)) }
             }
-            state == ExerciseState.ACTIVE && current.isPaused -> {
+            snapshot.state == GatewayExerciseState.ACTIVE && current.isPaused -> {
                 setRecording(current.resumed(now))
                 mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = false)) }
             }
@@ -459,9 +454,9 @@ class WorkoutRecorder(
         finishing = true
         flushPoints()
         unregisterCallback()
-        ExerciseService.stop(appContext)
+        platform.stopService()
 
-        val end = System.currentTimeMillis()
+        val end = platform.nowMillis()
         val elapsed = activeDurationMillis ?: current.elapsedMillis(end)
         val recorded = points.toList()
         enqueueHandoff(current, recorded, end, elapsed)
@@ -477,10 +472,13 @@ class WorkoutRecorder(
         finishing = false
     }
 
-    private fun finishInterrupted(saved: WatchRecording, savedPoints: List<WatchRecordedPoint>) {
+    private fun finishInterrupted(
+        saved: WatchRecording,
+        savedPoints: List<WatchRecordedPoint>,
+    ) {
         // A sticky restart may have put the service back in the foreground
         // for a workout that no longer runs: drop its notification.
-        ExerciseService.stop(appContext)
+        platform.stopService()
         val end = WatchHandoffBuilder.endOfInterruptedRecording(saved, savedPoints)
         val elapsed = saved.elapsedMillis(end)
         if (savedPoints.isEmpty() && elapsed < 1000) {
@@ -498,7 +496,7 @@ class WorkoutRecorder(
     ) {
         try {
             val data = WatchHandoffBuilder.bytes(recording, points, endedAtMillis, elapsedMillis)
-            phoneLink.enqueue(data, recording.sessionId)
+            handoffs.enqueue(data, recording.sessionId)
             store.clear()
         } catch (error: IOException) {
             // The recording stays on disk; the next launch finishes it again.
@@ -509,18 +507,25 @@ class WorkoutRecorder(
 
     // MARK: - State
 
-    private fun attach(newRecording: WatchRecording, savedPoints: List<WatchRecordedPoint>) {
+    private fun attach(
+        newRecording: WatchRecording,
+        savedPoints: List<WatchRecordedPoint>,
+    ) {
         recording = newRecording
         points.clear()
         points += savedPoints
         unsavedPoints.clear()
         lastHeartRate = null
         activeDurationMillis = null
+        persistedDistance = newRecording.lastDistanceMeters
         mutableState.update {
             WorkoutUiState(
                 phase = it.phase,
                 activityType = newRecording.activityType,
                 recording = newRecording,
+                // Health Services only sends the total when it changes, so
+                // keep the last one known instead of showing 0.
+                distanceMeters = newRecording.lastDistanceMeters,
             )
         }
     }
@@ -531,13 +536,16 @@ class WorkoutRecorder(
         unsavedPoints.clear()
         lastHeartRate = null
         activeDurationMillis = null
+        persistedDistance = null
     }
 
     private fun setRecording(updated: WatchRecording) {
-        recording = updated
-        mutableState.update { it.copy(recording = updated) }
+        val withDistance = updated.copy(lastDistanceMeters = mutableState.value.distanceMeters)
+        recording = withDistance
+        persistedDistance = withDistance.lastDistanceMeters
+        mutableState.update { it.copy(recording = withDistance) }
         try {
-            store.update(updated)
+            store.update(withDistance)
         } catch (error: IOException) {
             Log.w(TAG, "Could not save the workout state", error)
         }
@@ -548,9 +556,25 @@ class WorkoutRecorder(
         try {
             store.append(unsavedPoints.toList())
             unsavedPoints.clear()
+            persistDistance()
         } catch (error: IOException) {
             // Kept in memory and retried with the next batch.
             Log.w(TAG, "Could not save workout points", error)
+        }
+    }
+
+    /** Saves the distance with the points, so a crash keeps it as well. */
+    private fun persistDistance() {
+        val current = recording ?: return
+        val distance = mutableState.value.distanceMeters
+        if (distance == null || distance == persistedDistance) return
+        val updated = current.copy(lastDistanceMeters = distance)
+        try {
+            store.update(updated)
+            recording = updated
+            persistedDistance = distance
+        } catch (error: IOException) {
+            Log.w(TAG, "Could not save the workout distance", error)
         }
     }
 
@@ -561,22 +585,8 @@ class WorkoutRecorder(
     companion object {
         private const val TAG = "EndurainWear"
         private const val POINT_FLUSH_THRESHOLD = 10
-        private const val COUNTDOWN_TICK_MILLIS = 200L
-        private const val START_VIBRATION_MILLIS = 400L
 
-        fun dataType(metric: WorkoutMetric): DataType<*, *> =
-            when (metric) {
-                WorkoutMetric.HEART_RATE -> DataType.HEART_RATE_BPM
-                WorkoutMetric.LOCATION -> DataType.LOCATION
-                WorkoutMetric.DISTANCE -> DataType.DISTANCE_TOTAL
-            }
-
-        fun exerciseType(type: WatchActivityType): ExerciseType =
-            when (type) {
-                WatchActivityType.RUN -> ExerciseType.RUNNING
-                WatchActivityType.RIDE -> ExerciseType.BIKING
-                WatchActivityType.WALK -> ExerciseType.WALKING
-                WatchActivityType.HIKE -> ExerciseType.HIKING
-            }
+        /** Waits between attempts to ask Health Services who owns the exercise at launch. */
+        val RESTORE_BACKOFF_MILLIS = listOf(1_000L, 2_000L, 4_000L, 8_000L)
     }
 }

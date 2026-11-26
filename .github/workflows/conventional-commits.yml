@@ -15,6 +15,7 @@ jobs:
   validate:
     name: Validate PR title and commits
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       # Check out reviewed base-branch code only. Pull request input is passed
       # as data, so untrusted changes cannot alter the executed validator.

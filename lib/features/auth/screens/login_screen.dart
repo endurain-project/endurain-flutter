@@ -1,17 +1,11 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
-import 'package:endurain/core/auth/auth_service.dart';
-import 'package:endurain/core/auth/server_settings_service.dart';
-import 'package:endurain/core/auth/sso_service.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/identity_provider.dart';
-import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/core/utils/validators.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
-import 'package:endurain/features/auth/services/auth_coordinator.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -24,13 +18,13 @@ class LoginScreen extends StatefulWidget {
     super.key,
     this.onLoginSuccess,
     this.onCancel,
-    this.authService,
-    this.ssoService,
-    this.serverSettingsService,
-    this.appLinksService,
-    this.urlLauncherService,
+    required this.urlLauncherService,
     this.controller,
-  });
+    this.createController,
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
   final VoidCallback? onLoginSuccess;
 
@@ -38,12 +32,12 @@ class LoginScreen extends StatefulWidget {
   /// when there is somewhere to return to (i.e. an existing guest session).
   final VoidCallback? onCancel;
 
-  final AuthService? authService;
-  final SsoService? ssoService;
-  final ServerSettingsService? serverSettingsService;
-  final AppLinksService? appLinksService;
-  final UrlLauncherService? urlLauncherService;
+  final UrlLauncherService urlLauncherService;
+
+  /// Injected controller (tests); otherwise one is built with
+  /// [createController] and owned by the screen.
   final LoginController? controller;
+  final LoginController Function()? createController;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -51,7 +45,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   late final LoginController _controller;
-  late final UrlLauncherService _urlLauncherService;
   final _formKey = GlobalKey<FormState>();
   final _serverHostController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -64,33 +57,14 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   @override
   void initState() {
     super.initState();
-    _urlLauncherService =
-        widget.urlLauncherService ??
-        AppScope.servicesOf(context, listen: false).urlLauncher;
     _controller = registerController(
       widget.controller,
-      _createController,
+      () => widget.createController!(),
       onChanged: _handleControllerChanged,
     );
     _controller.startSsoCallbackListener(
       onLoginSuccess: () => widget.onLoginSuccess?.call(),
       onError: _showError,
-    );
-  }
-
-  LoginController _createController() {
-    final services = AppScope.servicesOf(context, listen: false);
-    return LoginController(
-      authCoordinator: AuthCoordinator(
-        authService: widget.authService ?? services.auth,
-        ssoService: widget.ssoService ?? services.sso,
-        serverSettingsService:
-            widget.serverSettingsService ?? services.serverSettings,
-      ),
-      appLinksService: widget.appLinksService ?? services.appLinks,
-      mapSettingsRepository: services.createMapSettingsRepository(),
-      config: services.config,
-      diagnostics: services.diagnostics,
     );
   }
 
@@ -142,14 +116,14 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
       return;
     }
 
-    final launched = await _urlLauncherService.launchExternalApplication(
+    final launched = await widget.urlLauncherService.launchExternalApplication(
       Uri.parse(oauthUrl),
     );
 
     if (!launched && mounted) {
       final l10n = AppLocalizations.of(context)!;
       _controller.ssoBrowserLaunchFailed();
-      _showError(l10n.ssoBrowserLaunchFailed);
+      await _showError(l10n.ssoBrowserLaunchFailed);
     }
   }
 
@@ -168,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
   Future<void> _handleMfaVerification() async {
     final l10n = AppLocalizations.of(context)!;
     if (_mfaCodeController.text.trim().isEmpty) {
-      _showError(l10n.mfaCodeRequired);
+      await _showError(l10n.mfaCodeRequired);
       return;
     }
 
@@ -182,9 +156,9 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     await _controller.submitPasswordChange(_newPasswordController.text);
   }
 
-  void _showError(Object message) {
+  Future<void> _showError(Object message) async {
     if (mounted) {
-      DialogUtils.showErrorDialog(context, message);
+      await DialogUtils.showErrorDialog(context, message);
     }
   }
 

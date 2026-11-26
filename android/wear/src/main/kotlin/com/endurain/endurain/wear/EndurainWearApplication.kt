@@ -11,6 +11,7 @@ class EndurainWearApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        ExerciseService.createNotificationChannel(this)
         phoneLink = PhoneLink(this)
         recorder = WorkoutRecorder(this, phoneLink)
         phoneLink.republishPending()

@@ -21,6 +21,12 @@ import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
 
 const Duration _discoveryPageWindow = Duration(days: 30);
+
+/// How far before the last successful sync an incremental pass looks again.
+///
+/// Wearables can sync a workout into Health hours or days after it ended, so
+/// the watermark alone would skip late arrivals.
+const Duration _incrementalOverlap = Duration(hours: 48);
 const int _defaultImportedPageSize = 20;
 
 /// Orchestrates the health import pipeline.
@@ -254,6 +260,7 @@ class HealthSyncService {
     required _DiscoveryCursor cursor,
     required HealthImportRange range,
     required bool reset,
+    HealthImportBounds? bounds,
   }) async {
     if (!_healthSyncEnabled) {
       cursor.reset();
@@ -264,13 +271,14 @@ class HealthSyncService {
       cursor.begin(
         profileId: profile.id,
         range: range,
-        bounds: range.resolve(_now()),
+        bounds: bounds ?? range.resolve(_now()),
       );
     }
 
-    final bounds = cursor.bounds!;
+    final cursorBounds = cursor.bounds!;
     final pageEndExclusive = cursor.nextPageEndExclusive!;
-    if (!cursor.hasMore || !pageEndExclusive.isAfter(bounds.startInclusive)) {
+    if (!cursor.hasMore ||
+        !pageEndExclusive.isAfter(cursorBounds.startInclusive)) {
       cursor.hasMore = false;
       return HealthWorkoutPage(
         items: List.unmodifiable(cursor.candidates),
@@ -279,8 +287,8 @@ class HealthSyncService {
     }
 
     final proposedStart = pageEndExclusive.subtract(_discoveryPageWindow);
-    final pageStart = proposedStart.isBefore(bounds.startInclusive)
-        ? bounds.startInclusive
+    final pageStart = proposedStart.isBefore(cursorBounds.startInclusive)
+        ? cursorBounds.startInclusive
         : proposedStart;
     final pageEndInclusive = pageEndExclusive.subtract(
       const Duration(microseconds: 1),
@@ -311,7 +319,8 @@ class HealthSyncService {
     // back empty, so paging stops here.
     if (_adapter.historyAccessDeclined) cursor.historyUnavailable = true;
     cursor.hasMore =
-        !cursor.historyUnavailable && pageStart.isAfter(bounds.startInclusive);
+        !cursor.historyUnavailable &&
+        pageStart.isAfter(cursorBounds.startInclusive);
     cursor.routeConsentDeniedCount += _adapter.routeConsentDeniedCount;
     _diagnostics.recordBreadcrumbSync(
       DiagnosticsEvents.healthListImportable,
@@ -459,8 +468,9 @@ class HealthSyncService {
   Future<({int imported, int failed})> _importSelected(
     ConnectionProfile profile,
     Set<String> sourceIds,
-    List<HealthWorkout> candidates,
-  ) async {
+    List<HealthWorkout> candidates, {
+    bool incremental = false,
+  }) async {
     final candidateIds = {for (final w in candidates) w.sourceId};
     final toImport = candidates
         .where((w) => sourceIds.contains(w.sourceId) && w.hasRoute)
@@ -497,8 +507,13 @@ class HealthSyncService {
       }
     }
 
-    if (imported > 0) {
+    // An incremental pass only moves the watermark when nothing failed: a
+    // failed workout must stay inside the next pass's window to be retried.
+    final advanceWatermark = incremental ? failed == 0 : imported > 0;
+    if (advanceWatermark) {
       await _importRepo.setLastSyncAt(profile.id, _now());
+    }
+    if (imported > 0) {
       unawaited(_uploadQueue.drain());
     }
 
@@ -539,27 +554,53 @@ class HealthSyncService {
       await _ensureProfileUnchanged(profile);
       final authorization = await _currentAuthorizationStatusFor(profile);
       if (authorization != HealthAuthorizationStatus.granted) return null;
-      return _importDefaultRangeForProfile(profile);
+      return _importDefaultRangeForProfile(profile, incremental: true);
     });
   }
 
   /// Discovers and imports the default range with its own discovery state,
   /// leaving the Health Sync screen's list and paging untouched.
+  ///
+  /// With [incremental], discovery starts at the stored last-sync time minus
+  /// [_incrementalOverlap] instead of re-reading the whole default range on
+  /// every resume. It never reaches further back than the default range, and
+  /// falls back to it when there is no prior sync.
   Future<({int imported, int failed})> _importDefaultRangeForProfile(
-    ConnectionProfile profile,
-  ) async {
+    ConnectionProfile profile, {
+    bool incremental = false,
+  }) async {
     final cursor = _DiscoveryCursor();
+    final defaultBounds = HealthImportRange.defaultRange.resolve(_now());
+    var bounds = defaultBounds;
+    if (incremental) {
+      final lastSyncAt = await _importRepo.lastSyncAt(profile.id);
+      if (lastSyncAt != null) {
+        final start = lastSyncAt.toUtc().subtract(_incrementalOverlap);
+        if (start.isAfter(defaultBounds.startInclusive)) {
+          bounds = HealthImportBounds(
+            startInclusive: start,
+            endExclusive: defaultBounds.endExclusive,
+          );
+        }
+      }
+    }
     await _loadAvailableForProfile(
       profile,
       cursor: cursor,
       range: HealthImportRange.defaultRange,
       reset: true,
+      bounds: bounds,
     );
     final ids = cursor.candidates
         .where((workout) => workout.hasRoute)
         .map((workout) => workout.sourceId)
         .toSet();
-    return _importSelected(profile, ids, cursor.candidates);
+    return _importSelected(
+      profile,
+      ids,
+      cursor.candidates,
+      incremental: incremental,
+    );
   }
 
   // ── Private ─────────────────────────────────────────────────────────────

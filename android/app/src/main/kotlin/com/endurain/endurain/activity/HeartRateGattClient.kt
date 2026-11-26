@@ -1,16 +1,8 @@
 package com.endurain.endurain.activity
 
-import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
 import android.content.Context
-import android.os.Build
 import java.util.UUID
 
 /**
@@ -24,7 +16,7 @@ import java.util.UUID
  * uses `autoConnect = true` so the OS restores the link if the strap briefly
  * drops out of range mid-activity.
  */
-class HeartRateGattClient(private val context: Context) {
+class HeartRateGattClient(context: Context) : BleNotifyClient(context, "HeartRateGatt") {
     private val reading = FreshReading()
 
     /**
@@ -34,124 +26,17 @@ class HeartRateGattClient(private val context: Context) {
     val latestBpm: Int?
         get() = reading.value
 
-    private var gatt: BluetoothGatt? = null
+    override fun selectCharacteristic(gatt: BluetoothGatt): BluetoothGattCharacteristic? =
+        gatt.getService(HEART_RATE_SERVICE)?.getCharacteristic(HEART_RATE_MEASUREMENT)
 
-    private val callback = object : BluetoothGattCallback() {
-        @SuppressLint("MissingPermission")
-        override fun onConnectionStateChange(
-            connectedGatt: BluetoothGatt,
-            status: Int,
-            newState: Int,
-        ) {
-            when (newState) {
-                BluetoothProfile.STATE_CONNECTED -> {
-                    try {
-                        connectedGatt.discoverServices()
-                    } catch (_: Exception) {
-                        // Ignore: a later reconnect will retry discovery.
-                    }
-                }
-                BluetoothProfile.STATE_DISCONNECTED -> {
-                    // Drop the stale reading; autoConnect will restore the link.
-                    reading.clear()
-                }
-            }
-        }
-
-        @SuppressLint("MissingPermission")
-        override fun onServicesDiscovered(discoveredGatt: BluetoothGatt, status: Int) {
-            if (status != BluetoothGatt.GATT_SUCCESS) {
-                return
-            }
-            val service = discoveredGatt.getService(HEART_RATE_SERVICE) ?: return
-            val characteristic =
-                service.getCharacteristic(HEART_RATE_MEASUREMENT) ?: return
-            discoveredGatt.setCharacteristicNotification(characteristic, true)
-            val cccd = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG) ?: return
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    discoveredGatt.writeDescriptor(
-                        cccd,
-                        BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE,
-                    )
-                } else {
-                    @Suppress("DEPRECATION")
-                    cccd.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                    @Suppress("DEPRECATION")
-                    discoveredGatt.writeDescriptor(cccd)
-                }
-            } catch (_: Exception) {
-                // Notifications could not be enabled; no heart rate will arrive.
-            }
-        }
-
-        // Android 13+ delivers the value directly.
-        override fun onCharacteristicChanged(
-            changedGatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-            value: ByteArray,
-        ) {
-            if (characteristic.uuid == HEART_RATE_MEASUREMENT) {
-                parseHeartRate(value)?.let { reading.update(it) }
-            }
-        }
-
-        // Pre-Android 13 reads the value off the characteristic.
-        @Deprecated("Deprecated in API 33")
-        override fun onCharacteristicChanged(
-            changedGatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-        ) {
-            if (characteristic.uuid == HEART_RATE_MEASUREMENT) {
-                @Suppress("DEPRECATION")
-                val value = characteristic.value ?: return
-                parseHeartRate(value)?.let { reading.update(it) }
-            }
+    override fun onValue(uuid: UUID, value: ByteArray) {
+        if (uuid == HEART_RATE_MEASUREMENT) {
+            parseHeartRate(value)?.let { reading.update(it) }
         }
     }
 
-    /** Connects to [deviceId] (a BLE MAC address) and begins streaming HR. */
-    @SuppressLint("MissingPermission")
-    fun start(deviceId: String) {
-        stop()
-        try {
-            val manager =
-                context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-                    ?: return
-            val adapter: BluetoothAdapter = manager.adapter ?: return
-            if (!adapter.isEnabled) {
-                return
-            }
-            val device = adapter.getRemoteDevice(deviceId)
-            gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                device.connectGatt(context, true, callback, BluetoothDevice.TRANSPORT_LE)
-            } else {
-                device.connectGatt(context, true, callback)
-            }
-        } catch (_: Exception) {
-            // Bluetooth unavailable, permission missing, or malformed address:
-            // degrade gracefully to recording without heart rate.
-            gatt = null
-        }
-    }
-
-    /** Disconnects and releases the GATT connection. */
-    @SuppressLint("MissingPermission")
-    fun stop() {
+    override fun onLinkLost() {
         reading.clear()
-        gatt?.let { active ->
-            try {
-                active.disconnect()
-            } catch (_: Exception) {
-                // Best effort.
-            }
-            try {
-                active.close()
-            } catch (_: Exception) {
-                // Best effort.
-            }
-        }
-        gatt = null
     }
 
     companion object {
@@ -159,28 +44,30 @@ class HeartRateGattClient(private val context: Context) {
             UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb")
         private val HEART_RATE_MEASUREMENT =
             UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb")
-        private val CLIENT_CHARACTERISTIC_CONFIG =
-            UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+
+        private const val FLAG_VALUE_IS_16_BIT = 0x01
+        private const val FLAG_ENERGY_PRESENT = 0x08
 
         /**
          * Decodes the GATT Heart Rate Measurement value: flags byte then an
-         * 8- or 16-bit little-endian BPM. Returns `null` for malformed data.
+         * 8- or 16-bit little-endian BPM. Returns `null` for malformed data,
+         * including a payload whose flags promise an energy-expended field that
+         * is cut short (the Dart parser rejects it too, so both layers agree).
          */
         fun parseHeartRate(data: ByteArray): Int? {
             if (data.isEmpty()) {
                 return null
             }
             val flags = data[0].toInt() and 0xFF
-            val is16Bit = (flags and 0x01) != 0
+            val is16Bit = (flags and FLAG_VALUE_IS_16_BIT) != 0
+            val valueSize = if (is16Bit) 2 else 1
+            val energySize = if ((flags and FLAG_ENERGY_PRESENT) != 0) 2 else 0
+            if (data.size < 1 + valueSize + energySize) {
+                return null
+            }
             return if (is16Bit) {
-                if (data.size < 3) {
-                    return null
-                }
                 (data[1].toInt() and 0xFF) or ((data[2].toInt() and 0xFF) shl 8)
             } else {
-                if (data.size < 2) {
-                    return null
-                }
                 data[1].toInt() and 0xFF
             }
         }

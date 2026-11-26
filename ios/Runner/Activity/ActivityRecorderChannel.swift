@@ -1,5 +1,7 @@
 import Foundation
-import Flutter
+// Flutter's Objective-C headers carry no concurrency annotations; the method
+// and stream handlers run on the platform (main) thread.
+@preconcurrency import Flutter
 
 /// Hosts the method/event channels that bridge the Dart
 /// `NativeActivityRecorderChannel` to the native CoreLocation recorder.

@@ -1,4 +1,3 @@
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
@@ -27,36 +26,30 @@ import 'package:material_ui/material_ui.dart';
 class AudioAnnouncementSettingsScreen extends StatelessWidget {
   const AudioAnnouncementSettingsScreen({
     super.key,
-    this.controller,
-    this.measurementSystemController,
+    required this.controller,
+    required this.measurementSystemController,
   });
 
-  /// Optional override for tests; otherwise resolved from [AppScope].
-  final AudioAnnouncementSettingsController? controller;
+  final AudioAnnouncementSettingsController controller;
 
-  /// Optional override for tests; otherwise resolved from [AppScope].
-  final MeasurementSystemController? measurementSystemController;
+  /// Read for the unit the interval presets are shown in.
+  final MeasurementSystemController measurementSystemController;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final settingsController =
-        controller ??
-        AppScope.servicesOf(
-          context,
-          listen: false,
-        ).audioAnnouncementSettingsController;
-    final measurement =
-        measurementSystemController ??
-        AppScope.servicesOf(context, listen: false).measurementSystemController;
-    final measurementSystem = measurement.resolve(context.deviceLocale);
+    final settingsController = controller;
+    final measurement = measurementSystemController;
 
     return AdaptiveScaffold(
       title: l10n.audioAnnouncementsTitle,
       body: ListenableBuilder(
-        listenable: settingsController,
+        // The unit preference no longer rebuilds the whole app, so this screen
+        // listens to it itself.
+        listenable: Listenable.merge([settingsController, measurement]),
         builder: (context, _) {
           final settings = settingsController.settings;
+          final measurementSystem = measurement.resolve(context.deviceLocale);
           return ListView(
             padding: readableContentPadding(context),
             children: [

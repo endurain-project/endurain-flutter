@@ -151,6 +151,7 @@
   "@errorHealthPermissionDenied": {
     "description": "Erro de autorização de saúde negada - Usado em: error_localizations.dart"
   },
+  "errorHealthUnavailable": "Os dados de saúde não estão disponíveis neste dispositivo",
   "errorHealthReadFailed": "Não foi possível ler os dados de saúde",
   "@errorHealthReadFailed": {
     "description": "Erro de leitura de dados de saúde - Usado em: error_localizations.dart"
@@ -1104,6 +1105,7 @@
   "@loggedIn": {
     "description": "Cabeçalho da secção de autenticação - Usado em: server_settings_screen.dart"
   },
+  "serverNotSecure": "Não seguro (HTTP)",
   "notConfigured": "Não configurado",
   "@notConfigured": {
     "description": "Texto exibido quando uma definição do servidor não tem valor configurado - Usado em: server_settings_screen.dart"

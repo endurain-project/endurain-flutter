@@ -52,7 +52,7 @@ struct StartView: View {
                 }
                 Section {
                     Picker("Countdown", selection: $workout.countdownSeconds) {
-                        ForEach(WorkoutManager.countdownOptions, id: \.self) { seconds in
+                        ForEach(WorkoutCountdown.options, id: \.self) { seconds in
                             Text(Self.countdownLabel(seconds)).tag(seconds)
                         }
                     }

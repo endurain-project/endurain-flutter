@@ -11,6 +11,12 @@ import 'package:endurain/features/sensors/services/ble_payload.dart';
 /// Parsing is pure and side-effect free so it is fully unit testable without a
 /// Bluetooth stack. Malformed or truncated payloads return `null` rather than
 /// throwing, so a single bad notification never crashes the sensor pipeline.
+///
+/// Ownership during a native Android recording: the Kotlin GATT client
+/// (`HeartRateGattClient.parseHeartRate`) holds the sensor while the native
+/// recorder runs and decodes only bpm. This Dart parser owns the rest (RR intervals, energy expended and contact status) and
+/// serves every other case, such as the phone app recording or the Sensors
+/// screen. Both are checked against `test/fixtures/ble_heart_rate_vectors.json`.
 class HeartRateMeasurementParser {
   const HeartRateMeasurementParser._();
 

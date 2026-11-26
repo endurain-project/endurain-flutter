@@ -13,6 +13,13 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore"
+  # android/wear is a separate Gradle build that /android does not cover.
+  - package-ecosystem: gradle
+    directory: /android/wear
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore"
   - package-ecosystem: github-actions
     directory: /
     schedule:

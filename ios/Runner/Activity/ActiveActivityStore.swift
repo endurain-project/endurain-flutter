@@ -8,11 +8,15 @@ import Foundation
 /// path returned by `path_provider`'s `getApplicationSupportDirectory()` so the
 /// Dart and native sides agree on the location. Never writes to shared or
 /// publicly visible storage.
+///
+/// Main-actor isolated: the recorder, its channel and the HealthKit heart
+/// rate monitor all run there, so the actor serializes every read-modify-write
+/// of the files without a lock or a queue.
+@MainActor
 final class ActiveActivityStore {
     static let shared = ActiveActivityStore()
 
     private let fileManager = FileManager.default
-    private let queue = DispatchQueue(label: "com.endurain.activity.store")
 
     private let activeDirectory: URL
     private let directoryRemover: (URL) throws -> Void
@@ -31,7 +35,7 @@ final class ActiveActivityStore {
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("activity_records", isDirectory: true)
                 .appendingPathComponent("active", isDirectory: true)
-            self.directoryRemover = directoryRemover
+        self.directoryRemover = directoryRemover
         self.sessionWriter = sessionWriter
     }
 
@@ -62,28 +66,22 @@ final class ActiveActivityStore {
 
     @discardableResult
     func saveSession(_ session: ActiveActivitySessionData) -> Bool {
-        return queue.sync {
-            guard let data = session.toJsonString()?.data(using: .utf8) else { return false }
-            do {
-                try ensureDirectory()
-                try sessionWriter(data, sessionFile)
-                return true
-            } catch {
-                // Surface persistence failures via the coordinator; never log
-                // the session payload itself.
-                ActivityRecorderCoordinator.shared.emitFailed(
-                    ActivityRecorderCoordinator.reasonPersistenceFailed
-                )
-                return false
-            }
+        guard let data = session.toJsonString()?.data(using: .utf8) else { return false }
+        do {
+            try ensureDirectory()
+            try sessionWriter(data, sessionFile)
+            return true
+        } catch {
+            // Surface persistence failures via the coordinator; never log
+            // the session payload itself.
+            ActivityRecorderCoordinator.shared.emitFailed(
+                ActivityRecorderCoordinator.reasonPersistenceFailed
+            )
+            return false
         }
     }
 
     func loadSession() -> ActiveActivitySessionData? {
-        return queue.sync { loadSessionUnlocked() }
-    }
-
-    private func loadSessionUnlocked() -> ActiveActivitySessionData? {
         guard
             let data = try? Data(contentsOf: sessionFile),
             let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
@@ -94,15 +92,13 @@ final class ActiveActivityStore {
     }
 
     func hasRecoverableData() -> Bool {
-        return queue.sync {
-            guard let files = try? fileManager.contentsOfDirectory(
-                at: activeDirectory,
-                includingPropertiesForKeys: nil
-            ) else {
-                return false
-            }
-            return !files.isEmpty
+        guard let files = try? fileManager.contentsOfDirectory(
+            at: activeDirectory,
+            includingPropertiesForKeys: nil
+        ) else {
+            return false
         }
+        return !files.isEmpty
     }
 
     /// Appends already-validated points to the JSONL file. Throws on I/O
@@ -111,20 +107,18 @@ final class ActiveActivityStore {
         if points.isEmpty {
             return
         }
-        try queue.sync {
-            try ensureDirectory()
-            var payload = Data()
-            for point in points {
-                guard let line = point.toJsonLine() else { continue }
-                if let lineData = (line + "\n").data(using: .utf8) {
-                    payload.append(lineData)
-                }
+        try ensureDirectory()
+        var payload = Data()
+        for point in points {
+            guard let line = point.toJsonLine() else { continue }
+            if let lineData = (line + "\n").data(using: .utf8) {
+                payload.append(lineData)
             }
-            if payload.isEmpty {
-                return
-            }
-            try appendLogData(payload, to: pointsFile)
         }
+        if payload.isEmpty {
+            return
+        }
+        try appendLogData(payload, to: pointsFile)
     }
 
     enum SensorError: Error {
@@ -132,34 +126,30 @@ final class ActiveActivityStore {
     }
 
     func appendSensorSample(_ sample: RecordedSensorSampleData, localSessionId: String) throws {
-        try queue.sync {
-            guard let session = loadSessionUnlocked(),
-                  session.localSessionId == localSessionId,
-                  session.status == ActiveActivitySessionData.statusRecording else {
-                throw SensorError.invalidSession
-            }
-            var payload = try JSONSerialization.data(withJSONObject: sample.toMap())
-            payload.append(10)
-            try appendLogData(payload, to: sensorFile)
+        guard let session = loadSession(),
+              session.localSessionId == localSessionId,
+              session.status == ActiveActivitySessionData.statusRecording else {
+            throw SensorError.invalidSession
         }
+        var payload = try JSONSerialization.data(withJSONObject: sample.toMap())
+        payload.append(10)
+        try appendLogData(payload, to: sensorFile)
     }
 
     func readSensorSamples(localSessionId: String) throws -> [RecordedSensorSampleData] {
-        return try queue.sync {
-            guard loadSessionUnlocked()?.localSessionId == localSessionId else {
-                throw SensorError.invalidSession
+        guard loadSession()?.localSessionId == localSessionId else {
+            throw SensorError.invalidSession
+        }
+        guard fileManager.fileExists(atPath: sensorFile.path) else {
+            return []
+        }
+        let content = try String(contentsOf: sensorFile, encoding: .utf8)
+        return content.split(separator: "\n").compactMap { line in
+            guard let data = String(line).data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                return nil
             }
-            guard fileManager.fileExists(atPath: sensorFile.path) else {
-                return []
-            }
-            let content = try String(contentsOf: sensorFile, encoding: .utf8)
-            return content.split(separator: "\n").compactMap { line in
-                guard let data = String(line).data(using: .utf8),
-                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                    return nil
-                }
-                return RecordedSensorSampleData.fromJson(json)
-            }
+            return RecordedSensorSampleData.fromJson(json)
         }
     }
 
@@ -187,70 +177,62 @@ final class ActiveActivityStore {
     /// Reads persisted points, skipping malformed lines, returning entries at or
     /// after `sinceOffset` (counted across valid points only).
     func readPoints(sinceOffset: Int = 0) throws -> [RecordedActivityPointData] {
-        return try queue.sync {
-            guard fileManager.fileExists(atPath: pointsFile.path) else {
-                return []
-            }
-            let content = try String(contentsOf: pointsFile, encoding: .utf8)
-            var result: [RecordedActivityPointData] = []
-            var validIndex = 0
-            for rawLine in content.split(separator: "\n", omittingEmptySubsequences: false) {
-                guard let point = RecordedActivityPointData.tryParseLine(String(rawLine)) else {
-                    continue
-                }
-                if validIndex >= sinceOffset {
-                    result.append(point)
-                }
-                validIndex += 1
-            }
-            return result
+        guard fileManager.fileExists(atPath: pointsFile.path) else {
+            return []
         }
+        let content = try String(contentsOf: pointsFile, encoding: .utf8)
+        var result: [RecordedActivityPointData] = []
+        var validIndex = 0
+        for rawLine in content.split(separator: "\n", omittingEmptySubsequences: false) {
+            guard let point = RecordedActivityPointData.tryParseLine(String(rawLine)) else {
+                continue
+            }
+            if validIndex >= sinceOffset {
+                result.append(point)
+            }
+            validIndex += 1
+        }
+        return result
     }
 
     func pointCount() -> Int {
-        return queue.sync {
-            guard let content = try? String(contentsOf: pointsFile, encoding: .utf8) else {
-                return 0
-            }
-            var count = 0
-            for rawLine in content.split(separator: "\n", omittingEmptySubsequences: false) {
-                if RecordedActivityPointData.tryParseLine(String(rawLine)) != nil {
-                    count += 1
-                }
-            }
-            return count
+        guard let content = try? String(contentsOf: pointsFile, encoding: .utf8) else {
+            return 0
         }
+        var count = 0
+        for rawLine in content.split(separator: "\n", omittingEmptySubsequences: false) {
+            if RecordedActivityPointData.tryParseLine(String(rawLine)) != nil {
+                count += 1
+            }
+        }
+        return count
     }
 
     func lastPoint() -> RecordedActivityPointData? {
-        return queue.sync {
-            guard let content = try? String(contentsOf: pointsFile, encoding: .utf8) else {
-                return nil
-            }
-            var last: RecordedActivityPointData?
-            for rawLine in content.split(separator: "\n", omittingEmptySubsequences: false) {
-                if let point = RecordedActivityPointData.tryParseLine(String(rawLine)) {
-                    last = point
-                }
-            }
-            return last
+        guard let content = try? String(contentsOf: pointsFile, encoding: .utf8) else {
+            return nil
         }
+        var last: RecordedActivityPointData?
+        for rawLine in content.split(separator: "\n", omittingEmptySubsequences: false) {
+            if let point = RecordedActivityPointData.tryParseLine(String(rawLine)) {
+                last = point
+            }
+        }
+        return last
     }
 
     @discardableResult
     func clear() -> Bool {
-        return queue.sync {
-            do {
-                if fileManager.fileExists(atPath: activeDirectory.path) {
-                    try directoryRemover(activeDirectory)
-                }
-                return true
-            } catch {
-                ActivityRecorderCoordinator.shared.emitFailed(
-                    ActivityRecorderCoordinator.reasonPersistenceFailed
-                )
-                return false
+        do {
+            if fileManager.fileExists(atPath: activeDirectory.path) {
+                try directoryRemover(activeDirectory)
             }
+            return true
+        } catch {
+            ActivityRecorderCoordinator.shared.emitFailed(
+                ActivityRecorderCoordinator.reasonPersistenceFailed
+            )
+            return false
         }
     }
 
@@ -260,31 +242,27 @@ final class ActiveActivityStore {
     /// `hasRecoverableData()` keeps working unchanged.
     @discardableResult
     func saveAnnouncementState(_ state: AnnouncementStateData) -> Bool {
-        return queue.sync {
-            guard let json = state.toJsonString() else { return false }
-            do {
-                try ensureDirectory()
-                try json.data(using: .utf8)?.write(to: announcementFile, options: .atomic)
-                return true
-            } catch {
-                // Losing this write only risks a duplicate or skipped
-                // announcement on the next fix, never the recorded track.
-                return false
-            }
+        guard let json = state.toJsonString() else { return false }
+        do {
+            try ensureDirectory()
+            try json.data(using: .utf8)?.write(to: announcementFile, options: .atomic)
+            return true
+        } catch {
+            // Losing this write only risks a duplicate or skipped
+            // announcement on the next fix, never the recorded track.
+            return false
         }
     }
 
     /// Returns the persisted announcement state, or `nil` when absent/corrupt.
     func loadAnnouncementState() -> AnnouncementStateData? {
-        return queue.sync {
-            guard
-                let data = try? Data(contentsOf: announcementFile),
-                let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-            else {
-                return nil
-            }
-            return AnnouncementStateData.fromJson(object)
+        guard
+            let data = try? Data(contentsOf: announcementFile),
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else {
+            return nil
         }
+        return AnnouncementStateData.fromJson(object)
     }
 
     private func orphanedSession() -> ActiveActivitySessionData? {

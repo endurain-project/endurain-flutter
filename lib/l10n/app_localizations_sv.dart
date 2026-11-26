@@ -130,6 +130,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorHealthPermissionDenied => 'Åtkomst till hälsodata nekades';
 
   @override
+  String get errorHealthUnavailable =>
+      'Hälsodata är inte tillgänglig på den här enheten';
+
+  @override
   String get errorHealthReadFailed => 'Kunde inte läsa hälsodata';
 
   @override
@@ -893,6 +897,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get loggedIn => 'Inloggad';
+
+  @override
+  String get serverNotSecure => 'Inte säker (HTTP)';
 
   @override
   String get notConfigured => 'Inte konfigurerad';

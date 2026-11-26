@@ -1,3 +1,4 @@
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/diagnostics/diagnostics_scope.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/localization/app_locales.dart';
@@ -329,6 +330,99 @@ void main() {
       expect(find.text('Logged out'), findsNothing);
     });
   });
+
+  group('DialogUtils destructive styling', () {
+    Widget confirmApp({required bool destructive}) => _DialogTestApp(
+      builder: (context) => ElevatedButton(
+        onPressed: () => DialogUtils.showConfirmDialog(
+          context,
+          title: 'Delete?',
+          message: 'Gone for good.',
+          confirmText: 'Delete',
+          isDestructive: destructive,
+        ),
+        child: const Text('Show confirm'),
+      ),
+    );
+
+    testWidgets(
+      'Material colours a destructive confirm with the error colour',
+      (tester) async {
+        await tester.pumpWidget(confirmApp(destructive: true));
+        await tester.tap(find.text('Show confirm'));
+        await tester.pumpAndSettle();
+
+        final error = Theme.of(tester.element(find.byType(AlertDialog)))
+            .colorScheme
+            .error;
+        final style = tester
+            .widget<TextButton>(find.widgetWithText(TextButton, 'Delete'))
+            .style!;
+        expect(style.foregroundColor!.resolve({}), error);
+        final cancel = tester.widget<TextButton>(
+          find.widgetWithText(TextButton, l10n.cancel),
+        );
+        expect(cancel.style, isNull);
+      },
+    );
+
+    testWidgets('Material leaves a normal confirm unstyled', (tester) async {
+      await tester.pumpWidget(confirmApp(destructive: false));
+      await tester.tap(find.text('Show confirm'));
+      await tester.pumpAndSettle();
+
+      final button = tester.widget<TextButton>(
+        find.widgetWithText(TextButton, 'Delete'),
+      );
+      expect(button.style, isNull);
+    });
+
+    testWidgets('Cupertino flags a destructive confirm', (tester) async {
+      PlatformUtils.debugIsApplePlatformOverride = true;
+      await tester.pumpWidget(confirmApp(destructive: true));
+      await tester.tap(find.text('Show confirm'));
+      await tester.pumpAndSettle();
+
+      final action = tester.widget<CupertinoDialogAction>(
+        find.widgetWithText(CupertinoDialogAction, 'Delete'),
+      );
+      expect(action.isDestructiveAction, isTrue);
+    });
+  });
+
+  for (final apple in [false, true]) {
+    testWidgets('showActionDialog returns the pressed value (apple=$apple)', (
+      tester,
+    ) async {
+      PlatformUtils.debugIsApplePlatformOverride = apple;
+      late Future<int?> result;
+      await tester.pumpWidget(
+        _DialogTestApp(
+          builder: (context) => ElevatedButton(
+            onPressed: () {
+              result = DialogUtils.showActionDialog<int>(
+                context,
+                title: 'Pick',
+                message: 'One of three.',
+                choices: const [
+                  DialogChoice(label: 'One', value: 1),
+                  DialogChoice(label: 'Two', value: 2),
+                  DialogChoice(label: 'Three', value: 3, isDestructive: true),
+                ],
+              );
+            },
+            child: const Text('Show'),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Show'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Two'));
+      await tester.pumpAndSettle();
+
+      expect(await result, 2);
+    });
+  }
 
   group('DialogUtils.showChoiceDialog', () {
     testWidgets('uses the given cancel label and returns false for it', (

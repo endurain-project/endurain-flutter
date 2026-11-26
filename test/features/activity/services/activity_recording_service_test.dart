@@ -334,12 +334,12 @@ void main() {
             now: clock.getClock(startedAt).now,
           );
 
-          service.recoverActiveSession();
+          unawaited(service.recoverActiveSession());
           clock.flushMicrotasks();
           expect(service.state.elapsedDurationSeconds, 120);
           clock.elapse(const Duration(seconds: 5));
           expect(service.state.elapsedDurationSeconds, 125);
-          service.pause();
+          unawaited(service.pause());
           clock.flushMicrotasks();
           clock.elapse(const Duration(seconds: 10));
           expect(service.state.elapsedDurationSeconds, 125);
@@ -1127,6 +1127,56 @@ void main() {
             41.1,
             41.2,
           ]);
+        },
+      );
+
+      test(
+        'a batch only replaces the segment it extends and keeps earlier ones',
+        () async {
+          final recorder = _ControllableRecorder();
+          final service = _buildService(recorder: recorder);
+          addTearDown(service.dispose);
+          await service.start(activityType: ActivityType.run);
+          final sessionId = service.localSessionId!;
+          void deliver(List<RecordedActivityPoint> points, int offset) {
+            recorder._controller.add(
+              ActivityRecorderEvent.pointBatchAvailable(
+                points,
+                localSessionId: sessionId,
+                pointOffset: offset,
+              ),
+            );
+          }
+
+          deliver([_point(latitude: 41.1, longitude: -8.6)], 0);
+          await pumpEventQueue();
+          final firstSegment = service.state.segments.single;
+          final firstPoints = service.state.points;
+
+          deliver([
+            _point(latitude: 41.2, longitude: -8.6),
+            _point(latitude: 41.3, longitude: -8.6, segmentIndex: 1),
+          ], 1);
+          await pumpEventQueue();
+          final secondSegment = service.state.segments.last;
+
+          deliver([
+            _point(latitude: 41.4, longitude: -8.6, segmentIndex: 1),
+          ], 3);
+          await pumpEventQueue();
+
+          final segments = service.state.segments;
+          expect(segments, hasLength(2));
+          // The first segment grew once, then stayed put.
+          expect(segments.first.points.map((p) => p.latitude), [41.1, 41.2]);
+          expect(identical(segments.first, firstSegment), isFalse);
+          expect(segments.last.points.map((p) => p.latitude), [41.3, 41.4]);
+          expect(identical(segments.last, secondSegment), isFalse);
+          // Earlier snapshots keep exactly the points they had.
+          expect(firstSegment.points, hasLength(1));
+          expect(secondSegment.points, hasLength(1));
+          expect(firstPoints, hasLength(1));
+          expect(service.state.points, hasLength(4));
         },
       );
 
@@ -2001,7 +2051,7 @@ class _ControllableRecorder implements ActivityLocationRecorder {
     if (startErrors.isNotEmpty) {
       final error = startErrors.removeAt(0);
       if (error != null) {
-        throw error;
+        Error.throwWithStackTrace(error, StackTrace.current);
       }
     }
   }
@@ -2095,7 +2145,9 @@ class _StoredSensorRecorder implements ActivitySensorRecorder {
     required RecordedSensorSample sample,
   }) async {
     await pendingWrite;
-    if (writeError case final error?) throw error;
+    if (writeError case final error?) {
+      Error.throwWithStackTrace(error, StackTrace.current);
+    }
     samples.add(sample);
   }
 
@@ -2103,7 +2155,9 @@ class _StoredSensorRecorder implements ActivitySensorRecorder {
   Future<List<RecordedSensorSample>> drainSensorSamples({
     required String localSessionId,
   }) async {
-    if (readError case final error?) throw error;
+    if (readError case final error?) {
+      Error.throwWithStackTrace(error, StackTrace.current);
+    }
     return List.of(samples);
   }
 }

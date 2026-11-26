@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
@@ -7,10 +8,7 @@ import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
-import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
-import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
-import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
 import 'package:endurain/features/activity/widgets/activity_route_map.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
@@ -25,19 +23,22 @@ class ActivityDetailsScreen extends StatefulWidget {
     super.key,
     required this.recordId,
     this.controller,
-    this.repository,
-    this.uploadService,
-    this.retentionSettingsRepository,
+    this.createController,
     this.tileServerUrlProvider,
     this.embedded = false,
     this.onDeleted,
-  });
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
   final String recordId;
+
+  /// The history screen's controller, so a record opened from there stays in
+  /// sync with the list. Otherwise one is built with [createController] and
+  /// owned by this screen.
   final LocalActivityHistoryController? controller;
-  final LocalActivityRepository? repository;
-  final ActivityUploadService? uploadService;
-  final ActivityRetentionSettingsRepository? retentionSettingsRepository;
+  final LocalActivityHistoryController Function()? createController;
 
   /// Supplies the tile-server URL for the route preview map. When null, the map
   /// is not shown (e.g. in tests that do not exercise the map).
@@ -63,21 +64,13 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   @override
   void initState() {
     super.initState();
-    _controller = registerController(widget.controller, _createController);
-    if (widget.controller == null) {
-      _controller.loadRecord(widget.recordId);
-    }
-  }
-
-  LocalActivityHistoryController _createController() {
-    return AppScope.servicesOf(
-      context,
-      listen: false,
-    ).createLocalActivityHistoryController(
-      repository: widget.repository,
-      uploadService: widget.uploadService,
-      retentionSettingsRepository: widget.retentionSettingsRepository,
+    _controller = registerController(
+      widget.controller,
+      () => widget.createController!(),
     );
+    if (widget.controller == null) {
+      unawaited(_controller.loadRecord(widget.recordId));
+    }
   }
 
   Future<void> _retry(LocalActivityRecord record) async {

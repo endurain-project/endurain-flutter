@@ -122,6 +122,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Sağlık verilerine erişim reddedildi';
 
   @override
+  String get errorHealthUnavailable =>
+      'Sağlık verileri bu cihazda kullanılamıyor';
+
+  @override
   String get errorHealthReadFailed => 'Sağlık verileri okunamadı';
 
   @override
@@ -881,6 +885,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get loggedIn => 'Oturum açıldı';
+
+  @override
+  String get serverNotSecure => 'Güvenli değil (HTTP)';
 
   @override
   String get notConfigured => 'Yapılandırılmadı';

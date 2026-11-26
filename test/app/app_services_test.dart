@@ -60,15 +60,15 @@ void main() {
       expect(connectionChanges, 1);
     });
 
-    test('activityRecordingController is an app-lifetime singleton', () {
+    test('activity.recordingController is an app-lifetime singleton', () {
       final services = AppServices();
 
       // The controller is documented as owned by AppServices so it survives
       // tab navigation; repeated reads must return the identical instance.
       expect(
         identical(
-          services.activityRecordingController,
-          services.activityRecordingController,
+          services.activity.recordingController,
+          services.activity.recordingController,
         ),
         isTrue,
       );
@@ -82,8 +82,8 @@ void main() {
         // It is a factory (not a cached getter): each screen that builds a
         // recording session must get its own service, otherwise disposing one
         // would tear down another screen's recorder.
-        final first = services.createActivityRecordingService();
-        final second = services.createActivityRecordingService();
+        final first = services.activity.createRecordingService();
+        final second = services.activity.createRecordingService();
         expect(identical(first, second), isFalse);
       },
     );
@@ -95,10 +95,13 @@ void main() {
       // controller, the upload queue, history screens) shares one repository
       // instance and therefore one consistent view of locally stored data.
       expect(
-        identical(services.localActivities, services.localActivities),
+        identical(
+          services.activity.localActivities,
+          services.activity.localActivities,
+        ),
         isTrue,
       );
-      expect(services.localActivities, isA<LocalActivityRepository>());
+      expect(services.activity.localActivities, isA<LocalActivityRepository>());
     });
   });
 }

@@ -85,6 +85,12 @@ android {
         compose = true
     }
 
+    testOptions {
+        // The recorder logs through android.util.Log, which the unit-test
+        // android.jar stubs out.
+        unitTests.isReturnDefaultValues = true
+    }
+
     sourceSets {
         getByName("main") {
             // Protocol and stores shared with the phone app.
@@ -105,9 +111,9 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.1")
-    implementation("androidx.lifecycle:lifecycle-service:2.11.1")
     implementation("androidx.wear.compose:compose-material3:1.7.2")
     implementation("androidx.wear.compose:compose-foundation:1.7.2")
+    implementation("androidx.wear:wear:1.4.0")
     implementation("androidx.wear:wear-ongoing:1.1.0")
     implementation("androidx.health:health-services-client:1.1.0")
     implementation("com.google.android.gms:play-services-wearable:20.0.1")
@@ -117,4 +123,5 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20260814")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }

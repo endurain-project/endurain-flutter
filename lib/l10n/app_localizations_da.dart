@@ -128,6 +128,10 @@ class AppLocalizationsDa extends AppLocalizations {
       'Adgang til sundhedsdata blev nægtet';
 
   @override
+  String get errorHealthUnavailable =>
+      'Sundhedsdata er ikke tilgængelige på denne enhed';
+
+  @override
   String get errorHealthReadFailed => 'Kunne ikke læse sundhedsdata';
 
   @override
@@ -890,6 +894,9 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get loggedIn => 'Logget ind';
+
+  @override
+  String get serverNotSecure => 'Ikke sikker (HTTP)';
 
   @override
   String get notConfigured => 'Ikke konfigureret';
