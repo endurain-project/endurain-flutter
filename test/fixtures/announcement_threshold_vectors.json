@@ -1,0 +1,193 @@
+{
+  "description": "Shared AnnouncementThresholdCalculator.latestCrossing vectors. Loaded by the Kotlin and Swift tests (Dart has no equivalent). 'expect' is null when no crossing is reported; fractions and values are compared with a 1e-9 tolerance.",
+  "cases": [
+    {
+      "name": "crosses the first threshold mid-sample",
+      "intervalValue": 1000,
+      "previousCumulative": 900,
+      "newCumulative": 1100,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 1000,
+        "interpolationFraction": 0.5
+      }
+    },
+    {
+      "name": "no threshold reached",
+      "intervalValue": 1000,
+      "previousCumulative": 100,
+      "newCumulative": 900,
+      "lastAnnouncedIndex": 0,
+      "expect": null
+    },
+    {
+      "name": "threshold already announced",
+      "intervalValue": 1000,
+      "previousCumulative": 1100,
+      "newCumulative": 1900,
+      "lastAnnouncedIndex": 1,
+      "expect": null
+    },
+    {
+      "name": "landing exactly on a threshold",
+      "intervalValue": 1000,
+      "previousCumulative": 900,
+      "newCumulative": 1000,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 1000,
+        "interpolationFraction": 1.0
+      }
+    },
+    {
+      "name": "starting exactly on a threshold still announces it once reached",
+      "intervalValue": 1000,
+      "previousCumulative": 1000,
+      "newCumulative": 1100,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 1000,
+        "interpolationFraction": 0.0
+      }
+    },
+    {
+      "name": "gap skipping several thresholds returns only the latest",
+      "intervalValue": 1000,
+      "previousCumulative": 900,
+      "newCumulative": 3200,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 3,
+        "thresholdValue": 3000,
+        "interpolationFraction": 0.9130434782608695
+      }
+    },
+    {
+      "name": "gap skipping thresholds after some were announced",
+      "intervalValue": 1000,
+      "previousCumulative": 1500,
+      "newCumulative": 4500,
+      "lastAnnouncedIndex": 1,
+      "expect": {
+        "thresholdIndex": 4,
+        "thresholdValue": 4000,
+        "interpolationFraction": 0.8333333333333334
+      }
+    },
+    {
+      "name": "value did not move",
+      "intervalValue": 1000,
+      "previousCumulative": 500,
+      "newCumulative": 500,
+      "lastAnnouncedIndex": 0,
+      "expect": null
+    },
+    {
+      "name": "value moved backwards",
+      "intervalValue": 1000,
+      "previousCumulative": 1500,
+      "newCumulative": 1400,
+      "lastAnnouncedIndex": 0,
+      "expect": null
+    },
+    {
+      "name": "zero interval is rejected",
+      "intervalValue": 0,
+      "previousCumulative": 0,
+      "newCumulative": 100,
+      "lastAnnouncedIndex": 0,
+      "expect": null
+    },
+    {
+      "name": "negative interval is rejected",
+      "intervalValue": -1000,
+      "previousCumulative": 0,
+      "newCumulative": 5000,
+      "lastAnnouncedIndex": 0,
+      "expect": null
+    },
+    {
+      "name": "negative last announced index starts at the first threshold",
+      "intervalValue": 1000,
+      "previousCumulative": 900,
+      "newCumulative": 1100,
+      "lastAnnouncedIndex": -5,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 1000,
+        "interpolationFraction": 0.5
+      }
+    },
+    {
+      "name": "time based interval of five minutes",
+      "intervalValue": 300,
+      "previousCumulative": 290,
+      "newCumulative": 310,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 300,
+        "interpolationFraction": 0.5
+      }
+    },
+    {
+      "name": "time based second milestone",
+      "intervalValue": 300,
+      "previousCumulative": 590,
+      "newCumulative": 610,
+      "lastAnnouncedIndex": 1,
+      "expect": {
+        "thresholdIndex": 2,
+        "thresholdValue": 600,
+        "interpolationFraction": 0.5
+      }
+    },
+    {
+      "name": "mile interval fractional threshold",
+      "intervalValue": 1609.344,
+      "previousCumulative": 1600,
+      "newCumulative": 1700,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 1609.344,
+        "interpolationFraction": 0.09344000000000051
+      }
+    },
+    {
+      "name": "announced index ahead of the value",
+      "intervalValue": 1000,
+      "previousCumulative": 1500,
+      "newCumulative": 2500,
+      "lastAnnouncedIndex": 5,
+      "expect": null
+    },
+    {
+      "name": "tiny span interpolation is clamped to one",
+      "intervalValue": 1000,
+      "previousCumulative": 999.9999,
+      "newCumulative": 1000.0001,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 1000,
+        "interpolationFraction": 0.5
+      }
+    },
+    {
+      "name": "first sample from zero crossing the first threshold in one jump",
+      "intervalValue": 1000,
+      "previousCumulative": 0,
+      "newCumulative": 1000,
+      "lastAnnouncedIndex": 0,
+      "expect": {
+        "thresholdIndex": 1,
+        "thresholdValue": 1000,
+        "interpolationFraction": 1.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "description": "Shared BLE GATT parse vectors. Loaded by the Dart parser tests and meant for the Kotlin GATT client unit tests, so both decoders agree on the wire format. 'hex' is the raw characteristic value, two hex digits per byte, no separators (empty string = empty payload). Keys outside 'dartOnly' are produced by BOTH implementations; a null value means the parser must return null. 'dartOnly' lists fields only the Dart layer decodes (it owns them while the phone app records). 'watts' is the Kotlin result (negative power clamped to 0); 'dartOnly.signedWatts' is the raw SINT16 the Dart parser returns, so watts == max(0, signedWatts).",
+  "characteristic": "0x2A63 Cycling Power Measurement",
+  "kotlinFunction": "CyclingPowerGattClient.parsePowerWatts",
+  "dartFunction": "CyclingPowerMeasurementParser.parseInstantaneousPowerWatts",
+  "cases": [
+    {
+      "name": "250 W",
+      "hex": "0000FA00",
+      "watts": 250,
+      "dartOnly": {
+        "signedWatts": 250
+      }
+    },
+    {
+      "name": "zero power",
+      "hex": "00000000",
+      "watts": 0,
+      "dartOnly": {
+        "signedWatts": 0
+      }
+    },
+    {
+      "name": "largest positive value",
+      "hex": "0000FF7F",
+      "watts": 32767,
+      "dartOnly": {
+        "signedWatts": 32767
+      }
+    },
+    {
+      "name": "negative power is clamped to zero by Kotlin",
+      "hex": "0000FFFF",
+      "watts": 0,
+      "dartOnly": {
+        "signedWatts": -1
+      }
+    },
+    {
+      "name": "most negative value is clamped to zero by Kotlin",
+      "hex": "00000080",
+      "watts": 0,
+      "dartOnly": {
+        "signedWatts": -32768
+      }
+    },
+    {
+      "name": "pedal power balance field follows the power value",
+      "hex": "0100C80064",
+      "watts": 200,
+      "dartOnly": {
+        "signedWatts": 200
+      }
+    },
+    {
+      "name": "pedal balance and accumulated torque",
+      "hex": "05002C01641000",
+      "watts": 300,
+      "dartOnly": {
+        "signedWatts": 300
+      }
+    },
+    {
+      "name": "wheel and crank revolution data follow the power value",
+      "hex": "3000900101000000100002002000",
+      "watts": 400,
+      "dartOnly": {
+        "signedWatts": 400
+      }
+    },
+    {
+      "name": "3-byte payload is truncated",
+      "hex": "0000FA",
+      "watts": null,
+      "dartOnly": null
+    },
+    {
+      "name": "empty payload",
+      "hex": "",
+      "watts": null,
+      "dartOnly": null
+    }
+  ]
+}

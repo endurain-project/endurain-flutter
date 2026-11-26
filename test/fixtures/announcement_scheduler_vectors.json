@@ -1,0 +1,1194 @@
+{
+  "description": "Shared AnnouncementScheduler vectors (onFix / onElapsedTime). Loaded by the Kotlin and Swift tests. 'config' plus optional 'initial' use the field names of AnnouncementStateData; the state carries across steps and is checked after every step ('expectState', 1e-6 tolerance on doubles). Announcement text uses literal templates so only structured values are compared. Expected values come from an independent Python port, with latitude steps of 0.0027 degrees (~300.2 m).",
+  "cases": [
+    {
+      "name": "distance interval announces each kilometre once",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7027,
+          "longitude": -9.1,
+          "elapsedSeconds": 90,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 90,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7054,
+          "longitude": -9.1,
+          "elapsedSeconds": 180,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 180,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7081,
+          "longitude": -9.1,
+          "elapsedSeconds": 270,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 900.678906,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 270,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7108,
+          "longitude": -9.1,
+          "elapsedSeconds": 360,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[1.0 km] T[5:00] L[Pace 5:00 min/km] O[Pace 5:00 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 1200.905208,
+            "lastAnnouncedDistanceIndex": 1,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 360,
+            "lastAnnouncementDistanceMeters": 1000.0,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.71107,
+          "longitude": -9.1,
+          "elapsedSeconds": 365,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 1230.927838,
+            "lastAnnouncedDistanceIndex": 1,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 365,
+            "lastAnnouncementDistanceMeters": 1000.0,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7189,
+          "longitude": -9.1,
+          "elapsedSeconds": 630,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[2.0 km] T[9:59] L[Pace 4:59 min/km] O[Pace 5:00 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 2101.584114,
+            "lastAnnouncedDistanceIndex": 2,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 630,
+            "lastAnnouncementDistanceMeters": 2000.0,
+            "lastAnnouncementElapsedSeconds": 599
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7216,
+          "longitude": -9.1,
+          "elapsedSeconds": 720,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 2401.810416,
+            "lastAnnouncedDistanceIndex": 2,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 720,
+            "lastAnnouncementDistanceMeters": 2000.0,
+            "lastAnnouncementElapsedSeconds": 599
+          }
+        }
+      ]
+    },
+    {
+      "name": "gap skipping two kilometres announces only the latest",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7027,
+          "longitude": -9.1,
+          "elapsedSeconds": 60,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 60,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.727,
+          "longitude": -9.1,
+          "elapsedSeconds": 700,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[3.0 km] T[11:39] L[Pace 3:53 min/km] O[Pace 3:53 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 3002.263019,
+            "lastAnnouncedDistanceIndex": 3,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 700,
+            "lastAnnouncementDistanceMeters": 3000.0,
+            "lastAnnouncementElapsedSeconds": 699
+          }
+        }
+      ]
+    },
+    {
+      "name": "new segment never counts as distance",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7027,
+          "longitude": -9.1,
+          "elapsedSeconds": 60,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 60,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.781,
+          "longitude": -9.1,
+          "elapsedSeconds": 900,
+          "isNewSegment": true,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 900,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7837,
+          "longitude": -9.1,
+          "elapsedSeconds": 960,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 960,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7864,
+          "longitude": -9.1,
+          "elapsedSeconds": 1020,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 900.678906,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 1020,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7891,
+          "longitude": -9.1,
+          "elapsedSeconds": 1080,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[1.0 km] T[17:20] L[Pace 17:20 min/km] O[Pace 17:20 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 1200.905208,
+            "lastAnnouncedDistanceIndex": 1,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 1080,
+            "lastAnnouncementDistanceMeters": 1000.0,
+            "lastAnnouncementElapsedSeconds": 1040
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7918,
+          "longitude": -9.1,
+          "elapsedSeconds": 1140,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 1501.13151,
+            "lastAnnouncedDistanceIndex": 1,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 1140,
+            "lastAnnouncementDistanceMeters": 1000.0,
+            "lastAnnouncementElapsedSeconds": 1040
+          }
+        }
+      ]
+    },
+    {
+      "name": "disabled schedule never accumulates",
+      "config": {
+        "enabled": false,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.727,
+          "longitude": -9.1,
+          "elapsedSeconds": 100,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 900,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "distance schedule ignores elapsed callbacks",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 5000,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7054,
+          "longitude": -9.1,
+          "elapsedSeconds": 100,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 100,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "time interval announces from elapsed callbacks while stationary",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "time",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7027,
+          "longitude": -9.1,
+          "elapsedSeconds": 100,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 100,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 299,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 299,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 300,
+          "expectAnnouncements": [
+            "D[0.3 km] T[5:00] L[Pace 16:39 min/km] O[Pace 16:39 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 1,
+            "lastElapsedSeconds": 300,
+            "lastAnnouncementDistanceMeters": 300.226302,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 301,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 1,
+            "lastElapsedSeconds": 301,
+            "lastAnnouncementDistanceMeters": 300.226302,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 650,
+          "expectAnnouncements": [
+            "D[0.3 km] T[10:00] L[Pace] O[Pace 33:18 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 2,
+            "lastElapsedSeconds": 650,
+            "lastAnnouncementDistanceMeters": 300.226302,
+            "lastAnnouncementElapsedSeconds": 600
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 900,
+          "expectAnnouncements": [
+            "D[0.3 km] T[15:00] L[Pace] O[Pace 49:58 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 3,
+            "lastElapsedSeconds": 900,
+            "lastAnnouncementDistanceMeters": 300.226302,
+            "lastAnnouncementElapsedSeconds": 900
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 905,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 3,
+            "lastElapsedSeconds": 905,
+            "lastAnnouncementDistanceMeters": 300.226302,
+            "lastAnnouncementElapsedSeconds": 900
+          }
+        }
+      ]
+    },
+    {
+      "name": "time interval interpolates distance at a fix",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "time",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7054,
+          "longitude": -9.1,
+          "elapsedSeconds": 250,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 250,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7108,
+          "longitude": -9.1,
+          "elapsedSeconds": 350,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[0.9 km] T[5:00] L[Pace 5:33 min/km] O[Pace 5:33 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 1200.905208,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 1,
+            "lastElapsedSeconds": 350,
+            "lastAnnouncementDistanceMeters": 900.678906,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7162,
+          "longitude": -9.1,
+          "elapsedSeconds": 590,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 1801.357812,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 1,
+            "lastElapsedSeconds": 590,
+            "lastAnnouncementDistanceMeters": 900.678906,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7189,
+          "longitude": -9.1,
+          "elapsedSeconds": 610,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[2.0 km] T[10:00] L[Pace 4:45 min/km] O[Pace 5:07 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 2101.584114,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 2,
+            "lastElapsedSeconds": 610,
+            "lastAnnouncementDistanceMeters": 1951.470963,
+            "lastAnnouncementElapsedSeconds": 600
+          }
+        }
+      ]
+    },
+    {
+      "name": "elapsed time never moves backwards",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "time",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7027,
+          "longitude": -9.1,
+          "elapsedSeconds": 400,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[0.2 km] T[5:00] L[Pace 22:12 min/km] O[Pace 22:12 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 1,
+            "lastElapsedSeconds": 400,
+            "lastAnnouncementDistanceMeters": 225.169726,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7054,
+          "longitude": -9.1,
+          "elapsedSeconds": 200,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 1,
+            "lastElapsedSeconds": 400,
+            "lastAnnouncementDistanceMeters": 225.169726,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 250,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 1,
+            "lastElapsedSeconds": 400,
+            "lastAnnouncementDistanceMeters": 225.169726,
+            "lastAnnouncementElapsedSeconds": 300
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 600,
+          "expectAnnouncements": [
+            "D[0.6 km] T[10:00] L[Pace 13:19 min/km] O[Pace 16:39 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 2,
+            "lastElapsedSeconds": 600,
+            "lastAnnouncementDistanceMeters": 600.452604,
+            "lastAnnouncementElapsedSeconds": 600
+          }
+        }
+      ]
+    },
+    {
+      "name": "imperial speed announcements every mile",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1609.344,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": true,
+        "metric": "speed",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} mi",
+        "metricUnitTemplate": "{value} mph",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7135,
+          "longitude": -9.1,
+          "elapsedSeconds": 300,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 1501.13151,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 300,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7162,
+          "longitude": -9.1,
+          "elapsedSeconds": 360,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[1.0 mi] T[5:22] L[Pace 11.2 mph] O[Pace 11.2 mph]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 1801.357812,
+            "lastAnnouncedDistanceIndex": 1,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 360,
+            "lastAnnouncementDistanceMeters": 1609.344,
+            "lastAnnouncementElapsedSeconds": 322
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7297,
+          "longitude": -9.1,
+          "elapsedSeconds": 700,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[2.0 mi] T[11:21] L[Pace 10.0 mph] O[Pace 10.6 mph]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 3302.489321,
+            "lastAnnouncedDistanceIndex": 2,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 700,
+            "lastAnnouncementDistanceMeters": 3218.688,
+            "lastAnnouncementElapsedSeconds": 681
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7324,
+          "longitude": -9.1,
+          "elapsedSeconds": 780,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 3602.715623,
+            "lastAnnouncedDistanceIndex": 2,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 780,
+            "lastAnnouncementDistanceMeters": 3218.688,
+            "lastAnnouncementElapsedSeconds": 681
+          }
+        }
+      ]
+    },
+    {
+      "name": "German decimals in announcements",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 500.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "de-DE",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7027,
+          "longitude": -9.1,
+          "elapsedSeconds": 70,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 300.226302,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 70,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7054,
+          "longitude": -9.1,
+          "elapsedSeconds": 140,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[0,5 km] T[1:57] L[Pace 3:54 min/km] O[Pace 3:54 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 600.452604,
+            "lastAnnouncedDistanceIndex": 1,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 140,
+            "lastAnnouncementDistanceMeters": 500.0,
+            "lastAnnouncementElapsedSeconds": 117
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7081,
+          "longitude": -9.1,
+          "elapsedSeconds": 210,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 900.678906,
+            "lastAnnouncedDistanceIndex": 1,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 210,
+            "lastAnnouncementDistanceMeters": 500.0,
+            "lastAnnouncementElapsedSeconds": 117
+          }
+        }
+      ]
+    },
+    {
+      "name": "restored state does not repeat announced thresholds",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7054,
+          "longitude": -9.1,
+          "elapsedSeconds": 600,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 2400.226302,
+            "lastAnnouncedDistanceIndex": 2,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 600,
+            "lastAnnouncementDistanceMeters": 2000.0,
+            "lastAnnouncementElapsedSeconds": 480
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7108,
+          "longitude": -9.1,
+          "elapsedSeconds": 720,
+          "isNewSegment": false,
+          "expectAnnouncements": [
+            "D[3.0 km] T[12:00] L[Pace 4:00 min/km] O[Pace 4:00 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 3000.678906,
+            "lastAnnouncedDistanceIndex": 3,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 720,
+            "lastAnnouncementDistanceMeters": 3000.0,
+            "lastAnnouncementElapsedSeconds": 720
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7135,
+          "longitude": -9.1,
+          "elapsedSeconds": 790,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 3300.905208,
+            "lastAnnouncedDistanceIndex": 3,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 790,
+            "lastAnnouncementDistanceMeters": 3000.0,
+            "lastAnnouncementElapsedSeconds": 720
+          }
+        }
+      ],
+      "initial": {
+        "cumulativeDistanceMeters": 2100.0,
+        "lastAnnouncedDistanceIndex": 2,
+        "lastLatitude": 38.7027,
+        "lastLongitude": -9.1,
+        "lastElapsedSeconds": 500,
+        "lastAnnouncementDistanceMeters": 2000.0,
+        "lastAnnouncementElapsedSeconds": 480
+      }
+    },
+    {
+      "name": "restored time state announces the missed threshold once",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "time",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 1000,
+          "expectAnnouncements": [
+            "D[3.5 km] T[15:00] L[Pace 4:00 min/km] O[Pace 4:17 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 3500.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 3,
+            "lastElapsedSeconds": 1000,
+            "lastAnnouncementDistanceMeters": 3500.0,
+            "lastAnnouncementElapsedSeconds": 900
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 1001,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 3500.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 3,
+            "lastElapsedSeconds": 1001,
+            "lastAnnouncementDistanceMeters": 3500.0,
+            "lastAnnouncementElapsedSeconds": 900
+          }
+        },
+        {
+          "type": "elapsed",
+          "elapsedSeconds": 1200,
+          "expectAnnouncements": [
+            "D[3.5 km] T[20:00] L[Pace] O[Pace 5:43 min/km]"
+          ],
+          "expectState": {
+            "cumulativeDistanceMeters": 3500.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 4,
+            "lastElapsedSeconds": 1200,
+            "lastAnnouncementDistanceMeters": 3500.0,
+            "lastAnnouncementElapsedSeconds": 1200
+          }
+        }
+      ],
+      "initial": {
+        "cumulativeDistanceMeters": 3500.0,
+        "lastAnnouncedTimeIndex": 1,
+        "lastElapsedSeconds": 700,
+        "lastAnnouncementDistanceMeters": 1000.0,
+        "lastAnnouncementElapsedSeconds": 300
+      }
+    },
+    {
+      "name": "zero distance interval never announces",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 0.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "steps": [
+        {
+          "type": "fix",
+          "latitude": 38.7,
+          "longitude": -9.1,
+          "elapsedSeconds": 0,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 0.0,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 0,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        },
+        {
+          "type": "fix",
+          "latitude": 38.7135,
+          "longitude": -9.1,
+          "elapsedSeconds": 100,
+          "isNewSegment": false,
+          "expectAnnouncements": [],
+          "expectState": {
+            "cumulativeDistanceMeters": 1501.13151,
+            "lastAnnouncedDistanceIndex": 0,
+            "lastAnnouncedTimeIndex": 0,
+            "lastElapsedSeconds": 100,
+            "lastAnnouncementDistanceMeters": 0.0,
+            "lastAnnouncementElapsedSeconds": 0
+          }
+        }
+      ]
+    }
+  ]
+}

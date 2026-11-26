@@ -1,0 +1,662 @@
+{
+  "description": "Shared AnnouncementSpeechBuilder vectors. Loaded by the Kotlin and Swift tests. 'config' uses the field names of AnnouncementStateData; templates are literal here so only the structured parts are checked (rounding, units, clock format, decimal separator, label fallbacks), not translated wording. A case with 'preview': true runs buildPreview(config); otherwise build(config, distanceMeters, elapsedSeconds) with the lastAnnouncement* fields applied to the config. Decimals round the value's shortest decimal form with ties to even (Foundation's %.1f behaviour), so 1.25 is '1.2', 0.15 is '0.2' and 1.75 is '1.8'; Java's String.format rounds half up instead and was replaced in the Kotlin builder.",
+  "cases": [
+    {
+      "name": "one kilometre in five minutes",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": 300,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.0 km] T[5:00] L[Pace 5:00 min/km] O[Pace 5:00 min/km]"
+    },
+    {
+      "name": "lap metric uses the previous announcement",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 2000.0,
+      "elapsedSeconds": 660,
+      "lastAnnouncementDistanceMeters": 1000.0,
+      "lastAnnouncementElapsedSeconds": 300,
+      "expect": "D[2.0 km] T[11:00] L[Pace 6:00 min/km] O[Pace 5:30 min/km]"
+    },
+    {
+      "name": "pace over an hour switches to H:MM:SS",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 10000.0,
+      "elapsedSeconds": 3725,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[10.0 km] T[1:02:05] L[Pace 6:13 min/km] O[Pace 6:13 min/km]"
+    },
+    {
+      "name": "distance rounds to one decimal",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1234.0,
+      "elapsedSeconds": 400,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.2 km] T[6:40] L[Pace 5:24 min/km] O[Pace 5:24 min/km]"
+    },
+    {
+      "name": "exact tie 1.25 km rounds half to even",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1250.0,
+      "elapsedSeconds": 400,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.2 km] T[6:40] L[Pace 5:20 min/km] O[Pace 5:20 min/km]"
+    },
+    {
+      "name": "exact tie 1.75 km rounds half to even",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1750.0,
+      "elapsedSeconds": 500,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.8 km] T[8:20] L[Pace 4:46 min/km] O[Pace 4:46 min/km]"
+    },
+    {
+      "name": "exact tie 0.25 km rounds half to even",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 250.0,
+      "elapsedSeconds": 80,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[0.2 km] T[1:20] L[Pace 5:20 min/km] O[Pace 5:20 min/km]"
+    },
+    {
+      "name": "0.15 km rounds on its shortest decimal form, ties to even",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 150.0,
+      "elapsedSeconds": 50,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[0.2 km] T[0:50] L[Pace 5:33 min/km] O[Pace 5:33 min/km]"
+    },
+    {
+      "name": "0.35 km rounds on its shortest decimal form, ties to even",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 350.0,
+      "elapsedSeconds": 100,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[0.4 km] T[1:40] L[Pace 4:46 min/km] O[Pace 4:46 min/km]"
+    },
+    {
+      "name": "decimal just below a tie rounds down",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1249.0,
+      "elapsedSeconds": 400,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.2 km] T[6:40] L[Pace 5:20 min/km] O[Pace 5:20 min/km]"
+    },
+    {
+      "name": "German decimal separator",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "de-DE",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1500.0,
+      "elapsedSeconds": 450,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1,5 km] T[7:30] L[Pace 5:00 min/km] O[Pace 5:00 min/km]"
+    },
+    {
+      "name": "Portuguese decimal separator",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "pt-PT",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1500.0,
+      "elapsedSeconds": 450,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1,5 km] T[7:30] L[Pace 5:00 min/km] O[Pace 5:00 min/km]"
+    },
+    {
+      "name": "blank language tag falls back to a point",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1500.0,
+      "elapsedSeconds": 450,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.5 km] T[7:30] L[Pace 5:00 min/km] O[Pace 5:00 min/km]"
+    },
+    {
+      "name": "imperial distance and pace",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": true,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} mi",
+        "metricUnitTemplate": "{value} min/mi",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1609.344,
+      "elapsedSeconds": 540,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.0 mi] T[9:00] L[Pace 9:00 min/mi] O[Pace 9:00 min/mi]"
+    },
+    {
+      "name": "speed metric in km/h",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "speed",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} km/h",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 5000.0,
+      "elapsedSeconds": 1200,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[5.0 km] T[20:00] L[Pace 15.0 km/h] O[Pace 15.0 km/h]"
+    },
+    {
+      "name": "speed metric imperial with comma separator",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": true,
+        "metric": "speed",
+        "languageTag": "de-DE",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} mph",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 8046.72,
+      "elapsedSeconds": 2400,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[5,0 km] T[40:00] L[Pace 7,5 mph] O[Pace 7,5 mph]"
+    },
+    {
+      "name": "zero lap distance leaves only the metric label",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": 300,
+      "lastAnnouncementDistanceMeters": 1000.0,
+      "lastAnnouncementElapsedSeconds": 300,
+      "expect": "D[1.0 km] T[5:00] L[Pace] O[Pace 5:00 min/km]"
+    },
+    {
+      "name": "zero lap distance for speed leaves only the label",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "speed",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": 300,
+      "lastAnnouncementDistanceMeters": 1000.0,
+      "lastAnnouncementElapsedSeconds": 300,
+      "expect": "D[1.0 km] T[5:00] L[Pace] O[Pace 12.0 min/km]"
+    },
+    {
+      "name": "zero elapsed time speed leaves only the label",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "speed",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 0.0,
+      "elapsedSeconds": 0,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[0.0 km] T[0:00] L[Pace] O[Pace]"
+    },
+    {
+      "name": "lap anchor ahead of the value is clamped to zero",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 500.0,
+      "elapsedSeconds": 100,
+      "lastAnnouncementDistanceMeters": 900.0,
+      "lastAnnouncementElapsedSeconds": 200,
+      "expect": "D[0.5 km] T[1:40] L[Pace] O[Pace 3:20 min/km]"
+    },
+    {
+      "name": "empty metric label is trimmed",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value}",
+        "metricLabel": "",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": 300,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.0 km] T[5:00] L[5:00] O[5:00]"
+    },
+    {
+      "name": "templates without placeholders pass through",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "x",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "Keep going"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": 300,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "Keep going"
+    },
+    {
+      "name": "message template may repeat placeholders",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "{duration} {duration} {distance}"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": 300,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "5:00 5:00 1.0 km"
+    },
+    {
+      "name": "pace rounds to the nearest second",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": 301,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.0 km] T[5:01] L[Pace 5:01 min/km] O[Pace 5:01 min/km]"
+    },
+    {
+      "name": "pace with fractional seconds per unit rounds to nearest",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 3000.0,
+      "elapsedSeconds": 901,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[3.0 km] T[15:01] L[Pace 5:00 min/km] O[Pace 5:00 min/km]"
+    },
+    {
+      "name": "time of exactly one hour",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 5000.0,
+      "elapsedSeconds": 3600,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[5.0 km] T[1:00:00] L[Pace 12:00 min/km] O[Pace 12:00 min/km]"
+    },
+    {
+      "name": "negative elapsed has no overall pace and clamps the clock",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "distanceMeters": 1000.0,
+      "elapsedSeconds": -5,
+      "lastAnnouncementDistanceMeters": 0.0,
+      "lastAnnouncementElapsedSeconds": 0,
+      "expect": "D[1.0 km] T[0:00] L[Pace 0:00 min/km] O[Pace]"
+    },
+    {
+      "name": "distance based preview",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "preview": true,
+      "expect": "D[1.0 km] T[5:33] L[Pace 5:33 min/km] O[Pace 5:33 min/km]"
+    },
+    {
+      "name": "time based preview",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "time",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 600,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "preview": true,
+      "expect": "D[1.8 km] T[10:00] L[Pace 5:33 min/km] O[Pace 5:33 min/km]"
+    },
+    {
+      "name": "imperial distance preview",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1609.344,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": true,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} mi",
+        "metricUnitTemplate": "{value} min/mi",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "preview": true,
+      "expect": "D[1.0 mi] T[8:56] L[Pace 8:56 min/mi] O[Pace 8:56 min/mi]"
+    },
+    {
+      "name": "speed preview",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "distance",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 300,
+        "useImperialUnits": false,
+        "metric": "speed",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} km/h",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "preview": true,
+      "expect": "D[1.0 km] T[5:33] L[Pace 10.8 km/h] O[Pace 10.8 km/h]"
+    },
+    {
+      "name": "short time preview",
+      "config": {
+        "enabled": true,
+        "intervalUnit": "time",
+        "distanceIntervalMeters": 1000.0,
+        "timeIntervalSeconds": 45,
+        "useImperialUnits": false,
+        "metric": "pace",
+        "languageTag": "en-US",
+        "distanceUnitTemplate": "{value} km",
+        "metricUnitTemplate": "{value} min/km",
+        "metricLabel": "Pace",
+        "messageTemplate": "D[{distance}] T[{duration}] L[{lapMetric}] O[{overallMetric}]"
+      },
+      "preview": true,
+      "expect": "D[0.1 km] T[0:45] L[Pace 5:33 min/km] O[Pace 5:33 min/km]"
+    }
+  ]
+}
