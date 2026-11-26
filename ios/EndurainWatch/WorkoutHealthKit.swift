@@ -33,8 +33,9 @@ enum WorkoutHealthKit {
         }
     }
 
-    /// Asks to save workouts, routes, distance and energy, and to read heart
-    /// rate, distance and energy during the workout.
+    /// Asks to save workouts, routes, distance and energy, and to read only
+    /// what the workout screen shows: heart rate and distance. Energy is
+    /// saved with the workout but never read, so it is not requested.
     static func requestAuthorization(_ healthStore: HKHealthStore) async throws {
         let share: Set<HKSampleType> = [
             HKObjectType.workoutType(),
@@ -44,9 +45,7 @@ enum WorkoutHealthKit {
             HKQuantityType(.distanceCycling),
         ]
         let read: Set<HKObjectType> = [
-            HKObjectType.workoutType(),
             HKQuantityType(.heartRate),
-            HKQuantityType(.activeEnergyBurned),
             HKQuantityType(.distanceWalkingRunning),
             HKQuantityType(.distanceCycling),
         ]

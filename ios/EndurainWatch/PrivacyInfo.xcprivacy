@@ -7,7 +7,7 @@
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
-	<!-- Workouts (heart rate, distance, energy) and their GPS routes are
+	<!-- Workouts (heart rate, distance) and their GPS routes are
 	     uploaded to the Endurain server the user signs in to, under their
 	     account, only to provide the app's features. -->
 	<key>NSPrivacyCollectedDataTypes</key>

@@ -57,7 +57,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Endurain reads your heart rate, distance and energy during a workout to show them live and add heart rate to your route.</string>
+	<string>Endurain reads your heart rate and distance during a workout to show them live and add heart rate to your route.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Endurain saves your watch workouts and their routes to Health, like any workout recorded on Apple Watch.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

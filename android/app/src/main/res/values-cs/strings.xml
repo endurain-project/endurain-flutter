@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Upozornění na záznam</string>
     <string name="activity_recording_alert_channel_description">Zobrazí se, když se záznam zastaví, zatímco je Endurain na pozadí.</string>
     <string name="health_rationale_title">Zdravotní údaje v Endurainu</string>
-    <string name="health_rationale_usage">Endurain čte tréninky, trasy, tep, vzdálenost, kalorie a kroky pouze za účelem importu vybraných aktivit.</string>
+    <string name="health_rationale_usage">Endurain čte tréninky, trasy, tep a vzdálenost pouze za účelem importu vybraných aktivit.</string>
     <string name="health_rationale_storage">Data vybraných tras se ukládají v tomto zařízení a nahrávají se pouze na server Endurain, ke kterému se připojíte.</string>
 </resources>

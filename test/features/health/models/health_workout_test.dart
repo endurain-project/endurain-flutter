@@ -26,7 +26,6 @@ void main() {
       expect(workout.sourceId, 'uuid-1');
       expect(workout.type, HealthWorkoutType.run);
       expect(workout.distanceMeters, isNull);
-      expect(workout.energyKilocalories, isNull);
     });
 
     test('constructs without route — hasRoute is false', () {
@@ -48,10 +47,8 @@ void main() {
         endedAt: end,
         route: const [],
         distanceMeters: 15000,
-        energyKilocalories: 450,
       );
       expect(workout.distanceMeters, 15000);
-      expect(workout.energyKilocalories, 450);
     });
   });
 }

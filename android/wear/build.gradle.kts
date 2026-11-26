@@ -4,7 +4,7 @@ import java.util.Properties
 // built into AGP 9, so unlike the Flutter phone build (whose Gradle plugin still
 // needs the legacy variant API) this build needs no kotlin-android plugin.
 plugins {
-    id("com.android.application") version "9.5.2"
+    id("com.android.application") version "9.5.3"
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.21"
 }
 
@@ -42,8 +42,9 @@ val releaseStoreFile = signingValue("storeFile", "ANDROID_KEYSTORE_PATH")?.takeI
 
 android {
     namespace = "com.endurain.endurain.wear"
+    // Compose 1.13 (BOM 2026.11) needs compileSdk 37.1.
     compileSdk = 37
-    compileSdkMinor = 0
+    compileSdkMinor = 1
 
     defaultConfig {
         // Must equal the phone app's id for the Data Layer to connect them.
@@ -106,8 +107,7 @@ kotlin {
 }
 
 dependencies {
-    // Newer BOMs need compileSdk 37.1, which the CI image does not install.
-    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.11.01"))
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.1")

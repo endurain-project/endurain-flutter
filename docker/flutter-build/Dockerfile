@@ -24,7 +24,8 @@ ARG FLUTTER_SHA256=4ad17fc8462fbcef2ba19ff4a78c0a16b7147fde1add8578e267ea62cdb92
 ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/releases/stable/linux
 
 # Android SDK. The command-line tools SHA256 is published directly on the
-# SDK download page. Secure storage compiles against API 37, main's Flutter
+# SDK download page. Secure storage compiles against API 37, the Wear OS app
+# against API 37.1 (Compose 1.13 needs it), main's Flutter
 # template still targets API 36 (kept installed for the shared image tag's
 # other consumers), while other Android dependencies compile against APIs 35
 # and 34. CMake is required by the native-assets toolchain. Build-tools tracks
@@ -34,6 +35,7 @@ ARG FLUTTER_STORAGE_URL=https://storage.googleapis.com/flutter_infra_release/rel
 ARG ANDROID_CMDLINE_TOOLS_VERSION=15859902
 ARG ANDROID_CMDLINE_TOOLS_SHA256=4e4c464f145a7512b57d088ac6c278c03c9eea610886b35a5e0804e74eedf583
 ARG ANDROID_PLATFORM=android-37.0
+ARG ANDROID_WEAR_PLATFORM=android-37.1
 ARG ANDROID_FLUTTER_PLATFORM=android-36
 ARG ANDROID_PLUGIN_PLATFORM=android-35
 ARG ANDROID_LEGACY_PLATFORM=android-34
@@ -74,6 +76,7 @@ RUN set -eu; \
     sdkmanager \
         "platform-tools" \
         "platforms;${ANDROID_PLATFORM}" \
+        "platforms;${ANDROID_WEAR_PLATFORM}" \
         "platforms;${ANDROID_FLUTTER_PLATFORM}" \
         "platforms;${ANDROID_PLUGIN_PLATFORM}" \
         "platforms;${ANDROID_LEGACY_PLATFORM}" \

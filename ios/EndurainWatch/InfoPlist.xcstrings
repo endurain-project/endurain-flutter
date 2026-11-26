@@ -7,187 +7,187 @@
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain чете пулса, разстоянието и енергията ви по време на тренировка, за да ги показва в реално време и да добавя пулса към маршрута ви."
+            "value" : "Endurain чете пулса и разстоянието ви по време на тренировка, за да ги показва в реално време и да добавя пулса към маршрута ви."
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain llegeix la vostra freqüència cardíaca, distància i energia durant un entrenament per mostrar-les en directe i afegir la freqüència cardíaca a la vostra ruta."
+            "value" : "Endurain llegeix la vostra freqüència cardíaca i distància durant un entrenament per mostrar-les en directe i afegir la freqüència cardíaca a la vostra ruta."
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain během tréninku čte váš tep, vzdálenost a energii, aby je zobrazoval živě a přidal tep k vaší trase."
+            "value" : "Endurain během tréninku čte váš tep a vzdálenost, aby je zobrazoval živě a přidal tep k vaší trase."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain læser din puls, distance og energi under en træning for at vise dem live og tilføje pulsen til din rute."
+            "value" : "Endurain læser din puls og distance under en træning for at vise dem live og tilføje pulsen til din rute."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain liest während eines Trainings Ihre Herzfrequenz, Distanz und Energie, um sie live anzuzeigen und die Herzfrequenz zu Ihrer Route hinzuzufügen."
+            "value" : "Endurain liest während eines Trainings Ihre Herzfrequenz und Distanz, um sie live anzuzeigen und die Herzfrequenz zu Ihrer Route hinzuzufügen."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Το Endurain διαβάζει τον καρδιακό ρυθμό, την απόσταση και την ενέργειά σας κατά τη διάρκεια μιας προπόνησης για να τα εμφανίζει σε πραγματικό χρόνο και να προσθέτει τον καρδιακό ρυθμό στη διαδρομή σας."
+            "value" : "Το Endurain διαβάζει τον καρδιακό ρυθμό και την απόστασή σας κατά τη διάρκεια μιας προπόνησης για να τα εμφανίζει σε πραγματικό χρόνο και να προσθέτει τον καρδιακό ρυθμό στη διαδρομή σας."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain reads your heart rate, distance and energy during a workout to show them live and add heart rate to your route."
+            "value" : "Endurain reads your heart rate and distance during a workout to show them live and add heart rate to your route."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain lee tu frecuencia cardíaca, distancia y energía durante un entrenamiento para mostrarlas en directo y añadir la frecuencia cardíaca a tu ruta."
+            "value" : "Endurain lee tu frecuencia cardíaca y distancia durante un entrenamiento para mostrarlas en directo y añadir la frecuencia cardíaca a tu ruta."
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain loeb treeningu ajal teie pulssi, vahemaad ja energiat, et neid reaalajas näidata ja lisada pulss teie marsruudile."
+            "value" : "Endurain loeb treeningu ajal teie pulssi ja vahemaad, et neid reaalajas näidata ja lisada pulss teie marsruudile."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain lukee sykkeesi, matkan ja energian harjoituksen aikana näyttääkseen ne reaaliajassa ja lisätäkseen sykkeen reittiisi."
+            "value" : "Endurain lukee sykkeesi ja matkan harjoituksen aikana näyttääkseen ne reaaliajassa ja lisätäkseen sykkeen reittiisi."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain lit votre fréquence cardiaque, votre distance et votre énergie pendant un entraînement pour les afficher en direct et ajouter la fréquence cardiaque à votre itinéraire."
+            "value" : "Endurain lit votre fréquence cardiaque et votre distance pendant un entraînement pour les afficher en direct et ajouter la fréquence cardiaque à votre itinéraire."
           }
         },
         "gl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain le a túa frecuencia cardíaca, distancia e enerxía durante un adestramento para amosalas en directo e engadir a frecuencia cardíaca á túa ruta."
+            "value" : "Endurain le a túa frecuencia cardíaca e distancia durante un adestramento para amosalas en directo e engadir a frecuencia cardíaca á túa ruta."
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain tijekom vježbe čita vaš puls, udaljenost i energiju kako bi ih prikazivao uživo i dodao puls vašoj ruti."
+            "value" : "Endurain tijekom vježbe čita vaš puls i udaljenost kako bi ih prikazivao uživo i dodao puls vašoj ruti."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Az Endurain edzés közben beolvassa a pulzusát, a távolságot és az energiát, hogy élőben megjelenítse őket, és hozzáadja a pulzust az útvonalához."
+            "value" : "Az Endurain edzés közben beolvassa a pulzusát és a távolságot, hogy élőben megjelenítse őket, és hozzáadja a pulzust az útvonalához."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain legge la frequenza cardiaca, la distanza e l’energia durante un allenamento per mostrarle in tempo reale e aggiungere la frequenza cardiaca al tuo percorso."
+            "value" : "Endurain legge la frequenza cardiaca e la distanza durante un allenamento per mostrarle in tempo reale e aggiungere la frequenza cardiaca al tuo percorso."
           }
         },
         "lt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain treniruotės metu nuskaito jūsų pulsą, atstumą ir energiją, kad rodytų juos tiesiogiai ir pridėtų pulsą prie jūsų maršruto."
+            "value" : "Endurain treniruotės metu nuskaito jūsų pulsą ir atstumą, kad rodytų juos tiesiogiai ir pridėtų pulsą prie jūsų maršruto."
           }
         },
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain treniņa laikā nolasa jūsu pulsu, attālumu un enerģiju, lai tos rādītu reāllaikā un pievienotu pulsu jūsu maršrutam."
+            "value" : "Endurain treniņa laikā nolasa jūsu pulsu un attālumu, lai tos rādītu reāllaikā un pievienotu pulsu jūsu maršrutam."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain leser pulsen, distansen og energien din under en trening for å vise dem live og legge til pulsen i ruten din."
+            "value" : "Endurain leser pulsen og distansen din under en trening for å vise dem live og legge til pulsen i ruten din."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain leest tijdens een training je hartslag, afstand en energie om ze live te tonen en je hartslag aan je route toe te voegen."
+            "value" : "Endurain leest tijdens een training je hartslag en afstand om ze live te tonen en je hartslag aan je route toe te voegen."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain odczytuje Twoje tętno, dystans i energię podczas treningu, aby pokazywać je na żywo i dodawać tętno do Twojej trasy."
+            "value" : "Endurain odczytuje Twoje tętno i dystans podczas treningu, aby pokazywać je na żywo i dodawać tętno do Twojej trasy."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Endurain lê a sua frequência cardíaca, distância e energia durante um treino para as mostrar em tempo real e adicionar a frequência cardíaca ao seu percurso."
+            "value" : "O Endurain lê a sua frequência cardíaca e distância durante um treino para as mostrar em tempo real e adicionar a frequência cardíaca ao seu percurso."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Endurain lê a sua frequência cardíaca, distância e energia durante um treino para as mostrar em tempo real e adicionar a frequência cardíaca ao seu percurso."
+            "value" : "O Endurain lê a sua frequência cardíaca e distância durante um treino para as mostrar em tempo real e adicionar a frequência cardíaca ao seu percurso."
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain citește ritmul cardiac, distanța și energia în timpul unui antrenament pentru a le afișa în timp real și a adăuga ritmul cardiac la traseul dvs."
+            "value" : "Endurain citește ritmul cardiac și distanța în timpul unui antrenament pentru a le afișa în timp real și a adăuga ritmul cardiac la traseul dvs."
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain počas tréningu číta váš tep, vzdialenosť a energiu, aby ich zobrazoval naživo a pridal tep k vašej trase."
+            "value" : "Endurain počas tréningu číta váš tep a vzdialenosť, aby ich zobrazoval naživo a pridal tep k vašej trase."
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain med vadbo bere vaš srčni utrip, razdaljo in energijo, da jih prikaže v živo in doda srčni utrip vaši poti."
+            "value" : "Endurain med vadbo bere vaš srčni utrip in razdaljo, da jih prikaže v živo in doda srčni utrip vaši poti."
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain током вежбе чита ваш пулс, раздаљину и енергију да би их приказивао уживо и додао пулс вашој рути."
+            "value" : "Endurain током вежбе чита ваш пулс и раздаљину да би их приказивао уживо и додао пулс вашој рути."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain läser din puls, sträcka och energi under ett träningspass för att visa dem i realtid och lägga till pulsen i din rutt."
+            "value" : "Endurain läser din puls och sträcka under ett träningspass för att visa dem i realtid och lägga till pulsen i din rutt."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain, antrenman sırasında nabzınızı, mesafenizi ve enerjinizi canlı göstermek ve nabzı rotanıza eklemek için okur."
+            "value" : "Endurain, antrenman sırasında nabzınızı ve mesafenizi canlı göstermek ve nabzı rotanıza eklemek için okur."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain під час тренування зчитує ваш пульс, відстань і енергію, щоб показувати їх у реальному часі та додавати пульс до вашого маршруту."
+            "value" : "Endurain під час тренування зчитує ваш пульс і відстань, щоб показувати їх у реальному часі та додавати пульс до вашого маршруту."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain 会在锻炼期间读取你的心率、距离和能量，以便实时显示并将心率添加到你的路线中。"
+            "value" : "Endurain 会在锻炼期间读取你的心率和距离，以便实时显示并将心率添加到你的路线中。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endurain 會在鍛鍊期間讀取你的心率、距離和能量，以便即時顯示並將心率加入你的路線。"
+            "value" : "Endurain 會在鍛鍊期間讀取你的心率和距離，以便即時顯示並將心率加入你的路線。"
           }
         }
       }

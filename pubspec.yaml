@@ -4,7 +4,7 @@ publish_to: 'none'
 
 # Release tags mirror this field (vX.Y.Z+BUILD); the Android workflow checks it.
 # `flutter build --build-name/--build-number` override it per build.
-version: 0.12.2+24
+version: 0.12.3+25
 
 environment:
   sdk: ^3.14.0
@@ -75,7 +75,7 @@ dependencies:
   url_launcher: ^6.3.1
 
   # SVG support for SSO provider icons
-  flutter_svg: ^2.0.16
+  flutter_svg: ^2.5.1
 
   # SQLite storage for local activity metadata.
   # sqflite provides the native Android/iOS implementation.
@@ -83,7 +83,7 @@ dependencies:
 
   # Network connectivity signal for retrying activity uploads when connectivity
   # returns.
-  connectivity_plus: ^7.3.0
+  connectivity_plus: ^7.3.2
 
   # OS share sheet for GPX file export.
   share_plus: ^13.2.1
@@ -99,7 +99,7 @@ dependencies:
   # Services) and actively maintained across Android/iOS/desktop/web. It also
   # requests the BLE runtime permissions itself, so no separate
   # permission_handler dependency is needed.
-  universal_ble: ^3.1.0
+  universal_ble: ^3.4.1
 
   # Standalone Material/Cupertino design packages (Flutter 3.47+), decoupled
   # from the core SDK so they can ship on their own release cadence.
@@ -128,6 +128,13 @@ dev_dependencies:
 
   # Generate app icons for all platforms
   flutter_launcher_icons: ^0.14.4
+
+# geolocator_linux 0.2.6, the latest, still requires dbus ^0.7, which blocks
+# universal_ble >=3.1.1 and connectivity_plus >=7.3.2 (both need dbus ^0.8).
+# The app builds only for Android and iOS, so geolocator_linux is never built
+# into it. Remove this once a geolocator_linux release accepts dbus ^0.8.
+dependency_overrides:
+  dbus: ^0.8.0
 
 flutter:
   generate: true

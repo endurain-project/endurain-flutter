@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Alertes d\'enregistrament</string>
     <string name="activity_recording_alert_channel_description">Es mostra quan un enregistrament s\'atura mentre Endurain és en segon pla.</string>
     <string name="health_rationale_title">Dades de salut d\'Endurain</string>
-    <string name="health_rationale_usage">Endurain llegeix entrenaments, rutes, freqüència cardíaca, distància, calories i passos només per importar les activitats seleccionades.</string>
+    <string name="health_rationale_usage">Endurain llegeix entrenaments, rutes, freqüència cardíaca i distància només per importar les activitats seleccionades.</string>
     <string name="health_rationale_storage">Les dades de les rutes seleccionades es desen en aquest dispositiu i només es pugen al servidor d\'Endurain que connecteu.</string>
 </resources>

@@ -14,7 +14,6 @@ class HealthWorkout {
     required this.endedAt,
     required this.route,
     this.distanceMeters,
-    this.energyKilocalories,
   });
 
   /// Stable OS-assigned UUID that uniquely identifies this workout.
@@ -34,15 +33,6 @@ class HealthWorkout {
 
   /// Total distance covered, in metres. May be null if not recorded.
   final double? distanceMeters;
-
-  /// Total energy burned, in kilocalories. May be null if not recorded.
-  ///
-  /// Captured from the platform for completeness but **not** part of the v1
-  /// upload: the Endurain server ingests GPX (track points only) and recomputes
-  /// metrics server-side, and GPX 1.1 has no standard calorie field. This is
-  /// retained for a future structured (non-GPX) ingest path; intentionally
-  /// unused today rather than dropped, so the mapping is ready when that lands.
-  final double? energyKilocalories;
 
   /// GPS route points for this workout, ordered by time.
   ///

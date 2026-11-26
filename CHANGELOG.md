@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v0.12.3+25] - 2026-11-26
+
+This release requests only the health data the apps use, after Google Play rejected 0.12.2 under its Health Connect minimum-scope policy, and updates the dependencies.
+
+### Changed
+
+- Health Sync on Android no longer asks for step counts or calories, which no feature used. It still imports workouts, routes, heart rate and distance. The Health Connect privacy text no longer lists steps or calories in any language.
+- The Apple Watch app no longer asks to read workouts or active energy. It reads only heart rate and distance, which the workout screen shows, and still saves energy with the workout. The Health read description no longer mentions energy in any language.
+- A manifest test fails if the Android app declares a Health Connect permission outside the expected set.
+- Dependency updates:
+  - `universal_ble` 3.4.1, `connectivity_plus` 7.3.2 and `flutter_svg` 2.5.1. A `dbus` override lets them resolve alongside `geolocator_linux`, whose latest release still requires `dbus` 0.7; the app does not build for Linux.
+  - Android Gradle plugin 9.5.3 for the phone and Wear OS builds.
+  - Compose BOM 2026.11.01 for the Wear OS app, which now compiles against SDK 37.1. The CI builder image installs that platform.
+
+### Removed
+
+- The `READ_STEPS` and `READ_TOTAL_CALORIES_BURNED` Health Connect permissions, and the unused calories field of imported workouts.
+
 ## [v0.12.2+24] - 2026-11-26
 
 This release adapts the app to large screens and fixes the findings of a full review of the app, its native code and CI. Recording stays smooth on long activities, watch workouts are safer, and the iOS app meets App Store privacy requirements.

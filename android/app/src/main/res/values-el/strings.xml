@@ -9,6 +9,6 @@
     <string name="activity_recording_alert_channel_name">Ειδοποιήσεις καταγραφής</string>
     <string name="activity_recording_alert_channel_description">Εμφανίζεται όταν μια καταγραφή σταματά ενώ το Endurain εκτελείται στο παρασκήνιο.</string>
     <string name="health_rationale_title">Δεδομένα υγείας του Endurain</string>
-    <string name="health_rationale_usage">Το Endurain διαβάζει προπονήσεις, διαδρομές, καρδιακό ρυθμό, απόσταση, θερμίδες και βήματα μόνο για την εισαγωγή επιλεγμένων δραστηριοτήτων.</string>
+    <string name="health_rationale_usage">Το Endurain διαβάζει προπονήσεις, διαδρομές, καρδιακό ρυθμό και απόσταση μόνο για την εισαγωγή επιλεγμένων δραστηριοτήτων.</string>
     <string name="health_rationale_storage">Τα δεδομένα των επιλεγμένων διαδρομών αποθηκεύονται σε αυτήν τη συσκευή και μεταφορτώνονται μόνο στον διακομιστή Endurain στον οποίο συνδέεστε.</string>
 </resources>
