@@ -157,8 +157,11 @@ class _LoginScreenState extends State<LoginScreen> with OwnedControllers {
     }
     _mfaEntry.error = null;
     await _controller.submitMfa(code);
-    if (mounted) {
+    // A retryable rejection keeps the code kind; an ended sign-in starts over.
+    if (mounted && _controller.showMfaInput) {
       _mfaEntry.code.clear();
+    } else if (mounted) {
+      _mfaEntry.reset();
     }
   }
 

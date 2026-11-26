@@ -239,11 +239,13 @@ void main() {
           client: _mfaClient(submitted, verifyStatus: 401),
         );
         await _reachMfaStep(tester, controller, l10n);
-
-        await tester.enterText(find.byType(TextField), '123456');
+        await tester.tap(find.text(l10n.mfaUseBackupCode));
         await tester.pumpAndSettle();
 
-        expect(submitted, ['123456']);
+        await tester.enterText(find.byType(TextField), 'A3K97BDF');
+        await tester.pumpAndSettle();
+
+        expect(submitted, ['A3K9-7BDF']);
         expect(find.text(l10n.errorMfaSessionMissing), findsOneWidget);
         expect(find.text(l10n.ok), findsOneWidget);
         await tester.tap(find.text(l10n.ok));
@@ -253,6 +255,12 @@ void main() {
           find.widgetWithText(TextFormField, l10n.username),
           findsOneWidget,
         );
+
+        // The next sign-in starts again on an authenticator code.
+        await tester.tap(find.widgetWithText(FilledButton, l10n.login));
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.mfaCodeHint), findsOneWidget);
+        expect(find.text(l10n.mfaBackupCodeHint), findsNothing);
 
         controller.dispose();
       },
