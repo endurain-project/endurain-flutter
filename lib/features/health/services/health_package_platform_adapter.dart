@@ -7,7 +7,9 @@ import 'package:endurain/features/health/models/health_route_point.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
+import 'package:endurain/features/health/services/health_heart_rate_index.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
+import 'package:endurain/features/health/services/health_route_correlation.dart';
 import 'package:endurain/features/health/services/heart_rate_series_reader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
@@ -47,11 +49,6 @@ const _historyCutoffSafetyMargin = Duration(minutes: 5);
 /// reading just before the start or after the end can still reach the first
 /// or last route points.
 const _heartRateWindowPadding = Duration(minutes: 1);
-
-/// How far a route point may be from the nearest heart rate reading and still
-/// take its value. Readings are usually 1-5 s apart, so this covers occasional
-/// gaps of up to 20 s without stretching a reading across a real dropout.
-const int _heartRateMatchToleranceMs = 10000;
 
 /// [HealthPlatformAdapter] backed by the `health` Flutter package.
 ///
@@ -168,8 +165,27 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
         DiagnosticsEvents.healthRequestAuthorizationError,
         details: diagnosticErrorDetails(e),
       );
-      throw const AppException(AppErrorCode.healthPermissionDenied);
+      if (_isPlatformUnavailable(e)) {
+        throw AppException(AppErrorCode.healthUnavailable, cause: e);
+      }
+      if (e is HealthException &&
+          e.errorCode != HealthErrorCode.permissionDenied) {
+        throw _readFailed(e);
+      }
+      throw AppException(AppErrorCode.healthPermissionDenied, cause: e);
     }
+  }
+
+  /// Whether [error] says the health platform itself is missing or
+  /// unsupported, not that the user refused access.
+  ///
+  /// The plugin reports Health Connect missing altogether as an
+  /// [UnsupportedError], and a data type the device cannot serve as
+  /// [HealthErrorCode.notSupported].
+  static bool _isPlatformUnavailable(Object error) {
+    return error is UnsupportedError ||
+        (error is HealthException &&
+            error.errorCode == HealthErrorCode.notSupported);
   }
 
   @override
@@ -185,7 +201,12 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
         false => HealthAuthorizationStatus.denied,
         null => HealthAuthorizationStatus.notDetermined,
       };
-    } catch (_) {
+    } catch (error) {
+      // A missing platform is not a denial: surfacing it lets the caller offer
+      // an install or an explanation instead of a permission prompt.
+      if (_isPlatformUnavailable(error)) {
+        throw AppException(AppErrorCode.healthUnavailable, cause: error);
+      }
       return HealthAuthorizationStatus.denied;
     }
   }
@@ -305,7 +326,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
 
       // Step 3 — Fetch heart rate readings for the remaining workouts only.
       final heartRate = await _fetchHeartRate(workoutPoints: workoutPoints);
-      final heartRateIndex = _HeartRateIndex(heartRate.samples);
+      final heartRateIndex = HealthHeartRateIndex(heartRate.samples);
 
       // Step 4 — Map each workout data point to a HealthWorkout.
       final workouts = workoutPoints
@@ -508,9 +529,8 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   /// A failed plugin read throws (see [_readFailed]) instead of returning no
   /// readings, so a workout is never imported without its heart rate because
   /// of a passing failure.
-  Future<({List<_HrSample> samples, String source})> _fetchHeartRate({
-    required List<HealthDataPoint> workoutPoints,
-  }) async {
+  Future<({List<HealthHeartRateSample> samples, String source})>
+  _fetchHeartRate({required List<HealthDataPoint> workoutPoints}) async {
     final windows = [
       for (final point in workoutPoints)
         (
@@ -521,7 +541,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     final reader = _heartRateSeriesReader;
     if (reader != null) {
       try {
-        final samples = <_HrSample>[];
+        final samples = <HealthHeartRateSample>[];
         for (final window in windows) {
           final readings = await reader.read(
             start: window.start,
@@ -529,7 +549,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
           );
           for (final reading in readings) {
             samples.add(
-              _HrSample.interval(
+              HealthHeartRateSample.interval(
                 start: reading.start,
                 end: reading.end,
                 bpm: reading.bpm.round(),
@@ -537,7 +557,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
             );
           }
         }
-        samples.sort(_HrSample.byStart);
+        samples.sort(HealthHeartRateSample.byStart);
         return (samples: samples, source: 'series');
       } catch (error) {
         _diagnostics.recordBreadcrumbSync(
@@ -558,10 +578,10 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   ///
   /// On iOS a condensed series arrives here as one sample spanning the whole
   /// series with a single summary value; it still covers its full interval.
-  Future<List<_HrSample>> _fetchHeartRateSamples(
+  Future<List<HealthHeartRateSample>> _fetchHeartRateSamples(
     List<({DateTime start, DateTime end})> windows,
   ) async {
-    final samples = <_HrSample>[];
+    final samples = <HealthHeartRateSample>[];
     try {
       for (final window in windows) {
         final points = await _health.getHealthDataFromTypes(
@@ -573,7 +593,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
           final value = pt.value;
           if (value is! NumericHealthValue) continue;
           samples.add(
-            _HrSample.interval(
+            HealthHeartRateSample.interval(
               start: pt.dateFrom,
               end: pt.dateTo,
               bpm: value.numericValue.round(),
@@ -584,7 +604,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     } catch (error) {
       throw _readFailed(error);
     }
-    samples.sort(_HrSample.byStart);
+    samples.sort(HealthHeartRateSample.byStart);
     return samples;
   }
 
@@ -595,7 +615,7 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   HealthWorkout? _mapWorkout({
     required HealthDataPoint point,
     required List<WorkoutRouteLocation> locations,
-    required _HeartRateIndex heartRate,
+    required HealthHeartRateIndex heartRate,
   }) {
     final value = point.value;
     if (value is! WorkoutHealthValue) return null;
@@ -649,10 +669,10 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   }
 
   /// Attaches the heart rate reading that covers a route point, or the
-  /// nearest one within [_heartRateMatchToleranceMs] of it.
+  /// nearest one within the match tolerance of it.
   HealthRoutePoint _mergeHr({
     required WorkoutRouteLocation loc,
-    required _HeartRateIndex heartRate,
+    required HealthHeartRateIndex heartRate,
   }) {
     return HealthRoutePoint(
       latitude: loc.latitude,
@@ -662,122 +682,6 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       heartRate: heartRate.bpmAt(loc.timestamp.millisecondsSinceEpoch),
     );
   }
-}
-
-/// Looks up the heart rate at a time in readings sorted by start.
-///
-/// Readings can overlap, for example when two sources recorded heart rate at
-/// once, so the reading just before a time is not always the one that covers
-/// it. [_maxEndMs] holds the latest end among the readings up to each index;
-/// it never decreases, so a binary search over it finds the earliest reading
-/// that covers a time.
-class _HeartRateIndex {
-  _HeartRateIndex(this._samples)
-    : _maxEndMs = List.filled(_samples.length, 0),
-      _maxEndIndex = List.filled(_samples.length, 0) {
-    for (var i = 0; i < _samples.length; i++) {
-      if (i > 0 && _maxEndMs[i - 1] >= _samples[i].endMs) {
-        _maxEndMs[i] = _maxEndMs[i - 1];
-        _maxEndIndex[i] = _maxEndIndex[i - 1];
-      } else {
-        _maxEndMs[i] = _samples[i].endMs;
-        _maxEndIndex[i] = i;
-      }
-    }
-  }
-
-  final List<_HrSample> _samples;
-
-  /// Latest `endMs` among `_samples[0..i]`.
-  final List<int> _maxEndMs;
-
-  /// Index of the earliest reading holding `_maxEndMs[i]`.
-  final List<int> _maxEndIndex;
-
-  /// Returns the heart rate at [targetMs], or `null` when no reading covers
-  /// it or lies within [_heartRateMatchToleranceMs] of it.
-  ///
-  /// A reading that covers [targetMs] wins, the earliest-starting one if
-  /// several do. Otherwise the nearest reading wins: the one ending last
-  /// before [targetMs] or the first one starting after it, the earlier one on
-  /// a tie.
-  int? bpmAt(int targetMs) {
-    // Readings [0, startedCount) start at or before targetMs.
-    final startedCount = _firstIndexWhere(
-      (i) => _samples[i].startMs > targetMs,
-    );
-    if (startedCount > 0) {
-      // Earliest reading whose running max end reaches targetMs. The max
-      // first reaches it at that reading, so the reading itself covers it.
-      final covering = _firstIndexWhere(
-        (i) => _maxEndMs[i] >= targetMs,
-        end: startedCount,
-      );
-      if (covering < startedCount) return _samples[covering].bpm;
-    }
-
-    int? hr;
-    var closest = _heartRateMatchToleranceMs + 1;
-    if (startedCount > 0) {
-      final before = _maxEndIndex[startedCount - 1];
-      final distance = targetMs - _samples[before].endMs;
-      if (distance < closest) {
-        hr = _samples[before].bpm;
-        closest = distance;
-      }
-    }
-    if (startedCount < _samples.length) {
-      final distance = _samples[startedCount].startMs - targetMs;
-      if (distance < closest) hr = _samples[startedCount].bpm;
-    }
-    return hr;
-  }
-
-  /// First index in `[0, end)` for which the monotonic [test] holds, or [end].
-  int _firstIndexWhere(bool Function(int index) test, {int? end}) {
-    var low = 0;
-    var high = end ?? _samples.length;
-    while (low < high) {
-      final middle = low + (high - low) ~/ 2;
-      if (test(middle)) {
-        high = middle;
-      } else {
-        low = middle + 1;
-      }
-    }
-    return low;
-  }
-}
-
-/// Lightweight heart-rate reading covering `startMs..endMs` (private to this
-/// file). An instant reading has `startMs == endMs`.
-class _HrSample {
-  const _HrSample._({
-    required this.startMs,
-    required this.endMs,
-    required this.bpm,
-  });
-
-  factory _HrSample.interval({
-    required DateTime start,
-    required DateTime end,
-    required int bpm,
-  }) {
-    final startMs = start.millisecondsSinceEpoch;
-    final endMs = end.millisecondsSinceEpoch;
-    return _HrSample._(
-      startMs: startMs,
-      endMs: endMs < startMs ? startMs : endMs,
-      bpm: bpm,
-    );
-  }
-
-  final int startMs;
-  final int endMs;
-  final int bpm;
-
-  static int byStart(_HrSample a, _HrSample b) =>
-      a.startMs.compareTo(b.startMs);
 }
 
 /// A GPS route sample with its own time window, used to correlate it to a
@@ -793,54 +697,4 @@ class _RouteData {
   final DateTime end;
   final String? workoutUuid;
   final List<WorkoutRouteLocation> locations;
-}
-
-/// How far a route may lie outside a workout's window and still be given to it
-/// when it overlaps no workout, absorbing clock/rounding differences between
-/// the route and workout samples.
-const int _routeMatchToleranceMs = 60000;
-
-/// Returns the index in [workouts] of the workout that owns a GPS route, or
-/// `null` when none does.
-///
-/// When the route carries its owning workout's UUID (Android / Health Connect)
-/// the match is exact. On iOS `HKWorkoutRoute` does not expose that UUID, so
-/// the route goes to the one workout it overlaps the most. A route that
-/// overlaps none goes to the nearest workout within [_routeMatchToleranceMs],
-/// so back-to-back workouts never share each other's tracks. A tie goes to the
-/// workout whose start is closest to the route's.
-@visibleForTesting
-int? healthRouteOwnerIndex({
-  required String? routeWorkoutUuid,
-  required DateTime routeStart,
-  required DateTime routeEnd,
-  required List<({String uuid, DateTime start, DateTime end})> workouts,
-}) {
-  if (routeWorkoutUuid != null) {
-    final index = workouts.indexWhere((w) => w.uuid == routeWorkoutUuid);
-    return index < 0 ? null : index;
-  }
-  final routeStartMs = routeStart.millisecondsSinceEpoch;
-  final routeEndMs = routeEnd.millisecondsSinceEpoch;
-  int? owner;
-  // Overlap in ms; negative values are the gap between route and workout.
-  var bestOverlapMs = -_routeMatchToleranceMs - 1;
-  var bestStartDistanceMs = 0;
-  for (var i = 0; i < workouts.length; i++) {
-    final workoutStartMs = workouts[i].start.millisecondsSinceEpoch;
-    final workoutEndMs = workouts[i].end.millisecondsSinceEpoch;
-    final overlapMs =
-        (routeEndMs < workoutEndMs ? routeEndMs : workoutEndMs) -
-        (routeStartMs > workoutStartMs ? routeStartMs : workoutStartMs);
-    final startDistanceMs = (routeStartMs - workoutStartMs).abs();
-    if (overlapMs > bestOverlapMs ||
-        (owner != null &&
-            overlapMs == bestOverlapMs &&
-            startDistanceMs < bestStartDistanceMs)) {
-      owner = i;
-      bestOverlapMs = overlapMs;
-      bestStartDistanceMs = startDistanceMs;
-    }
-  }
-  return owner;
 }

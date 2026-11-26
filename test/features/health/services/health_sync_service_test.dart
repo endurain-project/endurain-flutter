@@ -690,6 +690,77 @@ void main() {
       );
     });
 
+    test(
+      'first sync reads the whole default range and stamps the sync',
+      () async {
+        await service.setAutoSyncOnResumeEnabled(true);
+        adapter.workouts = [makeWorkout('w1')];
+
+        await service.autoSyncOnResume();
+
+        expect(
+          adapter.readWindows.last.start,
+          DateTime.utc(2025, 6, 1, 11).subtract(const Duration(days: 30)),
+        );
+        expect(
+          await importStore.lastSyncAt(profile.id),
+          DateTime.utc(2025, 6, 1, 11),
+        );
+      },
+    );
+
+    test('later passes start 48 hours before the last sync', () async {
+      await service.setAutoSyncOnResumeEnabled(true);
+      await importStore.setLastSyncAt(profile.id, DateTime.utc(2025, 5, 30, 8));
+      adapter.workouts = [makeWorkout('w1')];
+
+      await service.autoSyncOnResume();
+
+      expect(adapter.readWindows, hasLength(1));
+      expect(adapter.readWindows.single.start, DateTime.utc(2025, 5, 28, 8));
+    });
+
+    test('an old last sync never reaches past the default range', () async {
+      await service.setAutoSyncOnResumeEnabled(true);
+      await importStore.setLastSyncAt(profile.id, DateTime.utc(2025, 1, 1));
+
+      await service.autoSyncOnResume();
+
+      expect(
+        adapter.readWindows.first.start,
+        DateTime.utc(2025, 6, 1, 11).subtract(const Duration(days: 30)),
+      );
+    });
+
+    test('a failed pass does not advance the last sync', () async {
+      await service.setAutoSyncOnResumeEnabled(true);
+      final previous = DateTime.utc(2025, 5, 30, 8);
+      await importStore.setLastSyncAt(profile.id, previous);
+      adapter.readWorkoutsError = const AppException(
+        AppErrorCode.healthImportFailed,
+      );
+
+      await expectLater(
+        service.autoSyncOnResume(),
+        throwsA(isA<AppException>()),
+      );
+
+      expect(await importStore.lastSyncAt(profile.id), previous);
+    });
+
+    test('a pass with nothing new still advances the last sync', () async {
+      await service.setAutoSyncOnResumeEnabled(true);
+      await importStore.setLastSyncAt(profile.id, DateTime.utc(2025, 5, 30, 8));
+
+      final result = await service.autoSyncOnResume();
+
+      expect(result, (imported: 0, failed: 0));
+      expect(
+        await importStore.lastSyncAt(profile.id),
+        DateTime.utc(2025, 6, 1, 11),
+      );
+    });
+
     test('leaves the screen list and paging untouched', () async {
       await service.setAutoSyncOnResumeEnabled(true);
       adapter.routeConsentDeniedCountValue = 1;

@@ -14,7 +14,6 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
-import '../../../helpers/widget_test_app.dart';
 import '../fakes/fake_sensor_connection_adapter.dart';
 
 void main() {
@@ -74,12 +73,10 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: TestAppScope(
-          child: SensorSettingsScreen(
-            controller: controller,
-            powerController: powerController,
-            cadenceController: cadenceController,
-          ),
+        home: SensorSettingsScreen(
+          controller: controller,
+          powerController: powerController,
+          cadenceController: cadenceController,
         ),
       ),
     );

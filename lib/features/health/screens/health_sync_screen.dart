@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
@@ -14,10 +15,24 @@ import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:material_ui/material_ui.dart';
 
 class HealthSyncScreen extends StatefulWidget {
-  const HealthSyncScreen({super.key, this.controller});
+  const HealthSyncScreen({
+    super.key,
+    required this.activityDetailsBuilder,
+    this.controller,
+    this.createController,
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
-  /// Optional injected controller — if omitted, resolved from [AppScope].
+  /// The page for an imported workout's local activity.
+  final Widget Function(BuildContext context, String recordId)
+  activityDetailsBuilder;
+
+  /// Injected controller (tests); otherwise one is built with
+  /// [createController] and owned by the screen.
   final HealthSyncController? controller;
+  final HealthSyncController Function()? createController;
 
   @override
   State<HealthSyncScreen> createState() => _HealthSyncScreenState();
@@ -32,12 +47,9 @@ class _HealthSyncScreenState extends State<HealthSyncScreen>
     super.initState();
     _controller = registerController(
       widget.controller,
-      () => AppScope.servicesOf(
-        context,
-        listen: false,
-      ).createHealthSyncController(),
+      () => widget.createController!(),
     );
-    _controller.loadStatus();
+    unawaited(_controller.loadStatus());
   }
 
   @override
@@ -219,7 +231,11 @@ class _HealthSyncScreenState extends State<HealthSyncScreen>
         Expanded(
           child: state.selectedView == HealthSyncView.available
               ? HealthSyncAvailableView(controller: _controller, state: state)
-              : HealthSyncImportedView(controller: _controller, state: state),
+              : HealthSyncImportedView(
+                  controller: _controller,
+                  state: state,
+                  activityDetailsBuilder: widget.activityDetailsBuilder,
+                ),
         ),
       ],
     );

@@ -161,6 +161,81 @@ void main() {
     });
   });
 
+  group('HealthPackagePlatformAdapter authorization failures', () {
+    HealthPackagePlatformAdapter adapterFailingWith(Object error) {
+      return HealthPackagePlatformAdapter(
+        health: _FakeHealth(hasPermissionsResult: true, authError: error),
+        targetPlatform: () => TargetPlatform.android,
+      );
+    }
+
+    Matcher throwsCode(AppErrorCode code) =>
+        throwsA(isA<AppException>().having((e) => e.code, 'code', code));
+
+    test('Health Connect missing is unavailable, not denied', () async {
+      await expectLater(
+        adapterFailingWith(UnsupportedError('no Health Connect'))
+            .requestAuthorization(),
+        throwsCode(AppErrorCode.healthUnavailable),
+      );
+    });
+
+    test('a not-supported platform error is unavailable', () async {
+      await expectLater(
+        adapterFailingWith(
+          HealthException(
+            null,
+            'nope',
+            errorCode: HealthErrorCode.notSupported,
+          ),
+        ).requestAuthorization(),
+        throwsCode(AppErrorCode.healthUnavailable),
+      );
+    });
+
+    test('a permission error stays denied', () async {
+      await expectLater(
+        adapterFailingWith(
+          HealthException(
+            null,
+            'no',
+            errorCode: HealthErrorCode.permissionDenied,
+          ),
+        ).requestAuthorization(),
+        throwsCode(AppErrorCode.healthPermissionDenied),
+      );
+    });
+
+    test('a transient platform error is a read failure, not denied', () async {
+      await expectLater(
+        adapterFailingWith(
+          HealthException(null, 'busy', errorCode: HealthErrorCode.unavailable),
+        ).requestAuthorization(),
+        throwsA(
+          isA<AppException>()
+              .having((e) => e.code, 'code', AppErrorCode.healthReadFailed)
+              .having((e) => e.isTransient, 'isTransient', isTrue),
+        ),
+      );
+    });
+
+    test('status check reports a missing platform instead of denied', () async {
+      await expectLater(
+        adapterFailingWith(UnsupportedError('no Health Connect'))
+            .currentAuthorizationStatus(),
+        throwsCode(AppErrorCode.healthUnavailable),
+      );
+    });
+
+    test('status check still maps other failures to denied', () async {
+      expect(
+        await adapterFailingWith(StateError('boom'))
+            .currentAuthorizationStatus(),
+        HealthAuthorizationStatus.denied,
+      );
+    });
+  });
+
   group('HealthPackagePlatformAdapter — via UnsupportedAdapter contract', () {
     // Verify the adapter interface contract is satisfied
     const adapter = UnsupportedHealthPlatformAdapter();
@@ -572,103 +647,6 @@ void main() {
       expect(health.lastWorkoutReadStart, requestedStart);
       expect(health.historyAvailableCallCount, 0);
       expect(health.requestHistoryCallCount, 0);
-    });
-  });
-
-  group('healthRouteOwnerIndex', () {
-    final workouts = [
-      (
-        uuid: 'w1',
-        start: DateTime.utc(2025, 6, 1, 9, 0),
-        end: DateTime.utc(2025, 6, 1, 10, 0),
-      ),
-      // Starts 30 s after w1 ends: inside the time tolerance of w1.
-      (
-        uuid: 'w2',
-        start: DateTime.utc(2025, 6, 1, 10, 0, 30),
-        end: DateTime.utc(2025, 6, 1, 11, 0),
-      ),
-    ];
-
-    int? owner({
-      String? uuid,
-      required DateTime routeStart,
-      required DateTime routeEnd,
-    }) => healthRouteOwnerIndex(
-      routeWorkoutUuid: uuid,
-      routeStart: routeStart,
-      routeEnd: routeEnd,
-      workouts: workouts,
-    );
-
-    test('matches by UUID when the route carries the workout UUID', () {
-      expect(
-        owner(
-          uuid: 'w2',
-          routeStart: DateTime.utc(2030), // time ignored when UUID present
-          routeEnd: DateTime.utc(2030),
-        ),
-        1,
-      );
-    });
-
-    test('rejects an unknown UUID even if the times overlap', () {
-      expect(
-        owner(
-          uuid: 'other',
-          routeStart: DateTime.utc(2025, 6, 1, 9, 0),
-          routeEnd: DateTime.utc(2025, 6, 1, 10, 0),
-        ),
-        isNull,
-      );
-    });
-
-    test('gives a route to the one workout it overlaps (iOS)', () {
-      expect(
-        owner(
-          routeStart: DateTime.utc(2025, 6, 1, 9, 0),
-          routeEnd: DateTime.utc(2025, 6, 1, 10, 0),
-        ),
-        0,
-      );
-      expect(
-        owner(
-          routeStart: DateTime.utc(2025, 6, 1, 10, 0, 30),
-          routeEnd: DateTime.utc(2025, 6, 1, 11, 0),
-        ),
-        1,
-      );
-    });
-
-    test('a route overlapping two workouts goes to the larger overlap', () {
-      expect(
-        owner(
-          routeStart: DateTime.utc(2025, 6, 1, 9, 55),
-          routeEnd: DateTime.utc(2025, 6, 1, 10, 50),
-        ),
-        1,
-      );
-    });
-
-    test('does not match a route well outside every workout', () {
-      expect(
-        owner(
-          routeStart: DateTime.utc(2025, 6, 1, 12, 0),
-          routeEnd: DateTime.utc(2025, 6, 1, 13, 0),
-        ),
-        isNull,
-      );
-    });
-
-    test('tolerates a small clock skew when nothing overlaps', () {
-      // Route ends 30 s before w1 starts — within the 60 s tolerance.
-      expect(
-        owner(
-          routeStart: DateTime.utc(2025, 6, 1, 8, 58, 30),
-          routeEnd: DateTime.utc(2025, 6, 1, 8, 59, 30),
-        ),
-        0,
-      );
     });
   });
 
@@ -1150,9 +1128,13 @@ class _FakeHealth extends Health {
     this.requestHistoryResult = false,
     this.readError,
     this.errorByType = const {},
+    this.authError,
   });
 
   final bool? hasPermissionsResult;
+
+  /// Thrown by requestAuthorization and hasPermissions when set.
+  final Object? authError;
 
   /// Thrown by every data read when set.
   final Object? readError;
@@ -1204,6 +1186,9 @@ class _FakeHealth extends Health {
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
+    if (authError case final error?) {
+      Error.throwWithStackTrace(error, StackTrace.current);
+    }
     lastHasPermissionTypes = types;
     lastHasPermissionAccess = permissions;
     return hasPermissionsResult;
@@ -1214,6 +1199,9 @@ class _FakeHealth extends Health {
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
+    if (authError case final error?) {
+      Error.throwWithStackTrace(error, StackTrace.current);
+    }
     lastRequestAuthorizationTypes = types;
     lastRequestAuthorizationAccess = permissions;
     return requestAuthorizationResult;
@@ -1230,7 +1218,7 @@ class _FakeHealth extends Health {
   }) async {
     final error = readError;
     if (error != null) {
-      throw error;
+      Error.throwWithStackTrace(error, StackTrace.current);
     }
     if (types.contains(HealthDataType.WORKOUT)) {
       lastWorkoutReadStart = startTime;
@@ -1241,7 +1229,9 @@ class _FakeHealth extends Health {
     }
     for (final type in types) {
       final typeError = errorByType[type];
-      if (typeError != null) throw typeError;
+      if (typeError != null) {
+        Error.throwWithStackTrace(typeError, StackTrace.current);
+      }
     }
     return [for (final type in types) ...?dataByType[type]];
   }
@@ -1327,7 +1317,9 @@ class _FakeHeartRateSeriesReader implements HeartRateSeriesReader {
   }) async {
     windows.add((start: start, end: end));
     final failure = error;
-    if (failure != null) throw failure;
+    if (failure != null) {
+      Error.throwWithStackTrace(failure, StackTrace.current);
+    }
     return readings;
   }
 }

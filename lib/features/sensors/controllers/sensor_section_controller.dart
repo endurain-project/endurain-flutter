@@ -186,10 +186,10 @@ class SensorSectionController extends SafeNotifier
 
   @override
   void dispose() {
-    _bluetoothSubscription?.cancel();
-    _statusSubscription?.cancel();
-    _measurementSubscription?.cancel();
-    _scanSubscription?.cancel();
+    unawaited(_bluetoothSubscription?.cancel());
+    unawaited(_statusSubscription?.cancel());
+    unawaited(_measurementSubscription?.cancel());
+    unawaited(_scanSubscription?.cancel());
     unawaited(_service.stopScan());
     super.dispose();
   }

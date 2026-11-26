@@ -13,6 +13,12 @@ import 'package:endurain/features/sensors/services/ble_payload.dart';
 /// Parsing is pure and side-effect free so it is fully unit testable without a
 /// Bluetooth stack. Malformed or truncated payloads return `null` rather than
 /// throwing, so a single bad notification never crashes the sensor pipeline.
+///
+/// Ownership during a native Android recording: the Kotlin GATT client
+/// (`CyclingPowerGattClient.parsePowerWatts`) holds the sensor while the native
+/// recorder runs and decodes only instantaneous power (clamped to zero). This Dart parser owns the rest (the unclamped signed value) and
+/// serves every other case, such as the phone app recording or the Sensors
+/// screen. Both are checked against `test/fixtures/ble_cycling_power_vectors.json`.
 class CyclingPowerMeasurementParser {
   const CyclingPowerMeasurementParser._();
 

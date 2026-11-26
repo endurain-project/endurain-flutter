@@ -107,7 +107,7 @@ class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
       // listeners can reset their "scanning" state.
       timeoutTimer = Timer(timeout, () {
         if (!controller.isClosed) {
-          controller.close();
+          unawaited(controller.close());
         }
       });
     }

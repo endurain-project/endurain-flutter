@@ -32,6 +32,12 @@ class CscCrankMeasurement {
 /// and side-effect free; the stateful crank-to-RPM derivation lives in
 /// `CyclingSpeedCadenceMeasurementDecoder`. Malformed or truncated payloads
 /// return `null` rather than throwing.
+///
+/// Ownership during a native Android recording: the Kotlin GATT client
+/// (`CadenceGattClient.parseCscCrank`) holds the sensor while the native
+/// recorder runs and decodes only cadence (derived from the crank fields with its own calculator). This Dart parser owns the rest (the Dart-side cadence derivation in `CyclingSpeedCadenceMeasurementDecoder`) and
+/// serves every other case, such as the phone app recording or the Sensors
+/// screen. Both are checked against `test/fixtures/ble_cycling_speed_cadence_vectors.json`.
 class CyclingSpeedCadenceMeasurementParser {
   const CyclingSpeedCadenceMeasurementParser._();
 
