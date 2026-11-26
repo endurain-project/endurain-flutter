@@ -402,6 +402,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaCodeRequired => 'Ange MFA-koden';
 
   @override
+  String get mfaBackupCode => 'Reservkod';
+
+  @override
+  String get mfaBackupCodeHint => 'Ange en av dina reservkoder på 8 tecken';
+
+  @override
+  String get mfaUseBackupCode => 'Använd en reservkod';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Använd en kod från autentiseringsappen';
+
+  @override
   String get verify => 'Verifiera';
 
   @override

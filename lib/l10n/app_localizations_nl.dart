@@ -399,6 +399,20 @@ class AppLocalizationsNl extends AppLocalizations {
   String get mfaCodeRequired => 'Voer de MFA-code in';
 
   @override
+  String get mfaBackupCode => 'Back-upcode';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Voer een van je back-upcodes van 8 tekens in';
+
+  @override
+  String get mfaUseBackupCode => 'Een back-upcode gebruiken';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Een code uit je authenticator-app gebruiken';
+
+  @override
   String get verify => 'Verifiëren';
 
   @override

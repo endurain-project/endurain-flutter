@@ -397,6 +397,20 @@ class AppLocalizationsLt extends AppLocalizations {
   String get mfaCodeRequired => 'Įveskite MFA kodą';
 
   @override
+  String get mfaBackupCode => 'Atsarginis kodas';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Įveskite vieną iš savo 8 simbolių atsarginių kodų';
+
+  @override
+  String get mfaUseBackupCode => 'Naudoti atsarginį kodą';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Naudoti autentifikavimo programėlės kodą';
+
+  @override
   String get verify => 'Patvirtinti';
 
   @override

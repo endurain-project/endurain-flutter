@@ -398,6 +398,18 @@ class AppLocalizationsDa extends AppLocalizations {
   String get mfaCodeRequired => 'Indtast MFA-koden';
 
   @override
+  String get mfaBackupCode => 'Backupkode';
+
+  @override
+  String get mfaBackupCodeHint => 'Indtast en af dine backupkoder på 8 tegn';
+
+  @override
+  String get mfaUseBackupCode => 'Brug en backupkode';
+
+  @override
+  String get mfaUseAuthenticatorCode => 'Brug en kode fra godkendelsesappen';
+
+  @override
   String get verify => 'Bekræft';
 
   @override

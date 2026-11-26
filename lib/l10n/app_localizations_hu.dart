@@ -405,6 +405,20 @@ class AppLocalizationsHu extends AppLocalizations {
   String get mfaCodeRequired => 'Adja meg az MFA-kódot';
 
   @override
+  String get mfaBackupCode => 'Tartalék kód';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Adja meg az egyik 8 karakteres tartalék kódját';
+
+  @override
+  String get mfaUseBackupCode => 'Tartalék kód használata';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Hitelesítő alkalmazás kódjának használata';
+
+  @override
   String get verify => 'Ellenőrzés';
 
   @override

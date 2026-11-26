@@ -398,6 +398,20 @@ class AppLocalizationsSl extends AppLocalizations {
   String get mfaCodeRequired => 'Vnesite kodo MFA';
 
   @override
+  String get mfaBackupCode => 'Rezervna koda';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Vnesite eno od svojih 8-mestnih rezervnih kod';
+
+  @override
+  String get mfaUseBackupCode => 'Uporabi rezervno kodo';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Uporabi kodo iz aplikacije za preverjanje pristnosti';
+
+  @override
   String get verify => 'Preveri';
 
   @override

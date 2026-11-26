@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The two-factor sign-in step shows one box per character. An authenticator code takes six digits only, and "Use a backup code" switches to eight boxes of letters and digits, which the app sends as `XXXX-XXXX`. Pasted or autofilled codes with spaces or a dash fill the boxes, and password managers can still fill authenticator codes. The code is sent as soon as the last box is filled. If the server rejects it, the boxes clear and the reason shows under them, so the user can type the next code straight away.
+
 ## [v0.12.3+25] - 2026-11-26
 
 This release requests only the health data the apps use, after Google Play rejected 0.12.2 under its Health Connect minimum-scope policy, and updates the dependencies.

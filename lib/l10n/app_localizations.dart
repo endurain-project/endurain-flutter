@@ -783,6 +783,30 @@ abstract class AppLocalizations {
   /// **'Please enter MFA code'**
   String get mfaCodeRequired;
 
+  /// MFA backup code field label
+  ///
+  /// In en, this message translates to:
+  /// **'Backup code'**
+  String get mfaBackupCode;
+
+  /// Helper text under the MFA backup code field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter one of your 8-character backup codes'**
+  String get mfaBackupCodeHint;
+
+  /// Button that switches the MFA step to a backup code
+  ///
+  /// In en, this message translates to:
+  /// **'Use a backup code'**
+  String get mfaUseBackupCode;
+
+  /// Button that switches the MFA step back to an authenticator app code
+  ///
+  /// In en, this message translates to:
+  /// **'Use an authenticator code'**
+  String get mfaUseAuthenticatorCode;
+
   /// MFA verification button label
   ///
   /// In en, this message translates to:

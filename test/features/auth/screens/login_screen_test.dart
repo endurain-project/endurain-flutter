@@ -145,7 +145,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.mfaTitle), findsOneWidget);
-      expect(find.text(l10n.mfaCode), findsOneWidget);
+      expect(find.text(l10n.mfaCodeHint), findsOneWidget);
+      // The server named no methods, so it offers no backup code.
+      expect(find.text(l10n.mfaUseBackupCode), findsNothing);
 
       await tester.tap(find.text(l10n.verify));
       await tester.pumpAndSettle();
@@ -154,6 +156,115 @@ void main() {
 
       controller.dispose();
     });
+
+    testWidgets('sends six digits on its own and shows why they failed', (
+      tester,
+    ) async {
+      final submitted = <String>[];
+      final controller = _controller(client: _mfaClient(submitted));
+      await _reachMfaStep(tester, controller, l10n);
+
+      // Letters and separators are dropped; the sixth digit sends the code.
+      await tester.enterText(find.byType(TextField), '12a3 45-6789');
+      await tester.pumpAndSettle();
+
+      expect(submitted, ['123456']);
+      expect(find.text(l10n.mfaTitle), findsOneWidget);
+      expect(
+        find.text(l10n.errorMfaVerificationFailedWithDetails('Invalid code')),
+        findsOneWidget,
+      );
+      expect(_mfaInput(tester).controller!.text, isEmpty);
+      // Inline, not in a dialog.
+      expect(find.text(l10n.ok), findsNothing);
+
+      // Typing again hides the reason.
+      await tester.enterText(find.byType(TextField), '1');
+      await tester.pump();
+      expect(
+        find.text(l10n.errorMfaVerificationFailedWithDetails('Invalid code')),
+        findsNothing,
+      );
+
+      controller.dispose();
+    });
+
+    testWidgets(
+      'sends eight backup code characters on their own, with a dash',
+      (tester) async {
+        final submitted = <String>[];
+        final controller = _controller(client: _mfaClient(submitted));
+        await _reachMfaStep(tester, controller, l10n);
+
+        await tester.enterText(find.byType(TextField), '12');
+        await tester.tap(find.text(l10n.mfaUseBackupCode));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.mfaBackupCodeHint), findsOneWidget);
+        expect(_mfaInput(tester).controller!.text, isEmpty);
+
+        await tester.enterText(find.byType(TextField), 'a3k9-7bd');
+        await tester.pumpAndSettle();
+        expect(_mfaInput(tester).controller!.text, 'A3K97BD');
+        expect(submitted, isEmpty);
+
+        await tester.enterText(find.byType(TextField), 'a3k9-7bdf-xyz');
+        await tester.pumpAndSettle();
+        expect(submitted, ['A3K9-7BDF']);
+
+        controller.dispose();
+      },
+    );
+
+    testWidgets('an incomplete code is not sent', (tester) async {
+      final submitted = <String>[];
+      final controller = _controller(client: _mfaClient(submitted));
+      await _reachMfaStep(tester, controller, l10n);
+
+      await tester.enterText(find.byType(TextField), '123');
+      await tester.tap(find.text(l10n.verify));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.mfaCodeRequired), findsOneWidget);
+      expect(submitted, isEmpty);
+
+      controller.dispose();
+    });
+
+    testWidgets(
+      'a lost sign-in session returns to the credentials in a dialog',
+      (tester) async {
+        final submitted = <String>[];
+        final controller = _controller(
+          client: _mfaClient(submitted, verifyStatus: 401),
+        );
+        await _reachMfaStep(tester, controller, l10n);
+        await tester.tap(find.text(l10n.mfaUseBackupCode));
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextField), 'A3K97BDF');
+        await tester.pumpAndSettle();
+
+        expect(submitted, ['A3K9-7BDF']);
+        expect(find.text(l10n.errorMfaSessionMissing), findsOneWidget);
+        expect(find.text(l10n.ok), findsOneWidget);
+        await tester.tap(find.text(l10n.ok));
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.mfaTitle), findsNothing);
+        expect(
+          find.widgetWithText(TextFormField, l10n.username),
+          findsOneWidget,
+        );
+
+        // The next sign-in starts again on an authenticator code.
+        await tester.tap(find.widgetWithText(FilledButton, l10n.login));
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.mfaCodeHint), findsOneWidget);
+        expect(find.text(l10n.mfaBackupCodeHint), findsNothing);
+
+        controller.dispose();
+      },
+    );
 
     testWidgets('shows the password-change step and checks the repeat', (
       tester,
@@ -300,6 +411,59 @@ Widget _loginScreen({
     ),
   );
 }
+
+/// A server that asks for MFA (TOTP or backup code) and records each code
+/// sent to it, then rejects it: as a wrong code, or with a `401` as a dead
+/// challenge.
+MockClient _mfaClient(List<String> submitted, {int verifyStatus = 400}) {
+  return MockClient((request) async {
+    final path = request.url.path;
+    if (path == ApiEndpoints.defaults.serverSettingsEndpoint) {
+      return http.Response(
+        '{"sso_enabled":false,"local_login_enabled":true}',
+        200,
+      );
+    }
+    if (path == ApiEndpoints.defaults.tokenEndpoint) {
+      return http.Response(
+        '{"next_step":"mfa","mfa_challenge":"${'c' * 43}",'
+        '"methods":["totp","backup_code"]}',
+        200,
+      );
+    }
+    if (path == ApiEndpoints.defaults.mfaVerifyEndpoint) {
+      final body = jsonDecode(request.body) as Map<String, dynamic>;
+      submitted.add(body['mfa_code'] as String);
+      return http.Response('{"detail":"Invalid code"}', verifyStatus);
+    }
+    fail('Unexpected request to ${request.url}');
+  });
+}
+
+Future<void> _reachMfaStep(
+  WidgetTester tester,
+  LoginController controller,
+  AppLocalizationsEn l10n,
+) async {
+  await tester.pumpWidget(_loginScreen(controller: controller));
+  await tester.enterText(find.byType(TextFormField), 'example.test');
+  await tester.tap(find.text(l10n.next));
+  await tester.pumpAndSettle();
+  await tester.enterText(
+    find.widgetWithText(TextFormField, l10n.username),
+    'joao',
+  );
+  await tester.enterText(
+    find.widgetWithText(TextFormField, l10n.password),
+    'secret',
+  );
+  await tester.tap(find.widgetWithText(FilledButton, l10n.login));
+  await tester.pumpAndSettle();
+  expect(find.text(l10n.mfaTitle), findsOneWidget);
+}
+
+TextField _mfaInput(WidgetTester tester) =>
+    tester.widget<TextField>(find.byType(TextField));
 
 LoginController _controller({
   required http.Client client,

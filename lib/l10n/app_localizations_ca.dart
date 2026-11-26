@@ -408,6 +408,20 @@ class AppLocalizationsCa extends AppLocalizations {
   String get mfaCodeRequired => 'Introduïu el codi MFA';
 
   @override
+  String get mfaBackupCode => 'Codi de reserva';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Introduïu un dels vostres codis de reserva de 8 caràcters';
+
+  @override
+  String get mfaUseBackupCode => 'Utilitza un codi de reserva';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Utilitza un codi de l\'aplicació d\'autenticació';
+
+  @override
   String get verify => 'Verifica';
 
   @override

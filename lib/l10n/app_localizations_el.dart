@@ -408,6 +408,20 @@ class AppLocalizationsEl extends AppLocalizations {
   String get mfaCodeRequired => 'Εισαγάγετε τον κωδικό MFA';
 
   @override
+  String get mfaBackupCode => 'Εφεδρικός κωδικός';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Εισαγάγετε έναν από τους εφεδρικούς κωδικούς σας 8 χαρακτήρων';
+
+  @override
+  String get mfaUseBackupCode => 'Χρήση εφεδρικού κωδικού';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Χρήση κωδικού από εφαρμογή ελέγχου ταυτότητας';
+
+  @override
   String get verify => 'Επαλήθευση';
 
   @override

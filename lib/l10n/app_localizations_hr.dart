@@ -403,6 +403,20 @@ class AppLocalizationsHr extends AppLocalizations {
   String get mfaCodeRequired => 'Unesite MFA kôd';
 
   @override
+  String get mfaBackupCode => 'Rezervni kôd';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Unesite jedan od svojih rezervnih kôdova od 8 znakova';
+
+  @override
+  String get mfaUseBackupCode => 'Koristi rezervni kôd';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Koristi kôd iz aplikacije za autentifikaciju';
+
+  @override
   String get verify => 'Provjeri';
 
   @override

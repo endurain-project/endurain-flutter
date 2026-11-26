@@ -398,6 +398,20 @@ class AppLocalizationsLv extends AppLocalizations {
   String get mfaCodeRequired => 'Ievadiet MFA kodu';
 
   @override
+  String get mfaBackupCode => 'Rezerves kods';
+
+  @override
+  String get mfaBackupCodeHint =>
+      'Ievadiet vienu no saviem 8 rakstzīmju rezerves kodiem';
+
+  @override
+  String get mfaUseBackupCode => 'Izmantot rezerves kodu';
+
+  @override
+  String get mfaUseAuthenticatorCode =>
+      'Izmantot autentifikācijas lietotnes kodu';
+
+  @override
   String get verify => 'Pārbaudīt';
 
   @override
