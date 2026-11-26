@@ -130,8 +130,8 @@ final class AudioAnnouncer: NSObject {
         }
     }
 
-    private func finish(_ utterance: AVSpeechUtterance) {
-        let wasActive = activeUtteranceIds.remove(ObjectIdentifier(utterance)) != nil
+    private func finish(_ utterance: ObjectIdentifier) {
+        let wasActive = activeUtteranceIds.remove(utterance) != nil
         guard activeUtteranceIds.isEmpty, wasActive || deactivateWhenSilent else {
             return
         }
@@ -200,10 +200,10 @@ final class AudioAnnouncer: NSObject {
         }
     }
 
-    private func cancel(_ utterance: AVSpeechUtterance) {
+    private func cancel(_ utterance: ObjectIdentifier) {
         // An utterance cancelled by `stop()` is no longer tracked; only an
         // unexpected cancellation is a failure.
-        if activeUtteranceIds.contains(ObjectIdentifier(utterance)) {
+        if activeUtteranceIds.contains(utterance) {
             reportFailure(stage: .utteranceCancelled)
         }
         finish(utterance)
@@ -227,12 +227,35 @@ final class AudioAnnouncer: NSObject {
     }
 }
 
-extension AudioAnnouncer: @preconcurrency AVSpeechSynthesizerDelegate {
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        finish(utterance)
+// AVFoundation does not document the delegate queue, so the callbacks hop to
+// the main actor instead of asserting they are already on it. Utterances are
+// tracked by identity, which is Sendable.
+extension AudioAnnouncer: AVSpeechSynthesizerDelegate {
+    nonisolated func speechSynthesizer(
+        _ synthesizer: AVSpeechSynthesizer,
+        didFinish utterance: AVSpeechUtterance
+    ) {
+        let id = ObjectIdentifier(utterance)
+        Self.onMainActor { $0.finish(id) }
     }
 
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        cancel(utterance)
+    nonisolated func speechSynthesizer(
+        _ synthesizer: AVSpeechSynthesizer,
+        didCancel utterance: AVSpeechUtterance
+    ) {
+        let id = ObjectIdentifier(utterance)
+        Self.onMainActor { $0.cancel(id) }
+    }
+
+    /// Runs [work] right away when already on the main thread, keeping the
+    /// callback order, and otherwise in order on the main queue.
+    nonisolated private static func onMainActor(
+        _ work: @escaping @MainActor @Sendable (AudioAnnouncer) -> Void
+    ) {
+        if Thread.isMainThread {
+            MainActor.assumeIsolated { work(.shared) }
+        } else {
+            DispatchQueue.main.async { work(.shared) }
+        }
     }
 }

@@ -11,28 +11,33 @@ import WatchConnectivity
 /// on the watch. A delivered workout still unconfirmed after
 /// [redeliveryDelay] is sent again, because the phone may have failed to keep
 /// the file it received; unconfirmed workouts are never dropped.
+///
+/// Main-actor isolated for SwiftUI. WatchConnectivity calls the delegate on a
+/// background queue, so the delegate methods and the transfer logic are
+/// nonisolated: they only touch `WCSession` and the self-locking outbox.
+@MainActor
 final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
     static let shared = PhoneLink()
 
     /// How long a delivered workout waits for the phone's confirmation
     /// before it is sent again.
-    static let redeliveryDelay: TimeInterval = 10 * 60
+    nonisolated static let redeliveryDelay: TimeInterval = 10 * 60
 
     /// A failed transfer is retried after this long, or sooner when the phone
     /// becomes reachable.
-    static let retryDelay: TimeInterval = 60
+    nonisolated static let retryDelay: TimeInterval = 60
 
-    /// Workouts not yet confirmed by the phone. Updated on the main queue.
+    /// Workouts not yet confirmed by the phone.
     @Published private(set) var waitingCount = 0
 
-    let outbox: HandoffFileStore
+    nonisolated let outbox: HandoffFileStore
 
     init(outbox: HandoffFileStore = HandoffFileStore(directory: PhoneLink.defaultOutboxDirectory())) {
         self.outbox = outbox
         super.init()
     }
 
-    static func defaultOutboxDirectory() -> URL {
+    nonisolated static func defaultOutboxDirectory() -> URL {
         let support = FileManager.default.urls(
             for: .applicationSupportDirectory,
             in: .userDomainMask
@@ -56,7 +61,7 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
 
     /// Starts a transfer for every workout not yet delivered, or delivered
     /// but unconfirmed for [redeliveryDelay], and not already on its way.
-    func sendPending() {
+    nonisolated func sendPending() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         guard session.activationState == .activated else { return }
@@ -75,16 +80,16 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
         refreshWaitingCount()
     }
 
-    private func refreshWaitingCount() {
+    nonisolated private func refreshWaitingCount() {
         let count = ((try? outbox.entries()) ?? []).count
-        DispatchQueue.main.async { [weak self] in
+        Task { @MainActor [weak self] in
             self?.waitingCount = count
         }
     }
 
     // MARK: - WCSessionDelegate
 
-    func session(
+    nonisolated func session(
         _ session: WCSession,
         activationDidCompleteWith activationState: WCSessionActivationState,
         error: Error?
@@ -92,7 +97,7 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
         sendPending()
     }
 
-    func session(
+    nonisolated func session(
         _ session: WCSession,
         didFinish fileTransfer: WCSessionFileTransfer,
         error: Error?
@@ -110,7 +115,7 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
 
-    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+    nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
         guard let sessionId = WatchProtocol.acknowledgedSessionId(in: userInfo) else {
             return
         }
@@ -118,7 +123,7 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
         refreshWaitingCount()
     }
 
-    func sessionReachabilityDidChange(_ session: WCSession) {
+    nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         if session.isReachable {
             sendPending()
         }

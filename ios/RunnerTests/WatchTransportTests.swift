@@ -389,24 +389,24 @@ final class WatchConnectivityBridgeTests: XCTestCase {
     func testStoresAReceivedFileUnderTheMetadataSessionId() throws {
         let file = try write(envelope(sessionId: "from-body"))
 
-        XCTAssertTrue(bridge.storeReceivedHandoff(
+        XCTAssertEqual(bridge.storeReceivedHandoff(
             fileURL: file,
             metadata: WatchProtocol.handoffMetadata(sessionId: "from-metadata")
-        ))
+        ), .stored)
         XCTAssertEqual(try bridge.inbox.entries().map { $0.sessionId }, ["from-metadata"])
     }
 
     func testFallsBackToTheSessionIdInTheEnvelope() throws {
         let file = try write(envelope(sessionId: "from-body"))
 
-        XCTAssertTrue(bridge.storeReceivedHandoff(fileURL: file, metadata: nil))
+        XCTAssertEqual(bridge.storeReceivedHandoff(fileURL: file, metadata: nil), .stored)
         XCTAssertEqual(try bridge.inbox.entries().map { $0.sessionId }, ["from-body"])
     }
 
     func testDropsAFileWithoutASessionId() throws {
         let file = try write(Data("not json".utf8))
 
-        XCTAssertFalse(bridge.storeReceivedHandoff(fileURL: file, metadata: [:]))
+        XCTAssertEqual(bridge.storeReceivedHandoff(fileURL: file, metadata: [:]), .dropped)
         XCTAssertTrue(bridge.inbox.isEmpty)
     }
 
@@ -435,19 +435,94 @@ final class WatchConnectivityBridgeTests: XCTestCase {
         XCTAssertEqual(try bridge.inbox.entries().count, 2)
     }
 
-    private func envelope(sessionId: String) -> Data {
+    func testLeavesASessionFromANewerWatchAppUnprocessedAndUnacknowledged() throws {
+        var metadata = WatchProtocol.handoffMetadata(sessionId: "newer")
+        metadata[WatchProtocol.keyVersion] = WatchProtocol.payloadVersion + 1
+        let file = try write(envelope(sessionId: "newer"))
+
+        XCTAssertEqual(bridge.storeReceivedHandoff(fileURL: file, metadata: metadata), .deferred)
+
+        // Never offered to Dart, so never acknowledged: the watch keeps it
+        // for the app update that can read it.
+        XCTAssertTrue(bridge.inbox.isEmpty)
+        XCTAssertTrue(bridge.pendingAcknowledgements().isEmpty)
+    }
+
+    func testChecksTheEnvelopeVersionWhenTheMetadataHasNone() throws {
+        let file = try write(envelope(sessionId: "newer", version: WatchProtocol.payloadVersion + 1))
+
+        XCTAssertEqual(bridge.storeReceivedHandoff(fileURL: file, metadata: nil), .deferred)
+        XCTAssertTrue(bridge.inbox.isEmpty)
+    }
+
+    func testDrainSkipsAStoredSessionFromANewerWatchApp() throws {
+        try bridge.inbox.save(
+            envelope(sessionId: "newer", version: WatchProtocol.payloadVersion + 1),
+            sessionId: "newer"
+        )
+
+        XCTAssertTrue(try WatchTransportChannel.readInbox(bridge.inbox).get().isEmpty)
+        XCTAssertEqual(try bridge.inbox.entries().count, 1)
+    }
+
+    func testAcceptsOlderAndUnversionedPayloads() {
+        XCTAssertTrue(WatchProtocol.isSupported(version: nil))
+        XCTAssertTrue(WatchProtocol.isSupported(version: 0))
+        XCTAssertTrue(WatchProtocol.isSupported(version: WatchProtocol.payloadVersion))
+        XCTAssertFalse(WatchProtocol.isSupported(version: WatchProtocol.payloadVersion + 1))
+        XCTAssertFalse(WatchProtocol.isSupported(version: "1"))
+    }
+
+    func testAcceptsAnAcknowledgementFromANewerPhoneApp() {
+        // The phone may update first; its acknowledgements must still clear
+        // the watch outbox.
+        var acknowledgement = WatchProtocol.acknowledgement(sessionId: "s")
+        XCTAssertEqual(WatchProtocol.acknowledgedSessionId(in: acknowledgement), "s")
+
+        acknowledgement[WatchProtocol.keyVersion] = WatchProtocol.payloadVersion + 1
+        XCTAssertEqual(WatchProtocol.acknowledgedSessionId(in: acknowledgement), "s")
+    }
+
+    func testDropsAReceivedFileOverTheSizeLimit() throws {
+        let file = try write(Data(repeating: 0x20, count: 9))
+
+        XCTAssertNil(WatchConnectivityBridge.readHandoff(at: file, maxBytes: 8))
+        XCTAssertEqual(WatchConnectivityBridge.readHandoff(at: file, maxBytes: 9)?.count, 9)
+    }
+
+    func testAcknowledgementsStayQueuedUntilHandedToTheTransfer() {
+        bridge.acknowledge(sessionId: "a")
+        bridge.acknowledge(sessionId: "b")
+        var transferred: [String] = []
+
+        bridge.transferPendingAcknowledgements { sessionId in
+            // Still queued while being handed over, so a crash here loses
+            // nothing.
+            XCTAssertTrue(bridge.pendingAcknowledgements().contains(sessionId))
+            transferred.append(sessionId)
+        }
+
+        XCTAssertEqual(transferred, ["a", "b"])
+        XCTAssertTrue(bridge.pendingAcknowledgements().isEmpty)
+    }
+
+    private func envelope(sessionId: String, version: Int? = nil) -> Data {
         let recording = WatchRecording(
             sessionId: sessionId,
             activityType: .run,
             startedAt: Date(timeIntervalSince1970: 1_800_000_000)
         )
-        return try! WatchHandoffBuilder.data(
+        var envelope = WatchHandoffBuilder.envelope(
             recording: recording,
             points: [],
             endedAt: recording.startedAt,
             elapsedSeconds: 0,
             healthWorkoutId: nil
         )
+        if let version {
+            envelope[WatchProtocol.keyVersion] = version
+        }
+        return try! JSONSerialization.data(withJSONObject: envelope)
     }
 
     private func write(_ data: Data) throws -> URL {

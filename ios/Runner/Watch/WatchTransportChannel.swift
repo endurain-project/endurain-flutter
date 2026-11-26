@@ -1,4 +1,6 @@
-import Flutter
+// Flutter's Objective-C headers carry no concurrency annotations; every
+// channel callback this file receives runs on the platform (main) thread.
+@preconcurrency import Flutter
 import Foundation
 
 /// Serves the Dart `WatchTransportChannelContract` from
@@ -7,7 +9,11 @@ import Foundation
 /// Methods: `linkStatus`, `drainHandoffs` and `acknowledgeHandoff`, each with
 /// a `version` argument that must match [WatchProtocol.payloadVersion].
 /// Events: `linkStatusChanged` and `handoffAvailable`.
-final class WatchTransportChannel: NSObject, FlutterStreamHandler {
+///
+/// Main-actor isolated like the Flutter channels it serves; inbox reads and
+/// acknowledgements run off the main actor.
+@MainActor
+final class WatchTransportChannel: NSObject, @preconcurrency FlutterStreamHandler {
     static let methodChannelName = "endurain/watch_transport/methods"
     static let eventChannelName = "endurain/watch_transport/events"
 
@@ -19,7 +25,6 @@ final class WatchTransportChannel: NSObject, FlutterStreamHandler {
     private var methodChannel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
     private var eventSink: FlutterEventSink?
-    private let ioQueue = DispatchQueue(label: "com.endurain.watch-transport", qos: .utility)
 
     init(bridge: WatchConnectivityBridge = .shared) {
         self.bridge = bridge
@@ -32,7 +37,10 @@ final class WatchTransportChannel: NSObject, FlutterStreamHandler {
             binaryMessenger: messenger
         )
         methods.setMethodCallHandler { [weak self] call, result in
-            self?.handle(call, result: result)
+            // Flutter calls method handlers on the platform thread.
+            MainActor.assumeIsolated {
+                self?.handle(call, result: result)
+            }
         }
         methodChannel = methods
 
@@ -71,19 +79,17 @@ final class WatchTransportChannel: NSObject, FlutterStreamHandler {
         case "linkStatus":
             result(bridge.linkStatus)
         case "drainHandoffs":
-            ioQueue.async { [bridge] in
-                let outcome = Self.readInbox(bridge.inbox)
-                DispatchQueue.main.async {
-                    switch outcome {
-                    case .success(let handoffs):
-                        result(handoffs)
-                    case .failure:
-                        result(FlutterError(
-                            code: Self.errorStoreReadFailed,
-                            message: "Could not read the watch inbox",
-                            details: nil
-                        ))
-                    }
+            let inbox = bridge.inbox
+            Task {
+                switch await Self.readInboxInBackground(inbox) {
+                case .success(let handoffs):
+                    result(handoffs)
+                case .failure:
+                    result(FlutterError(
+                        code: Self.errorStoreReadFailed,
+                        message: "Could not read the watch inbox",
+                        details: nil
+                    ))
                 }
             }
         default:
@@ -95,18 +101,33 @@ final class WatchTransportChannel: NSObject, FlutterStreamHandler {
                 ))
                 return
             }
-            ioQueue.async { [bridge] in
-                bridge.acknowledge(sessionId: sessionId)
-                DispatchQueue.main.async {
-                    result(nil)
-                }
+            let bridge = bridge
+            Task {
+                await Self.acknowledgeInBackground(bridge, sessionId: sessionId)
+                result(nil)
             }
         }
     }
 
-    /// Every readable envelope in [inbox]. An unreadable file is left in place
-    /// (and skipped) so a later app version can still read it.
-    static func readInbox(_ inbox: HandoffFileStore) -> Result<[[String: Any]], Error> {
+    @concurrent
+    nonisolated private static func readInboxInBackground(
+        _ inbox: HandoffFileStore
+    ) async -> sending Result<[[String: Any]], Error> {
+        return readInbox(inbox)
+    }
+
+    @concurrent
+    nonisolated private static func acknowledgeInBackground(
+        _ bridge: WatchConnectivityBridge,
+        sessionId: String
+    ) async {
+        bridge.acknowledge(sessionId: sessionId)
+    }
+
+    /// Every readable envelope in [inbox]. An unreadable file, or one from a
+    /// newer watch app, is left in place (and skipped) so a later app version
+    /// can still read it.
+    nonisolated static func readInbox(_ inbox: HandoffFileStore) -> Result<[[String: Any]], Error> {
         let entries: [HandoffFileStore.Entry]
         do {
             entries = try inbox.entries()
@@ -119,6 +140,10 @@ final class WatchTransportChannel: NSObject, FlutterStreamHandler {
                   let object = try? JSONSerialization.jsonObject(with: data),
                   let envelope = object as? [String: Any]
             else {
+                continue
+            }
+            guard WatchProtocol.isSupported(version: envelope[WatchProtocol.keyVersion]) else {
+                NSLog("Endurain watch transport: skipped a session from a newer watch app")
                 continue
             }
             handoffs.append(envelope)

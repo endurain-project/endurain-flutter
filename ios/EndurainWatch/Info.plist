@@ -65,8 +65,12 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
-		<!-- Required for haptic feedback during a workout session (the start
-		     countdown taps the wrist, possibly with the wrist lowered). -->
+		<!-- The app plays no audio. Apple requires this mode for haptics during
+		     a workout session ("If your app plays audio or provides haptic
+		     feedback during the workout session, you must also add the Audio
+		     background mode"): the start countdown taps the wrist while its
+		     prepared session keeps the app running with the wrist lowered,
+		     and the start is confirmed with a tap. -->
 		<string>audio</string>
 	</array>
 	<key>WKApplication</key>

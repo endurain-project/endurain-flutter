@@ -1,35 +1,32 @@
 import Foundation
-import Flutter
+// Flutter's Objective-C headers carry no concurrency annotations; the event
+// sink is only ever called on the main actor here.
+@preconcurrency import Flutter
 
 /// Bridges native recorder events to the Flutter `EventChannel` sink.
 ///
 /// Mirrors the Android `ActivityRecorderCoordinator`. Event payloads are
 /// versioned and use the same `type`/`session`/`points`/`reason` keys the Dart
-/// channel parser expects. All emissions are marshalled to the main thread,
-/// which is where the platform channel expects to be driven. Never emits raw
-/// coordinates in diagnostics; only structured, channel-bound payloads.
+/// channel parser expects. Main-actor isolated, which is where the platform
+/// channel expects to be driven: the recorder, the recorder channel and the
+/// active store all emit from the main actor. Never emits raw coordinates in
+/// diagnostics; only structured, channel-bound payloads.
+@MainActor
 final class ActivityRecorderCoordinator {
     static let shared = ActivityRecorderCoordinator()
 
     private let payloadVersion = 2
 
     private var eventSink: FlutterEventSink?
-    private var eventSinkGeneration = 0
 
     private init() {}
 
     func attach(_ sink: @escaping FlutterEventSink) {
-        runOnMain { [weak self] in
-            self?.eventSinkGeneration += 1
-            self?.eventSink = sink
-        }
+        eventSink = sink
     }
 
     func detach() {
-        runOnMain { [weak self] in
-            self?.eventSinkGeneration += 1
-            self?.eventSink = nil
-        }
+        eventSink = nil
     }
 
     func emitSession(type: String, session: ActiveActivitySessionData) {
@@ -77,36 +74,7 @@ final class ActivityRecorderCoordinator {
     }
 
     private func emit(_ payload: [String: Any]) {
-        if Thread.isMainThread {
-            eventSink?(payload)
-        } else {
-            var capturedGeneration = 0
-            var hasSink = false
-            DispatchQueue.main.sync { [weak self] in
-                capturedGeneration = self?.eventSinkGeneration ?? 0
-                hasSink = self?.eventSink != nil
-            }
-            guard hasSink else {
-                return
-            }
-            DispatchQueue.main.async { [weak self] in
-                guard
-                    let self = self,
-                    self.eventSinkGeneration == capturedGeneration
-                else {
-                    return
-                }
-                self.eventSink?(payload)
-            }
-        }
-    }
-
-    private func runOnMain(_ work: @escaping () -> Void) {
-        if Thread.isMainThread {
-            work()
-        } else {
-            DispatchQueue.main.async(execute: work)
-        }
+        eventSink?(payload)
     }
 
     static let eventStarted = "started"

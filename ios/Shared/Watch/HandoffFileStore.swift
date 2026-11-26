@@ -10,8 +10,14 @@ import Foundation
 /// File names are the hex encoding of the session id's UTF-8 bytes: injective
 /// (two sessions never share a file), safe on any file system, and reversible,
 /// so listing the directory yields the session ids without reading the files.
-final class HandoffFileStore {
-    struct Entry {
+///
+/// Used from the WatchConnectivity delegate queue, an I/O queue and the main
+/// actor at once. It is `Sendable` because its only state is on disk and
+/// every read-modify-write of the directory runs under [lock]; it stays
+/// synchronous (not an actor) because a received file must be stored before
+/// the WatchConnectivity callback returns.
+final class HandoffFileStore: Sendable {
+    struct Entry: Sendable {
         let sessionId: String
         let url: URL
 
@@ -32,8 +38,12 @@ final class HandoffFileStore {
     private static let deliveredSuffix = ".delivered.json"
 
     let directory: URL
-    private let fileManager = FileManager.default
     private let lock = NSLock()
+
+    /// The shared manager is thread-safe; a stored one would not be Sendable.
+    private var fileManager: FileManager {
+        return FileManager.default
+    }
 
     init(directory: URL) {
         self.directory = directory

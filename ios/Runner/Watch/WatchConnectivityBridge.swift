@@ -10,21 +10,32 @@ import WatchConnectivity
 /// whenever it runs and acknowledges what it stored, and only then is the
 /// watch told it may delete its copy.
 ///
-/// WatchConnectivity calls the delegate on a background queue. The callbacks
-/// to Flutter are always made on the main queue.
-final class WatchConnectivityBridge: NSObject, WCSessionDelegate {
+/// WatchConnectivity calls the delegate on a background queue, Dart's
+/// acknowledgements arrive on an I/O queue, and the Flutter callbacks run on
+/// the main actor. The bridge is `Sendable`: the callbacks are main-actor
+/// state, the inbox locks itself, and the queued acknowledgements are only
+/// read and written under [acknowledgementLock].
+final class WatchConnectivityBridge: NSObject, WCSessionDelegate, Sendable {
     static let shared = WatchConnectivityBridge()
+
+    /// Largest watch session file read into memory. A workout point is about
+    /// 220 bytes of JSON at one fix per second, so this holds about 40 hours;
+    /// anything bigger is not a session the watch app writes.
+    static let maxHandoffBytes = 32 * 1024 * 1024
 
     /// Sessions received from the watch and not yet acknowledged by Dart.
     let inbox: HandoffFileStore
 
-    /// Called on the main queue after a session lands in the inbox.
-    var onHandoffReceived: (() -> Void)?
+    /// Called after a session Dart can read lands in the inbox.
+    @MainActor var onHandoffReceived: (@MainActor () -> Void)?
 
-    /// Called on the main queue with the new `WatchLinkStatus` name.
-    var onLinkStatusChanged: ((String) -> Void)?
+    /// Called with the new `WatchLinkStatus` name.
+    @MainActor var onLinkStatusChanged: (@MainActor (String) -> Void)?
 
-    private let defaults: UserDefaults
+    // `UserDefaults` is documented as thread-safe ("you can use the same
+    // object in multiple threads or tasks simultaneously") but is not marked
+    // Sendable. Its read-modify-write sequences here run under the lock.
+    nonisolated(unsafe) private let defaults: UserDefaults
     private static let pendingAcknowledgementsKey = "endurain.watch.pending_acknowledgements"
     private let acknowledgementLock = NSLock()
 
@@ -106,34 +117,99 @@ final class WatchConnectivityBridge: NSObject, WCSessionDelegate {
         else {
             return
         }
-        acknowledgementLock.lock()
-        let pending = pendingAcknowledgements()
-        defaults.removeObject(forKey: Self.pendingAcknowledgementsKey)
-        acknowledgementLock.unlock()
-        for sessionId in pending {
+        transferPendingAcknowledgements { sessionId in
             session.transferUserInfo(WatchProtocol.acknowledgement(sessionId: sessionId))
         }
     }
 
-    /// Moves a received file into the inbox. Returns false when it carries no
-    /// usable session id, in which case it is dropped.
+    /// Passes each queued acknowledgement to [transfer] and only then drops
+    /// it from the queue, so one that was never handed over (the app killed
+    /// mid-way) is sent on the next flush. A duplicate is harmless: the watch
+    /// ignores an acknowledgement for a session it no longer has.
+    func transferPendingAcknowledgements(_ transfer: (String) -> Void) {
+        acknowledgementLock.lock()
+        defer { acknowledgementLock.unlock() }
+        var transferred = Set<String>()
+        for sessionId in pendingAcknowledgements() {
+            transfer(sessionId)
+            transferred.insert(sessionId)
+        }
+        guard !transferred.isEmpty else {
+            return
+        }
+        let remaining = pendingAcknowledgements().filter { !transferred.contains($0) }
+        if remaining.isEmpty {
+            defaults.removeObject(forKey: Self.pendingAcknowledgementsKey)
+        } else {
+            defaults.set(remaining, forKey: Self.pendingAcknowledgementsKey)
+        }
+    }
+
+    /// What happened to a file received from the watch.
+    enum ReceiveOutcome: Equatable {
+        /// Stored in the inbox for Dart.
+        case stored
+        /// Written by a newer watch app. Neither stored nor acknowledged, so
+        /// the watch keeps it and sends it again until an updated app here
+        /// can read it.
+        case deferred
+        /// Not stored: unreadable, too large, or without a session id.
+        case dropped
+    }
+
+    /// Moves a received file into the inbox.
     @discardableResult
-    func storeReceivedHandoff(fileURL: URL, metadata: [String: Any]?) -> Bool {
-        guard let data = try? Data(contentsOf: fileURL) else {
-            NSLog("Endurain watch bridge: could not read a received session")
-            return false
+    func storeReceivedHandoff(fileURL: URL, metadata: [String: Any]?) -> ReceiveOutcome {
+        guard let data = Self.readHandoff(at: fileURL) else {
+            return .dropped
+        }
+        guard WatchProtocol.isSupported(version: metadata?[WatchProtocol.keyVersion]),
+              Self.isReadableVersion(data)
+        else {
+            NSLog("Endurain watch bridge: left a session from a newer watch app on the watch")
+            return .deferred
         }
         guard let sessionId = Self.sessionId(metadata: metadata, data: data) else {
             NSLog("Endurain watch bridge: dropped a session without an id")
-            return false
+            return .dropped
         }
         do {
             try inbox.save(data, sessionId: sessionId)
-            return true
+            return .stored
         } catch {
             NSLog("Endurain watch bridge: could not store a received session")
-            return false
+            return .dropped
         }
+    }
+
+    /// The file's contents, or nil when it cannot be read or is larger than
+    /// [maxHandoffBytes]. Reads at most one byte past the limit, so an
+    /// oversized file is never loaded whole.
+    static func readHandoff(at fileURL: URL, maxBytes: Int = maxHandoffBytes) -> Data? {
+        do {
+            let handle = try FileHandle(forReadingFrom: fileURL)
+            defer { try? handle.close() }
+            let data = try handle.read(upToCount: maxBytes + 1) ?? Data()
+            guard data.count <= maxBytes else {
+                NSLog("Endurain watch bridge: dropped a received session over the size limit")
+                return nil
+            }
+            return data
+        } catch {
+            NSLog("Endurain watch bridge: could not read a received session")
+            return nil
+        }
+    }
+
+    /// Whether the envelope in [data] is of a version this app can read. An
+    /// unparseable envelope counts as readable, so Dart sees (and reports) it.
+    static func isReadableVersion(_ data: Data) -> Bool {
+        guard let object = try? JSONSerialization.jsonObject(with: data),
+              let envelope = object as? [String: Any]
+        else {
+            return true
+        }
+        return WatchProtocol.isSupported(version: envelope[WatchProtocol.keyVersion])
     }
 
     /// The session id from the transfer metadata, or from the envelope itself.
@@ -183,10 +259,10 @@ final class WatchConnectivityBridge: NSObject, WCSessionDelegate {
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
         // The file is deleted when this returns, so it is stored synchronously.
-        guard storeReceivedHandoff(fileURL: file.fileURL, metadata: file.metadata) else {
+        guard storeReceivedHandoff(fileURL: file.fileURL, metadata: file.metadata) == .stored else {
             return
         }
-        DispatchQueue.main.async { [weak self] in
+        Task { @MainActor [weak self] in
             self?.onHandoffReceived?()
         }
     }
@@ -194,7 +270,7 @@ final class WatchConnectivityBridge: NSObject, WCSessionDelegate {
     // MARK: - Private
 
     private func notifyLinkStatus() {
-        DispatchQueue.main.async { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
             self.onLinkStatusChanged?(self.linkStatus)
         }

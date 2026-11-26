@@ -3,7 +3,7 @@ import Foundation
 /// Configuration for `MovementAutoPauseDetector`.
 ///
 /// Mirrors the Dart `MovementAutoPauseConfig`
-/// (lib/features/activity/services/movement_auto_pause_detector.dart) and the
+/// (test/helpers/movement_auto_pause_detector.dart) and the
 /// Android `MovementAutoPauseConfig`; keep all three implementations in sync.
 /// Dart owns the canonical algorithm doc.
 struct MovementAutoPauseConfig {
@@ -43,7 +43,7 @@ struct MovementSample {
 /// when it should auto-resume once movement is observed again.
 ///
 /// Mirrors `MovementAutoPauseDetector` in
-/// lib/features/activity/services/movement_auto_pause_detector.dart (the Dart
+/// test/helpers/movement_auto_pause_detector.dart (the Dart
 /// geolocator fallback recorder implements the same algorithm) and the
 /// Android `MovementAutoPauseDetector.kt`; keep all three in sync.
 ///

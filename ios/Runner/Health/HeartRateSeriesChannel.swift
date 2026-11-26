@@ -1,4 +1,6 @@
-import Flutter
+// Flutter's Objective-C headers carry no concurrency annotations; the method
+// handler runs on the platform (main) thread.
+@preconcurrency import Flutter
 import Foundation
 import HealthKit
 
@@ -6,7 +8,7 @@ import HealthKit
 ///
 /// HealthKit can merge equal consecutive readings into one interval, so a
 /// reading is an interval rather than an instant (`start == end` otherwise).
-struct HeartRateSeriesReading: Equatable {
+struct HeartRateSeriesReading: Equatable, Sendable {
     let start: Date
     let end: Date
     let bpm: Double
@@ -49,6 +51,7 @@ enum HeartRateSeriesEncoding {
 /// it replaces the plugin's heart rate read on iOS.
 ///
 /// It reads under the heart rate read permission Health Sync already requests.
+@MainActor
 final class HeartRateSeriesChannel {
     static let channelName = "endurain/health_heart_rate"
     static let readMethod = "readHeartRateSeries"
@@ -66,7 +69,10 @@ final class HeartRateSeriesChannel {
             binaryMessenger: messenger
         )
         channel.setMethodCallHandler { [weak self] call, result in
-            self?.handle(call, result: result)
+            // Flutter calls method handlers on the platform thread.
+            MainActor.assumeIsolated {
+                self?.handle(call, result: result)
+            }
         }
         self.channel = channel
     }
@@ -90,35 +96,39 @@ final class HeartRateSeriesChannel {
         }
         let start = Date(timeIntervalSince1970: startMs / 1000)
         let end = Date(timeIntervalSince1970: endMs / 1000)
-        read(start: start, end: end) { outcome in
-            DispatchQueue.main.async {
-                switch outcome {
-                case .success(let readings):
-                    let flat = HeartRateSeriesEncoding.encode(
-                        readings,
-                        windowStart: start,
-                        windowEnd: end
-                    )
-                    let data = flat.withUnsafeBufferPointer { Data(buffer: $0) }
-                    result(FlutterStandardTypedData(float64: data))
-                case .failure(let error):
-                    result(FlutterError(
-                        code: Self.errorCode(for: error),
-                        message: error.localizedDescription,
-                        details: nil
-                    ))
-                }
+        Task {
+            switch await read(start: start, end: end) {
+            case .success(let readings):
+                let flat = HeartRateSeriesEncoding.encode(
+                    readings,
+                    windowStart: start,
+                    windowEnd: end
+                )
+                let data = flat.withUnsafeBufferPointer { Data(buffer: $0) }
+                result(FlutterStandardTypedData(float64: data))
+            case .failure(let error):
+                result(FlutterError(
+                    code: Self.errorCode(for: error),
+                    message: error.localizedDescription,
+                    details: nil
+                ))
             }
         }
     }
 
     /// Runs `HKQuantitySeriesSampleQuery` over every heart rate sample that
-    /// overlaps `start...end`. `completion` is called once, on a HealthKit
+    /// overlaps `start...end`. HealthKit delivers the readings on its own
     /// background queue.
+    private func read(start: Date, end: Date) async -> Result<[HeartRateSeriesReading], Error> {
+        await withCheckedContinuation { continuation in
+            read(start: start, end: end) { continuation.resume(returning: $0) }
+        }
+    }
+
     private func read(
         start: Date,
         end: Date,
-        completion: @escaping (Result<[HeartRateSeriesReading], Error>) -> Void
+        completion: @escaping @Sendable (Result<[HeartRateSeriesReading], Error>) -> Void
     ) {
         guard HKHealthStore.isHealthDataAvailable(),
               let type = HKQuantityType.quantityType(forIdentifier: .heartRate)
@@ -157,7 +167,7 @@ final class HeartRateSeriesChannel {
 
     /// Error codes matching the ones the `health` plugin uses, so Dart can tell
     /// a locked device from a lasting failure.
-    private static func errorCode(for error: Error) -> String {
+    nonisolated private static func errorCode(for error: Error) -> String {
         guard let hkError = error as? HKError else {
             return "HEALTH_ERROR"
         }
@@ -176,13 +186,16 @@ final class HeartRateSeriesChannel {
 
 /// Collects the readings a series query delivers one at a time and completes
 /// exactly once, on the first error or when the query reports it is done.
-private final class SeriesCollector {
+///
+/// `@unchecked Sendable` because HealthKit calls it from its own queue: the
+/// mutable state is only touched under [lock], and the completion is Sendable.
+private final class SeriesCollector: @unchecked Sendable {
     private let lock = NSLock()
     private var readings: [HeartRateSeriesReading] = []
     private var completed = false
-    private let completion: (Result<[HeartRateSeriesReading], Error>) -> Void
+    private let completion: @Sendable (Result<[HeartRateSeriesReading], Error>) -> Void
 
-    init(completion: @escaping (Result<[HeartRateSeriesReading], Error>) -> Void) {
+    init(completion: @escaping @Sendable (Result<[HeartRateSeriesReading], Error>) -> Void) {
         self.completion = completion
     }
 

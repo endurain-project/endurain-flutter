@@ -49,8 +49,28 @@ enum WatchProtocol {
         ]
     }
 
+    /// Whether a payload stamped with [version] can be read by this build.
+    ///
+    /// Older versions are accepted, and so is a missing one (written before
+    /// payloads carried it). A newer version must not be processed or
+    /// acknowledged: the sender keeps it, so an updated app can still read
+    /// it. Android Wear and the phone apply the same rule.
+    static func isSupported(version: Any?) -> Bool {
+        guard let version else {
+            return true
+        }
+        guard let number = version as? NSNumber else {
+            return false
+        }
+        return number.intValue <= payloadVersion
+    }
+
     /// The session id an acknowledgement confirms, or nil for any other
     /// payload.
+    ///
+    /// Any version is accepted: an acknowledgement only names a session the
+    /// phone has stored, so rejecting a newer one would leave workouts stuck in
+    /// the watch outbox whenever the phone app updates before the watch app.
     static func acknowledgedSessionId(in userInfo: [String: Any]) -> String? {
         guard userInfo[keyKind] as? String == kindAcknowledgement,
               let sessionId = userInfo[keySessionId] as? String,
@@ -70,7 +90,11 @@ enum WatchProtocol {
         return isoFormatter.date(from: value)
     }
 
-    private static let isoFormatter: ISO8601DateFormatter = {
+    // Safe to share: it is configured once here and only read afterwards,
+    // and Foundation's formatters are thread-safe for formatting and parsing.
+    // `Date.ISO8601FormatStyle` (Sendable) rounds and parses differently,
+    // which would change the wire format.
+    nonisolated(unsafe) private static let isoFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         formatter.timeZone = TimeZone(identifier: "UTC")

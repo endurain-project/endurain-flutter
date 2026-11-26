@@ -10,7 +10,8 @@ final class ActiveSensorRecordingTests: XCTestCase {
   private var store: ActiveActivityStore!
   private let sessionId = "sensor_session"
 
-  override func setUpWithError() throws {
+  // The async overrides run on the main actor, like this class.
+  override func setUp() async throws {
     directory = FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
     store = ActiveActivityStore(activeDirectory: directory)
@@ -22,7 +23,7 @@ final class ActiveSensorRecordingTests: XCTestCase {
     )))
   }
 
-  override func tearDownWithError() throws {
+  override func tearDown() async throws {
     if FileManager.default.fileExists(atPath: directory.path) {
       try FileManager.default.removeItem(at: directory)
     }
@@ -193,12 +194,12 @@ final class ActivityRecorderChannelPersistenceTests: XCTestCase {
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
     addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
     var failWrites = false
-    let store = ActiveActivityStore(activeDirectory: directory) { data, url in
+    let store = ActiveActivityStore(activeDirectory: directory, sessionWriter: { data, url in
       if failWrites {
         throw WriteFailure.simulated
       }
       try data.write(to: url, options: .atomic)
-    }
+    })
     let manager = RecoveryLocationManager()
     let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
     let channel = ActivityRecorderChannel(store: store, recorder: recorder)
@@ -409,12 +410,12 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
     addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
     var failWrites = false
-    let store = ActiveActivityStore(activeDirectory: directory) { data, url in
+    let store = ActiveActivityStore(activeDirectory: directory, sessionWriter: { data, url in
       if failWrites {
         throw CocoaError(.fileWriteOutOfSpace)
       }
       try data.write(to: url, options: .atomic)
-    }
+    })
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
     let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
@@ -549,21 +550,21 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
   func testFreshFixPolicy() {
     let start: Int64 = 1_000_000
     // Before the (re)start beyond the tolerance: a cached position.
-    XCTAssertFalse(CoreLocationActivityRecorder.isFreshFix(
-      timestampMillis: start - CoreLocationActivityRecorder.staleFixToleranceMillis - 1,
+    XCTAssertFalse(LocationFixPolicy.isFreshFix(
+      timestampMillis: start - LocationFixPolicy.staleFixToleranceMillis - 1,
       nowMillis: start, collectionStartedAtMillis: start, isFirstFix: false
     ))
-    XCTAssertTrue(CoreLocationActivityRecorder.isFreshFix(
-      timestampMillis: start - CoreLocationActivityRecorder.staleFixToleranceMillis,
+    XCTAssertTrue(LocationFixPolicy.isFreshFix(
+      timestampMillis: start - LocationFixPolicy.staleFixToleranceMillis,
       nowMillis: start, collectionStartedAtMillis: start, isFirstFix: true
     ))
     // The first fix must also be recent; later ones may arrive late.
     let old = start + 1_000
-    let now = old + CoreLocationActivityRecorder.maxFirstFixAgeMillis + 1
-    XCTAssertFalse(CoreLocationActivityRecorder.isFreshFix(
+    let now = old + LocationFixPolicy.maxFirstFixAgeMillis + 1
+    XCTAssertFalse(LocationFixPolicy.isFreshFix(
       timestampMillis: old, nowMillis: now, collectionStartedAtMillis: start, isFirstFix: true
     ))
-    XCTAssertTrue(CoreLocationActivityRecorder.isFreshFix(
+    XCTAssertTrue(LocationFixPolicy.isFreshFix(
       timestampMillis: old, nowMillis: now, collectionStartedAtMillis: start, isFirstFix: false
     ))
   }
