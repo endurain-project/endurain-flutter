@@ -46,7 +46,7 @@ void main() {
       config: const AppConfig(healthSyncEnabled: false),
     );
     final sessionController = AuthSessionController(
-      authService: AuthService(storage: services.secureStorage),
+      authService: AuthService(storage: services.infra.secureStorage),
     );
     addTearDown(sessionController.dispose);
 

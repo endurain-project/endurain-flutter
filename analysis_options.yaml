@@ -24,6 +24,11 @@ analyzer:
     - macos/**
     - linux/**
   errors:
+    # Removing this override reports ~100 sites (mostly test fakes). Most are
+    # constructors with a public named parameter backing a private field
+    # (`Foo({required int count}) : _count = count`); an initializing formal
+    # would need `this._count`, which cannot be a named parameter, so the lint
+    # would force the field public or the parameter positional.
     prefer_initializing_formals: ignore
   language:
     strict-casts: true
@@ -57,12 +62,17 @@ linter:
     require_trailing_commas: true
     sort_child_properties_last: true
     unawaited_futures: true
+    discarded_futures: true
+    only_throw_errors: true
     unnecessary_lambdas: true
     unnecessary_null_aware_assignments: true
     unnecessary_null_checks: true
     unnecessary_nullable_for_final_variable_declarations: true
     use_build_context_synchronously: true
     use_super_parameters: true
+    # Not enabled: avoid_catches_without_on_clauses. Most bare catches sit at
+    # platform, plugin and fire-and-forget boundaries where any failure must be
+    # contained and recorded, so the rule would mostly add `on Object` noise.
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

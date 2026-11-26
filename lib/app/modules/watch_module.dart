@@ -34,6 +34,7 @@ class WatchModule {
       WatchSessionIngestionService(
         repository: _activity.localActivities,
         ledger: ledger,
+        finalizer: _activity.finalizer,
         diagnostics: _infra.diagnostics,
       );
 

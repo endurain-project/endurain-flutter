@@ -42,11 +42,11 @@ Future<void> main() async {
       ),
     ),
   );
-  final diagnostics = services.diagnostics;
+  final diagnostics = services.infra.diagnostics;
   // Opt-in remote crash reporting, independent of local diagnostics. Held here
   // so the root-zone error handler below (which runs outside the widget tree)
   // can forward to it just like it does to diagnostics.
-  final crashReporting = services.crashReporting;
+  final crashReporting = services.infra.crashReporting;
 
   final appRunner = runZonedGuarded<Future<void>>(
     () async {
@@ -59,8 +59,8 @@ Future<void> main() async {
         await diagnostics.initialize().timeout(const Duration(seconds: 3));
       } catch (_) {}
       final launchContext = await _diagnosticsContext(
-        services.packageInfo,
-        services.deviceInfo,
+        services.infra.packageInfo,
+        services.infra.deviceInfo,
       );
       diagnostics
         ..setContext(launchContext)
@@ -81,15 +81,15 @@ Future<void> main() async {
 
       // Load the persisted language (BCP 47) before the first frame so the UI
       // starts in the user's chosen locale rather than flashing the system one.
-      await services.localeController.load();
+      await services.infra.localeController.load();
 
       // Same for the unit preference, so stats never flash metric before
       // switching to imperial.
-      await services.measurementSystemController.load();
+      await services.infra.measurementSystemController.load();
 
       // Load the audio-announcement preference so a recording started before
       // the settings screen is ever opened still uses the user's saved choice.
-      await services.audioAnnouncementSettingsController.load();
+      await services.activity.audioAnnouncementSettingsController.load();
 
       // Start remote crash reporting only if the user previously opted in.
       // No-op (and no network) otherwise; the two diagnostics channels are
@@ -135,13 +135,13 @@ Future<void> main() async {
       // background so they are ready before the user starts recording. Touching
       // each coordinator also starts it listening for Bluetooth becoming ready.
       // Best-effort and self-guarded; a no-op when no sensor was ever paired.
-      unawaited(services.reconnectRememberedSensors(withRetries: true));
+      unawaited(services.sensors.reconnectRemembered(withRetries: true));
 
       // Pull any workout a paired companion watch finished while the app was
       // not running. Touching the coordinator also starts it listening for
       // watch push events; app resume alone would miss a cold launch. Inert
       // and silent on builds and platforms without a watch transport.
-      unawaited(services.watchCompanion.syncPendingSessions());
+      unawaited(services.watch.companion.syncPendingSessions());
     },
     (error, stackTrace) {
       diagnostics.recordErrorSync(

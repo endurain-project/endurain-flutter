@@ -1,8 +1,8 @@
 import 'package:endurain/app/navigation/app_routes.dart';
+import 'package:endurain/app/navigation/app_screens.dart';
 import 'package:endurain/app/widgets/app_bottom_nav.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/features/auth/controllers/auth_session_controller.dart';
-import 'package:endurain/features/auth/screens/login_screen.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +26,7 @@ import 'package:go_router/go_router.dart';
 /// [diagnostics] by route name only (see [diagnosticRouteLabel]).
 GoRouter buildAppRouter({
   required AuthSessionController session,
+  required AppScreens screens,
   required Future<void> Function(BuildContext context) onLoginSuccess,
   required VoidCallback onLogout,
   DiagnosticsRecorder diagnostics = const NoopDiagnosticsRecorder(),
@@ -58,7 +59,7 @@ GoRouter buildAppRouter({
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => LoginScreen(
+        builder: (context, state) => screens.login(
           // Awaited before leaving: the callback may ask the user a question
           // on this route (see `LegacyProfileAdoptionService`) before it marks
           // the session authenticated, which redirects to home.
@@ -80,10 +81,14 @@ GoRouter buildAppRouter({
         builder: (context, state) => ListenableBuilder(
           listenable: session,
           builder: (context, _) => AppBottomNav(
-            onLogout: onLogout,
-            isGuest: session.isGuest,
-            // Push so the back button returns to the Settings tab underneath.
-            onSignIn: () => context.push(AppRoutes.login),
+            mapTab: screens.map,
+            settingsTab: (context) => screens.settings(
+              context,
+              onLogout: onLogout,
+              isGuest: session.isGuest,
+              // Push so the back button returns to the Settings tab underneath.
+              onSignIn: () => context.push(AppRoutes.login),
+            ),
           ),
         ),
       ),
