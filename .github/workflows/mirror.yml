@@ -13,6 +13,8 @@ permissions:
 jobs:
   mirror:
     runs-on: ubuntu-latest
+    # A full mirror push of a large history can be slow, but never this slow.
+    timeout-minutes: 20
     steps:
       - name: Push full mirror to GitLab
         env:

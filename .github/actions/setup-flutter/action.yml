@@ -8,10 +8,15 @@ runs:
   using: composite
   steps:
     # GitHub container jobs use a runner-owned HOME, so the image build's
-    # global Git configuration is not available at runtime.
+    # global Git configuration is not available at runtime. Only the CI builder
+    # image has the SDK at /opt/flutter; elsewhere (ios.yml clones Flutter into
+    # RUNNER_TEMP, owned by the runner user) there is nothing to trust.
     - name: Trust the Flutter SDK checkout
       shell: bash
-      run: git config --global --add safe.directory /opt/flutter
+      run: |
+        if [[ -d /opt/flutter ]]; then
+          git config --global --add safe.directory /opt/flutter
+        fi
 
     - name: Restore pub cache
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

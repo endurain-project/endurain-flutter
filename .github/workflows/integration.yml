@@ -19,7 +19,7 @@ on:
       - ".github/actions/**"
 
 env:
-  # Keep in sync with ci.yml.
+  # Source of truth: .flutter-version (checked by ci.yml).
   FLUTTER_VERSION: 3.50.1
 
 concurrency:
@@ -52,6 +52,9 @@ jobs:
 
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
+
+      - name: Cache Gradle dependencies
+        uses: ./.github/actions/gradle-cache
 
       # The emulator binary links against X11, audio and GL libraries that the
       # builder image does not ship. Installed per run to keep the shared image

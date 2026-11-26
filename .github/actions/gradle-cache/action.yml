@@ -1,0 +1,37 @@
+name: Gradle dependency cache
+description: >-
+  Cache the Gradle dependency caches of the CI builder image
+  (GRADLE_USER_HOME=/opt/gradle-home). The wrapper distribution is already
+  baked into the image, so only `caches` is stored. Pass `save: 'false'` for
+  jobs that build a signed release: they then only restore, so a cache entry
+  written by a pull request run can never reach a release build.
+
+inputs:
+  save:
+    description: Whether this job may write the cache ('true' or 'false').
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    # Pull request runs write caches scoped to their own ref, and release runs
+    # can only restore entries from the default branch, so restore-only is
+    # enough for the release job.
+    - name: Restore Gradle cache
+      if: inputs.save == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: /opt/gradle-home/caches
+        key: gradle-${{ hashFiles('android/**/*.gradle', 'android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+        restore-keys: |
+          gradle-
+
+    - name: Restore Gradle cache (read-only)
+      if: inputs.save != 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: /opt/gradle-home/caches
+        key: gradle-${{ hashFiles('android/**/*.gradle', 'android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+        restore-keys: |
+          gradle-

@@ -15,6 +15,7 @@ jobs:
   validate:
     name: Verify contributor agreement
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       # Run the validator from the trusted base ref so a pull request cannot
       # alter the check that determines whether it is eligible to merge.

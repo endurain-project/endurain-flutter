@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  # Keep in sync with ci.yml.
+  # Source of truth: .flutter-version (checked by ci.yml).
   FLUTTER_VERSION: 3.50.1
 
 concurrency:
@@ -35,6 +35,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       # The image defaults to an older Xcode 27; match the one releases are
       # built with. Selected first, since it decides which simulators exist.
@@ -70,8 +71,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Tags can be moved; the commit the tag pointed to when it was
+          # reviewed is pinned here. Update it with
+          # `git ls-remote https://github.com/flutter/flutter refs/tags/<version>`
+          # whenever FLUTTER_VERSION changes.
+          flutter_sha=ae9b586f34a8443573f82ef57c3bf914a908cbf7 # 3.50.1
           git clone --depth 1 --branch "$FLUTTER_VERSION" \
             https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          actual_sha="$(git -C "$RUNNER_TEMP/flutter" rev-parse HEAD)"
+          if [[ "$actual_sha" != "$flutter_sha" ]]; then
+            echo "Flutter $FLUTTER_VERSION is $actual_sha, expected $flutter_sha." >&2
+            exit 1
+          fi
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
 
       - name: Set up Flutter

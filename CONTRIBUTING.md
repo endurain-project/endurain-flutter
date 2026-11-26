@@ -59,21 +59,38 @@ PRs that are too large to review efficiently will be asked to be split before th
 
 ## Testing and Quality Checks
 
-Before opening a PR, run the same checks as CI:
+Before opening a PR, run the same checks as CI.
+
+Dart (the `Format`, `Analyze` and `Test` jobs):
 
 ```bash
 dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test --coverage
-dart run tool/check_coverage.dart \
-  --min-line-coverage 80 \
-  --min-file-line-coverage 60 \
-  --exclude 'lib/l10n/app_localizations*.dart' \
-  --exclude 'lib/core/theme/app_theme_tokens.dart' \
-  --exclude 'lib/app/navigation/app_routes.dart' \
-  --exclude 'lib/app/widgets/app_bottom_nav.dart' \
-  --exclude 'lib/core/services/platform/*.dart' \
-  --exclude 'lib/features/health/services/health_package_platform_adapter.dart'
+# Thresholds plus the exclusion list in .github/coverage-excludes.txt
+.github/scripts/check_coverage.sh
+```
+
+Android (the `Android unit tests` and `Android build` jobs; needs the Android
+SDK, and the first command generates the Gradle configuration):
+
+```bash
+flutter build apk --config-only
+(cd android && ./gradlew :app:testDebugUnitTest --console=plain)
+# Keeps the stub used when the Wear OS link is disabled compiling
+(cd android && ./gradlew :app:compileDebugKotlin -Pendurain.wearable=false --console=plain)
+# The Wear OS app is a separate Gradle build
+(cd android && ./gradlew -p wear assembleDebug testDebugUnitTest lintDebug --console=plain)
+flutter build apk --debug --target-platform android-arm64
+```
+
+On-device smoke tests (the `Integration` workflow runs them on an Android
+emulator for changes to `lib/`, `android/` or `integration_test/`; the iOS ones
+run in the iOS workflow on pushes to `main`). Start an emulator or simulator,
+then:
+
+```bash
+flutter test integration_test
 ```
 
 ## Getting Started

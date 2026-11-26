@@ -15,20 +15,28 @@ on:
     types: [published]
 
 env:
+  # Source of truth: .flutter-version (checked by ci.yml).
   FLUTTER_VERSION: 3.50.1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
+# The build job runs third-party Gradle and pub plugin code next to the upload
+# key, so it gets a read-only token. Only the release job below can write to
+# the repository, and it never runs build code.
 permissions:
-  contents: write
+  contents: read
   packages: read
 
 jobs:
   build-android:
     name: Build Android APKs
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: read
     container:
       image: ghcr.io/endurain-project/endurain-flutter-ci:3.50.1
     steps:
@@ -36,9 +44,18 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Flutter
         uses: ./.github/actions/setup-flutter
+
+      # Restore-only: this job signs the release, so it must never consume a
+      # cache entry that a pull request run could have written. Entries come
+      # from runs of the default branch (see the gradle-cache action).
+      - name: Restore Gradle dependencies
+        uses: ./.github/actions/gradle-cache
+        with:
+          save: 'false'
 
       - name: Prepare signed release inputs
         shell: bash
@@ -102,11 +119,10 @@ jobs:
           )"
           [[ "$actual_fingerprint" == "$expected_fingerprint" ]]
 
+          # Only non-secret values go to later steps. The passwords and alias are
+          # passed as step-level env to the two build steps that sign.
           {
             echo "ANDROID_KEYSTORE_PATH=$keystore_path"
-            echo "ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD"
-            echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS"
-            echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD"
             echo "VERSION_NAME=$VERSION_NAME"
             echo "VERSION_CODE=$VERSION_CODE"
             echo "EXPECTED_CERT_SHA256=$expected_fingerprint"
@@ -127,6 +143,9 @@ jobs:
             -XX:MaxMetaspaceSize=768m
             -XX:ReservedCodeCacheSize=128m
           ENDURAIN_CRASH_REPORTING_DSN: ${{ vars.ENDURAIN_CRASH_REPORTING_DSN }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           pkill -f 'GradleDaemon' || true
           flutter build apk --release \
@@ -153,6 +172,9 @@ jobs:
             -Xmx3072m
             -XX:MaxMetaspaceSize=768m
             -XX:ReservedCodeCacheSize=128m
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           pkill -f 'GradleDaemon' || true
@@ -183,21 +205,39 @@ jobs:
             [[ "$actual_fingerprint" == "$EXPECTED_CERT_SHA256" ]]
           done
 
+      # Handed to the release job (a release run) or kept for download (a manual
+      # run). Release runs keep it for a day only; 0 means the repository default.
       - name: Upload APKs as workflow artifact
-        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: endurain-release-apk
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/flutter-apk/wear-release.apk
+          retention-days: ${{ github.event_name == 'release' && 1 || 0 }}
           if-no-files-found: error
+
+  # Attaching needs a write token, so it is a separate job that only handles
+  # the verified APKs and runs none of the build code.
+  attach-release:
+    name: Attach APKs to the release
+    needs: build-android
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download APKs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: endurain-release-apk
+          path: apks
 
       # A rerun after a partial upload finds some APKs already attached, and
       # GitHub rejects a second asset with the same name. Replace them, so every
       # APK on the release comes from this run.
       - name: Attach APKs to the release
-        if: github.event_name == 'release'
         shell: bash
         env:
           UPLOAD_URL: ${{ github.event.release.upload_url }}
@@ -216,25 +256,10 @@ jobs:
             --output "$assets_json" \
             "$releases_api/$RELEASE_ID/assets?per_page=100"
 
-          # The CI image has no jq, so the Flutter SDK's Dart reads the list.
-          # The id is printed behind a marker so other output is ignored.
-          asset_id_script="$RUNNER_TEMP/release_asset_id.dart"
-          cat > "$asset_id_script" <<'DART'
-          import 'dart:convert';
-          import 'dart:io';
-
-          void main(List<String> args) {
-            final assets = jsonDecode(File(args[0]).readAsStringSync()) as List;
-            for (final asset in assets) {
-              if (asset['name'] == args[1]) print('asset-id:${asset['id']}');
-            }
-          }
-          DART
-
           for apk_name in app-release.apk wear-release.apk; do
             existing_id="$(
-              dart "$asset_id_script" "$assets_json" "$apk_name" |
-                sed -n 's/^asset-id://p'
+              jq --raw-output --arg name "$apk_name" \
+                '.[] | select(.name == $name) | .id' "$assets_json"
             )"
             if [[ -n "$existing_id" ]]; then
               echo "Replacing the existing $apk_name (asset $existing_id)."
@@ -245,6 +270,6 @@ jobs:
             curl --fail --show-error --location "${auth_headers[@]}" \
               --request POST \
               --header "Content-Type: application/vnd.android.package-archive" \
-              --data-binary "@build/app/outputs/flutter-apk/$apk_name" \
+              --data-binary "@apks/$apk_name" \
               "${upload_url}?name=$apk_name"
           done

@@ -1,0 +1,34 @@
+# Globs excluded from the coverage gate (tool/check_coverage.dart --exclude).
+# Single source of truth: ci.yml reads this file, and README.md and
+# CONTRIBUTING.md run the same command from it. One glob per line; blank lines
+# and lines starting with # are ignored. Add a rationale for every entry, and
+# prefer a test over a new exclusion.
+
+# gen_l10n output, regenerated from lib/l10n/*.arb; nothing hand-written.
+lib/l10n/app_localizations*.dart
+
+# Constants only (colors, radii); no branches or logic to execute.
+lib/core/theme/app_theme_tokens.dart
+
+# Route path string constants only.
+lib/app/navigation/app_routes.dart
+
+# Pure widget wiring of the platform-adaptive navigation shell; covered by the
+# on-device integration tests (integration_test/), not by unit tests.
+lib/app/widgets/app_bottom_nav.dart
+
+# Thin wrappers around platform plugins (location, share, url_launcher,
+# app_links, ...). They only forward to the plugin, which cannot run in unit
+# tests; the logic that uses them is tested through their abstract interfaces.
+lib/core/services/platform/*.dart
+
+# The health package boundary (HealthKit / Health Connect); needs a real
+# platform. The mapping logic around it lives in separately tested files.
+lib/features/health/services/health_package_platform_adapter.dart
+
+# The universal_ble boundary; needs real Bluetooth hardware. Decoding and
+# profile logic live in separately tested files.
+lib/features/sensors/services/universal_ble_sensor_connection_adapter.dart
+
+# Diagnostics source and event name constants only; no logic to execute.
+lib/core/diagnostics/diagnostics_events.dart
