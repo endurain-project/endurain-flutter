@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/movement_auto_pause_detector.dart';
 
 void main() {
   group('MovementAutoPauseDetector', () {

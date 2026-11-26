@@ -86,8 +86,8 @@ class MapSensorController extends SafeNotifier {
 
   @override
   void dispose() {
-    _sampleSubscription?.cancel();
-    _statusSubscription?.cancel();
+    unawaited(_sampleSubscription?.cancel());
+    unawaited(_statusSubscription?.cancel());
     super.dispose();
   }
 }

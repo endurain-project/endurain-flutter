@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/gpx_document_builder.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
@@ -95,6 +96,57 @@ void main() {
 
       expect(await controller.loadRoute(record), isNull);
     });
+
+    test('loadRoute parses a large GPX on an isolate', () async {
+      final points = [
+        for (var i = 0; i < 3000; i++)
+          GpxTrackPoint(
+            latitude: 41 + i * 1e-5,
+            longitude: -8.6 + i * 1e-5,
+            time: DateTime.utc(2026).add(Duration(seconds: i)),
+          ),
+      ];
+      final gpx = buildGpxDocument(
+        name: 'long',
+        type: 'run',
+        segments: [points],
+      );
+      expect(gpx.length, greaterThan(gpxIsolateParseThreshold));
+      final fileName = await repository.writeGpx(id: 'big', gpx: gpx);
+      final record = _recordWithGpx(id: 'big', gpxFileName: fileName);
+      await repository.upsert(record);
+      final controller = LocalActivityHistoryController(
+        repository: repository,
+        uploadService: _uploadServiceReturning(201),
+        shareService: FakeShareService(),
+      );
+      addTearDown(controller.dispose);
+
+      final route = await controller.loadRoute(record);
+
+      expect(route!.points, hasLength(3000));
+    });
+
+    test(
+      'loadRoute returns null and records a breadcrumb on failure',
+      () async {
+        final diagnostics = _CapturingDiagnostics();
+        final controller = LocalActivityHistoryController(
+          repository: _UnreadableGpxRepository(tempDirectory),
+          uploadService: _uploadServiceReturning(201),
+          shareService: FakeShareService(),
+          diagnostics: diagnostics,
+        );
+        addTearDown(controller.dispose);
+
+        final route = await controller.loadRoute(
+          _recordWithGpx(id: 'broken', gpxFileName: 'broken.gpx'),
+        );
+
+        expect(route, isNull);
+        expect(diagnostics.events, ['activity.route_load_failed']);
+      },
+    );
 
     test('loadRoute returns null when the GPX file is missing', () async {
       final record = _recordWithGpx(id: 'ghost', gpxFileName: 'ghost.gpx');
@@ -591,4 +643,36 @@ class _GatedRetentionSettings extends ActivityRetentionSettingsRepository {
     await gate.future;
     stored = enabled;
   }
+}
+
+class _CapturingDiagnostics implements DiagnosticsRecorder {
+  final List<String> events = [];
+
+  @override
+  void recordBreadcrumbSync(
+    String event, {
+    Map<String, Object?> details = const {},
+  }) => events.add(event);
+
+  @override
+  void recordErrorSync(
+    Object error,
+    StackTrace stackTrace, {
+    String source = DiagnosticsSources.uncaught,
+  }) {}
+}
+
+class _UnreadableGpxRepository extends LocalActivityRepository {
+  _UnreadableGpxRepository(Directory directory)
+    : super(
+        supportDirectoryProvider: () async => directory,
+        store: createTestActivityStore(directory),
+      );
+
+  @override
+  Future<bool> hasGpx(LocalActivityRecord record) async => true;
+
+  @override
+  Future<String> readGpxContents(LocalActivityRecord record) async =>
+      throw const FileSystemException('unreadable');
 }

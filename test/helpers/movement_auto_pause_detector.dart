@@ -1,42 +1,6 @@
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/services/geo_distance.dart';
-
-/// Configuration for [MovementAutoPauseDetector].
-///
-/// A snapshot of these values is persisted onto the active session (see
-/// `ActiveActivitySession.autoPauseEnabled`/`autoPauseDelaySeconds`) so a
-/// recovered recording keeps behaving the way it did when it started, even if
-/// the user changes the app preference mid-recording.
-class MovementAutoPauseConfig {
-  const MovementAutoPauseConfig({
-    this.enabled = false,
-    this.pauseDelay = const Duration(seconds: 5),
-    this.movingSpeedThresholdMetersPerSecond = 0.6,
-    this.maxAccuracyMeters = 30,
-    this.consecutiveMovingSamplesToResume = 3,
-  }) : assert(consecutiveMovingSamplesToResume > 0);
-
-  /// Whether auto-pause is active for this recording.
-  final bool enabled;
-
-  /// How long movement must be absent before the recording auto-pauses.
-  final Duration pauseDelay;
-
-  /// Speed at or above which a sample counts as "moving" (m/s). The default
-  /// (~2.2 km/h) is comfortably below a walking pace while still filtering
-  /// GPS jitter recorded while stationary.
-  final double movingSpeedThresholdMetersPerSecond;
-
-  /// Horizontal accuracy worse than this (in meters) is treated as
-  /// unreliable and never counted as movement. This is intentionally stricter
-  /// than the track-retention threshold so coarse fixes cannot drive automatic
-  /// pause or resume transitions.
-  final double maxAccuracyMeters;
-
-  /// Number of consecutive reliable "moving" samples required to auto-resume,
-  /// providing hysteresis so a single noisy fix cannot resume prematurely.
-  final int consecutiveMovingSamplesToResume;
-}
+import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 
 /// The result of feeding a point into [MovementAutoPauseDetector].
 enum MovementAutoPauseTransition {
@@ -55,8 +19,8 @@ enum MovementAutoPauseTransition {
 /// Detects when an active recording should auto-pause due to inactivity, and
 /// when it should auto-resume once movement is observed again.
 ///
-/// This is pure logic with no platform dependency, shared by the Dart
-/// geolocator fallback recorder; the native Android/iOS recorders implement
+/// This is pure logic with no platform dependency, used by the Dart
+/// geolocator test recorder and as the reference for the vectors; the native Android/iOS recorders implement
 /// the same algorithm directly (see `MovementAutoPauseDetector.kt` and
 /// `MovementAutoPauseDetector.swift`) since they cannot depend on Dart code.
 /// All three run the shared vectors in

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
@@ -74,7 +76,7 @@ class _StartCountdownViewState extends State<StartCountdownView> {
       now: widget.now,
     );
     _countdown.addListener(_onCountdownChanged);
-    _countdown.outcome.then(_close);
+    unawaited(_countdown.outcome.then(_close));
     _countdown.start();
   }
 

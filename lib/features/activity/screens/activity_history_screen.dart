@@ -1,19 +1,15 @@
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
-import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
-import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
-import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -26,18 +22,25 @@ class ActivityHistoryScreen extends StatefulWidget {
   const ActivityHistoryScreen({
     super.key,
     this.controller,
-    this.repository,
-    this.uploadService,
-    this.retentionSettingsRepository,
+    this.createController,
     this.uploadQueue,
     this.mapSettingsRepository,
-  });
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
+  /// Injected controller (tests); otherwise one is built with
+  /// [createController] and owned by the screen.
   final LocalActivityHistoryController? controller;
-  final LocalActivityRepository? repository;
-  final ActivityUploadService? uploadService;
-  final ActivityRetentionSettingsRepository? retentionSettingsRepository;
+  final LocalActivityHistoryController Function()? createController;
+
+  /// Drained when the app resumes, so uploads that failed offline retry while
+  /// the list is on screen. Null disables that.
   final ActivityUploadQueue? uploadQueue;
+
+  /// Supplies each record's tile server for the route preview. Null hides the
+  /// preview map.
   final MapSettingsRepository? mapSettingsRepository;
 
   @override
@@ -62,25 +65,13 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller = registerController(widget.controller, _createController);
-    final services = widget.controller == null
-        ? AppScope.servicesOf(context, listen: false)
-        : null;
-    _uploadQueue = widget.uploadQueue ?? services?.activityUploadQueue;
-    _mapSettings =
-        widget.mapSettingsRepository ?? services?.createMapSettingsRepository();
-    _controller.load();
-  }
-
-  LocalActivityHistoryController _createController() {
-    return AppScope.servicesOf(
-      context,
-      listen: false,
-    ).createLocalActivityHistoryController(
-      repository: widget.repository,
-      uploadService: widget.uploadService,
-      retentionSettingsRepository: widget.retentionSettingsRepository,
+    _controller = registerController(
+      widget.controller,
+      () => widget.createController!(),
     );
+    _uploadQueue = widget.uploadQueue;
+    _mapSettings = widget.mapSettingsRepository;
+    unawaited(_controller.load());
   }
 
   @override
@@ -140,8 +131,8 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
     }
   }
 
-  void _openDetails(LocalActivityRecord record) {
-    adaptivePush<void>(
+  Future<void> _openDetails(LocalActivityRecord record) async {
+    await adaptivePush<void>(
       context,
       (context) => ActivityDetailsScreen(
         recordId: record.id,

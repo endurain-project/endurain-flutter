@@ -1,5 +1,5 @@
 import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 
 /// Persists the user's auto-pause preference in [AppPreferencesStore].
 ///

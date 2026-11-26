@@ -12,6 +12,7 @@ import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/recording_controller_factory.dart';
 import '../../../helpers/recording_diagnostics.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
@@ -117,9 +118,11 @@ void main() {
 
   setUp(() async {
     supportDirectory = await Directory.systemTemp.createTemp('watch_companion');
+    final repository = createTestLocalActivityRepository(supportDirectory);
     ingestion = WatchSessionIngestionService(
-      repository: createTestLocalActivityRepository(supportDirectory),
+      repository: repository,
       ledger: WatchIngestionLedger(preferences: FakePreferencesStore()),
+      finalizer: createTestFinalizer(repository),
     );
   });
 

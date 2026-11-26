@@ -8,9 +8,9 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
-import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/geolocator_activity_location_recorder.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 
@@ -362,7 +362,9 @@ class _StoreBackedRecorder implements ActivityLocationRecorder {
 
   @override
   Future<List<RecordedActivityPoint>> drain({int sinceOffset = 0}) async {
-    if (drainError case final error?) throw error;
+    if (drainError case final error?) {
+      Error.throwWithStackTrace(error, StackTrace.current);
+    }
     return _points.sublist(sinceOffset.clamp(0, _points.length));
   }
 

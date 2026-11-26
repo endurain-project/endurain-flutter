@@ -241,6 +241,75 @@ void main() {
         await platform.close();
       },
     );
+
+    group('app lifecycle', () {
+      Future<(MapStateController, FakeLocationPlatformAdapter)> make() async {
+        final platform = FakeLocationPlatformAdapter(
+          currentPosition: testPosition(latitude: 41.1, longitude: -8.6),
+        );
+        final controller = MapStateController(
+          locationService: LocationService(platformAdapter: platform),
+          mapSettingsRepository: makeSettings(),
+        );
+        await controller.initialize();
+        addTearDown(() async {
+          controller.dispose();
+          await platform.close();
+        });
+        return (controller, platform);
+      }
+
+      test('setAppInForeground(false) stops position updates', () async {
+        final (controller, platform) = await make();
+
+        controller.setAppInForeground(false);
+        platform.addPosition(testPosition(latitude: 99.0, longitude: 0.0));
+        await pumpEventQueue();
+
+        expect(controller.currentLocation.latitude, closeTo(41.1, 0.001));
+      });
+
+      test('setAppInForeground(true) resumes position updates', () async {
+        final (controller, platform) = await make();
+
+        controller.setAppInForeground(false);
+        controller.setAppInForeground(true);
+        platform.addPosition(testPosition(latitude: 52.0, longitude: 13.0));
+        await pumpEventQueue();
+
+        expect(controller.currentLocation.latitude, closeTo(52.0, 0.001));
+      });
+
+      test(
+        'returning to the foreground does not resume while recording',
+        () async {
+          final (controller, platform) = await make();
+
+          controller.setRecordingActive(true);
+          controller.setAppInForeground(false);
+          controller.setAppInForeground(true);
+          platform.addPosition(testPosition(latitude: 99.0, longitude: 0.0));
+          await pumpEventQueue();
+
+          expect(controller.currentLocation.latitude, closeTo(41.1, 0.001));
+        },
+      );
+
+      test(
+        'a recording ending while backgrounded keeps the stream off',
+        () async {
+          final (controller, platform) = await make();
+
+          controller.setAppInForeground(false);
+          controller.setRecordingActive(true);
+          controller.setRecordingActive(false);
+          platform.addPosition(testPosition(latitude: 99.0, longitude: 0.0));
+          await pumpEventQueue();
+
+          expect(controller.currentLocation.latitude, closeTo(41.1, 0.001));
+        },
+      );
+    });
   });
 }
 

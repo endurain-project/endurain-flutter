@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/features/activity/controllers/start_countdown_settings_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -12,10 +11,19 @@ import 'package:material_ui/material_ui.dart';
 /// Lets the user turn the start countdown on, pick its length, and choose
 /// whether it is spoken. Read fresh each time Start is tapped.
 class StartCountdownSettingsScreen extends StatefulWidget {
-  const StartCountdownSettingsScreen({super.key, this.controller});
+  const StartCountdownSettingsScreen({
+    super.key,
+    this.controller,
+    this.createController,
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
-  /// Optional override for tests; otherwise resolved from [AppScope].
+  /// Injected controller (tests); otherwise one is built with
+  /// [createController] and owned by the screen.
   final StartCountdownSettingsController? controller;
+  final StartCountdownSettingsController Function()? createController;
 
   @override
   State<StartCountdownSettingsScreen> createState() =>
@@ -34,10 +42,7 @@ class _StartCountdownSettingsScreenState
     super.initState();
     _controller = registerController(
       widget.controller,
-      () => AppScope.servicesOf(
-        context,
-        listen: false,
-      ).createStartCountdownSettingsController(),
+      () => widget.createController!(),
       onChanged: _onControllerChanged,
     );
     unawaited(_controller.load());

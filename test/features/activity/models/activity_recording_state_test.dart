@@ -50,6 +50,39 @@ void main() {
       expect(state.points, hasLength(1));
     });
 
+    test('appendTrackRuns grows the last segment and keeps earlier ones', () {
+      ActivityTrackPoint at(double latitude) => ActivityTrackPoint(
+        latitude: latitude,
+        longitude: -8.6,
+        timestamp: DateTime.utc(2026, 5, 30, 10),
+      );
+      final state = ActivityRecordingState(
+        status: ActivityRecordingStatus.recording,
+        segments: [
+          ActivityTrackSegment(points: [at(1)]),
+          ActivityTrackSegment(points: [at(2)]),
+        ],
+      );
+      final first = state.segments.first;
+      final last = state.segments.last;
+
+      final grown = state.appendTrackRuns([
+        TrackRun([at(3), at(4)]),
+        TrackRun([at(5)], startsNewSegment: true),
+      ]);
+
+      expect(grown.segments, hasLength(3));
+      expect(identical(grown.segments.first, first), isTrue);
+      expect(identical(grown.segments[1], last), isFalse);
+      expect(grown.segments[1].points.map((p) => p.latitude), [2, 3, 4]);
+      expect(grown.segments.last.points.map((p) => p.latitude), [5]);
+      expect(grown.points.map((p) => p.latitude), [1, 2, 3, 4, 5]);
+      // The source state is an unchanged snapshot.
+      expect(state.points, hasLength(2));
+      expect(last.points, hasLength(1));
+      expect(identical(state.appendTrackRuns(const []), state), isTrue);
+    });
+
     test('copyWith can update elapsed duration', () {
       final state = ActivityRecordingState(
         status: ActivityRecordingStatus.recording,

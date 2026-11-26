@@ -1,6 +1,7 @@
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/services/activity_segment_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/activity_segment_policy.dart';
 
 void main() {
   group('ActivitySegmentPolicy', () {

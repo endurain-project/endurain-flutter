@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/models/activity_recording_error.dart'
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/append_only_list.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 
 /// Ephemeral UI/recording status used by [ActivityRecordingState], the live
@@ -18,6 +19,15 @@ enum ActivityRecordingStatus {
   stopping,
   completed,
   failed,
+}
+
+/// Consecutive points to append to a recording's track: they continue the last
+/// segment, or open a new one when [startsNewSegment] is set.
+class TrackRun {
+  const TrackRun(this.points, {this.startsNewSegment = false});
+
+  final List<ActivityTrackPoint> points;
+  final bool startsNewSegment;
 }
 
 class ActivityRecordingState {
@@ -52,7 +62,7 @@ class ActivityRecordingState {
     required this.currentPowerWatts,
     required this.currentCadenceRpm,
     required this.isAutoPaused,
-    required List<ActivityTrackPoint> frozenPoints,
+    required AppendOnlyList<ActivityTrackPoint> frozenPoints,
     required List<ActivityTrackSegment> frozenSegments,
   }) : _points = frozenPoints,
        _segments = frozenSegments;
@@ -92,7 +102,7 @@ class ActivityRecordingState {
   /// that this pause may resume on its own once movement is detected again.
   final bool isAutoPaused;
 
-  final List<ActivityTrackPoint> _points;
+  final AppendOnlyList<ActivityTrackPoint> _points;
   final List<ActivityTrackSegment> _segments;
 
   /// The track points, unmodifiable. The same list instance is returned for
@@ -101,6 +111,11 @@ class ActivityRecordingState {
   List<ActivityTrackPoint> get points => _points;
 
   /// The track segments, unmodifiable and identity-stable like [points].
+  ///
+  /// Contract for caches keyed by identity: a segment instance never changes,
+  /// and a segment that gained points is a new instance (see
+  /// [ActivityTrackSegment]), while untouched segments keep their instance
+  /// across [appendTrackRuns], [addPoint] and [startNewSegment].
   List<ActivityTrackSegment> get segments => _segments;
 
   bool get isActive {
@@ -169,20 +184,70 @@ class ActivityRecordingState {
     );
   }
 
-  ActivityRecordingState addPoint(ActivityTrackPoint point) {
-    final updatedSegments = _segments.isEmpty
-        ? [
-            ActivityTrackSegment(points: [point]),
-          ]
-        : [
-            ..._segments.take(_segments.length - 1),
-            _segments.last.addPoint(point),
-          ];
-    return copyWith(segments: updatedSegments);
+  ActivityRecordingState addPoint(ActivityTrackPoint point) => appendTrackRuns([
+    TrackRun([point]),
+  ]);
+
+  /// Appends points to the track without copying the existing ones, in time
+  /// proportional to the points added (plus the segment count).
+  ///
+  /// Each [TrackRun] either continues the last segment or opens a new one.
+  /// Only the segments that receive points change identity.
+  ActivityRecordingState appendTrackRuns(List<TrackRun> runs) {
+    var segments = _segments;
+    final added = <ActivityTrackPoint>[];
+    for (final run in runs) {
+      if (run.points.isEmpty) {
+        continue;
+      }
+      added.addAll(run.points);
+      if (run.startsNewSegment || segments.isEmpty) {
+        segments = [...segments, ActivityTrackSegment(points: run.points)];
+      } else {
+        segments = [
+          ...segments.take(segments.length - 1),
+          segments.last.addPoints(run.points),
+        ];
+      }
+    }
+    if (added.isEmpty) {
+      return this;
+    }
+    return _withTrack(
+      _points.appended(added),
+      List<ActivityTrackSegment>.unmodifiable(segments),
+    );
   }
 
   ActivityRecordingState startNewSegment() {
-    return copyWith(segments: [..._segments, ActivityTrackSegment()]);
+    return _withTrack(
+      _points,
+      List<ActivityTrackSegment>.unmodifiable([
+        ..._segments,
+        ActivityTrackSegment(),
+      ]),
+    );
+  }
+
+  ActivityRecordingState _withTrack(
+    AppendOnlyList<ActivityTrackPoint> points,
+    List<ActivityTrackSegment> segments,
+  ) {
+    return ActivityRecordingState._(
+      status: status,
+      activityType: activityType,
+      startedAt: startedAt,
+      endedAt: endedAt,
+      localActivityId: localActivityId,
+      lastError: lastError,
+      elapsedDurationSeconds: elapsedDurationSeconds,
+      currentHeartRateBpm: currentHeartRateBpm,
+      currentPowerWatts: currentPowerWatts,
+      currentCadenceRpm: currentCadenceRpm,
+      isAutoPaused: isAutoPaused,
+      frozenPoints: points,
+      frozenSegments: segments,
+    );
   }
 
   /// The current live value for [kind], or `null` when none has been reported.
@@ -215,11 +280,11 @@ class ActivityRecordingState {
     );
   }
 
-  static List<ActivityTrackPoint> _frozenPoints(
+  static AppendOnlyList<ActivityTrackPoint> _frozenPoints(
     List<ActivityTrackPoint> points,
     List<ActivityTrackSegment> segments,
   ) {
-    return List<ActivityTrackPoint>.unmodifiable(
+    return AppendOnlyList<ActivityTrackPoint>.of(
       segments.isEmpty ? points : _flattenSegments(segments),
     );
   }

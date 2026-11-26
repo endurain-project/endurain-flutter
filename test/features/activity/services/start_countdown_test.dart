@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:endurain/features/activity/services/start_countdown.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,7 +25,7 @@ void main() {
       final cues = <int>[];
       final countdown = build(async, cues: cues);
       StartCountdownOutcome? outcome;
-      countdown.outcome.then((value) => outcome = value);
+      unawaited(countdown.outcome.then((value) => outcome = value));
 
       countdown.start();
       expect(countdown.remainingSeconds, 5);
@@ -45,7 +47,7 @@ void main() {
       final cues = <int>[];
       final countdown = build(async, seconds: 3, cues: cues);
       StartCountdownOutcome? outcome;
-      countdown.outcome.then((value) => outcome = value);
+      unawaited(countdown.outcome.then((value) => outcome = value));
       countdown.start();
 
       async.elapse(const Duration(milliseconds: 1500));
@@ -66,7 +68,7 @@ void main() {
     fakeAsync((async) {
       final skipped = build(async);
       StartCountdownOutcome? skippedOutcome;
-      skipped.outcome.then((value) => skippedOutcome = value);
+      unawaited(skipped.outcome.then((value) => skippedOutcome = value));
       skipped.start();
       skipped.skip();
       async.flushMicrotasks();
@@ -75,7 +77,7 @@ void main() {
 
       final cancelled = build(async);
       StartCountdownOutcome? cancelledOutcome;
-      cancelled.outcome.then((value) => cancelledOutcome = value);
+      unawaited(cancelled.outcome.then((value) => cancelledOutcome = value));
       cancelled.start();
       cancelled.cancel();
       // Later ticks do nothing once it has ended.
@@ -93,7 +95,7 @@ void main() {
       final cues = <int>[];
       final countdown = build(async, cues: cues, now: () => wallClock);
       StartCountdownOutcome? outcome;
-      countdown.outcome.then((value) => outcome = value);
+      unawaited(countdown.outcome.then((value) => outcome = value));
       countdown.start();
 
       wallClock = origin.add(const Duration(seconds: 30));
@@ -109,7 +111,7 @@ void main() {
     fakeAsync((async) {
       final countdown = build(async);
       StartCountdownOutcome? outcome;
-      countdown.outcome.then((value) => outcome = value);
+      unawaited(countdown.outcome.then((value) => outcome = value));
       countdown.start();
 
       countdown.dispose();

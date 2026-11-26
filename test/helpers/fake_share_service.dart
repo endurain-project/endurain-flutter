@@ -17,7 +17,7 @@ class FakeShareService extends ShareService {
     Rect? sharePositionOrigin,
   }) async {
     if (throwError != null) {
-      throw throwError!;
+      Error.throwWithStackTrace(throwError!, StackTrace.current);
     }
     calls.add((paths: paths, subject: subject));
   }

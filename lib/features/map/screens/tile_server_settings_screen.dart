@@ -1,4 +1,5 @@
-import 'package:endurain/app/app_scope.dart';
+import 'dart:async';
+
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/validators.dart';
@@ -15,10 +16,19 @@ import 'package:material_ui/material_ui.dart';
 /// replaces it with the server's own tile setting (see
 /// `MapSettingsRepository.saveFromServerSettings`).
 class TileServerSettingsScreen extends StatefulWidget {
-  const TileServerSettingsScreen({super.key, this.controller});
+  const TileServerSettingsScreen({
+    super.key,
+    this.controller,
+    this.createController,
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
-  /// Optional override for tests; otherwise resolved from [AppScope].
+  /// Injected controller (tests); otherwise one is built with
+  /// [createController] and owned by the screen.
   final TileServerSettingsController? controller;
+  final TileServerSettingsController Function()? createController;
 
   @override
   State<TileServerSettingsScreen> createState() =>
@@ -36,12 +46,9 @@ class _TileServerSettingsScreenState extends State<TileServerSettingsScreen>
     super.initState();
     _controller = registerController(
       widget.controller,
-      () => AppScope.servicesOf(
-        context,
-        listen: false,
-      ).createTileServerSettingsController(),
+      () => widget.createController!(),
     );
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override

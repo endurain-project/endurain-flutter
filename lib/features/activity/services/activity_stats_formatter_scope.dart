@@ -1,4 +1,4 @@
-import 'package:endurain/app/app_scope.dart';
+import 'package:endurain/app/measurement_system_scope.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/l10n/app_localizations.dart';
@@ -11,8 +11,8 @@ import 'package:flutter/widgets.dart';
 /// symbols, the resolved [MeasurementSystem], and the locale used for number
 /// grouping/decimals) are combined, so screens do not each re-derive them.
 ///
-/// The root `App` rebuilds on both locale and unit changes, so a formatter
-/// obtained during `build` is always current.
+/// Reading these during `build` subscribes the widget to [MeasurementSystemScope],
+/// so it rebuilds when the unit preference changes.
 extension ActivityStatsFormatterScope on BuildContext {
   /// The device's locale, including its region subtag.
   ///
@@ -26,14 +26,15 @@ extension ActivityStatsFormatterScope on BuildContext {
   /// The unit system to display: the user's explicit choice when set,
   /// otherwise the operating-system setting with a device-region fallback.
   ///
-  /// Falls back to the device-region default when there is no [AppScope]
-  /// ancestor, so a widget rendered in isolation (previews, widget tests) still
-  /// formats correctly instead of throwing.
-  MeasurementSystem get measurementSystem {
-    final services = AppScope.maybeServicesOf(this, listen: false);
-    return services?.measurementSystemController.resolve(deviceLocale) ??
-        MeasurementSystem.forLocale(deviceLocale);
-  }
+  /// Falls back to the device-region default when there is no
+  /// [MeasurementSystemScope] ancestor, so a widget rendered in isolation
+  /// (previews, widget tests) still formats correctly instead of throwing.
+  MeasurementSystem get measurementSystem =>
+      MeasurementSystemScope.of(this, deviceLocale);
+
+  /// [measurementSystem] without a rebuild dependency, for event handlers.
+  MeasurementSystem get currentMeasurementSystem =>
+      MeasurementSystemScope.of(this, deviceLocale, listen: false);
 
   /// A formatter bound to the active locale and unit preference.
   ActivityStatsFormatter get statsFormatter {

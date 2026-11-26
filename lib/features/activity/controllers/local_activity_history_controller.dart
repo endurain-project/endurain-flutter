@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
@@ -9,6 +10,12 @@ import 'package:endurain/features/activity/repositories/local_activity_repositor
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
+
+/// GPX documents larger than this (in UTF-16 code units) are parsed on a
+/// background isolate; smaller ones parse faster inline than an isolate spawn.
+const int gpxIsolateParseThreshold = 64 * 1024;
+
+GpxRoute? _parseGpxRoute(String gpx) => const GpxRouteParser().parse(gpx);
 
 class LocalActivityHistoryController extends SafeNotifier {
   LocalActivityHistoryController({
@@ -93,8 +100,17 @@ class LocalActivityHistoryController extends SafeNotifier {
         return null;
       }
       final gpx = await _repository.readGpxContents(record);
-      return const GpxRouteParser().parse(gpx);
-    } catch (_) {
+      // A long activity's GPX is megabytes of text: parse it off the UI thread.
+      return gpx.length > gpxIsolateParseThreshold
+          ? await Isolate.run(() => _parseGpxRoute(gpx))
+          : _parseGpxRoute(gpx);
+    } catch (error) {
+      // The caller still gets null (no map), but the failure is no longer
+      // invisible in the diagnostics report.
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.activityRouteLoadFailed,
+        details: {'id': record.id, ...diagnosticErrorDetails(error)},
+      );
       return null;
     }
   }

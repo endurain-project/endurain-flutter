@@ -41,6 +41,8 @@ class LocalActivityRecord {
     this.lastUploadErrorCode,
     this.autoRetryEligible = true,
     this.gpxCleanupPending = false,
+    this.uploadAttemptCount = 0,
+    this.nextUploadAttemptAt,
     this.idempotencyKey,
     this.connectionOrigin,
     this.connectionProfileId,
@@ -73,6 +75,14 @@ class LocalActivityRecord {
   /// The server accepted this activity, but removing its local GPX file still
   /// needs retrying because retention is disabled.
   final bool gpxCleanupPending;
+
+  /// Consecutive transient upload failures since the last success, persisted
+  /// so the backoff survives app restarts. Reset when the upload succeeds.
+  final int uploadAttemptCount;
+
+  /// Earliest time the durable queue may retry this record on its own. `null`
+  /// means no backoff is pending. A manual retry ignores it.
+  final DateTime? nextUploadAttemptAt;
 
   /// Stable key used for server-side upload de-duplication.
   ///
@@ -114,6 +124,8 @@ class LocalActivityRecord {
     Object? lastUploadErrorCode = kUnset,
     bool? autoRetryEligible,
     bool? gpxCleanupPending,
+    int? uploadAttemptCount,
+    Object? nextUploadAttemptAt = kUnset,
     Object? idempotencyKey = kUnset,
     Object? connectionOrigin = kUnset,
     Object? connectionProfileId = kUnset,
@@ -152,6 +164,10 @@ class LocalActivityRecord {
           : lastUploadErrorCode as AppErrorCode?,
       autoRetryEligible: autoRetryEligible ?? this.autoRetryEligible,
       gpxCleanupPending: gpxCleanupPending ?? this.gpxCleanupPending,
+      uploadAttemptCount: uploadAttemptCount ?? this.uploadAttemptCount,
+      nextUploadAttemptAt: identical(nextUploadAttemptAt, kUnset)
+          ? this.nextUploadAttemptAt
+          : nextUploadAttemptAt as DateTime?,
       idempotencyKey: identical(idempotencyKey, kUnset)
           ? this.idempotencyKey
           : idempotencyKey as String?,
@@ -190,6 +206,9 @@ class LocalActivityRecord {
         'lastUploadErrorCode': lastUploadErrorCode!.name,
       'autoRetryEligible': autoRetryEligible,
       'gpxCleanupPending': gpxCleanupPending,
+      'uploadAttemptCount': uploadAttemptCount,
+      if (nextUploadAttemptAt != null)
+        'nextUploadAttemptAt': nextUploadAttemptAt!.toUtcIso8601(),
       if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
       if (connectionOrigin != null) 'connectionOrigin': connectionOrigin,
       if (connectionProfileId != null)
@@ -230,6 +249,8 @@ class LocalActivityRecord {
       gpxCleanupPending: json['gpxCleanupPending'] is bool
           ? json['gpxCleanupPending'] as bool
           : false,
+      uploadAttemptCount: jsonInt(json['uploadAttemptCount']) ?? 0,
+      nextUploadAttemptAt: jsonDateTime(json['nextUploadAttemptAt']),
       idempotencyKey: jsonString(json['idempotencyKey']),
       connectionOrigin: jsonString(json['connectionOrigin']),
       connectionProfileId: jsonString(json['connectionProfileId']),

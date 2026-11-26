@@ -29,12 +29,17 @@ class GpxRouteParser {
   const GpxRouteParser();
 
   static final RegExp _segmentPattern = RegExp(
-    r'<trkseg>(.*?)</trkseg>',
+    r'<trkseg\b[^>]*>(.*?)</trkseg>',
     dotAll: true,
   );
 
-  static final RegExp _trackPointPattern = RegExp(
-    r'<trkpt\s+lat="([^"]+)"\s+lon="([^"]+)"',
+  /// The attribute list of one `<trkpt ...>` start tag. Attributes are read
+  /// separately so their order does not matter.
+  static final RegExp _trackPointPattern = RegExp(r'<trkpt\b([^>]*)>');
+
+  /// One `name="value"` or `name='value'` attribute.
+  static final RegExp _attributePattern = RegExp(
+    r'''([A-Za-z_:][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')''',
   );
 
   /// Returns the parsed [GpxRoute], or `null` when [gpx] contains no valid
@@ -67,8 +72,23 @@ class GpxRouteParser {
   List<LatLng> _pointsIn(String segment) {
     final points = <LatLng>[];
     for (final match in _trackPointPattern.allMatches(segment)) {
-      final latitude = double.tryParse(match.group(1)!);
-      final longitude = double.tryParse(match.group(2)!);
+      String? latText;
+      String? lonText;
+      for (final attribute in _attributePattern.allMatches(
+        match.group(1) ?? '',
+      )) {
+        final value = attribute.group(2) ?? attribute.group(3) ?? '';
+        switch (attribute.group(1)) {
+          case 'lat':
+            latText = value;
+          case 'lon':
+            lonText = value;
+        }
+      }
+      final latitude = latText == null ? null : double.tryParse(latText.trim());
+      final longitude = lonText == null
+          ? null
+          : double.tryParse(lonText.trim());
       if (latitude == null || longitude == null) {
         continue;
       }

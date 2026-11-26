@@ -21,7 +21,7 @@ class _FakeSensorRecorder implements ActivitySensorRecorder {
       throw StateError('disk full');
     }
     if (appendError case final error?) {
-      throw error;
+      Error.throwWithStackTrace(error, StackTrace.current);
     }
     appended.add(sample);
   }

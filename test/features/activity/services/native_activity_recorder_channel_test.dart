@@ -4,7 +4,7 @@ import 'package:endurain/features/activity/models/audio_announcement_settings.da
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
-import 'package:endurain/features/activity/services/movement_auto_pause_detector.dart';
+import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

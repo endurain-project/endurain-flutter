@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:endurain/core/diagnostics/diagnostics_events.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -10,6 +11,7 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/recording_diagnostics.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
@@ -482,7 +484,187 @@ void main() {
 
       expect(attemptedKeys, ['q_conn']);
     });
+
+    group('persisted retry backoff', () {
+      final failedAt = DateTime.utc(2026, 6, 3, 8);
+
+      test('a transient failure counts and schedules the next try', () async {
+        await _createRecord(
+          repository,
+          id: 'q_backoff',
+          status: LocalActivityUploadStatus.pending,
+        );
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _failingUploadService(
+            500,
+            backoff: ActivityUploadBackoff(random: () => 0),
+          ),
+          now: () => failedAt,
+        );
+
+        await queue.drain();
+
+        final record = (await repository.get('q_backoff'))!;
+        expect(record.uploadStatus, LocalActivityUploadStatus.failed);
+        expect(record.uploadAttemptCount, 1);
+        expect(
+          record.nextUploadAttemptAt,
+          failedAt.add(const Duration(minutes: 1)),
+        );
+      });
+
+      test('skips a record until its backoff elapses', () async {
+        await _createRecord(
+          repository,
+          id: 'q_wait',
+          status: LocalActivityUploadStatus.failed,
+          nextUploadAttemptAt: DateTime.utc(2026, 6, 3, 9),
+          uploadAttemptCount: 2,
+        );
+        final attemptedKeys = <String?>[];
+        var now = DateTime.utc(2026, 6, 3, 8, 59);
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+          now: () => now,
+        );
+
+        await queue.drain();
+        expect(attemptedKeys, isEmpty);
+
+        now = DateTime.utc(2026, 6, 3, 9);
+        await queue.drain();
+        expect(attemptedKeys, ['q_wait']);
+        final record = (await repository.get('q_wait'))!;
+        expect(record.uploadStatus, LocalActivityUploadStatus.uploaded);
+        expect(record.uploadAttemptCount, 0);
+        expect(record.nextUploadAttemptAt, isNull);
+      });
+
+      test('keeps doubling the wait over consecutive failures', () async {
+        await _createRecord(
+          repository,
+          id: 'q_double',
+          status: LocalActivityUploadStatus.pending,
+        );
+        var now = failedAt;
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _failingUploadService(
+            503,
+            backoff: ActivityUploadBackoff(random: () => 0),
+          ),
+          now: () => now,
+        );
+
+        await queue.drain();
+        now = (await repository.get('q_double'))!.nextUploadAttemptAt!;
+        await queue.drain();
+
+        final record = (await repository.get('q_double'))!;
+        expect(record.uploadAttemptCount, 2);
+        expect(record.nextUploadAttemptAt, now.add(const Duration(minutes: 2)));
+      });
+
+      test('an auth failure does not back off', () async {
+        await _createRecord(
+          repository,
+          id: 'q_auth_backoff',
+          status: LocalActivityUploadStatus.pending,
+        );
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _failingUploadService(401),
+          now: () => failedAt,
+        );
+
+        await queue.drain();
+
+        final record = (await repository.get('q_auth_backoff'))!;
+        expect(record.uploadAttemptCount, 0);
+        expect(record.nextUploadAttemptAt, isNull);
+        expect(record.autoRetryEligible, isTrue);
+      });
+
+      test('a manual retry ignores the backoff', () async {
+        final record = await _createRecord(
+          repository,
+          id: 'q_manual',
+          status: LocalActivityUploadStatus.failed,
+          nextUploadAttemptAt: DateTime.utc(2099),
+          uploadAttemptCount: 5,
+        );
+        final service = _uploadServiceCapturing([], status: 201);
+
+        final result = await service.performUploadAttempt(
+          record: record,
+          repository: repository,
+        );
+
+        expect(result.uploadStatus, LocalActivityUploadStatus.uploaded);
+        expect(result.uploadAttemptCount, 0);
+        expect(result.nextUploadAttemptAt, isNull);
+      });
+
+      test('still finishes a deferred GPX cleanup during a backoff', () async {
+        final record = await _createRecord(
+          repository,
+          id: 'q_cleanup',
+          status: LocalActivityUploadStatus.uploaded,
+          nextUploadAttemptAt: DateTime.utc(2099),
+        );
+        await repository.upsert(record.copyWith(gpxCleanupPending: true));
+        final attemptedKeys = <String?>[];
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _uploadServiceCapturing(attemptedKeys, status: 201),
+          retentionSettingsRepository: null,
+          now: () => failedAt,
+        );
+
+        await queue.drain();
+
+        // Cleanup involves no upload.
+        expect(attemptedKeys, isEmpty);
+        expect((await repository.get('q_cleanup'))!.gpxCleanupPending, isFalse);
+      });
+    });
+
+    test(
+      'a failure outside per-record handling is recorded, not thrown',
+      () async {
+        final diagnostics = RecordingDiagnostics();
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _uploadServiceCapturing([], status: 201),
+          activeConnectionProfile: () async => throw StateError('profile gone'),
+          diagnostics: diagnostics,
+        );
+
+        await queue.drain();
+
+        expect(
+          diagnostics.single(DiagnosticsEvents.activityUploadQueueDrainFailed),
+          isNotNull,
+        );
+      },
+    );
   });
+}
+
+ActivityUploadService _failingUploadService(
+  int status, {
+  ActivityUploadBackoff backoff = const ActivityUploadBackoff(),
+}) {
+  return ActivityUploadService(
+    config: const ActivityUploadConfig(endpoint: '/upload', fieldName: 'file'),
+    backoff: backoff,
+    uploadFile:
+        (_, _, _, {idempotencyKey, expectedOrigin, expectedProfileId}) async {
+          return http.StreamedResponse(const Stream<List<int>>.empty(), status);
+        },
+  );
 }
 
 ActivityUploadService _uploadServiceCapturing(
@@ -506,6 +688,8 @@ Future<LocalActivityRecord> _createRecord(
   String? connectionOrigin = 'https://example.test',
   String? connectionProfileId = 'profile-1',
   bool autoRetryEligible = true,
+  int uploadAttemptCount = 0,
+  DateTime? nextUploadAttemptAt,
 }) async {
   final fileName = await repository.writeGpx(id: id, gpx: '<gpx />');
   final record = LocalActivityRecord(
@@ -523,6 +707,8 @@ Future<LocalActivityRecord> _createRecord(
     connectionOrigin: connectionOrigin,
     connectionProfileId: connectionProfileId,
     autoRetryEligible: autoRetryEligible,
+    uploadAttemptCount: uploadAttemptCount,
+    nextUploadAttemptAt: nextUploadAttemptAt,
   );
   await repository.upsert(record);
   return record;

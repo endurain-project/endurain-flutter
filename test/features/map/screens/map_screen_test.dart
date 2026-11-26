@@ -4,11 +4,12 @@ import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
+import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
-import 'package:endurain/features/activity/services/geolocator_activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
+import 'package:endurain/features/activity/widgets/activity_recording_overlay.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
 import 'package:endurain/features/map/repositories/map_settings_repository.dart';
@@ -30,7 +31,9 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 
 import '../../../helpers/fake_location_platform_adapter.dart';
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/geolocator_activity_location_recorder.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
+import '../../../helpers/recording_controller_factory.dart';
 import '../../../helpers/widget_test_app.dart';
 import '../../sensors/fakes/fake_sensor_connection_adapter.dart';
 
@@ -71,6 +74,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
           ),
@@ -114,6 +118,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
             sensorControllers: {
@@ -171,6 +176,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapStateController,
             activityController: activityController,
           ),
@@ -209,6 +215,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
           ),
@@ -254,6 +261,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
           ),
@@ -281,6 +289,116 @@ void main() {
       await platform.close();
     });
 
+    testWidgets('an elapsed-only update does not rebuild the map layers', (
+      tester,
+    ) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
+            controller: mapController,
+            activityController: activityController,
+          ),
+        ),
+      );
+      await _pumpMapFrame(tester);
+
+      await activityController.start(ActivityType.run);
+      platform.addPosition(testPosition(latitude: 41.10, longitude: -8.60));
+      await tester.pump();
+      platform.addPosition(testPosition(latitude: 41.11, longitude: -8.61));
+      await tester.pump();
+
+      final flutterMap = tester.widget<FlutterMap>(find.byType(FlutterMap));
+      final layer = tester.widget<PolylineLayer>(find.byType(PolylineLayer));
+      final tiles = tester.widget<TileLayer>(find.byType(TileLayer));
+
+      // Same track, new notification: what the 1 Hz elapsed timer produces.
+      var notifications = 0;
+      activityController.addListener(() => notifications++);
+      activityController.notifyListeners();
+      activityController.notifyListeners();
+      await tester.pump();
+
+      expect(notifications, 2);
+      expect(
+        identical(
+          tester.widget<FlutterMap>(find.byType(FlutterMap)),
+          flutterMap,
+        ),
+        isTrue,
+      );
+      expect(
+        identical(
+          tester.widget<PolylineLayer>(find.byType(PolylineLayer)),
+          layer,
+        ),
+        isTrue,
+      );
+      expect(
+        identical(tester.widget<TileLayer>(find.byType(TileLayer)), tiles),
+        isTrue,
+      );
+
+      // A new point still redraws the route.
+      platform.addPosition(testPosition(latitude: 41.12, longitude: -8.62));
+      await tester.pump();
+      await tester.pump();
+      expect(
+        tester
+            .widget<PolylineLayer>(find.byType(PolylineLayer))
+            .polylines
+            .single
+            .points,
+        hasLength(3),
+      );
+
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
+    testWidgets('pauses the map position stream while backgrounded', (
+      tester,
+    ) async {
+      final platform = FakeLocationPlatformAdapter(
+        currentPosition: testPosition(latitude: 41.1579, longitude: -8.6291),
+      );
+      final mapController = await _mapController(platform);
+      final activityController = _activityController(platform);
+
+      await tester.pumpWidget(
+        _MapTestApp(
+          child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
+            controller: mapController,
+            activityController: activityController,
+          ),
+        ),
+      );
+      await _pumpMapFrame(tester);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      platform.addPosition(testPosition(latitude: 50.0, longitude: 10.0));
+      await tester.pump();
+      expect(mapController.currentLocation.latitude, closeTo(41.1579, 1e-6));
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      platform.addPosition(testPosition(latitude: 51.0, longitude: 11.0));
+      await tester.pump();
+      expect(mapController.currentLocation.latitude, closeTo(51.0, 1e-6));
+
+      activityController.dispose();
+      mapController.dispose();
+      await platform.close();
+    });
+
     testWidgets('renders separate polylines without bridging a paused gap', (
       tester,
     ) async {
@@ -293,6 +411,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
           ),
@@ -340,6 +459,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
           ),
@@ -375,6 +495,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
           ),
@@ -419,15 +540,24 @@ void main() {
       final mapController = await _mapController(platform);
       final activityController = _activityController(platform);
       final countdownPlatform = _RecordingCountdownPlatform();
+      final countdownSettings = await _countdownSettings(seconds: 3);
 
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
             controller: mapController,
             activityController: activityController,
-            startCountdownSettings: await _countdownSettings(seconds: 3),
-            startCountdownPlatform: countdownPlatform,
-            countdownClock: tester.binding.clock.now,
+            recordingOverlayBuilder: (context, controller, reserved) =>
+                ActivityRecordingOverlay(
+                  controller: controller,
+                  trailingReservedWidth: reserved,
+                  startCountdownSettings: countdownSettings,
+                  startCountdownPlatform: countdownPlatform,
+                  readAudioAnnouncementSettings:
+                      AudioAnnouncementSettings.defaults,
+                  historyBuilder: _noHistory,
+                  countdownClock: tester.binding.clock.now,
+                ),
           ),
         ),
       );
@@ -487,15 +617,24 @@ void main() {
         final mapController = await _mapController(platform);
         final activityController = _activityController(platform);
         final countdownPlatform = _RecordingCountdownPlatform();
+        final countdownSettings = await _countdownSettings(seconds: 10);
 
         await tester.pumpWidget(
           _MapTestApp(
             child: MapScreen(
               controller: mapController,
               activityController: activityController,
-              startCountdownSettings: await _countdownSettings(seconds: 10),
-              startCountdownPlatform: countdownPlatform,
-              countdownClock: tester.binding.clock.now,
+              recordingOverlayBuilder: (context, controller, reserved) =>
+                  ActivityRecordingOverlay(
+                    controller: controller,
+                    trailingReservedWidth: reserved,
+                    startCountdownSettings: countdownSettings,
+                    startCountdownPlatform: countdownPlatform,
+                    readAudioAnnouncementSettings:
+                        AudioAnnouncementSettings.defaults,
+                    historyBuilder: _noHistory,
+                    countdownClock: tester.binding.clock.now,
+                  ),
             ),
           ),
         );
@@ -533,15 +672,24 @@ void main() {
       final mapController = await _mapController(platform);
       final activityController = _activityController(platform);
       final countdownPlatform = _RecordingCountdownPlatform();
+      final countdownSettings = await _countdownSettings(seconds: 10);
 
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
             controller: mapController,
             activityController: activityController,
-            startCountdownSettings: await _countdownSettings(seconds: 10),
-            startCountdownPlatform: countdownPlatform,
-            countdownClock: tester.binding.clock.now,
+            recordingOverlayBuilder: (context, controller, reserved) =>
+                ActivityRecordingOverlay(
+                  controller: controller,
+                  trailingReservedWidth: reserved,
+                  startCountdownSettings: countdownSettings,
+                  startCountdownPlatform: countdownPlatform,
+                  readAudioAnnouncementSettings:
+                      AudioAnnouncementSettings.defaults,
+                  historyBuilder: _noHistory,
+                  countdownClock: tester.binding.clock.now,
+                ),
           ),
         ),
       );
@@ -582,15 +730,24 @@ void main() {
       final mapController = await _mapController(platform);
       final activityController = _activityController(platform);
       final countdownPlatform = _RecordingCountdownPlatform();
+      final countdownSettings = await _countdownSettings(seconds: 10);
 
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
             controller: mapController,
             activityController: activityController,
-            startCountdownSettings: await _countdownSettings(seconds: 10),
-            startCountdownPlatform: countdownPlatform,
-            countdownClock: tester.binding.clock.now,
+            recordingOverlayBuilder: (context, controller, reserved) =>
+                ActivityRecordingOverlay(
+                  controller: controller,
+                  trailingReservedWidth: reserved,
+                  startCountdownSettings: countdownSettings,
+                  startCountdownPlatform: countdownPlatform,
+                  readAudioAnnouncementSettings:
+                      AudioAnnouncementSettings.defaults,
+                  historyBuilder: _noHistory,
+                  countdownClock: tester.binding.clock.now,
+                ),
           ),
         ),
       );
@@ -638,6 +795,7 @@ void main() {
                   viewPadding: const EdgeInsets.only(bottom: 34),
                 ),
                 child: MapScreen(
+                  recordingOverlayBuilder: _defaultOverlay,
                   controller: mapController,
                   activityController: activityController,
                 ),
@@ -689,6 +847,7 @@ void main() {
                   viewPadding: const EdgeInsets.only(bottom: 24),
                 ),
                 child: MapScreen(
+                  recordingOverlayBuilder: _defaultOverlay,
                   controller: mapController,
                   activityController: activityController,
                 ),
@@ -786,7 +945,7 @@ ActivityRecordingController _activityController(
   FakeLocationPlatformAdapter platform,
 ) {
   final locationService = LocationService(platformAdapter: platform);
-  return ActivityRecordingController(
+  return createTestRecordingController(
     recordingService: ActivityRecordingService(
       locationService: locationService,
       recorder: GeolocatorActivityLocationRecorder(
@@ -800,6 +959,27 @@ ActivityRecordingController _activityController(
     ownsService: true,
   );
 }
+
+/// The recording overlay with in-memory settings and a platform that does
+/// nothing, for tests that are not about the recording flow.
+Widget _defaultOverlay(
+  BuildContext context,
+  ActivityRecordingController controller,
+  double trailingReservedWidth,
+) {
+  return ActivityRecordingOverlay(
+    controller: controller,
+    trailingReservedWidth: trailingReservedWidth,
+    startCountdownSettings: StartCountdownSettingsRepository(
+      preferences: FakePreferencesStore(),
+    ),
+    startCountdownPlatform: _RecordingCountdownPlatform(),
+    readAudioAnnouncementSettings: AudioAnnouncementSettings.defaults,
+    historyBuilder: _noHistory,
+  );
+}
+
+Widget _noHistory(BuildContext context) => const SizedBox();
 
 class _MapTestApp extends TestMaterialApp {
   const _MapTestApp({required super.child});

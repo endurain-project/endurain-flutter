@@ -10,6 +10,7 @@ import 'package:endurain/features/watch/services/watch_session_ingestion_service
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/recording_controller_factory.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
@@ -74,7 +75,10 @@ void main() {
     service = WatchSessionIngestionService(
       repository: repository,
       ledger: ledger,
-      now: () => DateTime.utc(2026, 6, 3, 10),
+      finalizer: createTestFinalizer(
+        repository,
+        now: () => DateTime.utc(2026, 6, 3, 10),
+      ),
     );
   });
 
@@ -259,6 +263,7 @@ void main() {
     final retry = WatchSessionIngestionService(
       repository: repository,
       ledger: freshLedger,
+      finalizer: createTestFinalizer(repository),
     );
 
     final second = await retry.ingest(buildHandoff());
