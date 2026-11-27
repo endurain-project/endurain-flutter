@@ -47,7 +47,7 @@ data class ActiveActivitySessionData(
      *
      * Drives whether the foreground service may declare the `connectedDevice`
      * service type on Android 14+ (see
-     * `ActivityRecorderService.canDeclareConnectedDeviceType`).
+     * `ForegroundServiceCompat.canDeclareConnectedDeviceType`).
      */
     fun hasAnySensorBinding(): Boolean {
         return !heartRateDeviceId.isNullOrEmpty() ||

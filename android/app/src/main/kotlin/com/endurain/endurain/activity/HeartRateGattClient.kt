@@ -66,7 +66,7 @@ class HeartRateGattClient(context: Context) : BleNotifyClient(context, "HeartRat
                 return null
             }
             return if (is16Bit) {
-                (data[1].toInt() and 0xFF) or ((data[2].toInt() and 0xFF) shl 8)
+                BleBytes.u16Le(data, 1)
             } else {
                 data[1].toInt() and 0xFF
             }

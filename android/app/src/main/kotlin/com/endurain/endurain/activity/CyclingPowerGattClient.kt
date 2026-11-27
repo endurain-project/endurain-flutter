@@ -56,7 +56,7 @@ class CyclingPowerGattClient(context: Context) :
             if (data.size < 4) {
                 return null
             }
-            val raw = (data[2].toInt() and 0xFF) or ((data[3].toInt() and 0xFF) shl 8)
+            val raw = BleBytes.u16Le(data, 2)
             val signed = if (raw and 0x8000 != 0) raw - 0x10000 else raw
             return if (signed < 0) 0 else signed
         }

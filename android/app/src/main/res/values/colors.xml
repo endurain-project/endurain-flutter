@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#19AB88</color>
+    <!-- Window and splash background before the first Flutter frame. -->
+    <color name="window_background">#FFFFFFFF</color>
+    <!-- Brand "E" of the Android 12+ splash icon (assets/logo). -->
+    <color name="splash_icon">#1D9E75</color>
 </resources>

@@ -154,7 +154,11 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/logo/brand_logo_light_theme.png"
   adaptive_icon_background: "#19AB88"
-  adaptive_icon_foreground: "assets/logo/brand_logo_light_theme.png"
+  # Transparent-background glyph; the opaque square would turn the Android 13+
+  # themed icon into a solid tile. Regenerating also writes
+  # ic_launcher_monochrome (white silhouette) for the themed icon.
+  adaptive_icon_foreground: "assets/logo/brand_logo_foreground.png"
+  adaptive_icon_monochrome: "assets/logo/brand_logo_monochrome.png"
   image_path_ios_dark_transparent: "assets/logo/brand_logo_dark_theme.png"
   image_path_ios_tinted_grayscale: "assets/logo/brand_logo_light_theme.png"
   desaturate_tinted_to_grayscale_ios: true

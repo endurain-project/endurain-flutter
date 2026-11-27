@@ -58,13 +58,44 @@ class ActiveActivityStoreTest {
         store.saveSession(session(ActiveActivitySessionData.STATUS_RECORDING))
         store.loadSession()
 
-        val file = java.io.File(
-            RuntimeEnvironment.getApplication().filesDir,
-            "${ActiveActivityStore.ROOT_DIR}/${ActiveActivityStore.ACTIVE_DIR}/" +
-                ActiveActivityStore.SESSION_FILE,
-        )
-        file.delete()
+        // The store is a process-wide singleton bound to the first test's
+        // files dir, so read the file it really uses.
+        val sessionFile = ActiveActivityStore::class.java.getDeclaredField("sessionFile")
+        sessionFile.isAccessible = true
+        (sessionFile.get(store) as java.io.File).delete()
 
+        assertNull(store.loadSession())
+    }
+
+    @Test
+    fun updateSessionRewritesTheLatestSessionAndReturnsIt() {
+        store.saveSession(session(ActiveActivitySessionData.STATUS_RECORDING))
+
+        val updated = store.updateSession {
+            it.copy(status = ActiveActivitySessionData.STATUS_PAUSED)
+        }
+
+        assertEquals(ActiveActivitySessionData.STATUS_PAUSED, updated?.status)
+        assertEquals(updated, store.loadSession())
+    }
+
+    @Test
+    fun updateSessionLeavesTheSessionUntouchedWhenTheTransformDeclines() {
+        val recording = session(ActiveActivitySessionData.STATUS_RECORDING)
+        store.saveSession(recording)
+
+        assertNull(store.updateSession { null })
+
+        assertEquals(recording, store.loadSession())
+    }
+
+    @Test
+    fun updateSessionDoesNothingWithoutASession() {
+        var called = false
+
+        assertNull(store.updateSession { called = true; it })
+
+        assertEquals(false, called)
         assertNull(store.loadSession())
     }
 }

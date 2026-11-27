@@ -1,23 +1,22 @@
 package com.endurain.endurain.activity
 
 import android.content.Context
-import android.location.Location
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 
 /**
  * Drives spoken announcements for an active recording: distance progress on
- * every fix, time-based thresholds on a one-shot main-looper timer, and the
+ * every fix, time-based thresholds on a one-shot timer on [handler]'s thread (the recorder thread), and the
  * auto-pause/resume cues. Progress is cached in memory and persisted through
  * [ActiveActivityStore] (see [AnnouncementStateCache]).
  */
 internal class RecorderAnnouncementDriver(
     private val context: Context,
     private val store: ActiveActivityStore,
+    private val handler: Handler = Handler(Looper.getMainLooper()),
 ) {
     private val cache = AnnouncementStateCache()
-    private val handler = Handler(Looper.getMainLooper())
     private val timeRunnable = Runnable {
         announceTimeIfDue(System.currentTimeMillis())
         scheduleNextTimeAnnouncement()
@@ -34,7 +33,7 @@ internal class RecorderAnnouncementDriver(
     }
 
     /** Advances announcement progress and speaks threshold crossings. */
-    fun onFix(nowMillis: Long, location: Location, isNewSegment: Boolean) {
+    fun onFix(nowMillis: Long, latitude: Double, longitude: Double, isNewSegment: Boolean) {
         val announcementState = currentState() ?: return
         if (!announcementState.enabled) {
             return
@@ -43,8 +42,8 @@ internal class RecorderAnnouncementDriver(
         val elapsedSeconds = SessionTiming.elapsedSeconds(session, nowMillis)
         val result = AnnouncementScheduler.onFix(
             state = announcementState,
-            latitude = location.latitude,
-            longitude = location.longitude,
+            latitude = latitude,
+            longitude = longitude,
             elapsedSeconds = elapsedSeconds,
             isNewSegment = isNewSegment,
         )
@@ -55,7 +54,7 @@ internal class RecorderAnnouncementDriver(
     }
 
     /**
-     * Schedules one main-looper callback at the next elapsed-time threshold.
+     * Schedules one callback on [handler] at the next elapsed-time threshold.
      * One-shot scheduling avoids polling and serializes state with GPS fixes.
      */
     fun scheduleNextTimeAnnouncement() {

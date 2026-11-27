@@ -29,10 +29,15 @@ private class ForwardingLocationListener(
  * Owns the platform location subscriptions of the recorder: the start-countdown
  * warm-up (fixes dropped) and the active collection. It knows nothing about
  * sessions; the service decides what a failed [startActive] means.
+ *
+ * Callbacks are delivered on [looper] (the recorder thread, see
+ * [RecorderWorker]), so [startWarmUp], [startActive] and the stop calls must
+ * also be made from it; the listener fields are not synchronized.
  */
 internal class RecorderLocationCollector(
     private val context: Context,
     private val manager: LocationManager?,
+    private val looper: Looper = Looper.getMainLooper(),
 ) {
     /** Why a subscription could not start. */
     enum class Failure { PERMISSION_LOST, LOCATION_UNAVAILABLE }
@@ -71,7 +76,7 @@ internal class RecorderLocationCollector(
                     MIN_UPDATE_INTERVAL_MS,
                     0f,
                     listener,
-                    Looper.getMainLooper(),
+                    looper,
                 )
                 warmUpListener = listener
             } catch (_: SecurityException) {
@@ -112,7 +117,7 @@ internal class RecorderLocationCollector(
                     MIN_UPDATE_INTERVAL_MS,
                     minDistanceMeters,
                     listener,
-                    Looper.getMainLooper(),
+                    looper,
                 )
                 registered = true
             } catch (_: SecurityException) {

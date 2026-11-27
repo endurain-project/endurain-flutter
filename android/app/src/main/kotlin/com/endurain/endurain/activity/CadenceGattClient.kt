@@ -94,10 +94,8 @@ class CadenceGattClient(context: Context) : BleNotifyClient(context, "CadenceGat
             if (data.size < offset + 4) {
                 return null
             }
-            val crankRevolutions =
-                (data[offset].toInt() and 0xFF) or ((data[offset + 1].toInt() and 0xFF) shl 8)
-            val crankEventTime =
-                (data[offset + 2].toInt() and 0xFF) or ((data[offset + 3].toInt() and 0xFF) shl 8)
+            val crankRevolutions = BleBytes.u16Le(data, offset)
+            val crankEventTime = BleBytes.u16Le(data, offset + 2)
             return Pair(crankRevolutions, crankEventTime)
         }
 

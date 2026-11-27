@@ -65,6 +65,27 @@ class ActiveActivityStore private constructor(appContext: Context) {
         }
     }
 
+    /**
+     * Atomically rewrites the stored session from its current value.
+     *
+     * The recorder thread, the channel's I/O thread and the service commands
+     * all change the session, so a read-modify-write done outside this lock
+     * could overwrite another writer's newer status. [transform] sees the
+     * latest session and returns the replacement, or `null` to leave it
+     * untouched (for example when the status it wanted to change moved on).
+     * Returns the saved session, or `null` when nothing was written.
+     */
+    fun updateSession(
+        transform: (ActiveActivitySessionData) -> ActiveActivitySessionData?,
+    ): ActiveActivitySessionData? {
+        synchronized(lock) {
+            val current = loadSession() ?: return null
+            val updated = transform(current) ?: return null
+            saveSession(updated)
+            return updated
+        }
+    }
+
     fun loadSession(): ActiveActivitySessionData? {
         synchronized(lock) {
             cachedSession?.let { cached ->

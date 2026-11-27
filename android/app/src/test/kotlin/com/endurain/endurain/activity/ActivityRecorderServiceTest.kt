@@ -45,12 +45,15 @@ class ActivityRecorderServiceTest {
         shadowOf(locations).setProviderEnabled(LocationManager.GPS_PROVIDER, true)
         store = ActiveActivityStore.of(application)
         store.clear()
+        // Commands and fixes run inline on the test thread (see RecorderWorker).
+        RecorderWorker.looperOverride = Looper.getMainLooper()
     }
 
     @After
     fun tearDown() {
         controllers.forEach { it.destroy() }
         controllers.clear()
+        RecorderWorker.looperOverride = null
         ActivityRecorderCoordinator.detachAll()
         store.clear()
     }
@@ -113,7 +116,7 @@ class ActivityRecorderServiceTest {
         warmUp(controller)
 
         shadowOf(Looper.getMainLooper()).idleFor(
-            java.time.Duration.ofMillis(ActivityRecorderService.WARM_UP_TIMEOUT_MILLIS - 1_000),
+            java.time.Duration.ofMillis(WarmUpPolicy.MAX_TIMEOUT_MILLIS - 1_000),
         )
         assertFalse(shadowOf(controller.get()).isStoppedBySelf)
         shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(2))
@@ -137,26 +140,26 @@ class ActivityRecorderServiceTest {
 
     @Test
     fun warmUpTimeoutIsTheCountdownPlusAMinuteClampedToOneToElevenMinutes() {
-        assertEquals(90_000L, ActivityRecorderService.warmUpTimeoutMillis(30))
-        assertEquals(60_000L, ActivityRecorderService.warmUpTimeoutMillis(0))
-        assertEquals(60_000L, ActivityRecorderService.warmUpTimeoutMillis(-5))
-        assertEquals(11 * 60_000L, ActivityRecorderService.warmUpTimeoutMillis(600))
-        assertEquals(11 * 60_000L, ActivityRecorderService.warmUpTimeoutMillis(3_600))
-        assertEquals(11 * 60_000L, ActivityRecorderService.warmUpTimeoutMillis(Long.MAX_VALUE))
-        assertEquals(60_000L, ActivityRecorderService.warmUpTimeoutMillis(Long.MIN_VALUE))
+        assertEquals(90_000L, WarmUpPolicy.timeoutMillis(30))
+        assertEquals(60_000L, WarmUpPolicy.timeoutMillis(0))
+        assertEquals(60_000L, WarmUpPolicy.timeoutMillis(-5))
+        assertEquals(11 * 60_000L, WarmUpPolicy.timeoutMillis(600))
+        assertEquals(11 * 60_000L, WarmUpPolicy.timeoutMillis(3_600))
+        assertEquals(11 * 60_000L, WarmUpPolicy.timeoutMillis(Long.MAX_VALUE))
+        assertEquals(60_000L, WarmUpPolicy.timeoutMillis(Long.MIN_VALUE))
         assertEquals(
-            ActivityRecorderService.MIN_WARM_UP_TIMEOUT_MILLIS,
-            ActivityRecorderService.warmUpTimeoutMillis(0),
+            WarmUpPolicy.MIN_TIMEOUT_MILLIS,
+            WarmUpPolicy.timeoutMillis(0),
         )
     }
 
     @Test
     fun warmUpTimeoutDefaultsToElevenMinutesWithoutACountdownLength() {
         assertEquals(
-            ActivityRecorderService.WARM_UP_TIMEOUT_MILLIS,
-            ActivityRecorderService.warmUpTimeoutMillis(null),
+            WarmUpPolicy.MAX_TIMEOUT_MILLIS,
+            WarmUpPolicy.timeoutMillis(null),
         )
-        assertEquals(11 * 60_000L, ActivityRecorderService.WARM_UP_TIMEOUT_MILLIS)
+        assertEquals(11 * 60_000L, WarmUpPolicy.MAX_TIMEOUT_MILLIS)
     }
 
     @Test
@@ -377,8 +380,8 @@ class ActivityRecorderServiceTest {
         assertEquals(1, store.pointCount())
 
         controller.get().onTaskRemoved(Intent())
-        assertEquals(original, ActivityRecorderCoordinator.recover(application))
-        assertEquals(original, ActivityRecorderCoordinator.recover(application))
+        assertEquals(original, SessionRecovery.recover(application))
+        assertEquals(original, SessionRecovery.recover(application))
         assertNull(shadowOf(application).nextStartedService)
         assertFalse(shadowOf(controller.get()).isStoppedBySelf)
         fix(41.2, System.currentTimeMillis() + 1_000)
@@ -398,7 +401,7 @@ class ActivityRecorderServiceTest {
             segmentIndex = 0,
         )))
 
-        val recovered = ActivityRecorderCoordinator.recover(application)!!
+        val recovered = SessionRecovery.recover(application)!!
         assertEquals(original.localSessionId, recovered.localSessionId)
         assertEquals(original.connectionProfileId, recovered.connectionProfileId)
         assertEquals(ActiveActivitySessionData.STATUS_RECORDING, recovered.status)
@@ -429,7 +432,7 @@ class ActivityRecorderServiceTest {
             ActiveActivitySessionData.STATUS_FAILED,
         )) {
             store.saveSession(session(status))
-            val recovered = ActivityRecorderCoordinator.recover(application)!!
+            val recovered = SessionRecovery.recover(application)!!
             assertEquals(ActiveActivitySessionData.STATUS_PAUSED, recovered.status)
             assertEquals("existing_session", recovered.localSessionId)
             assertNull(shadowOf(application).nextStartedService)
@@ -439,7 +442,7 @@ class ActivityRecorderServiceTest {
     @Test
     fun recoveryBeforeFirstFixDoesNotDiscardTheSession() {
         store.saveSession(session())
-        val recovered = ActivityRecorderCoordinator.recover(application)!!
+        val recovered = SessionRecovery.recover(application)!!
         assertEquals(ActiveActivitySessionData.STATUS_RECORDING, recovered.status)
         assertEquals(0, store.pointCount())
         assertNotNull(store.loadSession())
@@ -460,7 +463,7 @@ class ActivityRecorderServiceTest {
             Manifest.permission.ACCESS_COARSE_LOCATION,
         )
 
-        val recovered = ActivityRecorderCoordinator.recover(application)
+        val recovered = SessionRecovery.recover(application)
 
         assertEquals(ActiveActivitySessionData.STATUS_PAUSED, recovered?.status)
         assertEquals(ActiveActivitySessionData.STATUS_PAUSED, store.loadSession()?.status)
@@ -491,7 +494,7 @@ class ActivityRecorderServiceTest {
         assertTrue(shadowOf(controller.get()).isStoppedBySelf)
         assertEquals(
             ActiveActivitySessionData.STATUS_PAUSED,
-            ActivityRecorderCoordinator.recover(application)?.status,
+            SessionRecovery.recover(application)?.status,
         )
     }
 

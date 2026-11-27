@@ -1,6 +1,5 @@
 package com.endurain.endurain.activity
 
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.VisibleForTesting
@@ -41,63 +40,6 @@ object ActivityRecorderCoordinator {
     @VisibleForTesting
     internal fun detachAll() {
         eventSink = null
-    }
-
-    /**
-     * Brings the stored session back after the app (re)attaches.
-     *
-     * A failed session becomes a paused one that the user can resume. An
-     * interrupted recording is rebased past the time the process was dead and
-     * the service is asked to reattach; if Android refuses, the session is
-     * left paused and the failure is reported.
-     */
-    fun recover(context: Context): ActiveActivitySessionData? {
-        val store = ActiveActivityStore.of(context)
-        val session = store.loadSession() ?: return null
-        if (session.status == ActiveActivitySessionData.STATUS_FAILED) {
-            val paused = session.copy(
-                status = ActiveActivitySessionData.STATUS_PAUSED,
-                pausedAt = IsoTime.nowUtc(),
-                endedAt = null,
-            )
-            store.saveSession(paused)
-            ActivityRecorderService.pauseActiveInstance()
-            return paused
-        }
-        if (!session.requiresLocationMonitoring ||
-            ActivityRecorderService.isCollecting(session.localSessionId)
-        ) {
-            return session
-        }
-        val recovered = SessionTiming.afterInterruption(
-            session,
-            store.lastPoint()?.timestamp?.let(IsoTime::toEpochMillis),
-            System.currentTimeMillis(),
-        )
-        store.saveSession(recovered)
-        // Checked before `startForegroundService`: without location the
-        // service could not enter the foreground on Android 14+, and the
-        // app would crash for not calling `startForeground` in time.
-        val failureReason = if (!ActivityRecorderService.hasLocationPermission(context)) {
-            REASON_PERMISSION_LOST
-        } else {
-            try {
-                ActivityRecorderService.reconnect(context)
-                null
-            } catch (_: RuntimeException) {
-                REASON_LOCATION_STREAM_FAILED
-            }
-        }
-        if (failureReason != null) {
-            val paused = recovered.copy(
-                status = ActiveActivitySessionData.STATUS_PAUSED,
-                pausedAt = IsoTime.nowUtc(),
-            )
-            store.saveSession(paused)
-            emitFailed(failureReason)
-            return paused
-        }
-        return recovered
     }
 
     fun emitSession(type: String, session: ActiveActivitySessionData) {
@@ -177,5 +119,8 @@ object ActivityRecorderCoordinator {
     const val REASON_LOCATION_UNAVAILABLE = "locationUnavailable"
     const val REASON_PERMISSION_LOST = "permissionLost"
     const val REASON_PERSISTENCE_FAILED = "persistenceFailed"
+
+    // Not emitted on Android: kept so this list stays the full vocabulary of
+    // Dart's ActivityRecorderFailureReason, which decodes reasons by name.
     const val REASON_UNSUPPORTED_PLATFORM = "unsupportedPlatform"
 }

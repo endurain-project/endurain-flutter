@@ -1,11 +1,12 @@
 package com.endurain.endurain
 
 import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import com.endurain.endurain.activity.ActivityRecorderChannel
+import com.endurain.endurain.activity.NotificationPermissionGate
 import com.endurain.endurain.watch.WatchInbox
 import com.endurain.endurain.watch.WatchLinkFactory
 import com.endurain.endurain.watch.WatchTransportChannel
@@ -15,7 +16,32 @@ import io.flutter.embedding.engine.FlutterEngine
 class MainActivity : FlutterFragmentActivity() {
     private var recorderChannel: ActivityRecorderChannel? = null
     private var deviceMeasurementSystemChannel: DeviceMeasurementSystemChannel? = null
+    private var healthConnectSettingsChannel: HealthConnectSettingsChannel? = null
     private var watchTransportChannel: WatchTransportChannel? = null
+
+    /**
+     * Asks for the Android 13+ notification permission when Dart requests it
+     * (right before a recording or its start countdown), not on app start.
+     * The permission is declared in the manifest but, from API 33, must also
+     * be granted at runtime for the recorder's foreground notification to show.
+     * Recording itself never depends on the answer.
+     */
+    private val notificationPermissionGate: NotificationPermissionGate = NotificationPermissionGate(
+        isGranted = {
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+        },
+        // After a permanent denial the system answers "denied" without showing
+        // anything, so the launcher is safe to call every time.
+        launch = { notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+    )
+
+    // Registered at construction: ActivityResult launchers must exist before
+    // the activity is STARTED.
+    private val notificationPermissionLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            notificationPermissionGate.onResult(granted)
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +51,6 @@ class MainActivity : FlutterFragmentActivity() {
         // Called after super.onCreate so it replaces the translucent status bar
         // FlutterFragmentActivity sets there.
         enableEdgeToEdge()
-        maybeRequestNotificationPermission()
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -33,7 +58,13 @@ class MainActivity : FlutterFragmentActivity() {
         deviceMeasurementSystemChannel = DeviceMeasurementSystemChannel().also {
             it.register(flutterEngine.dartExecutor.binaryMessenger)
         }
-        recorderChannel = ActivityRecorderChannel(applicationContext).also {
+        healthConnectSettingsChannel = HealthConnectSettingsChannel(this).also {
+            it.register(flutterEngine.dartExecutor.binaryMessenger)
+        }
+        recorderChannel = ActivityRecorderChannel(
+            applicationContext,
+            notificationPermission = notificationPermissionGate,
+        ).also {
             it.register(flutterEngine.dartExecutor.binaryMessenger)
         }
         watchTransportChannel = WatchTransportChannel(
@@ -47,37 +78,15 @@ class MainActivity : FlutterFragmentActivity() {
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
         deviceMeasurementSystemChannel?.unregister()
         deviceMeasurementSystemChannel = null
+        healthConnectSettingsChannel?.unregister()
+        healthConnectSettingsChannel = null
         recorderChannel?.unregister()
         recorderChannel = null
+        // Dart can no longer receive the answer; do not leave its call hanging.
+        notificationPermissionGate.cancelPending()
         watchTransportChannel?.unregister()
         watchTransportChannel = null
         super.cleanUpFlutterEngine(flutterEngine)
     }
 
-    /**
-     * Requests the Android 13+ (API 33) runtime notification permission so the
-     * foreground-service notification that keeps activity recording — and the
-     * native heart-rate capture bound to it — alive stays visible. The
-     * permission is declared in the manifest but, from API 33, must also be
-     * granted at runtime. Best-effort: recording still runs if the user denies
-     * it, just without a visible ongoing notification.
-     */
-    private fun maybeRequestNotificationPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return
-        }
-        val granted =
-            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-        if (!granted) {
-            requestPermissions(
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                REQUEST_POST_NOTIFICATIONS,
-            )
-        }
-    }
-
-    private companion object {
-        private const val REQUEST_POST_NOTIFICATIONS = 1001
-    }
 }
