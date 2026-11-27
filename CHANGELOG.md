@@ -4,11 +4,81 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.12.4+26] - 2026-11-27
+
+This release adds a new two-factor code entry with backup codes and a Wear OS tile, and fixes the findings of a second review of the app, its native code, CI and docs. Recordings recover more reliably on Android and Wear OS, and both watch apps follow current platform guidance more closely.
+
+### Added
+
+- A "Start workout" tile on Wear OS that opens the app.
+- During a Wear OS workout, the ongoing activity on the watch face and in recents shows the elapsed time and whether the workout is paused.
+- Starting a workout on Wear OS while another app is recording one asks for confirmation first, because Health Services ends the other app's workout.
+- When Precise Location is off, the iPhone and Apple Watch apps ask for temporary precise location while recording. Recording continues if the user declines.
+- The Health Connect permission rationale screen links to the [mobile app privacy policy](https://docs.endurain.com/privacy/mobile-app-privacy-policy/), in every language.
+- CI changes:
+  - CI lints the Android phone app (`:app:lintDebug`), as it already did for the Wear OS app.
+  - A dead-code check (`tool/check_dead_code.dart`) fails when a public declaration in `lib/` is referenced nowhere in `lib/`. Justified exceptions are listed, each with a reason, in `.github/dead-code-allowlist.txt`.
+- Architecture tests that stop the sign-in feature from importing the map feature, and the settings feature from importing activity code or health internals.
 
 ### Changed
 
 - The two-factor sign-in step shows one box per character. An authenticator code takes six digits only, and "Use a backup code" switches to eight boxes of letters and digits, which the app sends as `XXXX-XXXX`. Pasted or autofilled codes with spaces or a dash fill the boxes, and password managers can still fill authenticator codes. The code is sent as soon as the last box is filled. If the server rejects it, the boxes clear and the reason shows under them, so the user can type the next code straight away.
+- In the Wear OS app:
+  - In ambient mode the workout screen shows only the elapsed time. Heart rate and distance arrive in batches while the screen is dimmed, so they could be out of date.
+  - The workout pager shows a page indicator, so the pause and end page is easier to find.
+  - TalkBack reads heart rate as "Heart rate, N beats per minute".
+  - The countdown shows the GPS status while Health Services warms up.
+- In the Apple Watch app:
+  - VoiceOver reads each metric with its label.
+  - With the always-on display dimmed, the metrics refresh once a minute and the countdown once a second.
+  - The countdown number scales with Dynamic Type.
+  - The app uses the Observation framework (`@Observable`) instead of `ObservableObject`.
+- The Apple Watch app resends a workout the iPhone has not confirmed after 10 minutes, then waits twice as long each time, up to 24 hours, instead of resending every 10 minutes forever. It still never deletes an unconfirmed workout.
+- On Android:
+  - The recording notification shows as soon as a recording starts, with a monochrome status-bar icon.
+  - The app uses the Android 12+ splash screen, and its launcher icon has a monochrome layer for themed icons.
+  - Spoken announcements use the same audio attributes as the request that lowers other apps' audio.
+- The Android and iPhone recorders keep the active session in memory instead of reading it from disk on every GPS fix.
+- The iPhone privacy manifest declares crash and diagnostic data, which opt-in crash reporting sends.
+- The activity history and Health Sync lists build rows as they scroll into view. Long lists are now grouped into cards of 20 rows.
+- The app loads its language, units, audio and crash-reporting settings in parallel at startup.
+- Selected rows on the language and units screens are announced as selected, and the units screen no longer shows a disclosure arrow on iPhone.
+- The GitLab mirror runs only for `main` and `v*` tags. It pushes only branches and tags, so GitHub's pull-request refs no longer make it fail.
+- Internal changes:
+  - Audio announcement settings moved into the activity feature.
+  - Settings repositories share typed preference helpers.
+  - The upload queue and watch sync share one single-flight helper, and both databases share one open helper.
+  - Auto-pause handling moved out of the recording service, and import and discovery out of the Health Sync service.
+  - Files that grew past the size limit are split, including the Wear OS main screen and recorder.
+- The README, CONTRIBUTING, SECURITY, the localization guide and the contributor instructions match the code again. The fixes cover project structure, schema version, HealthKit write access, the Kotlin version, build commands, CI checks, minimum OS versions and architecture rules. `dart-defines.json` is git-ignored as documented.
+
+### Fixed
+
+- On Android, resuming a recording no longer leaves the saved session marked as recording when the system refuses to restart the recorder. The session stays paused and can be resumed again.
+- A Wear OS workout no longer stays on "Saving…" when Health Services never reports that it ended. The app finishes with what it recorded after 20 seconds.
+- The Wear OS app requests approximate location together with precise location. Some Android 12 releases ignore a request for precise location on its own.
+- A long unfinished Wear OS workout no longer slows the app's launch. It is now loaded off the main thread.
+- The map's location spinner and the device access screen no longer stay loading forever when a location check fails.
+- A BLE sensor scan stops when it times out, including when the scan is cancelled while it is still starting.
+- Two parts of the app opening the same database at once share one connection.
+
+### Security
+
+- Reinstalling the iPhone app starts signed out. iOS keeps keychain items after an app is uninstalled, so a reinstall used to restore the previous session. Upgrades stay signed in.
+- Diagnostics and crash reports redact email addresses.
+- A sign-in error link is ignored when no single sign-on is in progress, so another app can no longer cancel a sign-in that hasn't started.
+- The GitLab mirror passes its tokens in request headers instead of in remote URLs.
+
+### Removed
+
+- Unused code:
+  - The `AppScope` widget and `ActivityGpxFileWriter`.
+  - Unused theme tokens and constants.
+  - The client's unused PUT and DELETE requests.
+  - The legacy token setters.
+  - The unused geolocator background-location settings.
+  - Getters that only tests read.
+- Unused status and reason constants in the native Android and iOS recorders, and the duplicate Android launch background.
 
 ## [v0.12.3+25] - 2026-11-26
 
