@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Hälsodata i Endurain</string>
     <string name="health_rationale_usage">Endurain läser träningspass, rutter, puls och distans endast för att importera valda aktiviteter.</string>
     <string name="health_rationale_storage">Data för valda rutter lagras på den här enheten och laddas bara upp till den Endurain-server du ansluter till.</string>
+    <string name="health_rationale_privacy_policy">Integritetspolicy</string>
 </resources>

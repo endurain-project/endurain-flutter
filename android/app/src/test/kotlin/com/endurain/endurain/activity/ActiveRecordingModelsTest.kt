@@ -169,9 +169,6 @@ class ActiveRecordingModelsTest {
             sessionWith(ActiveActivitySessionData.STATUS_PAUSED).isActive,
         )
         assertFalse(
-            sessionWith(ActiveActivitySessionData.STATUS_STOPPING).isActive,
-        )
-        assertFalse(
             sessionWith(ActiveActivitySessionData.STATUS_COMPLETED).isActive,
         )
         assertFalse(

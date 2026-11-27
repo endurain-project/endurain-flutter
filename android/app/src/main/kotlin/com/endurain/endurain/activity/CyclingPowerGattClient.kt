@@ -42,9 +42,9 @@ class CyclingPowerGattClient(context: Context) :
 
     companion object {
         private val CYCLING_POWER_SERVICE =
-            UUID.fromString("00001818-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x1818)
         private val CYCLING_POWER_MEASUREMENT =
-            UUID.fromString("00002a63-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x2a63)
 
         /**
          * Decodes the GATT Cycling Power Measurement value: a UINT16 flags field

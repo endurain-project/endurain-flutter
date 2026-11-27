@@ -483,7 +483,7 @@ class ActivityRecorderService : Service() {
         // Feed the auto-pause detector before the accuracy/speed gates below,
         // so stillness timing advances from wall-clock progress on every fix
         // (including noisy ones the detector itself discounts as movement
-        // evidence), matching the Dart geolocator recorder.
+        // evidence), matching the iOS recorder.
         val transition = autoPauseDetector?.onActivePoint(movementSample(location, nowMillis))
             ?: MovementAutoPauseTransition.NONE
         if (transition == MovementAutoPauseTransition.AUTO_PAUSE) {
@@ -827,7 +827,7 @@ class ActivityRecorderService : Service() {
                 ) == PackageManager.PERMISSION_GRANTED
         }
 
-        // Mirror the Dart location/segment policy constants.
+        // Mirror the iOS LocationFixPolicy constants.
         private const val MIN_UPDATE_DISTANCE_METERS = 3f
         private const val MAX_TIME_GAP_MILLIS = 30_000L
         private const val MAX_ACCURACY_METERS = 100f

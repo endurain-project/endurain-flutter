@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Здравни данни в Endurain</string>
     <string name="health_rationale_usage">Endurain чете тренировки, маршрути, пулс и разстояние само за да импортира избрани дейности.</string>
     <string name="health_rationale_storage">Данните за избраните маршрути се съхраняват на това устройство и се качват само на сървъра на Endurain, към който се свържете.</string>
+    <string name="health_rationale_privacy_policy">Политика за поверителност</string>
 </resources>

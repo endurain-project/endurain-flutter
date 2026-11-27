@@ -12,4 +12,5 @@
     <string name="health_rationale_title">Endurain health data</string>
     <string name="health_rationale_usage">Endurain reads workouts, routes, heart rate, and distance only to import selected activities.</string>
     <string name="health_rationale_storage">Selected route data is stored on this device and uploaded only to the Endurain server you connect.</string>
+    <string name="health_rationale_privacy_policy">Privacy policy</string>
 </resources>

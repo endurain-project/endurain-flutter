@@ -177,7 +177,7 @@ internal class RecorderLocationCollector(
             PackageManager.PERMISSION_GRANTED
 
     private companion object {
-        // Mirrors the Dart location policy.
+        // Mirrors the iOS LocationFixPolicy / CoreLocation recorder.
         const val MIN_UPDATE_INTERVAL_MS = 1000L
     }
 }

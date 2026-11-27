@@ -215,7 +215,18 @@ class ActivityRecorderChannel(context: Context) :
             pausedAutomatically = false,
         )
         store.saveSession(updated)
-        ActivityRecorderService.resume(appContext)
+        try {
+            ActivityRecorderService.resume(appContext)
+        } catch (_: RuntimeException) {
+            // Started from the background or refused by the system (for
+            // example ForegroundServiceStartNotAllowedException). Put the
+            // paused session back so the stored state matches the idle
+            // service and the user can retry; no `failed` event, since the
+            // recording itself is intact.
+            store.saveSession(session)
+            result.error(ERROR_SERVICE, "Unable to resume recorder service", null)
+            return
+        }
         ActivityRecorderCoordinator.emitSession(
             ActivityRecorderCoordinator.TYPE_RESUMED,
             updated,

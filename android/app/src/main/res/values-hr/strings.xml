@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Zdravstveni podaci u Endurainu</string>
     <string name="health_rationale_usage">Endurain čita vježbe, rute, puls i udaljenost samo radi uvoza odabranih aktivnosti.</string>
     <string name="health_rationale_storage">Podaci odabranih ruta pohranjuju se na ovom uređaju i prenose se samo na Endurain poslužitelj na koji se povežete.</string>
+    <string name="health_rationale_privacy_policy">Pravila privatnosti</string>
 </resources>

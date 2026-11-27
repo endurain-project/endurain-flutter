@@ -8,7 +8,7 @@ import kotlin.math.max
  * [ActivityRecorderService] (GPS and timer announcement scheduling) so the two
  * never drift apart.
  *
- * Mirrors the Dart geolocator recorder: a paused session keeps its stored
+ * Mirrors the iOS recorder (shared session_timing_vectors.json): a paused session keeps its stored
  * value; an active one adds the current segment's running time measured from
  * `resumedAt ?? startedAt`.
  */

@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Endurain sağlık verileri</string>
     <string name="health_rationale_usage">Endurain antrenmanları, rotaları, nabzı ve mesafeyi yalnızca seçilen etkinlikleri içe aktarmak için okur.</string>
     <string name="health_rationale_storage">Seçilen rota verileri bu cihazda saklanır ve yalnızca bağlandığınız Endurain sunucusuna yüklenir.</string>
+    <string name="health_rationale_privacy_policy">Gizlilik politikası</string>
 </resources>

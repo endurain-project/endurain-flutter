@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Datos de salud de Endurain</string>
     <string name="health_rationale_usage">Endurain lee entrenamientos, rutas, frecuencia cardíaca y distancia solo para importar las actividades seleccionadas.</string>
     <string name="health_rationale_storage">Los datos de las rutas seleccionadas se guardan en este dispositivo y solo se suben al servidor de Endurain al que te conectes.</string>
+    <string name="health_rationale_privacy_policy">Política de privacidad</string>
 </resources>

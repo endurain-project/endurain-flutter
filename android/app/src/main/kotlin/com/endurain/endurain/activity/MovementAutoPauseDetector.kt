@@ -54,8 +54,8 @@ data class MovementSample(
  *
  * Mirrors `MovementAutoPauseDetector` in
  * test/helpers/movement_auto_pause_detector.dart (the Dart
- * geolocator fallback recorder implements the same algorithm); keep the two
- * implementations in sync.
+ * reference implementation) and the iOS MovementAutoPauseDetector.swift; keep
+ * them in sync via the shared movement_auto_pause_vectors.json.
  *
  * The detector combines two signals to decide whether a sample counts as
  * "moving": the fix's own reported speed (when its horizontal accuracy is

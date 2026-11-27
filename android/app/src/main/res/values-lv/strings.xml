@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Endurain veselības dati</string>
     <string name="health_rationale_usage">Endurain nolasa treniņus, maršrutus, pulsu un attālumu tikai, lai importētu atlasītās aktivitātes.</string>
     <string name="health_rationale_storage">Atlasīto maršrutu dati tiek glabāti šajā ierīcē un augšupielādēti tikai Endurain serverī, ar kuru izveidojat savienojumu.</string>
+    <string name="health_rationale_privacy_policy">Privātuma politika</string>
 </resources>

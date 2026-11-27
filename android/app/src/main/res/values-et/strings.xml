@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Endurain\'i terviseandmed</string>
     <string name="health_rationale_usage">Endurain loeb treeninguid, marsruute, pulssi ja vahemaad ainult valitud tegevuste importimiseks.</string>
     <string name="health_rationale_storage">Valitud marsruutide andmed salvestatakse sellesse seadmesse ja laaditakse üles ainult Endurain\'i serverisse, millega ühenduse loote.</string>
+    <string name="health_rationale_privacy_policy">Privaatsuspoliitika</string>
 </resources>

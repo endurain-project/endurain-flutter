@@ -51,7 +51,7 @@ class HandoffFileStoreTest {
     @Test
     fun missingDirectoryIsEmpty() {
         assertTrue(store.entries().isEmpty())
-        assertTrue(store.isEmpty)
+        assertTrue(store.entries().isEmpty())
     }
 
     @Test
@@ -102,7 +102,7 @@ class HandoffFileStoreTest {
         assertEquals(listOf("recent"), store.entries().map { it.sessionId })
 
         store.remove("recent")
-        assertTrue(store.isEmpty)
+        assertTrue(store.entries().isEmpty())
     }
 
     @Test
@@ -370,7 +370,7 @@ class WatchTransportChannelTest {
         val result = call("acknowledgeHandoff", mapOf("version" to 1, "sessionId" to "s"))
 
         assertTrue(result.succeeded)
-        assertTrue(inbox.isEmpty)
+        assertTrue(inbox.entries().isEmpty())
         assertEquals(listOf("s"), link.acknowledged)
     }
 

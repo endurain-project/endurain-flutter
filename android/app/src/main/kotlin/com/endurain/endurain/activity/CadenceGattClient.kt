@@ -62,13 +62,13 @@ class CadenceGattClient(context: Context) : BleNotifyClient(context, "CadenceGat
 
     companion object {
         private val CSC_SERVICE =
-            UUID.fromString("00001816-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x1816)
         private val CSC_MEASUREMENT =
-            UUID.fromString("00002a5b-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x2a5b)
         private val RSC_SERVICE =
-            UUID.fromString("00001814-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x1814)
         private val RSC_MEASUREMENT =
-            UUID.fromString("00002a53-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x2a53)
 
         private const val FLAG_WHEEL_DATA_PRESENT = 0x01
         private const val FLAG_CRANK_DATA_PRESENT = 0x02

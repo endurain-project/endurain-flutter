@@ -66,9 +66,6 @@ class HandoffFileStore(val directory: File) {
                 .sortedBy { it.savedAtMillis }
         }
 
-    val isEmpty: Boolean
-        get() = entries().isEmpty()
-
     fun remove(sessionId: String) {
         val name = runCatching { encode(sessionId) }.getOrNull() ?: return
         synchronized(lock) {

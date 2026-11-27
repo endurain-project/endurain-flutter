@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Δεδομένα υγείας του Endurain</string>
     <string name="health_rationale_usage">Το Endurain διαβάζει προπονήσεις, διαδρομές, καρδιακό ρυθμό και απόσταση μόνο για την εισαγωγή επιλεγμένων δραστηριοτήτων.</string>
     <string name="health_rationale_storage">Τα δεδομένα των επιλεγμένων διαδρομών αποθηκεύονται σε αυτήν τη συσκευή και μεταφορτώνονται μόνο στον διακομιστή Endurain στον οποίο συνδέεστε.</string>
+    <string name="health_rationale_privacy_policy">Πολιτική απορρήτου</string>
 </resources>

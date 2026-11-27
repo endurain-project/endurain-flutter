@@ -3,6 +3,8 @@ package com.endurain.endurain.activity
 import android.Manifest
 import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import android.location.LocationManager
 import android.os.Looper
 import io.flutter.plugin.common.BinaryMessenger
@@ -201,6 +203,29 @@ class ActivityRecorderChannelTest {
         // Still paused, so it can resume once permission is granted again.
         assertEquals(paused, store.loadSession())
         assertEquals(listOf("permissionLost"), failureReasons(events))
+    }
+
+    @Test
+    fun resumeRefusedByTheSystemKeepsTheSessionPausedAndRepliesWithAnError() {
+        val paused = pausedSession()
+        store.saveSession(paused)
+        val refusing = object : ContextWrapper(application) {
+            override fun getApplicationContext(): Context = this
+
+            override fun startForegroundService(service: Intent?) =
+                throw IllegalStateException("background start not allowed")
+        }
+        val channel = ActivityRecorderChannel(refusing).also {
+            it.register(NoopMessenger())
+            channels.add(it)
+        }
+        val result = CapturingResult()
+
+        channel.onMethodCall(MethodCall("resume", null), result)
+
+        assertEquals("service_start_failed", result.errorCode)
+        // The service never started, so the stored session must stay paused.
+        assertEquals(paused, store.loadSession())
     }
 
     @Test

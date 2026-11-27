@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Az Endurain egészségügyi adatai</string>
     <string name="health_rationale_usage">Az Endurain csak a kiválasztott tevékenységek importálásához olvassa az edzéseket, útvonalakat, pulzust és távolságot.</string>
     <string name="health_rationale_storage">A kiválasztott útvonalak adatai ezen az eszközön tárolódnak, és csak arra az Endurain-szerverre töltődnek fel, amelyhez csatlakozik.</string>
+    <string name="health_rationale_privacy_policy">Adatvédelmi irányelvek</string>
 </resources>
