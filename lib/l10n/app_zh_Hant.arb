@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "選擇在暫停前等待多長時間沒有移動。",
   "activityAutoPauseDelayOptionLabel": "{seconds} 秒",
   "activityAutoPausedIndicator": "自動暫停中",
+  "activityPausedIndicator": "已暫停",
   "startCountdownSettingsTitle": "開始倒數",
   "startCountdownSettingsSubtitle": "開始記錄前倒數",
   "startCountdownToggleLabel": "開始前倒數",

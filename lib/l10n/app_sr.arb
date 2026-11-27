@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Изаберите колико дуго без покрета треба сачекати пре паузирања.",
   "activityAutoPauseDelayOptionLabel": "{seconds, plural, one{{seconds} секунда} few{{seconds} секунде} other{{seconds} секунди}}",
   "activityAutoPausedIndicator": "Аутоматски паузирано",
+  "activityPausedIndicator": "Паузирано",
   "startCountdownSettingsTitle": "Одбројавање пре почетка",
   "startCountdownSettingsSubtitle": "Одбројавај пре почетка снимања",
   "startCountdownToggleLabel": "Одбројавај пре почетка",

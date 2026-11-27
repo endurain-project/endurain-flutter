@@ -8,10 +8,12 @@ import 'package:endurain/features/activity/models/audio_announcement_config.dart
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/repositories/start_countdown_settings_repository.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
+import 'package:endurain/features/activity/services/recording_live_activity_publisher.dart';
 import 'package:endurain/features/activity/services/start_countdown.dart';
 import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_controls.dart';
 import 'package:endurain/features/activity/widgets/activity_stop_confirmation_dialog.dart';
+import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/activity/widgets/start_countdown_dialog.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -68,6 +70,29 @@ class _ActivityRecordingOverlayState extends State<ActivityRecordingOverlay> {
   bool _isStartFlowRunning = false;
 
   ActivityRecordingController get _activityController => widget.controller;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Resolved here rather than at start, so a recording recovered after a
+    // restart and a change of language or units reach the Live Activity too.
+    final l10n = AppLocalizations.of(context)!;
+    _activityController.configureLiveActivity(
+      RecordingLiveActivityLabels(
+        formatter: context.statsFormatter,
+        numberLocale: context.numberFormatLocale,
+        activityTypes: {
+          for (final type in ActivityType.values)
+            type: type.localizedLabel(l10n),
+        },
+        distance: l10n.activityStatDistance,
+        pace: l10n.activityStatPace,
+        speed: l10n.activityStatSpeed,
+        paused: l10n.activityPausedIndicator,
+        autoPaused: l10n.activityAutoPausedIndicator,
+      ),
+    );
+  }
 
   Future<void> _confirmStopActivity() async {
     final state = _activityController.state;

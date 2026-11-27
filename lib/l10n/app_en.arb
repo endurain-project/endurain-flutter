@@ -831,6 +831,10 @@
   "@activityAutoPausedIndicator": {
     "description": "Indicator shown on the recording screen while auto-paused - Used in: activity_recording_controls.dart"
   },
+  "activityPausedIndicator": "Paused",
+  "@activityPausedIndicator": {
+    "description": "Shown on the Lock Screen and Dynamic Island Live Activity while a recording is paused by hand - Used in: activity_recording_overlay.dart"
+  },
   "startCountdownSettingsTitle": "Start countdown",
   "@startCountdownSettingsTitle": {
     "description": "Start countdown settings screen title and settings navigation label - Used in: start_countdown_settings_screen.dart, settings_screen.dart"

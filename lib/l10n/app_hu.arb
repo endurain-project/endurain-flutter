@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Válassza ki, mennyi ideig várjon mozgás nélkül szüneteltetés előtt.",
   "activityAutoPauseDelayOptionLabel": "{seconds} másodperc",
   "activityAutoPausedIndicator": "Automatikusan szüneteltetve",
+  "activityPausedIndicator": "Szüneteltetve",
   "startCountdownSettingsTitle": "Visszaszámlálás indítás előtt",
   "startCountdownSettingsSubtitle": "Visszaszámlálás a rögzítés kezdete előtt",
   "startCountdownToggleLabel": "Visszaszámlálás bekapcsolása",

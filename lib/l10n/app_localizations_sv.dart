@@ -664,6 +664,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatiskt pausad';
 
   @override
+  String get activityPausedIndicator => 'Pausad';
+
+  @override
   String get startCountdownSettingsTitle => 'Nedräkning före start';
 
   @override

@@ -660,6 +660,9 @@ class AppLocalizationsEt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaatselt peatatud';
 
   @override
+  String get activityPausedIndicator => 'Peatatud';
+
+  @override
   String get startCountdownSettingsTitle => 'Alguse loendus';
 
   @override

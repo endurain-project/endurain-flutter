@@ -661,6 +661,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Автоматично призупинено';
 
   @override
+  String get activityPausedIndicator => 'Призупинено';
+
+  @override
   String get startCountdownSettingsTitle => 'Зворотний відлік перед стартом';
 
   @override

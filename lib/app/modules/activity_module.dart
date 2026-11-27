@@ -30,6 +30,8 @@ import 'package:endurain/features/activity/services/audio_announcement_preview_a
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
 import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
+import 'package:endurain/features/activity/services/recording_live_activity_adapter.dart';
+import 'package:endurain/features/activity/services/recording_live_activity_publisher.dart';
 import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:flutter/foundation.dart';
@@ -166,6 +168,13 @@ class ActivityModule {
       isUploadAuthorized: _auth.service.isAuthenticated,
       activeConnectionProfile: _auth.session.getConnectionProfile,
       diagnostics: _infra.diagnostics,
+      liveActivity: RecordingLiveActivityPublisher(
+        // Only iOS has a Live Activity.
+        adapter: defaultTargetPlatform == TargetPlatform.iOS
+            ? MethodChannelRecordingLiveActivityAdapter()
+            : const UnsupportedRecordingLiveActivityAdapter(),
+        diagnostics: _infra.diagnostics,
+      ),
     );
     // When a recording ends, the native recorder releases the sensor handoff;
     // bring the Dart-side sensor links back so they are ready again without the

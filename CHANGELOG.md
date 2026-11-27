@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - During a Wear OS workout, the ongoing activity on the watch face and in recents shows the elapsed time and whether the workout is paused.
 - Starting a workout on Wear OS while another app is recording one asks for confirmation first, because Health Services ends the other app's workout.
 - When Precise Location is off, the iPhone and Apple Watch apps ask for temporary precise location while recording. Recording continues if the user declines.
+- On iPhone, a recording in progress shows its elapsed time, distance and pace (or speed) on the Lock Screen and in the Dynamic Island, and whether it is paused. It can be turned off in the iPhone's Settings for Endurain under Live Activities.
 - Every map shows its tile source's attribution: the OpenStreetMap credit for the default source, and the server's attribution (or the host name) for a custom one.
 - The Health access screen opens the Health Connect permission screen when Android no longer shows the permission dialog. The sensor screens, and a new Bluetooth row on Device Access, open the system settings when Bluetooth access is blocked.
 - The Health Connect permission rationale screen links to the [mobile app privacy policy](https://docs.endurain.com/privacy/mobile-app-privacy-policy/), in every language.

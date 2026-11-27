@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Izberite, kako dolgo brez gibanja počakati pred premorom.",
   "activityAutoPauseDelayOptionLabel": "{seconds, plural, one{{seconds} sekunda} two{{seconds} sekundi} few{{seconds} sekunde} other{{seconds} sekund}}",
   "activityAutoPausedIndicator": "Samodejno prekinjeno",
+  "activityPausedIndicator": "Prekinjeno",
   "startCountdownSettingsTitle": "Odštevanje pred začetkom",
   "startCountdownSettingsSubtitle": "Odštevaj pred začetkom snemanja",
   "startCountdownToggleLabel": "Odštevaj pred začetkom",

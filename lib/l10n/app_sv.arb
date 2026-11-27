@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Välj hur länge utan rörelse den ska vänta innan pausning.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekunder",
   "activityAutoPausedIndicator": "Automatiskt pausad",
+  "activityPausedIndicator": "Pausad",
   "startCountdownSettingsTitle": "Nedräkning före start",
   "startCountdownSettingsSubtitle": "Räkna ned innan inspelningen startar",
   "startCountdownToggleLabel": "Räkna ned före start",

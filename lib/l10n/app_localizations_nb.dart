@@ -660,6 +660,9 @@ class AppLocalizationsNb extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatisk pause';
 
   @override
+  String get activityPausedIndicator => 'Satt på pause';
+
+  @override
   String get startCountdownSettingsTitle => 'Nedtelling før start';
 
   @override

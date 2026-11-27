@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Alegeți cât timp fără mișcare se așteaptă înainte de pauză.",
   "activityAutoPauseDelayOptionLabel": "{seconds, plural, one{{seconds} secundă} few{{seconds} secunde} other{{seconds} de secunde}}",
   "activityAutoPausedIndicator": "În pauză automată",
+  "activityPausedIndicator": "În pauză",
   "startCountdownSettingsTitle": "Numărătoare inversă la start",
   "startCountdownSettingsSubtitle": "Numărătoare inversă înainte de înregistrare",
   "startCountdownToggleLabel": "Numărătoare inversă înainte de start",

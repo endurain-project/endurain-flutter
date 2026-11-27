@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Izvēlieties, cik ilgi bez kustības gaidīt pirms pauzes.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekundes",
   "activityAutoPausedIndicator": "Automātiski pauzēts",
+  "activityPausedIndicator": "Pauzēts",
   "startCountdownSettingsTitle": "Sākuma atpakaļskaitīšana",
   "startCountdownSettingsSubtitle": "Atpakaļskaitīšana pirms ierakstīšanas sākuma",
   "startCountdownToggleLabel": "Skaitīt atpakaļ pirms sākuma",

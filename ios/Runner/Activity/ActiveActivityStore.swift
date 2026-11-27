@@ -36,6 +36,11 @@ final class ActiveActivityStore {
     private var cachedSession: ActiveActivitySessionData?
     private var cachedStamp: FileStamp?
 
+    /// Called after this store saves a session, or with nil after it clears
+    /// the recording. Every native state change of a recording goes through
+    /// here, so the Live Activity follows it from this one place.
+    var onSessionChange: ((ActiveActivitySessionData?) -> Void)?
+
     init(
         activeDirectory: URL? = nil,
         directoryRemover: @escaping (URL) throws -> Void = { url in
@@ -85,6 +90,7 @@ final class ActiveActivityStore {
             try ensureDirectory()
             try sessionWriter(data, sessionFile)
             remember(session)
+            onSessionChange?(session)
             return true
         } catch {
             // Surface persistence failures via the coordinator; never log
@@ -277,6 +283,7 @@ final class ActiveActivityStore {
             if fileManager.fileExists(atPath: activeDirectory.path) {
                 try directoryRemover(activeDirectory)
             }
+            onSessionChange?(nil)
             return true
         } catch {
             ActivityRecorderCoordinator.shared.emitFailed(

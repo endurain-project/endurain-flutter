@@ -662,6 +662,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatisch gepauzeerd';
 
   @override
+  String get activityPausedIndicator => 'Gepauzeerd';
+
+  @override
   String get startCountdownSettingsTitle => 'Startaftelling';
 
   @override

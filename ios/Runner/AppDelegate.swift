@@ -27,6 +27,11 @@ import os
   /// engine (which may start late, or not at all, in the background) is up.
   private var activityRecorder: CoreLocationActivityRecorder?
 
+  /// The Live Activity of the recording, which follows every change to the
+  /// durable session from launch on, and takes Flutter's metrics through the
+  /// recorder channel.
+  private var workoutLiveActivity: WorkoutLiveActivity?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -41,9 +46,16 @@ import os
     // than when Dart attaches matters: a background relaunch has a short
     // execution window, and the durable store already holds everything
     // needed to continue.
+    let liveActivity = WorkoutLiveActivity(store: .shared)
+    workoutLiveActivity = liveActivity
+    ActiveActivityStore.shared.onSessionChange = { [weak liveActivity] session in
+      liveActivity?.sessionDidChange(session)
+    }
     let recorder = CoreLocationActivityRecorder(store: .shared)
     activityRecorder = recorder
     recorder.resumeAfterRelaunch()
+    // Also ends a Live Activity left behind by a recording that is gone.
+    liveActivity.sessionDidChange(ActiveActivityStore.shared.loadSession())
     // Activated before the engine so sessions the watch queued while the app
     // was closed land in the durable inbox as soon as they are delivered.
     WatchConnectivityBridge.shared.activate()
@@ -102,7 +114,11 @@ import os
     if let registrar = engineBridge.pluginRegistry.registrar(
       forPlugin: "EndurainActivityRecorderChannel"
     ) {
-      let channel = ActivityRecorderChannel(store: .shared, recorder: activityRecorder)
+      let channel = ActivityRecorderChannel(
+        store: .shared,
+        recorder: activityRecorder,
+        liveActivity: workoutLiveActivity
+      )
       channel.register(with: registrar.messenger())
       activityRecorderChannel = channel
     }

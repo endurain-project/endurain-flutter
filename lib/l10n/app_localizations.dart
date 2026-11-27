@@ -1257,6 +1257,12 @@ abstract class AppLocalizations {
   /// **'Auto-paused'**
   String get activityAutoPausedIndicator;
 
+  /// Shown on the Lock Screen and Dynamic Island Live Activity while a recording is paused by hand - Used in: activity_recording_overlay.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get activityPausedIndicator;
+
   /// Start countdown settings screen title and settings navigation label - Used in: start_countdown_settings_screen.dart, settings_screen.dart
   ///
   /// In en, this message translates to:

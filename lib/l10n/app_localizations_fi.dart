@@ -664,6 +664,9 @@ class AppLocalizationsFi extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaattisesti keskeytetty';
 
   @override
+  String get activityPausedIndicator => 'Keskeytetty';
+
+  @override
   String get startCountdownSettingsTitle => 'Aloituslaskenta';
 
   @override

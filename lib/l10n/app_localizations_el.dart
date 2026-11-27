@@ -673,6 +673,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Αυτόματη παύση';
 
   @override
+  String get activityPausedIndicator => 'Σε παύση';
+
+  @override
   String get startCountdownSettingsTitle => 'Αντίστροφη μέτρηση έναρξης';
 
   @override

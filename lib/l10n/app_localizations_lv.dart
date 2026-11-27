@@ -661,6 +661,9 @@ class AppLocalizationsLv extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automātiski pauzēts';
 
   @override
+  String get activityPausedIndicator => 'Pauzēts';
+
+  @override
   String get startCountdownSettingsTitle => 'Sākuma atpakaļskaitīšana';
 
   @override

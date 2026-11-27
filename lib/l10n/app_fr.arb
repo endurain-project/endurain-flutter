@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Choisissez combien de temps sans mouvement attendre avant la pause.",
   "activityAutoPauseDelayOptionLabel": "{seconds} secondes",
   "activityAutoPausedIndicator": "En pause automatique",
+  "activityPausedIndicator": "En pause",
   "startCountdownSettingsTitle": "Compte à rebours de départ",
   "startCountdownSettingsSubtitle": "Compte à rebours avant l'enregistrement",
   "startCountdownToggleLabel": "Compte à rebours avant le départ",

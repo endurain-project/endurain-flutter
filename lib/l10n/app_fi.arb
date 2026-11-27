@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Valitse, kuinka kauan ilman liikettä odotetaan ennen keskeytystä.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekuntia",
   "activityAutoPausedIndicator": "Automaattisesti keskeytetty",
+  "activityPausedIndicator": "Keskeytetty",
   "startCountdownSettingsTitle": "Aloituslaskenta",
   "startCountdownSettingsSubtitle": "Laske alaspäin ennen tallennuksen alkua",
   "startCountdownToggleLabel": "Laske alaspäin ennen aloitusta",

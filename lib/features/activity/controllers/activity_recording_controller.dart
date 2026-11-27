@@ -22,6 +22,8 @@ import 'package:endurain/features/activity/services/activity_finalizer.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
+import 'package:endurain/features/activity/services/recording_live_activity_adapter.dart';
+import 'package:endurain/features/activity/services/recording_live_activity_publisher.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
 class ActivityRecordingController extends SafeNotifier {
@@ -37,8 +39,14 @@ class ActivityRecordingController extends SafeNotifier {
     DiagnosticsRecorder? diagnostics,
     String Function()? localActivityIdProvider,
     DateTime Function()? now,
+    RecordingLiveActivityPublisher? liveActivity,
     this._ownsService = true,
-  }) : _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
+  }) : _liveActivity =
+           liveActivity ??
+           RecordingLiveActivityPublisher(
+             adapter: const UnsupportedRecordingLiveActivityAdapter(),
+           ),
+       _isUploadAuthorized = isUploadAuthorized ?? _alwaysAuthorized,
        _activeConnectionProfile = activeConnectionProfile ?? _noActiveProfile,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _localActivityIdProvider = localActivityIdProvider ?? localActivityId,
@@ -60,6 +68,7 @@ class ActivityRecordingController extends SafeNotifier {
   final DiagnosticsRecorder _diagnostics;
   final String Function() _localActivityIdProvider;
   final DateTime Function() _now;
+  final RecordingLiveActivityPublisher _liveActivity;
   final bool _ownsService;
   late final StreamSubscription<ActivityRecordingState> _stateSubscription;
 
@@ -92,6 +101,12 @@ class ActivityRecordingController extends SafeNotifier {
   /// next recording start. See `ActivityRecordingService.configureAudioAnnouncements`.
   void configureAudioAnnouncements(AudioAnnouncementConfig config) {
     _recordingService.configureAudioAnnouncements(config);
+  }
+
+  /// Supplies the localized labels of the recording's Live Activity. Called
+  /// again when the language or the unit preference changes.
+  void configureLiveActivity(RecordingLiveActivityLabels labels) {
+    _liveActivity.configure(labels);
   }
 
   void selectActivityType(ActivityType type) {
@@ -446,6 +461,10 @@ class ActivityRecordingController extends SafeNotifier {
       state = state.copyWith(localActivityId: _state.localActivityId);
     }
     _state = state;
+    _liveActivity.update(
+      state,
+      localSessionId: _recordingService.localSessionId,
+    );
     notify();
   }
 

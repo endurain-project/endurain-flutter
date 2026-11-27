@@ -50,6 +50,10 @@ class NativeActivityRecorderChannelContract {
   static const String requestNotificationPermission =
       'requestNotificationPermission';
 
+  /// iOS only: shows the formatted distance and pace or speed of the active
+  /// recording on its Live Activity. Android does not implement it.
+  static const String updateLiveActivity = 'updateLiveActivity';
+
   // Event payload keys.
   static const String eventType = 'type';
   static const String eventSession = 'session';

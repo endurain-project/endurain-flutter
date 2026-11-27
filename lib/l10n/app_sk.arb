@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Vyberte, ako dlho čakať bez pohybu pred pozastavením.",
   "activityAutoPauseDelayOptionLabel": "{seconds, plural, one{{seconds} sekunda} few{{seconds} sekundy} many{{seconds} sekundy} other{{seconds} sekúnd}}",
   "activityAutoPausedIndicator": "Automaticky pozastavené",
+  "activityPausedIndicator": "Pozastavené",
   "startCountdownSettingsTitle": "Odpočítavanie pred štartom",
   "startCountdownSettingsSubtitle": "Odpočítavať pred začatím nahrávania",
   "startCountdownToggleLabel": "Odpočítavať pred štartom",

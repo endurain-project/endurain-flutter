@@ -674,6 +674,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get activityAutoPausedIndicator => 'În pauză automată';
 
   @override
+  String get activityPausedIndicator => 'În pauză';
+
+  @override
   String get startCountdownSettingsTitle => 'Numărătoare inversă la start';
 
   @override

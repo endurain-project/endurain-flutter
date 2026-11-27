@@ -1,4 +1,6 @@
 import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/features/activity/models/activity_recording_stats.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
@@ -152,6 +154,24 @@ class ActivityStatsFormatter {
     final secondsPerKilometer =
         (UnitConversions.metersPerKilometer / metersPerSecond).round();
     return labels.minutesPerKilometer(_minutesAndSeconds(secondsPerKilometer));
+  }
+
+  /// Whether a recording of [activityType] shows pace rather than speed.
+  static bool showsPace(ActivityType? activityType) =>
+      activityType == ActivityType.run;
+
+  /// The live pace (a run) or speed (any other activity) of [stats]: the
+  /// current speed, or the average one before there is a current speed.
+  String formatLivePaceOrSpeed(
+    ActivityRecordingStats stats, {
+    required ActivityType? activityType,
+    String? locale,
+  }) {
+    final speed =
+        stats.currentSpeedMetersPerSecond ?? stats.averageSpeedMetersPerSecond;
+    return showsPace(activityType)
+        ? formatPace(speed)
+        : formatSpeed(speed, locale: locale);
   }
 
   /// Average pace for [distanceMeters] covered in [durationSeconds].

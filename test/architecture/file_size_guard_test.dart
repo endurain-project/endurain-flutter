@@ -28,6 +28,7 @@ const Map<String, String> _roots = {
   'android/watch_shared/watch/kotlin': '.kt',
   'ios/Runner': '.swift',
   'ios/EndurainWatch': '.swift',
+  'ios/EndurainLiveActivity': '.swift',
   'ios/Shared': '.swift',
 };
 

@@ -64,6 +64,8 @@ class DiagnosticsEvents {
   static const String activityUploadQueueDrainFailed =
       'activity.upload_queue_drain_failed';
   static const String activityRouteLoadFailed = 'activity.route_load_failed';
+  static const String activityLiveActivityUpdateFailed =
+      'activity.live_activity_update_failed';
   static const String activityUploadQueueRecordFailed =
       'activity.upload_queue_record_failed';
   static const String activityUploadRetryFailed =

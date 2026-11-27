@@ -667,6 +667,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'In pausa automatica';
 
   @override
+  String get activityPausedIndicator => 'In pausa';
+
+  @override
   String get startCountdownSettingsTitle => 'Conto alla rovescia di partenza';
 
   @override
