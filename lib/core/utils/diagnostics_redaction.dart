@@ -35,7 +35,7 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
       // the key and the separator, and a quoted value is redacted whole.
       .replaceAllMapped(
         RegExp(
-          r'''([\w-]*(?:token|password|secret|authorization|cookie|session|verifier)[\w-]*)["']?\s*[=:]\s*("[^"]*"|'[^']*'|[^,\s]+)''',
+          r'''([\w-]*(?:token|password|secret|authorization|cookie|session|verifier)[\w-]*)["']?\s*[=:]\s*(?:(?:Basic|Bearer|Digest)\s+)?("[^"]*"|'[^']*'|[^,\s]+)''',
           caseSensitive: false,
         ),
         (match) => '${match.group(1)}=<redacted>',
@@ -45,6 +45,12 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
         (match) => '${match.group(1)}=<redacted>',
       )
       .replaceAllMapped(_urlOrPath, (match) => _redactUrlOrPath(match[0]!))
+      // Bare hosts and IPs in socket errors, e.g.
+      // `Failed host lookup: 'example.org'` or `address = 10.0.0.2, port = 1`.
+      .replaceAllMapped(_hostLookup, (match) => '${match.group(1)}<host>')
+      .replaceAllMapped(_addressEquals, (match) => '${match.group(1)}<host>')
+      .replaceAll(_ipv4, '<host>')
+      .replaceAll(_ipv6, '<host>')
       .replaceAll(RegExp(r'/Users/[^\s:]+'), '<path>')
       .replaceAll(RegExp(r'/private/var/containers/[^\s:]+'), '<path>')
       .replaceAll(RegExp(r'/data/user/[^\s:]+'), '<path>')
@@ -60,6 +66,28 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
   }
   return sanitized;
 }
+
+final RegExp _hostLookup = RegExp(
+  r'''(host lookup:\s*)['"]?[^\s'",)]+['"]?''',
+  caseSensitive: false,
+);
+
+final RegExp _addressEquals = RegExp(
+  r'''(address\s*=\s*)['"]?[^\s'",)]+['"]?''',
+  caseSensitive: false,
+);
+
+// Four dotted octets only, so versions such as `1.2.3` stay readable.
+final RegExp _ipv4 = RegExp(
+  r'(?<![\w.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?![\w]|\.\d)',
+);
+
+// Eight hex groups, or a `::`-compressed form with at least one group.
+final RegExp _ipv6 = RegExp(
+  r'(?<![\w:])(?:(?:[0-9a-f]{1,4}:){7}[0-9a-f]{1,4}|'
+  r'(?:[0-9a-f]{1,4}(?::[0-9a-f]{1,4})*)?::(?:[0-9a-f]{1,4}(?::[0-9a-f]{1,4})*)?)(?![\w:])',
+  caseSensitive: false,
+);
 
 // A URL, or an absolute path starting with a letter (not `/Users`-style
 // device paths, which are redacted whole afterwards).
