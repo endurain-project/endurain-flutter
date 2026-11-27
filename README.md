@@ -756,7 +756,7 @@ Contributions are welcomed! This mobile app is part of the main Endurain project
 - **Use constants** - avoid magic numbers, use files in `core/constants/`
 - **Platform-adaptive UI** - use `PlatformUtils` for platform checks
 - **Open-source first** - prefer well-maintained open-source dependencies when they meet the need; proprietary or store-specific SDKs are acceptable when their product or platform benefit is clear
-- **Follow conventions** - see `.github/copilot-instructions.md`
+- **Follow conventions** - see [AGENTS.md](AGENTS.md) and the skills under `.agents/skills/`
 
 ## License
 
