@@ -12,15 +12,16 @@ applyTo: "lib/**, test/**, android/**, ios/**, pubspec.yaml, l10n.yaml, analysis
 - Controllers own workflow state, loading state, stream lifecycles, and async transitions.
 - Repositories coordinate feature data and return typed models or typed results.
 - Services isolate HTTP, secure storage, auth/session behavior, and platform APIs.
-- Wire shared dependencies through `AppServices`, `AppScope`, and constructor injection instead of creating new service instances inside widgets.
+- Wire shared dependencies in the composition root (`lib/app`: `AppServices`, `modules/`, `navigation/app_screens.dart`) and pass them down through constructors instead of creating new service instances inside widgets.
+- Code under `lib/core` and `lib/shared` never imports `lib/features` or `lib/app`; features do not import another feature's `…Store`.
 - Add abstractions only when they remove real duplication or protect a boundary that is already repeated.
 
 ## State Management and Dependency Injection
 
-**Decision (2026-06-08):** Keep `ChangeNotifier` + `AppScope` `InheritedWidget` +
-`AppServices` global singleton. Do **not** migrate to Riverpod or Provider until
-there is a concrete multi-account or multi-environment requirement that the
-current approach cannot satisfy.
+**Decision (2026-06-08):** Keep `ChangeNotifier`-based controllers (through
+`SafeNotifier`) with the `AppServices` composition root. Do **not** migrate to
+Riverpod or Provider until there is a concrete multi-account or
+multi-environment requirement that the current approach cannot satisfy.
 
 **When to create each layer:**
 - **Service** — when the unit isolates exactly one platform API, one HTTP
@@ -30,19 +31,21 @@ current approach cannot satisfy.
   domain caching, or return a typed result that hides storage keys from the
   caller. Repositories are feature-local unless the same composition is needed
   in two features.
-- **Controller** (`ChangeNotifier`) — one per screen/route that owns mutable UI
+- **Controller** (extends `SafeNotifier`; call `notify()`, never `notifyListeners()`) — one per screen/route that owns mutable UI
   state, loading flags, stream subscriptions, and async transitions. Dispose
   streams and subscriptions in `dispose()`.
-- **Long-lived controller** — hoist to `AppServices` (not the screen) when the
+- **Long-lived controller** — hoist to the composition root (`AppServices`) (not the screen) when the
   controller must survive tab navigation or be shared across screens. The active
   recording controller is the canonical example.
 
 **DI rules:**
 - Inject collaborators through constructors. Default parameters use `??
   Collaborator()` so tests can supply fakes without a service locator.
-- Screens and controllers obtain shared services via
-  `AppScope.servicesOf(context, listen: false)`, never by calling
-  `AppServices.instance` directly inside widget code.
+- Screens and controllers never see `AppScope` or `AppServices`: feature code
+  receives its dependencies as constructor parameters, wired in
+  `lib/app/navigation/app_screens.dart` and `lib/app/modules`. `AppServices` is
+  constructed only by the composition root, and `AppServices.instance` no
+  longer exists. `test/architecture/` enforces both.
 - `AppConfig` (in `AppServices.config`) is the single home for build-time
   environment knobs (API base path, transport policy, feature flags). Add new
   flags there; do not scatter `const bool kFeatureX = true` across files.
@@ -60,7 +63,7 @@ current approach cannot satisfy.
 ## Localization
 
 - Never hardcode user-facing strings in widgets, dialogs, validators, snack bars, errors, or button labels.
-- Add every new ARB entry to all locale files (`app_en.arb` is the source; see `lib/core/localization/app_locales.dart`), and translate native text too: Android `res/values-*/strings.xml` (phone and `android/wear`) and the iOS/watchOS string catalogs.
+- Add every new ARB entry to all 30 locale files (`app_en.arb` is the English source; see `lib/core/localization/app_locales.dart`), and translate native text too: Android `res/values-*/strings.xml` (phone and `android/wear`) and the iOS/watchOS string catalogs.
 - Include ARB metadata descriptions with usage context such as `Used in: activity_screen.dart`.
 - Keep service-layer errors language-free and map them to localized text near the UI.
 - Run `flutter gen-l10n` after ARB changes when generated files need refreshing.
@@ -68,8 +71,9 @@ current approach cannot satisfy.
 ## Adaptive UI
 
 - Use shared adaptive primitives from `lib/shared/adaptive/` before adding platform branches.
-- Android should render through Flutter Material or Material 3 widgets.
-- iOS should render through Flutter Cupertino widgets where supported.
+- Android should render through `material_ui` (Material 3) widgets.
+- iOS should render through `cupertino_ui` widgets where supported.
+- Import `material_ui`/`cupertino_ui`, never the core-SDK `material.dart`/`cupertino.dart`, and use `appLocalizationsDelegates` rather than the generated `localizationsDelegates`.
 - Do not hand-roll platform visual effects, custom glass/blur surfaces, or platform-lookalike widgets when native Flutter families do not expose that behavior.
 - Add a new adaptive primitive only when the pattern repeats across features.
 
@@ -77,9 +81,13 @@ current approach cannot satisfy.
 
 - Put plugin calls behind injectable adapters before they appear in controllers or screens.
 - Handle permissions, denial states, unavailable services, and platform exceptions gracefully.
-- Keep permission declarations aligned with actual behavior. Do not request or describe background location until background activity tracking exists.
+- Keep permission declarations aligned with actual behavior. Request and describe background location only as the native background recorder uses it (Android foreground service, iOS background location).
 - Keep release identifiers production-looking and consistent across Android and iOS.
 - Do not sign Android release builds with debug keys.
+
+## Architecture Guards
+
+`test/architecture/` fails `flutter test` when a rule is broken: no `AppScope`/`AppServices` in `lib/features`; `AppServices` and the auth session services (`AuthService`, `SsoService`, `ApiClient`, `AuthSessionStore`) are constructed only in the composition root and auth infrastructure; feature controllers extend `SafeNotifier`; `core`/`shared` do not import `features`/`app`; no cross-feature `…Store` imports; the map imports only two activity entry points; source files stay under 500 lines (legacy files are capped); no legacy core-SDK Material/Cupertino imports; Android manifest, Health Connect permissions and backup exclusions stay consistent. Read the guard before working around it.
 
 ## Testing And Validation
 

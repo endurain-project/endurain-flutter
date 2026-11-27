@@ -11,10 +11,19 @@ beyond any full-disk encryption the OS or device provides.
 **Practical expectations:**
 - A device with full-disk encryption (enabled by default on modern Android and
   iOS) protects the files while the device is locked.
-- Disabling device encryption or obtaining a device backup may expose local
-  track data.
+- Disabling device encryption may expose local track data. The activity
+  files, the activity and health-import databases, and the secure-storage
+  preferences are excluded from Android cloud backup and device transfer, and
+  the activity storage directories are excluded from iOS backups, so a backup
+  should not contain them.
 - No auth tokens or credentials are stored alongside the GPX files; those are
   kept separately in the platform keychain/secure storage.
+
+**Network and diagnostics:**
+- Self-hosted servers may be reached over plain `http://`. The app allows it,
+  warns in the login flow, and shows a "Not secure (HTTP)" indicator.
+- Remote crash reporting is opt-in and off by default; local diagnostics are
+  never uploaded automatically.
 
 If you require stronger at-rest protection for recorded tracks, export and
 delete them from the device promptly after each session.

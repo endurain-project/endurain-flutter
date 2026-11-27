@@ -3,8 +3,9 @@
 ## Tech Stack
 - **Flutter**: 3.50+ (stable channel; CI pins 3.50.1)
 - **Dart**: 3.14.0+
-- **Platforms**: Android, iOS
-- **State Management**: `ChangeNotifier` view-model controllers wired in a composition root (`AppServices`) and exposed via `AppScope`; obtain services with `AppScope.servicesOf(context)`
+- **Platforms**: Android, iOS, plus the Wear OS (`android/wear`) and Apple Watch (`ios/EndurainWatch`) companion apps
+- **State Management**: view-model controllers extending `SafeNotifier` (`lib/shared/state/safe_notifier.dart`), wired in a composition root (`AppServices`, `lib/app/modules`, `lib/app/navigation/app_screens.dart`); features receive dependencies through constructors, never through `AppScope`/`AppServices`
+- **UI Toolkit**: `material_ui` and `cupertino_ui` packages (not the core-SDK `material.dart`/`cupertino.dart`)
 - **Map Provider**: OpenStreetMap (flutter_map + latlong2)
 - **Secure Storage**: flutter_secure_storage
 - **Location**: geolocator (foreground) + a native Android/iOS recorder for background activity capture
@@ -57,15 +58,15 @@ class MyWidget extends StatelessWidget {
 - **Never** hardcode user-facing strings
 - Always use `AppLocalizations.of(context)` (or `l10n` variable)
 - Example: `Text(l10n.mapTab)` instead of `Text('Map')`
-- Supported languages: 30+ locales (see `lib/core/localization/app_locales.dart`); English (`app_en.arb`) is the source/reference locale. An ARB parity guard test enforces that every locale defines the same keys.
+- Supported languages: 30 locales including English (see `lib/core/localization/app_locales.dart`); English (`app_en.arb`) is the source/reference locale. An ARB parity guard test enforces that every locale defines the same keys.
 - **Translations organized by feature** in `lib/l10n/app_en.arb` and the per-locale `app_<code>.arb` files
-  - Sections: Common/Shared, Auth, Map, Activity, Health, Settings (see `lib/l10n/README.md`)
+  - Sections: Common/Shared, Errors, Auth, Activity, Map, Settings, Health sync, Sensors, Units (see `lib/l10n/README.md`)
   - When adding translations, place them in the appropriate section
   - Include usage info in description: `"Used in: your_screen.dart"`
   - Run `flutter gen-l10n` after editing ARB files
 
 ### Icons
-- **Prefer Material Icons**: Built-in, no extra bundle size
+- **Prefer Material Icons**: Built-in with `material_ui`, no extra bundle size
   - `Icon(Icons.map)`, `Icon(Icons.settings)`, `Icon(Icons.dns)`
 - Avoid Font Awesome unless specifically needed (adds bundle size)
 
@@ -77,25 +78,23 @@ lib/
 ├── main.dart
 ├── app.dart
 ├── core/
+│   ├── auth/                  # secure_storage_service.dart, session store
+│   ├── location/              # location_service.dart
 │   ├── theme/
-│   │   └── app_theme.dart
-│   └── services/
-│       ├── secure_storage_service.dart
-│       └── location_service.dart
+│   └── ...                    # config, constants, diagnostics, models, network, services, utils
+├── app/                       # Composition root: AppServices, modules/, navigation/, widgets/ (app_bottom_nav.dart)
 ├── features/
 │   ├── map/
-│   │   ├── map_screen.dart
+│   │   ├── screens/           # map_screen.dart
 │   │   └── widgets/
-│   └── settings/
-│       ├── settings_screen.dart
-│       ├── server_settings_screen.dart
-│       └── widgets/
-├── shared/
-│   └── widgets/
-│       └── app_bottom_nav.dart
-└── l10n/
-    ├── app_en.arb
-    └── app_pt.arb
+│   ├── settings/
+│   │   ├── controllers/
+│   │   ├── repositories/
+│   │   ├── screens/           # settings_screen.dart, server_settings_screen.dart
+│   │   └── services/
+│   └── ...                    # account_migration, activity, auth, health, sensors, watch
+├── shared/                    # adaptive/, layout/, state/
+└── l10n/                      # app_en.arb, app_<code>.arb, README.md
 ```
 
 ### Layering & naming taxonomy
@@ -106,10 +105,10 @@ invent synonyms (no `Manager`, `ViewModel`, `Helper`, or `DAO`).
 | Layer | Folder / suffix | Responsibility |
 | --- | --- | --- |
 | **Screen** | `screens/`, `…Screen` | Thin view. Renders controller state and dispatches user intents. Owns dialogs/navigation/form validation only. Never calls a repository/service data method and drives it with `setState`. |
-| **Controller** | `controllers/`, `…Controller` (extends `ChangeNotifier`) | View-model. Holds view state and policy decisions; delegates data work to services/repositories. |
+| **Controller** | `controllers/`, `…Controller` (extends `SafeNotifier`) | View-model. Holds view state and policy decisions; delegates data work to services/repositories. |
 | **Service** | `services/` or `core/services/`, `…Service` | Business logic, coordination, and platform integration. Platform integrations sit behind an injectable adapter interface with an `Unsupported…` fallback. |
 | **Repository** | `repositories/`, `…Repository` | The public data-access **facade** a feature depends on. Composes one or more stores/services and returns domain models. |
-| **Store** | `repositories/`, `…Store` | The concrete **persistence implementation** behind a repository (e.g. `SqfliteActivityStore`, `FileActiveActivityStore`, `SqfliteHealthImportStore`). Injectable so tests swap in-memory/FFI backends. |
+| **Store** | `repositories/`, `…Store` | The concrete **persistence implementation** behind a repository (e.g. `SqfliteActivityStore`, `SqfliteHealthImportStore`; `FileActiveActivityStore` is a test helper in `test/helpers`, because the native recorders own the active-session files in production). Injectable so tests swap in-memory/FFI backends. |
 | **Model** | `models/` | Immutable value type: `final` fields, `const` constructor where possible, `copyWith` for stateful ones. |
 
 Rules:
@@ -119,27 +118,50 @@ Rules:
   `settings`) expose only a Repository. When both exist, the repository owns
   the store and no other layer touches the store directly.
 - **Screens delegate to a Controller.** Do not read/write a repository from a
-  screen with `setState`; hold a `ChangeNotifier` controller instead. App-
+  screen with `setState`; hold a `SafeNotifier` controller instead. App-
   lifetime controllers are constructed in `AppServices`; route-owned
-  controllers are built via an `AppServices.createXController()` factory (or
-  from an injected test seam) and disposed through the `OwnedControllers`
-  mixin (`lib/shared/state/owned_controllers.dart`).
-- **Composition root only.** All wiring lives in `AppServices`; obtain services
-  via `AppScope.servicesOf(context)`. Never reference `AppServices.instance`
-  from feature code — this is enforced by
-  `test/architecture/app_services_instance_guard_test.dart`.
+  controllers are built by the composition root (`lib/app/navigation/
+  app_screens.dart`, `lib/app/modules`) and disposed through the
+  `OwnedControllers` mixin (`lib/shared/state/owned_controllers.dart`).
+- **Composition root only.** All wiring lives in `lib/app` (`AppServices`, the
+  modules, `AppScreens`). Feature code receives collaborators through
+  constructor parameters and never references `AppScope` or `AppServices`.
 
-## Package Versions (Reference)
-The authoritative list is `pubspec.yaml`; keep this section in sync when adding load-bearing dependencies:
-- `cupertino_icons: ^1.0.8`
-- `flutter_lints: ^6.0.0`
-- `flutter_secure_storage: ^11.1.0`
-- `geolocator: ^14.0.3`
-- `flutter_map: ^8.3.2`
-- `latlong2: ^0.10.1`
-- `go_router: ^18.0.1`
-- `sqflite: ^2.4.4`
-- `health: ^14.0.0`
+## Architecture Guards
+
+`test/architecture/` enforces these rules in `flutter test`; read the guard
+before working around it:
+- `feature_service_locator_guard_test.dart`: nothing under `lib/features`
+  references `AppScope` or `AppServices`.
+- `app_services_instance_guard_test.dart`: `AppServices` is constructed only by
+  `main.dart`, `app.dart` and `app/app_services.dart`, and `AppServices.instance`
+  is never reintroduced.
+- `auth_wiring_guard_test.dart`: `AuthService`, `SsoService`, `ApiClient` and
+  `AuthSessionStore` are constructed only in the auth infrastructure, so there
+  is a single serialized session store.
+- `controller_notifier_guard_test.dart`: feature controllers extend
+  `SafeNotifier`, call `notify()` instead of `notifyListeners()`, and do not
+  declare their own disposal flag.
+- `layering_guard_test.dart`: `lib/core` and `lib/shared` never import
+  `lib/features` or `lib/app`.
+- `feature_boundary_guard_test.dart`: no feature imports another feature's
+  `…Store`, and stores are used only in repositories, services and the
+  composition root.
+- `map_activity_coupling_guard_test.dart`: the map imports only
+  `activity_recording_controller.dart` and `activity_recording_overlay.dart`
+  from the activity feature.
+- `file_size_guard_test.dart`: source files stay under 500 lines; larger
+  legacy files are capped at their current size and may only shrink.
+- `design_system_migration_guard_test.dart`: use `material_ui`/`cupertino_ui`;
+  the legacy core-SDK Material/Cupertino imports and the generated
+  `AppLocalizations.localizationsDelegates` are not allowed (use
+  `appLocalizationsDelegates`).
+- `android_manifest_test.dart`: Health Connect permissions match what the app
+  uses, the network security config is wired, and the private storage roots are
+  excluded from Android backups.
+
+## Dependencies Reference
+`pubspec.yaml` is the authoritative list of packages and versions.
 
 ## Best Practices
 
@@ -155,7 +177,7 @@ The authoritative list is `pubspec.yaml`; keep this section in sync when adding 
 
 ### Security
 - Never commit API keys or credentials
-- Use `.gitignore` for `*.jks`, environment files, and any proprietary configuration files
+- Use `.gitignore` for `*.jks`, environment files (including `dart-defines.json`), and any proprietary configuration files
 - Store sensitive data only in `flutter_secure_storage`
 
 ### Testing
@@ -193,6 +215,6 @@ Text(l10n.mapTab)
 ```
 
 ## Git Workflow
-- Commit messages: Clear, descriptive (e.g., "Add server settings form with validation")
-- Branch strategy: Feature branches for major changes
+- Commit messages and PR titles: Conventional Commits, validated by CI (e.g., `feat: add server settings form validation`)
+- Branch strategy: Feature branches for major changes, named like `fix/...` or `feat/...`
 - Never commit build artifacts, IDE configs, or secrets

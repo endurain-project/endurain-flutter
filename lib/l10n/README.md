@@ -49,10 +49,24 @@ Used by: `features/map/screens/map_screen.dart`
 - Location control tooltips
 
 ### 6. **SETTINGS**
-Used by: `features/settings/screens/settings_screen.dart`, `features/settings/screens/server_settings_screen.dart`
-- Settings navigation (settingsTab, settingsScreen)
+Used by: `features/settings/`
+- Settings navigation and section headers (settingsTab, settingsSectionAccount)
 - Server configuration (serverUrl, tileServerUrl, loggedIn)
+- Language, diagnostics, device access, and audio announcement screens
 - Save messages (savedSuccessfully)
+
+### 7. **HEALTH SYNC**
+Used by: `features/health/`
+- Health access, import range, selection, and import status messages
+- Starts at the `@@healthSection` marker; it has no `=== ... ===` header
+
+### 8. **SENSORS**
+Used by: `features/sensors/`
+- Bluetooth sensor pairing, connection status, and live measurement labels
+
+### 9. **UNITS**
+Used by: `core/models/measurement_system.dart`, `features/activity/services/activity_stats_formatter.dart`
+- Metric and imperial unit formats (unitMeter and related keys)
 
 ## Adding New Translations
 
@@ -60,7 +74,7 @@ When adding a new translation:
 
 1. **Find the right section** in `app_en.arb`, and add the key to every
    `app_<code>.arb` file (the ARB parity test fails otherwise)
-2. **Add the key** in alphabetical order within that section
+2. **Add the key** next to related keys in that section. Keys are grouped by screen or topic, not sorted alphabetically; append new groups at the end of the section
 3. **Include usage info** in the description: `"description": "Button label - Used in: your_screen.dart"`
 4. **Run** `flutter gen-l10n` to regenerate localization classes
 5. **Update this README** if adding a new section
