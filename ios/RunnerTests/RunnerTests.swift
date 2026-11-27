@@ -655,42 +655,6 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     }
   }
 
-  func testWarmUpDropsFixesAndTheRecordingKeepsItsStream() throws {
-    let store = makeStore()
-    let manager = RecoveryLocationManager()
-    let source = FakeLiveLocationSource()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
-    defer { recorder.stopCollection() }
-
-    recorder.beginWarmUp()
-    XCTAssertTrue(source.isRunning)
-    source.deliver([fix(Date())])
-    XCTAssertEqual(store.pointCount(), 0)
-
-    XCTAssertTrue(store.saveSession(session()))
-    XCTAssertTrue(recorder.startCollection())
-    recorder.endWarmUp()
-    XCTAssertTrue(source.isRunning)
-    XCTAssertEqual(source.startCount, 1)
-    source.deliver([fix(Date())])
-    XCTAssertEqual(store.pointCount(), 1)
-  }
-
-  func testEndWarmUpStopsAnUnusedStreamAndWarmUpNeedsPermission() {
-    let manager = RecoveryLocationManager()
-    let source = FakeLiveLocationSource()
-    let recorder = CoreLocationActivityRecorder(
-      store: makeStore(), manager: manager, locationSource: source
-    )
-    recorder.beginWarmUp()
-    recorder.endWarmUp()
-    XCTAssertFalse(source.isRunning)
-
-    manager.permission = .denied
-    recorder.beginWarmUp()
-    XCTAssertFalse(source.isRunning)
-  }
-
   func testStationaryUpdateAutoPausesWithoutFurtherFixes() async throws {
     let store = makeStore()
     XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
@@ -716,6 +680,72 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     XCTAssertEqual(paused.status, ActiveActivitySessionData.statusPaused)
     XCTAssertTrue(paused.pausedAutomatically)
     XCTAssertTrue(source.isRunning)
+  }
+
+  private func autoPausingSession(delaySeconds: Int) -> ActiveActivitySessionData {
+    ActiveActivitySessionData(
+      localSessionId: "stationary_session",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: IsoTime.nowUtc(),
+      autoPauseEnabled: true,
+      autoPauseDelaySeconds: delaySeconds
+    )
+  }
+
+  func testMovingFixAfterAnOverdueStationaryPauseAutoPausesFirst() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(autoPausingSession(delaySeconds: 60)))
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(
+      store: store, manager: RecoveryLocationManager(), locationSource: source
+    )
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    let start = Date()
+    source.deliver([fix(start)], isStationary: true)
+
+    // The app slept through the scheduled pause; movement wakes it later.
+    source.deliver([fix(start.addingTimeInterval(120), latitude: 41.2, speed: 3)])
+
+    let paused = try XCTUnwrap(store.loadSession())
+    XCTAssertEqual(paused.status, ActiveActivitySessionData.statusPaused)
+    XCTAssertTrue(paused.pausedAutomatically)
+    // Back-dated to the last movement: the collection start.
+    let pausedAtMillis = try XCTUnwrap(IsoTime.toEpochMillis(paused.pausedAt))
+    XCTAssertLessThan(pausedAtMillis, millis(start.addingTimeInterval(60)))
+    XCTAssertEqual(store.pointCount(), 1)
+  }
+
+  func testManualResumeWhileStationaryAutoPausesAgain() async throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(autoPausingSession(delaySeconds: 1)))
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(
+      store: store, manager: RecoveryLocationManager(), locationSource: source
+    )
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+    source.deliver([fix(Date())], isStationary: true)
+    try await Task.sleep(nanoseconds: 1_500_000_000)
+    let autoPaused = try XCTUnwrap(store.loadSession())
+    XCTAssertTrue(autoPaused.pausedAutomatically)
+
+    // What `ActivityRecorderChannel.handleResume` does; no update follows
+    // while the device stays still.
+    let resumeTime = Date()
+    XCTAssertTrue(store.saveSession(autoPaused.copyWith(
+      status: ActiveActivitySessionData.statusRecording,
+      resumedAt: .some(IsoTime.format(resumeTime)),
+      pausedAt: .some(nil),
+      pausedAutomatically: false
+    )))
+    XCTAssertTrue(recorder.resumeCollection(nowMillis: millis(resumeTime)))
+    try await Task.sleep(nanoseconds: 1_500_000_000)
+
+    let pausedAgain = try XCTUnwrap(store.loadSession())
+    XCTAssertEqual(pausedAgain.status, ActiveActivitySessionData.statusPaused)
+    XCTAssertTrue(pausedAgain.pausedAutomatically)
   }
 
   func testMovingUpdateCancelsTheStationaryAutoPause() async throws {

@@ -95,6 +95,7 @@
 		1A000000000000000000000F /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000004 /* WorkoutLiveActivityWidget.swift */; };
 		1A0000000000000000000010 /* EndurainLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000006 /* EndurainLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1A0000000000000000000041 /* WorkoutLiveActivityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000040 /* WorkoutLiveActivityTests.swift */; };
+		1A0000000000000000000051 /* StartCountdownWarmUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000050 /* StartCountdownWarmUp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -255,6 +256,7 @@
 		1A0000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A0000000000000000000006 /* EndurainLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EndurainLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A0000000000000000000040 /* WorkoutLiveActivityTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityTests.swift; sourceTree = "<group>"; };
+		1A0000000000000000000050 /* StartCountdownWarmUp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/StartCountdownWarmUp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -392,6 +394,7 @@
 				AA00000000000000000000AB /* AudioAnnouncer.swift */,
 				AA00000000000000000000AC /* SessionTiming.swift */,
 				AA00000000000000000000E1 /* LiveLocationSource.swift */,
+				1A0000000000000000000050 /* StartCountdownWarmUp.swift */,
 				AA00000000000000000000F5 /* CoreLocationActivityRecorder+AutoPause.swift */,
 				AA00000000000000000000C5 /* AnnouncementStateCache.swift */,
 				AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */,
@@ -777,6 +780,7 @@
 				AA00000000000000000000BB /* AudioAnnouncer.swift in Sources */,
 				AA00000000000000000000BC /* SessionTiming.swift in Sources */,
 				AA00000000000000000000E2 /* LiveLocationSource.swift in Sources */,
+				1A0000000000000000000051 /* StartCountdownWarmUp.swift in Sources */,
 				AA00000000000000000000F6 /* CoreLocationActivityRecorder+AutoPause.swift in Sources */,
 				AA00000000000000000000C4 /* AnnouncementStateCache.swift in Sources */,
 				AA00000000000000000000CC /* HealthKitHeartRateMonitor.swift in Sources */,

@@ -22,6 +22,15 @@ final class WorkoutLiveActivity {
     private var metrics: WorkoutActivityAttributes.Metrics?
     private var metricsSessionId: String?
 
+    /// The state last asked of each activity, by ID. A new state is compared
+    /// with this rather than with the one shown, which lags behind while an
+    /// update is queued.
+    private var requestedStates: [String: WorkoutActivityAttributes.ContentState] = [:]
+
+    /// The last queued ActivityKit call. Each call waits for the one before,
+    /// so they apply in the order they were made and the latest state wins.
+    private var lastOperation: Task<Void, Never>?
+
     init(store: ActiveActivityStore) {
         self.store = store
     }
@@ -60,11 +69,12 @@ final class WorkoutLiveActivity {
             nowMillis: LocationFixPolicy.nowMillis()
         )
         if let current {
-            guard current.content.state != state else {
+            let activityId = current.id
+            guard (requestedStates[activityId] ?? current.content.state) != state else {
                 return
             }
-            let activityId = current.id
-            Task {
+            requestedStates[activityId] = state
+            enqueue {
                 await Self.update(activityId: activityId, to: state)
             }
             return
@@ -73,10 +83,11 @@ final class WorkoutLiveActivity {
             return
         }
         do {
-            _ = try Activity.request(
+            let activity = try Activity.request(
                 attributes: WorkoutActivityAttributes(localSessionId: session.localSessionId),
                 content: ActivityContent(state: state, staleDate: nil)
             )
+            requestedStates[activity.id] = state
         } catch {
             // iOS starts a Live Activity only while the app is in front, for
             // example not after a start countdown that ended on a locked
@@ -117,9 +128,18 @@ final class WorkoutLiveActivity {
 
     private func end(_ activities: [Activity<WorkoutActivityAttributes>]) {
         for activityId in activities.map(\.id) {
-            Task {
+            requestedStates[activityId] = nil
+            enqueue {
                 await Self.end(activityId: activityId)
             }
+        }
+    }
+
+    private func enqueue(_ operation: @escaping @Sendable () async -> Void) {
+        let previous = lastOperation
+        lastOperation = Task {
+            await previous?.value
+            await operation()
         }
     }
 

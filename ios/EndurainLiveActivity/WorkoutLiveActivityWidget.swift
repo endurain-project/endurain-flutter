@@ -30,12 +30,12 @@ struct WorkoutLiveActivityWidget: Widget {
                         .font(.system(.title, design: .rounded).weight(.semibold))
                 }
             } compactLeading: {
-                StatusIcon(state: state)
+                StatusIcon(state: state, isStandalone: true)
             } compactTrailing: {
                 ElapsedTimeView(state: state)
                     .frame(maxWidth: 64)
             } minimal: {
-                StatusIcon(state: state)
+                StatusIcon(state: state, isStandalone: true)
             }
         }
     }
@@ -64,7 +64,7 @@ private struct TitleView: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            StatusIcon(state: state)
+            StatusIcon(state: state, isStandalone: false)
             Text(state.metrics.title)
                 .font(.headline)
             if state.isPaused {
@@ -113,13 +113,26 @@ private struct MetricView: View {
     }
 }
 
-/// Recording or paused, as a symbol; the text next to it says the same.
+/// Recording or paused, as a symbol.
 private struct StatusIcon: View {
     let state: WorkoutActivityAttributes.ContentState
+
+    /// Whether no text next to the symbol says the same, as in the compact
+    /// and minimal Dynamic Island; VoiceOver then reads the activity type and
+    /// the paused label instead.
+    let isStandalone: Bool
 
     var body: some View {
         Image(systemName: state.isPaused ? "pause.fill" : "record.circle")
             .foregroundStyle(state.isPaused ? Color.secondary : Color.red)
-            .accessibilityHidden(true)
+            .accessibilityHidden(!isStandalone)
+            .accessibilityLabel(accessibilityText)
+    }
+
+    private var accessibilityText: String {
+        guard state.isPaused else {
+            return state.metrics.title
+        }
+        return "\(state.metrics.title), \(state.metrics.pausedLabel)"
     }
 }

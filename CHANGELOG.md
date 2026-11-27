@@ -53,7 +53,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The GitLab mirror runs only for `main` and `v*` tags. It pushes only branches and tags, so GitHub's pull-request refs no longer make it fail.
 - Android and Wear OS dependencies, the Android Gradle plugin and the Kotlin version are declared once, in the Gradle version catalog `android/gradle/libs.versions.toml`.
 - Internal changes:
-  - The iPhone start countdown keeps the app awake with the recorder's own location stream instead of a separate location manager.
   - Audio announcement settings moved into the activity feature.
   - Settings repositories share typed preference helpers.
   - The upload queue and watch sync share one single-flight helper, and both databases share one open helper.

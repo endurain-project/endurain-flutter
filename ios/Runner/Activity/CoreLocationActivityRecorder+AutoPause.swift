@@ -66,8 +66,25 @@ extension CoreLocationActivityRecorder {
                 return
             }
             self.stationaryAutoPauseTask = nil
-            self.autoPauseWhileStationary()
+            self.autoPauseWhileStationary(atMillis: LocationFixPolicy.nowMillis())
         }
+    }
+
+    /// Applies a pending stationary auto-pause that came due before
+    /// [millis], the time of a fix showing the device moving again.
+    ///
+    /// iOS can suspend the app while the stream is stopped for a stationary
+    /// device, so the scheduled pause may not have run yet when movement
+    /// wakes the app. Without this the moving fix would reset the stillness
+    /// timer and the stop would count as recorded time.
+    func applyOverdueStationaryAutoPause(atMillis millis: Int64) {
+        guard stationaryAutoPauseTask != nil,
+              let dueAtMillis = autoPauseDetector?.autoPauseDueAtMillis,
+              millis >= dueAtMillis else {
+            return
+        }
+        cancelStationaryAutoPause()
+        autoPauseWhileStationary(atMillis: millis)
     }
 
     /// Drops the pending stationary auto-pause, for a fix that shows the
@@ -77,15 +94,16 @@ extension CoreLocationActivityRecorder {
         stationaryAutoPauseTask = nil
     }
 
-    private func autoPauseWhileStationary() {
+    /// Auto-pauses, back-dated to the last movement, when the stillness
+    /// reached the pause delay by [millis].
+    private func autoPauseWhileStationary(atMillis millis: Int64) {
         guard let detector = autoPauseDetector,
               let session = store.loadSession(),
               session.status == ActiveActivitySessionData.statusRecording else {
             return
         }
-        let nowMillis = LocationFixPolicy.nowMillis()
-        if case .autoPause = detector.onStationary(atMillis: nowMillis) {
-            transitionToAutoPaused(session, nowMillis: nowMillis)
+        if case .autoPause = detector.onStationary(atMillis: millis) {
+            transitionToAutoPaused(session, nowMillis: millis)
         }
     }
 

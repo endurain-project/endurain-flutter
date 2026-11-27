@@ -18,6 +18,7 @@ final class ActivityRecorderChannel:
     @preconcurrency FlutterStreamHandler {
     private let store: ActiveActivityStore
     private let recorder: CoreLocationActivityRecorder
+    private let startWarmUp = StartCountdownWarmUp()
     private let liveActivity: WorkoutLiveActivity
 
     private var methodChannel: FlutterMethodChannel?
@@ -93,10 +94,10 @@ final class ActivityRecorderChannel:
         case ActivityRecorderChannel.methodSpeakCue:
             handleSpeakCue(call, result: result)
         case ActivityRecorderChannel.methodBeginStartWarmUp:
-            recorder.beginWarmUp()
+            startWarmUp.begin()
             result(nil)
         case ActivityRecorderChannel.methodEndStartWarmUp:
-            recorder.endWarmUp()
+            startWarmUp.end()
             result(nil)
         case ActivityRecorderChannel.methodUpdateLiveActivity:
             handleUpdateLiveActivity(call, result: result)

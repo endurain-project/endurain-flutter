@@ -51,6 +51,10 @@ final class CoreLocationActivityRecorder:
     /// The pending auto-pause while the device is stationary and Core
     /// Location has stopped delivering fixes.
     var stationaryAutoPauseTask: Task<Void, Never>?
+    /// Whether the last update of the stream said the device is stationary.
+    /// No further update follows until it moves, so a reset of the
+    /// auto-pause detector has to schedule the stationary auto-pause again.
+    private var isStationary = false
     /// Whether fixes closer than `LocationFixPolicy.distanceFilterMeters` to
     /// the last stored one are dropped (auto-pause off).
     private var usesDistanceFilter = true
@@ -131,6 +135,7 @@ final class CoreLocationActivityRecorder:
         let session = store.loadSession()
         usesDistanceFilter = session?.autoPauseEnabled != true
         lastStoredLocation = nil
+        isStationary = false
         let nowMillis = LocationFixPolicy.nowMillis()
         autoPauseDetector = MovementAutoPauseDetector(config: MovementAutoPauseConfig(
             enabled: session?.autoPauseEnabled ?? false,
@@ -142,7 +147,6 @@ final class CoreLocationActivityRecorder:
         autoPauseDetector?.reset(movementAtMillis: nowMillis)
         markCollectionStarted(atMillis: nowMillis)
         nextPointOffset = store.pointCount()
-        // Already running when the start countdown warmed it up.
         locationSource.start { [weak self] update in
             self?.handleUpdate(update)
         }
@@ -160,36 +164,6 @@ final class CoreLocationActivityRecorder:
         didRequestFullAccuracy = manager.requestPreciseLocationIfNeeded(
             purposeKey: Self.fullAccuracyPurposeKey
         )
-    }
-
-    /// Starts the location stream for the start countdown and drops its
-    /// fixes.
-    ///
-    /// iOS suspends an app soon after the screen locks unless it is doing
-    /// something allowed in the background, and nothing records during the
-    /// countdown. Running location updates is allowed, so the app stays awake
-    /// for the whole countdown, and GPS has a fix by the time the recording
-    /// starts on the same stream. Does nothing when location is not
-    /// authorized: the recording asks for permission itself, and the
-    /// countdown then just runs in the foreground. Never touches the store.
-    func beginWarmUp() {
-        let status = currentAuthorizationStatus()
-        guard !isCollecting,
-              status == .authorizedAlways || status == .authorizedWhenInUse else {
-            return
-        }
-        locationSource.start { [weak self] update in
-            self?.handleUpdate(update)
-        }
-    }
-
-    /// Stops the stream `beginWarmUp` started unless a recording took it
-    /// over. Safe to call when no warm-up is running.
-    func endWarmUp() {
-        guard !isCollecting else {
-            return
-        }
-        locationSource.stop()
     }
 
     /// Re-arms collection after the process was relaunched (for example by
@@ -261,6 +235,7 @@ final class CoreLocationActivityRecorder:
         announcements.flush()
         announcements.cancelTimeAnnouncement()
         cancelStationaryAutoPause()
+        isStationary = false
         locationSource.stop()
         heartRateMonitor.stop()
         AudioAnnouncer.shared.stop()
@@ -302,6 +277,9 @@ final class CoreLocationActivityRecorder:
         cancelStationaryAutoPause()
         autoPauseDetector?.reset(movementAtMillis: nowMillis)
         markCollectionStarted(atMillis: nowMillis)
+        if isStationary {
+            scheduleStationaryAutoPause()
+        }
         announcements.scheduleNextTimeAnnouncement()
         return true
     }
@@ -313,19 +291,25 @@ final class CoreLocationActivityRecorder:
 
     // MARK: - Location updates
 
-    /// Takes one update from the location stream. Updates that arrive while
-    /// not collecting come from the start-countdown warm-up and are dropped.
+    /// Takes one update from the location stream. Updates that arrive after
+    /// collection stopped are dropped.
     func handleUpdate(_ update: LiveLocationUpdate) {
         guard isCollecting else {
             return
         }
         if let location = update.location {
+            if !update.isStationary {
+                applyOverdueStationaryAutoPause(
+                    atMillis: LocationFixPolicy.effectiveMillis(location)
+                )
+            }
             handleLocationFix(location)
         }
         guard isCollecting else {
             // A failure while storing the fix stopped collection.
             return
         }
+        isStationary = update.isStationary
         if update.isStationary {
             scheduleStationaryAutoPause()
         } else {
