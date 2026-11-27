@@ -2,9 +2,12 @@
 // calls this delegate and every channel handler on the main thread.
 @preconcurrency import Flutter
 import UIKit
+import os
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, @preconcurrency FlutterImplicitEngineDelegate {
+  nonisolated private static let log = AppLogger.make(category: "AppDelegate")
+
   /// Strong reference so the native activity recorder channel outlives engine
   /// setup and keeps its method/event handlers registered.
   private var activityRecorderChannel: ActivityRecorderChannel?
@@ -57,7 +60,7 @@ import UIKit
         )
         try WatchStorage.excludeFromBackup(directory)
       } catch {
-        NSLog("Unable to exclude private Endurain storage from backup: %@", error.localizedDescription)
+        Self.log.error("Unable to exclude private storage from backup: \(error.localizedDescription, privacy: .private)")
       }
     }
   }
@@ -76,11 +79,7 @@ import UIKit
           result(FlutterMethodNotImplemented)
           return
         }
-        if #available(iOS 16.0, *) {
-          result(Locale.current.measurementSystem == .metric ? "metric" : "imperial")
-        } else {
-          result(Locale.current.usesMetricSystem ? "metric" : "imperial")
-        }
+        result(Locale.current.measurementSystem == .metric ? "metric" : "imperial")
       }
       deviceSettingsChannel = channel
     }

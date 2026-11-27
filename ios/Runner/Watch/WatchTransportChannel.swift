@@ -2,6 +2,7 @@
 // channel callback this file receives runs on the platform (main) thread.
 @preconcurrency import Flutter
 import Foundation
+import os
 
 /// Serves the Dart `WatchTransportChannelContract` from
 /// [WatchConnectivityBridge].
@@ -14,6 +15,8 @@ import Foundation
 /// acknowledgements run off the main actor.
 @MainActor
 final class WatchTransportChannel: NSObject, @preconcurrency FlutterStreamHandler {
+    nonisolated private static let log = AppLogger.make(category: "WatchTransportChannel")
+
     static let methodChannelName = "endurain/watch_transport/methods"
     static let eventChannelName = "endurain/watch_transport/events"
 
@@ -143,7 +146,7 @@ final class WatchTransportChannel: NSObject, @preconcurrency FlutterStreamHandle
                 continue
             }
             guard WatchProtocol.isSupported(version: envelope[WatchProtocol.keyVersion]) else {
-                NSLog("Endurain watch transport: skipped a session from a newer watch app")
+                Self.log.notice("Skipped a session from a newer watch app")
                 continue
             }
             handoffs.append(envelope)

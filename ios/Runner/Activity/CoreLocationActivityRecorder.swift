@@ -83,9 +83,9 @@ final class CoreLocationActivityRecorder:
             )
         }
         manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.distanceFilter = CoreLocationActivityRecorder.distanceFilterMeters
-        manager.activityType = .fitness
+        manager.applyFitnessConfiguration(
+            distanceFilter: CoreLocationActivityRecorder.distanceFilterMeters
+        )
         manager.pausesLocationUpdatesAutomatically = false
     }
 
@@ -152,14 +152,9 @@ final class CoreLocationActivityRecorder:
     /// user turned Precise Location off, asks once per launch to turn it on
     /// for now. Recording starts either way, with whatever accuracy results.
     private func requestFullAccuracyIfNeeded() {
-        guard !didRequestFullAccuracy,
-              manager.accuracyAuthorization == .reducedAccuracy
-        else {
-            return
-        }
-        didRequestFullAccuracy = true
-        manager.requestTemporaryFullAccuracyAuthorization(
-            withPurposeKey: Self.fullAccuracyPurposeKey
+        guard !didRequestFullAccuracy else { return }
+        didRequestFullAccuracy = manager.requestPreciseLocationIfNeeded(
+            purposeKey: Self.fullAccuracyPurposeKey
         )
     }
 

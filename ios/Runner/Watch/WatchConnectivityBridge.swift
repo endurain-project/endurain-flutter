@@ -1,5 +1,6 @@
 import Foundation
 import WatchConnectivity
+import os
 
 /// Phone end of the link to the Endurain Apple Watch app.
 ///
@@ -16,6 +17,8 @@ import WatchConnectivity
 /// state, the inbox locks itself, and the queued acknowledgements are only
 /// read and written under [acknowledgementLock].
 final class WatchConnectivityBridge: NSObject, WCSessionDelegate, Sendable {
+    private static let log = AppLogger.make(category: "WatchConnectivityBridge")
+
     static let shared = WatchConnectivityBridge()
 
     /// Largest watch session file read into memory. A workout point is about
@@ -163,18 +166,18 @@ final class WatchConnectivityBridge: NSObject, WCSessionDelegate, Sendable {
         guard WatchProtocol.isSupported(version: metadata?[WatchProtocol.keyVersion]),
               Self.isReadableVersion(data)
         else {
-            NSLog("Endurain watch bridge: left a session from a newer watch app on the watch")
+            Self.log.notice("Left a session from a newer watch app on the watch")
             return .deferred
         }
         guard let sessionId = Self.sessionId(metadata: metadata, data: data) else {
-            NSLog("Endurain watch bridge: dropped a session without an id")
+            Self.log.error("Dropped a session without an id")
             return .dropped
         }
         do {
             try inbox.save(data, sessionId: sessionId)
             return .stored
         } catch {
-            NSLog("Endurain watch bridge: could not store a received session")
+            Self.log.error("Could not store a received session: \(error.localizedDescription, privacy: .private)")
             return .dropped
         }
     }
@@ -188,12 +191,12 @@ final class WatchConnectivityBridge: NSObject, WCSessionDelegate, Sendable {
             defer { try? handle.close() }
             let data = try handle.read(upToCount: maxBytes + 1) ?? Data()
             guard data.count <= maxBytes else {
-                NSLog("Endurain watch bridge: dropped a received session over the size limit")
+                Self.log.error("Dropped a received session over the size limit")
                 return nil
             }
             return data
         } catch {
-            NSLog("Endurain watch bridge: could not read a received session")
+            Self.log.error("Could not read a received session: \(error.localizedDescription, privacy: .private)")
             return nil
         }
     }

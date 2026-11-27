@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// Durable store of session handoffs, one JSON file per session.
 ///
@@ -17,6 +18,8 @@ import Foundation
 /// synchronous (not an actor) because a received file must be stored before
 /// the WatchConnectivity callback returns.
 final class HandoffFileStore: Sendable {
+    private static let log = AppLogger.make(category: "HandoffFileStore")
+
     struct Entry: Sendable {
         let sessionId: String
         let url: URL
@@ -155,7 +158,7 @@ final class HandoffFileStore: Sendable {
             )
             try writeAttempts(readAttempts(stem: stem) + 1, stem: stem)
         } catch {
-            NSLog("Endurain watch store: could not mark a session delivered")
+            Self.log.error("Could not mark a session delivered: \(error.localizedDescription, privacy: .private)")
         }
     }
 

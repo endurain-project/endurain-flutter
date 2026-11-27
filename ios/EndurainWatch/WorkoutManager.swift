@@ -16,6 +16,11 @@ import WatchKit
 ///
 /// The track is kept by [WorkoutRouteRecorder], the GPS stream by
 /// [WorkoutLocationSource], and the HealthKit mapping by [WorkoutHealthKit].
+///
+/// Crash and relaunch recovery lives in `WorkoutManager+Recovery.swift`,
+/// finishing a workout in `WorkoutManager+Finishing.swift`, and the HealthKit
+/// delegate callbacks in `WorkoutManager+Delegates.swift`. State they share
+/// is internal rather than private for that reason.
 @MainActor
 @Observable
 final class WorkoutManager: NSObject {
@@ -40,6 +45,8 @@ final class WorkoutManager: NSObject {
         let hasRoute: Bool
     }
 
+    nonisolated static let log = AppLogger.make(category: "WorkoutManager")
+
     private static let countdownSecondsKey = "startCountdownSeconds"
 
     /// Seconds counted down before a workout starts, saved on the watch.
@@ -49,20 +56,20 @@ final class WorkoutManager: NSObject {
         }
     }
 
-    private(set) var phase: Phase = .idle
+    var phase: Phase = .idle
     private(set) var activityType: WatchActivityType?
-    private(set) var distanceMeters: Double?
-    private(set) var heartRateBpm: Int?
+    var distanceMeters: Double?
+    var heartRateBpm: Int?
     private(set) var locationAuthorization: CLAuthorizationStatus
     var errorMessage: String?
 
-    @ObservationIgnored private let healthStore = HKHealthStore()
-    @ObservationIgnored private let location = WorkoutLocationSource()
-    @ObservationIgnored private let store: WatchRecordingStore
-    @ObservationIgnored private let route: WorkoutRouteRecorder
-    @ObservationIgnored private var session: HKWorkoutSession?
-    @ObservationIgnored private var builder: HKLiveWorkoutBuilder?
-    @ObservationIgnored private var recording: WatchRecording?
+    @ObservationIgnored let healthStore = HKHealthStore()
+    @ObservationIgnored let location = WorkoutLocationSource()
+    @ObservationIgnored let store: WatchRecordingStore
+    @ObservationIgnored let route: WorkoutRouteRecorder
+    @ObservationIgnored var session: HKWorkoutSession?
+    @ObservationIgnored var builder: HKLiveWorkoutBuilder?
+    @ObservationIgnored var recording: WatchRecording?
     @ObservationIgnored private var pendingStart: (session: HKWorkoutSession, builder: HKLiveWorkoutBuilder, type: WatchActivityType)?
     @ObservationIgnored private var countdownTask: Task<Void, Never>?
 
@@ -214,7 +221,7 @@ final class WorkoutManager: NSObject {
     }
 
     private func failStart(session: HKWorkoutSession?, error: Error) {
-        NSLog("Endurain watch: could not start a workout: %@", error.localizedDescription)
+        Self.log.error("Could not start a workout: \(error.localizedDescription, privacy: .private)")
         session?.end()
         store.clear()
         detach()
@@ -242,124 +249,9 @@ final class WorkoutManager: NSObject {
         }
     }
 
-    // MARK: - Recovery
-
-    /// Called at launch: resumes a workout that was running when the app was
-    /// killed, or finishes and sends it when HealthKit no longer has it.
-    ///
-    /// A failed recovery query says nothing about whether HealthKit still
-    /// runs the workout, and finishing it then could save a second,
-    /// overlapping one. The stored recording is kept for the next launch.
-    func restoreUnfinishedRecording() {
-        guard session == nil, phase == .idle, let saved = store.load() else {
-            return
-        }
-        healthStore.recoverActiveWorkoutSession { [weak self] recovered, error in
-            Task { @MainActor in
-                guard let self, self.session == nil else { return }
-                if let recovered {
-                    self.adopt(recovered, saved: saved)
-                } else if let error {
-                    NSLog(
-                        "Endurain watch: could not check for a running workout: %@",
-                        error.localizedDescription
-                    )
-                } else {
-                    self.finishInterrupted(saved.recording, points: saved.points)
-                }
-            }
-        }
-    }
-
-    /// Called by watchOS when it relaunched the app for a running workout.
-    func recoverActiveWorkout() {
-        guard session == nil else { return }
-        healthStore.recoverActiveWorkoutSession { [weak self] recovered, _ in
-            Task { @MainActor in
-                guard let self, self.session == nil, let recovered else { return }
-                self.adopt(recovered, saved: self.store.load())
-            }
-        }
-    }
-
-    private func adopt(
-        _ session: HKWorkoutSession,
-        saved: (recording: WatchRecording, points: [WatchRecordedPoint])?
-    ) {
-        if session.state == .prepared || session.state == .notStarted {
-            // Left over from a countdown the app never finished: nothing was
-            // recorded, so drop it rather than start a workout unasked.
-            session.end()
-            return
-        }
-        var recording: WatchRecording
-        let savedPoints: [WatchRecordedPoint]
-        if let saved {
-            recording = saved.recording
-            savedPoints = saved.points
-        } else {
-            // HealthKit kept a session the store never saw (a crash right
-            // after it started): record it from here on.
-            recording = WatchRecording(
-                sessionId: UUID().uuidString,
-                activityType: WorkoutHealthKit.activityType(for: session.workoutConfiguration),
-                startedAt: session.startDate ?? Date()
-            )
-            try? store.begin(recording)
-            savedPoints = []
-        }
-        let builder = session.associatedWorkoutBuilder()
-        if builder.dataSource == nil {
-            builder.dataSource = HKLiveWorkoutDataSource(
-                healthStore: healthStore,
-                workoutConfiguration: session.workoutConfiguration
-            )
-        }
-        let now = Date()
-        switch session.state {
-        case .paused:
-            recording.pause(at: now)
-        case .running:
-            recording.resume(at: now)
-        default:
-            break
-        }
-        try? store.update(recording)
-        attach(session: session, builder: builder, recording: recording, points: savedPoints)
-
-        switch session.state {
-        case .paused:
-            phase = .paused
-        case .ended, .stopped:
-            phase = .ending
-            Task { await finish(at: session.endDate ?? now) }
-        default:
-            phase = .running
-            location.start()
-        }
-    }
-
-    /// Sends a recording whose HealthKit session is gone. Its workout was
-    /// never saved to HealthKit, so the handoff carries no health id.
-    private func finishInterrupted(_ recording: WatchRecording, points: [WatchRecordedPoint]) {
-        let end = WatchHandoffBuilder.endOfInterruptedRecording(recording, points: points)
-        let elapsed = recording.elapsedSeconds(at: end)
-        if points.isEmpty && elapsed < 1 {
-            store.clear()
-            return
-        }
-        enqueueHandoff(
-            recording: recording,
-            points: points,
-            endedAt: end,
-            elapsedSeconds: elapsed,
-            healthWorkoutId: nil
-        )
-    }
-
     // MARK: - Session lifecycle
 
-    private func attach(
+    func attach(
         session: HKWorkoutSession,
         builder: HKLiveWorkoutBuilder,
         recording: WatchRecording,
@@ -376,7 +268,7 @@ final class WorkoutManager: NSObject {
         route.begin(with: points)
     }
 
-    private func detach() {
+    func detach() {
         location.stop()
         session = nil
         builder = nil
@@ -384,7 +276,7 @@ final class WorkoutManager: NSObject {
         route.reset()
     }
 
-    private func handle(state: HKWorkoutSessionState, date: Date) {
+    func handle(state: HKWorkoutSessionState, date: Date) {
         switch state {
         case .running:
             if var recording, recording.isPaused {
@@ -411,74 +303,6 @@ final class WorkoutManager: NSObject {
         }
     }
 
-    private func finish(at endDate: Date) async {
-        guard let recording else {
-            detach()
-            phase = .idle
-            return
-        }
-        location.stop()
-        route.flush()
-
-        var elapsed = recording.elapsedSeconds(at: endDate)
-        var healthWorkoutId: String?
-        if let builder {
-            do {
-                try await builder.endCollection(at: endDate)
-                elapsed = builder.elapsedTime
-                if let workout = try await builder.finishWorkout() {
-                    healthWorkoutId = workout.uuid.uuidString
-                    await route.finishRoute(with: workout)
-                }
-            } catch {
-                // Saving to HealthKit is not required to keep the workout:
-                // Endurain still gets it below.
-                NSLog("Endurain watch: could not save the workout to Health: %@", error.localizedDescription)
-            }
-        }
-
-        let recordedPoints = route.points
-        enqueueHandoff(
-            recording: recording,
-            points: recordedPoints,
-            endedAt: endDate,
-            elapsedSeconds: elapsed,
-            healthWorkoutId: healthWorkoutId
-        )
-        let summary = Summary(
-            activityType: recording.activityType,
-            elapsedSeconds: elapsed,
-            distanceMeters: distanceMeters,
-            hasRoute: !recordedPoints.isEmpty
-        )
-        detach()
-        phase = .finished(summary)
-    }
-
-    private func enqueueHandoff(
-        recording: WatchRecording,
-        points: [WatchRecordedPoint],
-        endedAt: Date,
-        elapsedSeconds: TimeInterval,
-        healthWorkoutId: String?
-    ) {
-        do {
-            let data = try WatchHandoffBuilder.data(
-                recording: recording,
-                points: points,
-                endedAt: endedAt,
-                elapsedSeconds: elapsedSeconds,
-                healthWorkoutId: healthWorkoutId
-            )
-            try PhoneLink.shared.enqueue(data, sessionId: recording.sessionId)
-            store.clear()
-        } catch {
-            // The recording stays on disk; the next launch finishes it again.
-            NSLog("Endurain watch: could not queue the workout: %@", error.localizedDescription)
-            errorMessage = String(localized: "The workout could not be queued for your iPhone. It will be retried.")
-        }
-    }
-
     // MARK: - Location
 
     private func record(_ locations: [CLLocation]) {
@@ -486,70 +310,5 @@ final class WorkoutManager: NSObject {
             return
         }
         route.record(locations, for: recording)
-    }
-
-    private func persistRecording() {
-        guard let recording else { return }
-        do {
-            try store.update(recording)
-        } catch {
-            NSLog("Endurain watch: could not save the workout state")
-        }
-    }
-}
-
-// MARK: - HKWorkoutSessionDelegate
-
-extension WorkoutManager: HKWorkoutSessionDelegate {
-    nonisolated func workoutSession(
-        _ workoutSession: HKWorkoutSession,
-        didChangeTo toState: HKWorkoutSessionState,
-        from fromState: HKWorkoutSessionState,
-        date: Date
-    ) {
-        Task { @MainActor in
-            self.handle(state: toState, date: date)
-        }
-    }
-
-    nonisolated func workoutSession(
-        _ workoutSession: HKWorkoutSession,
-        didFailWithError error: Error
-    ) {
-        NSLog("Endurain watch: the workout session failed: %@", error.localizedDescription)
-        Task { @MainActor in
-            self.errorMessage = String(localized: "The workout session stopped unexpectedly.")
-        }
-    }
-}
-
-// MARK: - HKLiveWorkoutBuilderDelegate
-
-extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
-    nonisolated func workoutBuilderDidCollectEvent(_ workoutBuilder: HKLiveWorkoutBuilder) {}
-
-    nonisolated func workoutBuilder(
-        _ workoutBuilder: HKLiveWorkoutBuilder,
-        didCollectDataOf collectedTypes: Set<HKSampleType>
-    ) {
-        let bpmUnit = HKUnit.count().unitDivided(by: .minute())
-        let heartRate = workoutBuilder
-            .statistics(for: HKQuantityType(.heartRate))?
-            .mostRecentQuantity()?
-            .doubleValue(for: bpmUnit)
-        let distance = [HKQuantityType(.distanceWalkingRunning), HKQuantityType(.distanceCycling)]
-            .compactMap { workoutBuilder.statistics(for: $0)?.sumQuantity()?.doubleValue(for: .meter()) }
-            .max()
-        let now = Date()
-        Task { @MainActor in
-            if let heartRate {
-                let bpm = Int(heartRate.rounded())
-                self.heartRateBpm = bpm
-                self.route.noteHeartRate(bpm, at: now)
-            }
-            if let distance {
-                self.distanceMeters = distance
-            }
-        }
     }
 }
