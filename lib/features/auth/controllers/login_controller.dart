@@ -253,13 +253,15 @@ class LoginController extends SafeNotifier {
     final error =
         uri.queryParameters['error'] ?? uri.queryParameters['message'];
 
+    // Any app can fire this deep link: with no SSO sign-in waiting for it,
+    // it must not abort one that is not there, reset the form, or spend the
+    // one-shot PKCE verifier on a forged session id.
+    if (!_authCoordinator.hasPendingSsoFlow) {
+      _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.ssoCallbackIgnored);
+      return;
+    }
+
     if (error != null && error.isNotEmpty) {
-      // Any app can fire this deep link: with no SSO sign-in waiting for it,
-      // it must not abort one that is not there or reset the form.
-      if (!_authCoordinator.hasPendingSsoFlow) {
-        _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.ssoCallbackIgnored);
-        return;
-      }
       // Any app can fire this deep link, so never surface its text to the
       // user: only a documented failure code selects a specific message.
       final knownError = SsoService.knownCallbackErrors.contains(error)
