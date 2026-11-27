@@ -128,6 +128,10 @@ class SsoService {
   // explicit cancellation via [clearPkce].
   _SsoPkceState? _pendingPkce;
 
+  /// Whether an OAuth flow was initiated and not yet completed, failed or
+  /// cancelled.
+  bool get hasPendingFlow => _pendingPkce != null;
+
   /// Get list of enabled identity providers from server
   Future<List<IdentityProvider>> getEnabledProviders({
     String? serverUrl,

@@ -6,31 +6,13 @@ import HealthKit
 enum WorkoutHealthKit {
     static func configuration(for type: WatchActivityType) -> HKWorkoutConfiguration {
         let configuration = HKWorkoutConfiguration()
-        switch type {
-        case .run:
-            configuration.activityType = .running
-        case .ride:
-            configuration.activityType = .cycling
-        case .walk:
-            configuration.activityType = .walking
-        case .hike:
-            configuration.activityType = .hiking
-        }
+        configuration.activityType = type.healthKitActivityType
         configuration.locationType = .outdoor
         return configuration
     }
 
     static func activityType(for configuration: HKWorkoutConfiguration) -> WatchActivityType {
-        switch configuration.activityType {
-        case .cycling:
-            return .ride
-        case .walking:
-            return .walk
-        case .hiking:
-            return .hike
-        default:
-            return .run
-        }
+        return WatchActivityType(healthKit: configuration.activityType) ?? .run
     }
 
     /// Asks to save workouts, routes, distance and energy, and to read only

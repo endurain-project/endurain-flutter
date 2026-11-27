@@ -3,6 +3,7 @@ package com.endurain.endurain.wear
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.SystemClock
+import androidx.core.content.ContextCompat
 import androidx.health.services.client.ExerciseClient
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
@@ -90,12 +91,22 @@ interface ExerciseGateway {
     /** Whether this app owns the exercise Health Services is running. Throws when it cannot tell. */
     suspend fun ownsRunningExercise(): Boolean
 
+    /**
+     * Whether another app is recording an exercise, which starting ours
+     * would end. Throws when it cannot tell.
+     */
+    suspend fun otherAppHasExercise(): Boolean
+
     fun setListener(listener: ExerciseListener)
 
     suspend fun clearListener()
 }
 
 class HealthServicesExerciseGateway(context: Context) : ExerciseGateway {
+    // Updates are delivered on the main thread, where the recorder keeps its
+    // state; the recorder moves the file writes off it. Passed explicitly so
+    // the callback does not depend on the client's default executor.
+    private val callbackExecutor = ContextCompat.getMainExecutor(context.applicationContext)
     private val client: ExerciseClient by lazy { HealthServices.getClient(context.applicationContext).exerciseClient }
     private var registered: ExerciseUpdateCallback? = null
 
@@ -145,8 +156,13 @@ class HealthServicesExerciseGateway(context: Context) : ExerciseGateway {
     // library's restriction on their companion object.
     @SuppressLint("RestrictedApi")
     override suspend fun ownsRunningExercise(): Boolean =
-        client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus ==
-            ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
+        trackedStatus() == ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
+
+    @SuppressLint("RestrictedApi")
+    override suspend fun otherAppHasExercise(): Boolean =
+        trackedStatus() == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
+
+    private suspend fun trackedStatus(): Int = client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus
 
     override fun setListener(listener: ExerciseListener) {
         val callback =
@@ -172,7 +188,7 @@ class HealthServicesExerciseGateway(context: Context) : ExerciseGateway {
                 }
             }
         registered = callback
-        client.setUpdateCallback(callback)
+        client.setUpdateCallback(callbackExecutor, callback)
     }
 
     override suspend fun clearListener() {

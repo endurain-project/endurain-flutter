@@ -34,7 +34,6 @@ void main() {
       final controller = buildController();
       addTearDown(controller.dispose);
 
-      expect(controller.isLoaded, isFalse);
       expect(controller.enabled, isTrue);
       expect(
         controller.delaySeconds,
@@ -52,7 +51,6 @@ void main() {
 
       await controller.load();
 
-      expect(controller.isLoaded, isTrue);
       expect(controller.enabled, isFalse);
       expect(controller.delaySeconds, 30);
       expect(notified, isTrue);
@@ -91,8 +89,14 @@ void main() {
 
         await controller.setDelaySeconds(500);
 
-        expect(controller.delaySeconds, controller.maxDelaySeconds);
-        expect(await repository.getDelaySeconds(), controller.maxDelaySeconds);
+        expect(
+          controller.delaySeconds,
+          AutoPauseSettingsRepository.maxDelaySeconds,
+        );
+        expect(
+          await repository.getDelaySeconds(),
+          AutoPauseSettingsRepository.maxDelaySeconds,
+        );
       },
     );
 
@@ -111,20 +115,6 @@ void main() {
       expect(
         controller.delaySeconds,
         AutoPauseSettingsRepository.defaultDelaySeconds,
-      );
-    });
-
-    test('exposes the supported delay range from the repository', () {
-      final controller = buildController();
-      addTearDown(controller.dispose);
-
-      expect(
-        controller.minDelaySeconds,
-        AutoPauseSettingsRepository.minDelaySeconds,
-      );
-      expect(
-        controller.maxDelaySeconds,
-        AutoPauseSettingsRepository.maxDelaySeconds,
       );
     });
   });

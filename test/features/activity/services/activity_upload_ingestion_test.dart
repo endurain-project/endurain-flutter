@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -404,8 +403,5 @@ ActivityUploadService _service({
 }
 
 ActivityUploadRequest _request() {
-  return const ActivityUploadRequest(
-    filePath: '/tmp/activity.gpx',
-    activityType: ActivityType.run,
-  );
+  return const ActivityUploadRequest(filePath: '/tmp/activity.gpx');
 }

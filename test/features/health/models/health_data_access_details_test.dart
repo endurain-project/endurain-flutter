@@ -10,18 +10,6 @@ void main() {
       expect(details.workouts, HealthDataAccessStatus.needsAttention);
       expect(details.workoutRoutes, HealthDataAccessStatus.needsAttention);
       expect(details.heartRate, HealthDataAccessStatus.needsAttention);
-      expect(details.hasItemsNeedingAttention, isTrue);
-    });
-
-    test('reports when every inspectable category is allowed', () {
-      const details = HealthDataAccessDetails(
-        canInspectIndividualPermissions: true,
-        workouts: HealthDataAccessStatus.allowed,
-        workoutRoutes: HealthDataAccessStatus.allowed,
-        heartRate: HealthDataAccessStatus.allowed,
-      );
-
-      expect(details.hasItemsNeedingAttention, isFalse);
     });
   });
 }

@@ -1,8 +1,8 @@
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/tile_server_settings_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
@@ -33,7 +33,6 @@ void main() {
       final controller = controllerFor();
 
       expect(controller.isLoading, isTrue);
-      expect(controller.serverUrl, isNull);
       expect(controller.tileServerUrl, isEmpty);
     });
 
@@ -49,7 +48,6 @@ void main() {
       await controller.load();
 
       expect(loadingStates, [true, false]);
-      expect(controller.serverUrl, 'https://endurain.example.test');
       expect(
         controller.tileServerUrl,
         'https://tiles.example.test/{z}/{x}/{y}.png',
@@ -88,7 +86,6 @@ void main() {
       await controller.load();
 
       expect(controller.hasLoadError, isFalse);
-      expect(controller.serverUrl, 'https://endurain.example.test');
       expect(controller.tileServerUrl, MapConstants.defaultTileServerUrl);
     });
 

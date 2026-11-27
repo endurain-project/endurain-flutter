@@ -40,13 +40,6 @@ class CrashReportingService {
   /// Whether the transport is currently active (opted in + usable DSN + started).
   bool get isActive => _reporter.isActive;
 
-  /// The DSN reporting will use: Endurain's managed default. `null` when the
-  /// build ships without one (e.g. source or F-Droid builds).
-  String? get effectiveDsn => _defaultDsn;
-
-  /// Whether a structurally usable DSN is available to report with.
-  bool get hasUsableDsn => isUsableCrashReportingDsn(effectiveDsn);
-
   /// Loads the persisted opt-in state without touching the transport.
   Future<void> load() async {
     if (_loaded) {
@@ -88,7 +81,9 @@ class CrashReportingService {
   }
 
   Future<void> _applyReporterState() async {
-    final dsn = effectiveDsn;
+    // Endurain's managed default; null for builds that ship without one
+    // (e.g. source or F-Droid builds).
+    final dsn = _defaultDsn;
     if (_enabled && dsn != null && isUsableCrashReportingDsn(dsn)) {
       await _reporter.start(
         dsn: dsn,

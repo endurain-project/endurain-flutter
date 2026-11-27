@@ -18,9 +18,6 @@ abstract class WatchTransportAdapter {
   /// handoffs). A broadcast stream; late subscribers do not replay history.
   Stream<WatchTransportEvent> get events;
 
-  /// Current reachability of the paired watch.
-  Future<WatchLinkStatus> linkStatus();
-
   /// Returns every session the watch has handed over and that the phone has
   /// not yet acknowledged.
   Future<List<WatchSessionHandoff>> drainPendingHandoffs();
@@ -40,9 +37,6 @@ class UnsupportedWatchTransport implements WatchTransportAdapter {
 
   @override
   Stream<WatchTransportEvent> get events => const Stream.empty();
-
-  @override
-  Future<WatchLinkStatus> linkStatus() async => WatchLinkStatus.unsupported;
 
   @override
   Future<List<WatchSessionHandoff>> drainPendingHandoffs() async =>

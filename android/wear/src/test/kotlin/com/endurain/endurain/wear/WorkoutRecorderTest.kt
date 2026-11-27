@@ -6,6 +6,7 @@ import com.endurain.endurain.watchlink.WatchRecording
 import com.endurain.endurain.watchlink.WatchRecordingStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -23,6 +24,7 @@ import java.io.IOException
 import java.nio.file.Files
 
 private const val BASE_TIME = 1_800_000_000_000L
+private const val END_TIMEOUT = 20_000L
 
 private class FakeGateway : ExerciseGateway {
     var supported: Set<WorkoutMetric>? = WorkoutMetric.entries.toSet()
@@ -34,11 +36,16 @@ private class FakeGateway : ExerciseGateway {
     var ended = 0
     var startFailure: Exception? = null
     var endFailure: Exception? = null
+    var endReportsEnded = true
+    var otherApp = false
+    var otherAppFailure: Exception? = null
+    var registeredBeforePrepare: Boolean? = null
     var registered: ExerciseListener? = null
 
     override suspend fun supportedMetrics(type: WatchActivityType) = supported
 
     override suspend fun prepare(type: WatchActivityType, metrics: Set<WorkoutMetric>) {
+        registeredBeforePrepare = registered != null
         prepared++
     }
 
@@ -56,12 +63,17 @@ private class FakeGateway : ExerciseGateway {
     override suspend fun end() {
         ended++
         endFailure?.let { throw it }
-        registered?.onUpdate(ExerciseSnapshot(GatewayExerciseState.ENDED))
+        if (endReportsEnded) registered?.onUpdate(ExerciseSnapshot(GatewayExerciseState.ENDED))
     }
 
     override suspend fun ownsRunningExercise(): Boolean {
         ownershipCalls++
         return ownership.removeFirst().getOrThrow()
+    }
+
+    override suspend fun otherAppHasExercise(): Boolean {
+        otherAppFailure?.let { throw it }
+        return otherApp
     }
 
     override fun setListener(listener: ExerciseListener) {
@@ -79,11 +91,21 @@ private class FakePlatform(private val clock: () -> Long) : WorkoutPlatform {
     var serviceStops = 0
     var ticks = 0
     var startVibrations = 0
+    var lastActiveMillis: Long? = null
+    var lastPaused = false
 
     override fun isGranted(permission: String) = true
 
-    override fun startService(countingDown: Boolean) {
+    override fun startService(
+        countingDown: Boolean,
+        activeMillis: Long?,
+        paused: Boolean,
+    ) {
         services++
+        if (activeMillis != null) {
+            lastActiveMillis = activeMillis
+            lastPaused = paused
+        }
     }
 
     override fun stopService() {
@@ -134,6 +156,8 @@ class WorkoutRecorderTest {
         countdownSetting = setting,
         scope = scope,
         restoreBackoffMillis = listOf(1_000, 2_000, 4_000),
+        ioDispatcher = StandardTestDispatcher(testScheduler),
+        endTimeoutMillis = END_TIMEOUT,
     )
 
     private fun saveRecording(distance: Double? = null, withPoint: Boolean = true): WatchRecording {
@@ -206,10 +230,12 @@ class WorkoutRecorderTest {
             assertEquals(1, gateway.paused)
             gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.PAUSED))
             assertEquals(WorkoutPhase.Active(paused = true), recorder.state.value.phase)
+            runCurrent()
             assertTrue(store.load()!!.first.isPaused)
 
             gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.ACTIVE))
             assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+            runCurrent()
             assertEquals(1, store.load()!!.first.segmentIndex)
         }
 
@@ -381,5 +407,255 @@ class WorkoutRecorderTest {
 
             assertEquals(SensorStatus.ACQUIRING, recorder.state.value.locationStatus)
             assertEquals(SensorStatus.UNAVAILABLE, recorder.state.value.heartRateStatus)
+        }
+
+    @Test
+    fun endFinishesAfterATimeoutWhenTheEndIsNeverReported() =
+        runTest {
+            gateway.endReportsEnded = false
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            recorder.end()
+            runCurrent()
+            assertEquals(WorkoutPhase.Ending, recorder.state.value.phase)
+
+            advanceTimeBy(END_TIMEOUT - 1)
+            runCurrent()
+            assertEquals(WorkoutPhase.Ending, recorder.state.value.phase)
+
+            advanceTimeBy(2)
+            runCurrent()
+            assertTrue(recorder.state.value.phase is WorkoutPhase.Finished)
+            assertEquals(1, handoffs.size)
+        }
+
+    @Test
+    fun theEndTimeoutDoesNotFinishTwiceWhenTheEndArrivesLate() =
+        runTest {
+            gateway.endReportsEnded = false
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            recorder.end()
+            runCurrent()
+
+            gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.ENDED))
+            runCurrent()
+            assertTrue(recorder.state.value.phase is WorkoutPhase.Finished)
+            recorder.dismissSummary()
+
+            advanceUntilIdle()
+            assertEquals(WorkoutPhase.Idle, recorder.state.value.phase)
+            assertEquals(1, handoffs.size)
+        }
+
+    @Test
+    fun startAsksFirstWhenAnotherAppRecords() =
+        runTest {
+            gateway.otherApp = true
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            assertEquals(WorkoutPhase.ConfirmingTakeover, recorder.state.value.phase)
+            assertEquals(0, gateway.started)
+            assertEquals(false, store.hasRecording())
+
+            recorder.confirmTakeover()
+            runCurrent()
+            assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+            assertEquals(1, gateway.started)
+        }
+
+    @Test
+    fun decliningTheTakeoverStartsNothing() =
+        runTest {
+            gateway.otherApp = true
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            recorder.cancelTakeover()
+            runCurrent()
+
+            assertEquals(WorkoutPhase.Idle, recorder.state.value.phase)
+            assertEquals(0, gateway.started)
+            assertEquals(0, gateway.prepared)
+        }
+
+    @Test
+    fun startGoesAheadWhenTheOtherAppCheckFails() =
+        runTest {
+            gateway.otherAppFailure = IllegalStateException("unknown")
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+        }
+
+    @Test
+    fun warmUpAvailabilityReachesTheCountdown() =
+        runTest {
+            setting.seconds = 5
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            assertEquals(true, gateway.registeredBeforePrepare)
+
+            gateway.registered!!.onAvailabilityChanged(WorkoutMetric.LOCATION, SensorStatus.ACQUIRING)
+            assertEquals(SensorStatus.ACQUIRING, recorder.state.value.locationStatus)
+
+            // It survives the switch from the countdown to the recording.
+            recorder.skipCountdown()
+            runCurrent()
+            assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+            assertEquals(SensorStatus.ACQUIRING, recorder.state.value.locationStatus)
+        }
+
+    @Test
+    fun cancellingTheCountdownStopsTheWarmUpUpdates() =
+        runTest {
+            setting.seconds = 5
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            recorder.cancelCountdown()
+            advanceUntilIdle()
+
+            assertNull(gateway.registered)
+        }
+
+    @Test
+    fun pauseAndResumeUpdateTheOngoingActivity() =
+        runTest {
+            val platform = FakePlatform { BASE_TIME + testScheduler.currentTime }
+            val recorder = recorder(this, platform)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            assertEquals(false, platform.lastPaused)
+
+            advanceTimeBy(5_000)
+            gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.PAUSED))
+            assertEquals(true, platform.lastPaused)
+            assertEquals(5_000L, platform.lastActiveMillis)
+
+            gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.ACTIVE))
+            assertEquals(false, platform.lastPaused)
+        }
+
+    @Test
+    fun restoreBlocksStartingWhileTheRecordingLoads() =
+        runTest {
+            saveRecording()
+            gateway.ownership += Result.success(true)
+            val recorder = recorder(this)
+
+            recorder.restoreUnfinishedRecording()
+            // Nothing ran yet: the load is queued on the IO dispatcher.
+            assertEquals(WorkoutPhase.Starting, recorder.state.value.phase)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+            assertEquals(0, gateway.started)
+            assertEquals("saved", store.load()!!.first.sessionId)
+        }
+
+    @Test
+    fun restoreWithNothingSavedStaysIdle() =
+        runTest {
+            val recorder = recorder(this)
+            recorder.restoreUnfinishedRecording()
+            runCurrent()
+            assertEquals(WorkoutPhase.Idle, recorder.state.value.phase)
+        }
+
+    @Test
+    fun restoreClearsARecordingThatCannotBeRead() =
+        runTest {
+            saveRecording()
+            File(directory, "recording.json").writeText("{broken")
+            val platform = FakePlatform { BASE_TIME + testScheduler.currentTime }
+            val recorder = recorder(this, platform)
+
+            recorder.restoreUnfinishedRecording()
+            runCurrent()
+
+            assertEquals(WorkoutPhase.Idle, recorder.state.value.phase)
+            assertEquals(false, store.hasRecording())
+            assertEquals(false, recorder.hasSavedRecording())
+            assertTrue(handoffs.isEmpty())
+            assertEquals(0, gateway.ownershipCalls)
+
+            // Nothing is left to block a new workout.
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+        }
+
+    private fun fixes(vararg seconds: Int) =
+        seconds.map {
+            GatewayLocation(BASE_TIME + it * 1000L, 38.7, -9.1, Double.NaN, Double.NaN, null, null)
+        }
+
+    @Test
+    fun pointsAreSavedOffTheCallbackInOrder() =
+        runTest {
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            // The test dispatcher is queued: nothing is written until it runs.
+            val first = fixes(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+            val second = fixes(11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+            gateway.registered!!.onUpdate(
+                ExerciseSnapshot(GatewayExerciseState.ACTIVE, distanceTotalMeters = 50.0, locations = first),
+            )
+            gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.ACTIVE, locations = second))
+            assertTrue(store.load()!!.second.isEmpty())
+
+            runCurrent()
+
+            val (saved, points) = store.load()!!
+            assertEquals((1..20).map { BASE_TIME + it * 1000L }, points.map { it.timestampMillis })
+            assertEquals(50.0, saved.lastDistanceMeters)
+        }
+
+    @Test
+    fun finishHandsOverThePointsStillUnsaved() =
+        runTest {
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            gateway.registered!!.onUpdate(
+                ExerciseSnapshot(GatewayExerciseState.ACTIVE, locations = fixes(1, 2, 3)),
+            )
+
+            recorder.end()
+            runCurrent()
+
+            val summary = (recorder.state.value.phase as WorkoutPhase.Finished).summary
+            assertTrue(summary.hasRoute)
+            assertEquals(1, handoffs.size)
+            assertEquals(false, store.hasRecording())
+        }
+
+    @Test
+    fun aFailedHandoffKeepsTheRecordingAndWarns() =
+        runTest {
+            val recorder =
+                recorder(this, sink = HandoffSink { _, _ -> throw IOException("full") })
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            recorder.end()
+            runCurrent()
+
+            assertTrue(recorder.state.value.phase is WorkoutPhase.Finished)
+            assertEquals(R.string.queue_failed, recorder.state.value.errorMessage)
+            assertTrue(store.hasRecording())
         }
 }

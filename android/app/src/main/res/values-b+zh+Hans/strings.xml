@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Endurain 健康数据</string>
     <string name="health_rationale_usage">Endurain 读取锻炼、路线、心率和距离，仅用于导入所选活动。</string>
     <string name="health_rationale_storage">所选路线数据存储在此设备上，并且只会上传到您连接的 Endurain 服务器。</string>
+    <string name="health_rationale_privacy_policy">隐私政策</string>
 </resources>

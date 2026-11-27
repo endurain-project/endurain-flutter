@@ -1,5 +1,4 @@
 import 'package:endurain/core/models/measurement_system.dart';
-import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -23,8 +22,10 @@ class UnitsSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final measurement = controller;
     // The device locale (with region), not the app's resolved language-only
-    // locale — see `ActivityStatsFormatterScope.deviceLocale`.
-    final deviceDefault = measurement.deviceDefault(context.deviceLocale);
+    // locale (the same value as `ActivityStatsFormatterScope.deviceLocale`).
+    final deviceDefault = measurement.deviceDefault(
+      View.of(context).platformDispatcher.locale,
+    );
 
     return AdaptiveScaffold(
       title: l10n.unitsTitle,
@@ -37,21 +38,21 @@ class UnitsSettingsScreen extends StatelessWidget {
             children: [
               AdaptiveListSection(
                 children: [
-                  _UnitsOptionTile(
+                  AdaptiveSelectableListTile(
                     title: l10n.unitsSystemDefault,
                     subtitle: _labelFor(deviceDefault, l10n),
-                    isSelected: selected == null,
+                    selected: selected == null,
                     onTap: () => measurement.setPreference(null),
                   ),
-                  _UnitsOptionTile(
+                  AdaptiveSelectableListTile(
                     title: l10n.unitsMetric,
-                    isSelected: selected == MeasurementSystem.metric,
+                    selected: selected == MeasurementSystem.metric,
                     onTap: () =>
                         measurement.setPreference(MeasurementSystem.metric),
                   ),
-                  _UnitsOptionTile(
+                  AdaptiveSelectableListTile(
                     title: l10n.unitsImperial,
-                    isSelected: selected == MeasurementSystem.imperial,
+                    selected: selected == MeasurementSystem.imperial,
                     onTap: () =>
                         measurement.setPreference(MeasurementSystem.imperial),
                   ),
@@ -69,31 +70,5 @@ class UnitsSettingsScreen extends StatelessWidget {
       MeasurementSystem.metric => l10n.unitsMetric,
       MeasurementSystem.imperial => l10n.unitsImperial,
     };
-  }
-}
-
-class _UnitsOptionTile extends StatelessWidget {
-  const _UnitsOptionTile({
-    required this.title,
-    required this.isSelected,
-    required this.onTap,
-    this.subtitle,
-  });
-
-  final String title;
-  final String? subtitle;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveListTile(
-      title: title,
-      subtitle: subtitle,
-      onTap: onTap,
-      trailing: isSelected
-          ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
-          : null,
-    );
   }
 }

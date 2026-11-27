@@ -103,7 +103,7 @@ class WatchTransportChannel(
         }
         executor.execute {
             val status = link.linkStatus()
-            val hasPending = !inbox.isEmpty
+            val hasPending = inbox.entries().isNotEmpty()
             mainHandler.post {
                 send(mapOf("type" to "linkStatusChanged", "linkStatus" to status))
                 if (hasPending) send(mapOf("type" to "handoffAvailable"))

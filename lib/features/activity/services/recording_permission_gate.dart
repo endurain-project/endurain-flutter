@@ -6,9 +6,30 @@ import 'package:geolocator/geolocator.dart';
 /// Checks whether location (and, on Apple platforms, always-on background)
 /// access allows a recording to start or resume.
 class RecordingPermissionGate {
-  RecordingPermissionGate(this._location);
+  RecordingPermissionGate(this._location, {bool Function()? requiresBackground})
+    : _requiresBackground = requiresBackground ?? (() => false);
 
   final LocationService _location;
+  final bool Function() _requiresBackground;
+
+  /// Opens the system page for this app's permissions.
+  Future<bool> openAppSettings() => _location.openAppSettings();
+
+  /// Whether location is on and permitted, asking for permission first when it
+  /// was never decided (see [locationError]).
+  Future<bool> isLocationReady() async => await locationError() == null;
+
+  /// [backgroundError] for the platform's current background requirement.
+  Future<ActivityRecordingError?> backgroundTrackingError() =>
+      backgroundError(required: _requiresBackground());
+
+  /// Whether background tracking is permitted (or not required).
+  Future<bool> isBackgroundReady() async =>
+      await backgroundTrackingError() == null;
+
+  /// [requestBackground] for the platform's current background requirement.
+  Future<bool> requestBackgroundPermission() =>
+      requestBackground(required: _requiresBackground());
 
   /// The blocking location error, requesting permission when still undecided;
   /// null when recording may proceed.

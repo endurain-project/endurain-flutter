@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
-import 'package:endurain/core/utils/date_time_formatting.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
-import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
-import 'package:endurain/features/activity/widgets/activity_type_label.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/features/activity/widgets/activity_record_tile.dart';
+import 'package:endurain/features/activity/widgets/lazy_list_section.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -21,6 +21,7 @@ import 'package:material_ui/material_ui.dart';
 class ActivityHistoryScreen extends StatefulWidget {
   const ActivityHistoryScreen({
     super.key,
+    required this.urlLauncher,
     this.controller,
     this.createController,
     this.uploadQueue,
@@ -29,6 +30,9 @@ class ActivityHistoryScreen extends StatefulWidget {
          controller != null || createController != null,
          'Pass a controller or a factory for one.',
        );
+
+  /// Opens the route preview map's attribution link.
+  final UrlLauncherService urlLauncher;
 
   /// Injected controller (tests); otherwise one is built with
   /// [createController] and owned by the screen.
@@ -136,8 +140,10 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
       context,
       (context) => ActivityDetailsScreen(
         recordId: record.id,
+        urlLauncher: widget.urlLauncher,
         controller: _controller,
         tileServerUrlProvider: _tileServerUrlProvider(record),
+        tileAttributionProvider: _tileAttributionProvider(record),
       ),
     );
   }
@@ -150,6 +156,17 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
       return null;
     }
     return () => mapSettings.getTileServerUrl(origin: record.connectionOrigin);
+  }
+
+  Future<String?> Function()? _tileAttributionProvider(
+    LocalActivityRecord record,
+  ) {
+    final mapSettings = _mapSettings;
+    if (mapSettings == null) {
+      return null;
+    }
+    return () =>
+        mapSettings.getTileAttribution(origin: record.connectionOrigin);
   }
 
   /// The record for the details pane, or null when there are none.
@@ -199,8 +216,12 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
                     child: ActivityDetailsScreen(
                       key: ValueKey(paneRecord.id),
                       recordId: paneRecord.id,
+                      urlLauncher: widget.urlLauncher,
                       controller: _controller,
                       tileServerUrlProvider: _tileServerUrlProvider(paneRecord),
+                      tileAttributionProvider: _tileAttributionProvider(
+                        paneRecord,
+                      ),
                       embedded: true,
                       onDeleted: () => setState(() => _selectedRecordId = null),
                     ),
@@ -225,25 +246,29 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
     // in, so it sits above the records rather than inside them.
     return RefreshIndicator.adaptive(
       onRefresh: _controller.refresh,
-      child: ListView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: readableContentPadding(context),
-        children: [
-          if (_controller.canConfigureGpxRetention) ...[
-            AdaptiveListSection(
-              children: [
-                AdaptiveSwitchListTile(
-                  title: l10n.activityRetainUploadedGpx,
-                  subtitle: l10n.activityRetainUploadedGpxSubtitle,
-                  value: _controller.retainUploadedGpx,
-                  onChanged: _controller.setRetainUploadedGpx,
+        slivers: paddedSlivers(readableContentPadding(context), [
+          if (_controller.canConfigureGpxRetention)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  bottom: UIConstants.paddingStandard,
                 ),
-              ],
+                child: AdaptiveListSection(
+                  children: [
+                    AdaptiveSwitchListTile(
+                      title: l10n.activityRetainUploadedGpx,
+                      subtitle: l10n.activityRetainUploadedGpxSubtitle,
+                      value: _controller.retainUploadedGpx,
+                      onChanged: _controller.setRetainUploadedGpx,
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: UIConstants.paddingStandard),
-          ],
           ..._buildRecords(l10n, selectedId: selectedId),
-        ],
+        ]),
       ),
     );
   }
@@ -253,52 +278,66 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
     required String? selectedId,
   }) {
     if (_controller.isLoading && _controller.records.isEmpty) {
-      return const [Center(child: AdaptiveLoadingIndicator())];
+      return const [
+        SliverToBoxAdapter(child: Center(child: AdaptiveLoadingIndicator())),
+      ];
     }
 
     if (_controller.error != null && _controller.records.isEmpty) {
       return [
-        _HistoryMessage(
-          message: l10n.activityHistoryLoadFailed,
-          actionLabel: l10n.activityHistoryRefresh,
-          onAction: _controller.refresh,
+        SliverToBoxAdapter(
+          child: _HistoryMessage(
+            message: l10n.activityHistoryLoadFailed,
+            actionLabel: l10n.activityHistoryRefresh,
+            onAction: _controller.refresh,
+          ),
         ),
       ];
     }
 
     if (_controller.records.isEmpty) {
-      return [_HistoryMessage(message: l10n.activityHistoryEmpty)];
+      return [
+        SliverToBoxAdapter(
+          child: _HistoryMessage(message: l10n.activityHistoryEmpty),
+        ),
+      ];
     }
 
+    final records = _controller.records;
     return [
-      AdaptiveListSection(
+      LazyListSection(
         header: l10n.activityHistoryLocalActivities,
-        children: [
-          for (final record in _controller.records)
-            _ActivityRecordTile(
-              record: record,
-              isBusy: _controller.isBusy(record.id),
-              selected: record.id == selectedId,
-              onTap: selectedId == null
-                  ? () => _openDetails(record)
-                  : () => setState(() => _selectedRecordId = record.id),
-              onRetry: record.uploadStatus == LocalActivityUploadStatus.uploaded
-                  ? null
-                  : () => _retry(record),
-              onDelete: () => _delete(record),
-            ),
-        ],
+        itemCount: records.length,
+        itemBuilder: (context, index) {
+          final record = records[index];
+          return ActivityRecordTile(
+            record: record,
+            isBusy: _controller.isBusy(record.id),
+            selected: record.id == selectedId,
+            onTap: selectedId == null
+                ? () => _openDetails(record)
+                : () => setState(() => _selectedRecordId = record.id),
+            onRetry: record.uploadStatus == LocalActivityUploadStatus.uploaded
+                ? null
+                : () => _retry(record),
+            onDelete: () => _delete(record),
+          );
+        },
       ),
-      if (_controller.hasMore) ...[
-        const SizedBox(height: UIConstants.paddingStandard),
-        Center(
-          child: AdaptiveButton(
-            label: l10n.activityHistoryLoadMore,
-            onPressed: _controller.isLoading ? null : _controller.loadMore,
+      if (_controller.hasMore)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: UIConstants.paddingStandard,
+            ),
+            child: Center(
+              child: AdaptiveButton(
+                label: l10n.activityHistoryLoadMore,
+                onPressed: _controller.isLoading ? null : _controller.loadMore,
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: UIConstants.paddingStandard),
-      ],
     ];
   }
 }
@@ -361,172 +400,4 @@ class _PaneDivider extends StatelessWidget {
     }
     return const VerticalDivider(width: 1);
   }
-}
-
-class _ActivityRecordTile extends StatelessWidget {
-  const _ActivityRecordTile({
-    required this.record,
-    required this.isBusy,
-    required this.onTap,
-    required this.onRetry,
-    required this.onDelete,
-    this.selected = false,
-  });
-
-  final LocalActivityRecord record;
-  final bool isBusy;
-  final bool selected;
-  final VoidCallback onTap;
-  final VoidCallback? onRetry;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final formatter = context.statsFormatter;
-    final title = l10n.activityHistoryEntryTitle(
-      record.activityType.localizedLabel(l10n),
-      formatLocalDateTime(context, record.endedAt),
-    );
-    final subtitle = [
-      l10n.activityHistoryDuration(
-        formatter.formatDuration(record.elapsedDurationSeconds),
-      ),
-      l10n.activityHistoryDistance(
-        formatter.formatDistance(record.distanceMeters, locale: locale),
-      ),
-      l10n.activityHistoryUploadStatus(
-        _uploadStatusLabel(l10n, record.uploadStatus),
-      ),
-    ].join('\n');
-
-    return AdaptiveListTile(
-      leading: _statusIcon(record.uploadStatus),
-      title: title,
-      subtitle: subtitle,
-      trailing: _RecordActions(
-        isBusy: isBusy,
-        onRetry: onRetry,
-        onDelete: onDelete,
-      ),
-      onTap: onTap,
-      selected: selected,
-    );
-  }
-
-  Widget _statusIcon(LocalActivityUploadStatus status) {
-    return switch (status) {
-      LocalActivityUploadStatus.uploaded => const AdaptiveIcon(
-        materialIcon: Icons.cloud_done,
-        cupertinoIcon: CupertinoIcons.cloud_upload_fill,
-      ),
-      LocalActivityUploadStatus.pending => const AdaptiveIcon(
-        materialIcon: Icons.cloud_upload,
-        cupertinoIcon: CupertinoIcons.cloud_upload,
-      ),
-      LocalActivityUploadStatus.failed => const AdaptiveIcon(
-        materialIcon: Icons.error_outline,
-        cupertinoIcon: CupertinoIcons.exclamationmark_triangle,
-      ),
-    };
-  }
-}
-
-class _RecordActions extends StatelessWidget {
-  const _RecordActions({
-    required this.isBusy,
-    required this.onRetry,
-    required this.onDelete,
-  });
-
-  final bool isBusy;
-  final VoidCallback? onRetry;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (isBusy)
-          const SizedBox.square(
-            dimension: 28,
-            child: AdaptiveLoadingIndicator(),
-          )
-        else ...[
-          if (onRetry != null)
-            _IconActionButton(
-              tooltip: l10n.activityRetryUpload,
-              materialIcon: Icons.refresh,
-              cupertinoIcon: CupertinoIcons.refresh,
-              onPressed: onRetry,
-            ),
-          _IconActionButton(
-            tooltip: l10n.activityDeleteLocal,
-            materialIcon: Icons.delete_outline,
-            cupertinoIcon: CupertinoIcons.delete,
-            onPressed: onDelete,
-            destructive: true,
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _IconActionButton extends StatelessWidget {
-  const _IconActionButton({
-    required this.tooltip,
-    required this.materialIcon,
-    required this.cupertinoIcon,
-    required this.onPressed,
-    this.destructive = false,
-  });
-
-  final String tooltip;
-  final IconData materialIcon;
-  final IconData cupertinoIcon;
-  final VoidCallback? onPressed;
-  final bool destructive;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = destructive
-        ? PlatformUtils.isApplePlatform
-              ? CupertinoColors.systemRed
-              : Theme.of(context).colorScheme.error
-        : null;
-
-    if (PlatformUtils.isApplePlatform) {
-      return Tooltip(
-        message: tooltip,
-        child: CupertinoButton(
-          padding: EdgeInsets.zero,
-          minimumSize: const Size.square(32),
-          onPressed: onPressed,
-          child: Icon(cupertinoIcon, color: color, size: 22),
-        ),
-      );
-    }
-
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onPressed,
-      color: color,
-      icon: Icon(materialIcon),
-    );
-  }
-}
-
-String _uploadStatusLabel(
-  AppLocalizations l10n,
-  LocalActivityUploadStatus status,
-) {
-  return switch (status) {
-    LocalActivityUploadStatus.pending => l10n.activityUploadStatusPending,
-    LocalActivityUploadStatus.uploaded => l10n.activityUploadStatusUploaded,
-    LocalActivityUploadStatus.failed => l10n.activityUploadStatusFailed,
-  };
 }

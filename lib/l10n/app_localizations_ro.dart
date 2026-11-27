@@ -608,6 +608,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get activityUploadReady => 'Gata de încărcare';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Salvată pe acest dispozitiv. Va fi încărcată după ce vă conectați.';
+
+  @override
   String get activityUploaded => 'Încărcat';
 
   @override
@@ -867,6 +871,28 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Acces la datele de sănătate';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Acces la Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Permis';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth este dezactivat';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Blocat în setările sistemului';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Nu este permis';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Nu este disponibil pe acest dispozitiv';
 
   @override
   String get deviceAccessChecking => 'Se verifică accesul...';
@@ -1141,6 +1167,16 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Deschideți aplicația Sănătate, atingeți fotografia de profil, apoi Aplicații și servicii. Selectați Endurain și actualizați categoriile de date.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Permite accesul în Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect nu mai întreabă după ce accesul a fost refuzat de două ori. Deschide Health Connect pentru a permite Endurain să citească antrenamentele, traseele și pulsul tău.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Deschide Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Conectați-vă la datele de sănătate';

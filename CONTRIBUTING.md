@@ -24,13 +24,13 @@ By checking the agreement box and submitting or updating the pull request, you e
 
 As a rule of thumb:
 
-- **Target under 300 lines changed** (excluding lock files, generated code, and migrations)
+- **Target under 300 lines changed** (excluding lock files, generated code, and localization output)
 - **One PR = one thing.** Don't bundle a bug fix with a refactor with a new feature
 - If your change is naturally large (e.g. a new integration), break it into a chain of smaller PRs that can each be reviewed and merged independently
 
 PRs that are too large to review efficiently will be asked to be split before they receive a review. This isn't a judgment on the quality of the work, it's a maintainability constraint.
 
-**Excluded from the line count:** `package-lock.json`, `uv.lock`, migration files, and other generated or vendored files.
+**Excluded from the line count:** `pubspec.lock`, generated files (such as the `flutter gen-l10n` output), and other vendored files.
 
 ## How to Contribute
 
@@ -43,7 +43,7 @@ PRs that are too large to review efficiently will be asked to be split before th
 ### Documentation
 
 - Always welcome and rarely requires prior discussion
-- Improvements to the docs site, inline code comments, and the README all count
+- Improvements to inline code comments, the README, and the other Markdown files all count
 - Keep the same tone and structure as existing docs
 
 ### New Features
@@ -69,6 +69,9 @@ flutter analyze
 flutter test --coverage
 # Thresholds plus the exclusion list in .github/coverage-excludes.txt
 .github/scripts/check_coverage.sh
+# Fails when a public declaration in lib/ is referenced nowhere in lib/;
+# justified exceptions go in .github/dead-code-allowlist.txt, with a reason
+dart run tool/check_dead_code.dart
 ```
 
 Android (the `Android unit tests` and `Android build` jobs; needs the Android
@@ -77,6 +80,7 @@ SDK, and the first command generates the Gradle configuration):
 ```bash
 flutter build apk --config-only
 (cd android && ./gradlew :app:testDebugUnitTest --console=plain)
+(cd android && ./gradlew :app:lintDebug --console=plain)
 # Keeps the stub used when the Wear OS link is disabled compiling
 (cd android && ./gradlew :app:compileDebugKotlin -Pendurain.wearable=false --console=plain)
 # The Wear OS app is a separate Gradle build
@@ -84,9 +88,23 @@ flutter build apk --config-only
 flutter build apk --debug --target-platform android-arm64
 ```
 
+iOS and watchOS (the `iOS` workflow runs them on a macOS runner for pull
+requests that touch `ios/**`, `lib/**`, the pubspec files, `.flutter-version`,
+`test/fixtures/**` or `integration_test/**`, and on pushes to `main`; needs
+Xcode, and the first command generates the Xcode configuration):
+
+```bash
+flutter build ios --simulator --debug --config-only
+# Pick a simulator with `xcrun simctl list devices available`
+xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner \
+  -destination 'platform=iOS Simulator,name=<iPhone simulator>' CODE_SIGNING_ALLOWED=NO
+xcodebuild test -workspace ios/Runner.xcworkspace -scheme EndurainWatch \
+  -destination 'platform=watchOS Simulator,name=<Apple Watch simulator>' CODE_SIGNING_ALLOWED=NO
+```
+
 On-device smoke tests (the `Integration` workflow runs them on an Android
 emulator for changes to `lib/`, `android/` or `integration_test/`; the iOS ones
-run in the iOS workflow on pushes to `main`). Start an emulator or simulator,
+run in the iOS workflow). Start an emulator or simulator,
 then:
 
 ```bash
@@ -102,16 +120,17 @@ flutter test integration_test
    ```
 3. **Create a branch** and use a descriptive name:
    ```bash
-   git checkout -b fix/garmin-sync-timeout
+   git checkout -b fix/gpx-segment-distance
    # or
-   git checkout -b feat/gpx-export
+   git checkout -b feat/cadence-stats
    ```
 4. **Make your changes**, committing with clear messages following [Conventional Commits](https://www.conventionalcommits.org/):
    ```
-   fix: handle timeout on Garmin sync
-   feat: add GPX export for activities
-   docs: clarify Docker environment variables
+   fix: handle multi-segment GPX distance correctly
+   feat: add cadence to the recording statistics
+   docs: clarify the Wear OS build steps
    ```
+   The `Conventional Commits` check validates the PR title and every commit in the PR. The allowed types are `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style` and `test`; a scope (`feat(map): ...`) and `!` for breaking changes are optional.
 5. **Push and open a PR** against the `main` branch, filling in the PR template completely and accepting the Contributor License Agreement
 
 ## Response Time Expectations

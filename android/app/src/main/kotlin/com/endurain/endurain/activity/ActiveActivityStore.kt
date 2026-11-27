@@ -3,7 +3,6 @@ package com.endurain.endurain.activity
 import android.content.Context
 import android.util.AtomicFile
 import java.io.File
-import java.io.FileNotFoundException
 import org.json.JSONObject
 
 /**
@@ -32,6 +31,22 @@ class ActiveActivityStore private constructor(appContext: Context) {
     private val atomicAnnouncementFile = AtomicFile(announcementFile)
     private val lock = Any()
 
+    /**
+     * The last session parsed from or written to [sessionFile], with the file
+     * stamp it corresponds to. Every fix reads the session, so this saves a
+     * disk read and JSON parse per fix. All writers go through this store
+     * (the service and the channel share this singleton), and a stamp that no
+     * longer matches the file (removed or changed behind the store's back)
+     * discards the copy. Guarded by [lock].
+     */
+    private var cachedSession: CachedSession? = null
+
+    private class CachedSession(
+        val session: ActiveActivitySessionData,
+        val lastModified: Long,
+        val length: Long,
+    )
+
     fun saveSession(session: ActiveActivitySessionData) {
         synchronized(lock) {
             ensureDir()
@@ -41,21 +56,59 @@ class ActiveActivityStore private constructor(appContext: Context) {
                 output.write(session.toJson().toString().toByteArray(Charsets.UTF_8))
                 output.fd.sync()
                 atomicSessionFile.finishWrite(output)
+                cachedSession = CachedSession(session, sessionFile.lastModified(), sessionFile.length())
             } catch (error: Exception) {
+                cachedSession = null
                 output?.let { atomicSessionFile.failWrite(it) }
                 throw error
             }
         }
     }
 
+    /**
+     * Atomically rewrites the stored session from its current value.
+     *
+     * The recorder thread, the channel's I/O thread and the service commands
+     * all change the session, so a read-modify-write done outside this lock
+     * could overwrite another writer's newer status. [transform] sees the
+     * latest session and returns the replacement, or `null` to leave it
+     * untouched (for example when the status it wanted to change moved on).
+     * Returns the saved session, or `null` when nothing was written.
+     */
+    fun updateSession(
+        transform: (ActiveActivitySessionData) -> ActiveActivitySessionData?,
+    ): ActiveActivitySessionData? {
+        synchronized(lock) {
+            val current = loadSession() ?: return null
+            val updated = transform(current) ?: return null
+            saveSession(updated)
+            return updated
+        }
+    }
+
     fun loadSession(): ActiveActivitySessionData? {
         synchronized(lock) {
+            cachedSession?.let { cached ->
+                if (sessionFile.exists() &&
+                    sessionFile.lastModified() == cached.lastModified &&
+                    sessionFile.length() == cached.length
+                ) {
+                    return cached.session
+                }
+                cachedSession = null
+            }
             return try {
-                atomicSessionFile.openRead().bufferedReader().use { reader ->
+                val parsed = atomicSessionFile.openRead().bufferedReader().use { reader ->
                     ActiveActivitySessionData.fromJson(JSONObject(reader.readText()))
-                } ?: pointsLog.orphanedSession()
-            } catch (_: FileNotFoundException) {
-                pointsLog.orphanedSession()
+                }
+                if (parsed != null) {
+                    cachedSession = CachedSession(
+                        parsed,
+                        sessionFile.lastModified(),
+                        sessionFile.length(),
+                    )
+                }
+                parsed ?: pointsLog.orphanedSession()
             } catch (_: Exception) {
                 pointsLog.orphanedSession()
             }
@@ -107,6 +160,7 @@ class ActiveActivityStore private constructor(appContext: Context) {
     /** Removes all active-recording files. */
     fun clear() {
         synchronized(lock) {
+            cachedSession = null
             if (activeDir.exists()) {
                 activeDir.deleteRecursively()
             }
@@ -142,8 +196,6 @@ class ActiveActivityStore private constructor(appContext: Context) {
                 atomicAnnouncementFile.openRead().bufferedReader().use { reader ->
                     AnnouncementStateData.fromJson(JSONObject(reader.readText()))
                 }
-            } catch (_: FileNotFoundException) {
-                null
             } catch (_: Exception) {
                 null
             }

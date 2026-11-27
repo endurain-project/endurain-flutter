@@ -605,6 +605,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get activityUploadReady => 'Redo att laddas upp';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Sparad på den här enheten. Den laddas upp när du loggar in.';
+
+  @override
   String get activityUploaded => 'Uppladdad';
 
   @override
@@ -848,6 +852,28 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Åtkomst till hälsodata';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Bluetooth-åtkomst';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Tillåten';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth är avstängt';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Blockerad i systeminställningar';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Inte tillåtet';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Ej tillgängligt på den här enheten';
 
   @override
   String get deviceAccessChecking => 'Kontrollerar åtkomst…';
@@ -1118,6 +1144,16 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Öppna appen Hälsa, tryck på din profilbild och sedan på Appar och tjänster. Välj Endurain och uppdatera datakategorierna.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Tillåt åtkomst i Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect slutar fråga när åtkomst har nekats två gånger. Öppna Health Connect för att låta Endurain läsa dina träningspass, rutter och puls.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Öppna Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Anslut till hälsodata';

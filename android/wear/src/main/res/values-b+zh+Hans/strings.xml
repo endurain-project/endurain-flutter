@@ -35,4 +35,9 @@
     <string name="gps_lost">GPS 信号丢失</string>
     <string name="hr_unavailable">无法获取心率</string>
     <string name="restore_failed">无法检查您的锻炼。点按“确定”重试。</string>
+    <string name="takeover_confirm">另一个应用正在记录锻炼。在此开始会结束它。</string>
+    <string name="takeover_start">仍然开始</string>
+    <string name="notification_paused">锻炼已暂停</string>
+    <string name="tile_label">开始锻炼</string>
+    <string name="heart_rate_description">心率每分钟%1$d次</string>
 </resources>

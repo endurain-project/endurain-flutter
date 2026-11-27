@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
-import 'package:endurain/features/watch/models/watch_link_status.dart';
+import 'package:endurain/core/utils/single_flight.dart';
 import 'package:endurain/features/watch/models/watch_session_handoff.dart';
 import 'package:endurain/features/watch/models/watch_transport_event.dart';
 import 'package:endurain/features/watch/services/watch_session_ingestion_service.dart';
@@ -76,20 +76,13 @@ class WatchCompanionService {
   final DiagnosticsRecorder _diagnostics;
 
   StreamSubscription<WatchTransportEvent>? _eventSubscription;
-  Future<WatchSyncSummary>? _inFlightSync;
-  bool _followUpRequested = false;
-  WatchLinkStatus _linkStatus = WatchLinkStatus.unsupported;
+  late final SingleFlight<WatchSyncSummary> _syncFlight =
+      SingleFlight<WatchSyncSummary>(
+        pass: _runSync,
+        combine: (total, next) => total + next,
+        canContinue: () => !_disposed,
+      );
   bool _disposed = false;
-
-  /// Last known reachability of the paired watch.
-  WatchLinkStatus get linkStatus => _linkStatus;
-
-  /// Refreshes [linkStatus] from the transport.
-  Future<WatchLinkStatus> refreshLinkStatus() async {
-    final status = await _transport.linkStatus();
-    _linkStatus = status;
-    return status;
-  }
 
   /// Drains every pending handoff, persisting each finished watch session as a
   /// local activity and acknowledging the ones that reached a terminal state.
@@ -99,25 +92,7 @@ class WatchCompanionService {
   ///
   /// A call made while a drain is running joins it, and also schedules one
   /// more pass once it finishes; the returned summary covers both passes.
-  Future<WatchSyncSummary> syncPendingSessions() {
-    final inFlight = _inFlightSync;
-    if (inFlight != null) {
-      _followUpRequested = true;
-      return inFlight;
-    }
-    return _inFlightSync = _syncUntilSettled().whenComplete(() {
-      _inFlightSync = null;
-    });
-  }
-
-  Future<WatchSyncSummary> _syncUntilSettled() async {
-    var total = const WatchSyncSummary();
-    do {
-      _followUpRequested = false;
-      total = total + await _runSync();
-    } while (_followUpRequested && !_disposed);
-    return total;
-  }
+  Future<WatchSyncSummary> syncPendingSessions() => _syncFlight.run();
 
   Future<WatchSyncSummary> _runSync() async {
     if (_disposed) {
@@ -225,7 +200,6 @@ class WatchCompanionService {
       case WatchTransportEventType.linkStatusChanged:
         final status = event.linkStatus;
         if (status != null) {
-          _linkStatus = status;
           if (status.isReachable) {
             unawaited(syncPendingSessions());
           }

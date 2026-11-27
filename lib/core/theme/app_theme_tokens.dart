@@ -30,17 +30,12 @@ class AppThemeTokens {
   static const lightBackground = Color(0xFFF1EFE8);
   static const lightCard = Color(0xFFFFFFFF);
   static const ink = Color(0xFF2C2C2A);
-  static const lightMutedForeground = Color(0xFF888780);
 
   // --- Neutrals (dark) ---------------------------------------------------
   static const darkBackground = Color(0xFF18181B);
   static const darkCard = Color(0xFF27272A);
   static const darkForeground = Color(0xFFF4F4F5);
   static const darkMutedForeground = Color(0xFFA1A1AA);
-
-  // Kept for backwards compatibility with existing scaffold wiring.
-  static const lightSurface = lightBackground;
-  static const darkSurface = darkBackground;
 
   // --- Destructive -------------------------------------------------------
   static const destructive = hr;
@@ -49,22 +44,13 @@ class AppThemeTokens {
   static const hairlineLight = Color(0x14000000); // rgba(0,0,0,0.08)
   static const hairlineDark = Color(0x14FFFFFF); // rgba(255,255,255,0.08)
 
-  // --- Activity badge colors ---------------------------------------------
-  static const activityRunningBg = Color(0xFFFBE9E8);
+  // --- Activity-tinted text (reused as the error / muted-variant colors) ---
   static const activityRunningText = Color(0xFFB42318);
-  static const activityCyclingBg = Color(0xFFE9F4DC);
-  static const activityCyclingText = Color(0xFF466E15);
-  static const activitySwimmingBg = Color(0xFFE6F1FB);
-  static const activitySwimmingText = Color(0xFF185FA5);
-  static const activityHikingBg = Color(0xFFFAEEDA);
-  static const activityHikingText = Color(0xFF854F0B);
-  static const activityOtherBg = Color(0xFFF1EFE8);
   static const activityOtherText = Color(0xFF5F5E5A);
 
   // --- Radii -------------------------------------------------------------
   static const double radiusCard = 12.0;
   static const double radiusInput = 8.0;
-  static const double radiusBadge = 20.0;
 
   // --- Borders -----------------------------------------------------------
   static const double focusedBorderWidth = 2.0;

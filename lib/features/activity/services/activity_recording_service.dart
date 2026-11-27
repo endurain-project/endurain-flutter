@@ -16,6 +16,7 @@ import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
+import 'package:endurain/features/activity/services/recording_auto_pause_coordinator.dart';
 import 'package:endurain/features/activity/services/recording_elapsed_clock.dart';
 import 'package:endurain/features/activity/services/recording_permission_gate.dart';
 import 'package:endurain/features/activity/services/recording_point_batcher.dart';
@@ -43,7 +44,10 @@ class ActivityRecordingService {
        _sensorFreshness = sensorFreshness,
        _prepareSensorSources = prepareSensorSources {
     _clock = RecordingElapsedClock(_now);
-    _permissions = RecordingPermissionGate(_locationService);
+    _permissions = RecordingPermissionGate(
+      _locationService,
+      requiresBackground: () => _requiresAppleBackgroundPermission,
+    );
     _sensorSubscription = sensorReadings?.listen(_sensors.onReading);
   }
 
@@ -117,6 +121,18 @@ class ActivityRecordingService {
   );
   StreamSubscription<RecordedSensorSample>? _sensorSubscription;
 
+  late final RecordingAutoPauseCoordinator _autoPause =
+      RecordingAutoPauseCoordinator(
+        sensors: _sensors,
+        clock: _clock,
+        now: _now,
+        readState: () => _state,
+        emit: _emit,
+        localSessionId: () => _localSessionId,
+        startElapsedTimer: _startElapsedTimer,
+        recordBreadcrumb: _recordBreadcrumb,
+      );
+
   final StreamController<ActivityRecordingState> _stateController =
       StreamController<ActivityRecordingState>.broadcast();
 
@@ -125,7 +141,6 @@ class ActivityRecordingService {
   int _lastBreadcrumbPointCount = 0;
   bool _isDisposed = false;
   BackgroundLocationConfig? _backgroundConfig;
-  MovementAutoPauseConfig _autoPauseConfig = const MovementAutoPauseConfig();
   AudioAnnouncementConfig? _audioAnnouncementConfig;
   String? _localSessionId;
   String? _connectionOrigin;
@@ -147,7 +162,7 @@ class ActivityRecordingService {
   /// recording's session. Called by the controller before [start] with the
   /// current value of `AutoPauseSettingsRepository.getConfig()`.
   void configureAutoPause(MovementAutoPauseConfig config) {
-    _autoPauseConfig = config;
+    _autoPause.config = config;
   }
 
   /// Supplies the localized spoken-announcement configuration used by the
@@ -225,7 +240,7 @@ class ActivityRecordingService {
     if (audioAnnouncementConfig != null) {
       _audioAnnouncementConfig = audioAnnouncementConfig;
     }
-    final backgroundErrorKey = await _backgroundTrackingErrorKey();
+    final backgroundErrorKey = await _permissions.backgroundTrackingError();
     if (backgroundErrorKey != null) {
       _recordBreadcrumb(
         DiagnosticsEvents.activityStartFailed,
@@ -295,7 +310,7 @@ class ActivityRecordingService {
           heartRateDeviceId: sensorDeviceIds[RecordedSensorKind.heartRate],
           powerDeviceId: sensorDeviceIds[RecordedSensorKind.power],
           cadenceDeviceId: sensorDeviceIds[RecordedSensorKind.cadence],
-          autoPauseConfig: _autoPauseConfig,
+          autoPauseConfig: _autoPause.config,
         ),
       );
       if (!_isDisposed && _state.status == ActivityRecordingStatus.recording) {
@@ -317,22 +332,17 @@ class ActivityRecordingService {
     }
   }
 
-  Future<bool> openAppSettings() {
-    return _locationService.openAppSettings();
-  }
+  Future<bool> openAppSettings() => _permissions.openAppSettings();
 
-  Future<bool> isBackgroundTrackingReady() async {
-    return await _backgroundTrackingErrorKey() == null;
-  }
+  Future<bool> isBackgroundTrackingReady() => _permissions.isBackgroundReady();
 
-  Future<bool> requestBackgroundTrackingPermission() => _permissions
-      .requestBackground(required: _requiresAppleBackgroundPermission);
+  Future<bool> requestBackgroundTrackingPermission() =>
+      _permissions.requestBackgroundPermission();
 
   /// Whether location is on and permitted, asking for permission first when
   /// it was never decided. Lets the start countdown settle the permission
   /// prompt before the user puts the phone away.
-  Future<bool> isLocationReady() async =>
-      await _permissions.locationError() == null;
+  Future<bool> isLocationReady() => _permissions.isLocationReady();
 
   Future<void> pause() => _commands.run(_pause);
 
@@ -417,7 +427,7 @@ class ActivityRecordingService {
     final sessionId = _localSessionId;
     final locationError =
         await _permissions.locationError() ??
-        await _backgroundTrackingErrorKey();
+        await _permissions.backgroundTrackingError();
     if (_isDisposed ||
         _state.status != ActivityRecordingStatus.paused ||
         sessionId != _localSessionId) {
@@ -650,79 +660,9 @@ class ActivityRecordingService {
       case ActivityRecorderEventType.failed:
         _fail(recordingErrorForRecorderFailure(event.failureReason));
       case ActivityRecorderEventType.autoPaused:
-        _handleAutoPaused(event);
       case ActivityRecorderEventType.autoResumed:
-        _handleAutoResumed(event);
+        _autoPause.handle(event);
     }
-  }
-
-  /// Bridges an autonomous auto-pause (the recorder's movement detector, not
-  /// an explicit [pause] call) into the live UI state.
-  ///
-  /// Guarded to only act while actively recording so a duplicate or
-  /// out-of-order event can never clobber a state the controller already
-  /// knows about. Prefers the recorder's own elapsed-time computation (from
-  /// `event.session` over recomputing locally: the recorder timestamps the
-  /// pause from the fix that triggered it, which stays correct even if the
-  /// Dart isolate's own timer was throttled while backgrounded.
-  ///
-  /// The recorder has already saved the session as paused, so it rejects
-  /// further sensor samples: capture stops here and restarts on auto-resume.
-  void _handleAutoPaused(ActivityRecorderEvent event) {
-    if (_state.status != ActivityRecordingStatus.recording) {
-      return;
-    }
-    _sensors.stopCapture();
-    final elapsedDurationSeconds = _clock.freeze(
-      elapsedSeconds: event.session?.elapsedDurationSeconds,
-    );
-    _emit(
-      _state.copyWith(
-        status: ActivityRecordingStatus.paused,
-        elapsedDurationSeconds: elapsedDurationSeconds,
-        isAutoPaused: true,
-      ),
-    );
-    _recordBreadcrumb(
-      DiagnosticsEvents.activityAutoPaused,
-      details: {
-        'elapsedSeconds': elapsedDurationSeconds,
-        'pointCount': _state.points.length,
-        'segmentCount': _state.segments.length,
-      },
-    );
-  }
-
-  /// Bridges an autonomous auto-resume (the recorder observed enough
-  /// consecutive movement, not an explicit [resume] call) into the live UI
-  /// state, starting a new track segment as required.
-  ///
-  /// Guarded to only act while auto-paused — in particular, a manually paused
-  /// recording (`isAutoPaused == false`) never transitions here, which is the
-  /// state-side half of "manual pause never auto-resumes" (the recorder-side
-  /// half is that a manual pause stops monitoring location entirely).
-  void _handleAutoResumed(ActivityRecorderEvent event) {
-    if (_state.status != ActivityRecordingStatus.paused ||
-        !_state.isAutoPaused) {
-      return;
-    }
-    _clock.beginSegment(event.session?.resumedAt ?? _now());
-    _emit(
-      _state.startNewSegment().copyWith(
-        status: ActivityRecordingStatus.recording,
-        isAutoPaused: false,
-      ),
-    );
-    _recordBreadcrumb(
-      DiagnosticsEvents.activityAutoResumed,
-      details: {
-        'elapsedSeconds': _state.elapsedDurationSeconds,
-        'pointCount': _state.points.length,
-        'segmentCount': _state.segments.length,
-      },
-    );
-    _startElapsedTimer();
-    _sensors.startCapture(_localSessionId);
   }
 
   Future<bool> _runRecorderCommand(
@@ -795,9 +735,6 @@ class ActivityRecordingService {
       return false;
     }
   }
-
-  Future<ActivityRecordingError?> _backgroundTrackingErrorKey() => _permissions
-      .backgroundError(required: _requiresAppleBackgroundPermission);
 
   bool get _requiresAppleBackgroundPermission {
     return _backgroundConfig != null &&

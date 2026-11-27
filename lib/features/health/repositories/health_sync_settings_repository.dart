@@ -48,16 +48,12 @@ class HealthSyncSettingsRepository {
   /// Defaults to `false` — manual import is the default experience. The user
   /// opts in by granting platform health authorization and enabling this
   /// toggle on the health sync screen.
-  Future<bool> isAutoSyncOnResumeEnabled(String profileId) async {
-    final value = await _preferences.read(key: _autoSyncKey(profileId));
-    return value == 'true';
+  Future<bool> isAutoSyncOnResumeEnabled(String profileId) {
+    return _preferences.readBool(key: _autoSyncKey(profileId));
   }
 
   Future<void> setAutoSyncOnResumeEnabled(String profileId, bool enabled) {
-    return _preferences.write(
-      key: _autoSyncKey(profileId),
-      value: enabled ? 'true' : 'false',
-    );
+    return _preferences.writeBool(key: _autoSyncKey(profileId), value: enabled);
   }
 
   Future<void> clearForProfile(String profileId) {

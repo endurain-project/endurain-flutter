@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Architecture guard: a feature's persistence backend stays private to it.
 ///
 /// A `…Store` is the concrete persistence implementation sitting behind a
-/// feature's repository facade (`SqfliteActivityStore`, `FileActiveActivityStore`,
+/// feature's repository facade (`SqfliteActivityStore`,
 /// `SqfliteHealthImportStore`, …). The repository is the swappable public seam
 /// every other feature depends on; the store is an implementation detail.
 ///

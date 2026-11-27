@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Gezondheidsgegevens in Endurain</string>
     <string name="health_rationale_usage">Endurain leest trainingen, routes, hartslag en afstand alleen om geselecteerde activiteiten te importeren.</string>
     <string name="health_rationale_storage">Gegevens van geselecteerde routes worden op dit apparaat opgeslagen en alleen geüpload naar de Endurain-server waarmee je verbinding maakt.</string>
+    <string name="health_rationale_privacy_policy">Privacybeleid</string>
 </resources>

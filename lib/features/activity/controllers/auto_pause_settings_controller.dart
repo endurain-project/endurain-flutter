@@ -21,9 +21,6 @@ class AutoPauseSettingsController extends SafeNotifier {
   int get delaySeconds => _delaySeconds;
   bool get isLoaded => _isLoaded;
 
-  int get minDelaySeconds => AutoPauseSettingsRepository.minDelaySeconds;
-  int get maxDelaySeconds => AutoPauseSettingsRepository.maxDelaySeconds;
-
   Future<void> load() async {
     try {
       final enabled = await _repository.isEnabled();

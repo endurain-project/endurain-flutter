@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Zdravstveni podatki v Endurainu</string>
     <string name="health_rationale_usage">Endurain bere vadbe, poti, srčni utrip in razdaljo samo za uvoz izbranih aktivnosti.</string>
     <string name="health_rationale_storage">Podatki izbranih poti so shranjeni v tej napravi in naloženi samo na strežnik Endurain, s katerim se povežete.</string>
+    <string name="health_rationale_privacy_policy">Pravilnik o zasebnosti</string>
 </resources>

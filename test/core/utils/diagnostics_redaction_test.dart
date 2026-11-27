@@ -103,5 +103,95 @@ void main() {
         '{"sessionId=<redacted>,"user":"bob"}',
       );
     });
+
+    test('redacts email addresses', () {
+      expect(
+        redactDiagnosticText('User joao.silva+run@mail.example.org not found'),
+        'User <email> not found',
+      );
+      expect(
+        redactDiagnosticText('{"detail":"a@b.co and c_d@e.io"}'),
+        '{"detail":"<email> and <email>"}',
+      );
+    });
+
+    test('leaves text with an at sign but no address alone', () {
+      expect(redactDiagnosticText('ping @here now'), 'ping @here now');
+    });
+
+    group('hosts and addresses', () {
+      test('redacts a host after a failed lookup, quoted or not', () {
+        expect(
+          redactDiagnosticText(
+            "SocketException: Failed host lookup: 'endurain.myhome.example'",
+          ),
+          'SocketException: Failed host lookup: <host>',
+        );
+        expect(
+          redactDiagnosticText('Failed host lookup: endurain.myhome.example)'),
+          'Failed host lookup: <host>)',
+        );
+      });
+
+      test('redacts the address of a socket error', () {
+        final redacted = redactDiagnosticText(
+          'SocketException: Connection refused, address = 192.168.1.20, '
+          'port = 51234',
+        );
+
+        expect(redacted, isNot(contains('192.168')));
+        expect(redacted, contains('address = <host>'));
+        expect(
+          redactDiagnosticText('address = server.example, port = 1'),
+          'address = <host>, port = 1',
+        );
+      });
+
+      test('redacts IPv4 and IPv6 literals anywhere', () {
+        expect(
+          redactDiagnosticText('peer 10.0.0.7 reset, via 2001:db8::1 and ::1'),
+          'peer <host> reset, via <host> and <host>',
+        );
+        expect(
+          redactDiagnosticText('2001:0db8:85a3:0000:0000:8a2e:0370:7334 down'),
+          '<host> down',
+        );
+      });
+
+      test('leaves versions, times and coordinates alone', () {
+        expect(
+          redactDiagnosticText('app 1.2.3 build 0.12.4'),
+          contains('1.2.3'),
+        );
+        expect(
+          redactDiagnosticText('at 12:34:56 version 0.12.4+26'),
+          'at 12:34:56 version 0.12.4+26',
+        );
+        expect(
+          redactDiagnosticText('fix 41.123456, -8.123456'),
+          'fix <coordinates>',
+        );
+      });
+    });
+
+    group('authorization schemes', () {
+      test('consumes a Basic scheme and its token', () {
+        expect(
+          redactDiagnosticText('Authorization: Basic dXNlcjpwYXNz'),
+          'Authorization=<redacted>',
+        );
+      });
+
+      test('consumes Bearer and Digest schemes', () {
+        expect(
+          redactDiagnosticText('Authorization: Bearer abc.def'),
+          'Authorization=<redacted>',
+        );
+        expect(
+          redactDiagnosticText('authorization: Digest nonce12345'),
+          'authorization=<redacted>',
+        );
+      });
+    });
   });
 }

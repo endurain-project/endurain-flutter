@@ -29,4 +29,12 @@ class BluetoothAddressUtilTest {
         assertNull(BluetoothAddressUtil.normalize(""))
         assertNull(BluetoothAddressUtil.normalize("  \n"))
     }
+
+    @Test
+    fun bluetoothUuid_expandsA16BitAssignedNumber() {
+        assertEquals(
+            "0000180d-0000-1000-8000-00805f9b34fb",
+            bluetoothUuid(0x180d).toString(),
+        )
+    }
 }

@@ -1,10 +1,11 @@
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/json_parsing.dart';
-import 'package:endurain/core/utils/private_storage_paths.dart';
+import 'package:endurain/core/utils/sqlite_database_handle.dart';
 import 'package:endurain/core/utils/sqlite_migration_runner.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_store.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// SQLite-backed [LocalActivityStore] implemented with sqflite.
@@ -18,17 +19,16 @@ import 'package:sqflite/sqflite.dart';
 /// ```
 class SqfliteActivityStore implements LocalActivityStore {
   SqfliteActivityStore({DatabaseFactory? databaseFactory, String? databasePath})
-    : _factory = databaseFactory ?? _platformFactory(),
-      _path = databasePath;
+    : _databaseFactory = databaseFactory,
+      _databasePath = databasePath;
 
   static const int _schemaVersion = 10;
   static const String _dbFileName = 'activity.db';
   static const String _tableVersion = 'schema_version';
   static const String _tableActivity = 'local_activity';
 
-  final DatabaseFactory _factory;
-  final String? _path;
-  Database? _db;
+  final DatabaseFactory? _databaseFactory;
+  final String? _databasePath;
 
   /// Ordered schema migrations keyed by the version they upgrade the database
   /// **to**. Migration `n` transforms a database at version `n - 1` into
@@ -59,32 +59,15 @@ class SqfliteActivityStore implements LocalActivityStore {
     recordVersion: _recordSchemaVersion,
   );
 
-  static DatabaseFactory _platformFactory() => databaseFactorySqflitePlugin;
+  late final SqliteDatabaseHandle _database = SqliteDatabaseHandle(
+    fileName: _dbFileName,
+    schemaVersion: _schemaVersion,
+    migrationRunner: _migrationRunner,
+    databaseFactory: _databaseFactory,
+    databasePath: _databasePath,
+  );
 
-  Future<Database> _open() async {
-    if (_db != null) return _db!;
-    final path =
-        _path ??
-        await privateDatabasePath(
-          databaseFactory: _factory,
-          fileName: _dbFileName,
-        );
-    _db = await _factory.openDatabase(
-      path,
-      options: OpenDatabaseOptions(
-        version: _schemaVersion,
-        onCreate: (db, version) async {
-          // Fresh install: run every migration from 1..version so the schema
-          // is produced by the same steps an upgrade would apply.
-          await _migrationRunner.run(db, from: 0, to: version);
-        },
-        onUpgrade: (db, oldVersion, newVersion) async {
-          await _migrationRunner.run(db, from: oldVersion, to: newVersion);
-        },
-      ),
-    );
-    return _db!;
-  }
+  Future<Database> _open() => _database.open();
 
   /// Persists the current schema [version] in [_tableVersion] (single-row).
   Future<void> _recordSchemaVersion(Database db, int version) async {
@@ -249,13 +232,6 @@ class SqfliteActivityStore implements LocalActivityStore {
   }
 
   @override
-  Future<List<LocalActivityRecord>> list() async {
-    final db = await _open();
-    final rows = await db.query(_tableActivity, orderBy: 'ended_at DESC');
-    return rows.map(_fromRow).toList();
-  }
-
-  @override
   Future<LocalActivityRecord?> get(String id) async {
     final db = await _open();
     final rows = await db.query(
@@ -407,25 +383,6 @@ class SqfliteActivityStore implements LocalActivityStore {
   }
 
   @override
-  Future<List<LocalActivityRecord>> listByUploadStatus(
-    Set<LocalActivityUploadStatus> statuses,
-  ) async {
-    if (statuses.isEmpty) {
-      return const <LocalActivityRecord>[];
-    }
-    final db = await _open();
-    final values = statuses.map((status) => status.toJson()).toList();
-    final placeholders = List.filled(values.length, '?').join(', ');
-    final rows = await db.query(
-      _tableActivity,
-      where: 'upload_status IN ($placeholders)',
-      whereArgs: values,
-      orderBy: 'ended_at ASC',
-    );
-    return rows.map(_fromRow).toList();
-  }
-
-  @override
   Future<List<LocalActivityRecord>> listUploadQueueCandidates() async {
     final db = await _open();
     final rows = await db.query(
@@ -443,9 +400,9 @@ class SqfliteActivityStore implements LocalActivityStore {
     return rows.map(_fromRow).toList();
   }
 
+  @visibleForTesting
   Future<void> close() async {
-    await _db?.close();
-    _db = null;
+    await _database.close();
   }
 
   Map<String, Object?> _toRow(LocalActivityRecord r) {

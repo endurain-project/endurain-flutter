@@ -17,9 +17,6 @@ class ApiEndpoints {
 
   final AppConfig _config;
 
-  /// The API path prefix (e.g. `/api/v1`).
-  String get basePath => _config.apiBasePath;
-
   String get _base => _config.apiBasePath;
 
   // Sign-in, session renewal and sign-out. Every answer of login, MFA

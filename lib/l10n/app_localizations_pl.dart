@@ -608,6 +608,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get activityUploadReady => 'Gotowe do przesłania';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Zapisano na tym urządzeniu. Zostanie przesłana po zalogowaniu.';
+
+  @override
   String get activityUploaded => 'Przesłano';
 
   @override
@@ -852,6 +856,29 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Dostęp do danych zdrowotnych';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Dostęp do Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Dozwolone';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth jest wyłączony';
+
+  @override
+  String get deviceAccessBluetoothBlocked =>
+      'Zablokowane w ustawieniach systemu';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Niedozwolone';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Niedostępne na tym urządzeniu';
 
   @override
   String get deviceAccessChecking => 'Sprawdzam dostęp…';
@@ -1126,6 +1153,16 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Otwórz aplikację Zdrowie, dotknij swojego zdjęcia profilowego, a następnie Aplikacje i usługi. Wybierz Endurain i zaktualizuj kategorie danych.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Zezwól na dostęp w Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect przestaje pytać po dwukrotnym odmówieniu dostępu. Otwórz Health Connect, aby zezwolić Endurain na odczyt treningów, tras i tętna.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Otwórz Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Połącz z danymi zdrowotnymi';

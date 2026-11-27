@@ -4,6 +4,7 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_store.dart';
 import 'package:endurain/features/activity/repositories/sqflite_activity_store.dart';
 import 'package:endurain/features/activity/services/local_activity_gpx_storage.dart';
+import 'package:flutter/foundation.dart';
 
 /// Facade that combines metadata storage (delegated to [LocalActivityStore])
 /// with GPX file I/O owned by [LocalActivityGpxStorage].
@@ -21,8 +22,6 @@ class LocalActivityRepository {
 
   final LocalActivityGpxStorage _gpxStorage;
   final LocalActivityStore _store;
-
-  Future<List<LocalActivityRecord>> list() => _store.list();
 
   Future<LocalActivityRecord?> get(String id) => _store.get(id);
 
@@ -54,14 +53,11 @@ class LocalActivityRepository {
     required int limit,
   }) => _store.listPage(offset: offset, limit: limit);
 
-  Future<List<LocalActivityRecord>> listByUploadStatus(
-    Set<LocalActivityUploadStatus> statuses,
-  ) => _store.listByUploadStatus(statuses);
-
   /// See [LocalActivityStore.listUploadQueueCandidates].
   Future<List<LocalActivityRecord>> listUploadQueueCandidates() =>
       _store.listUploadQueueCandidates();
 
+  @visibleForTesting
   Future<int> count() => _store.count();
 
   Future<int> bindUnassignedToProfile({

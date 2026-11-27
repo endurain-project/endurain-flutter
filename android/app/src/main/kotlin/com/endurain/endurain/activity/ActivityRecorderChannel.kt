@@ -20,9 +20,17 @@ import java.util.concurrent.RejectedExecutionException
  * resume/stop/discard) are owned here; point batches and collection failures
  * are emitted by the service via [ActivityRecorderCoordinator]. Drain/recover
  * read directly from the durable [ActiveActivityStore].
+ *
+ * Threading: handlers that touch the store (every save ends in `fd.sync()`)
+ * run in call order on a single I/O thread and reply on the main thread, so
+ * disk latency never blocks the UI. Any failure they raise is replied as
+ * `store_read_failed` rather than thrown. Handlers that only start speech or
+ * ask for a permission stay on the main thread.
  */
-class ActivityRecorderChannel(context: Context) :
-    MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
+class ActivityRecorderChannel(
+    context: Context,
+    private val notificationPermission: NotificationPermissionRequester? = null,
+) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
     private val appContext = context.applicationContext
     private val store = ActiveActivityStore.of(appContext)
@@ -32,10 +40,11 @@ class ActivityRecorderChannel(context: Context) :
     private var eventSink: EventChannel.EventSink? = null
 
     /** Whether this engine's Dart started a start-countdown warm-up it has not ended. */
+    @Volatile
     private var warmUpBegun = false
 
-    /** Drains read the points file off the main thread, in call order. */
-    private val drainExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    /** Store work runs off the main thread, in call order. */
+    private val ioExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
 
     fun register(messenger: BinaryMessenger) {
@@ -60,27 +69,49 @@ class ActivityRecorderChannel(context: Context) :
             warmUpBegun = false
             ActivityRecorderService.endWarmUp()
         }
-        drainExecutor.shutdown()
+        ioExecutor.shutdown()
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            METHOD_START -> handleStart(call, result)
-            METHOD_PAUSE -> handlePause(result)
-            METHOD_RESUME -> handleResume(result)
-            METHOD_STOP -> handleStop(result)
-            METHOD_DISCARD -> handleDiscard(result)
-            METHOD_DRAIN -> handleDrain(call, result)
-            METHOD_RECOVER -> handleRecover(result)
+            METHOD_START -> offMain(result) { handleStart(call, it) }
+            METHOD_PAUSE -> offMain(result, ::handlePause)
+            METHOD_RESUME -> offMain(result, ::handleResume)
+            METHOD_STOP -> offMain(result, ::handleStop)
+            METHOD_DISCARD -> offMain(result, ::handleDiscard)
+            METHOD_DRAIN -> offMain(result) { handleDrain(call, it) }
+            METHOD_RECOVER -> offMain(result, ::handleRecover)
             METHOD_SPEAK_PREVIEW -> handleSpeakPreview(call, result)
             METHOD_SPEAK_CUE -> handleSpeakCue(call, result)
-            METHOD_BEGIN_START_WARM_UP -> handleBeginStartWarmUp(call, result)
+            METHOD_BEGIN_START_WARM_UP -> offMain(result) { handleBeginStartWarmUp(call, it) }
+            METHOD_REQUEST_NOTIFICATION_PERMISSION -> handleRequestNotificationPermission(result)
             METHOD_END_START_WARM_UP -> {
                 warmUpBegun = false
                 ActivityRecorderService.endWarmUp()
                 result.success(null)
             }
             else -> result.notImplemented()
+        }
+    }
+
+    /**
+     * Runs [task] on the I/O thread with a reply that hops to the main thread.
+     * An exception it leaves behind (a store that cannot be read or written)
+     * becomes a typed `store_read_failed` reply; a reply already sent wins.
+     */
+    private fun offMain(result: MethodChannel.Result, task: (MethodChannel.Result) -> Unit) {
+        val reply = MainThreadResult(result, mainHandler)
+        try {
+            ioExecutor.execute {
+                try {
+                    task(reply)
+                } catch (_: Exception) {
+                    reply.error(ERROR_STORE, "Unable to access the recording store", null)
+                }
+            }
+        } catch (_: RejectedExecutionException) {
+            // The channel was unregistered; its engine is going away.
+            result.error(ERROR_STORE, "Recorder channel unregistered", null)
         }
     }
 
@@ -148,9 +179,21 @@ class ActivityRecorderChannel(context: Context) :
             autoPauseEnabled = autoPauseEnabled,
             autoPauseDelaySeconds = autoPauseDelaySeconds,
         )
-        store.saveSession(session)
-        AnnouncementStateData.fromStartArguments(audioAnnouncements)?.let {
-            store.saveAnnouncementState(it)
+        try {
+            store.saveSession(session)
+            AnnouncementStateData.fromStartArguments(audioAnnouncements)?.let {
+                store.saveAnnouncementState(it)
+            }
+        } catch (_: Exception) {
+            // Nothing recorded yet: a half-written start must not be left
+            // behind to reject every later start as `invalid_state`.
+            try {
+                store.clear()
+            } catch (_: Exception) {
+                // Best effort; the store reports its own failure below.
+            }
+            result.error(ERROR_STORE, "Unable to persist the new recording", null)
+            return
         }
         try {
             ActivityRecorderService.start(appContext, title, text)
@@ -175,19 +218,20 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     private fun handlePause(result: MethodChannel.Result) {
-        val session = store.loadSession()
-        if (session == null) {
+        val nowMillis = System.currentTimeMillis()
+        // Atomic against the recorder thread's own session rewrites.
+        val updated = store.updateSession { session ->
+            session.copy(
+                status = ActiveActivitySessionData.STATUS_PAUSED,
+                pausedAt = IsoTime.format(java.util.Date(nowMillis)),
+                elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
+                pausedAutomatically = false,
+            )
+        }
+        if (updated == null) {
             result.error(ERROR_STATE, "No active session", null)
             return
         }
-        val nowMillis = System.currentTimeMillis()
-        val updated = session.copy(
-            status = ActiveActivitySessionData.STATUS_PAUSED,
-            pausedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
-            pausedAutomatically = false,
-        )
-        store.saveSession(updated)
         ActivityRecorderService.pause(appContext)
         ActivityRecorderCoordinator.emitSession(
             ActivityRecorderCoordinator.TYPE_PAUSED,
@@ -208,14 +252,30 @@ class ActivityRecorderChannel(context: Context) :
             return
         }
         val nowMillis = System.currentTimeMillis()
-        val updated = session.copy(
-            status = ActiveActivitySessionData.STATUS_RECORDING,
-            resumedAt = IsoTime.format(java.util.Date(nowMillis)),
-            pausedAt = null,
-            pausedAutomatically = false,
-        )
-        store.saveSession(updated)
-        ActivityRecorderService.resume(appContext)
+        val updated = store.updateSession { current ->
+            current.copy(
+                status = ActiveActivitySessionData.STATUS_RECORDING,
+                resumedAt = IsoTime.format(java.util.Date(nowMillis)),
+                pausedAt = null,
+                pausedAutomatically = false,
+            )
+        }
+        if (updated == null) {
+            result.error(ERROR_STATE, "No active session", null)
+            return
+        }
+        try {
+            ActivityRecorderService.resume(appContext)
+        } catch (_: RuntimeException) {
+            // Started from the background or refused by the system (for
+            // example ForegroundServiceStartNotAllowedException). Put the
+            // paused session back so the stored state matches the idle
+            // service and the user can retry; no `failed` event, since the
+            // recording itself is intact.
+            store.saveSession(session)
+            result.error(ERROR_SERVICE, "Unable to resume recorder service", null)
+            return
+        }
         ActivityRecorderCoordinator.emitSession(
             ActivityRecorderCoordinator.TYPE_RESUMED,
             updated,
@@ -224,28 +284,25 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     private fun handleStop(result: MethodChannel.Result) {
-        val session = store.loadSession()
-        if (session == null) {
-            ActivityRecorderService.stop(appContext)
-            result.success(null)
-            return
-        }
         val nowMillis = System.currentTimeMillis()
-        val updated = session.copy(
-            status = ActiveActivitySessionData.STATUS_COMPLETED,
-            endedAt = IsoTime.format(java.util.Date(nowMillis)),
-            elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
-        )
         // Mark the session completed before tearing the service down. The
-        // collection guard in onLocationFix drops any in-flight fix once the
-        // status is no longer recording, so the recorder is quiesced before
-        // Dart drains the store for completion.
-        store.saveSession(updated)
+        // collection guard in the recorder's fix pipeline drops any in-flight
+        // fix once the status is no longer recording, so the recorder is
+        // quiesced before Dart drains the store for completion.
+        val updated = store.updateSession { session ->
+            session.copy(
+                status = ActiveActivitySessionData.STATUS_COMPLETED,
+                endedAt = IsoTime.format(java.util.Date(nowMillis)),
+                elapsedDurationSeconds = session.elapsedSecondsAt(nowMillis),
+            )
+        }
         ActivityRecorderService.stop(appContext)
-        ActivityRecorderCoordinator.emitSession(
-            ActivityRecorderCoordinator.TYPE_STOPPED,
-            updated,
-        )
+        if (updated != null) {
+            ActivityRecorderCoordinator.emitSession(
+                ActivityRecorderCoordinator.TYPE_STOPPED,
+                updated,
+            )
+        }
         result.success(null)
     }
 
@@ -258,30 +315,11 @@ class ActivityRecorderChannel(context: Context) :
 
     private fun handleDrain(call: MethodCall, result: MethodChannel.Result) {
         val sinceOffset = call.argument<Int>("sinceOffset") ?: 0
-        try {
-            drainExecutor.execute {
-                val points = try {
-                    store.readPoints(sinceOffset).map { it.toMap() }
-                } catch (_: Exception) {
-                    mainHandler.post {
-                        result.error(ERROR_STORE, "Unable to read recorded points", null)
-                    }
-                    return@execute
-                }
-                mainHandler.post { result.success(points) }
-            }
-        } catch (_: RejectedExecutionException) {
-            // The channel was unregistered; its engine is going away.
-            result.error(ERROR_STORE, "Recorder channel unregistered", null)
-        }
+        result.success(store.readPoints(sinceOffset).map { it.toMap() })
     }
 
     private fun handleRecover(result: MethodChannel.Result) {
-        try {
-            result.success(ActivityRecorderCoordinator.recover(appContext)?.toMap())
-        } catch (_: Exception) {
-            result.error(ERROR_STORE, "Unable to recover recording", null)
-        }
+        result.success(SessionRecovery.recover(appContext)?.toMap())
     }
 
     /**
@@ -375,6 +413,22 @@ class ActivityRecorderChannel(context: Context) :
     }
 
     /**
+     * Asks for the Android 13+ notification permission, which keeps the
+     * recorder's foreground notification visible. Dart calls it right before
+     * a recording or its start countdown begins, while the app is in front.
+     * Replies whether the permission is granted afterwards; a "no" never
+     * blocks recording, which runs without a visible notification.
+     */
+    private fun handleRequestNotificationPermission(result: MethodChannel.Result) {
+        val requester = notificationPermission
+        if (requester == null) {
+            result.success(false)
+            return
+        }
+        requester.request { granted -> result.success(granted) }
+    }
+
+    /**
      * Speaks one short start-countdown cue. Like the preview, it never
      * touches the durable session store.
      */
@@ -393,6 +447,7 @@ class ActivityRecorderChannel(context: Context) :
         AudioAnnouncer.speak(appContext, text, duck, languageTag)
         result.success(null)
     }
+
     companion object {
         const val PAYLOAD_VERSION = 2
 
@@ -410,6 +465,7 @@ class ActivityRecorderChannel(context: Context) :
         const val METHOD_SPEAK_CUE = "speakCue"
         const val METHOD_BEGIN_START_WARM_UP = "beginStartWarmUp"
         const val METHOD_END_START_WARM_UP = "endStartWarmUp"
+        const val METHOD_REQUEST_NOTIFICATION_PERMISSION = "requestNotificationPermission"
 
         private const val ARG_COUNTDOWN_SECONDS = "countdownSeconds"
 

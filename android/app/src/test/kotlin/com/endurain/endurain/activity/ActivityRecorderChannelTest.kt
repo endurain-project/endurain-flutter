@@ -3,6 +3,8 @@ package com.endurain.endurain.activity
 import android.Manifest
 import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import android.location.LocationManager
 import android.os.Looper
 import io.flutter.plugin.common.BinaryMessenger
@@ -43,6 +45,7 @@ class ActivityRecorderChannelTest {
         shadowOf(locations).setProviderEnabled(LocationManager.GPS_PROVIDER, true)
         store = ActiveActivityStore.of(application)
         store.clear()
+        RecorderWorker.looperOverride = Looper.getMainLooper()
     }
 
     @After
@@ -51,6 +54,7 @@ class ActivityRecorderChannelTest {
         channels.clear()
         ActivityRecorderCoordinator.detachAll()
         store.clear()
+        RecorderWorker.looperOverride = null
     }
 
     private fun channel(): ActivityRecorderChannel =
@@ -94,7 +98,7 @@ class ActivityRecorderChannelTest {
         })
         val result = CapturingResult()
 
-        channel().onMethodCall(MethodCall("drain", mapOf("sinceOffset" to 1)), result)
+        channel().callAndWait(MethodCall("drain", mapOf("sinceOffset" to 1)), result)
         repeat(200) {
             if (result.done) return@repeat
             Thread.sleep(10)
@@ -111,7 +115,7 @@ class ActivityRecorderChannelTest {
     @Test
     fun unregisteringEndsAWarmUpThisEngineBegan() {
         val channel = channel()
-        channel.onMethodCall(MethodCall("beginStartWarmUp", null), CapturingResult())
+        channel.callAndWait(MethodCall("beginStartWarmUp", null), CapturingResult())
         val controller = Robolectric.buildService(ActivityRecorderService::class.java).create()
         controller.get().onStartCommand(shadowOf(application).nextStartedService, 0, 1)
         assertFalse(shadowOf(controller.get()).isStoppedBySelf)
@@ -120,6 +124,21 @@ class ActivityRecorderChannelTest {
 
         assertTrue(shadowOf(controller.get()).isStoppedBySelf)
         controller.destroy()
+    }
+
+    /**
+     * Calls the channel and waits for its reply: store work runs on the
+     * channel's I/O thread and replies on the (paused) main looper.
+     */
+    private fun ActivityRecorderChannel.callAndWait(call: MethodCall, result: CapturingResult) {
+        onMethodCall(call, result)
+        for (attempt in 0 until 500) {
+            shadowOf(Looper.getMainLooper()).idle()
+            if (result.done) {
+                return
+            }
+            Thread.sleep(10)
+        }
     }
 
     private fun denyLocation() {
@@ -161,7 +180,7 @@ class ActivityRecorderChannelTest {
         val events = listen(channel)
         val result = CapturingResult()
 
-        channel.onMethodCall(MethodCall("start", startArguments()), result)
+        channel.callAndWait(MethodCall("start", startArguments()), result)
 
         assertEquals("service_start_failed", result.errorCode)
         assertNull(shadowOf(application).nextStartedService)
@@ -175,7 +194,7 @@ class ActivityRecorderChannelTest {
     fun startWithLocationPermissionStartsTheService() {
         val result = CapturingResult()
 
-        channel().onMethodCall(MethodCall("start", startArguments()), result)
+        channel().callAndWait(MethodCall("start", startArguments()), result)
 
         assertTrue(result.done)
         assertNull(result.errorCode)
@@ -194,7 +213,7 @@ class ActivityRecorderChannelTest {
         val events = listen(channel)
         val result = CapturingResult()
 
-        channel.onMethodCall(MethodCall("resume", null), result)
+        channel.callAndWait(MethodCall("resume", null), result)
 
         assertEquals("service_start_failed", result.errorCode)
         assertNull(shadowOf(application).nextStartedService)
@@ -204,13 +223,36 @@ class ActivityRecorderChannelTest {
     }
 
     @Test
+    fun resumeRefusedByTheSystemKeepsTheSessionPausedAndRepliesWithAnError() {
+        val paused = pausedSession()
+        store.saveSession(paused)
+        val refusing = object : ContextWrapper(application) {
+            override fun getApplicationContext(): Context = this
+
+            override fun startForegroundService(service: Intent?) =
+                throw IllegalStateException("background start not allowed")
+        }
+        val channel = ActivityRecorderChannel(refusing).also {
+            it.register(NoopMessenger())
+            channels.add(it)
+        }
+        val result = CapturingResult()
+
+        channel.callAndWait(MethodCall("resume", null), result)
+
+        assertEquals("service_start_failed", result.errorCode)
+        // The service never started, so the stored session must stay paused.
+        assertEquals(paused, store.loadSession())
+    }
+
+    @Test
     fun beginWarmUpWithoutLocationPermissionRepliesWithAnErrorAndStartsNoService() {
         denyLocation()
         val channel = channel()
         val events = listen(channel)
         val result = CapturingResult()
 
-        channel.onMethodCall(
+        channel.callAndWait(
             MethodCall("beginStartWarmUp", mapOf("countdownSeconds" to 10)),
             result,
         )
@@ -232,7 +274,7 @@ class ActivityRecorderChannelTest {
         val events = listen(channel)
         val result = CapturingResult()
 
-        channel.onMethodCall(MethodCall("recover", null), result)
+        channel.callAndWait(MethodCall("recover", null), result)
 
         assertNull(result.errorCode)
         val recovered = result.value as Map<*, *>
@@ -244,7 +286,7 @@ class ActivityRecorderChannelTest {
 
     @Test
     fun beginWarmUpPassesTheCountdownLengthToTheService() {
-        channel().onMethodCall(
+        channel().callAndWait(
             MethodCall("beginStartWarmUp", mapOf("countdownSeconds" to 30)),
             CapturingResult(),
         )
@@ -261,7 +303,7 @@ class ActivityRecorderChannelTest {
     fun beginWarmUpToleratesAMissingOrNonIntegerCountdownLength() {
         for (arguments in listOf(null, emptyMap<String, Any?>(), mapOf("countdownSeconds" to "30"))) {
             val result = CapturingResult()
-            channel().onMethodCall(MethodCall("beginStartWarmUp", arguments), result)
+            channel().callAndWait(MethodCall("beginStartWarmUp", arguments), result)
 
             assertTrue(result.done)
             assertNull(result.errorCode)
@@ -269,6 +311,100 @@ class ActivityRecorderChannelTest {
             assertEquals(ActivityRecorderService.ACTION_WARM_UP, intent.action)
             assertFalse(intent.hasExtra(ActivityRecorderService.EXTRA_COUNTDOWN_SECONDS))
         }
+    }
+
+    @Test
+    fun notificationPermissionRequestRepliesWithTheRequestersAnswer() {
+        var asked = 0
+        val channel = ActivityRecorderChannel(
+            application,
+            notificationPermission = NotificationPermissionRequester { onResult ->
+                asked++
+                onResult(true)
+            },
+        ).also {
+            it.register(NoopMessenger())
+            channels.add(it)
+        }
+        val result = CapturingResult()
+
+        channel.callAndWait(MethodCall("requestNotificationPermission", null), result)
+
+        assertEquals(true, result.value)
+        assertEquals(1, asked)
+        assertEquals(Looper.getMainLooper().thread, result.thread)
+    }
+
+    @Test
+    fun notificationPermissionRequestWaitsForTheUsersAnswer() {
+        var pending: ((Boolean) -> Unit)? = null
+        val channel = ActivityRecorderChannel(
+            application,
+            notificationPermission = NotificationPermissionRequester { pending = it },
+        ).also {
+            it.register(NoopMessenger())
+            channels.add(it)
+        }
+        val result = CapturingResult()
+        channel.onMethodCall(MethodCall("requestNotificationPermission", null), result)
+        assertFalse(result.done)
+
+        pending!!(false)
+
+        assertTrue(result.done)
+        assertEquals(false, result.value)
+    }
+
+    @Test
+    fun notificationPermissionRequestWithoutAnActivityRepliesNo() {
+        val result = CapturingResult()
+
+        channel().callAndWait(MethodCall("requestNotificationPermission", null), result)
+
+        assertEquals(false, result.value)
+        assertNull(result.errorCode)
+    }
+
+    @Test
+    fun aStoreThatCannotBeWrittenRepliesWithATypedErrorInsteadOfThrowing() {
+        // A regular file where the active directory belongs makes every save fail.
+        // The store is a process-wide singleton bound to the first test's
+        // files dir, so use the directory it really uses.
+        store.clear()
+        val activeDirField = ActiveActivityStore::class.java.getDeclaredField("activeDir")
+        activeDirField.isAccessible = true
+        val activeDir = activeDirField.get(store) as java.io.File
+        activeDir.parentFile?.mkdirs()
+        activeDir.writeText("not a directory")
+        val result = CapturingResult()
+
+        channel().callAndWait(MethodCall("start", startArguments()), result)
+
+        assertEquals("store_read_failed", result.errorCode)
+        assertNull(shadowOf(application).nextStartedService)
+        // The failed start leaves nothing behind to block the next one.
+        assertFalse(store.hasRecoverableData())
+    }
+
+    @Test
+    fun storeWorkRepliesOnTheMainThreadEvenThoughItRunsElsewhere() {
+        store.saveSession(pausedSession())
+        val result = CapturingResult()
+
+        channel().callAndWait(MethodCall("stop", null), result)
+
+        assertTrue(result.done)
+        assertEquals(Looper.getMainLooper().thread, result.thread)
+        assertEquals(ActiveActivitySessionData.STATUS_COMPLETED, store.loadSession()?.status)
+    }
+
+    @Test
+    fun pauseWithoutASessionRepliesWithAnInvalidStateError() {
+        val result = CapturingResult()
+
+        channel().callAndWait(MethodCall("pause", null), result)
+
+        assertEquals("invalid_state", result.errorCode)
     }
 
     private class RecordingSink : EventChannel.EventSink {

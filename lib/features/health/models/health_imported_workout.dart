@@ -12,8 +12,6 @@ class HealthImportedWorkout {
   final String localActivityId;
   final DateTime importedAt;
   final LocalActivityRecord? localActivity;
-
-  bool get isAvailableLocally => localActivity != null;
 }
 
 class HealthImportedWorkoutPage {

@@ -1,8 +1,7 @@
 package com.endurain.endurain.wear
 
-import com.endurain.endurain.watchlink.WatchProtocol
+import android.util.Log
 import com.google.android.gms.wearable.DataEvent
-import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.WearableListenerService
 
@@ -12,11 +11,14 @@ class AcknowledgementListenerService : WearableListenerService() {
         val phoneLink = (application as EndurainWearApplication).phoneLink
         for (event in dataEvents) {
             if (event.type != DataEvent.TYPE_CHANGED) continue
-            val version = DataMapItem.fromDataItem(event.dataItem).dataMap.getInt(WatchProtocol.KEY_VERSION)
-            val sessionId =
-                AcknowledgementReader.sessionIds(listOf(event.dataItem.uri.path to version)).firstOrNull()
+            try {
+                val sessionId = AcknowledgementReader.sessionIds(listOf(event.dataItem.uri.path)).firstOrNull()
                     ?: continue
-            phoneLink.acknowledged(sessionId)
+                phoneLink.acknowledged(sessionId)
+            } catch (error: Exception) {
+                // One malformed item must not stop the others from clearing the outbox.
+                Log.w(TAG, "Could not read an acknowledgement", error)
+            }
         }
     }
 }

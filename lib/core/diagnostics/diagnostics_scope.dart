@@ -2,8 +2,8 @@ import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:flutter/widgets.dart';
 
 /// Makes the app's [DiagnosticsRecorder] reachable from shared UI code
-/// (dialogs, adaptive widgets) that sits below the app layer and so cannot use
-/// `AppScope`.
+/// (dialogs, adaptive widgets) that sits below the app layer and so cannot reach
+/// `AppServices`.
 class DiagnosticsScope extends InheritedWidget {
   const DiagnosticsScope({
     super.key,

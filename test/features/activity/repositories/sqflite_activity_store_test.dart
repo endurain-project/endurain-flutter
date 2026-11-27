@@ -6,6 +6,8 @@ import 'package:endurain/features/activity/repositories/sqflite_activity_store.d
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../../../helpers/local_activity_listing.dart';
+
 void main() {
   setUpAll(sqfliteFfiInit);
 

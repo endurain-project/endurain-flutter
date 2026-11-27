@@ -5,6 +5,7 @@ import 'package:endurain/features/sensors/controllers/sensor_section_controller.
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
@@ -28,6 +29,8 @@ void main() {
   late SensorSectionController powerController;
   late SensorSectionController cadenceController;
 
+  var openedSettings = 0;
+
   setUp(() {
     // Force Material rendering so ListTile hit-testing is deterministic on the
     // (Apple) host test runner.
@@ -41,7 +44,14 @@ void main() {
       preferences: preferences,
       rememberedKey: SensorPreferencesRepository.rememberedHeartRateSensorKey,
     );
-    controller = SensorSectionController(service: service);
+    openedSettings = 0;
+    controller = SensorSectionController(
+      service: service,
+      openAppSettings: () async {
+        openedSettings++;
+        return true;
+      },
+    );
     // The power and cadence sections are not under test here; back them with an
     // unsupported adapter so they render a stable "unsupported" state and never
     // reach a real BLE stack or shared preferences.
@@ -55,8 +65,14 @@ void main() {
       preferences: preferences,
       rememberedKey: SensorPreferencesRepository.rememberedCadenceSensorKey,
     );
-    powerController = SensorSectionController(service: powerService);
-    cadenceController = SensorSectionController(service: cadenceService);
+    powerController = SensorSectionController(
+      openAppSettings: () async => true,
+      service: powerService,
+    );
+    cadenceController = SensorSectionController(
+      openAppSettings: () async => true,
+      service: cadenceService,
+    );
   });
 
   tearDown(() async {
@@ -74,6 +90,7 @@ void main() {
       AdaptiveApp(
         title: 'Test',
         home: SensorSettingsScreen(
+          openAppSettings: () async => true,
           controller: controller,
           powerController: powerController,
           cadenceController: cadenceController,
@@ -119,6 +136,34 @@ void main() {
 
     expect(find.text(l10n.sensorsBluetoothUnauthorized), findsOneWidget);
     expect(find.text(l10n.sensorsScan), findsNothing);
+  });
+
+  testWidgets('offers system settings when Bluetooth is unauthorized', (
+    tester,
+  ) async {
+    adapter.bluetoothStateValue = SensorBluetoothState.unauthorized;
+
+    await pumpScreen(tester);
+    await tester.tap(find.text(l10n.activityOpenSettings));
+
+    expect(openedSettings, 1);
+  });
+
+  testWidgets('offers system settings after a denied scan permission', (
+    tester,
+  ) async {
+    adapter
+      ..bluetoothStateValue = SensorBluetoothState.ready
+      ..permissionResult = SensorPermissionResult.denied;
+
+    await pumpScreen(tester);
+    await tester.tap(find.text(l10n.sensorsScan));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(l10n.sensorsPermissionRequired), findsOneWidget);
+    await tester.tap(find.text(l10n.activityOpenSettings));
+    expect(openedSettings, 1);
   });
 
   testWidgets('lists discovered sensors while scanning', (tester) async {

@@ -49,6 +49,40 @@ void main() {
       expect(await storage.exists(fileName), isFalse);
     });
 
+    test(
+      'leaves no staging file after a write and replaces in place',
+      () async {
+        await storage.write(id: 'activity_1', gpx: '<gpx>old</gpx>');
+        final fileName = await storage.write(
+          id: 'activity_1',
+          gpx: '<gpx>new</gpx>',
+        );
+
+        final dir = File(await storage.readFilePath(fileName)).parent;
+        expect(
+          dir.listSync().map((e) => e.path.split(Platform.pathSeparator).last),
+          ['activity_1.gpx'],
+        );
+        expect(await storage.read(fileName), '<gpx>new</gpx>');
+      },
+    );
+
+    test('sweeps staging files left by an interrupted write', () async {
+      final fileName = await storage.write(id: 'activity_1', gpx: '<gpx />');
+      final dir = File(await storage.readFilePath(fileName)).parent;
+      File('${dir.path}/activity_2.gpx.tmp').writeAsStringSync('<gpx trunc');
+      // A fresh instance models the app restarting after the crash.
+      final restarted = LocalActivityGpxStorage(
+        supportDirectoryProvider: () async => tempDirectory,
+      );
+
+      await restarted.write(id: 'activity_3', gpx: '<gpx />');
+
+      expect(File('${dir.path}/activity_2.gpx.tmp').existsSync(), isFalse);
+      expect(await restarted.exists('activity_1.gpx'), isTrue);
+      expect(await restarted.exists('activity_3.gpx'), isTrue);
+    });
+
     test('reads back written GPX contents', () async {
       final fileName = await storage.write(
         id: 'activity_1',

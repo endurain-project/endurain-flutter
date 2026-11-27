@@ -1,8 +1,8 @@
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/localization/app_locales.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/map/controllers/tile_server_settings_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/screens/tile_server_settings_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';

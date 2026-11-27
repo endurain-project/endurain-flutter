@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ system splash screen: only the splash attributes are added
+         on top of the base launch theme (the light/dark parent comes from
+         BaseLaunchTheme). The window background colour also serves as the
+         splash background, so day and night need no separate variant. The
+         Flutter engine takes over once it draws its first frame. -->
+    <style name="LaunchTheme" parent="BaseLaunchTheme">
+        <item name="android:windowSplashScreenBackground">@color/window_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+    </style>
+</resources>

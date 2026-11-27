@@ -21,9 +21,9 @@ import android.os.PowerManager
  */
 internal class RecordingWakeLock(
     private val context: Context,
+    private val handler: Handler = Handler(Looper.getMainLooper()),
     private val clock: () -> Long = android.os.SystemClock::elapsedRealtime,
 ) {
-    private val handler = Handler(Looper.getMainLooper())
     private var wakeLock: PowerManager.WakeLock? = null
     private var lastAcquiredAtMillis = 0L
 

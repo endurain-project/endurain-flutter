@@ -156,6 +156,13 @@ class _ActivityRecordingOverlayState extends State<ActivityRecordingOverlay> {
     }
 
     final countdownPlatform = widget.startCountdownPlatform;
+    // Asked here, with the user looking at the app and just before the first
+    // foreground notification, rather than on app launch. The answer never
+    // blocks recording.
+    await _safely(countdownPlatform.requestNotificationPermission);
+    if (!mounted) {
+      return;
+    }
     var countedDown = false;
     if (countdown.enabled) {
       final outcome = await _runStartCountdown(

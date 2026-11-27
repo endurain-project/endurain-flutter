@@ -28,12 +28,9 @@ class LocaleSettingsRepository {
   /// Persists [locale] as a BCP 47 tag, or clears the preference (falling back
   /// to the system locale) when [locale] is `null`.
   Future<void> setLocale(Locale? locale) {
-    if (locale == null) {
-      return _preferences.delete(key: _localeTagKey);
-    }
-    return _preferences.write(
+    return _preferences.writeOrDelete(
       key: _localeTagKey,
-      value: locale.toLanguageTag(),
+      value: locale?.toLanguageTag(),
     );
   }
 

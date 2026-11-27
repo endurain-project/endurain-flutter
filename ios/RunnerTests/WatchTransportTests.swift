@@ -95,7 +95,7 @@ final class HandoffFileStoreTests: XCTestCase {
         store.markDelivered("unacknowledged", at: now.addingTimeInterval(-40 * 24 * 3600))
         store.markDelivered("recent", at: now.addingTimeInterval(-60))
 
-        let toSend = store.entriesToTransfer(redeliverDeliveredBefore: now.addingTimeInterval(-600))
+        let toSend = store.entriesToTransfer(at: now, baseDelay: 600, maxDelay: 86_400)
 
         XCTAssertEqual(Set(toSend.map { $0.sessionId }), ["pending", "unacknowledged"])
         // Nothing unacknowledged is ever dropped.
@@ -106,14 +106,81 @@ final class HandoffFileStoreTests: XCTestCase {
         let now = Date()
         try store.save(Data("route".utf8), sessionId: "s")
         store.markDelivered("s", at: now.addingTimeInterval(-3600))
-        XCTAssertEqual(store.entriesToTransfer(redeliverDeliveredBefore: now.addingTimeInterval(-600)).count, 1)
+        XCTAssertEqual(store.entriesToTransfer(at: now, baseDelay: 600, maxDelay: 86_400).count, 1)
 
         store.markDelivered("s", at: now)
 
         let entry = try XCTUnwrap(store.entry(for: "s"))
         XCTAssertEqual(try XCTUnwrap(entry.deliveredAt).timeIntervalSince(now), 0, accuracy: 1)
         XCTAssertEqual(store.data(for: "s"), Data("route".utf8))
-        XCTAssertTrue(store.entriesToTransfer(redeliverDeliveredBefore: now.addingTimeInterval(-600)).isEmpty)
+        XCTAssertTrue(store.entriesToTransfer(at: now, baseDelay: 600, maxDelay: 86_400).isEmpty)
+    }
+
+    func testRedeliveryDelayDoublesUpToTheCap() {
+        func delay(_ attempts: Int) -> TimeInterval {
+            return HandoffFileStore.redeliveryDelay(
+                afterAttempts: attempts,
+                baseDelay: 600,
+                maxDelay: 86_400
+            )
+        }
+        XCTAssertEqual(delay(0), 600)
+        XCTAssertEqual(delay(1), 600)
+        XCTAssertEqual(delay(2), 1_200)
+        XCTAssertEqual(delay(3), 2_400)
+        XCTAssertEqual(delay(8), 76_800)
+        XCTAssertEqual(delay(9), 86_400)
+        XCTAssertEqual(delay(500), 86_400)
+    }
+
+    func testEachUnacknowledgedDeliveryLengthensTheWait() throws {
+        let now = Date()
+        try store.save(Data("route".utf8), sessionId: "s")
+
+        store.markDelivered("s", at: now)
+        XCTAssertEqual(try XCTUnwrap(store.entry(for: "s")).deliveryAttempts, 1)
+        store.markDelivered("s", at: now)
+        XCTAssertEqual(try XCTUnwrap(store.entry(for: "s")).deliveryAttempts, 2)
+        store.markDelivered("s", at: now)
+        XCTAssertEqual(try XCTUnwrap(store.entry(for: "s")).deliveryAttempts, 3)
+
+        // After three deliveries the wait is 4 x the base delay.
+        func due(after seconds: TimeInterval) -> Bool {
+            return !store.entriesToTransfer(
+                at: now.addingTimeInterval(seconds),
+                baseDelay: 600,
+                maxDelay: 86_400
+            ).isEmpty
+        }
+        XCTAssertFalse(due(after: 2_399))
+        XCTAssertTrue(due(after: 2_400))
+        // Never deleted, however long it stays unacknowledged.
+        XCTAssertEqual(store.data(for: "s"), Data("route".utf8))
+    }
+
+    func testAttemptsSurviveANewStoreInstanceAndResetOnSave() throws {
+        let now = Date()
+        try store.save(Data("a".utf8), sessionId: "s")
+        store.markDelivered("s", at: now)
+        store.markDelivered("s", at: now)
+
+        let reopened = HandoffFileStore(directory: directory)
+        XCTAssertEqual(try XCTUnwrap(reopened.entry(for: "s")).deliveryAttempts, 2)
+
+        try store.save(Data("b".utf8), sessionId: "s")
+        XCTAssertEqual(try XCTUnwrap(store.entry(for: "s")).deliveryAttempts, 0)
+        store.markDelivered("s", at: now)
+        XCTAssertEqual(try XCTUnwrap(store.entry(for: "s")).deliveryAttempts, 1)
+    }
+
+    func testRemoveAlsoDropsTheAttemptCount() throws {
+        try store.save(Data("a".utf8), sessionId: "s")
+        store.markDelivered("s")
+        store.remove("s")
+
+        XCTAssertTrue(store.isEmpty)
+        let leftovers = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
+        XCTAssertTrue(leftovers.isEmpty)
     }
 
     func testMarkDeliveredIgnoresAnUnknownSession() throws {

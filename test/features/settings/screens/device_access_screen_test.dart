@@ -3,6 +3,7 @@ import 'package:endurain/core/services/platform/location_platform_adapter.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/settings/controllers/device_access_controller.dart';
+import 'package:endurain/features/settings/models/bluetooth_access_state.dart';
 import 'package:endurain/features/settings/screens/device_access_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -138,6 +139,74 @@ void main() {
 
     expect(find.text(l10n.deviceAccessLocationAlways), findsOneWidget);
     expect(find.text(l10n.deviceAccessHealthUnavailable), findsOneWidget);
+  });
+
+  testWidgets('shows the Bluetooth row and requests access when undecided', (
+    tester,
+  ) async {
+    final adapter = _FakeLocationPlatformAdapter(
+      permission: LocationPermission.always,
+      requestedPermission: LocationPermission.always,
+    );
+    var state = BluetoothAccessState.notDetermined;
+    final controller = DeviceAccessController(
+      locationService: LocationService(platformAdapter: adapter),
+      checkBluetoothAccess: () async => state,
+      requestBluetoothAccess: () async => state = BluetoothAccessState.ready,
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: DeviceAccessScreen(
+          controller: controller,
+          healthController: _idleHealthController(),
+          healthSyncEnabled: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.deviceAccessBluetoothNotAllowed), findsOneWidget);
+
+    await tester.tap(find.text(l10n.deviceAccessBluetoothTitle));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.deviceAccessBluetoothAllowed), findsOneWidget);
+  });
+
+  testWidgets('opens app settings when Bluetooth access is blocked', (
+    tester,
+  ) async {
+    final adapter = _FakeLocationPlatformAdapter(
+      permission: LocationPermission.always,
+      requestedPermission: LocationPermission.always,
+    );
+    final controller = DeviceAccessController(
+      locationService: LocationService(platformAdapter: adapter),
+      checkBluetoothAccess: () async => BluetoothAccessState.blocked,
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      AdaptiveApp(
+        title: 'Test',
+        home: DeviceAccessScreen(
+          controller: controller,
+          healthController: _idleHealthController(),
+          healthSyncEnabled: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.deviceAccessBluetoothBlocked), findsOneWidget);
+
+    await tester.tap(find.text(l10n.deviceAccessBluetoothTitle));
+    await tester.pumpAndSettle();
+
+    expect(adapter.openAppSettingsCalled, isTrue);
   });
 }
 

@@ -9,6 +9,9 @@ import com.endurain.endurain.watchlink.HandoffFileStore
  * inert.
  */
 object WatchLinkFactory {
+    // `context` is unused here but the signature must match the
+    // watchLinkPlay flavor, which MainActivity calls identically.
+    @Suppress("UNUSED_PARAMETER")
     fun create(context: Context): WatchLink = UnsupportedWatchLink
 }
 

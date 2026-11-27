@@ -3,7 +3,6 @@ package com.endurain.endurain.activity
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.io.File
 
 /**
  * JVM unit tests for [MovementAutoPauseDetector].
@@ -253,7 +252,7 @@ class MovementAutoPauseDetectorTest {
      */
     @Test
     fun sharedVectorsMatchExpectedTransitions() {
-        val cases = JSONObject(findVectorsFile().readText()).getJSONArray("cases")
+        val cases = SharedFixtures.load("movement_auto_pause_vectors.json").getJSONArray("cases")
         for (i in 0 until cases.length()) {
             val spec = cases.getJSONObject(i)
             val name = spec.getString("name")
@@ -290,18 +289,5 @@ class MovementAutoPauseDetectorTest {
                 assertEquals("$name: step at t=${step.getInt("t")}", expected, actual)
             }
         }
-    }
-
-    /** Gradle's working directory is android/app; walk up to the repo root. */
-    private fun findVectorsFile(): File {
-        var dir: File? = File(System.getProperty("user.dir")!!).absoluteFile
-        while (dir != null) {
-            val candidate = File(dir, "test/fixtures/movement_auto_pause_vectors.json")
-            if (candidate.isFile) {
-                return candidate
-            }
-            dir = dir.parentFile
-        }
-        throw AssertionError("movement_auto_pause_vectors.json not found")
     }
 }

@@ -1,6 +1,7 @@
 import CoreLocation
 import Foundation
 import HealthKit
+import os
 
 /// The GPS track of the workout being recorded on the watch.
 ///
@@ -9,6 +10,8 @@ import HealthKit
 /// durable [WatchRecordingStore], so a crash costs at most one batch.
 @MainActor
 final class WorkoutRouteRecorder {
+    nonisolated private static let log = AppLogger.make(category: "WorkoutRouteRecorder")
+
     /// GPS fixes less accurate than this are not recorded.
     static let maxHorizontalAccuracyMeters: CLLocationAccuracy = 50
 
@@ -89,7 +92,7 @@ final class WorkoutRouteRecorder {
             unsavedPoints = []
         } catch {
             // Kept in memory and retried with the next batch.
-            NSLog("Endurain watch: could not save workout points")
+            Self.log.error("Could not save workout points: \(error.localizedDescription, privacy: .private)")
         }
     }
 
@@ -115,7 +118,7 @@ final class WorkoutRouteRecorder {
         routeHasData = true
         routeBuilder.insertRouteData(locations) { _, error in
             if let error {
-                NSLog("Endurain watch: could not add to the workout route: %@", error.localizedDescription)
+                Self.log.error("Could not add to the workout route: \(error.localizedDescription, privacy: .private)")
             }
         }
     }

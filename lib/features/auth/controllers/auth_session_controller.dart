@@ -57,8 +57,6 @@ class AuthSessionController extends SafeNotifier {
   bool _sessionUnreadable = false;
 
   SessionMode get mode => _mode;
-  bool get isLoading => _mode == SessionMode.loading;
-  bool get isAuthenticated => _mode == SessionMode.authenticated;
   bool get isGuest => _mode == SessionMode.guest;
 
   /// Resolves the initial session on launch. A valid server session restores

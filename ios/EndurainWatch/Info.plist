@@ -62,6 +62,11 @@
 	<string>Endurain saves your watch workouts and their routes to Health, like any workout recorded on Apple Watch.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Endurain records your route during outdoor workouts so it can be uploaded to your Endurain server.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>EndurainWorkoutRoute</key>
+		<string>Endurain needs your precise location to record an accurate route of your workout.</string>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

@@ -42,9 +42,9 @@ class CyclingPowerGattClient(context: Context) :
 
     companion object {
         private val CYCLING_POWER_SERVICE =
-            UUID.fromString("00001818-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x1818)
         private val CYCLING_POWER_MEASUREMENT =
-            UUID.fromString("00002a63-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x2a63)
 
         /**
          * Decodes the GATT Cycling Power Measurement value: a UINT16 flags field
@@ -56,7 +56,7 @@ class CyclingPowerGattClient(context: Context) :
             if (data.size < 4) {
                 return null
             }
-            val raw = (data[2].toInt() and 0xFF) or ((data[3].toInt() and 0xFF) shl 8)
+            val raw = BleBytes.u16Le(data, 2)
             val signed = if (raw and 0x8000 != 0) raw - 0x10000 else raw
             return if (signed < 0) 0 else signed
         }

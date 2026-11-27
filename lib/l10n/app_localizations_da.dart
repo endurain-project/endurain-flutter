@@ -601,6 +601,10 @@ class AppLocalizationsDa extends AppLocalizations {
   String get activityUploadReady => 'Klar til upload';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Gemt på denne enhed. Den uploades, når du logger ind.';
+
+  @override
   String get activityUploaded => 'Uploadet';
 
   @override
@@ -845,6 +849,28 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Adgang til sundhedsdata';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Adgang til Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Tilladt';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth er slået fra';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Blokeret i systemindstillinger';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Ikke tilladt';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Ikke tilgængelig på denne enhed';
 
   @override
   String get deviceAccessChecking => 'Kontrollerer adgang…';
@@ -1116,6 +1142,16 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Åbn appen Sundhed, tryk på dit profilbillede og derefter på Apps og tjenester. Vælg Endurain, og opdater datakategorierne.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Tillad adgang i Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect holder op med at spørge, når adgang er afvist to gange. Åbn Health Connect for at give Endurain lov til at læse dine træninger, ruter og puls.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Åbn Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Opret forbindelse til sundhedsdata';

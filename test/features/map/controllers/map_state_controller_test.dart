@@ -1,8 +1,8 @@
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_location_platform_adapter.dart';
@@ -166,10 +166,40 @@ void main() {
       platform.addPositionError(StateError('stream stopped'));
       await pumpEventQueue();
 
-      expect(controller.hasLocationError, isTrue);
       expect(controller.hasLocationPermission, isFalse);
       expect(controller.isLoadingLocation, isFalse);
       controller.dispose();
+      await platform.close();
+    });
+
+    test('clears the loading flag when the platform throws', () async {
+      final controller = MapStateController(
+        locationService: LocationService(
+          platformAdapter: FakeLocationPlatformAdapter(
+            platformError: PlatformException(code: 'channel-error'),
+          ),
+        ),
+        mapSettingsRepository: makeSettings(),
+      );
+
+      await controller.initialize();
+
+      expect(controller.isLoadingLocation, isFalse);
+      expect(controller.hasLocationPermission, isFalse);
+      controller.dispose();
+    });
+
+    test('ignores recording and foreground changes after dispose', () async {
+      final platform = FakeLocationPlatformAdapter();
+      final controller = MapStateController(
+        locationService: LocationService(platformAdapter: platform),
+        mapSettingsRepository: makeSettings(),
+      );
+      await controller.initialize();
+      controller.dispose();
+
+      expect(() => controller.setRecordingActive(false), returnsNormally);
+      expect(() => controller.setAppInForeground(true), returnsNormally);
       await platform.close();
     });
 

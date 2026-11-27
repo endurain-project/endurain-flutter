@@ -5,6 +5,7 @@ import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 import 'package:endurain/features/sensors/services/sensor_measurement_decoder.dart';
 import 'package:endurain/features/sensors/services/sensor_profile.dart';
@@ -56,12 +57,19 @@ class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
   }
 
   @override
-  Future<bool> ensurePermissions() async {
+  Future<SensorPermissionResult> ensurePermissions() async {
     try {
       await UniversalBle.requestPermissions();
-      return true;
     } catch (_) {
-      return false;
+      // The plugin throws when the user refuses a runtime permission.
+      return SensorPermissionResult.denied;
+    }
+    try {
+      return SensorPermissionResult.fromBluetoothState(
+        await currentBluetoothState(),
+      );
+    } catch (_) {
+      return SensorPermissionResult.unavailable;
     }
   }
 
@@ -72,6 +80,8 @@ class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
     late final StreamController<List<BleSensorDevice>> controller;
     StreamSubscription<BleDevice>? scanSubscription;
     Timer? timeoutTimer;
+    var cancelled = false;
+    var scanStarted = false;
     final discovered = <String, BleSensorDevice>{};
 
     Future<void> beginScan() async {
@@ -103,9 +113,19 @@ class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
         }
         return;
       }
+      scanStarted = true;
+      if (cancelled) {
+        // The listener went away while the scan was starting; onCancel's
+        // stopScan may have run before the scan began, so stop it here.
+        await stopScan().catchError((Object _) {});
+        return;
+      }
       // universal_ble scans until stopped, so end the stream after [timeout] so
-      // listeners can reset their "scanning" state.
+      // listeners can reset their "scanning" state. A closed controller does
+      // not run onCancel, so stop the scan and drop the subscription here.
       timeoutTimer = Timer(timeout, () {
+        unawaited(scanSubscription?.cancel());
+        unawaited(stopScan().catchError((Object _) {}));
         if (!controller.isClosed) {
           unawaited(controller.close());
         }
@@ -115,9 +135,14 @@ class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
     controller = StreamController<List<BleSensorDevice>>(
       onListen: beginScan,
       onCancel: () async {
+        cancelled = true;
         timeoutTimer?.cancel();
         await scanSubscription?.cancel();
-        await stopScan();
+        // While startScan is still queued, stopScan would wait behind it and
+        // stall this cancel; beginScan stops the scan itself once it starts.
+        if (scanStarted) {
+          await stopScan();
+        }
       },
     );
     return controller.stream;

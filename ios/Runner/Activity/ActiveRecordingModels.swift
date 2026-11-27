@@ -198,7 +198,6 @@ struct ActiveActivitySessionData {
 
     static let statusRecording = "recording"
     static let statusPaused = "paused"
-    static let statusStopping = "stopping"
     static let statusCompleted = "completed"
     static let statusFailed = "failed"
 }

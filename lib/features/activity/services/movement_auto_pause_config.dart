@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Configuration for the movement auto-pause algorithm.
 ///
 /// The algorithm itself runs natively (`MovementAutoPauseDetector.kt` and
@@ -27,15 +29,18 @@ class MovementAutoPauseConfig {
   /// Speed at or above which a sample counts as "moving" (m/s). The default
   /// (~2.2 km/h) is comfortably below a walking pace while still filtering
   /// GPS jitter recorded while stationary.
+  @visibleForTesting
   final double movingSpeedThresholdMetersPerSecond;
 
   /// Horizontal accuracy worse than this (in meters) is treated as
   /// unreliable and never counted as movement. This is intentionally stricter
   /// than the track-retention threshold so coarse fixes cannot drive automatic
   /// pause or resume transitions.
+  @visibleForTesting
   final double maxAccuracyMeters;
 
   /// Number of consecutive reliable "moving" samples required to auto-resume,
   /// providing hysteresis so a single noisy fix cannot resume prematurely.
+  @visibleForTesting
   final int consecutiveMovingSamplesToResume;
 }

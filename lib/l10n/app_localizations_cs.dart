@@ -603,6 +603,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get activityUploadReady => 'Připraveno k nahrání';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Uloženo v tomto zařízení. Nahraje se po přihlášení.';
+
+  @override
   String get activityUploaded => 'Nahráno';
 
   @override
@@ -863,6 +867,28 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Přístup k údajům o zdraví';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Přístup k Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Povoleno';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth je vypnutý';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Blokováno v nastavení systému';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Není povoleno';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Není k dispozici na tomto zařízení';
 
   @override
   String get deviceAccessChecking => 'Kontrola přístupu…';
@@ -1133,6 +1159,16 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Otevřete aplikaci Zdraví, klepněte na svůj profilový obrázek a poté na Aplikace a služby. Vyberte Endurain a aktualizujte kategorie dat.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Povolte přístup v Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect se přestane ptát, jakmile byl přístup dvakrát odepřen. Otevřete Health Connect a povolte Endurain číst vaše tréninky, trasy a tepovou frekvenci.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Otevřít Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Připojit ke zdravotním datům';

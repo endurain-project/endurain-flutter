@@ -18,9 +18,8 @@ class CrashReportingSettingsRepository {
 
   /// Whether the user has opted in to remote crash reporting. Defaults to
   /// `false` — nothing is transmitted until the user turns this on.
-  Future<bool> isEnabled() async =>
-      await _preferences.read(key: _enabledKey) == 'true';
+  Future<bool> isEnabled() => _preferences.readBool(key: _enabledKey);
 
   Future<void> setEnabled(bool enabled) =>
-      _preferences.write(key: _enabledKey, value: enabled ? 'true' : 'false');
+      _preferences.writeBool(key: _enabledKey, value: enabled);
 }

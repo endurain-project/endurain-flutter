@@ -198,10 +198,13 @@ void main() {
       () async {
         final storage = SecureStorageService();
         await storage.setServerUrl('https://example.test');
-        await storage.setAccessToken('access-1');
-        await storage.setRefreshToken('refresh-1');
-        await storage.setSessionId('session-1');
-        await storage.setAccessTokenExpiresAt(DateTime.now().toUtc());
+        await storage.write(key: 'access_token', value: 'access-1');
+        await storage.write(key: 'refresh_token', value: 'refresh-1');
+        await storage.write(key: 'session_id', value: 'session-1');
+        await storage.write(
+          key: 'access_token_expires_at',
+          value: DateTime.now().toUtc().toIso8601String(),
+        );
         final service = AuthService(
           storage: storage,
           httpClient: MockClient((request) async {
@@ -218,7 +221,7 @@ void main() {
         expect(refreshed, isFalse);
         expect(await storage.getAccessToken(), isNull);
         expect(await storage.getRefreshToken(), isNull);
-        expect(await storage.getSessionId(), isNull);
+        expect(await storage.read(key: 'session_id'), isNull);
       },
     );
 
@@ -238,7 +241,7 @@ void main() {
       expect(serverLogoutSucceeded, isFalse);
       expect(await storage.getAccessToken(), isNull);
       expect(await storage.getRefreshToken(), isNull);
-      expect(await storage.getSessionId(), isNull);
+      expect(await storage.read(key: 'session_id'), isNull);
       expect(await storage.getServerUrl(), 'https://example.test');
       expect(await _readSession(storage), isNull);
     });
@@ -848,7 +851,7 @@ void main() {
 
     test('refreshToken clears the session without credentials', () async {
       final storage = SecureStorageService();
-      await storage.setAccessToken('access-1');
+      await storage.write(key: 'access_token', value: 'access-1');
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {
@@ -1128,7 +1131,7 @@ void main() {
     test('logout clears local tokens without server credentials', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
+      await storage.write(key: 'access_token', value: 'access-1');
       final service = AuthService(
         storage: storage,
         httpClient: MockClient((request) async {

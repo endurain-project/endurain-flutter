@@ -65,7 +65,6 @@ class ActivityRecordingController extends SafeNotifier {
 
   ActivityRecordingState _state = ActivityRecordingState();
   ActivityType _selectedActivityType = ActivityType.run;
-  String? _completedGpx;
   String? _completedLocalActivityId;
   LocalActivityRecord? _completedLocalActivityRecord;
   ActivityUploadStatus _uploadStatus = ActivityUploadStatus.idle;
@@ -77,10 +76,6 @@ class ActivityRecordingController extends SafeNotifier {
   ActivityRecordingState get state => _state;
 
   ActivityType get selectedActivityType => _selectedActivityType;
-
-  String? get completedGpx => _completedGpx;
-
-  String? get completedLocalActivityId => _completedLocalActivityId;
 
   ActivityUploadStatus get uploadStatus => _uploadStatus;
 
@@ -112,12 +107,21 @@ class ActivityRecordingController extends SafeNotifier {
 
   Future<void> start(ActivityType type) async {
     await _activeRecovery;
-    if (_state.isActive ||
-        _state.status == ActivityRecordingStatus.stopping ||
-        _state.status == ActivityRecordingStatus.completed) {
+    if (_state.isActive || _state.status == ActivityRecordingStatus.stopping) {
       return;
     }
-    _completedGpx = null;
+    if (_state.status == ActivityRecordingStatus.completed) {
+      // A finished activity still on screen is already saved; starting a new
+      // one dismisses its summary instead of silently doing nothing. An
+      // upload in flight keeps the summary, so its result is not lost.
+      if (_uploadStatus == ActivityUploadStatus.uploading) {
+        return;
+      }
+      await clearCompleted();
+      if (_state.status == ActivityRecordingStatus.completed) {
+        return;
+      }
+    }
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.idle);
@@ -210,7 +214,6 @@ class ActivityRecordingController extends SafeNotifier {
       await _finalizeCompletedState(completedState);
       return;
     }
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setState(completedState);
@@ -234,6 +237,9 @@ class ActivityRecordingController extends SafeNotifier {
     );
     if (await _isUploadAuthorized()) {
       unawaited(uploadCompletedGpx());
+    } else {
+      // Saved as pending; the upload queue sends it after the next sign-in.
+      _setUploadState(ActivityUploadStatus.awaitingSignIn);
     }
   }
 
@@ -248,7 +254,6 @@ class ActivityRecordingController extends SafeNotifier {
       _setUploadState(ActivityUploadStatus.cleanupFailed, error: error);
       return;
     }
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.idle);
@@ -257,7 +262,6 @@ class ActivityRecordingController extends SafeNotifier {
   }
 
   Future<void> clearCompleted() async {
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.idle);
@@ -301,7 +305,6 @@ class ActivityRecordingController extends SafeNotifier {
   ) async {
     try {
       final gpx = await _finalizer.buildGpx(completedState);
-      _completedGpx = gpx;
       return gpx;
     } catch (error) {
       // Sanitized breadcrumb only — record the error type, never coordinates,
@@ -311,7 +314,6 @@ class ActivityRecordingController extends SafeNotifier {
         DiagnosticsEvents.activityGpxGenerationFailed,
         details: diagnosticErrorDetails(error),
       );
-      _completedGpx = null;
       _setState(
         completedState.copyWith(
           status: ActivityRecordingStatus.failed,
@@ -365,7 +367,6 @@ class ActivityRecordingController extends SafeNotifier {
     ActivityRecordingState completedState,
     AppException error,
   ) {
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.failed, error: error);

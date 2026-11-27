@@ -2,6 +2,9 @@ name: Mirror to GitLab
 
 on:
   push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
 
 concurrency:
   group: gitlab-mirror
@@ -22,11 +25,20 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
           set -euo pipefail
+          # Credentials travel in an HTTP header passed per command (-c), so
+          # they are never written to the mirror's git config or remote URLs.
+          gh_auth="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')"
+          gl_auth="$(printf 'oauth2:%s' "$GITLAB_TOKEN" | base64 | tr -d '\n')"
+          echo "::add-mask::$gh_auth"
+          echo "::add-mask::$gl_auth"
           mirror_dir="$RUNNER_TEMP/endurain-flutter.git"
-          git clone --mirror \
-            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            "$mirror_dir"
+          git -c "http.extraheader=AUTHORIZATION: basic ${gh_auth}" \
+            clone --mirror "https://github.com/${GITHUB_REPOSITORY}.git" "$mirror_dir"
           cd "$mirror_dir"
-          git remote set-url --push origin \
-            "https://oauth2:${GITLAB_TOKEN}@gitlab.com/endurain-project/endurain-flutter.git"
-          git push --mirror
+          # A plain `git push --mirror` would also push GitHub's refs/pull/*,
+          # which GitLab rejects. Push only branches and tags, pruning
+          # anything deleted upstream.
+          git -c "http.extraheader=AUTHORIZATION: basic ${gl_auth}" \
+            push --prune \
+            "https://gitlab.com/endurain-project/endurain-flutter.git" \
+            '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'

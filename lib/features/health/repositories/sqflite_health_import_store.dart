@@ -1,7 +1,8 @@
-import 'package:endurain/core/utils/private_storage_paths.dart';
+import 'package:endurain/core/utils/sqlite_database_handle.dart';
 import 'package:endurain/core/utils/sqlite_migration_runner.dart';
 import 'package:endurain/features/health/models/health_imported_workout.dart';
 import 'package:endurain/features/health/repositories/health_import_store.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// SQLite-backed [HealthImportStore] implemented with sqflite.
@@ -24,8 +25,8 @@ class SqfliteHealthImportStore implements HealthImportStore {
     DatabaseFactory? databaseFactory,
     String? databasePath,
     DateTime Function()? now,
-  }) : _factory = databaseFactory ?? _platformFactory(),
-       _path = databasePath,
+  }) : _databaseFactory = databaseFactory,
+       _databasePath = databasePath,
        _now = now ?? DateTime.now;
 
   static const int _schemaVersion = 3;
@@ -35,40 +36,28 @@ class SqfliteHealthImportStore implements HealthImportStore {
   static const String _tableSync = 'sync_state';
   static const String _legacyProfileId = 'legacy://unassigned';
 
-  final DatabaseFactory _factory;
-  final String? _path;
+  final DatabaseFactory? _databaseFactory;
+  final String? _databasePath;
   final DateTime Function() _now;
-  Database? _db;
 
   late final SqliteMigrationRunner _migrationRunner = SqliteMigrationRunner(
     migrations: {1: _migrateToV1, 2: _migrateToV2, 3: _migrateToV3},
     recordVersion: _recordSchemaVersion,
   );
 
-  static DatabaseFactory _platformFactory() => databaseFactorySqflitePlugin;
+  late final SqliteDatabaseHandle _database = SqliteDatabaseHandle(
+    fileName: _dbFileName,
+    schemaVersion: _schemaVersion,
+    migrationRunner: _migrationRunner,
+    databaseFactory: _databaseFactory,
+    databasePath: _databasePath,
+  );
 
-  Future<Database> _open() async {
-    if (_db != null) return _db!;
-    final path =
-        _path ??
-        await privateDatabasePath(
-          databaseFactory: _factory,
-          fileName: _dbFileName,
-        );
-    _db = await _factory.openDatabase(
-      path,
-      options: OpenDatabaseOptions(
-        version: _schemaVersion,
-        onCreate: (db, version) async {
-          await _migrationRunner.run(db, from: 0, to: version);
-        },
-        onUpgrade: (db, oldVersion, newVersion) async {
-          await _migrationRunner.run(db, from: oldVersion, to: newVersion);
-        },
-      ),
-    );
-    return _db!;
-  }
+  Future<Database> _open() => _database.open();
+
+  /// Closes the underlying database; a later call reopens it.
+  @visibleForTesting
+  Future<void> close() => _database.close();
 
   Future<void> _recordSchemaVersion(Database db, int version) async {
     await db.execute(

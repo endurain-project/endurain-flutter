@@ -2,6 +2,8 @@ import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/active_activity_session_x.dart';
+
 void main() {
   group('ActiveActivitySession', () {
     final startedAt = DateTime.utc(2026, 6, 3, 9);

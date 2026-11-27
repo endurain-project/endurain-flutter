@@ -547,6 +547,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityUploadReady => '准备上传';
 
   @override
+  String get activityUploadAwaitingSignIn => '已保存在此设备上。登录后将上传。';
+
+  @override
   String get activityUploaded => '已上传';
 
   @override
@@ -778,6 +781,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => '健康数据访问权限';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => '蓝牙访问权限';
+
+  @override
+  String get deviceAccessBluetoothAllowed => '已允许';
+
+  @override
+  String get deviceAccessBluetoothOff => '蓝牙已关闭';
+
+  @override
+  String get deviceAccessBluetoothBlocked => '已在系统设置中阻止';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => '不允许';
+
+  @override
+  String get deviceAccessBluetoothUnavailable => '在此设备上不可用';
 
   @override
   String get deviceAccessChecking => '正在检查访问权限…';
@@ -1039,6 +1063,16 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       '打开“健康”App，轻点您的个人资料图片，然后轻点“App 和服务”。选择 Endurain 并更新数据类别。';
+
+  @override
+  String get healthAccessBlockedTitle => '在 Health Connect 中允许访问';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      '在访问被拒绝两次后，Health Connect 将不再询问。请打开 Health Connect，允许 Endurain 读取您的锻炼、路线和心率。';
+
+  @override
+  String get healthAccessOpenHealthConnect => '打开 Health Connect';
 
   @override
   String get healthSyncAuthorize => '连接到健康数据';
@@ -1937,6 +1971,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get activityUploadReady => '準備上傳';
 
   @override
+  String get activityUploadAwaitingSignIn => '已儲存在此裝置上。登入後將上傳。';
+
+  @override
   String get activityUploaded => '已上傳';
 
   @override
@@ -2169,6 +2206,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get deviceAccessHealthTitle => '健康資料存取權限';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => '藍牙存取權限';
+
+  @override
+  String get deviceAccessBluetoothAllowed => '已允許';
+
+  @override
+  String get deviceAccessBluetoothOff => '藍牙已關閉';
+
+  @override
+  String get deviceAccessBluetoothBlocked => '已在系統設定中封鎖';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => '不允許';
+
+  @override
+  String get deviceAccessBluetoothUnavailable => '此裝置上無法使用';
 
   @override
   String get deviceAccessChecking => '正在檢查存取權限…';
@@ -2430,6 +2488,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get healthAccessReviewIosInstructions =>
       '開啟「健康」App，點一下您的個人資料照片，然後點一下「App 和服務」。選擇 Endurain 並更新資料類別。';
+
+  @override
+  String get healthAccessBlockedTitle => '在 Health Connect 中允許存取';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      '在存取權限被拒絕兩次後，Health Connect 將不再詢問。請開啟 Health Connect，允許 Endurain 讀取您的運動、路線和心率。';
+
+  @override
+  String get healthAccessOpenHealthConnect => '開啟 Health Connect';
 
   @override
   String get healthSyncAuthorize => '連結健康資料';

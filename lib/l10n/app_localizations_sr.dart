@@ -605,6 +605,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get activityUploadReady => 'Спремно за отпремање';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Сачувано на овом уређају. Биће отпремљено када се пријавите.';
+
+  @override
   String get activityUploaded => 'Отпремљено';
 
   @override
@@ -862,6 +866,29 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Приступ здравственим подацима';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Приступ Bluetooth-у';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Дозвољено';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth је искључен';
+
+  @override
+  String get deviceAccessBluetoothBlocked =>
+      'Блокирано у системским подешавањима';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Није дозвољено';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Није доступно на овом уређају';
 
   @override
   String get deviceAccessChecking => 'Провера приступа…';
@@ -1134,6 +1161,16 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Отворите апликацију Здравље, додирните своју слику профила, затим Апликације и услуге. Изаберите Endurain и ажурирајте категорије података.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Дозволите приступ у Health Connect-у';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect престаје да пита након што је приступ два пута одбијен. Отворите Health Connect да бисте дозволили Endurain-у да чита ваше тренинге, руте и пулс.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Отвори Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Повежи здравствене податке';

@@ -22,7 +22,6 @@ void main() {
 
     test('starts unloaded and follows the system locale', () {
       expect(controller.locale, isNull);
-      expect(controller.isLoaded, isFalse);
     });
 
     test('load reads the persisted locale', () async {
@@ -30,7 +29,6 @@ void main() {
 
       await controller.load();
 
-      expect(controller.isLoaded, isTrue);
       expect(controller.locale?.languageCode, 'pt');
     });
 
@@ -70,7 +68,6 @@ void main() {
 
       await failing.load();
 
-      expect(failing.isLoaded, isTrue);
       expect(failing.locale, isNull);
     });
   });

@@ -29,9 +29,7 @@ final class StartCountdownWarmUp: NSObject, CLLocationManagerDelegate {
         guard status == .authorizedAlways || status == .authorizedWhenInUse else {
             return
         }
-        manager.activityType = .fitness
-        manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.distanceFilter = kCLDistanceFilterNone
+        manager.applyFitnessConfiguration(distanceFilter: kCLDistanceFilterNone)
         manager.pausesLocationUpdatesAutomatically = false
         manager.allowsBackgroundLocationUpdates = true
         manager.showsBackgroundLocationIndicator = true

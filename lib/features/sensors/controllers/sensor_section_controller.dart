@@ -5,6 +5,7 @@ import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
@@ -18,10 +19,14 @@ import 'package:endurain/shared/state/safe_notifier.dart';
 /// disposed with the route; the underlying service is not disposed here.
 class SensorSectionController extends SafeNotifier
     implements SensorSectionView {
-  SensorSectionController({required SensorService service})
-    : _service = service;
+  SensorSectionController({
+    required SensorService service,
+    required Future<bool> Function() openAppSettings,
+  }) : _service = service,
+       _openAppSettings = openAppSettings;
 
   final SensorService _service;
+  final Future<bool> Function() _openAppSettings;
 
   /// How long a manual scan runs before it stops on its own. Kept generous so
   /// slower-advertising sensors have time to be discovered.
@@ -38,7 +43,9 @@ class SensorSectionController extends SafeNotifier
   SensorMeasurement? _latestMeasurement;
   List<BleSensorDevice> _scanResults = const <BleSensorDevice>[];
   bool _isScanning = false;
+  bool _isStartingScan = false;
   bool _permissionDenied = false;
+  bool _permissionUnavailable = false;
   bool _isCheckingBluetooth = true;
   BleSensorDevice? _rememberedDevice;
 
@@ -52,6 +59,8 @@ class SensorSectionController extends SafeNotifier
   bool get isScanning => _isScanning;
   @override
   bool get permissionDenied => _permissionDenied;
+  @override
+  bool get permissionUnavailable => _permissionUnavailable;
   @override
   bool get isCheckingBluetooth => _isCheckingBluetooth;
   @override
@@ -110,21 +119,37 @@ class SensorSectionController extends SafeNotifier
   }
 
   /// Requests permission if needed, then scans for nearby sensors.
+  ///
+  /// Re-entrant calls (a double tap, or a tap while the permission prompt is
+  /// open) are ignored, and nothing starts if the controller is disposed while
+  /// the prompt was showing.
   @override
   Future<void> startScan() async {
-    if (_isScanning) {
+    if (_isScanning || _isStartingScan) {
       return;
     }
+    _isStartingScan = true;
     _permissionDenied = false;
-    final granted = await _service.ensurePermissions();
-    if (!granted) {
-      _permissionDenied = true;
+    _permissionUnavailable = false;
+    final SensorPermissionResult permission;
+    try {
+      permission = await _service.ensurePermissions();
+    } finally {
+      _isStartingScan = false;
+    }
+    if (isDisposed) {
+      return;
+    }
+    if (!permission.isGranted) {
+      _permissionDenied = permission == SensorPermissionResult.denied;
+      _permissionUnavailable = permission == SensorPermissionResult.unavailable;
       notify();
       return;
     }
     _scanResults = const <BleSensorDevice>[];
     _isScanning = true;
     notify();
+    unawaited(_scanSubscription?.cancel());
     _scanSubscription = _service
         .scan(timeout: _scanTimeout)
         .listen(
@@ -142,6 +167,10 @@ class SensorSectionController extends SafeNotifier
           },
         );
   }
+
+  /// Opens the app's system settings so a denied permission can be granted.
+  @override
+  Future<bool> openAppSettings() => _openAppSettings();
 
   /// Stops an in-progress scan.
   @override

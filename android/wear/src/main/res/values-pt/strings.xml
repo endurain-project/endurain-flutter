@@ -35,4 +35,9 @@
     <string name="gps_lost">Sinal GPS perdido</string>
     <string name="hr_unavailable">Frequência cardíaca indisponível</string>
     <string name="restore_failed">Não foi possível verificar o treino. Toque em OK para tentar novamente.</string>
+    <string name="takeover_confirm">Outra aplicação está a gravar um treino. Começar aqui termina-o.</string>
+    <string name="takeover_start">Começar mesmo assim</string>
+    <string name="notification_paused">Treino em pausa</string>
+    <string name="tile_label">Iniciar treino</string>
+    <string name="heart_rate_description">Frequência cardíaca: %1$d batimentos por minuto</string>
 </resources>

@@ -77,3 +77,6 @@ firebase_options.dart
 # Sensitive data
 secrets.dart
 config/secrets.yaml
+
+# Local environment values for --dart-define-from-file
+dart-defines.json

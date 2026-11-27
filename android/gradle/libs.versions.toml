@@ -1,0 +1,45 @@
+# Single source of truth for the versions of both Gradle builds: the phone app
+# (android/, Flutter) and the standalone Wear OS app (android/wear), which
+# imports this file in its settings.gradle.kts. Dependabot updates it.
+# The plugin versions are also read from here by android/settings.gradle.kts,
+# whose plugins {} block cannot use catalog accessors.
+
+[versions]
+agp = "9.5.3"
+kotlin = "2.4.21"
+composeBom = "2026.11.01"
+wearCompose = "1.7.2"
+wearProtolayout = "1.4.2"
+coroutines = "1.11.0"
+playServicesWearable = "20.0.1"
+coreKtx = "1.19.1"
+junit = "4.13.2"
+orgJson = "20260814"
+
+[libraries]
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+androidx-activity = { module = "androidx.activity:activity", version = "1.13.0" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version = "2.11.1" }
+androidx-wear = { module = "androidx.wear:wear", version = "1.4.0" }
+androidx-wear-ongoing = { module = "androidx.wear:wear-ongoing", version = "1.1.0" }
+androidx-wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wearCompose" }
+androidx-wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wearCompose" }
+androidx-wear-protolayout = { module = "androidx.wear.protolayout:protolayout", version.ref = "wearProtolayout" }
+androidx-wear-protolayout-material3 = { module = "androidx.wear.protolayout:protolayout-material3", version.ref = "wearProtolayout" }
+androidx-wear-tiles = { module = "androidx.wear.tiles:tiles", version = "1.6.2" }
+androidx-health-services-client = { module = "androidx.health:health-services-client", version = "1.1.0" }
+play-services-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "playServicesWearable" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "coroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+junit = { module = "junit:junit", version.ref = "junit" }
+org-json = { module = "org.json:json", version.ref = "orgJson" }
+robolectric = { module = "org.robolectric:robolectric", version = "4.18.1" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

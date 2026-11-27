@@ -5,7 +5,6 @@ import 'package:endurain/core/config/api_endpoints.dart';
 import 'package:endurain/core/constants/api_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -86,14 +85,12 @@ class ActivityUploadConfig {
 class ActivityUploadRequest {
   const ActivityUploadRequest({
     required this.filePath,
-    required this.activityType,
     this.idempotencyKey,
     this.expectedOrigin,
     this.expectedProfileId,
   });
 
   final String filePath;
-  final ActivityType activityType;
 
   /// Stable key sent with the upload so the server can de-duplicate retried
   /// uploads of the same activity. Typically the local activity id.
@@ -420,7 +417,6 @@ class ActivityUploadService {
         await uploadGpx(
           ActivityUploadRequest(
             filePath: filePath,
-            activityType: updated.activityType,
             idempotencyKey: updated.effectiveIdempotencyKey,
             expectedOrigin: updated.connectionOrigin,
             expectedProfileId: updated.connectionProfileId,

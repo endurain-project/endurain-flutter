@@ -59,7 +59,6 @@ void main() {
 
       expect(subject.isEnabled, isTrue);
       expect(subject.isActive, isTrue);
-      expect(subject.effectiveDsn, managedDsn);
       expect(reporter.starts.single.dsn, managedDsn);
       expect(reporter.starts.single.release, 'test-release');
       expect(reporter.starts.single.environment, 'test');
@@ -73,7 +72,6 @@ void main() {
       await subject.setEnabled(true);
 
       expect(subject.isEnabled, isTrue);
-      expect(subject.hasUsableDsn, isFalse);
       expect(subject.isActive, isFalse);
       expect(reporter.starts, isEmpty);
     });

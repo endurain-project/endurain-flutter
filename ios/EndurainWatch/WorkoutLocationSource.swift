@@ -1,5 +1,6 @@
 import CoreLocation
 import Foundation
+import os
 
 /// The Core Location stream of a watch workout.
 ///
@@ -8,8 +9,15 @@ import Foundation
 /// and authorization changes to its owner on the main actor.
 @MainActor
 final class WorkoutLocationSource: NSObject {
+    nonisolated private static let log = AppLogger.make(category: "WorkoutLocationSource")
+
     private let manager = CLLocationManager()
     private var isUpdating = false
+    private var didRequestFullAccuracy = false
+
+    /// Key of the purpose string under
+    /// `NSLocationTemporaryUsageDescriptionDictionary` in Info.plist.
+    static let fullAccuracyPurposeKey = "EndurainWorkoutRoute"
 
     /// Called with every batch of fixes Core Location delivers.
     var onLocations: (([CLLocation]) -> Void)?
@@ -30,15 +38,25 @@ final class WorkoutLocationSource: NSObject {
     func requestAuthorizationIfNeeded() {
         if manager.authorizationStatus == .notDetermined {
             manager.requestWhenInUseAuthorization()
+        } else {
+            requestFullAccuracyIfNeeded()
         }
+    }
+
+    /// A route recorded with approximate location is useless, so when the
+    /// user granted access but turned Precise Location off, asks once per
+    /// launch to turn it on for now. The workout records either way.
+    func requestFullAccuracyIfNeeded() {
+        guard !didRequestFullAccuracy else { return }
+        didRequestFullAccuracy = manager.requestPreciseLocationIfNeeded(
+            purposeKey: Self.fullAccuracyPurposeKey
+        )
     }
 
     func start() {
         guard !isUpdating else { return }
         isUpdating = true
-        manager.activityType = .fitness
-        manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.distanceFilter = kCLDistanceFilterNone
+        manager.applyFitnessConfiguration(distanceFilter: kCLDistanceFilterNone)
         manager.allowsBackgroundLocationUpdates = true
         manager.startUpdatingLocation()
     }
@@ -47,6 +65,7 @@ final class WorkoutLocationSource: NSObject {
         guard isUpdating else { return }
         isUpdating = false
         manager.stopUpdatingLocation()
+        manager.allowsBackgroundLocationUpdates = false
     }
 }
 
@@ -63,13 +82,14 @@ extension WorkoutLocationSource: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        NSLog("Endurain watch: location update failed: %@", error.localizedDescription)
+        Self.log.error("Location update failed: \(error.localizedDescription, privacy: .private)")
     }
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
         Task { @MainActor in
             self.onAuthorizationChange?(status)
+            self.requestFullAccuracyIfNeeded()
         }
     }
 }

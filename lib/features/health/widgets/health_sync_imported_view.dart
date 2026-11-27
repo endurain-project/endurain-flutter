@@ -3,6 +3,7 @@ import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
+import 'package:endurain/features/activity/widgets/lazy_list_section.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_imported_workout.dart';
 import 'package:endurain/features/health/models/health_sync_state.dart';
@@ -35,67 +36,79 @@ class HealthSyncImportedView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return RefreshIndicator.adaptive(
       onRefresh: controller.loadImported,
-      child: ListView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: readableContentPadding(context),
-        children: [
-          if (state.error != null) ...[
-            HealthSyncInlineError(error: state.error!),
-            Center(
-              child: AdaptiveButton(
-                label: l10n.activityHistoryRefresh,
-                variant: AdaptiveButtonVariant.secondary,
-                onPressed: state.isLoadingImported
-                    ? null
-                    : controller.loadImported,
+        slivers: paddedSlivers(readableContentPadding(context), [
+          if (state.error != null)
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  HealthSyncInlineError(error: state.error!),
+                  Center(
+                    child: AdaptiveButton(
+                      label: l10n.activityHistoryRefresh,
+                      variant: AdaptiveButtonVariant.secondary,
+                      onPressed: state.isLoadingImported
+                          ? null
+                          : controller.loadImported,
+                    ),
+                  ),
+                  const SizedBox(height: UIConstants.paddingStandard),
+                ],
               ),
             ),
-            const SizedBox(height: UIConstants.paddingStandard),
-          ],
           if (state.importedWorkouts.isEmpty && !state.isLoadingImported)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: UIConstants.paddingXLarge,
-              ),
-              child: Text(
-                l10n.healthSyncImportedEmpty,
-                textAlign: TextAlign.center,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: UIConstants.paddingXLarge,
+                ),
+                child: Text(
+                  l10n.healthSyncImportedEmpty,
+                  textAlign: TextAlign.center,
+                ),
               ),
             )
           else if (state.importedWorkouts.isNotEmpty)
-            AdaptiveListSection(
-              children: [
-                for (final imported in state.importedWorkouts)
-                  _ImportedWorkoutTile(
-                    imported: imported,
-                    onTap: imported.localActivity == null
-                        ? null
-                        : () => adaptivePush<void>(
+            LazyListSection(
+              itemCount: state.importedWorkouts.length,
+              itemBuilder: (context, index) {
+                final imported = state.importedWorkouts[index];
+                return _ImportedWorkoutTile(
+                  imported: imported,
+                  onTap: imported.localActivity == null
+                      ? null
+                      : () => adaptivePush<void>(
+                          context,
+                          (context) => activityDetailsBuilder(
                             context,
-                            (context) => activityDetailsBuilder(
-                              context,
-                              imported.localActivityId,
-                            ),
+                            imported.localActivityId,
                           ),
-                    onRestore: imported.localActivity == null
-                        ? () => controller.restoreMissingImport(imported)
-                        : null,
-                  ),
-              ],
+                        ),
+                  onRestore: imported.localActivity == null
+                      ? () => controller.restoreMissingImport(imported)
+                      : null,
+                );
+              },
             ),
-          if (state.importedHasMore) ...[
-            const SizedBox(height: UIConstants.paddingStandard),
-            Center(
-              child: AdaptiveButton(
-                label: l10n.activityHistoryLoadMore,
-                variant: AdaptiveButtonVariant.secondary,
-                onPressed: state.isLoadingImported
-                    ? null
-                    : () => controller.loadImported(reset: false),
+          if (state.importedHasMore)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: UIConstants.paddingStandard,
+                ),
+                child: Center(
+                  child: AdaptiveButton(
+                    label: l10n.activityHistoryLoadMore,
+                    variant: AdaptiveButtonVariant.secondary,
+                    onPressed: state.isLoadingImported
+                        ? null
+                        : () => controller.loadImported(reset: false),
+                  ),
+                ),
               ),
             ),
-          ],
-        ],
+        ]),
       ),
     );
   }

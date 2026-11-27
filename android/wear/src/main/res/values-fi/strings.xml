@@ -35,4 +35,9 @@
     <string name="gps_lost">GPS-signaali katosi</string>
     <string name="hr_unavailable">Syke ei ole saatavilla</string>
     <string name="restore_failed">Harjoitusta ei voitu tarkistaa. Yritä uudelleen napauttamalla OK.</string>
+    <string name="takeover_confirm">Toinen sovellus tallentaa harjoitusta. Jos aloitat täällä, se päättyy.</string>
+    <string name="takeover_start">Aloita silti</string>
+    <string name="notification_paused">Harjoitus tauolla</string>
+    <string name="tile_label">Aloita harjoitus</string>
+    <string name="heart_rate_description">Syke %1$d lyöntiä minuutissa</string>
 </resources>

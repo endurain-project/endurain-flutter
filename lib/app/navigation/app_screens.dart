@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/controllers/auto_pause_settings_contr
 import 'package:endurain/features/activity/controllers/start_countdown_settings_controller.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
+import 'package:endurain/features/activity/screens/audio_announcement_settings_screen.dart';
 import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
 import 'package:endurain/features/activity/screens/start_countdown_settings_screen.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_overlay.dart';
@@ -13,10 +14,11 @@ import 'package:endurain/features/health/screens/health_sync_screen.dart';
 import 'package:endurain/features/map/controllers/tile_server_settings_controller.dart';
 import 'package:endurain/features/map/screens/map_screen.dart';
 import 'package:endurain/features/map/screens/tile_server_settings_screen.dart';
+import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
+import 'package:endurain/features/settings/models/bluetooth_access_state.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
-import 'package:endurain/features/settings/screens/audio_announcement_settings_screen.dart';
 import 'package:endurain/features/settings/screens/device_access_screen.dart';
 import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
@@ -44,6 +46,7 @@ class AppScreens {
     return MapScreen(
       activityController: activity.recordingController,
       locationService: _services.infra.location,
+      urlLauncher: _services.infra.urlLauncher,
       mapSettings: _services.createMapSettingsRepository(),
       sensorServices: _services.sensors.services,
       // The real app resumes a recording the OS killed mid-activity.
@@ -79,9 +82,6 @@ class AppScreens {
       onSignIn: onSignIn,
       createController: () => SettingsController(
         packageInfoService: infra.packageInfo,
-        // The unit preference is delegated to the app-lifetime controller so a
-        // change made here re-renders the rest of the app, not just this route.
-        measurementSystemController: infra.measurementSystemController,
         secureStorage: infra.secureStorage,
         connectionChanges: _services.connectionChanges,
       ),
@@ -103,7 +103,9 @@ class AppScreens {
           serverSettingsService: auth.serverSettings,
         ),
         appLinksService: infra.appLinks,
-        mapSettingsRepository: _services.createMapSettingsRepository(),
+        saveServerSettings: _services
+            .createMapSettingsRepository()
+            .saveFromServerSettings,
         config: _services.config,
         diagnostics: infra.diagnostics,
       ),
@@ -114,10 +116,25 @@ class AppScreens {
   /// recording.
   Widget activityHistory(BuildContext context) {
     return ActivityHistoryScreen(
+      urlLauncher: _services.infra.urlLauncher,
       createController: _services.createLocalActivityHistoryController,
       uploadQueue: _services.activity.uploadQueue,
       mapSettingsRepository: _services.createMapSettingsRepository(),
     );
+  }
+
+  /// Maps the sensors feature's Bluetooth state onto what the Device access
+  /// screen shows, so `settings` never imports `sensors`.
+  Future<BluetoothAccessState> _bluetoothAccess(
+    Future<SensorBluetoothState> Function() read,
+  ) async {
+    return switch (await read()) {
+      SensorBluetoothState.ready => BluetoothAccessState.ready,
+      SensorBluetoothState.off => BluetoothAccessState.off,
+      SensorBluetoothState.unauthorized => BluetoothAccessState.blocked,
+      SensorBluetoothState.unsupported => BluetoothAccessState.unavailable,
+      SensorBluetoothState.unknown => BluetoothAccessState.notDetermined,
+    };
   }
 
   SettingsDestinations _settingsDestinations(VoidCallback? onLogout) {
@@ -157,18 +174,19 @@ class AppScreens {
       ),
       audioAnnouncements: (context) => AudioAnnouncementSettingsScreen(
         controller: activity.audioAnnouncementSettingsController,
-        measurementSystemController: infra.measurementSystemController,
       ),
       sensors: (context) => SensorSettingsScreen(
         heartRateService: sensors.heartRate,
         powerService: sensors.power,
         cadenceService: sensors.cadence,
+        openAppSettings: infra.location.openAppSettings,
       ),
       healthSync: (context) => HealthSyncScreen(
         createController: health.createSyncController,
         // Standalone (not beside a history list), so it owns its controller.
         activityDetailsBuilder: (context, recordId) => ActivityDetailsScreen(
           recordId: recordId,
+          urlLauncher: infra.urlLauncher,
           createController: _services.createLocalActivityHistoryController,
         ),
       ),
@@ -177,6 +195,12 @@ class AppScreens {
         locationService: infra.location,
         createHealthController: health.createSyncController,
         healthSyncEnabled: healthSyncEnabled,
+        checkBluetoothAccess: () =>
+            _bluetoothAccess(sensors.heartRate.currentBluetoothState),
+        requestBluetoothAccess: () async {
+          await sensors.heartRate.ensurePermissions();
+          return _bluetoothAccess(sensors.heartRate.currentBluetoothState);
+        },
       ),
       diagnostics: (context) => DiagnosticsScreen(
         diagnostics: infra.diagnostics,

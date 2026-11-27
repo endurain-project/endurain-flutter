@@ -1,8 +1,8 @@
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/services/app_preferences_store.dart';
-import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/core/utils/scoped_storage_key.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
@@ -198,32 +198,17 @@ class SecureStorageService {
   Future<void> setUsername(String username) =>
       write(key: _usernameKey, value: username);
 
-  // Token-specific methods
+  // Token-specific methods. Only the pre-v2 credential keys are handled here;
+  // the session lives in the `auth_session_v2` blob.
+  @visibleForTesting
   Future<String?> getAccessToken() => read(key: _accessTokenKey);
-  Future<void> setAccessToken(String token) =>
-      write(key: _accessTokenKey, value: token);
   Future<void> deleteAccessToken() => delete(key: _accessTokenKey);
 
+  @visibleForTesting
   Future<String?> getRefreshToken() => read(key: _refreshTokenKey);
-  Future<void> setRefreshToken(String token) =>
-      write(key: _refreshTokenKey, value: token);
   Future<void> deleteRefreshToken() => delete(key: _refreshTokenKey);
 
-  Future<String?> getSessionId() => read(key: _sessionIdKey);
-  Future<void> setSessionId(String sessionId) =>
-      write(key: _sessionIdKey, value: sessionId);
   Future<void> deleteSessionId() => delete(key: _sessionIdKey);
-
-  Future<DateTime?> getAccessTokenExpiresAt() async {
-    final value = await read(key: _accessTokenExpiresAtKey);
-    if (value == null || value.isEmpty) {
-      return null;
-    }
-    return DateTime.tryParse(value);
-  }
-
-  Future<void> setAccessTokenExpiresAt(DateTime expiresAt) =>
-      write(key: _accessTokenExpiresAtKey, value: expiresAt.toUtcIso8601());
 
   Future<void> deleteAccessTokenExpiresAt() =>
       delete(key: _accessTokenExpiresAtKey);

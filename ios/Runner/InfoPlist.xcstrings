@@ -1,6 +1,197 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "EndurainActivityRecording" : {
+      "comment" : "Purpose of the temporary precise-location prompt shown when Precise Location is off while recording.",
+      "localizations" : {
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain се нуждае от вашето точно местоположение, за да запише точна следа от дейността ви."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain necessita la vostra ubicació precisa per enregistrar un traçat exacte de l'activitat."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain potřebuje vaši přesnou polohu, aby mohl zaznamenat přesnou trasu vaší aktivity."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain har brug for din præcise placering for at registrere en nøjagtig rute for din aktivitet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain benötigt Ihren genauen Standort, um eine präzise Strecke Ihrer Aktivität aufzuzeichnen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Endurain χρειάζεται την ακριβή τοποθεσία σας για να καταγράψει με ακρίβεια τη διαδρομή της δραστηριότητάς σας."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain needs your precise location to record an accurate track of your activity."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain necesita tu ubicación precisa para registrar un recorrido exacto de tu actividad."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain vajab sinu täpset asukohta, et salvestada sinu tegevuse täpne rada."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain tarvitsee tarkan sijaintisi tallentaakseen toiminnan reitin tarkasti."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain a besoin de votre position précise pour enregistrer le tracé exact de votre activité."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain precisa da túa localización precisa para rexistrar un percorrido exacto da túa actividade."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain treba vašu preciznu lokaciju kako bi zabilježio točnu stazu vaše aktivnosti."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az Endurainnek szüksége van a pontos tartózkodási helyedre, hogy pontosan rögzíthesse a tevékenységed nyomvonalát."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain ha bisogno della tua posizione precisa per registrare un tracciato accurato della tua attività."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain reikia tikslios jūsų vietos, kad galėtų tiksliai užfiksuoti jūsų veiklos trasą."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain ir nepieciešama jūsu precīza atrašanās vieta, lai precīzi ierakstītu jūsu aktivitātes trasi."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain trenger din nøyaktige posisjon for å registrere en presis rute for aktiviteten din."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain heeft je exacte locatie nodig om een nauwkeurig spoor van je activiteit op te nemen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain potrzebuje Twojej dokładnej lokalizacji, aby zapisać dokładny ślad Twojej aktywności."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain precisa da sua localização precisa para gravar um trajeto exato da sua atividade."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Endurain precisa da sua localização precisa para gravar um trajeto exato da sua atividade."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain are nevoie de locația ta precisă pentru a înregistra un traseu exact al activității tale."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain potrebuje vašu presnú polohu, aby mohol zaznamenať presnú trasu vašej aktivity."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain potrebuje vašo natančno lokacijo, da lahko natančno zabeleži pot vaše dejavnosti."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain-у је потребна ваша прецизна локација да би забележио тачну трасу ваше активности."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain behöver din exakta position för att spela in en korrekt rutt för din aktivitet."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain, etkinliğinizin doğru bir rotasını kaydetmek için tam konumunuza ihtiyaç duyar."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain потрібне ваше точне розташування, щоб записати точний трек вашої активності."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 需要你的精确位置，以便准确记录你的活动轨迹。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endurain 需要你的精確位置，以便準確記錄你的活動軌跡。"
+          }
+        }
+      }
+    },
     "NSBluetoothAlwaysUsageDescription" : {
       "comment" : "Bluetooth permission prompt.",
       "localizations" : {

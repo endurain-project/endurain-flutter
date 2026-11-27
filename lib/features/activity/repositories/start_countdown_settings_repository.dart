@@ -46,24 +46,28 @@ class StartCountdownSettingsRepository {
 
   final AppPreferencesStore preferences;
 
-  Future<bool> isEnabled() => _readBool(enabledKey, defaultEnabled);
+  Future<bool> isEnabled() =>
+      preferences.readBool(key: enabledKey, defaultValue: defaultEnabled);
 
-  Future<void> setEnabled(bool enabled) => _writeBool(enabledKey, enabled);
+  Future<void> setEnabled(bool enabled) =>
+      preferences.writeBool(key: enabledKey, value: enabled);
 
-  Future<bool> isVoiceEnabled() =>
-      _readBool(voiceEnabledKey, defaultVoiceEnabled);
+  Future<bool> isVoiceEnabled() => preferences.readBool(
+    key: voiceEnabledKey,
+    defaultValue: defaultVoiceEnabled,
+  );
 
   Future<void> setVoiceEnabled(bool enabled) =>
-      _writeBool(voiceEnabledKey, enabled);
+      preferences.writeBool(key: voiceEnabledKey, value: enabled);
 
   /// The configured countdown length, clamped to [minSeconds]..[maxSeconds].
-  Future<int> getSeconds() async {
-    final raw = await preferences.read(key: secondsKey);
-    final stored = raw == null ? null : int.tryParse(raw);
-    if (stored == null) {
-      return defaultSeconds;
-    }
-    return clampSeconds(stored);
+  Future<int> getSeconds() {
+    return preferences.readClampedInt(
+      key: secondsKey,
+      defaultValue: defaultSeconds,
+      min: minSeconds,
+      max: maxSeconds,
+    );
   }
 
   Future<void> setSeconds(int seconds) {
@@ -73,15 +77,7 @@ class StartCountdownSettingsRepository {
     );
   }
 
-  static int clampSeconds(int seconds) {
-    if (seconds < minSeconds) {
-      return minSeconds;
-    }
-    if (seconds > maxSeconds) {
-      return maxSeconds;
-    }
-    return seconds;
-  }
+  static int clampSeconds(int seconds) => seconds.clamp(minSeconds, maxSeconds);
 
   /// Reads every preference at once, falling back to the defaults on a read
   /// failure so a storage problem never blocks starting a recording.
@@ -95,17 +91,5 @@ class StartCountdownSettingsRepository {
     } catch (_) {
       return StartCountdownConfig.defaults;
     }
-  }
-
-  Future<bool> _readBool(String key, bool fallback) async {
-    final stored = await preferences.read(key: key);
-    if (stored == null) {
-      return fallback;
-    }
-    return stored == 'true';
-  }
-
-  Future<void> _writeBool(String key, bool value) {
-    return preferences.write(key: key, value: value ? 'true' : 'false');
   }
 }

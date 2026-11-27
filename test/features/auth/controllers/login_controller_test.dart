@@ -13,9 +13,9 @@ import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/identity_provider.dart' as core;
 import 'package:endurain/core/network/base_http_client.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/features/auth/controllers/login_controller.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -156,6 +156,10 @@ void main() {
         onError: errors.add,
       );
 
+      await controller.beginSsoLogin(
+        const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
+      );
       appLinks.add(
         Uri.parse(
           'com.endurain.endurain:/auth/sso/callback?error=access_denied',
@@ -194,6 +198,10 @@ void main() {
         onError: errors.add,
       );
 
+      await controller.beginSsoLogin(
+        const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
+      );
       appLinks.add(Uri.parse('com.endurain.endurain:/auth/sso/callback'));
       await Future<void>.delayed(Duration.zero);
 
@@ -500,6 +508,10 @@ void main() {
         onError: errors.add,
       );
 
+      await controller.beginSsoLogin(
+        const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
+      );
       appLinks.add(
         Uri.parse(
           'com.endurain.endurain:/auth/sso/callback?session_id=session-1',
@@ -547,7 +559,8 @@ void main() {
         ..add(Uri.parse('com.endurain.endurain:/auth/sso/callback'));
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      // Both failures above drop the PKCE state, so start a fresh flow: the
+      // The error above dropped the PKCE state (so the bare callback after it
+      // was ignored as unsolicited); start a fresh flow: the
       // last callback must reach the server's token exchange, not fail on the
       // local "restart sign-in" guard.
       await controller.beginSsoLogin(
@@ -569,7 +582,7 @@ void main() {
         DiagnosticsEvents.ssoLoginStarted,
         DiagnosticsEvents.ssoCallbackIgnored,
         DiagnosticsEvents.ssoCallbackError,
-        DiagnosticsEvents.ssoCallbackMissingSession,
+        DiagnosticsEvents.ssoCallbackIgnored,
         DiagnosticsEvents.ssoLoginStarted,
         DiagnosticsEvents.ssoCallbackReceived,
         DiagnosticsEvents.ssoExchangeFailed,
@@ -621,7 +634,6 @@ void main() {
       await controller.submitServerUrl('https://example.test');
       expect(controller.isStep2, isTrue);
       expect(controller.availableIdPs, isNotEmpty);
-      expect(controller.serverSettings, isNotNull);
 
       await controller.submitLogin(
         serverUrl: 'https://example.test',
@@ -633,7 +645,6 @@ void main() {
       controller.backToServerStep();
       expect(controller.isStep2, isFalse);
       expect(controller.availableIdPs, isEmpty);
-      expect(controller.serverSettings, isNull);
 
       controller.backFromMfa();
       expect(controller.showMfaInput, isFalse);
@@ -882,6 +893,120 @@ void main() {
       await appLinks.close();
     });
 
+    test('ignores an SSO error callback when no sign-in is pending', () async {
+      final appLinks = FakeAppLinksService();
+      final diagnostics = RecordingDiagnostics();
+      final errors = <Object>[];
+      final controller = LoginController(
+        authCoordinator: _repository(
+          storage: SecureStorageService(),
+          client: MockClient((_) async => fail('No request expected.')),
+        ),
+        appLinksService: appLinks,
+        diagnostics: diagnostics,
+      );
+      controller.startSsoCallbackListener(
+        onLoginSuccess: () => fail('Login should not complete.'),
+        onError: errors.add,
+      );
+
+      appLinks.add(
+        Uri.parse(
+          'com.endurain.endurain:/auth/sso/callback?error=access_denied',
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(errors, isEmpty);
+      expect(diagnostics.events, [DiagnosticsEvents.ssoCallbackIgnored]);
+      controller.dispose();
+      await appLinks.close();
+    });
+
+    test('ignores forged SSO callbacks when no sign-in is pending', () async {
+      final appLinks = FakeAppLinksService();
+      final diagnostics = RecordingDiagnostics();
+      final errors = <Object>[];
+      final controller = LoginController(
+        authCoordinator: _repository(
+          storage: SecureStorageService(),
+          client: MockClient((_) async => fail('No request expected.')),
+        ),
+        appLinksService: appLinks,
+        diagnostics: diagnostics,
+      );
+      controller.startSsoCallbackListener(
+        onLoginSuccess: () => fail('Login should not complete.'),
+        onError: errors.add,
+      );
+
+      appLinks
+        ..add(Uri.parse('com.endurain.endurain:/auth/sso/callback'))
+        ..add(
+          Uri.parse(
+            'com.endurain.endurain:/auth/sso/callback?session_id=forged',
+          ),
+        );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(errors, isEmpty);
+      expect(controller.isLoading, isFalse);
+      expect(controller.showMfaInput, isFalse);
+      expect(diagnostics.events, [
+        DiagnosticsEvents.ssoCallbackIgnored,
+        DiagnosticsEvents.ssoCallbackIgnored,
+      ]);
+      controller.dispose();
+      await appLinks.close();
+    });
+
+    test(
+      'a forged callback does not consume a pending PKCE verifier',
+      () async {
+        final appLinks = FakeAppLinksService();
+        final requestedPaths = <String>[];
+        final controller = LoginController(
+          authCoordinator: _repository(
+            storage: SecureStorageService(),
+            client: MockClient((request) async {
+              requestedPaths.add(request.url.path);
+              return http.Response('{"detail":"nope"}', 400);
+            }),
+          ),
+          appLinksService: appLinks,
+        );
+        controller.startSsoCallbackListener(
+          onLoginSuccess: () => fail('Login should not complete.'),
+          onError: (_) {},
+        );
+
+        // A forged id with nothing pending is dropped without a request...
+        appLinks.add(
+          Uri.parse(
+            'com.endurain.endurain:/auth/sso/callback?session_id=forged',
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(requestedPaths, isEmpty);
+
+        // ...and the legitimate flow that follows still reaches the exchange.
+        await controller.beginSsoLogin(
+          const IdentityProviderFixture().provider,
+          serverUrl: 'https://example.test',
+        );
+        appLinks.add(
+          Uri.parse('com.endurain.endurain:/auth/sso/callback?session_id=real'),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(requestedPaths, [
+          ApiEndpoints.defaults.sessionTokensEndpoint('real'),
+        ]);
+        controller.dispose();
+        await appLinks.close();
+      },
+    );
+
     test('passes a documented SSO failure code on, and drops others', () async {
       final appLinks = FakeAppLinksService();
       final errors = <Object>[];
@@ -897,18 +1022,17 @@ void main() {
         onError: errors.add,
       );
 
-      appLinks
-        ..add(
-          Uri.parse(
-            'com.endurain.endurain:/auth/sso/callback?error=sso_approval_pending',
-          ),
-        )
-        ..add(
-          Uri.parse(
-            'com.endurain.endurain:/auth/sso/callback?error=%3Cscript%3E',
-          ),
+      // Each failure drops the pending flow, so every callback needs its own.
+      for (final callback in ['sso_approval_pending', '%3Cscript%3E']) {
+        await controller.beginSsoLogin(
+          const IdentityProviderFixture().provider,
+          serverUrl: 'https://example.test',
         );
-      await Future<void>.delayed(Duration.zero);
+        appLinks.add(
+          Uri.parse('com.endurain.endurain:/auth/sso/callback?error=$callback'),
+        );
+        await Future<void>.delayed(Duration.zero);
+      }
 
       expect(errors.map((e) => (e as AppException).details), [
         'sso_approval_pending',
@@ -1031,7 +1155,7 @@ void main() {
           }),
         ),
         appLinksService: const EmptyAppLinksService(),
-        mapSettingsRepository: mapRepo,
+        saveServerSettings: mapRepo.saveFromServerSettings,
       );
       await controller.submitServerUrl('https://example.test');
       expect(
@@ -1084,9 +1208,9 @@ void main() {
           }),
         ),
         appLinksService: const EmptyAppLinksService(),
-        mapSettingsRepository: MapSettingsRepository(
+        saveServerSettings: MapSettingsRepository(
           preferences: _FailingWritesPreferencesStore(),
-        ),
+        ).saveFromServerSettings,
         diagnostics: diagnostics,
       );
       final loginCompleted = Completer<void>();

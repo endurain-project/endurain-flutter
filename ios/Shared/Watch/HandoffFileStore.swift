@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// Durable store of session handoffs, one JSON file per session.
 ///
@@ -17,6 +18,8 @@ import Foundation
 /// synchronous (not an actor) because a received file must be stored before
 /// the WatchConnectivity callback returns.
 final class HandoffFileStore: Sendable {
+    private static let log = AppLogger.make(category: "HandoffFileStore")
+
     struct Entry: Sendable {
         let sessionId: String
         let url: URL
@@ -24,6 +27,10 @@ final class HandoffFileStore: Sendable {
         /// When the watch's transfer of this entry to the phone finished, or
         /// nil while it has not been delivered. Unused by the phone's inbox.
         let deliveredAt: Date?
+
+        /// How many times the watch's transfer of this entry finished without
+        /// the phone acknowledging it. Zero until the first delivery.
+        let deliveryAttempts: Int
     }
 
     enum StoreError: Error {
@@ -36,6 +43,7 @@ final class HandoffFileStore: Sendable {
 
     private static let pendingExtension = "json"
     private static let deliveredSuffix = ".delivered.json"
+    private static let attemptsExtension = "attempts"
 
     let directory: URL
     private let lock = NSLock()
@@ -58,6 +66,7 @@ final class HandoffFileStore: Sendable {
         try ensureDirectory()
         try data.write(to: pendingURL(stem: name), options: .atomic)
         removeIfPresent(deliveredURL(stem: name))
+        removeIfPresent(attemptsURL(stem: name))
     }
 
     func data(for sessionId: String) -> Data? {
@@ -108,7 +117,8 @@ final class HandoffFileStore: Sendable {
                 Entry(
                     sessionId: sessionId,
                     url: url,
-                    deliveredAt: delivered ? modified : nil
+                    deliveredAt: delivered ? modified : nil,
+                    deliveryAttempts: delivered ? readAttempts(stem: stem) : 0
                 ),
                 modified
             ))
@@ -124,7 +134,9 @@ final class HandoffFileStore: Sendable {
 
     /// Records that the transfer of [sessionId] finished. The file is kept,
     /// renamed, until the acknowledgement arrives. A repeated delivery of an
-    /// already delivered entry (see [entriesToTransfer]) restarts its clock.
+    /// already delivered entry (see [entriesToTransfer]) restarts its clock
+    /// and counts as another unacknowledged attempt, which lengthens the wait
+    /// before the next one.
     func markDelivered(_ sessionId: String, at date: Date = Date()) {
         guard let stem = try? Self.fileStem(for: sessionId) else {
             return
@@ -144,24 +156,49 @@ final class HandoffFileStore: Sendable {
                 [.modificationDate: date],
                 ofItemAtPath: delivered.path
             )
+            try writeAttempts(readAttempts(stem: stem) + 1, stem: stem)
         } catch {
-            NSLog("Endurain watch store: could not mark a session delivered")
+            Self.log.error("Could not mark a session delivered: \(error.localizedDescription, privacy: .private)")
         }
     }
 
     /// The entries the watch should transfer: every one not yet delivered,
-    /// and every delivered one still unacknowledged since before
-    /// [redeliverDeliveredBefore].
+    /// and every delivered one still unacknowledged when its backoff has run
+    /// out (see [redeliveryDelay]).
     ///
     /// A delivered file is not proof the phone kept it: the phone can fail
     /// to read or store it, and then never acknowledges it. Sending it again
     /// is safe because the phone stores one copy per session and Dart
-    /// ignores a session it already has.
-    func entriesToTransfer(redeliverDeliveredBefore date: Date) -> [Entry] {
+    /// ignores a session it already has. A file the phone can never accept
+    /// would otherwise be resent forever at a fixed rate, so the wait doubles
+    /// with every unacknowledged delivery, up to [maxDelay]. The workout is
+    /// never deleted.
+    func entriesToTransfer(
+        at now: Date = Date(),
+        baseDelay: TimeInterval,
+        maxDelay: TimeInterval
+    ) -> [Entry] {
         return ((try? entries()) ?? []).filter { entry in
             guard let deliveredAt = entry.deliveredAt else { return true }
-            return deliveredAt <= date
+            let delay = Self.redeliveryDelay(
+                afterAttempts: entry.deliveryAttempts,
+                baseDelay: baseDelay,
+                maxDelay: maxDelay
+            )
+            return deliveredAt.addingTimeInterval(delay) <= now
         }
+    }
+
+    /// How long a delivered entry waits for the acknowledgement before the
+    /// next delivery: [baseDelay] after the first one, doubling after each
+    /// further one, never more than [maxDelay].
+    static func redeliveryDelay(
+        afterAttempts attempts: Int,
+        baseDelay: TimeInterval,
+        maxDelay: TimeInterval
+    ) -> TimeInterval {
+        let doublings = min(max(attempts - 1, 0), 30)
+        return min(baseDelay * Double(1 << doublings), maxDelay)
     }
 
     func remove(_ sessionId: String) {
@@ -172,6 +209,7 @@ final class HandoffFileStore: Sendable {
         defer { lock.unlock() }
         removeIfPresent(pendingURL(stem: stem))
         removeIfPresent(deliveredURL(stem: stem))
+        removeIfPresent(attemptsURL(stem: stem))
     }
 
     // MARK: - File names
@@ -212,6 +250,26 @@ final class HandoffFileStore: Sendable {
         return directory.appendingPathComponent("\(stem)\(Self.deliveredSuffix)")
     }
 
+    private func attemptsURL(stem: String) -> URL {
+        return directory.appendingPathComponent("\(stem).\(Self.attemptsExtension)")
+    }
+
+    /// Called with [lock] held.
+    private func readAttempts(stem: String) -> Int {
+        guard let data = try? Data(contentsOf: attemptsURL(stem: stem)),
+              let text = String(data: data, encoding: .utf8),
+              let count = Int(text.trimmingCharacters(in: .whitespacesAndNewlines))
+        else {
+            return 0
+        }
+        return max(count, 0)
+    }
+
+    /// Called with [lock] held.
+    private func writeAttempts(_ count: Int, stem: String) throws {
+        try Data(String(count).utf8).write(to: attemptsURL(stem: stem), options: .atomic)
+    }
+
     private func ensureDirectory() throws {
         guard !fileManager.fileExists(atPath: directory.path) else {
             return
@@ -222,10 +280,7 @@ final class HandoffFileStore: Sendable {
         )
         // Workout routes and heart rate are health data: keep them out of
         // device and iCloud backups.
-        var values = URLResourceValues()
-        values.isExcludedFromBackup = true
-        var mutableDirectory = directory
-        try? mutableDirectory.setResourceValues(values)
+        try? WatchStorage.excludeFromBackup(directory)
     }
 
     private func removeIfPresent(_ url: URL) {

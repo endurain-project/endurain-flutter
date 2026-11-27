@@ -18,10 +18,6 @@ enum WatchProtocol {
     /// Mirrors `ActiveActivitySession.currentSchemaVersion` in Dart.
     static let sessionSchemaVersion = 3
 
-    /// Bundle identifier of the watch app. HealthKit reports it as the source
-    /// of every workout the watch saves.
-    static let watchAppBundleIdentifier = "com.endurain.endurain.watchkitapp"
-
     // Metadata of a file transfer and keys of a user-info transfer.
     static let keyKind = "kind"
     static let keyVersion = "version"

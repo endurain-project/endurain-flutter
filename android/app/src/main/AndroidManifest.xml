@@ -135,6 +135,16 @@
         <intent>
             <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
         </intent>
+        <!-- Required on Android 11+ package visibility so the app can tell
+             whether Health Connect's settings screens exist before opening
+             them (HealthConnectSettingsChannel): the framework screen on
+             Android 14+, the Health Connect app's before. -->
+        <intent>
+            <action android:name="android.health.connect.action.MANAGE_HEALTH_PERMISSIONS" />
+        </intent>
+        <intent>
+            <action android:name="androidx.health.ACTION_HEALTH_CONNECT_SETTINGS" />
+        </intent>
         <!-- Required on Android 11+ (API 30+) package visibility so
              TextToSpeech can find an installed speech engine for spoken
              activity announcements; see AudioAnnouncer.kt. -->

@@ -1,7 +1,10 @@
 import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/services/platform/location_platform_adapter.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
+
+import '../../helpers/fake_location_platform_adapter.dart';
 
 void main() {
   group('LocationService', () {
@@ -34,6 +37,16 @@ void main() {
         permission: LocationPermission.deniedForever,
       );
       final service = LocationService(platformAdapter: adapter);
+
+      expect(await service.getCurrentPosition(), isNull);
+    });
+
+    test('returns null when a platform call throws', () async {
+      final service = LocationService(
+        platformAdapter: FakeLocationPlatformAdapter(
+          platformError: PlatformException(code: 'channel-error'),
+        ),
+      );
 
       expect(await service.getCurrentPosition(), isNull);
     });

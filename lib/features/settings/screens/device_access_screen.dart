@@ -8,9 +8,11 @@ import 'package:endurain/features/health/models/health_authorization_status.dart
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/screens/health_access_screen.dart';
 import 'package:endurain/features/settings/controllers/device_access_controller.dart';
+import 'package:endurain/features/settings/models/bluetooth_access_state.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -21,6 +23,8 @@ class DeviceAccessScreen extends StatefulWidget {
     this.locationService,
     this.healthController,
     this.createHealthController,
+    this.checkBluetoothAccess,
+    this.requestBluetoothAccess,
     required this.healthSyncEnabled,
   }) : assert(
          controller != null || locationService != null,
@@ -42,38 +46,43 @@ class DeviceAccessScreen extends StatefulWidget {
   final HealthSyncController Function()? createHealthController;
   final bool healthSyncEnabled;
 
+  /// Read and request Bluetooth access, supplied by the composition root when
+  /// the Bluetooth row is offered. Used only when this screen builds its own
+  /// controller.
+  final Future<BluetoothAccessState> Function()? checkBluetoothAccess;
+  final Future<BluetoothAccessState> Function()? requestBluetoothAccess;
+
   @override
   State<DeviceAccessScreen> createState() => _DeviceAccessScreenState();
 }
 
 class _DeviceAccessScreenState extends State<DeviceAccessScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, OwnedControllers {
   late final DeviceAccessController _controller;
   late final HealthSyncController _healthController;
-  late final bool _ownsHealthController;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller =
-        widget.controller ??
-        DeviceAccessController(locationService: widget.locationService!);
-    _ownsHealthController = widget.healthController == null;
-    _healthController =
-        widget.healthController ?? widget.createHealthController!();
+    _controller = registerController(
+      widget.controller,
+      () => DeviceAccessController(
+        locationService: widget.locationService!,
+        checkBluetoothAccess: widget.checkBluetoothAccess,
+        requestBluetoothAccess: widget.requestBluetoothAccess,
+      ),
+    );
+    _healthController = registerController(
+      widget.healthController,
+      () => widget.createHealthController!(),
+    );
     unawaited(_refresh());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
-    if (_ownsHealthController) {
-      _healthController.dispose();
-    }
     super.dispose();
   }
 
@@ -109,6 +118,13 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
                   header: l10n.deviceAccessLocationSection,
                   children: [_buildLocationTile(l10n)],
                 ),
+                if (_controller.hasBluetooth) ...[
+                  const SizedBox(height: UIConstants.paddingStandard),
+                  AdaptiveListSection(
+                    header: l10n.deviceAccessBluetoothSection,
+                    children: [_buildBluetoothTile(l10n)],
+                  ),
+                ],
                 if (widget.healthSyncEnabled) ...[
                   const SizedBox(height: UIConstants.paddingStandard),
                   AdaptiveListSection(
@@ -146,6 +162,42 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
           : null,
       onTap: _controller.isLoading ? null : action,
     );
+  }
+
+  Widget _buildBluetoothTile(AppLocalizations l10n) {
+    final state = _controller.bluetoothAccess;
+    return AdaptiveListTile(
+      leading: const AdaptiveIcon(
+        materialIcon: Icons.bluetooth,
+        cupertinoIcon: CupertinoIcons.bluetooth,
+      ),
+      title: l10n.deviceAccessBluetoothTitle,
+      subtitle: _controller.isLoading
+          ? l10n.deviceAccessChecking
+          : _bluetoothStatus(l10n, state),
+      onTap: _controller.isLoading ? null : _bluetoothAction(state),
+    );
+  }
+
+  String _bluetoothStatus(AppLocalizations l10n, BluetoothAccessState state) {
+    return switch (state) {
+      BluetoothAccessState.ready => l10n.deviceAccessBluetoothAllowed,
+      BluetoothAccessState.off => l10n.deviceAccessBluetoothOff,
+      BluetoothAccessState.notDetermined =>
+        l10n.deviceAccessBluetoothNotAllowed,
+      BluetoothAccessState.blocked => l10n.deviceAccessBluetoothBlocked,
+      BluetoothAccessState.unavailable => l10n.deviceAccessBluetoothUnavailable,
+    };
+  }
+
+  VoidCallback? _bluetoothAction(BluetoothAccessState state) {
+    return switch (state) {
+      BluetoothAccessState.notDetermined => _controller.requestBluetoothAccess,
+      BluetoothAccessState.unavailable => null,
+      BluetoothAccessState.ready ||
+      BluetoothAccessState.off ||
+      BluetoothAccessState.blocked => _controller.openAppSettings,
+    };
   }
 
   Widget _buildHealthTile(BuildContext context, AppLocalizations l10n) {
@@ -190,7 +242,7 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
     return switch (permission) {
       LocationPermission.denied ||
       LocationPermission.unableToDetermine => _controller.requestLocationAccess,
-      LocationPermission.deniedForever => _controller.openAppSettings,
+      LocationPermission.deniedForever ||
       LocationPermission.always ||
       LocationPermission.whileInUse => _controller.openAppSettings,
     };

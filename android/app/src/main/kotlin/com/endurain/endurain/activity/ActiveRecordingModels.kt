@@ -47,7 +47,7 @@ data class ActiveActivitySessionData(
      *
      * Drives whether the foreground service may declare the `connectedDevice`
      * service type on Android 14+ (see
-     * `ActivityRecorderService.canDeclareConnectedDeviceType`).
+     * `ForegroundServiceCompat.canDeclareConnectedDeviceType`).
      */
     fun hasAnySensorBinding(): Boolean {
         return !heartRateDeviceId.isNullOrEmpty() ||
@@ -58,8 +58,8 @@ data class ActiveActivitySessionData(
     /**
      * Accumulated elapsed seconds as of [referenceMillis]: a paused session
      * keeps its stored value; otherwise adds the current segment's running
-     * time from `resumedAt ?? startedAt`. Mirrors the Dart geolocator
-     * recorder's `_elapsedDurationSeconds`; shared by [ActivityRecorderChannel]
+     * time from `resumedAt ?? startedAt`. Mirrors the iOS recorder's
+     * elapsed-time rule (see [SessionTiming]); shared by [ActivityRecorderChannel]
      * (manual pause/stop/recover) and [ActivityRecorderService] (auto-pause).
      */
     fun elapsedSecondsAt(referenceMillis: Long): Int {
@@ -123,7 +123,6 @@ data class ActiveActivitySessionData(
 
         const val STATUS_RECORDING = "recording"
         const val STATUS_PAUSED = "paused"
-        const val STATUS_STOPPING = "stopping"
         const val STATUS_COMPLETED = "completed"
         const val STATUS_FAILED = "failed"
 

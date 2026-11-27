@@ -11,24 +11,32 @@ import 'package:endurain/core/models/server_settings.dart';
 import 'package:endurain/core/services/platform/app_links_service.dart';
 import 'package:endurain/core/utils/server_url_resolver.dart';
 import 'package:endurain/features/auth/services/auth_coordinator.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 import 'package:flutter/foundation.dart' show ValueChanged, VoidCallback;
+
+/// Persists the server's discovered settings (e.g. its map tile server) for
+/// the origin that was just signed in to. Supplied by the composition root so
+/// sign-in does not depend on the feature that owns those settings.
+typedef ServerSettingsSaver = Future<void> Function(
+  ServerSettings settings, {
+  required String origin,
+});
 
 class LoginController extends SafeNotifier {
   LoginController({
     required this._authCoordinator,
     AppLinksService? appLinksService,
-    this._mapSettingsRepository,
+    ServerSettingsSaver? saveServerSettings,
     AppConfig? config,
     DiagnosticsRecorder? diagnostics,
-  }) : _appLinksService = appLinksService ?? DefaultAppLinksService(),
+  }) : _saveServerSettings = saveServerSettings,
+       _appLinksService = appLinksService ?? DefaultAppLinksService(),
        _config = config ?? AppConfig.defaults,
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder();
 
   final AuthCoordinator _authCoordinator;
   final AppLinksService _appLinksService;
-  final MapSettingsRepository? _mapSettingsRepository;
+  final ServerSettingsSaver? _saveServerSettings;
   final AppConfig _config;
   final DiagnosticsRecorder _diagnostics;
 
@@ -57,10 +65,6 @@ class LoginController extends SafeNotifier {
   bool get mfaAcceptsBackupCodes => _mfaMethods.contains('backup_code');
   bool get isStep2 => _isStep2;
   List<IdentityProvider> get availableIdPs => List.unmodifiable(_availableIdPs);
-  ServerSettings? get serverSettings => _serverSettings;
-
-  /// The server origin submitted for the current login flow.
-  String get serverUrl => _serverUrl;
 
   bool get localLoginEnabled => _serverSettings?.localLoginEnabled ?? true;
 
@@ -249,6 +253,14 @@ class LoginController extends SafeNotifier {
     final error =
         uri.queryParameters['error'] ?? uri.queryParameters['message'];
 
+    // Any app can fire this deep link: with no SSO sign-in waiting for it,
+    // it must not abort one that is not there, reset the form, or spend the
+    // one-shot PKCE verifier on a forged session id.
+    if (!_authCoordinator.hasPendingSsoFlow) {
+      _diagnostics.recordBreadcrumbSync(DiagnosticsEvents.ssoCallbackIgnored);
+      return;
+    }
+
     if (error != null && error.isNotEmpty) {
       // Any app can fire this deep link, so never surface its text to the
       // user: only a documented failure code selects a specific message.
@@ -358,7 +370,7 @@ class LoginController extends SafeNotifier {
     _onError?.call(error);
   }
 
-  /// Saves the signed-in server's map settings. Best-effort: the session is
+  /// Saves the signed-in server's settings. Best-effort: the session is
   /// already stored, so a preferences failure here must not turn a completed
   /// sign-in into an error. The settings are saved again at the next sign-in.
   Future<void> _commitServerSettings() async {
@@ -366,10 +378,7 @@ class LoginController extends SafeNotifier {
     final origin = ServerUrlResolver.normalize(_serverUrl, config: _config);
     if (settings == null || origin.isEmpty) return;
     try {
-      await _mapSettingsRepository?.saveFromServerSettings(
-        settings,
-        origin: origin,
-      );
+      await _saveServerSettings?.call(settings, origin: origin);
     } catch (error) {
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.authServerSettingsSaveFailed,

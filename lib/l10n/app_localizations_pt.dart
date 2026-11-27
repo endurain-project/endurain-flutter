@@ -608,6 +608,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get activityUploadReady => 'Pronto para enviar';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Guardada neste dispositivo. Será enviada depois de iniciar sessão.';
+
+  @override
   String get activityUploaded => 'Enviado';
 
   @override
@@ -852,6 +856,29 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Acesso aos dados de saúde';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Acesso ao Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Permitido';
+
+  @override
+  String get deviceAccessBluetoothOff => 'O Bluetooth está desativado';
+
+  @override
+  String get deviceAccessBluetoothBlocked =>
+      'Bloqueado nas configurações do sistema';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Não permitido';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Não disponível neste dispositivo';
 
   @override
   String get deviceAccessChecking => 'Verificando o acesso…';
@@ -1124,6 +1151,16 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Abra a app Saúde, toque na sua fotografia de perfil e depois em Apps e Serviços. Selecione Endurain e atualize as categorias de dados.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Permitir o acesso no Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'O Health Connect deixa de perguntar depois de o acesso ser recusado duas vezes. Abra o Health Connect para permitir que o Endurain leia os seus treinos, percursos e frequência cardíaca.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Abrir o Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Ligar aos dados de saúde';

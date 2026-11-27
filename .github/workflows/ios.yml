@@ -1,11 +1,23 @@
 name: iOS
 
-# macOS runners are the most expensive, so this only runs on pushes to main.
-# To check a branch before merging, start it by hand from the Actions tab.
+# macOS runners are the most expensive, so pull requests only run this when a
+# change can break iOS or watchOS (the path filter below); every push to main
+# runs it. Any other branch can be checked by hand from the Actions tab.
 on:
   push:
     branches:
       - main
+  pull_request:
+    paths:
+      - ios/**
+      - lib/**
+      - pubspec.yaml
+      - pubspec.lock
+      - .flutter-version
+      # Native tests read the shared test vectors the Dart tests also use.
+      - test/fixtures/**
+      - integration_test/**
+      - .github/workflows/ios.yml
   workflow_dispatch:
 
 env:
@@ -14,7 +26,8 @@ env:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Never cancel verification of a commit that has landed on main.
+  # Never cancel verification of a commit that has landed on main; a newer push
+  # to a pull request supersedes the run for the older one.
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
@@ -101,6 +114,27 @@ jobs:
             -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -destination "id=$SIMULATOR_UDID" \
+            CODE_SIGNING_ALLOWED=NO
+
+      # The EndurainWatchTests target runs from the EndurainWatch scheme on a
+      # watchOS simulator, picked by UDID like the iPhone above because runner
+      # images change which watches they ship.
+      - name: Run watchOS unit tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          watch_udid=$(xcrun simctl list devices available --json | jq -r \
+            '[.devices | to_entries[] | select(.key | test("watchOS")) | .value[]
+              | select(.name | startswith("Apple Watch"))][0].udid // empty')
+          if [ -z "$watch_udid" ]; then
+            echo "No Apple Watch simulator available" >&2
+            exit 1
+          fi
+          echo "Using watch simulator $watch_udid"
+          xcodebuild test \
+            -workspace ios/Runner.xcworkspace \
+            -scheme EndurainWatch \
+            -destination "id=$watch_udid" \
             CODE_SIGNING_ALLOWED=NO
 
       # Boots the real app on the simulator and signs in against an in-process

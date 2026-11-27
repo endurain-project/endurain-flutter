@@ -25,7 +25,6 @@ class MapConstants {
 class LocationMarkerConstants {
   // Marker dimensions
   static const double markerSize = 40.0;
-  static const double dotRadius = 8.0; // markerSize / 5
   static const double borderWidth = 3.0;
 
   // Directional cone dimensions (relative to radius)
@@ -45,4 +44,16 @@ class LocationMarkerConstants {
 /// Activity route visual constants
 class ActivityRouteConstants {
   static const double strokeWidth = 5.0;
+}
+
+/// Attribution shown for the default OpenStreetMap tile source.
+class MapAttributionConstants {
+  /// Proper-noun legal text required by the OSM tile usage policy; it is not
+  /// localized.
+  static const String openStreetMapText = '© OpenStreetMap contributors';
+
+  /// Where the OpenStreetMap attribution links to.
+  static final Uri openStreetMapCopyright = Uri.parse(
+    'https://www.openstreetmap.org/copyright',
+  );
 }

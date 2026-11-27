@@ -98,6 +98,11 @@
 	<string>This app uses location to show your position on the map and record activities, including while the app is in the background.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app uses location to show your position on the map and record activities while you are using the app.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>EndurainActivityRecording</key>
+		<string>Endurain needs your precise location to record an accurate track of your activity.</string>
+	</dict>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

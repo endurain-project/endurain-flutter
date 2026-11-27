@@ -1,6 +1,7 @@
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/repositories/active_activity_store.dart';
+
+import 'active_activity_store.dart';
 
 /// Simple in-memory [ActiveActivityStore] for unit tests.
 class InMemoryActiveActivityStore implements ActiveActivityStore {

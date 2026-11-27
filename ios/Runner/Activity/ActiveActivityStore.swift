@@ -22,6 +22,20 @@ final class ActiveActivityStore {
     private let directoryRemover: (URL) throws -> Void
     private let sessionWriter: (Data, URL) throws -> Void
 
+    /// Identifies one version of the session file. Every write replaces the
+    /// file atomically (new inode, new modification time), so a change by any
+    /// writer, including Dart, shows up here without reading the file.
+    private struct FileStamp: Equatable {
+        let fileNumber: UInt64
+        let modified: Date
+        let size: UInt64
+    }
+
+    /// The last session read from or written to disk, valid while the file
+    /// still has [cachedStamp]. Spares the per-fix disk read and decode.
+    private var cachedSession: ActiveActivitySessionData?
+    private var cachedStamp: FileStamp?
+
     init(
         activeDirectory: URL? = nil,
         directoryRemover: @escaping (URL) throws -> Void = { url in
@@ -70,6 +84,7 @@ final class ActiveActivityStore {
         do {
             try ensureDirectory()
             try sessionWriter(data, sessionFile)
+            remember(session)
             return true
         } catch {
             // Surface persistence failures via the coordinator; never log
@@ -82,13 +97,46 @@ final class ActiveActivityStore {
     }
 
     func loadSession() -> ActiveActivitySessionData? {
+        let stamp = sessionFileStamp()
+        if let stamp, stamp == cachedStamp, let cachedSession {
+            return cachedSession
+        }
         guard
             let data = try? Data(contentsOf: sessionFile),
             let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
         else {
             return orphanedSession()
         }
-        return ActiveActivitySessionData.fromJson(object) ?? orphanedSession()
+        guard let session = ActiveActivitySessionData.fromJson(object) else {
+            return orphanedSession()
+        }
+        cachedSession = session
+        cachedStamp = stamp
+        return session
+    }
+
+    /// Caches [session] as the content of the session file just written. If
+    /// another writer replaced the file in between, the stamp differs on the
+    /// next read and the file is read again.
+    private func remember(_ session: ActiveActivitySessionData) {
+        cachedSession = session
+        cachedStamp = sessionFileStamp()
+    }
+
+    private func sessionFileStamp() -> FileStamp? {
+        guard
+            let attributes = try? fileManager.attributesOfItem(atPath: sessionFile.path),
+            let modified = attributes[.modificationDate] as? Date,
+            let size = attributes[.size] as? NSNumber,
+            let fileNumber = attributes[.systemFileNumber] as? NSNumber
+        else {
+            return nil
+        }
+        return FileStamp(
+            fileNumber: fileNumber.uint64Value,
+            modified: modified,
+            size: size.uint64Value
+        )
     }
 
     func hasRecoverableData() -> Bool {
@@ -223,6 +271,8 @@ final class ActiveActivityStore {
 
     @discardableResult
     func clear() -> Bool {
+        cachedSession = nil
+        cachedStamp = nil
         do {
             if fileManager.fileExists(atPath: activeDirectory.path) {
                 try directoryRemover(activeDirectory)

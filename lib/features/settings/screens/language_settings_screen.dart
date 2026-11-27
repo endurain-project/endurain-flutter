@@ -147,14 +147,14 @@ class LanguageSettingsScreen extends StatelessWidget {
             children: [
               AdaptiveListSection(
                 children: [
-                  _LanguageOptionTile(
-                    label: l10n.languageSystemDefault,
+                  AdaptiveSelectableListTile(
+                    title: l10n.languageSystemDefault,
                     selected: selected == null,
                     onTap: () => _select(context, controller, null),
                   ),
                   for (final locale in languagePickerLocales)
-                    _LanguageOptionTile(
-                      label: languageDisplayName(locale),
+                    AdaptiveSelectableListTile(
+                      title: languageDisplayName(locale),
                       selected:
                           selected != null &&
                           selected.toLanguageTag() == locale.toLanguageTag(),
@@ -178,34 +178,5 @@ class LanguageSettingsScreen extends StatelessWidget {
     // does not need to block dismissing the picker.
     unawaited(controller.setLocale(locale));
     Navigator.of(context).pop();
-  }
-}
-
-class _LanguageOptionTile extends StatelessWidget {
-  const _LanguageOptionTile({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveListTile(
-      title: label,
-      onTap: onTap,
-      // A non-null trailing suppresses the Cupertino disclosure chevron so the
-      // checkmark alone signals selection.
-      trailing: selected
-          ? AdaptiveIcon(
-              materialIcon: Icons.check,
-              cupertinoIcon: CupertinoIcons.check_mark,
-              color: Theme.of(context).colorScheme.primary,
-            )
-          : const SizedBox.shrink(),
-    );
   }
 }

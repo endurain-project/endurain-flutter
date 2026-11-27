@@ -8,13 +8,16 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/local_activity_listing.dart';
 import '../../../helpers/recording_diagnostics.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {
+  retryTimerTests();
   group('ActivityUploadQueue', () {
     late Directory tempDirectory;
     late LocalActivityRepository repository;
@@ -712,4 +715,135 @@ Future<LocalActivityRecord> _createRecord(
   );
   await repository.upsert(record);
   return record;
+}
+
+/// Serves canned upload-queue candidates and counts how often they are read,
+/// so the retry timer can be observed without a database.
+class _ScriptedCandidatesRepository extends LocalActivityRepository {
+  _ScriptedCandidatesRepository(this.responses)
+    : super(supportDirectoryProvider: () async => Directory.systemTemp);
+
+  final List<List<LocalActivityRecord>> responses;
+  int reads = 0;
+
+  @override
+  Future<List<LocalActivityRecord>> listUploadQueueCandidates() async {
+    final index = reads < responses.length ? reads : responses.length - 1;
+    reads++;
+    return responses[index];
+  }
+}
+
+LocalActivityRecord _backingOffRecord(String id, DateTime next) {
+  return LocalActivityRecord(
+    id: id,
+    activityType: ActivityType.run,
+    startedAt: DateTime.utc(2026, 6, 2, 10),
+    endedAt: DateTime.utc(2026, 6, 2, 10, 30),
+    elapsedDurationSeconds: 1800,
+    distanceMeters: 5000,
+    pointCount: 40,
+    gpxFileName: '$id.gpx',
+    uploadStatus: LocalActivityUploadStatus.failed,
+    createdAt: DateTime.utc(2026, 6, 2, 10, 31),
+    updatedAt: DateTime.utc(2026, 6, 2, 10, 31),
+    nextUploadAttemptAt: next,
+  );
+}
+
+void retryTimerTests() {
+  final start = DateTime.utc(2026, 6, 2, 12);
+
+  group('ActivityUploadQueue retry timer', () {
+    test('re-drains when the earliest backoff elapses', () {
+      fakeAsync((async) {
+        final repository = _ScriptedCandidatesRepository([
+          [
+            _backingOffRecord('later', start.add(const Duration(minutes: 9))),
+            _backingOffRecord('soon', start.add(const Duration(minutes: 5))),
+          ],
+          const [],
+        ]);
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _failingUploadService(500),
+          now: () => async.getClock(start).now(),
+        );
+
+        unawaited(queue.drain());
+        async.flushMicrotasks();
+        expect(repository.reads, 1);
+
+        async.elapse(const Duration(minutes: 4, seconds: 59));
+        expect(repository.reads, 1);
+
+        async.elapse(const Duration(seconds: 1));
+        expect(repository.reads, 2);
+        queue.dispose();
+      });
+    });
+
+    test('dispose cancels a pending retry', () {
+      fakeAsync((async) {
+        final repository = _ScriptedCandidatesRepository([
+          [_backingOffRecord('soon', start.add(const Duration(minutes: 5)))],
+        ]);
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _failingUploadService(500),
+          now: () => async.getClock(start).now(),
+        );
+        unawaited(queue.drain());
+        async.flushMicrotasks();
+
+        queue.dispose();
+        async.elapse(const Duration(hours: 1));
+
+        expect(repository.reads, 1);
+      });
+    });
+
+    test('a later drain replaces the previous timer', () {
+      fakeAsync((async) {
+        final repository = _ScriptedCandidatesRepository([
+          [_backingOffRecord('a', start.add(const Duration(minutes: 5)))],
+          [_backingOffRecord('a', start.add(const Duration(minutes: 30)))],
+          const [],
+        ]);
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _failingUploadService(500),
+          now: () => async.getClock(start).now(),
+        );
+        unawaited(queue.drain());
+        async.flushMicrotasks();
+        unawaited(queue.drain());
+        async.flushMicrotasks();
+        expect(repository.reads, 2);
+
+        async.elapse(const Duration(minutes: 6));
+        expect(repository.reads, 2);
+
+        async.elapse(const Duration(minutes: 24));
+        expect(repository.reads, 3);
+        queue.dispose();
+      });
+    });
+
+    test('does not arm a timer when nothing is backing off', () {
+      fakeAsync((async) {
+        final repository = _ScriptedCandidatesRepository([const []]);
+        final queue = ActivityUploadQueue(
+          repository: repository,
+          uploadService: _failingUploadService(500),
+          now: () => async.getClock(start).now(),
+        );
+        unawaited(queue.drain());
+        async.flushMicrotasks();
+
+        expect(async.nonPeriodicTimerCount, 0);
+        queue.dispose();
+      });
+    });
+  });
 }

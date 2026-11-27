@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
-    @EnvironmentObject private var workout: WorkoutManager
+    @Environment(WorkoutManager.self) private var workout
 
     var body: some View {
         content
@@ -34,11 +34,12 @@ struct RootView: View {
 }
 
 struct StartView: View {
-    @EnvironmentObject private var workout: WorkoutManager
-    @EnvironmentObject private var phoneLink: PhoneLink
+    @Environment(WorkoutManager.self) private var workout
+    @Environment(PhoneLink.self) private var phoneLink
 
     var body: some View {
-        NavigationStack {
+        @Bindable var workout = workout
+        return NavigationStack {
             List {
                 Section {
                     ForEach(WatchActivityType.allCases, id: \.self) { type in
@@ -87,11 +88,14 @@ struct StartView: View {
 /// Counts down to the start of a workout. The watch taps the wrist for the
 /// last seconds and once more when recording starts (see `WorkoutManager`).
 struct CountdownView: View {
-    @EnvironmentObject private var workout: WorkoutManager
+    @Environment(WorkoutManager.self) private var workout
     let endsAt: Date
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
+    @ScaledMetric(relativeTo: .largeTitle) private var countdownFontSize: CGFloat = 64
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.25)) { context in
+        // The always-on display refreshes about once a second at most.
+        TimelineView(.periodic(from: .now, by: isLuminanceReduced ? 1 : 0.25)) { context in
             let remaining = max(0, Int(endsAt.timeIntervalSince(context.date).rounded(.up)))
             VStack(spacing: 6) {
                 if let type = workout.activityType {
@@ -100,7 +104,7 @@ struct CountdownView: View {
                         .foregroundStyle(.secondary)
                 }
                 Text("\(remaining)")
-                    .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
+                    .font(.system(size: countdownFontSize, weight: .bold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText(countsDown: true))
                     .accessibilityLabel(Text("Seconds left: \(remaining)"))
                 HStack {
@@ -124,7 +128,7 @@ struct CountdownView: View {
 }
 
 struct ActiveWorkoutView: View {
-    @EnvironmentObject private var workout: WorkoutManager
+    @Environment(WorkoutManager.self) private var workout
     @State private var page = 1
     @State private var confirmingEnd = false
 
@@ -177,27 +181,41 @@ struct ActiveWorkoutView: View {
 }
 
 struct MetricsView: View {
-    @EnvironmentObject private var workout: WorkoutManager
+    @Environment(WorkoutManager.self) private var workout
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { context in
+        // The always-on display refreshes once a minute, so it shows whole
+        // minutes and the timeline does not wake the app every second.
+        TimelineView(.periodic(from: .now, by: isLuminanceReduced ? 60 : 1)) { context in
             VStack(alignment: .leading, spacing: 2) {
                 if let type = workout.activityType {
                     Label(type.title, systemImage: type.symbolName)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
-                Text(WorkoutFormat.duration(workout.elapsedSeconds(at: context.date)))
+                let elapsed = workout.elapsedSeconds(at: context.date)
+                Text(isLuminanceReduced
+                    ? WorkoutFormat.durationInMinutes(elapsed)
+                    : WorkoutFormat.duration(elapsed))
                     .font(.system(.title, design: .rounded).monospacedDigit())
                     .foregroundStyle(workout.phase == .paused ? .yellow : .primary)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("Elapsed time"))
+                    .accessibilityValue(Text(WorkoutFormat.spokenDuration(elapsed)))
                 Text(WorkoutFormat.distance(workout.distanceMeters))
                     .font(.system(.title3, design: .rounded).monospacedDigit())
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("Distance"))
+                    .accessibilityValue(Text(WorkoutFormat.spokenDistance(workout.distanceMeters)))
                 Label(
                     workout.heartRateBpm.map { "\($0)" } ?? "--",
                     systemImage: "heart.fill"
                 )
                 .font(.system(.title3, design: .rounded).monospacedDigit())
                 .foregroundStyle(.red)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(heartRateAccessibilityLabel)
                 if workout.phase == .ending {
                     Text("Saving…")
                         .font(.footnote)
@@ -210,8 +228,17 @@ struct MetricsView: View {
     }
 }
 
+extension MetricsView {
+    private var heartRateAccessibilityLabel: Text {
+        guard let bpm = workout.heartRateBpm else {
+            return Text("Heart rate, not available")
+        }
+        return Text("Heart rate, \(bpm) beats per minute")
+    }
+}
+
 struct SummaryView: View {
-    @EnvironmentObject private var workout: WorkoutManager
+    @Environment(WorkoutManager.self) private var workout
     let summary: WorkoutManager.Summary
 
     var body: some View {
@@ -272,6 +299,38 @@ enum WorkoutFormat {
             return String(format: "%d:%02d:%02d", hours, minutes, secs)
         }
         return String(format: "%02d:%02d", minutes, secs)
+    }
+
+    /// Elapsed time as whole minutes (for example "1h 12m"), for the
+    /// always-on display, which does not show seconds.
+    static func durationInMinutes(_ seconds: TimeInterval) -> String {
+        let minutes = max(0, Int(seconds)) / 60
+        return Duration.seconds(minutes * 60).formatted(
+            .units(allowed: [.hours, .minutes], width: .narrow)
+        )
+    }
+
+    /// Elapsed time as words for VoiceOver (for example "1 hour, 2 minutes").
+    static func spokenDuration(_ seconds: TimeInterval) -> String {
+        let total = max(0, Int(seconds))
+        // Zero units are hidden, which would leave nothing to read at 0:00.
+        return Duration.seconds(total).formatted(
+            .units(
+                allowed: [.hours, .minutes, .seconds],
+                width: .wide,
+                zeroValueUnits: total == 0 ? .show(length: 1) : .hide
+            )
+        )
+    }
+
+    /// Distance as words for VoiceOver (for example "1.25 kilometers").
+    static func spokenDistance(_ meters: Double?) -> String {
+        let measurement = Measurement(value: meters ?? 0, unit: UnitLength.meters)
+        let usesMetric = Locale.current.measurementSystem == .metric
+        let converted = measurement.converted(to: usesMetric ? .kilometers : .miles)
+        return converted.formatted(
+            .measurement(width: .wide, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(2)))
+        )
     }
 
     /// Kilometres or miles, following the watch's region settings.

@@ -1,6 +1,7 @@
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 import 'package:endurain/features/sensors/services/sensor_measurement_decoder.dart';
 import 'package:endurain/features/sensors/services/sensor_profile.dart';
@@ -70,7 +71,10 @@ void main() {
     });
 
     test('never grants permission and never scans', () async {
-      expect(await adapter.ensurePermissions(), isFalse);
+      expect(
+        await adapter.ensurePermissions(),
+        SensorPermissionResult.unavailable,
+      );
       expect(await adapter.scanForSensors().isEmpty, isTrue);
     });
 

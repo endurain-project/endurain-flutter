@@ -2,10 +2,8 @@ import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/settings/controllers/locale_controller.dart';
-import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
 import 'package:endurain/features/settings/repositories/locale_settings_repository.dart';
-import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
 import 'package:endurain/features/settings/screens/settings_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
@@ -38,11 +36,6 @@ void main() {
 
   SettingsController buildSettingsController() => SettingsController(
     packageInfoService: const _FakePackageInfoService(version: '1.2.3'),
-    measurementSystemController: MeasurementSystemController(
-      repository: MeasurementSettingsRepository(
-        preferences: FakePreferencesStore(),
-      ),
-    ),
     secureStorage: SecureStorageService(),
   );
 

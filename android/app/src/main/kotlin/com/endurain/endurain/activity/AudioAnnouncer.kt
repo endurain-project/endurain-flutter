@@ -41,6 +41,11 @@ object AudioAnnouncer {
     private var focusRequest: AudioFocusRequest? = null
     private val duckingUtteranceIds = mutableSetOf<String>()
 
+    private val speechAttributes: AudioAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        .build()
+
     private data class PendingUtterance(
         val text: String,
         val duck: Boolean,
@@ -150,6 +155,11 @@ object AudioAnnouncer {
         try {
             if (status == TextToSpeech.SUCCESS) {
                 ready = true
+                // Route speech on the same stream the focus request describes.
+                val attributesResult = engine.setAudioAttributes(speechAttributes)
+                if (attributesResult == TextToSpeech.ERROR) {
+                    reportFailure(STAGE_AUDIO_ATTRIBUTES, code = attributesResult)
+                }
                 val result = engine.setOnUtteranceProgressListener(FocusReleasingListener())
                 if (result == TextToSpeech.ERROR) {
                     reportFailure(STAGE_LISTENER_REGISTRATION, code = result)
@@ -255,13 +265,9 @@ object AudioAnnouncer {
             return
         }
         try {
-            val attributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                .build()
             val request = AudioFocusRequest.Builder(
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
-            ).setAudioAttributes(attributes).build()
+            ).setAudioAttributes(speechAttributes).build()
             val result = manager.requestAudioFocus(request)
             if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 focusRequest = request
@@ -349,6 +355,7 @@ object AudioAnnouncer {
     private const val MAX_PENDING_UTTERANCES = 8
     private const val STAGE_INITIALIZATION = "initialization"
     private const val STAGE_LISTENER_REGISTRATION = "listener_registration"
+    private const val STAGE_AUDIO_ATTRIBUTES = "audio_attributes"
     private const val STAGE_SPEAK = "speak"
     private const val STAGE_ENQUEUE = "enqueue"
     private const val STAGE_LANGUAGE = "language"

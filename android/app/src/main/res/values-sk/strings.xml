@@ -11,4 +11,5 @@
     <string name="health_rationale_title">Zdravotné údaje v Endurain</string>
     <string name="health_rationale_usage">Endurain číta tréningy, trasy, tep a vzdialenosť iba na import vybraných aktivít.</string>
     <string name="health_rationale_storage">Údaje vybraných trás sa ukladajú v tomto zariadení a nahrávajú sa iba na server Endurain, ku ktorému sa pripojíte.</string>
+    <string name="health_rationale_privacy_policy">Zásady ochrany osobných údajov</string>
 </resources>

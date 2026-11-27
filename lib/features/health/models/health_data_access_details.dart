@@ -24,9 +24,4 @@ class HealthDataAccessDetails {
   final HealthDataAccessStatus workouts;
   final HealthDataAccessStatus workoutRoutes;
   final HealthDataAccessStatus heartRate;
-
-  bool get hasItemsNeedingAttention =>
-      workouts == HealthDataAccessStatus.needsAttention ||
-      workoutRoutes == HealthDataAccessStatus.needsAttention ||
-      heartRate == HealthDataAccessStatus.needsAttention;
 }

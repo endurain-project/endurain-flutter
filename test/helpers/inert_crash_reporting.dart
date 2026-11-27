@@ -13,3 +13,29 @@ CrashReportingService inertCrashReportingService() => CrashReportingService(
     preferences: FakePreferencesStore(),
   ),
 );
+
+/// A [CrashReporter] that discards everything, so no real backend is ever
+/// contacted.
+class NoopCrashReporter implements CrashReporter {
+  const NoopCrashReporter();
+
+  @override
+  bool get isActive => false;
+
+  @override
+  Future<bool> start({
+    required String dsn,
+    String? release,
+    String? environment,
+  }) async => false;
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> capture(
+    Object error,
+    StackTrace stackTrace, {
+    String? source,
+  }) async {}
+}

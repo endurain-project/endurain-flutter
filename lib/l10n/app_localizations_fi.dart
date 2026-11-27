@@ -605,6 +605,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get activityUploadReady => 'Valmis ladattavaksi';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Tallennettu tälle laitteelle. Se ladataan, kun kirjaudut sisään.';
+
+  @override
   String get activityUploaded => 'Ladattu';
 
   @override
@@ -849,6 +853,28 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get deviceAccessHealthTitle => 'Terveystietojen käyttöoikeus';
+
+  @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Bluetooth-käyttöoikeus';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Sallittu';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth on pois päältä';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Estetty järjestelmäasetuksissa';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Ei sallittu';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Ei saatavilla tällä laitteella';
 
   @override
   String get deviceAccessChecking => 'Tarkistetaan käyttöoikeuksia…';
@@ -1120,6 +1146,16 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Avaa Terveys-sovellus, napauta profiilikuvaasi ja sitten Sovellukset ja palvelut. Valitse Endurain ja päivitä tietoluokat.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Salli pääsy Health Connectissa';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect lopettaa kysymisen, kun pääsy on estetty kahdesti. Avaa Health Connect ja salli Endurainin lukea treenisi, reittisi ja sykkeesi.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Avaa Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Yhdistä terveystietoihin';

@@ -6,9 +6,10 @@ import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'active_activity_store.dart';
 
 /// File-backed [ActiveActivityStore] using app-private support storage.
 ///

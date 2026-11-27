@@ -14,6 +14,10 @@ import android.content.Context
 import android.util.Log
 import java.util.UUID
 
+/** Expands a 16-bit Bluetooth SIG assigned number to its full 128-bit UUID. */
+fun bluetoothUuid(short: Int): UUID =
+    UUID.fromString(String.format("%08x-0000-1000-8000-00805f9b34fb", short))
+
 /**
  * Shared BLE client for sensors that stream a single notifying GATT
  * characteristic (heart rate, cycling power, cadence).
@@ -223,6 +227,6 @@ abstract class BleNotifyClient internal constructor(
 
     private companion object {
         val CLIENT_CHARACTERISTIC_CONFIG: UUID =
-            UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x2902)
     }
 }

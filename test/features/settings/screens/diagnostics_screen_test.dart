@@ -10,8 +10,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../helpers/inert_crash_reporting.dart';
 
 /// Wraps [DiagnosticsScreen] with an injected diagnostics store and an inert
-/// crash-reporting service, so these tests render the screen without needing an
-/// AppScope.
+/// crash-reporting service, so these tests render the screen without needing the
+/// app's service graph.
 Widget _diagnosticsApp(DiagnosticsStore diagnostics) {
   return AdaptiveApp(
     title: 'Test',

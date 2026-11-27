@@ -3,6 +3,7 @@ import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ActivityTypePicker extends StatelessWidget {
@@ -165,25 +166,15 @@ class _CupertinoActivityTypePicker extends StatelessWidget {
   }
 
   Future<void> _showTypeActions(BuildContext context) async {
-    final selected = await showCupertinoModalPopup<ActivityType>(
+    final selected = await showAdaptiveChoicePicker<ActivityType>(
       context: context,
-      builder: (context) {
-        return CupertinoActionSheet(
-          title: Text(l10n.activityTypeLabel),
-          actions: ActivityType.values
-              .map((type) {
-                return CupertinoActionSheetAction(
-                  onPressed: () => Navigator.pop(context, type),
-                  child: Text(type.localizedLabel(l10n)),
-                );
-              })
-              .toList(growable: false),
-          cancelButton: CupertinoActionSheetAction(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-        );
-      },
+      title: l10n.activityTypeLabel,
+      cancelLabel: l10n.cancel,
+      selected: selectedType,
+      choices: [
+        for (final type in ActivityType.values)
+          AdaptiveChoice(value: type, label: type.localizedLabel(l10n)),
+      ],
     );
 
     if (selected != null) {

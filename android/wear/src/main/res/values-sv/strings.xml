@@ -35,4 +35,9 @@
     <string name="gps_lost">GPS-signal förlorad</string>
     <string name="hr_unavailable">Puls inte tillgänglig</string>
     <string name="restore_failed">Det gick inte att kontrollera träningspasset. Tryck på OK för att försöka igen.</string>
+    <string name="takeover_confirm">En annan app spelar in ett träningspass. Om du startar här avslutas det.</string>
+    <string name="takeover_start">Starta ändå</string>
+    <string name="notification_paused">Träningspasset är pausat</string>
+    <string name="tile_label">Starta träningspass</string>
+    <string name="heart_rate_description">Puls %1$d slag per minut</string>
 </resources>

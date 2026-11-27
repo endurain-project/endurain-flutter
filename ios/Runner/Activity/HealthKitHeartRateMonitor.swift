@@ -120,18 +120,7 @@ final class HealthKitHeartRateMonitor: NSObject {
     }
 
     static func workoutActivityType(for activityType: String) -> HKWorkoutActivityType {
-        switch activityType {
-        case "run":
-            return .running
-        case "ride":
-            return .cycling
-        case "walk":
-            return .walking
-        case "hike":
-            return .hiking
-        default:
-            return .other
-        }
+        return WatchActivityType.healthKitActivityType(forApiValue: activityType) ?? .other
     }
 
     /// After the app was terminated mid-recording, HealthKit may still hold

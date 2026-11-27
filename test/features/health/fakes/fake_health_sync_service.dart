@@ -84,13 +84,6 @@ class FakeHealthSyncService implements HealthSyncService {
   }
 
   @override
-  Future<List<HealthWorkout>> listImportable() async {
-    _maybeThrow();
-    listImportableCallCount++;
-    return List.of(workouts);
-  }
-
-  @override
   Future<HealthWorkoutPage> loadAvailable({
     HealthImportRange range = HealthImportRange.defaultRange,
   }) async {

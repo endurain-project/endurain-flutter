@@ -177,10 +177,7 @@ final class WatchRecordingStore {
     func begin(_ recording: WatchRecording) throws {
         clear()
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        var values = URLResourceValues()
-        values.isExcludedFromBackup = true
-        var mutableDirectory = directory
-        try? mutableDirectory.setResourceValues(values)
+        try? WatchStorage.excludeFromBackup(directory)
         try update(recording)
         try Data().write(to: pointsURL, options: .atomic)
     }

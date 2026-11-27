@@ -44,6 +44,7 @@ abstract class DiagnosticsStore implements DiagnosticsRecorder {
 
   Future<DiagnosticsReport?> readReport();
 
+  @visibleForTesting
   Future<String?> readReportText();
 
   Future<void> clearReport();

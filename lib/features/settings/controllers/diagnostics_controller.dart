@@ -43,9 +43,6 @@ class DiagnosticsController extends SafeNotifier {
   /// Whether remote crash reporting is currently active (opted in + usable DSN).
   bool get crashReportingActive => _crashReporting.isActive;
 
-  /// Whether the managed diagnostics endpoint is available to send to.
-  bool get crashReportingHasUsableServer => _crashReporting.hasUsableDsn;
-
   /// Loads the current report (when enabled), emitting a loading state first.
   ///
   /// The store's [DiagnosticsStore.isEnabled] is only meaningful after

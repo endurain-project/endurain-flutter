@@ -41,9 +41,9 @@ class HeartRateGattClient(context: Context) : BleNotifyClient(context, "HeartRat
 
     companion object {
         private val HEART_RATE_SERVICE =
-            UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x180d)
         private val HEART_RATE_MEASUREMENT =
-            UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb")
+            bluetoothUuid(0x2a37)
 
         private const val FLAG_VALUE_IS_16_BIT = 0x01
         private const val FLAG_ENERGY_PRESENT = 0x08
@@ -66,7 +66,7 @@ class HeartRateGattClient(context: Context) : BleNotifyClient(context, "HeartRat
                 return null
             }
             return if (is16Bit) {
-                (data[1].toInt() and 0xFF) or ((data[2].toInt() and 0xFF) shl 8)
+                BleBytes.u16Le(data, 1)
             } else {
                 data[1].toInt() and 0xFF
             }

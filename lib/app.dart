@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:endurain/app/app_scope.dart';
 import 'package:endurain/app/app_services.dart';
 import 'package:endurain/app/measurement_system_scope.dart';
 import 'package:endurain/app/navigation/app_router.dart';
@@ -150,22 +149,19 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return AppScope(
-      services: _services,
-      // Rebuild the localized app tree when the user changes languages. The
-      // unit preference travels in its own scope, so changing it rebuilds only
-      // the widgets that read it, not the router.
-      child: DiagnosticsScope(
-        recorder: _services.infra.diagnostics,
-        child: MeasurementSystemScope(
-          controller: _services.infra.measurementSystemController,
-          child: ListenableBuilder(
-            listenable: _services.infra.localeController,
-            builder: (context, _) => AdaptiveApp.router(
-              title: 'Endurain',
-              routerConfig: _router,
-              locale: _services.infra.localeController.locale,
-            ),
+    // Rebuild the localized app tree when the user changes languages. The
+    // unit preference travels in its own scope, so changing it rebuilds only
+    // the widgets that read it, not the router.
+    return DiagnosticsScope(
+      recorder: _services.infra.diagnostics,
+      child: MeasurementSystemScope(
+        controller: _services.infra.measurementSystemController,
+        child: ListenableBuilder(
+          listenable: _services.infra.localeController,
+          builder: (context, _) => AdaptiveApp.router(
+            title: 'Endurain',
+            routerConfig: _router,
+            locale: _services.infra.localeController.locale,
           ),
         ),
       ),

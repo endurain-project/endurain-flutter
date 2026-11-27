@@ -1,5 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -591,6 +592,7 @@ void main() {
 /// never touches storage: these tests only check that the tap navigates.
 Widget _detailsFor(BuildContext context, String recordId) {
   return ActivityDetailsScreen(
+    urlLauncher: const UrlLauncherService(),
     recordId: recordId,
     createController: _StubHistoryController.new,
   );

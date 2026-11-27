@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
-import 'package:endurain/core/utils/scoped_storage_key.dart';
 import 'package:endurain/core/utils/serial_task_queue.dart';
-import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
@@ -17,8 +15,10 @@ import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_page.dart';
 import 'package:endurain/features/health/repositories/health_import_repository.dart';
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
+import 'package:endurain/features/health/services/health_discovery_cursor.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
+import 'package:endurain/features/health/services/health_workout_importer.dart';
 
 const Duration _discoveryPageWindow = Duration(days: 30);
 
@@ -72,7 +72,15 @@ class HealthSyncService {
 
   static Future<bool> _neverRecordedElsewhere(String _) async => false;
 
-  final _DiscoveryCursor _cursor = _DiscoveryCursor();
+  late final HealthWorkoutImporter _importer = HealthWorkoutImporter(
+    importRepository: _importRepo,
+    localActivities: _localActivities,
+    gpxBuilder: _gpxBuilder,
+    isRecordedElsewhere: _isRecordedElsewhere,
+    now: _now,
+  );
+
+  final HealthDiscoveryCursor _cursor = HealthDiscoveryCursor();
   final SerialTaskQueue _queue = SerialTaskQueue();
 
   /// Number of workouts in the latest read whose route data could not be read.
@@ -214,16 +222,6 @@ class HealthSyncService {
 
   // ── Preview ─────────────────────────────────────────────────────────────
 
-  /// Loads the first page of importable workouts from the default 30-day
-  /// range, discarding pagination metadata.
-  ///
-  /// A convenience wrapper over [loadAvailable] for callers and tests that only
-  /// need the items; the controller uses [loadAvailable] directly so it can
-  /// page with `hasMore`.
-  Future<List<HealthWorkout>> listImportable() {
-    return loadAvailable().then((page) => page.items);
-  }
-
   Future<HealthWorkoutPage> loadAvailable({
     HealthImportRange range = HealthImportRange.defaultRange,
   }) {
@@ -257,7 +255,7 @@ class HealthSyncService {
   /// disturb what the screen is showing.
   Future<HealthWorkoutPage> _loadAvailableForProfile(
     ConnectionProfile profile, {
-    required _DiscoveryCursor cursor,
+    required HealthDiscoveryCursor cursor,
     required HealthImportRange range,
     required bool reset,
     HealthImportBounds? bounds,
@@ -303,7 +301,7 @@ class HealthSyncService {
       profile: profile,
       start: pageStart,
       end: pageEndInclusive,
-      exclude: (sourceId) => _isAlreadyHandled(profile, sourceId),
+      exclude: (sourceId) => _importer.isAlreadyHandled(profile, sourceId),
     );
 
     await _ensureProfileUnchanged(profile);
@@ -336,21 +334,6 @@ class HealthSyncService {
       items: List.unmodifiable(cursor.candidates),
       hasMore: cursor.hasMore,
     );
-  }
-
-  /// Whether the workout with [sourceId] is already imported for [profile]
-  /// (adopting a stray pre-migration import) or was recorded by another
-  /// Endurain path, so it is neither offered nor imported.
-  Future<bool> _isAlreadyHandled(
-    ConnectionProfile profile,
-    String sourceId,
-  ) async {
-    var importedLocalId = await _importRepo.localActivityIdFor(
-      profileId: profile.id,
-      sourceId: sourceId,
-    );
-    importedLocalId ??= await _adoptStrayImport(profile, sourceId);
-    return importedLocalId != null || await _isRecordedElsewhere(sourceId);
   }
 
   Future<List<HealthWorkout>> _readWorkouts({
@@ -483,7 +466,7 @@ class HealthSyncService {
     // here. Unless it was imported (or recorded elsewhere) meanwhile, report it
     // as failed instead of dropping it silently.
     for (final sourceId in sourceIds.difference(candidateIds)) {
-      if (!await _isAlreadyHandled(profile, sourceId)) failed++;
+      if (!await _importer.isAlreadyHandled(profile, sourceId)) failed++;
     }
 
     for (final workout in toImport) {
@@ -496,7 +479,7 @@ class HealthSyncService {
       }
       try {
         await _ensureProfileUnchanged(profile);
-        await _persistWorkout(profile, workout);
+        await _importer.persist(profile, workout);
         imported++;
       } catch (error) {
         failed++;
@@ -569,7 +552,7 @@ class HealthSyncService {
     ConnectionProfile profile, {
     bool incremental = false,
   }) async {
-    final cursor = _DiscoveryCursor();
+    final cursor = HealthDiscoveryCursor();
     final defaultBounds = HealthImportRange.defaultRange.resolve(_now());
     var bounds = defaultBounds;
     if (incremental) {
@@ -605,101 +588,6 @@ class HealthSyncService {
 
   // ── Private ─────────────────────────────────────────────────────────────
 
-  Future<void> _persistWorkout(
-    ConnectionProfile profile,
-    HealthWorkout workout,
-  ) async {
-    final existingMappedLocalId = await _importRepo.localActivityIdFor(
-      profileId: profile.id,
-      sourceId: workout.sourceId,
-    );
-    final localId =
-        existingMappedLocalId ?? _localIdFor(profile.id, workout.sourceId);
-    final existing = await _localActivities.get(localId);
-    if (existing != null) {
-      if (existing.connectionOrigin != profile.origin ||
-          existing.connectionProfileId != profile.id) {
-        throw const AppException(AppErrorCode.healthImportFailed);
-      }
-      await _importRepo.markImported(
-        profileId: profile.id,
-        sourceId: workout.sourceId,
-        localActivityId: localId,
-      );
-      return;
-    }
-    final gpx = _gpxBuilder.build(workout);
-
-    final start = workout.startedAt;
-    final end = workout.endedAt;
-    final elapsedSeconds = end.difference(start).inSeconds;
-
-    final gpxFileName = await _localActivities.writeGpx(id: localId, gpx: gpx);
-    final record = LocalActivityRecord(
-      id: localId,
-      activityType: workout.type.toActivityType(),
-      startedAt: start,
-      endedAt: end,
-      elapsedDurationSeconds: elapsedSeconds,
-      distanceMeters: workout.distanceMeters ?? 0,
-      pointCount: workout.route.length,
-      gpxFileName: gpxFileName,
-      uploadStatus: LocalActivityUploadStatus.pending,
-      createdAt: _now(),
-      updatedAt: _now(),
-      // Derive the upload idempotency key from the stable source workout UUID
-      // so a re-import (e.g. after the local dedup table is lost) collapses to
-      // the same server activity instead of creating a duplicate.
-      idempotencyKey: existingMappedLocalId == null
-          ? localId
-          : 'health_${workout.sourceId}',
-      connectionOrigin: profile.origin,
-      connectionProfileId: profile.id,
-    );
-
-    await _localActivities.upsert(record);
-    await _importRepo.markImported(
-      profileId: profile.id,
-      sourceId: workout.sourceId,
-      localActivityId: localId,
-    );
-  }
-
-  /// Reconciles a workout imported under a pre-origin-qualified profile id.
-  ///
-  /// Older app versions keyed health provenance on the raw server account id,
-  /// which is not unique across origins. Returns the adopted local activity id
-  /// when a stray provenance row for [sourceId] is confirmed — by its linked
-  /// local activity's origin and (migrated) profile id — to belong to the
-  /// active [profile], re-keying that row onto the current profile id. Returns
-  /// `null` when there is nothing to adopt, so discovery treats the workout as
-  /// importable. The linked activity is the source of truth, so a workout
-  /// imported for a *different* connection on the same device is never adopted.
-  Future<String?> _adoptStrayImport(
-    ConnectionProfile profile,
-    String sourceId,
-  ) async {
-    final strays = await _importRepo.importsForSource(sourceId);
-    for (final stray in strays) {
-      if (stray.profileId == profile.id) {
-        // Already keyed to the active profile; the direct lookup handled it.
-        continue;
-      }
-      final record = await _localActivities.get(stray.localActivityId);
-      if (record != null &&
-          record.connectionOrigin == profile.origin &&
-          record.connectionProfileId == profile.id) {
-        await _importRepo.reassignImportProfile(
-          sourceId: sourceId,
-          fromProfileId: stray.profileId,
-          toProfileId: profile.id,
-        );
-        return stray.localActivityId;
-      }
-    }
-    return null;
-  }
-
   Future<ConnectionProfile> _requireActiveProfile() async {
     final profile = await _activeConnectionProfile();
     if (profile == null) {
@@ -715,57 +603,6 @@ class HealthSyncService {
     }
   }
 
-  String _localIdFor(String profileId, String sourceId) {
-    return scopedStorageKey('health', '$profileId\n$sourceId');
-  }
-
   Future<T> _serialize<T>(Future<T> Function() operation) =>
       _queue.run(operation);
-}
-
-/// Route-scoped discovery/pagination state for the importable-workout list.
-///
-/// Groups the candidate cache and paging bounds that back a single health-sync
-/// route so this view state is a cohesive unit rather than seven loose fields
-/// on the service. `HealthSyncService.clearDiscoveryCache` resets it when the
-/// route is torn down.
-class _DiscoveryCursor {
-  List<HealthWorkout> candidates = const [];
-  String? profileId;
-  HealthImportRange? range;
-  HealthImportBounds? bounds;
-  DateTime? nextPageEndExclusive;
-  bool hasMore = false;
-  int routeConsentDeniedCount = 0;
-
-  /// Set once a read reports that older history is unreadable; stops paging.
-  bool historyUnavailable = false;
-
-  /// Starts a fresh discovery pass for [profileId] over [range]/[bounds].
-  void begin({
-    required String profileId,
-    required HealthImportRange range,
-    required HealthImportBounds bounds,
-  }) {
-    candidates = const [];
-    this.profileId = profileId;
-    this.range = range;
-    this.bounds = bounds;
-    nextPageEndExclusive = bounds.endExclusive;
-    hasMore = bounds.endExclusive.isAfter(bounds.startInclusive);
-    routeConsentDeniedCount = 0;
-    historyUnavailable = false;
-  }
-
-  /// Drops all cursor state so no route-scoped candidates linger.
-  void reset() {
-    candidates = const [];
-    profileId = null;
-    range = null;
-    bounds = null;
-    nextPageEndExclusive = null;
-    hasMore = false;
-    routeConsentDeniedCount = 0;
-    historyUnavailable = false;
-  }
 }
