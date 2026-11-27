@@ -188,8 +188,19 @@ class WatchRecordingStore(val directory: File) {
     /** Whether an unfinished recording is on disk, without reading its points. */
     fun hasRecording(): Boolean = recordingFile.isFile
 
-    /** The unfinished recording and its points, or null when there is none. */
+    /**
+     * The unfinished recording and its points, or null when there is none.
+     *
+     * A `recording.json` that exists but cannot be read or parsed is
+     * unrecoverable (the timing state is lost), so it is cleared here: left
+     * on disk, [hasRecording] would keep reporting a workout that can never
+     * be restored, and a sticky service restart would treat it as a live one.
+     * The caller learns of it from the null result while [hasRecording] was
+     * true, and logs it (this shared code stays free of `android.util.Log`
+     * so the phone's plain JVM tests can run it).
+     */
     fun load(): Pair<WatchRecording, List<WatchRecordedPoint>>? {
+        if (!recordingFile.isFile) return null
         val recording =
             try {
                 WatchRecording.fromJson(JSONObject(recordingFile.readText()))
@@ -197,7 +208,11 @@ class WatchRecordingStore(val directory: File) {
                 null
             } catch (_: JSONException) {
                 null
-            } ?: return null
+            }
+        if (recording == null) {
+            clear()
+            return null
+        }
         val points =
             try {
                 pointsFile.readLines()

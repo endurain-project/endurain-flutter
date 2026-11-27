@@ -111,8 +111,9 @@ android {
 
     sourceSets {
         getByName("main") {
-            // Protocol and stores shared with the Wear OS app (android/wear).
-            kotlin.srcDir("../watch_shared/kotlin")
+            // Wire protocol and handoff store shared with the Wear OS app
+            // (android/wear); the watch-only recording code stays out.
+            kotlin.srcDir("../watch_shared/common/kotlin")
             kotlin.srcDir("$watchLinkSourceDir/kotlin")
         }
     }
@@ -140,21 +141,21 @@ dependencies {
     // Used by the native activity recorder service for notification/permission
     // helpers. Kept as an explicit dependency since plugin transitive deps are
     // not exposed to the app compile classpath.
-    implementation("androidx.core:core-ktx:1.19.1")
+    implementation(libs.androidx.core.ktx)
     // enableEdgeToEdge() for MainActivity and the Health Connect rationale.
-    implementation("androidx.activity:activity:1.13.0")
+    implementation(libs.androidx.activity)
 
     if (watchLinkEnabled) {
-        implementation("com.google.android.gms:play-services-wearable:20.0.1")
+        implementation(libs.play.services.wearable)
     }
 
     // JVM unit tests for the native activity-recorder models. `org.json` is
     // pulled in as a real implementation because the android.jar on the
     // unit-test classpath only ships non-functional stubs; the Android Gradle
     // Plugin orders it ahead of that stub jar for `testDebugUnitTest`.
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.json:json:20260814")
-    testImplementation("org.robolectric:robolectric:4.18.1")
+    testImplementation(libs.junit)
+    testImplementation(libs.org.json)
+    testImplementation(libs.robolectric)
 }
 
 kotlin {

@@ -14,6 +14,12 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+    versionCatalogs {
+        // Shared with the phone build (android/settings.gradle.kts).
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
 }
 
 rootProject.name = "endurain-wear"

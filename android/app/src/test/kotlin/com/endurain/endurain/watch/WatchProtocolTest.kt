@@ -1,8 +1,6 @@
 package com.endurain.endurain.watch
 
 import com.endurain.endurain.watchlink.WatchProtocol
-import com.endurain.endurain.watchlink.WatchRecording
-import com.endurain.endurain.watchlink.WatchActivityType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -38,12 +36,5 @@ class WatchProtocolTest {
         val uri = WatchProtocol.dataLayerUri(WatchProtocol.ackPath("session/1"))
         assertEquals("wear", uri.scheme)
         assertEquals(WatchProtocol.ackPath("session/1"), uri.path)
-    }
-
-    @Test
-    fun recordingKeepsItsLastDistanceThroughJson() {
-        val recording = WatchRecording("s", WatchActivityType.RUN, 1_000, lastDistanceMeters = 12.5)
-        assertEquals(12.5, WatchRecording.fromJson(recording.toJson())?.lastDistanceMeters)
-        assertNull(WatchRecording.fromJson(recording.copy(lastDistanceMeters = null).toJson())?.lastDistanceMeters)
     }
 }

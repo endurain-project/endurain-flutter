@@ -42,15 +42,6 @@ class HandoffFileStore(val directory: File) {
         }
     }
 
-    fun data(sessionId: String): ByteArray? =
-        entry(sessionId)?.file?.let { file ->
-            try {
-                file.readBytes()
-            } catch (_: IOException) {
-                null
-            }
-        }
-
     fun entry(sessionId: String): Entry? = entries().firstOrNull { it.sessionId == sessionId }
 
     /** Every stored handoff, oldest first. A missing directory is empty. */

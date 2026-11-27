@@ -1,11 +1,11 @@
 import java.util.Properties
 
-// Keep the plugin versions in sync with android/settings.gradle.kts. Kotlin is
-// built into AGP 9, so unlike the Flutter phone build (whose Gradle plugin still
-// needs the legacy variant API) this build needs no kotlin-android plugin.
+// Kotlin is built into AGP 9, so unlike the Flutter phone build (whose Gradle
+// plugin still needs the legacy variant API) this build needs no kotlin-android
+// plugin. Versions come from android/gradle/libs.versions.toml.
 plugins {
-    id("com.android.application") version "9.5.3"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.21"
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 // The watch app ships with the same version as the phone app, read from
@@ -94,8 +94,10 @@ android {
 
     sourceSets {
         getByName("main") {
-            // Protocol and stores shared with the phone app.
-            kotlin.directories.add("../watch_shared/kotlin")
+            // Protocol and handoff store shared with the phone app, plus the
+            // watch-only recording and handoff code.
+            kotlin.directories.add("../watch_shared/common/kotlin")
+            kotlin.directories.add("../watch_shared/watch/kotlin")
         }
     }
 }
@@ -107,23 +109,24 @@ kotlin {
 }
 
 dependencies {
-    implementation(platform("androidx.compose:compose-bom:2026.11.01"))
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.core:core-ktx:1.19.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.1")
-    implementation("androidx.wear.compose:compose-material3:1.7.2")
-    implementation("androidx.wear.compose:compose-foundation:1.7.2")
-    implementation("androidx.wear:wear:1.4.0")
-    implementation("androidx.wear:wear-ongoing:1.1.0")
-    implementation("androidx.wear.protolayout:protolayout:1.4.2")
-    implementation("androidx.wear.tiles:tiles:1.6.2")
-    implementation("androidx.health:health-services-client:1.1.0")
-    implementation("com.google.android.gms:play-services-wearable:20.0.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0")
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.wear.compose.material3)
+    implementation(libs.androidx.wear.compose.foundation)
+    implementation(libs.androidx.wear)
+    implementation(libs.androidx.wear.ongoing)
+    implementation(libs.androidx.wear.protolayout)
+    implementation(libs.androidx.wear.protolayout.material3)
+    implementation(libs.androidx.wear.tiles)
+    implementation(libs.androidx.health.services.client)
+    implementation(libs.play.services.wearable)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.guava)
+    implementation(libs.kotlinx.coroutines.play.services)
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.json:json:20260814")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+    testImplementation(libs.junit)
+    testImplementation(libs.org.json)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
