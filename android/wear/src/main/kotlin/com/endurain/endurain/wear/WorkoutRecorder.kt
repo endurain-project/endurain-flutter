@@ -4,13 +4,14 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.StringRes
 import com.endurain.endurain.watchlink.WatchActivityType
-import com.endurain.endurain.watchlink.WatchHandoffBuilder
 import com.endurain.endurain.watchlink.WatchRecordedPoint
 import com.endurain.endurain.watchlink.WatchRecording
 import com.endurain.endurain.watchlink.WatchRecordingStore
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,54 +19,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.util.UUID
-
-sealed interface WorkoutPhase {
-    data object Idle : WorkoutPhase
-
-    data object Starting : WorkoutPhase
-
-    /**
-     * Counting down to the start. The exercise is prepared (sensors warming
-     * up, [ExerciseService] keeping the app alive) but nothing records yet.
-     */
-    data class CountingDown(val endsAtMillis: Long) : WorkoutPhase
-
-    data class Active(val paused: Boolean) : WorkoutPhase
-
-    data object Ending : WorkoutPhase
-
-    data class Finished(val summary: WorkoutSummary) : WorkoutPhase
-}
-
-data class WorkoutSummary(
-    val activityType: WatchActivityType,
-    val elapsedMillis: Long,
-    val distanceMeters: Double?,
-    val hasRoute: Boolean,
-)
-
-data class WorkoutUiState(
-    val phase: WorkoutPhase = WorkoutPhase.Idle,
-    val activityType: WatchActivityType? = null,
-    val recording: WatchRecording? = null,
-    val distanceMeters: Double? = null,
-    val heartRateBpm: Int? = null,
-    val locationStatus: SensorStatus = SensorStatus.UNKNOWN,
-    val heartRateStatus: SensorStatus = SensorStatus.UNKNOWN,
-    @StringRes val errorMessage: Int? = null,
-)
-
-/** Receives the finished workout's handoff envelope. */
-fun interface HandoffSink {
-    @Throws(IOException::class)
-    fun enqueue(
-        data: ByteArray,
-        sessionId: String,
-    )
-}
 
 /**
  * Records one outdoor workout through an [ExerciseGateway] (Health Services)
@@ -86,6 +43,8 @@ class WorkoutRecorder(
     private val countdownSetting: CountdownSetting,
     private val scope: CoroutineScope,
     private val restoreBackoffMillis: List<Long> = RESTORE_BACKOFF_MILLIS,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val endTimeoutMillis: Long = END_TIMEOUT_MILLIS,
     countdownTickMillis: Long = CountdownController.TICK_MILLIS,
 ) {
     constructor(context: Context, phoneLink: PhoneLink) : this(
@@ -117,13 +76,15 @@ class WorkoutRecorder(
     private var pendingStart: Pair<WatchActivityType, Set<WorkoutMetric>>? = null
 
     private var recording: WatchRecording? = null
-    private val points = mutableListOf<WatchRecordedPoint>()
-    private val unsavedPoints = mutableListOf<WatchRecordedPoint>()
-    private var lastHeartRate: Pair<Int, Long>? = null
+    private val track = WorkoutTrack(store)
+    private val handoff = WorkoutHandoff(store, handoffs)
     private var activeDurationMillis: Long? = null
     private var persistedDistance: Double? = null
     private var callbackRegistered = false
     private var finishing = false
+
+    /** Finishes with what was recorded when Health Services never reports the end. */
+    private var endTimeout: Job? = null
 
     /** Set while a restore could not tell whether the exercise still runs; dismissing its message retries. */
     private var restoreFailed = false
@@ -154,17 +115,54 @@ class WorkoutRecorder(
                         .filter { it in supported }
                         .toSet()
 
-                val seconds = countdownSeconds.value
-                if (seconds > 0) {
-                    beginCountdown(type, metrics, seconds)
+                if (gateway.otherAppHasExerciseOrFalse()) {
+                    // Starting would end that workout: ask first.
+                    pendingStart = type to metrics
+                    mutableState.update { it.copy(phase = WorkoutPhase.ConfirmingTakeover, activityType = type) }
                     return@launch
                 }
-                beginExercise(type, metrics)
+                proceedStart(type, metrics)
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
                 failStart(error)
             }
+        }
+    }
+
+    /** Starts the workout that [start] held back until the user agreed to end the other app's. */
+    fun confirmTakeover() {
+        if (mutableState.value.phase != WorkoutPhase.ConfirmingTakeover) return
+        val (type, metrics) = pendingStart ?: return
+        pendingStart = null
+        mutableState.update { it.copy(phase = WorkoutPhase.Starting) }
+        scope.launch {
+            try {
+                proceedStart(type, metrics)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                failStart(error)
+            }
+        }
+    }
+
+    /** Backs out of starting while another app's workout runs. */
+    fun cancelTakeover() {
+        if (mutableState.value.phase != WorkoutPhase.ConfirmingTakeover) return
+        pendingStart = null
+        mutableState.update { WorkoutUiState() }
+    }
+
+    private suspend fun proceedStart(
+        type: WatchActivityType,
+        metrics: Set<WorkoutMetric>,
+    ) {
+        val seconds = countdownSeconds.value
+        if (seconds > 0) {
+            beginCountdown(type, metrics, seconds)
+        } else {
+            beginExercise(type, metrics)
         }
     }
 
@@ -193,7 +191,8 @@ class WorkoutRecorder(
         mutableState.update { WorkoutUiState() }
         platform.stopService()
         // Ends the prepared exercise so the sensors stop warming up.
-        scope.launch { runCatching { gateway.end() } }
+        unregisterCallback()
+        launchLogged("end the prepared exercise") { gateway.end() }
     }
 
     // MARK: - Countdown
@@ -203,6 +202,8 @@ class WorkoutRecorder(
         metrics: Set<WorkoutMetric>,
         seconds: Int,
     ) {
+        // Registered first so the warm-up's GPS availability reaches the screen.
+        registerCallback()
         try {
             gateway.prepare(type, metrics)
             exerciseNeedsEnding = true
@@ -253,8 +254,7 @@ class WorkoutRecorder(
         // only switches its notification to "recording". Android can refuse
         // the call when the countdown ended with the app in the background,
         // which must not fail a workout Health Services is already recording.
-        runCatching { platform.startService() }
-            .onFailure { Log.w(TAG, "Could not update the workout foreground service", it) }
+        updateServiceStatus()
         exerciseNeedsEnding = false
         mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = false)) }
     }
@@ -264,22 +264,52 @@ class WorkoutRecorder(
         platform.stopService()
         store.clear()
         detach()
+        unregisterCallback()
         if (exerciseNeedsEnding) {
             // Nothing records it any more: end the prepared or started
             // exercise so Health Services does not keep the sensors on.
             exerciseNeedsEnding = false
-            unregisterCallback()
-            scope.launch { runCatching { gateway.end() } }
+            launchLogged("end the exercise") { gateway.end() }
         }
         fail(R.string.start_failed)
     }
 
     fun pause() {
-        scope.launch { runCatching { gateway.pause() } }
+        launchLogged("pause the exercise") { gateway.pause() }
     }
 
     fun resume() {
-        scope.launch { runCatching { gateway.resume() } }
+        launchLogged("resume the exercise") { gateway.resume() }
+    }
+
+    /** Runs a gateway call in the background, logging instead of swallowing its failure. */
+    private fun launchLogged(
+        what: String,
+        block: suspend () -> Unit,
+    ) {
+        scope.launch {
+            try {
+                block()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.w(TAG, "Could not $what", error)
+            }
+        }
+    }
+
+    /** Shows the active time and paused state in the ongoing activity. */
+    private fun updateServiceStatus() {
+        val current = recording ?: return
+        try {
+            platform.startService(
+                activeMillis = current.elapsedMillis(platform.nowMillis()),
+                paused = current.isPaused,
+            )
+        } catch (error: Exception) {
+            // Android can refuse this from the background; the workout goes on.
+            Log.w(TAG, "Could not update the workout foreground service", error)
+        }
     }
 
     fun end() {
@@ -289,6 +319,9 @@ class WorkoutRecorder(
         scope.launch {
             try {
                 gateway.end()
+                // Normally the ENDED update has finished the workout by now. If it
+                // never comes (the callback failed to register), do not wait forever.
+                if (mutableState.value.phase == WorkoutPhase.Ending) scheduleEndTimeout()
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
@@ -297,6 +330,18 @@ class WorkoutRecorder(
                 finish()
             }
         }
+    }
+
+    private fun scheduleEndTimeout() {
+        endTimeout?.cancel()
+        endTimeout =
+            scope.launch {
+                delay(endTimeoutMillis)
+                if (mutableState.value.phase == WorkoutPhase.Ending) {
+                    Log.w(TAG, "The exercise end was never reported")
+                    finish()
+                }
+            }
     }
 
     fun dismissSummary() {
@@ -323,11 +368,17 @@ class WorkoutRecorder(
      * left untouched and a message offers another try.
      */
     fun restoreUnfinishedRecording() {
-        val (saved, savedPoints) = store.load() ?: return
-        // Blocks starting a new workout, which would overwrite the saved one.
+        if (!store.hasRecording()) return
+        // Blocks starting a new workout, which would overwrite the saved one,
+        // while the recording loads off the main thread.
         mutableState.update { it.copy(phase = WorkoutPhase.Starting) }
         scope.launch {
-            val owned = readOwnership()
+            val (saved, savedPoints) =
+                withContext(ioDispatcher) { store.load() } ?: run {
+                    mutableState.update { it.copy(phase = WorkoutPhase.Idle) }
+                    return@launch
+                }
+            val owned = gateway.readOwnership(restoreBackoffMillis)
             when (owned) {
                 null -> {
                     restoreFailed = true
@@ -340,26 +391,10 @@ class WorkoutRecorder(
                 true -> {
                     attach(saved, savedPoints)
                     registerCallback()
-                    runCatching { platform.startService() }
+                    updateServiceStatus()
                     mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = saved.isPaused)) }
                 }
             }
-        }
-    }
-
-    /** Whether Health Services runs our exercise, or null when it could not be asked. */
-    private suspend fun readOwnership(): Boolean? {
-        var attempt = 0
-        while (true) {
-            try {
-                return gateway.ownsRunningExercise()
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Exception) {
-                Log.w(TAG, "Could not read the current exercise", error)
-            }
-            if (attempt >= restoreBackoffMillis.size) return null
-            delay(restoreBackoffMillis[attempt++])
         }
     }
 
@@ -396,14 +431,14 @@ class WorkoutRecorder(
     private fun unregisterCallback() {
         if (!callbackRegistered) return
         callbackRegistered = false
-        scope.launch { runCatching { gateway.clearListener() } }
+        launchLogged("stop exercise updates") { gateway.clearListener() }
     }
 
     private fun handle(snapshot: ExerciseSnapshot) {
         val current = recording ?: return
 
         snapshot.heartRateBpm?.let { bpm ->
-            snapshot.heartRateAtMillis?.let { lastHeartRate = bpm to it }
+            snapshot.heartRateAtMillis?.let { track.noteHeartRate(bpm, it) }
             mutableState.update { it.copy(heartRateBpm = bpm) }
         }
         snapshot.distanceTotalMeters?.let { total ->
@@ -412,23 +447,7 @@ class WorkoutRecorder(
         snapshot.activeDurationMillis?.let { activeDurationMillis = it }
 
         if (!current.isPaused && snapshot.state == GatewayExerciseState.ACTIVE) {
-            val newPoints =
-                snapshot.locations.mapNotNull { fix ->
-                    LocationSampleMapper.point(
-                        timestampMillis = fix.timestampMillis,
-                        latitude = fix.latitude,
-                        longitude = fix.longitude,
-                        altitude = fix.altitude,
-                        bearing = fix.bearing,
-                        horizontalErrorMeters = fix.horizontalErrorMeters,
-                        verticalErrorMeters = fix.verticalErrorMeters,
-                        segmentIndex = current.segmentIndex,
-                        lastHeartRate = lastHeartRate,
-                    )
-                }.filter { it.timestampMillis >= current.startedAtMillis }
-            points += newPoints
-            unsavedPoints += newPoints
-            if (unsavedPoints.size >= POINT_FLUSH_THRESHOLD) flushPoints()
+            if (track.add(snapshot.locations, current)) flushPoints()
         }
 
         val now = platform.nowMillis()
@@ -438,10 +457,12 @@ class WorkoutRecorder(
                 flushPoints()
                 setRecording(current.paused(now))
                 mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = true)) }
+                updateServiceStatus()
             }
             snapshot.state == GatewayExerciseState.ACTIVE && current.isPaused -> {
                 setRecording(current.resumed(now))
                 mutableState.update { it.copy(phase = WorkoutPhase.Active(paused = false)) }
+                updateServiceStatus()
             }
         }
     }
@@ -452,14 +473,16 @@ class WorkoutRecorder(
         if (finishing) return
         val current = recording ?: return
         finishing = true
+        endTimeout?.cancel()
+        endTimeout = null
         flushPoints()
         unregisterCallback()
         platform.stopService()
 
         val end = platform.nowMillis()
         val elapsed = activeDurationMillis ?: current.elapsedMillis(end)
-        val recorded = points.toList()
-        enqueueHandoff(current, recorded, end, elapsed)
+        val recorded = track.points()
+        if (!handoff.enqueue(current, recorded, end, elapsed)) queueFailed()
         val summary =
             WorkoutSummary(
                 activityType = current.activityType,
@@ -479,30 +502,11 @@ class WorkoutRecorder(
         // A sticky restart may have put the service back in the foreground
         // for a workout that no longer runs: drop its notification.
         platform.stopService()
-        val end = WatchHandoffBuilder.endOfInterruptedRecording(saved, savedPoints)
-        val elapsed = saved.elapsedMillis(end)
-        if (savedPoints.isEmpty() && elapsed < 1000) {
-            store.clear()
-            return
-        }
-        enqueueHandoff(saved, savedPoints, end, elapsed)
+        if (!handoff.enqueueInterrupted(saved, savedPoints)) queueFailed()
     }
 
-    private fun enqueueHandoff(
-        recording: WatchRecording,
-        points: List<WatchRecordedPoint>,
-        endedAtMillis: Long,
-        elapsedMillis: Long,
-    ) {
-        try {
-            val data = WatchHandoffBuilder.bytes(recording, points, endedAtMillis, elapsedMillis)
-            handoffs.enqueue(data, recording.sessionId)
-            store.clear()
-        } catch (error: IOException) {
-            // The recording stays on disk; the next launch finishes it again.
-            Log.w(TAG, "Could not queue the workout", error)
-            mutableState.update { it.copy(errorMessage = R.string.queue_failed) }
-        }
+    private fun queueFailed() {
+        mutableState.update { it.copy(errorMessage = R.string.queue_failed) }
     }
 
     // MARK: - State
@@ -512,16 +516,16 @@ class WorkoutRecorder(
         savedPoints: List<WatchRecordedPoint>,
     ) {
         recording = newRecording
-        points.clear()
-        points += savedPoints
-        unsavedPoints.clear()
-        lastHeartRate = null
+        track.reset(savedPoints)
         activeDurationMillis = null
         persistedDistance = newRecording.lastDistanceMeters
         mutableState.update {
             WorkoutUiState(
                 phase = it.phase,
                 activityType = newRecording.activityType,
+                // The warm-up may already have reported the sensors' availability.
+                locationStatus = it.locationStatus,
+                heartRateStatus = it.heartRateStatus,
                 recording = newRecording,
                 // Health Services only sends the total when it changes, so
                 // keep the last one known instead of showing 0.
@@ -532,9 +536,7 @@ class WorkoutRecorder(
 
     private fun detach() {
         recording = null
-        points.clear()
-        unsavedPoints.clear()
-        lastHeartRate = null
+        track.reset()
         activeDurationMillis = null
         persistedDistance = null
     }
@@ -552,15 +554,7 @@ class WorkoutRecorder(
     }
 
     private fun flushPoints() {
-        if (unsavedPoints.isEmpty()) return
-        try {
-            store.append(unsavedPoints.toList())
-            unsavedPoints.clear()
-            persistDistance()
-        } catch (error: IOException) {
-            // Kept in memory and retried with the next batch.
-            Log.w(TAG, "Could not save workout points", error)
-        }
+        if (track.flush()) persistDistance()
     }
 
     /** Saves the distance with the points, so a crash keeps it as well. */
@@ -583,8 +577,8 @@ class WorkoutRecorder(
     }
 
     companion object {
-        private const val TAG = "EndurainWear"
-        private const val POINT_FLUSH_THRESHOLD = 10
+        /** How long to wait for Health Services to report the end before finishing anyway. */
+        const val END_TIMEOUT_MILLIS = 20_000L
 
         /** Waits between attempts to ask Health Services who owns the exercise at launch. */
         val RESTORE_BACKOFF_MILLIS = listOf(1_000L, 2_000L, 4_000L, 8_000L)

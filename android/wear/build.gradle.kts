@@ -115,6 +115,8 @@ dependencies {
     implementation("androidx.wear.compose:compose-foundation:1.7.2")
     implementation("androidx.wear:wear:1.4.0")
     implementation("androidx.wear:wear-ongoing:1.1.0")
+    implementation("androidx.wear.protolayout:protolayout:1.4.2")
+    implementation("androidx.wear.tiles:tiles:1.6.2")
     implementation("androidx.health:health-services-client:1.1.0")
     implementation("com.google.android.gms:play-services-wearable:20.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")

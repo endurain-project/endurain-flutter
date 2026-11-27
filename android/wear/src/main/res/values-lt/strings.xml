@@ -35,4 +35,9 @@
     <string name="gps_lost">GPS signalas prarastas</string>
     <string name="hr_unavailable">Pulsas nepasiekiamas</string>
     <string name="restore_failed">Nepavyko patikrinti treniruotės. Palieskite Gerai, kad bandytumėte dar kartą.</string>
+    <string name="takeover_confirm">Kita programa įrašo treniruotę. Pradėjus čia ji bus baigta.</string>
+    <string name="takeover_start">Vis tiek pradėti</string>
+    <string name="notification_paused">Treniruotė pristabdyta</string>
+    <string name="tile_label">Pradėti treniruotę</string>
+    <string name="heart_rate_description">Pulsas: %1$d dūžių per minutę</string>
 </resources>

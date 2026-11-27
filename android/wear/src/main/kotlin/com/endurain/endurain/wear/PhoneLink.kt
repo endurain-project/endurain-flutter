@@ -7,7 +7,6 @@ import com.endurain.endurain.watchlink.WatchProtocol
 import com.google.android.gms.wearable.Asset
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.DataClient
-import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -107,9 +106,7 @@ class PhoneLink(context: Context) : HandoffSink {
         return try {
             val buffer = dataClient.getDataItems(uri, DataClient.FILTER_PREFIX).await()
             try {
-                AcknowledgementReader.sessionIds(
-                    buffer.map { it.uri.path to DataMapItem.fromDataItem(it).dataMap.getInt(WatchProtocol.KEY_VERSION) },
-                )
+                AcknowledgementReader.sessionIds(buffer.map { it.uri.path })
             } finally {
                 buffer.release()
             }
@@ -133,7 +130,6 @@ class PhoneLink(context: Context) : HandoffSink {
     }
 
     companion object {
-        private const val TAG = "EndurainWear"
         val RETENTION_MILLIS = TimeUnit.DAYS.toMillis(90)
     }
 }

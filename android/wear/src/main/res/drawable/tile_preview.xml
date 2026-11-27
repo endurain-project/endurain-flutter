@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Preview of the "Start workout" tile in the tile carousel's picker. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FF000000" />
+        </shape>
+    </item>
+    <item
+        android:bottom="96dp"
+        android:left="96dp"
+        android:right="96dp"
+        android:top="96dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FF19AB88" />
+            <corners android:radius="40dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -7,25 +7,13 @@ import org.junit.Test
 class AcknowledgementReaderTest {
     @Test
     fun readsSessionsOfAcknowledgementPaths() {
-        val items =
-            listOf(
-                WatchProtocol.ackPath("a") to WatchProtocol.PAYLOAD_VERSION,
-                WatchProtocol.ackPath("b/c") to 0,
-            )
-        assertEquals(listOf("a", "b/c"), AcknowledgementReader.sessionIds(items))
+        val paths = listOf(WatchProtocol.ackPath("a"), WatchProtocol.ackPath("b/c"))
+        assertEquals(listOf("a", "b/c"), AcknowledgementReader.sessionIds(paths))
     }
 
     @Test
-    fun skipsOtherPathsButAcceptsNewerVersions() {
-        // The phone may update first; its acknowledgements must still clear
-        // the outbox.
-        val items =
-            listOf(
-                WatchProtocol.handoffPath("a") to 1,
-                null to 1,
-                WatchProtocol.ackPath("future") to WatchProtocol.PAYLOAD_VERSION + 1,
-                WatchProtocol.ackPath("ok") to 1,
-            )
-        assertEquals(listOf("future", "ok"), AcknowledgementReader.sessionIds(items))
+    fun skipsOtherPaths() {
+        val paths = listOf(WatchProtocol.handoffPath("a"), null, WatchProtocol.ackPath("ok"))
+        assertEquals(listOf("ok"), AcknowledgementReader.sessionIds(paths))
     }
 }

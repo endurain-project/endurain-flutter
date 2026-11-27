@@ -90,6 +90,12 @@ interface ExerciseGateway {
     /** Whether this app owns the exercise Health Services is running. Throws when it cannot tell. */
     suspend fun ownsRunningExercise(): Boolean
 
+    /**
+     * Whether another app is recording an exercise, which starting ours
+     * would end. Throws when it cannot tell.
+     */
+    suspend fun otherAppHasExercise(): Boolean
+
     fun setListener(listener: ExerciseListener)
 
     suspend fun clearListener()
@@ -145,8 +151,13 @@ class HealthServicesExerciseGateway(context: Context) : ExerciseGateway {
     // library's restriction on their companion object.
     @SuppressLint("RestrictedApi")
     override suspend fun ownsRunningExercise(): Boolean =
-        client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus ==
-            ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
+        trackedStatus() == ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
+
+    @SuppressLint("RestrictedApi")
+    override suspend fun otherAppHasExercise(): Boolean =
+        trackedStatus() == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
+
+    private suspend fun trackedStatus(): Int = client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus
 
     override fun setListener(listener: ExerciseListener) {
         val callback =

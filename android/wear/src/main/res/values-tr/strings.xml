@@ -35,4 +35,9 @@
     <string name="gps_lost">GPS sinyali kaybedildi</string>
     <string name="hr_unavailable">Kalp atış hızı kullanılamıyor</string>
     <string name="restore_failed">Antrenman kontrol edilemedi. Tekrar denemek için Tamam\'a dokunun.</string>
+    <string name="takeover_confirm">Başka bir uygulama antrenman kaydediyor. Burada başlatırsan o sona erer.</string>
+    <string name="takeover_start">Yine de başlat</string>
+    <string name="notification_paused">Antrenman duraklatıldı</string>
+    <string name="tile_label">Antrenmanı başlat</string>
+    <string name="heart_rate_description">Kalp atış hızı dakikada %1$d atım</string>
 </resources>

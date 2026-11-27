@@ -14,8 +14,16 @@ interface WorkoutPlatform {
 
     fun isGranted(permission: String): Boolean
 
-    /** Puts [ExerciseService] in the foreground (or only switches its notification). */
-    fun startService(countingDown: Boolean = false)
+    /**
+     * Puts [ExerciseService] in the foreground (or only switches its
+     * notification). With [activeMillis] the ongoing activity shows a
+     * stopwatch of that much active time, frozen while [paused].
+     */
+    fun startService(
+        countingDown: Boolean = false,
+        activeMillis: Long? = null,
+        paused: Boolean = false,
+    )
 
     fun stopService()
 
@@ -43,7 +51,11 @@ class AndroidWorkoutPlatform(context: Context) : WorkoutPlatform {
     override fun isGranted(permission: String): Boolean =
         ContextCompat.checkSelfPermission(appContext, permission) == PackageManager.PERMISSION_GRANTED
 
-    override fun startService(countingDown: Boolean) = ExerciseService.start(appContext, countingDown)
+    override fun startService(
+        countingDown: Boolean,
+        activeMillis: Long?,
+        paused: Boolean,
+    ) = ExerciseService.start(appContext, countingDown, activeMillis, paused)
 
     override fun stopService() = ExerciseService.stop(appContext)
 

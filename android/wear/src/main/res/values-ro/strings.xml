@@ -35,4 +35,9 @@
     <string name="gps_lost">Semnal GPS pierdut</string>
     <string name="hr_unavailable">Ritmul cardiac nu este disponibil</string>
     <string name="restore_failed">Antrenamentul nu a putut fi verificat. Atingeți OK pentru a încerca din nou.</string>
+    <string name="takeover_confirm">Altă aplicație înregistrează un antrenament. Dacă pornești aici, acesta se va încheia.</string>
+    <string name="takeover_start">Pornește oricum</string>
+    <string name="notification_paused">Antrenament în pauză</string>
+    <string name="tile_label">Pornește antrenamentul</string>
+    <string name="heart_rate_description">Ritm cardiac: %1$d bătăi pe minut</string>
 </resources>

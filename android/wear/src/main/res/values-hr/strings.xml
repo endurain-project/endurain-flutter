@@ -35,4 +35,9 @@
     <string name="gps_lost">GPS signal izgubljen</string>
     <string name="hr_unavailable">Puls nije dostupan</string>
     <string name="restore_failed">Trening nije bilo moguće provjeriti. Dodirnite U redu za ponovni pokušaj.</string>
+    <string name="takeover_confirm">Druga aplikacija snima vježbu. Pokretanjem ovdje ona će se završiti.</string>
+    <string name="takeover_start">Ipak pokreni</string>
+    <string name="notification_paused">Vježba je pauzirana</string>
+    <string name="tile_label">Pokreni vježbu</string>
+    <string name="heart_rate_description">Puls %1$d otkucaja u minuti</string>
 </resources>

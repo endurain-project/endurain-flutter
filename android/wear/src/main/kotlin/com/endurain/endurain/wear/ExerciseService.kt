@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -34,12 +35,15 @@ class ExerciseService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        val countingDown = intent?.getBooleanExtra(EXTRA_COUNTING_DOWN, false) == true
+        val paused = intent?.getBooleanExtra(EXTRA_PAUSED, false) == true
+        val activeMillis = intent?.getLongExtra(EXTRA_ACTIVE_MILLIS, NO_ACTIVE_TIME)?.takeIf { it >= 0 }
         val title =
             getString(
-                if (intent?.getBooleanExtra(EXTRA_COUNTING_DOWN, false) == true) {
-                    R.string.notification_starting
-                } else {
-                    R.string.notification_recording
+                when {
+                    countingDown -> R.string.notification_starting
+                    paused -> R.string.notification_paused
+                    else -> R.string.notification_recording
                 },
             )
         val openApp =
@@ -60,7 +64,7 @@ class ExerciseService : Service() {
         OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notification)
             .setStaticIcon(R.drawable.ic_workout)
             .setTouchIntent(openApp)
-            .setStatus(Status.Builder().addTemplate(title).build())
+            .setStatus(status(title, activeMillis, paused))
             .build()
             .apply(applicationContext)
 
@@ -73,6 +77,27 @@ class ExerciseService : Service() {
             stopSelf()
         }
         return START_STICKY
+    }
+
+    /** The ongoing activity's text, with a stopwatch of the active time when it is known. */
+    private fun status(
+        title: String,
+        activeMillis: Long?,
+        paused: Boolean,
+    ): Status {
+        val builder = Status.Builder().addPart("state", Status.TextPart(title))
+        if (activeMillis == null) return builder.addTemplate("#state#").build()
+        val now = SystemClock.elapsedRealtime()
+        val stopwatch =
+            if (paused) {
+                // (timeZero, pausedAt): frozen at the active time. The third
+                // constructor argument is a target duration, which a workout
+                // stopwatch does not have.
+                Status.StopwatchPart(now - activeMillis, now)
+            } else {
+                Status.StopwatchPart(now - activeMillis)
+            }
+        return builder.addPart("time", stopwatch).addTemplate("#state# #time#").build()
     }
 
     private fun foregroundTypes(): Int {
@@ -93,10 +118,12 @@ class ExerciseService : Service() {
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
     companion object {
-        private const val TAG = "EndurainWear"
         private const val CHANNEL_ID = "workout"
         private const val NOTIFICATION_ID = 1
         private const val EXTRA_COUNTING_DOWN = "countingDown"
+        private const val EXTRA_ACTIVE_MILLIS = "activeMillis"
+        private const val EXTRA_PAUSED = "paused"
+        private const val NO_ACTIVE_TIME = -1L
 
         /** Creates the notification channel; once per process, from the Application. */
         fun createNotificationChannel(context: Context) {
@@ -112,8 +139,14 @@ class ExerciseService : Service() {
         fun start(
             context: Context,
             countingDown: Boolean = false,
+            activeMillis: Long? = null,
+            paused: Boolean = false,
         ) {
-            val intent = Intent(context, ExerciseService::class.java).putExtra(EXTRA_COUNTING_DOWN, countingDown)
+            val intent =
+                Intent(context, ExerciseService::class.java)
+                    .putExtra(EXTRA_COUNTING_DOWN, countingDown)
+                    .putExtra(EXTRA_ACTIVE_MILLIS, activeMillis ?: NO_ACTIVE_TIME)
+                    .putExtra(EXTRA_PAUSED, paused)
             ContextCompat.startForegroundService(context, intent)
         }
 
