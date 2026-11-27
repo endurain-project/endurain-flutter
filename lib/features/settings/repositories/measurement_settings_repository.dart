@@ -26,12 +26,9 @@ class MeasurementSettingsRepository {
   /// Persists [system], or clears the preference (falling back to the device
   /// locale) when [system] is `null`.
   Future<void> setMeasurementSystem(MeasurementSystem? system) {
-    if (system == null) {
-      return _preferences.delete(key: _measurementSystemKey);
-    }
-    return _preferences.write(
+    return _preferences.writeOrDelete(
       key: _measurementSystemKey,
-      value: system.toJson(),
+      value: system?.toJson(),
     );
   }
 }

@@ -32,7 +32,6 @@ class MapStateController extends SafeNotifier {
   String _tileServerUrl = MapConstants.defaultTileServerUrl;
   bool _isLoadingLocation = false;
   bool _hasLocationPermission = false;
-  bool _hasLocationError = false;
   bool _isLocationLocked = true;
   double _heading = 0.0;
 
@@ -40,7 +39,6 @@ class MapStateController extends SafeNotifier {
   String get tileServerUrl => _tileServerUrl;
   bool get isLoadingLocation => _isLoadingLocation;
   bool get hasLocationPermission => _hasLocationPermission;
-  bool get hasLocationError => _hasLocationError;
   bool get isLocationLocked => _isLocationLocked;
   double get heading => _heading;
 
@@ -81,10 +79,17 @@ class MapStateController extends SafeNotifier {
 
   Future<void> _loadUserLocation() async {
     _isLoadingLocation = true;
-    _hasLocationError = false;
     notify();
 
-    final position = await _locationService.getCurrentPosition();
+    Position? position;
+    try {
+      position = await _locationService.getCurrentPosition();
+    } catch (_) {
+      // Treated like "no location": the map keeps its default centre.
+      position = null;
+    } finally {
+      _isLoadingLocation = false;
+    }
 
     if (isDisposed) {
       return;
@@ -94,15 +99,12 @@ class MapStateController extends SafeNotifier {
       _currentLocation = LatLng(position.latitude, position.longitude);
       _updateHeading(position);
       _hasLocationPermission = true;
-      _hasLocationError = false;
-      _isLoadingLocation = false;
       notify();
       _syncPositionStream();
       return;
     }
 
     _hasLocationPermission = false;
-    _isLoadingLocation = false;
     notify();
   }
 
@@ -111,6 +113,9 @@ class MapStateController extends SafeNotifier {
   /// recorder owns the durable stream then) and the app in the foreground
   /// (nothing is drawn in the background, so the GPS would only burn battery).
   void _syncPositionStream() {
+    if (isDisposed) {
+      return;
+    }
     final shouldRun =
         _hasLocationPermission && !_recordingActive && _appInForeground;
     if (!shouldRun) {
@@ -140,13 +145,11 @@ class MapStateController extends SafeNotifier {
     _currentLocation = LatLng(position.latitude, position.longitude);
     _updateHeading(position);
     _hasLocationPermission = true;
-    _hasLocationError = false;
     notify();
   }
 
   void _handlePositionError(Object error, StackTrace stackTrace) {
     _hasLocationPermission = false;
-    _hasLocationError = true;
     _isLoadingLocation = false;
     notify();
   }

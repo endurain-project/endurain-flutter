@@ -99,17 +99,6 @@ class AuthSessionStore {
   Future<ConnectionProfile?> getConnectionProfile() async =>
       (await readSession())?.profile;
 
-  Future<String?> getLastServerUrl() => _storage.getServerUrl();
-
-  Future<String?> getAccessToken() async => (await readSession())?.accessToken;
-
-  Future<String?> getRefreshToken() async =>
-      (await readSession())?.refreshToken;
-
-  Future<void> saveLoginUsername(String username) {
-    return _storage.setUsername(username);
-  }
-
   Future<void> saveSession({
     required String origin,
     required String accessToken,

@@ -1,17 +1,18 @@
 import 'dart:async';
 
+import 'package:endurain/app/measurement_system_scope.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/features/activity/controllers/audio_announcement_settings_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
+import 'package:endurain/features/activity/screens/audio_announcement_settings_screen.dart';
 import 'package:endurain/features/activity/services/audio_announcement_preview_adapter.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
-import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
-import 'package:endurain/features/settings/screens/audio_announcement_settings_screen.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,9 +59,9 @@ void main() {
       AdaptiveApp(
         title: 'Test',
         locale: const Locale('en'),
-        home: AudioAnnouncementSettingsScreen(
-          controller: controller,
-          measurementSystemController: measurementController,
+        home: MeasurementSystemScope(
+          controller: measurementController,
+          child: AudioAnnouncementSettingsScreen(controller: controller),
         ),
       ),
     );

@@ -1,10 +1,10 @@
 import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/features/activity/controllers/audio_announcement_settings_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/repositories/audio_announcement_settings_repository.dart';
 import 'package:endurain/features/activity/services/audio_announcement_preview_adapter.dart';
-import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
@@ -26,7 +26,6 @@ void main() {
       final controller = buildController();
       addTearDown(controller.dispose);
 
-      expect(controller.isLoaded, isFalse);
       expect(controller.settings.masterEnabled, isFalse);
     });
 
@@ -41,7 +40,6 @@ void main() {
 
       await controller.load();
 
-      expect(controller.isLoaded, isTrue);
       expect(controller.settings.masterEnabled, isTrue);
       expect(notifications, 1);
     });
@@ -106,7 +104,6 @@ void main() {
 
       await controller.load();
 
-      expect(controller.isLoaded, isTrue);
       expect(controller.settings.masterEnabled, isFalse);
     });
 

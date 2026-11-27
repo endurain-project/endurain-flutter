@@ -107,55 +107,6 @@ void main() {
       },
     );
 
-    test('putJsonObject issues a PUT with the encoded body', () async {
-      final storage = SecureStorageService();
-      await _seedSession(storage);
-      final requests = <http.Request>[];
-      final client = ApiClient(
-        storage: storage,
-        authService: AuthService(storage: storage),
-        baseClient: BaseHttpClient(
-          httpClient: MockClient((request) async {
-            requests.add(request);
-            return http.Response('{"updated":true}', 200);
-          }),
-        ),
-      );
-
-      final data = await client.putJsonObject(
-        '/api/v1/activities/7',
-        body: {'name': 'renamed'},
-        failureCode: AppErrorCode.activityUploadFailed,
-      );
-
-      expect(data['updated'], true);
-      expect(requests.single.method, 'PUT');
-      expect(jsonDecode(requests.single.body), {'name': 'renamed'});
-    });
-
-    test('deleteJson succeeds on 204 with no body', () async {
-      final storage = SecureStorageService();
-      await _seedSession(storage);
-      final requests = <http.Request>[];
-      final client = ApiClient(
-        storage: storage,
-        authService: AuthService(storage: storage),
-        baseClient: BaseHttpClient(
-          httpClient: MockClient((request) async {
-            requests.add(request);
-            return http.Response('', 204);
-          }),
-        ),
-      );
-
-      await client.deleteJson(
-        '/api/v1/activities/7',
-        failureCode: AppErrorCode.activityUploadFailed,
-      );
-
-      expect(requests.single.method, 'DELETE');
-    });
-
     test('refreshes the token and retries once after a 401', () async {
       final storage = SecureStorageService();
       await _seedSession(storage);

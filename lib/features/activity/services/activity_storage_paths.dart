@@ -8,7 +8,7 @@ import 'dart:io';
 /// ```
 /// <app-support>/
 ///   activity_records/           ← [rootDirectoryName]
-///     active/                   ← FileActiveActivityStore
+///     active/                   ← native recorders (Android/iOS)
 ///       session.json
 ///       points.jsonl
 ///     gpx/                      ← LocalActivityGpxStorage
@@ -16,7 +16,7 @@ import 'dart:io';
 /// ```
 ///
 /// The names here must stay in sync with the Android `ActiveActivityStore` and
-/// the iOS `ActiveActivityStore` so either recorder can recover state written
+/// the iOS `ActiveActivityStore` (the native code owns these files) so either recorder can recover state written
 /// by the other.
 const String activityStorageRootDir = 'activity_records';
 

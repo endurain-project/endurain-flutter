@@ -10,16 +10,6 @@ void main() {
 
       expect(interval.unit, AudioAnnouncementIntervalUnit.distance);
       expect(interval.distanceMeters, 1000);
-      expect(interval.activeValue, 1000);
-    });
-
-    test('activeValue reflects the selected unit', () {
-      const interval = AudioAnnouncementInterval(
-        unit: AudioAnnouncementIntervalUnit.time,
-        timeSeconds: 300,
-      );
-
-      expect(interval.activeValue, 300);
     });
 
     test('copyWith clamps distance to the supported range', () {

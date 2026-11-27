@@ -18,5 +18,6 @@ export 'adaptive_navigation.dart';
 export 'adaptive_progress_bar.dart';
 export 'adaptive_scaffold.dart';
 export 'adaptive_segmented_control.dart';
+export 'adaptive_selectable_list_tile.dart';
 export 'adaptive_switch_list_tile.dart';
 export 'adaptive_text_form_field.dart';

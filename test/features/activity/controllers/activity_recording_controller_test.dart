@@ -14,7 +14,6 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/activity_upload_state.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/auto_pause_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -27,10 +26,13 @@ import 'package:endurain/features/activity/services/movement_auto_pause_config.d
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/active_activity_session_x.dart';
+import '../../../helpers/active_activity_store.dart';
 import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/file_active_activity_store.dart';
 import '../../../helpers/geolocator_activity_location_recorder.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
+import '../../../helpers/local_activity_listing.dart';
 import '../../../helpers/recording_controller_factory.dart';
 import '../../../helpers/recording_location_platform_adapter.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
@@ -381,11 +383,10 @@ void main() {
 
         final records = await repository.list();
         expect(controller.state.status, ActivityRecordingStatus.completed);
-        expect(controller.completedGpx, contains('<gpx'));
-        expect(
-          controller.completedGpx,
-          contains('<trkpt lat="41.1" lon="-8.6">'),
-        );
+        final gpx = await File(await repository.readGpxFilePath(records.single))
+            .readAsString();
+        expect(gpx, contains('<gpx'));
+        expect(gpx, contains('<trkpt lat="41.1" lon="-8.6">'));
         expect(controller.state.localActivityId, 'local_complete');
         expect(records, hasLength(1));
         expect(records.single.id, 'local_complete');
@@ -407,7 +408,6 @@ void main() {
       await controller.discard();
 
       expect(controller.state.status, ActivityRecordingStatus.idle);
-      expect(controller.completedGpx, isNull);
     });
 
     test('leaves empty recordings without GPX content', () async {
@@ -423,7 +423,6 @@ void main() {
       await pumpEventQueue();
 
       expect(controller.state.status, ActivityRecordingStatus.failed);
-      expect(controller.completedGpx, isNull);
     });
 
     test('surfaces GPX generation failures as recording failures', () async {
@@ -447,7 +446,6 @@ void main() {
         controller.state.lastError,
         ActivityRecordingError.gpxGenerationFailed,
       );
-      expect(controller.completedGpx, isNull);
       expect(controller.uploadStatus, ActivityUploadStatus.idle);
       // M2: a sanitized breadcrumb (error type only, no coordinates) is
       // recorded so the failure is observable in a field report.
@@ -871,7 +869,6 @@ void main() {
 
         final records = await repository.list();
         expect(controller.state.status, ActivityRecordingStatus.idle);
-        expect(controller.completedGpx, isNull);
         expect(records, hasLength(1));
         expect(await repository.hasGpx(records.single), isTrue);
       },

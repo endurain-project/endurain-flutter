@@ -23,31 +23,22 @@ class AutoPauseSettingsRepository {
   final AppPreferencesStore preferences;
 
   /// Whether auto-pause is enabled. Defaults to `true` when unset.
-  Future<bool> isEnabled() async {
-    final stored = await preferences.read(key: enabledKey);
-    if (stored == null) {
-      return defaultEnabled;
-    }
-    return stored == 'true';
-  }
+  Future<bool> isEnabled() =>
+      preferences.readBool(key: enabledKey, defaultValue: defaultEnabled);
 
-  Future<void> setEnabled(bool enabled) {
-    return preferences.write(
-      key: enabledKey,
-      value: enabled ? 'true' : 'false',
-    );
-  }
+  Future<void> setEnabled(bool enabled) =>
+      preferences.writeBool(key: enabledKey, value: enabled);
 
   /// The configured stillness delay in seconds, clamped to
   /// [minDelaySeconds]..[maxDelaySeconds]. Defaults to [defaultDelaySeconds]
   /// when unset or when the stored value is malformed.
-  Future<int> getDelaySeconds() async {
-    final raw = await preferences.read(key: delaySecondsKey);
-    final stored = raw == null ? null : int.tryParse(raw);
-    if (stored == null) {
-      return defaultDelaySeconds;
-    }
-    return clampDelaySeconds(stored);
+  Future<int> getDelaySeconds() {
+    return preferences.readClampedInt(
+      key: delaySecondsKey,
+      defaultValue: defaultDelaySeconds,
+      min: minDelaySeconds,
+      max: maxDelaySeconds,
+    );
   }
 
   /// Persists [seconds], clamped to the supported range.
@@ -59,15 +50,8 @@ class AutoPauseSettingsRepository {
   }
 
   /// Clamps [seconds] to [minDelaySeconds]..[maxDelaySeconds].
-  static int clampDelaySeconds(int seconds) {
-    if (seconds < minDelaySeconds) {
-      return minDelaySeconds;
-    }
-    if (seconds > maxDelaySeconds) {
-      return maxDelaySeconds;
-    }
-    return seconds;
-  }
+  static int clampDelaySeconds(int seconds) =>
+      seconds.clamp(minDelaySeconds, maxDelaySeconds);
 
   /// Reads both preferences and builds the resulting detector configuration.
   Future<MovementAutoPauseConfig> getConfig() async {

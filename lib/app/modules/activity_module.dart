@@ -9,7 +9,9 @@ import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/auth_session.dart';
 import 'package:endurain/core/services/platform/share_service.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
+import 'package:endurain/features/activity/controllers/audio_announcement_settings_controller.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
@@ -30,7 +32,6 @@ import 'package:endurain/features/activity/services/local_activity_summary_build
 import 'package:endurain/features/activity/services/native_activity_recorder_channel.dart';
 import 'package:endurain/features/activity/services/start_countdown_platform_adapter.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
-import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
 import 'package:flutter/foundation.dart';
 
 /// Wires the activity recording + upload feature: local storage, the durable
@@ -115,8 +116,7 @@ class ActivityModule {
   /// Builds the announcement preview adapter for the current platform. Only
   /// Android and iOS host the native speech engine.
   AudioAnnouncementPreviewAdapter createAudioAnnouncementPreviewAdapter() {
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (isMobilePlatform) {
       return MethodChannelAudioAnnouncementPreviewAdapter();
     }
     return const UnsupportedAudioAnnouncementPreviewAdapter();
@@ -131,8 +131,7 @@ class ActivityModule {
   /// Native support for the start countdown (spoken cues, iOS warm-up). Only
   /// Android and iOS host the native recorder channel.
   late final StartCountdownPlatformAdapter startCountdownPlatform =
-      defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS
+      isMobilePlatform
       ? MethodChannelStartCountdownPlatformAdapter()
       : const UnsupportedStartCountdownPlatformAdapter();
 
@@ -211,8 +210,7 @@ class ActivityModule {
   ActivityLocationRecorder createLocationRecorder({
     LocationService? locationService,
   }) {
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (isMobilePlatform) {
       return NativeActivityRecorderChannel();
     }
     throw UnsupportedError(

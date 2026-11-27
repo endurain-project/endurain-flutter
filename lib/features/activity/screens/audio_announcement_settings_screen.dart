@@ -1,13 +1,12 @@
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/features/activity/controllers/audio_announcement_settings_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/audio_announcement_config.dart';
 import 'package:endurain/features/activity/models/audio_announcement_settings.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
-import 'package:endurain/features/settings/controllers/audio_announcement_settings_controller.dart';
-import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -24,32 +23,24 @@ import 'package:material_ui/material_ui.dart';
 /// reopening this screen), and the controller drives the whole subtree via
 /// [ListenableBuilder].
 class AudioAnnouncementSettingsScreen extends StatelessWidget {
-  const AudioAnnouncementSettingsScreen({
-    super.key,
-    required this.controller,
-    required this.measurementSystemController,
-  });
+  const AudioAnnouncementSettingsScreen({super.key, required this.controller});
 
   final AudioAnnouncementSettingsController controller;
-
-  /// Read for the unit the interval presets are shown in.
-  final MeasurementSystemController measurementSystemController;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settingsController = controller;
-    final measurement = measurementSystemController;
 
     return AdaptiveScaffold(
       title: l10n.audioAnnouncementsTitle,
       body: ListenableBuilder(
-        // The unit preference no longer rebuilds the whole app, so this screen
-        // listens to it itself.
-        listenable: Listenable.merge([settingsController, measurement]),
+        listenable: settingsController,
         builder: (context, _) {
           final settings = settingsController.settings;
-          final measurementSystem = measurement.resolve(context.deviceLocale);
+          // Registers a dependency on the unit preference, so a units change
+          // rebuilds the interval presets.
+          final measurementSystem = context.measurementSystem;
           return ListView(
             padding: readableContentPadding(context),
             children: [

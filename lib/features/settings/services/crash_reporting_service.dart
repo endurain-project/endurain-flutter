@@ -44,9 +44,6 @@ class CrashReportingService {
   /// build ships without one (e.g. source or F-Droid builds).
   String? get effectiveDsn => _defaultDsn;
 
-  /// Whether a structurally usable DSN is available to report with.
-  bool get hasUsableDsn => isUsableCrashReportingDsn(effectiveDsn);
-
   /// Loads the persisted opt-in state without touching the transport.
   Future<void> load() async {
     if (_loaded) {

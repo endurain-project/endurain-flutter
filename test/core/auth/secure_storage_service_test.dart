@@ -155,25 +155,21 @@ void main() {
     test('clears only auth tokens', () async {
       final storage = SecureStorageService();
       await storage.setServerUrl('https://example.test');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setSessionId('session-1');
-      await storage.setAccessTokenExpiresAt(DateTime.now().toUtc());
+      await storage.write(key: 'access_token', value: 'access-1');
+      await storage.write(key: 'refresh_token', value: 'refresh-1');
+      await storage.write(key: 'session_id', value: 'session-1');
+      await storage.write(
+        key: 'access_token_expires_at',
+        value: DateTime.now().toUtc().toIso8601String(),
+      );
 
       await storage.clearAuthTokens();
 
       expect(await storage.getServerUrl(), 'https://example.test');
       expect(await storage.getAccessToken(), isNull);
       expect(await storage.getRefreshToken(), isNull);
-      expect(await storage.getSessionId(), isNull);
-      expect(await storage.getAccessTokenExpiresAt(), isNull);
-    });
-
-    test('returns null expiry for an unparsable stored value', () async {
-      final storage = SecureStorageService();
-      await storage.write(key: 'access_token_expires_at', value: 'not-a-date');
-
-      expect(await storage.getAccessTokenExpiresAt(), isNull);
+      expect(await storage.read(key: 'session_id'), isNull);
+      expect(await storage.read(key: 'access_token_expires_at'), isNull);
     });
 
     test('round-trips server and username preferences', () async {

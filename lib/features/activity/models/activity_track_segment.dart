@@ -18,8 +18,6 @@ class ActivityTrackSegment {
   /// The points, unmodifiable.
   List<ActivityTrackPoint> get points => _points;
 
-  ActivityTrackSegment addPoint(ActivityTrackPoint point) => addPoints([point]);
-
   /// A new segment with [points] appended; this segment is unchanged.
   ActivityTrackSegment addPoints(Iterable<ActivityTrackPoint> points) =>
       ActivityTrackSegment._(_points.appended(points));

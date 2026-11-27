@@ -6,13 +6,17 @@ import 'package:endurain/core/location/location_settings_builder.dart';
 import 'package:endurain/features/activity/models/active_activity_session.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/recorded_activity_point.dart';
-import 'package:endurain/features/activity/repositories/active_activity_store.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'active_activity_session_x.dart';
+import 'active_activity_store.dart';
 import 'activity_segment_policy.dart';
 import 'movement_auto_pause_detector.dart';
+
+/// Distance filter (metres) the geolocator stream uses while auto-paused.
+const int autoPauseDistanceFilterMeters = 0;
 
 /// Foreground/fallback [ActivityLocationRecorder] backed by the `geolocator`
 /// position stream.
@@ -45,7 +49,6 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
   StreamSubscription<Position>? _positionSubscription;
   Future<void> _positionQueue = Future<void>.value();
   ActiveActivitySession? _session;
-  BackgroundLocationConfig? _backgroundConfig;
   RecordedActivityPoint? _lastPoint;
   bool _resumedFromPause = false;
   bool _disposed = false;
@@ -76,7 +79,6 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       autoPauseDelaySeconds: autoPauseConfig.pauseDelay.inSeconds,
     );
     _session = session;
-    _backgroundConfig = request.backgroundConfig;
     _lastPoint = null;
     _resumedFromPause = false;
     _autoPauseDetector = MovementAutoPauseDetector(config: autoPauseConfig)
@@ -176,7 +178,6 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
     _session = null;
     _lastPoint = null;
     _resumedFromPause = false;
-    _backgroundConfig = null;
     _autoPauseDetector = null;
     await _store.clear();
     _emit(const ActivityRecorderEvent.recoverableStateChanged(null));
@@ -253,14 +254,11 @@ class GeolocatorActivityLocationRecorder implements ActivityLocationRecorder {
       return;
     }
     final distanceFilter = _session?.autoPauseEnabled == true
-        ? LocationDistanceFilters.autoPauseMeters
+        ? autoPauseDistanceFilterMeters
         : LocationDistanceFilters.recordingMeters;
     try {
       _positionSubscription = _locationService
-          .getPositionStream(
-            background: _backgroundConfig,
-            distanceFilter: distanceFilter,
-          )
+          .getPositionStream(distanceFilter: distanceFilter)
           .listen(_onPosition, onError: _onStreamError);
     } catch (error, stackTrace) {
       _diagnostics.recordErrorSync(

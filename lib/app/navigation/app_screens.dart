@@ -3,6 +3,7 @@ import 'package:endurain/features/activity/controllers/auto_pause_settings_contr
 import 'package:endurain/features/activity/controllers/start_countdown_settings_controller.dart';
 import 'package:endurain/features/activity/screens/activity_details_screen.dart';
 import 'package:endurain/features/activity/screens/activity_history_screen.dart';
+import 'package:endurain/features/activity/screens/audio_announcement_settings_screen.dart';
 import 'package:endurain/features/activity/screens/auto_pause_settings_screen.dart';
 import 'package:endurain/features/activity/screens/start_countdown_settings_screen.dart';
 import 'package:endurain/features/activity/widgets/activity_recording_overlay.dart';
@@ -16,7 +17,6 @@ import 'package:endurain/features/map/screens/tile_server_settings_screen.dart';
 import 'package:endurain/features/sensors/screens/sensor_settings_screen.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
 import 'package:endurain/features/settings/repositories/server_settings_repository.dart';
-import 'package:endurain/features/settings/screens/audio_announcement_settings_screen.dart';
 import 'package:endurain/features/settings/screens/device_access_screen.dart';
 import 'package:endurain/features/settings/screens/diagnostics_screen.dart';
 import 'package:endurain/features/settings/screens/language_settings_screen.dart';
@@ -79,9 +79,6 @@ class AppScreens {
       onSignIn: onSignIn,
       createController: () => SettingsController(
         packageInfoService: infra.packageInfo,
-        // The unit preference is delegated to the app-lifetime controller so a
-        // change made here re-renders the rest of the app, not just this route.
-        measurementSystemController: infra.measurementSystemController,
         secureStorage: infra.secureStorage,
         connectionChanges: _services.connectionChanges,
       ),
@@ -103,7 +100,9 @@ class AppScreens {
           serverSettingsService: auth.serverSettings,
         ),
         appLinksService: infra.appLinks,
-        mapSettingsRepository: _services.createMapSettingsRepository(),
+        saveServerSettings: _services
+            .createMapSettingsRepository()
+            .saveFromServerSettings,
         config: _services.config,
         diagnostics: infra.diagnostics,
       ),
@@ -157,7 +156,6 @@ class AppScreens {
       ),
       audioAnnouncements: (context) => AudioAnnouncementSettingsScreen(
         controller: activity.audioAnnouncementSettingsController,
-        measurementSystemController: infra.measurementSystemController,
       ),
       sensors: (context) => SensorSettingsScreen(
         heartRateService: sensors.heartRate,

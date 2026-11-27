@@ -14,13 +14,9 @@ class LocaleController extends SafeNotifier {
   final LocaleSettingsRepository _repository;
 
   Locale? _locale;
-  bool _isLoaded = false;
 
   /// The selected locale, or `null` to follow the system locale.
   Locale? get locale => _locale;
-
-  /// Whether the persisted preference has been read yet.
-  bool get isLoaded => _isLoaded;
 
   /// Loads the persisted locale once at startup. On any read error the app
   /// silently falls back to the system locale.
@@ -30,7 +26,6 @@ class LocaleController extends SafeNotifier {
     } catch (_) {
       _locale = null;
     }
-    _isLoaded = true;
     notify();
   }
 

@@ -67,13 +67,6 @@ class AudioAnnouncementInterval {
   final double distanceMeters;
   final int timeSeconds;
 
-  /// The interval value in the unit that actually applies right now (metres
-  /// for [AudioAnnouncementIntervalUnit.distance], seconds for
-  /// [AudioAnnouncementIntervalUnit.time]).
-  double get activeValue => unit == AudioAnnouncementIntervalUnit.distance
-      ? distanceMeters
-      : timeSeconds.toDouble();
-
   AudioAnnouncementInterval copyWith({
     bool? enabled,
     AudioAnnouncementIntervalUnit? unit,

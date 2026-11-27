@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class DiagnosticsSources {
   const DiagnosticsSources._();
 
@@ -5,7 +7,6 @@ class DiagnosticsSources {
   static const String platformDispatcher = 'platform_dispatcher';
   static const String rootZone = 'root_zone';
   static const String uncaught = 'uncaught';
-  static const String activityLocationStream = 'activity_location_stream';
   static const String activityRecorder = 'activity_recorder';
 }
 
@@ -30,23 +31,31 @@ class DiagnosticsEvents {
   static const String activityGpxGenerationFailed =
       'activity.gpx_generation_failed';
   static const String activityPointMilestone = 'activity.point_milestone';
-  static const String activityLocationStreamDone =
-      'activity.location_stream_done';
+  // Emitted only by the test geolocator recorder helper
+  // (test/helpers/geolocator_activity_location_recorder.dart); production
+  // recording runs in the native recorder.
+  @visibleForTesting
   static const String activityRecorderStarted = 'activity.recorder_started';
+  @visibleForTesting
   static const String activityRecorderPaused = 'activity.recorder_paused';
+  @visibleForTesting
   static const String activityRecorderResumed = 'activity.recorder_resumed';
+  @visibleForTesting
   static const String activityRecorderAutoPaused =
       'activity.recorder_auto_paused';
+  @visibleForTesting
   static const String activityRecorderAutoResumed =
       'activity.recorder_auto_resumed';
+  @visibleForTesting
   static const String activityRecorderStopped = 'activity.recorder_stopped';
-  static const String activityRecorderFailed = 'activity.recorder_failed';
   static const String activityActiveSessionRecovered =
       'activity.active_session_recovered';
   static const String activityStaleSessionCleared =
       'activity.stale_session_cleared';
+  @visibleForTesting
   static const String activityPointBatchDrained =
       'activity.point_batch_drained';
+  @visibleForTesting
   static const String activityTrackingStall = 'activity.tracking_stall';
   static const String activityUploadQueueDrainStarted =
       'activity.upload_queue_drain_started';

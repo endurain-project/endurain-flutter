@@ -30,6 +30,64 @@ void main() {
     expect(await store.read(key: 'theme'), isNull);
   });
 
+  test('reads and writes booleans with a default', () async {
+    expect(await store.readBool(key: 'flag'), isFalse);
+    expect(await store.readBool(key: 'flag', defaultValue: true), isTrue);
+
+    await store.writeBool(key: 'flag', value: false);
+    expect(await store.readBool(key: 'flag', defaultValue: true), isFalse);
+
+    await store.writeBool(key: 'flag', value: true);
+    expect(await store.readBool(key: 'flag'), isTrue);
+  });
+
+  test('reads integers clamped, with a default for bad values', () async {
+    Future<int> read() =>
+        store.readClampedInt(key: 'n', defaultValue: 7, min: 5, max: 60);
+
+    expect(await read(), 7);
+    await store.write(key: 'n', value: 'abc');
+    expect(await read(), 7);
+    await store.write(key: 'n', value: '1');
+    expect(await read(), 5);
+    await store.write(key: 'n', value: '999');
+    expect(await read(), 60);
+    await store.write(key: 'n', value: '30');
+    expect(await read(), 30);
+  });
+
+  test('writeOrDelete removes the key for null', () async {
+    await store.writeOrDelete(key: 'k', value: 'v');
+    expect(await store.read(key: 'k'), 'v');
+
+    await store.writeOrDelete(key: 'k');
+    expect(await store.read(key: 'k'), isNull);
+  });
+
+  test('tells a fresh install from an upgrade and from a marked one', () async {
+    expect(await store.isFreshInstall(), isTrue);
+
+    await store.markInstalled();
+    expect(await store.isFreshInstall(), isFalse);
+
+    // An upgrading install has the legacy-import flag but no marker yet.
+    final upgraded = AppPreferencesStore(
+      backend: _InMemoryPreferencesBackend()
+        .._values['endurain.preferences_json_migration_complete'] = 'true',
+      supportDirectoryProvider: () async => tempDir,
+    );
+    expect(await upgraded.isFreshInstall(), isFalse);
+
+    // An install that predates the import flag still has the legacy file.
+    await File('${tempDir.path}${Platform.pathSeparator}preferences.json')
+        .writeAsString(jsonEncode(<String, String>{'app_locale': 'en'}));
+    final legacy = AppPreferencesStore(
+      backend: _InMemoryPreferencesBackend(),
+      supportDirectoryProvider: () async => tempDir,
+    );
+    expect(await legacy.isFreshInstall(), isFalse);
+  });
+
   test(
     'imports legacy JSON preferences once without overwriting new values',
     () async {

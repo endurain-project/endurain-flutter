@@ -63,6 +63,9 @@ class AuthCoordinator {
     _authService.cancelSignIn();
   }
 
+  /// Whether an SSO sign-in was started and is still waiting for its callback.
+  bool get hasPendingSsoFlow => _ssoService.hasPendingFlow;
+
   void clearSsoPkce() {
     _ssoService.clearPkce();
   }

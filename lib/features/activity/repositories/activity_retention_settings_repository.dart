@@ -12,15 +12,11 @@ class ActivityRetentionSettingsRepository {
 
   final AppPreferencesStore _preferences;
 
-  Future<bool> isRetainUploadedGpxEnabled() async {
-    final value = await _preferences.read(key: retainUploadedGpxKey);
-    return value == null || value == 'true';
+  Future<bool> isRetainUploadedGpxEnabled() {
+    return _preferences.readBool(key: retainUploadedGpxKey, defaultValue: true);
   }
 
   Future<void> setRetainUploadedGpxEnabled(bool enabled) {
-    return _preferences.write(
-      key: retainUploadedGpxKey,
-      value: enabled ? 'true' : 'false',
-    );
+    return _preferences.writeBool(key: retainUploadedGpxKey, value: enabled);
   }
 }

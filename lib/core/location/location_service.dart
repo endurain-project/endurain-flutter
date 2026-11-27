@@ -27,52 +27,39 @@ class LocationService {
   /// Get current position
   /// Returns null if permission is denied or location service is disabled
   Future<Position?> getCurrentPosition() async {
-    // Check if location services are enabled
-    final serviceEnabled = await isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return null;
-    }
-
-    // Check permission
-    LocationPermission permission = await checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await requestPermission();
-      if (permission == LocationPermission.denied) {
+    // Every platform call can throw (e.g. a PlatformException from the
+    // permission or service channels), so the whole flow is guarded.
+    try {
+      if (!await isLocationServiceEnabled()) {
         return null;
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      return null;
-    }
+      var permission = await checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return null;
+      }
 
-    // Get position
-    try {
       return await _platformAdapter.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
           distanceFilter: LocationDistanceFilters.currentPositionMeters,
         ),
       );
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
 
-  /// Get position stream for continuous tracking
-  ///
-  /// Pass [background] to keep receiving updates while the app is backgrounded
-  /// (e.g. during an activity recording). When omitted, foreground-only
-  /// settings are used.
+  /// Get position stream for continuous (foreground) tracking.
   Stream<Position> getPositionStream({
-    BackgroundLocationConfig? background,
     int distanceFilter = LocationDistanceFilters.mapMeters,
   }) {
     return _platformAdapter.getPositionStream(
-      locationSettings: buildLocationSettings(
-        background: background,
-        distanceFilter: distanceFilter,
-      ),
+      locationSettings: buildLocationSettings(distanceFilter: distanceFilter),
     );
   }
 

@@ -26,8 +26,8 @@ import 'package:http/http.dart' as http;
 /// wrong account after a session change.
 ///
 /// Two request families share this machinery:
-/// - authenticated JSON verbs ([getJsonObject], [getJson], [postJsonObject],
-///   [putJsonObject], [deleteJson]) for the server-sync endpoints, and
+/// - authenticated JSON verbs ([getJsonObject], [getJson], [postJsonObject])
+///   for the server-sync endpoints, and
 /// - multipart [uploadFile] for activity GPX uploads.
 ///
 /// The unauthenticated auth/SSO/server-settings calls that first establish a
@@ -255,42 +255,6 @@ class ApiClient {
     expectedProfileId: expectedProfileId,
   );
 
-  /// Sends an authenticated `PUT` with an optional JSON [body] and returns the
-  /// decoded JSON object.
-  Future<Map<String, dynamic>> putJsonObject(
-    String endpoint, {
-    Map<String, dynamic>? body,
-    required AppErrorCode failureCode,
-    String? expectedOrigin,
-    String? expectedProfileId,
-  }) => _sendJsonForObject(
-    'PUT',
-    endpoint,
-    body: body,
-    failureCode: failureCode,
-    expectedOrigin: expectedOrigin,
-    expectedProfileId: expectedProfileId,
-  );
-
-  /// Sends an authenticated `DELETE`. Succeeds on `200` or `204`; otherwise
-  /// throws [AppException] with [failureCode].
-  Future<void> deleteJson(
-    String endpoint, {
-    required AppErrorCode failureCode,
-    String? expectedOrigin,
-    String? expectedProfileId,
-  }) async {
-    await _sendAndDecode<void>(
-      'DELETE',
-      endpoint,
-      failureCode: failureCode,
-      expectedStatuses: const {200, 204},
-      decode: (_) {},
-      expectedOrigin: expectedOrigin,
-      expectedProfileId: expectedProfileId,
-    );
-  }
-
   Future<Map<String, dynamic>> _sendJsonForObject(
     String method,
     String endpoint, {
@@ -316,8 +280,8 @@ class ApiClient {
   }
 
   /// Sends an authorized request and decodes the response with [decode] when
-  /// its status is in [expectedStatuses]; any other status throws
-  /// [ApiResponse.failure] with [failureCode].
+  /// its status is `200`; any other status throws [ApiResponse.failure] with
+  /// [failureCode].
   Future<T> _sendAndDecode<T>(
     String method,
     String endpoint, {
@@ -325,7 +289,6 @@ class ApiClient {
     Map<String, String>? extraHeaders,
     required AppErrorCode failureCode,
     required T Function(http.Response response) decode,
-    Set<int> expectedStatuses = const {200},
     String? expectedOrigin,
     String? expectedProfileId,
   }) async {
@@ -337,10 +300,7 @@ class ApiClient {
       expectedOrigin: expectedOrigin,
       expectedProfileId: expectedProfileId,
     );
-    if (expectedStatuses.contains(response.statusCode)) {
-      return decode(response);
-    }
-    throw ApiResponse.failure(response, failureCode);
+    return ApiResponse.decodeOk(response, failureCode, decode);
   }
 
   /// Resolves the active session, issues [method] against `<origin><endpoint>`

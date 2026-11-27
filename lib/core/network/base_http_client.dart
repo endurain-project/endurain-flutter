@@ -86,10 +86,6 @@ class BaseHttpClient {
         request = _client.get(url, headers: headers);
       case 'POST':
         request = _client.post(url, headers: headers, body: body);
-      case 'PUT':
-        request = _client.put(url, headers: headers, body: body);
-      case 'DELETE':
-        request = _client.delete(url, headers: headers);
       default:
         throw AppException(AppErrorCode.unsupportedHttpMethod, details: method);
     }
@@ -142,10 +138,11 @@ class BaseHttpClient {
     required AppErrorCode failureCode,
   }) async {
     final response = await get(url, extraHeaders: extraHeaders);
-    if (response.statusCode == 200) {
-      return ApiResponse.decodeJsonObject(response);
-    }
-    throw ApiResponse.failure(response, failureCode);
+    return ApiResponse.decodeOk(
+      response,
+      failureCode,
+      ApiResponse.decodeJsonObject,
+    );
   }
 
   /// Makes a GET request and returns the decoded JSON value (object or list).
@@ -157,10 +154,7 @@ class BaseHttpClient {
     required AppErrorCode failureCode,
   }) async {
     final response = await get(url, extraHeaders: extraHeaders);
-    if (response.statusCode == 200) {
-      return ApiResponse.decodeJson(response);
-    }
-    throw ApiResponse.failure(response, failureCode);
+    return ApiResponse.decodeOk(response, failureCode, ApiResponse.decodeJson);
   }
 
   /// Makes a POST request with a JSON body and returns the decoded JSON object.
@@ -189,10 +183,11 @@ class BaseHttpClient {
           }
         : extraHeaders;
     final response = await post(url, extraHeaders: headers, body: encodedBody);
-    if (response.statusCode == 200) {
-      return ApiResponse.decodeJsonObject(response);
-    }
-    throw ApiResponse.failure(response, failureCode);
+    return ApiResponse.decodeOk(
+      response,
+      failureCode,
+      ApiResponse.decodeJsonObject,
+    );
   }
 
   // ---------------------------------------------------------------------------

@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/auth/secure_storage_service.dart';
-import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
-import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 import 'package:flutter/foundation.dart';
 
@@ -15,18 +13,12 @@ import 'package:flutter/foundation.dart';
 /// must stay reachable even when one backing store is temporarily unavailable
 /// (e.g. a locked keychain), so a failure leaves that single field unset rather
 /// than blocking the whole screen.
-///
-/// The unit preference is delegated to the app-lifetime
-/// [MeasurementSystemController] rather than owned here, so changing it in
-/// Settings immediately re-renders every other screen too.
 class SettingsController extends SafeNotifier {
   SettingsController({
     required PackageInfoService packageInfoService,
-    required MeasurementSystemController measurementSystemController,
     required SecureStorageService secureStorage,
     Listenable? connectionChanges,
   }) : _packageInfoService = packageInfoService,
-       _measurementSystem = measurementSystemController,
        _secureStorage = secureStorage,
        _connectionChanges = connectionChanges {
     // The settings tab stays alive across sign-in and sign-out, so re-read
@@ -35,7 +27,6 @@ class SettingsController extends SafeNotifier {
   }
 
   final PackageInfoService _packageInfoService;
-  final MeasurementSystemController _measurementSystem;
   final SecureStorageService _secureStorage;
   final Listenable? _connectionChanges;
 
@@ -51,9 +42,6 @@ class SettingsController extends SafeNotifier {
 
   /// The connected server origin, or `null` when unknown/unavailable.
   String? get serverUrl => _serverUrl;
-
-  /// The explicit unit preference, or `null` when following the device region.
-  MeasurementSystem? get measurementSystem => _measurementSystem.preference;
 
   /// Loads every settings value the screen renders.
   ///
@@ -91,14 +79,6 @@ class SettingsController extends SafeNotifier {
       // Settings stays usable when secure storage is temporarily unavailable;
       // the server details screen surfaces storage errors directly.
     }
-  }
-
-  /// Persists the unit preference. `null` restores the device-region default.
-  ///
-  /// Delegated to the app-lifetime controller so every screen re-renders.
-  Future<void> setMeasurementSystem(MeasurementSystem? system) async {
-    await _measurementSystem.setPreference(system);
-    notify();
   }
 
   @override

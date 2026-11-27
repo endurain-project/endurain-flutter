@@ -1,21 +1,14 @@
 import 'package:endurain/core/auth/secure_storage_service.dart';
 import 'package:endurain/core/models/app_exception.dart';
-import 'package:endurain/core/models/measurement_system.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
-import 'package:endurain/features/settings/controllers/measurement_system_controller.dart';
 import 'package:endurain/features/settings/controllers/settings_controller.dart';
-import 'package:endurain/features/settings/repositories/measurement_settings_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../../helpers/fake_preferences_store.dart';
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late MeasurementSystemController measurement;
 
   SettingsController buildController({
     PackageInfoService? packageInfo,
@@ -25,7 +18,6 @@ void main() {
     return SettingsController(
       packageInfoService:
           packageInfo ?? const _FakePackageInfoService(version: '1.2.3'),
-      measurementSystemController: measurement,
       secureStorage: storage ?? SecureStorageService(),
       connectionChanges: connectionChanges,
     );
@@ -35,14 +27,7 @@ void main() {
     FlutterSecureStorage.setMockInitialValues(<String, String>{
       'server_url': 'https://endurain.example.test',
     });
-    measurement = MeasurementSystemController(
-      repository: MeasurementSettingsRepository(
-        preferences: FakePreferencesStore(),
-      ),
-    );
   });
-
-  tearDown(() => measurement.dispose());
 
   group('SettingsController.load', () {
     test('loads version and server URL', () async {
@@ -124,37 +109,6 @@ void main() {
       await pumpEventQueue();
 
       expect(notifications, 0);
-    });
-  });
-
-  group('SettingsController measurement system', () {
-    test('reflects the app-lifetime controller', () async {
-      await measurement.setPreference(MeasurementSystem.imperial);
-      final controller = buildController();
-      addTearDown(controller.dispose);
-
-      expect(controller.measurementSystem, MeasurementSystem.imperial);
-    });
-
-    test('delegates writes so the whole app sees the change', () async {
-      final controller = buildController();
-      addTearDown(controller.dispose);
-
-      await controller.setMeasurementSystem(MeasurementSystem.imperial);
-
-      expect(measurement.preference, MeasurementSystem.imperial);
-      expect(controller.measurementSystem, MeasurementSystem.imperial);
-    });
-
-    test('null restores the device-region default', () async {
-      final controller = buildController();
-      addTearDown(controller.dispose);
-      await controller.setMeasurementSystem(MeasurementSystem.metric);
-
-      await controller.setMeasurementSystem(null);
-
-      expect(measurement.preference, isNull);
-      expect(controller.measurementSystem, isNull);
     });
   });
 

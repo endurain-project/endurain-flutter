@@ -1,5 +1,6 @@
 import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/app/modules/activity_module.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/watch/repositories/watch_ingestion_ledger.dart';
 import 'package:endurain/features/watch/services/watch_companion_service.dart';
 import 'package:endurain/features/watch/services/watch_session_ingestion_service.dart';
@@ -59,8 +60,7 @@ class WatchModule {
   /// the platform-channel transport too; with no native handler registered it
   /// is just as inert.
   WatchTransportAdapter createTransportAdapter() {
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (isMobilePlatform) {
       return MethodChannelWatchTransport();
     }
     return const UnsupportedWatchTransport();

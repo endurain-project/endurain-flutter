@@ -103,5 +103,20 @@ void main() {
         '{"sessionId=<redacted>,"user":"bob"}',
       );
     });
+
+    test('redacts email addresses', () {
+      expect(
+        redactDiagnosticText('User joao.silva+run@mail.example.org not found'),
+        'User <email> not found',
+      );
+      expect(
+        redactDiagnosticText('{"detail":"a@b.co and c_d@e.io"}'),
+        '{"detail":"<email> and <email>"}',
+      );
+    });
+
+    test('leaves text with an at sign but no address alone', () {
+      expect(redactDiagnosticText('ping @here now'), 'ping @here now');
+    });
   });
 }

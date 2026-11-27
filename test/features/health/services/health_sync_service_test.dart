@@ -25,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/local_activity_listing.dart';
 import '../fakes/fake_health_import_store.dart';
 import '../fakes/fake_health_platform_adapter.dart';
 

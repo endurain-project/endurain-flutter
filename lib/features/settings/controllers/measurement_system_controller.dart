@@ -27,13 +27,9 @@ class MeasurementSystemController extends SafeNotifier {
 
   MeasurementSystem? _preference;
   MeasurementSystem? _deviceDefault;
-  bool _isLoaded = false;
 
   /// The explicit user choice, or `null` to follow the device region.
   MeasurementSystem? get preference => _preference;
-
-  /// Whether the persisted preference has been read yet.
-  bool get isLoaded => _isLoaded;
 
   /// Loads the persisted preference and the operating-system unit setting.
   /// On any read error the app falls back to the device region.
@@ -49,7 +45,6 @@ class MeasurementSystemController extends SafeNotifier {
       _preference = values[0];
       _deviceDefault = values[1];
     } catch (_) {}
-    _isLoaded = true;
     notify();
   }
 

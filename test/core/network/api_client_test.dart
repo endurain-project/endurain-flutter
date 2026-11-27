@@ -116,7 +116,7 @@ void main() {
 
     test('throws when uploading without a committed session', () async {
       final storage = SecureStorageService();
-      await storage.setAccessToken('access-1');
+      await storage.write(key: 'access_token', value: 'access-1');
       final client = ApiClient(
         storage: storage,
         authService: AuthService(storage: storage),

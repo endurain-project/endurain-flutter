@@ -65,19 +65,13 @@ class _ServerSettingsScreenState extends State<ServerSettingsScreen>
       } catch (error) {
         warning = localizedErrorMessage(error, l10n);
       }
-      if (!mounted) {
-        widget.onLogout?.call();
-        return;
-      }
-      if (warning != null) {
+      if (warning != null && mounted) {
         await DialogUtils.showMessage(context, warning);
-        if (!mounted) {
-          widget.onLogout?.call();
-          return;
-        }
       }
-      // Pop back to settings screen and trigger logout
-      Navigator.pop(context);
+      // Pop back to the settings screen (when still shown), then log out.
+      if (mounted) {
+        Navigator.pop(context);
+      }
       widget.onLogout?.call();
     }
   }

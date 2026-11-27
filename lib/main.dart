@@ -3,18 +3,21 @@ import 'dart:io';
 
 import 'package:endurain/app.dart';
 import 'package:endurain/app/app_services.dart';
+import 'package:endurain/core/auth/fresh_install_session_guard.dart';
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/services/platform/device_info_service.dart';
 import 'package:endurain/core/services/platform/package_info_service.dart';
+import 'package:endurain/features/settings/services/crash_reporting_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   // The composition root owns the single production [AppServices] instance and
-  // passes it down to the root [App], which exposes it through [AppScope].
-  // There is no global instance: widgets obtain services from the scope, and
-  // `App` builds its own fallback only when constructed without one (tests).
+  // passes it down to the root [App].
+  // There is no global instance: composition code passes services down through
+  // constructors, and `App` builds its own fallback only when constructed
+  // without one (tests).
   // Holding the instance here also keeps the same diagnostics object available
   // to the root-zone error handler below, which runs outside the widget tree.
   final services = AppServices(
@@ -52,6 +55,18 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
+      // A reinstalled iOS app must not start signed in with the keychain left
+      // behind by the previous install. This runs before anything reads the
+      // preferences or the session, since the first preference access records
+      // state that makes a fresh install look like an upgrade. Best-effort and
+      // bounded: a keychain failure must never keep the app from starting.
+      try {
+        await FreshInstallSessionGuard(
+          preferences: services.infra.preferences,
+          secureStorage: services.infra.secureStorage,
+        ).run().timeout(const Duration(seconds: 3));
+      } catch (_) {}
+
       // Best-effort and bounded like crash reporting below: a failing or
       // stalled diagnostics store (it reads preferences and local files) must
       // never keep the app from reaching `runApp`.
@@ -79,28 +94,27 @@ Future<void> main() async {
         onTimeout: () {},
       );
 
-      // Load the persisted language (BCP 47) before the first frame so the UI
-      // starts in the user's chosen locale rather than flashing the system one.
-      await services.infra.localeController.load();
-
-      // Same for the unit preference, so stats never flash metric before
-      // switching to imperial.
-      await services.infra.measurementSystemController.load();
-
-      // Load the audio-announcement preference so a recording started before
-      // the settings screen is ever opened still uses the user's saved choice.
-      await services.activity.audioAnnouncementSettingsController.load();
-
-      // Start remote crash reporting only if the user previously opted in.
-      // No-op (and no network) otherwise; the two diagnostics channels are
-      // independent. Best-effort and bounded: a failure or stall here (it
-      // reads preferences and may start a network transport) must never keep
-      // the app from reaching `runApp`.
-      try {
-        await crashReporting.initializeIfEnabled().timeout(
-          const Duration(seconds: 5),
-        );
-      } catch (_) {}
+      // The persisted preferences below are independent of each other, so
+      // they load together instead of one after the other.
+      await Future.wait([
+        // The persisted language (BCP 47), before the first frame so the UI
+        // starts in the user's chosen locale rather than flashing the system
+        // one.
+        services.infra.localeController.load(),
+        // The unit preference, so stats never flash metric before switching
+        // to imperial.
+        services.infra.measurementSystemController.load(),
+        // The audio-announcement preference, so a recording started before
+        // the settings screen is ever opened still uses the user's saved
+        // choice.
+        services.activity.audioAnnouncementSettingsController.load(),
+        // Remote crash reporting, only if the user previously opted in. No-op
+        // (and no network) otherwise; the two diagnostics channels are
+        // independent. Best-effort and bounded: a failure or stall here (it
+        // reads preferences and may start a network transport) must never
+        // keep the app from reaching `runApp`.
+        _startCrashReporting(crashReporting),
+      ]);
 
       FlutterError.onError = (details) {
         FlutterError.presentError(details);
@@ -159,6 +173,14 @@ Future<void> main() async {
     },
   );
   await appRunner;
+}
+
+Future<void> _startCrashReporting(CrashReportingService crashReporting) async {
+  try {
+    await crashReporting.initializeIfEnabled().timeout(
+      const Duration(seconds: 5),
+    );
+  } catch (_) {}
 }
 
 /// The report header for this launch: which build, on which device and OS.

@@ -198,7 +198,6 @@ void main() {
       await controller.setCrashReportingEnabled(true);
 
       expect(controller.crashReportingEnabled, isTrue);
-      expect(controller.crashReportingHasUsableServer, isFalse);
       expect(controller.crashReportingActive, isFalse);
       expect(reporter.starts, isEmpty);
     });

@@ -66,10 +66,7 @@ void main() {
       );
 
       await service.uploadGpx(
-        const ActivityUploadRequest(
-          filePath: '/tmp/activity.gpx',
-          activityType: ActivityType.run,
-        ),
+        const ActivityUploadRequest(filePath: '/tmp/activity.gpx'),
       );
 
       expect(endpoint, '/api/v1/activities/import/gpx');
@@ -104,7 +101,6 @@ void main() {
       await service.uploadGpx(
         const ActivityUploadRequest(
           filePath: '/tmp/activity.gpx',
-          activityType: ActivityType.run,
           idempotencyKey: 'activity-123',
         ),
       );
@@ -117,10 +113,7 @@ void main() {
 
       await expectLater(
         service.uploadGpx(
-          const ActivityUploadRequest(
-            filePath: '/tmp/activity.gpx',
-            activityType: ActivityType.ride,
-          ),
+          const ActivityUploadRequest(filePath: '/tmp/activity.gpx'),
         ),
         throwsA(
           isA<AppException>().having(
@@ -1230,10 +1223,7 @@ ActivityUploadService _serviceWithResponses(List<int> statusCodes) {
 }
 
 ActivityUploadRequest _request() {
-  return const ActivityUploadRequest(
-    filePath: '/tmp/activity.gpx',
-    activityType: ActivityType.run,
-  );
+  return const ActivityUploadRequest(filePath: '/tmp/activity.gpx');
 }
 
 Future<LocalActivityRecord> _createRecord(

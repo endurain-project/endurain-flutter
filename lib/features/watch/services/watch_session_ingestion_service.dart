@@ -1,5 +1,4 @@
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
-import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
 import 'package:endurain/features/activity/models/activity_track_segment.dart';
@@ -8,6 +7,7 @@ import 'package:endurain/features/activity/repositories/local_activity_repositor
 import 'package:endurain/features/activity/services/activity_finalizer.dart';
 import 'package:endurain/features/watch/models/watch_session_handoff.dart';
 import 'package:endurain/features/watch/repositories/watch_ingestion_ledger.dart';
+import 'package:flutter/foundation.dart';
 
 /// Outcome of ingesting a single [WatchSessionHandoff].
 enum WatchIngestionOutcome {
@@ -44,11 +44,11 @@ enum WatchIngestionOutcome {
 
 /// Result of one ingestion attempt.
 class WatchIngestionResult {
-  const WatchIngestionResult(this.outcome, {this.localActivityId, this.error});
+  const WatchIngestionResult(this.outcome, {this.localActivityId});
 
   final WatchIngestionOutcome outcome;
+  @visibleForTesting
   final String? localActivityId;
-  final AppException? error;
 
   /// Whether the handoff may be dropped by the watch: only once it is stored,
   /// already stored, or provably empty. Everything else stays queued.
@@ -174,9 +174,6 @@ class WatchSessionIngestionService {
         localActivityId: localActivityId,
       );
     } catch (error) {
-      final appError = error is AppException
-          ? error
-          : AppException(AppErrorCode.activityLocalSaveFailed, cause: error);
       _diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.watchSessionIngestFailed,
         details: {
@@ -187,7 +184,6 @@ class WatchSessionIngestionService {
       return WatchIngestionResult(
         WatchIngestionOutcome.failed,
         localActivityId: localActivityId,
-        error: appError,
       );
     }
   }

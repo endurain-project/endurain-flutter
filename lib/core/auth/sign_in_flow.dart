@@ -42,8 +42,6 @@ class AuthResult {
   /// The kinds of code the account can answer the MFA step with, such as
   /// `totp` and `backup_code`. An open set; empty when the server named none.
   final List<String> mfaMethods;
-
-  bool get mfaRequired => step == SignInStep.mfa;
 }
 
 /// Runs an Endurain (v0.21+) mobile sign-in from its first request to the
@@ -93,9 +91,6 @@ class SignInFlow {
   static final RegExp _deviceIdPattern = RegExp(r'^[A-Za-z0-9_-]{43}$');
 
   _PendingSignIn? _pending;
-
-  /// Whether a sign-in is waiting for [verifyMfa] or [changePassword].
-  bool get hasPendingStep => _pending?.challenge != null;
 
   /// Starts a password sign-in on [serverUrl] (already normalized), with a
   /// fresh PKCE pair whose challenge goes in the login form.

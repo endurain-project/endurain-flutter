@@ -2,7 +2,6 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 
 /// Abstraction over the activity-metadata backing store.
 abstract interface class LocalActivityStore {
-  Future<List<LocalActivityRecord>> list();
   Future<LocalActivityRecord?> get(String id);
   Future<List<LocalActivityRecord>> getByIds(Set<String> ids);
   Future<void> upsert(LocalActivityRecord record);
@@ -18,13 +17,6 @@ abstract interface class LocalActivityStore {
     required int offset,
     required int limit,
   });
-
-  /// Returns every record whose [LocalActivityRecord.uploadStatus] is in
-  /// [statuses], ordered oldest-first so the durable upload queue retries
-  /// activities in the order they were recorded.
-  Future<List<LocalActivityRecord>> listByUploadStatus(
-    Set<LocalActivityUploadStatus> statuses,
-  );
 
   /// Returns the records the durable upload queue must act on, ordered
   /// oldest-first: every `pending` record, every `failed` one still

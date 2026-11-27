@@ -11,6 +11,7 @@ import 'package:endurain/features/settings/controllers/device_access_controller.
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
+import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -47,33 +48,28 @@ class DeviceAccessScreen extends StatefulWidget {
 }
 
 class _DeviceAccessScreenState extends State<DeviceAccessScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, OwnedControllers {
   late final DeviceAccessController _controller;
   late final HealthSyncController _healthController;
-  late final bool _ownsHealthController;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller =
-        widget.controller ??
-        DeviceAccessController(locationService: widget.locationService!);
-    _ownsHealthController = widget.healthController == null;
-    _healthController =
-        widget.healthController ?? widget.createHealthController!();
+    _controller = registerController(
+      widget.controller,
+      () => DeviceAccessController(locationService: widget.locationService!),
+    );
+    _healthController = registerController(
+      widget.healthController,
+      () => widget.createHealthController!(),
+    );
     unawaited(_refresh());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
-    if (_ownsHealthController) {
-      _healthController.dispose();
-    }
     super.dispose();
   }
 
@@ -190,7 +186,7 @@ class _DeviceAccessScreenState extends State<DeviceAccessScreen>
     return switch (permission) {
       LocationPermission.denied ||
       LocationPermission.unableToDetermine => _controller.requestLocationAccess,
-      LocationPermission.deniedForever => _controller.openAppSettings,
+      LocationPermission.deniedForever ||
       LocationPermission.always ||
       LocationPermission.whileInUse => _controller.openAppSettings,
     };

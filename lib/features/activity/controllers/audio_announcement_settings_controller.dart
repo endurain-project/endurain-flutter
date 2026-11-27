@@ -23,12 +23,8 @@ class AudioAnnouncementSettingsController extends SafeNotifier {
   final AudioAnnouncementPreviewAdapter _previewAdapter;
 
   AudioAnnouncementSettings _settings = AudioAnnouncementSettings.defaults();
-  bool _isLoaded = false;
 
   AudioAnnouncementSettings get settings => _settings;
-
-  /// Whether the persisted preference has been read yet.
-  bool get isLoaded => _isLoaded;
 
   /// Loads the persisted preference. On any read error the app falls back to
   /// [AudioAnnouncementSettings.defaults].
@@ -38,7 +34,6 @@ class AudioAnnouncementSettingsController extends SafeNotifier {
     } catch (_) {
       _settings = AudioAnnouncementSettings.defaults();
     }
-    _isLoaded = true;
     notify();
   }
 

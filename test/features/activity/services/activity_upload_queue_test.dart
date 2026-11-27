@@ -11,6 +11,7 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../helpers/local_activity_listing.dart';
 import '../../../helpers/recording_diagnostics.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 

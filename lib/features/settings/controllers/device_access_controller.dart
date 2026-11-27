@@ -19,15 +19,32 @@ class DeviceAccessController extends SafeNotifier {
   Future<void> load() async {
     _isLoading = true;
     notify();
-    _isLocationServiceEnabled = await _locationService
-        .isLocationServiceEnabled();
-    _locationPermission = await _locationService.checkPermission();
-    _isLoading = false;
-    notify();
+    try {
+      await _refresh();
+    } finally {
+      _isLoading = false;
+      notify();
+    }
+  }
+
+  Future<void> _refresh() async {
+    try {
+      _isLocationServiceEnabled = await _locationService
+          .isLocationServiceEnabled();
+      _locationPermission = await _locationService.checkPermission();
+    } catch (_) {
+      // Platform channel failure: report the state as undetermined.
+      _isLocationServiceEnabled = false;
+      _locationPermission = LocationPermission.unableToDetermine;
+    }
   }
 
   Future<void> requestLocationAccess() async {
-    _locationPermission = await _locationService.requestPermission();
+    try {
+      _locationPermission = await _locationService.requestPermission();
+    } catch (_) {
+      // Keep the previous permission state when the request itself fails.
+    }
     notify();
   }
 

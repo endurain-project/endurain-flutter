@@ -100,7 +100,7 @@ void main() {
       service.throws = true;
       await controller.revalidate();
 
-      expect(controller.isAuthenticated, isTrue);
+      expect(controller.mode, SessionMode.authenticated);
       expect(diagnostics.single(DiagnosticsEvents.sessionRevalidateFailed), {
         'type': 'AppException',
         'code': 'secureStorageReadFailed',
@@ -118,7 +118,7 @@ void main() {
         await controller.initialize();
 
         expect(controller.isGuest, isTrue);
-        expect(controller.isLoading, isFalse);
+        expect(controller.mode, isNot(SessionMode.loading));
         controller.dispose();
       },
     );
@@ -135,7 +135,7 @@ void main() {
         service.authenticated = true;
         await controller.revalidate();
 
-        expect(controller.isAuthenticated, isTrue);
+        expect(controller.mode, SessionMode.authenticated);
         controller.dispose();
       },
     );
@@ -168,8 +168,8 @@ void main() {
 
       await controller.initialize();
 
-      expect(controller.isLoading, isFalse);
-      expect(controller.isAuthenticated, isTrue);
+      expect(controller.mode, isNot(SessionMode.loading));
+      expect(controller.mode, SessionMode.authenticated);
       expect(controller.mode, SessionMode.authenticated);
       controller.dispose();
     });
@@ -182,7 +182,7 @@ void main() {
 
         await controller.initialize();
 
-        expect(controller.isAuthenticated, isTrue);
+        expect(controller.mode, SessionMode.authenticated);
         controller.dispose();
       },
     );
@@ -197,7 +197,7 @@ void main() {
         final controller = AuthSessionController(authService: service);
 
         await controller.initialize();
-        expect(controller.isAuthenticated, isTrue);
+        expect(controller.mode, SessionMode.authenticated);
         await Future<void>.delayed(Duration.zero);
 
         expect(controller.isGuest, isTrue);
@@ -215,7 +215,7 @@ void main() {
       // Local-first: the app starts on the map without a login gate.
       expect(controller.mode, SessionMode.guest);
       expect(controller.isGuest, isTrue);
-      expect(controller.isAuthenticated, isFalse);
+      expect(controller.mode, isNot(SessionMode.authenticated));
       controller.dispose();
     });
 
@@ -236,13 +236,13 @@ void main() {
       );
 
       controller.markAuthenticated();
-      expect(controller.isAuthenticated, isTrue);
-      expect(controller.isLoading, isFalse);
+      expect(controller.mode, SessionMode.authenticated);
+      expect(controller.mode, isNot(SessionMode.loading));
 
       controller.continueAsGuest();
       expect(controller.mode, SessionMode.guest);
-      expect(controller.isAuthenticated, isFalse);
-      expect(controller.isLoading, isFalse);
+      expect(controller.mode, isNot(SessionMode.authenticated));
+      expect(controller.mode, isNot(SessionMode.loading));
       controller.dispose();
     });
 
@@ -293,7 +293,7 @@ void main() {
       // No session stored: the refresh reports it ended.
       expect(await service.refreshToken(), isFalse);
 
-      expect(controller.isAuthenticated, isTrue);
+      expect(controller.mode, SessionMode.authenticated);
     });
 
     group('revalidate', () {
@@ -324,7 +324,7 @@ void main() {
 
         // State unchanged → no notification expected.
         expect(notified, isFalse);
-        expect(controller.isAuthenticated, isTrue);
+        expect(controller.mode, SessionMode.authenticated);
         controller.dispose();
       });
 
@@ -336,7 +336,7 @@ void main() {
 
         await controller.revalidate();
 
-        expect(controller.isAuthenticated, isTrue);
+        expect(controller.mode, SessionMode.authenticated);
         controller.dispose();
       });
 
@@ -353,7 +353,7 @@ void main() {
         service.confirmation!.complete(false);
         await revalidation;
 
-        expect(controller.isAuthenticated, isTrue);
+        expect(controller.mode, SessionMode.authenticated);
         controller.dispose();
       });
 
@@ -369,7 +369,7 @@ void main() {
 
         expect(notified, isTrue);
         expect(controller.isGuest, isTrue);
-        expect(controller.isAuthenticated, isFalse);
+        expect(controller.mode, isNot(SessionMode.authenticated));
         controller.dispose();
       });
     });

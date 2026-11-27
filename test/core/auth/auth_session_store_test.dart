@@ -30,9 +30,9 @@ void main() {
 
       expect(await storage.getAccessToken(), isNull);
       expect(await storage.getRefreshToken(), isNull);
-      expect(await storage.getSessionId(), isNull);
+      expect(await storage.read(key: 'session_id'), isNull);
       expect(await storage.getUsername(), 'joao');
-      expect(await storage.getAccessTokenExpiresAt(), isNull);
+      expect(await storage.read(key: 'access_token_expires_at'), isNull);
       expect(await storage.getAuthSession(), isNotNull);
       final session = await store.readSession();
       expect(session?.origin, 'https://example.test');
@@ -113,8 +113,8 @@ void main() {
       expect(await storage.getServerUrl(), 'https://example.test');
       expect(await storage.getAccessToken(), isNull);
       expect(await storage.getRefreshToken(), isNull);
-      expect(await storage.getSessionId(), isNull);
-      expect(await storage.getAccessTokenExpiresAt(), isNull);
+      expect(await storage.read(key: 'session_id'), isNull);
+      expect(await storage.read(key: 'access_token_expires_at'), isNull);
     });
 
     test('saveSession resets an unusable store and signs in', () async {
@@ -355,20 +355,6 @@ void main() {
       expect(fake.deleteAllCalls, 0);
     });
 
-    test('returns the stored server URL', () async {
-      final storage = SecureStorageService();
-      final store = AuthSessionStore(storage: storage);
-      await storage.setServerUrl('https://example.test');
-
-      expect(await store.getLastServerUrl(), 'https://example.test');
-    });
-
-    test('returns null server URL when not set', () async {
-      final store = AuthSessionStore(storage: SecureStorageService());
-
-      expect(await store.getLastServerUrl(), isNull);
-    });
-
     test('does not restore pre-v2 individual-key sessions', () async {
       // The legacy per-key session migration was removed: such installs must
       // re-authenticate rather than have a partial, account-less session
@@ -376,11 +362,15 @@ void main() {
       final storage = SecureStorageService();
       final store = AuthSessionStore(storage: storage);
       await storage.setServerUrl('https://legacy.example');
-      await storage.setAccessToken('access-1');
-      await storage.setRefreshToken('refresh-1');
-      await storage.setSessionId('session-1');
-      await storage.setAccessTokenExpiresAt(
-        DateTime.now().toUtc().add(const Duration(hours: 1)),
+      await storage.write(key: 'access_token', value: 'access-1');
+      await storage.write(key: 'refresh_token', value: 'refresh-1');
+      await storage.write(key: 'session_id', value: 'session-1');
+      await storage.write(
+        key: 'access_token_expires_at',
+        value: DateTime.now()
+            .toUtc()
+            .add(const Duration(hours: 1))
+            .toIso8601String(),
       );
 
       expect(await store.readSession(), isNull);

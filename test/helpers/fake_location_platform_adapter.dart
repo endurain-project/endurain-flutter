@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/services/platform/location_platform_adapter.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 
 Position testPosition({
@@ -29,6 +30,7 @@ class FakeLocationPlatformAdapter implements LocationPlatformAdapter {
     this.serviceEnabled = true,
     this.permission = LocationPermission.whileInUse,
     this.requestedPermission = LocationPermission.whileInUse,
+    this.platformError,
   }) : currentPosition = currentPosition ?? testPosition();
 
   final Position currentPosition;
@@ -36,9 +38,20 @@ class FakeLocationPlatformAdapter implements LocationPlatformAdapter {
   final bool serviceEnabled;
   final LocationPermission permission;
   final LocationPermission requestedPermission;
+
+  /// When set, the service/permission calls throw it (e.g. a
+  /// PlatformException from the native channel).
+  final PlatformException? platformError;
   int openAppSettingsCallCount = 0;
   final _positionController = StreamController<Position>.broadcast();
   final _currentPositionCompleter = Completer<Position>();
+
+  void _throwIfConfigured() {
+    final error = platformError;
+    if (error != null) {
+      throw error;
+    }
+  }
 
   void addPosition(Position position) {
     _positionController.add(position);
@@ -60,6 +73,7 @@ class FakeLocationPlatformAdapter implements LocationPlatformAdapter {
 
   @override
   Future<LocationPermission> checkPermission() async {
+    _throwIfConfigured();
     return permission;
   }
 
@@ -83,6 +97,7 @@ class FakeLocationPlatformAdapter implements LocationPlatformAdapter {
 
   @override
   Future<bool> isLocationServiceEnabled() async {
+    _throwIfConfigured();
     return serviceEnabled;
   }
 
@@ -99,6 +114,7 @@ class FakeLocationPlatformAdapter implements LocationPlatformAdapter {
 
   @override
   Future<LocationPermission> requestPermission() async {
+    _throwIfConfigured();
     return requestedPermission;
   }
 }

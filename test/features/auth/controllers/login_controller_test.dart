@@ -156,6 +156,10 @@ void main() {
         onError: errors.add,
       );
 
+      await controller.beginSsoLogin(
+        const IdentityProviderFixture().provider,
+        serverUrl: 'https://example.test',
+      );
       appLinks.add(
         Uri.parse(
           'com.endurain.endurain:/auth/sso/callback?error=access_denied',
@@ -621,7 +625,6 @@ void main() {
       await controller.submitServerUrl('https://example.test');
       expect(controller.isStep2, isTrue);
       expect(controller.availableIdPs, isNotEmpty);
-      expect(controller.serverSettings, isNotNull);
 
       await controller.submitLogin(
         serverUrl: 'https://example.test',
@@ -633,7 +636,6 @@ void main() {
       controller.backToServerStep();
       expect(controller.isStep2, isFalse);
       expect(controller.availableIdPs, isEmpty);
-      expect(controller.serverSettings, isNull);
 
       controller.backFromMfa();
       expect(controller.showMfaInput, isFalse);
@@ -882,6 +884,36 @@ void main() {
       await appLinks.close();
     });
 
+    test('ignores an SSO error callback when no sign-in is pending', () async {
+      final appLinks = FakeAppLinksService();
+      final diagnostics = RecordingDiagnostics();
+      final errors = <Object>[];
+      final controller = LoginController(
+        authCoordinator: _repository(
+          storage: SecureStorageService(),
+          client: MockClient((_) async => fail('No request expected.')),
+        ),
+        appLinksService: appLinks,
+        diagnostics: diagnostics,
+      );
+      controller.startSsoCallbackListener(
+        onLoginSuccess: () => fail('Login should not complete.'),
+        onError: errors.add,
+      );
+
+      appLinks.add(
+        Uri.parse(
+          'com.endurain.endurain:/auth/sso/callback?error=access_denied',
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(errors, isEmpty);
+      expect(diagnostics.events, [DiagnosticsEvents.ssoCallbackIgnored]);
+      controller.dispose();
+      await appLinks.close();
+    });
+
     test('passes a documented SSO failure code on, and drops others', () async {
       final appLinks = FakeAppLinksService();
       final errors = <Object>[];
@@ -897,18 +929,17 @@ void main() {
         onError: errors.add,
       );
 
-      appLinks
-        ..add(
-          Uri.parse(
-            'com.endurain.endurain:/auth/sso/callback?error=sso_approval_pending',
-          ),
-        )
-        ..add(
-          Uri.parse(
-            'com.endurain.endurain:/auth/sso/callback?error=%3Cscript%3E',
-          ),
+      // Each failure drops the pending flow, so every callback needs its own.
+      for (final callback in ['sso_approval_pending', '%3Cscript%3E']) {
+        await controller.beginSsoLogin(
+          const IdentityProviderFixture().provider,
+          serverUrl: 'https://example.test',
         );
-      await Future<void>.delayed(Duration.zero);
+        appLinks.add(
+          Uri.parse('com.endurain.endurain:/auth/sso/callback?error=$callback'),
+        );
+        await Future<void>.delayed(Duration.zero);
+      }
 
       expect(errors.map((e) => (e as AppException).details), [
         'sso_approval_pending',
@@ -1031,7 +1062,7 @@ void main() {
           }),
         ),
         appLinksService: const EmptyAppLinksService(),
-        mapSettingsRepository: mapRepo,
+        saveServerSettings: mapRepo.saveFromServerSettings,
       );
       await controller.submitServerUrl('https://example.test');
       expect(
@@ -1084,9 +1115,9 @@ void main() {
           }),
         ),
         appLinksService: const EmptyAppLinksService(),
-        mapSettingsRepository: MapSettingsRepository(
+        saveServerSettings: MapSettingsRepository(
           preferences: _FailingWritesPreferencesStore(),
-        ),
+        ).saveFromServerSettings,
         diagnostics: diagnostics,
       );
       final loginCompleted = Completer<void>();

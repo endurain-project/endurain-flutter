@@ -73,7 +73,7 @@ void main() {
       await subject.setEnabled(true);
 
       expect(subject.isEnabled, isTrue);
-      expect(subject.hasUsableDsn, isFalse);
+      expect(subject.effectiveDsn, isNull);
       expect(subject.isActive, isFalse);
       expect(reporter.starts, isEmpty);
     });

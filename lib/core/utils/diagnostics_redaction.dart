@@ -4,7 +4,7 @@
 /// Both destinations must scrub the same sensitive material before anything is
 /// persisted or transmitted, so the rules live here once rather than being
 /// duplicated (and drifting) between the two. The redaction is deliberately
-/// conservative: it strips bearer tokens and JWTs, secret-like `key=value`
+/// conservative: it strips bearer tokens and JWTs, email addresses, secret-like `key=value`
 /// pairs and JSON members, any query-string values, URL hosts and path ids
 /// (a server address and the ids in `/sessions/<id>` identify the user),
 /// absolute on-device file
@@ -23,6 +23,13 @@ String redactDiagnosticText(String value, {int maxLength = 500}) {
       )
       // A JWT is a credential wherever it appears, with or without `Bearer `.
       .replaceAll(RegExp(r'eyJ[\w-]+\.[\w-]+\.[\w-]+'), '<redacted>')
+      // Server error text can echo the account's email address.
+      .replaceAll(
+        RegExp(
+          r'[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}',
+        ),
+        '<email>',
+      )
       // `key=value`, `key: value` and JSON members such as
       // `"refresh_token": "value"`: an optional closing quote may sit between
       // the key and the separator, and a quoted value is redacted whole.

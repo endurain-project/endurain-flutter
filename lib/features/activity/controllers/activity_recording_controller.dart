@@ -65,7 +65,6 @@ class ActivityRecordingController extends SafeNotifier {
 
   ActivityRecordingState _state = ActivityRecordingState();
   ActivityType _selectedActivityType = ActivityType.run;
-  String? _completedGpx;
   String? _completedLocalActivityId;
   LocalActivityRecord? _completedLocalActivityRecord;
   ActivityUploadStatus _uploadStatus = ActivityUploadStatus.idle;
@@ -77,10 +76,6 @@ class ActivityRecordingController extends SafeNotifier {
   ActivityRecordingState get state => _state;
 
   ActivityType get selectedActivityType => _selectedActivityType;
-
-  String? get completedGpx => _completedGpx;
-
-  String? get completedLocalActivityId => _completedLocalActivityId;
 
   ActivityUploadStatus get uploadStatus => _uploadStatus;
 
@@ -117,7 +112,6 @@ class ActivityRecordingController extends SafeNotifier {
         _state.status == ActivityRecordingStatus.completed) {
       return;
     }
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.idle);
@@ -210,7 +204,6 @@ class ActivityRecordingController extends SafeNotifier {
       await _finalizeCompletedState(completedState);
       return;
     }
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setState(completedState);
@@ -248,7 +241,6 @@ class ActivityRecordingController extends SafeNotifier {
       _setUploadState(ActivityUploadStatus.cleanupFailed, error: error);
       return;
     }
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.idle);
@@ -257,7 +249,6 @@ class ActivityRecordingController extends SafeNotifier {
   }
 
   Future<void> clearCompleted() async {
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.idle);
@@ -301,7 +292,6 @@ class ActivityRecordingController extends SafeNotifier {
   ) async {
     try {
       final gpx = await _finalizer.buildGpx(completedState);
-      _completedGpx = gpx;
       return gpx;
     } catch (error) {
       // Sanitized breadcrumb only — record the error type, never coordinates,
@@ -311,7 +301,6 @@ class ActivityRecordingController extends SafeNotifier {
         DiagnosticsEvents.activityGpxGenerationFailed,
         details: diagnosticErrorDetails(error),
       );
-      _completedGpx = null;
       _setState(
         completedState.copyWith(
           status: ActivityRecordingStatus.failed,
@@ -365,7 +354,6 @@ class ActivityRecordingController extends SafeNotifier {
     ActivityRecordingState completedState,
     AppException error,
   ) {
-    _completedGpx = null;
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
     _setUploadState(ActivityUploadStatus.failed, error: error);

@@ -15,6 +15,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../helpers/fake_preferences_store.dart';
 import '../../../helpers/fake_share_service.dart';
+import '../../../helpers/local_activity_listing.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {

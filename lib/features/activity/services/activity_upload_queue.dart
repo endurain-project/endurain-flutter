@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/models/auth_session.dart';
+import 'package:endurain/core/utils/single_flight.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/activity_retention_settings_repository.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
@@ -101,8 +102,14 @@ class ActivityUploadQueue {
   StreamSubscription<bool>? _connectivitySubscription;
   final StreamController<void> _drainCompletedController =
       StreamController<void>.broadcast();
-  Future<void>? _inFlightDrain;
-  bool _followUpRequested = false;
+  late final SingleFlight<void> _drainFlight = SingleFlight<void>(
+    pass: _drainGuarded,
+    onSettled: () {
+      if (!_drainCompletedController.isClosed) {
+        _drainCompletedController.add(null);
+      }
+    },
+  );
 
   Stream<void> get onDrainCompleted => _drainCompletedController.stream;
 
@@ -111,35 +118,20 @@ class ActivityUploadQueue {
   /// and each record keeps its persisted `failed` status for the UI.
   ///
   /// Single-flight: a concurrent call returns the in-progress future.
-  Future<void> drain() {
-    final inFlight = _inFlightDrain;
-    if (inFlight != null) {
-      _followUpRequested = true;
-      return inFlight;
-    }
-    return _inFlightDrain = _drainUntilSettled().whenComplete(() {
-      _inFlightDrain = null;
-      if (!_drainCompletedController.isClosed) {
-        _drainCompletedController.add(null);
-      }
-    });
-  }
+  Future<void> drain() => _drainFlight.run();
 
-  Future<void> _drainUntilSettled() async {
-    do {
-      _followUpRequested = false;
-      try {
-        await _drain();
-      } catch (error) {
-        // Per-record failures are handled inside the drain; this catches what
-        // is left (storage, profile lookup), so a failed drain is observable
-        // and never an unhandled error from a fire-and-forget trigger.
-        _diagnostics.recordBreadcrumbSync(
-          DiagnosticsEvents.activityUploadQueueDrainFailed,
-          details: diagnosticErrorDetails(error),
-        );
-      }
-    } while (_followUpRequested);
+  Future<void> _drainGuarded() async {
+    try {
+      await _drain();
+    } catch (error) {
+      // Per-record failures are handled inside the drain; this catches what
+      // is left (storage, profile lookup), so a failed drain is observable
+      // and never an unhandled error from a fire-and-forget trigger.
+      _diagnostics.recordBreadcrumbSync(
+        DiagnosticsEvents.activityUploadQueueDrainFailed,
+        details: diagnosticErrorDetails(error),
+      );
+    }
   }
 
   Future<void> _drain() async {

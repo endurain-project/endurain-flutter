@@ -1,4 +1,5 @@
 import 'package:endurain/features/activity/models/recorded_sensor_sample.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 class ActivityTrackPoint {
@@ -19,6 +20,7 @@ class ActivityTrackPoint {
   }) : assert(latitude >= -90 && latitude <= 90),
        assert(longitude >= -180 && longitude <= 180);
 
+  @visibleForTesting
   factory ActivityTrackPoint.fromPosition(Position position) {
     return ActivityTrackPoint(
       latitude: position.latitude,

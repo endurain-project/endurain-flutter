@@ -1,11 +1,11 @@
 import 'package:endurain/app/app_infrastructure.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 import 'package:endurain/features/sensors/services/sensor_profile.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/features/sensors/services/universal_ble_sensor_connection_adapter.dart';
-import 'package:flutter/foundation.dart';
 
 /// Wires the external Bluetooth sensors feature: one app-lifetime
 /// [SensorService] per kind (heart rate, power, cadence), plus the platform BLE
@@ -41,9 +41,6 @@ class SensorsModule {
             canAutoReconnect: _canAutoReconnect,
           ),
       };
-
-  /// The coordinator for [kind].
-  SensorService service(SensorMeasurementKind kind) => services[kind]!;
 
   SensorService get heartRate => services[SensorMeasurementKind.heartRate]!;
   SensorService get power => services[SensorMeasurementKind.power]!;
@@ -87,8 +84,7 @@ class SensorsModule {
   /// [UnsupportedSensorConnectionAdapter] elsewhere (desktop, web, or the host
   /// test runtime) so the feature degrades gracefully without a BLE stack.
   SensorConnectionAdapter createAdapter(List<SensorProfile> profiles) {
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (isMobilePlatform) {
       return UniversalBleSensorConnectionAdapter(profiles: profiles);
     }
     return const UnsupportedSensorConnectionAdapter();

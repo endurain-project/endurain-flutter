@@ -52,9 +52,6 @@ class TileServerSettingsController extends SafeNotifier {
   /// host warning cannot be applied without the server URL.
   bool get hasLoadError => _loadError != null;
 
-  /// The connected server origin, used to warn about third-party tile hosts.
-  String? get serverUrl => _serverUrl;
-
   /// The tile-server URL to pre-fill in the form (defaulted by the repository).
   String get tileServerUrl => _tileServerUrl;
 

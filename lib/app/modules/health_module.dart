@@ -1,6 +1,7 @@
 import 'package:endurain/app/app_infrastructure.dart';
 import 'package:endurain/app/modules/activity_module.dart';
 import 'package:endurain/app/modules/auth_module.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/repositories/health_import_repository.dart';
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
@@ -74,8 +75,7 @@ class HealthModule {
   /// [UnsupportedHealthPlatformAdapter] on all other platforms (e.g. macOS,
   /// Linux, Windows, or the host test runner).
   HealthPlatformAdapter createPlatformAdapter() {
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (isMobilePlatform) {
       return HealthPackagePlatformAdapter(
         health: Health(),
         diagnostics: _infra.diagnostics,

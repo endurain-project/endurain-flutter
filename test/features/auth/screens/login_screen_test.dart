@@ -66,7 +66,6 @@ void main() {
       await tester.tap(find.text(l10n.next));
       await tester.pumpAndSettle();
 
-      expect(controller.serverUrl, 'https://example.test');
       expect(find.text(l10n.username), findsOneWidget);
       expect(find.text(l10n.password), findsOneWidget);
       expect(find.text(l10n.showPassword), findsOneWidget);
@@ -103,7 +102,6 @@ void main() {
       await tester.tap(find.text(l10n.warnHttpServerUrlConfirm));
       await tester.pumpAndSettle();
 
-      expect(controller.serverUrl, 'http://example.test');
       expect(requestedUri?.scheme, 'http');
       controller.dispose();
     });

@@ -7,6 +7,7 @@ import 'package:endurain/features/activity/models/recorded_activity_point.dart';
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/active_activity_session_x.dart';
 import '../../../helpers/file_active_activity_store.dart';
 
 void main() {

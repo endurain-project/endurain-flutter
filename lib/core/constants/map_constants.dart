@@ -25,7 +25,6 @@ class MapConstants {
 class LocationMarkerConstants {
   // Marker dimensions
   static const double markerSize = 40.0;
-  static const double dotRadius = 8.0; // markerSize / 5
   static const double borderWidth = 3.0;
 
   // Directional cone dimensions (relative to radius)

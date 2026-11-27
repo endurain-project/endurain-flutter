@@ -50,7 +50,6 @@ void main() {
       final controller = buildController();
       addTearDown(controller.dispose);
 
-      expect(controller.isLoaded, isFalse);
       expect(controller.preference, isNull);
     });
 
@@ -63,7 +62,6 @@ void main() {
 
       await controller.load();
 
-      expect(controller.isLoaded, isTrue);
       expect(controller.preference, MeasurementSystem.imperial);
       expect(notifications, 1);
     });
@@ -156,7 +154,6 @@ void main() {
 
       await controller.load();
 
-      expect(controller.isLoaded, isTrue);
       expect(controller.preference, isNull);
     });
   });

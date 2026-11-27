@@ -55,7 +55,7 @@ void main() {
         );
         expect(await storage.getAccessToken(), isNull);
         expect(await storage.getRefreshToken(), isNull);
-        expect(await storage.getSessionId(), isNull);
+        expect(await storage.read(key: 'session_id'), isNull);
       },
     );
 

@@ -26,6 +26,11 @@ class AppPreferencesStore {
   static const String _migrationKey =
       'endurain.preferences_json_migration_complete';
 
+  /// Written once per install. Preferences are cleared when an iOS app is
+  /// uninstalled but keychain items are not, so a missing marker next to a
+  /// fresh preference store is how a reinstall is told apart from an upgrade.
+  static const String _installMarkerKey = 'endurain.install_marker';
+
   final AppPreferencesBackend _backend;
   final Future<Directory> Function() _supportDirectoryProvider;
 
@@ -54,6 +59,63 @@ class AppPreferencesStore {
   Future<void> write({required String key, required String value}) async {
     await _ensureMigrated();
     await _backend.write(key, value);
+  }
+
+  /// Reads a boolean written by [writeBool]: `true` only for the stored text
+  /// `true`, [defaultValue] when nothing is stored.
+  Future<bool> readBool({
+    required String key,
+    bool defaultValue = false,
+  }) async {
+    final stored = await read(key: key);
+    return stored == null ? defaultValue : stored == 'true';
+  }
+
+  /// Persists [value] as `true` / `false` text.
+  Future<void> writeBool({required String key, required bool value}) {
+    return write(key: key, value: value ? 'true' : 'false');
+  }
+
+  /// Reads an integer clamped to [min]..[max]; [defaultValue] when nothing
+  /// valid is stored (absent or malformed).
+  Future<int> readClampedInt({
+    required String key,
+    required int defaultValue,
+    required int min,
+    required int max,
+  }) async {
+    final stored = int.tryParse(await read(key: key) ?? '');
+    return stored == null ? defaultValue : stored.clamp(min, max);
+  }
+
+  /// Persists [value], or removes [key] when [value] is `null`.
+  Future<void> writeOrDelete({required String key, String? value}) {
+    return value == null ? delete(key: key) : write(key: key, value: value);
+  }
+
+  /// Whether this launch is the first of a new install rather than an
+  /// upgrade, judged before anything else touches the store.
+  ///
+  /// `false` when the install marker exists. Without it, an existing install
+  /// still shows other state: every version since 0.3 records the legacy
+  /// import flag on its first preference access, and older ones left the
+  /// legacy JSON file behind. Only a store with none of these is fresh.
+  /// Does not write anything; call [markInstalled] once the decision has been
+  /// acted on.
+  Future<bool> isFreshInstall() async {
+    if (await _backend.read(_installMarkerKey) != null) {
+      return false;
+    }
+    if (await _backend.read(_migrationKey) != null) {
+      return false;
+    }
+    return (await _loadLegacyValues()).isEmpty;
+  }
+
+  /// Records that this install has been seen, so later launches never treat
+  /// it as fresh.
+  Future<void> markInstalled() async {
+    await _backend.write(_installMarkerKey, 'true');
   }
 
   /// Removes [key] from the store. Silently succeeds when absent.

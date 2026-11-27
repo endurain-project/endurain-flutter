@@ -10,21 +10,17 @@ import 'package:flutter_test/flutter_test.dart';
 const int _maxLines = 500;
 
 const Map<String, int> _legacyCaps = {
-  'lib/features/activity/repositories/sqflite_activity_store.dart': 512,
-  'lib/features/activity/screens/activity_history_screen.dart': 532,
-  'lib/features/activity/services/activity_recording_service.dart': 875,
-  'lib/features/activity/services/activity_upload_service.dart': 558,
+  'lib/features/activity/services/activity_recording_service.dart': 812,
+  'lib/features/activity/services/activity_upload_service.dart': 556,
   'lib/features/auth/screens/login_screen.dart': 572,
-  'lib/features/health/services/health_package_platform_adapter.dart': 700,
-  'lib/features/health/services/health_sync_service.dart': 771,
-  'lib/features/health/widgets/health_sync_available_view.dart': 536,
+  'lib/features/health/services/health_package_platform_adapter.dart': 685,
+  'lib/features/health/services/health_sync_service.dart': 620,
   'lib/features/sensors/screens/sensor_settings_screen.dart': 512,
   'android/app/src/main/kotlin/com/endurain/endurain/activity/ActivityRecorderService.kt':
       921,
   'android/wear/src/main/kotlin/com/endurain/endurain/wear/WorkoutRecorder.kt':
-      592,
+      586,
   'ios/EndurainWatch/WorkoutManager.swift': 556,
-  'ios/Runner/Activity/CoreLocationActivityRecorder.swift': 534,
 };
 
 /// Source roots checked, with the file extension each one holds. Generated

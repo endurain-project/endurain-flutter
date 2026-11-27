@@ -36,34 +36,6 @@ abstract interface class CrashReporter {
   Future<void> capture(Object error, StackTrace stackTrace, {String? source});
 }
 
-/// A [CrashReporter] that discards everything.
-///
-/// Used when remote reporting is disabled and as the safe default on platforms
-/// or test runs where no real backend should be contacted.
-class NoopCrashReporter implements CrashReporter {
-  const NoopCrashReporter();
-
-  @override
-  bool get isActive => false;
-
-  @override
-  Future<bool> start({
-    required String dsn,
-    String? release,
-    String? environment,
-  }) async => false;
-
-  @override
-  Future<void> stop() async {}
-
-  @override
-  Future<void> capture(
-    Object error,
-    StackTrace stackTrace, {
-    String? source,
-  }) async {}
-}
-
 /// Whether [dsn] is a structurally usable Sentry DSN.
 ///
 /// A usable DSN is an absolute `http`/`https` URL that carries a public key in

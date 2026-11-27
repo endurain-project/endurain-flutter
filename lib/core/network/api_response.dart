@@ -25,6 +25,19 @@ class ApiResponse {
     throw const AppException(AppErrorCode.unexpectedResponseFormat);
   }
 
+  /// Decodes [response] with [decode] when its status is `200`; any other
+  /// status throws [failure] with [code].
+  static T decodeOk<T>(
+    http.Response response,
+    AppErrorCode code,
+    T Function(http.Response response) decode,
+  ) {
+    if (response.statusCode == 200) {
+      return decode(response);
+    }
+    throw failure(response, code);
+  }
+
   static AppException failure(http.Response response, AppErrorCode code) {
     return AppException(
       code,
@@ -35,17 +48,6 @@ class ApiResponse {
 
   static String requiredString(Map<String, dynamic> data, String key) {
     final value = data[key];
-    if (value is String && value.trim().isNotEmpty) {
-      return value;
-    }
-    throw const AppException(AppErrorCode.unexpectedResponseFormat);
-  }
-
-  static String? optionalString(Map<String, dynamic> data, String key) {
-    final value = data[key];
-    if (value == null) {
-      return null;
-    }
     if (value is String && value.trim().isNotEmpty) {
       return value;
     }

@@ -5,12 +5,13 @@ import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
+import 'package:endurain/features/activity/widgets/lazy_list_section.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/models/health_import_range.dart';
 import 'package:endurain/features/health/models/health_sync_state.dart';
 import 'package:endurain/features/health/models/health_workout.dart';
-import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/widgets/health_sync_inline_error.dart';
+import 'package:endurain/features/health/widgets/health_workout_row.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -42,59 +43,76 @@ class HealthSyncAvailableView extends StatelessWidget {
     ].join('\n');
     return RefreshIndicator.adaptive(
       onRefresh: controller.loadImportableWorkouts,
-      child: ListView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: readableContentPadding(context),
-        children: [
-          AdaptiveListSection(
-            children: [_buildRangeSelector(context, l10n, state)],
-          ),
-          const SizedBox(height: UIConstants.paddingStandard),
-          AdaptiveListSection(
-            children: [
-              AdaptiveSwitchListTile(
-                title: l10n.healthSyncAutoSyncTitle,
-                subtitle: automationSubtitle,
-                value: state.autoSyncOnResume,
-                onChanged: state.isImporting || state.isUpdatingAutoSync
-                    ? null
-                    : controller.setAutoSyncOnResume,
-              ),
-            ],
-          ),
-          if (state.importedCount > 0) ...[
-            const SizedBox(height: UIConstants.paddingStandard),
-            Text(
-              l10n.healthSyncImportedCount(state.importedCount),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w500,
-              ),
+        slivers: paddedSlivers(readableContentPadding(context), [
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AdaptiveListSection(
+                  children: [_buildRangeSelector(context, l10n, state)],
+                ),
+                const SizedBox(height: UIConstants.paddingStandard),
+                AdaptiveListSection(
+                  children: [
+                    AdaptiveSwitchListTile(
+                      title: l10n.healthSyncAutoSyncTitle,
+                      subtitle: automationSubtitle,
+                      value: state.autoSyncOnResume,
+                      onChanged: state.isImporting || state.isUpdatingAutoSync
+                          ? null
+                          : controller.setAutoSyncOnResume,
+                    ),
+                  ],
+                ),
+                if (state.importedCount > 0) ...[
+                  const SizedBox(height: UIConstants.paddingStandard),
+                  Text(
+                    l10n.healthSyncImportedCount(state.importedCount),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+                if (state.routeConsentDeniedCount > 0)
+                  _buildRouteConsentNotice(context, l10n),
+                if (_showNoRoutesExplanation(state))
+                  _buildNoRoutesNotice(context, l10n),
+                if (state.olderWorkoutsUnavailable)
+                  _buildHistoryAccessNotice(context, l10n),
+                if (state.error != null)
+                  HealthSyncInlineError(error: state.error!),
+                _buildToolbar(context, l10n, state),
+                if (state.importableWorkouts.isEmpty)
+                  _buildEmptyList(l10n, state),
+              ],
             ),
-          ],
-          if (state.routeConsentDeniedCount > 0)
-            _buildRouteConsentNotice(context, l10n),
-          if (_showNoRoutesExplanation(state))
-            _buildNoRoutesNotice(context, l10n),
-          if (state.olderWorkoutsUnavailable)
-            _buildHistoryAccessNotice(context, l10n),
-          if (state.error != null) HealthSyncInlineError(error: state.error!),
-          _buildToolbar(context, l10n, state),
-          _buildWorkoutList(context, l10n, state),
-          if (state.availableHasMore) ...[
-            const SizedBox(height: UIConstants.paddingStandard),
-            Center(
-              child: AdaptiveButton(
-                label: l10n.activityHistoryLoadMore,
-                variant: AdaptiveButtonVariant.secondary,
-                onPressed: state.isLoadingMoreAvailable
-                    ? null
-                    : controller.loadMoreAvailable,
-              ),
+          ),
+          if (state.importableWorkouts.isNotEmpty)
+            _buildWorkoutList(context, l10n, state),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (state.availableHasMore) ...[
+                  const SizedBox(height: UIConstants.paddingStandard),
+                  Center(
+                    child: AdaptiveButton(
+                      label: l10n.activityHistoryLoadMore,
+                      variant: AdaptiveButtonVariant.secondary,
+                      onPressed: state.isLoadingMoreAvailable
+                          ? null
+                          : controller.loadMoreAvailable,
+                    ),
+                  ),
+                ],
+                _buildImportActions(context, l10n, state),
+              ],
             ),
-          ],
-          _buildImportActions(context, l10n, state),
-        ],
+          ),
+        ]),
       ),
     );
   }
@@ -368,23 +386,22 @@ class HealthSyncAvailableView extends StatelessWidget {
     AppLocalizations l10n,
     HealthSyncState state,
   ) {
-    if (state.importableWorkouts.isEmpty) {
-      return _buildEmptyList(l10n, state);
-    }
-    return AdaptiveListSection(
-      children: [
-        for (final workout in state.importableWorkouts)
-          _WorkoutRow(
-            workout: workout,
-            title: _formatTitle(context, l10n, workout),
-            subtitle: _formatSubtitle(context, workout),
-            isSelected: state.selectedSourceIds.contains(workout.sourceId),
-            noRouteLabel: l10n.healthSyncNoRouteLabel,
-            onChanged: workout.hasRoute && !state.isImporting
-                ? (_) => controller.toggleSelection(workout.sourceId)
-                : null,
-          ),
-      ],
+    final workouts = state.importableWorkouts;
+    return LazyListSection(
+      itemCount: workouts.length,
+      itemBuilder: (context, index) {
+        final workout = workouts[index];
+        return HealthWorkoutRow(
+          workout: workout,
+          title: _formatTitle(context, l10n, workout),
+          subtitle: _formatSubtitle(context, workout),
+          isSelected: state.selectedSourceIds.contains(workout.sourceId),
+          noRouteLabel: l10n.healthSyncNoRouteLabel,
+          onChanged: workout.hasRoute && !state.isImporting
+              ? (_) => controller.toggleSelection(workout.sourceId)
+              : null,
+        );
+      },
     );
   }
 
@@ -445,91 +462,6 @@ class HealthSyncAvailableView extends StatelessWidget {
             expand: true,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _WorkoutRow extends StatelessWidget {
-  const _WorkoutRow({
-    required this.workout,
-    required this.title,
-    required this.subtitle,
-    required this.isSelected,
-    required this.noRouteLabel,
-    this.onChanged,
-  });
-
-  final HealthWorkout workout;
-  final String title;
-  final String? subtitle;
-  final bool isSelected;
-  final String noRouteLabel;
-  final ValueChanged<bool?>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveCheckboxListTile(
-      value: workout.hasRoute ? isSelected : false,
-      onChanged: onChanged,
-      showControl: workout.hasRoute,
-      secondary: _workoutIcon(workout.type),
-      title: workout.hasRoute
-          ? Text(title)
-          : Wrap(
-              spacing: UIConstants.paddingCompact,
-              runSpacing: UIConstants.paddingSmall,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(title),
-                _NonImportableBadge(
-                  label: AppLocalizations.of(context)!
-                      .healthSyncBadgeNonImportable,
-                ),
-              ],
-            ),
-      subtitle: workout.hasRoute
-          ? (subtitle == null ? null : Text(subtitle!))
-          : Text(
-              noRouteLabel,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-    );
-  }
-
-  Widget _workoutIcon(HealthWorkoutType type) {
-    final icon = switch (type) {
-      HealthWorkoutType.run => Icons.directions_run,
-      HealthWorkoutType.ride => Icons.directions_bike,
-      HealthWorkoutType.walk => Icons.directions_walk,
-      HealthWorkoutType.hike => Icons.hiking,
-      HealthWorkoutType.other => Icons.fitness_center,
-    };
-    return Icon(icon);
-  }
-}
-
-class _NonImportableBadge extends StatelessWidget {
-  const _NonImportableBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final foreground = colorScheme.onSurfaceVariant;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: foreground, letterSpacing: 0),
       ),
     );
   }

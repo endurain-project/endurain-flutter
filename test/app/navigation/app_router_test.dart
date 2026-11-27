@@ -205,7 +205,7 @@ void main() {
     tester.widget<LoginScreen>(find.byType(LoginScreen)).onLoginSuccess!();
     await tester.pump();
 
-    expect(session.isAuthenticated, isTrue);
+    expect(session.mode, SessionMode.authenticated);
     expect(find.byType(LoginScreen), findsNothing);
   });
 }

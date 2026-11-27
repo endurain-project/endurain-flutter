@@ -5,6 +5,7 @@ import 'package:endurain/features/activity/models/local_activity_record.dart';
 import 'package:endurain/features/activity/repositories/local_activity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/local_activity_listing.dart';
 import '../../../helpers/sqlite_local_activity_repository.dart';
 
 void main() {

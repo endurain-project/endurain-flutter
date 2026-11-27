@@ -50,16 +50,4 @@ void main() {
       );
     });
   });
-
-  group('NoopCrashReporter', () {
-    test('never activates and swallows every call', () async {
-      const reporter = NoopCrashReporter();
-
-      expect(reporter.isActive, isFalse);
-      expect(await reporter.start(dsn: 'https://key@host/1'), isFalse);
-      expect(reporter.isActive, isFalse);
-      await reporter.capture(StateError('boom'), StackTrace.current);
-      await reporter.stop();
-    });
-  });
 }

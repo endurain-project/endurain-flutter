@@ -68,8 +68,6 @@ class DiagnosticsStorage {
     }
   }
 
-  String get path => _file.path;
-
   /// The stored payload, or an empty one when missing or unreadable.
   Map<String, Object?> readPayloadSync() {
     if (!_file.existsSync()) {

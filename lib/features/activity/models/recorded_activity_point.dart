@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:endurain/core/utils/json_parsing.dart';
 import 'package:endurain/features/activity/models/activity_track_point.dart';
+import 'package:flutter/foundation.dart';
 
 /// A single location sample persisted to the durable active-recording store.
 ///
@@ -26,6 +27,7 @@ class RecordedActivityPoint {
     this.cadenceRpm,
   });
 
+  @visibleForTesting
   factory RecordedActivityPoint.fromTrackPoint(
     ActivityTrackPoint point, {
     required int segmentIndex,
@@ -102,6 +104,7 @@ class RecordedActivityPoint {
   }
 
   /// Serializes the point to a single JSON line for append-only storage.
+  @visibleForTesting
   String toJsonLine() => jsonEncode(toJson());
 
   factory RecordedActivityPoint.fromJson(Map<dynamic, dynamic> json) {
@@ -138,6 +141,7 @@ class RecordedActivityPoint {
 
   /// Parses one stored JSONL line, returning `null` for blank or malformed
   /// lines so a single corrupt entry never aborts recovery of the rest.
+  @visibleForTesting
   static RecordedActivityPoint? tryParseLine(String line) {
     final trimmed = line.trim();
     if (trimmed.isEmpty) {

@@ -15,7 +15,7 @@ class ActivityGpxBuilder {
   String build(ActivityRecordingState state, {String? trackName}) {
     final segments = _segmentsForGpx(state);
     return buildGpxDocument(
-      name: trackName ?? _defaultTrackName(state.activityType),
+      name: trackName ?? _trackType(state.activityType),
       type: _trackType(state.activityType),
       metadataTime: _metadataTime(state),
       bounds: GpxBounds.fromPoints(
@@ -39,10 +39,6 @@ class ActivityGpxBuilder {
     cadence: point.cadenceRpm,
     powerWatts: point.powerWatts,
   );
-
-  String _defaultTrackName(ActivityType? activityType) {
-    return activityType?.apiValue ?? ActivityType.other.apiValue;
-  }
 
   String _trackType(ActivityType? activityType) {
     return activityType?.apiValue ?? ActivityType.other.apiValue;
