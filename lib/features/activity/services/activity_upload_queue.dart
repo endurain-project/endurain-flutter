@@ -18,10 +18,13 @@ import 'package:endurain/features/activity/services/activity_upload_service.dart
 ///
 /// Triggers:
 /// - app-resume (wired in `app.dart`),
-/// - optionally a `connectivitySignal` that emits `true` when connectivity is
-///   restored. The signal is intentionally an injected `Stream` so the app
-///   stays dependency-free; a build that wants connectivity-driven draining can
-///   pass a stream (e.g. from `connectivity_plus`) without changing this class.
+/// - a `connectivitySignal` that emits `true` when connectivity is restored
+///   (wired in `activity_module.dart`). It is an injected `Stream` so the
+///   queue stays free of platform plugins and tests can drive it,
+/// - a single retry timer: after each drain, the queue arms a [Timer] for the
+///   earliest future `next_attempt_at` among records waiting out a backoff,
+///   so a long foreground session retries them without a resume or
+///   connectivity event.
 ///
 /// [drain] is single-flight: concurrent calls share the same in-progress run,
 /// so app-resume and a connectivity event cannot start two overlapping drains.
@@ -100,6 +103,8 @@ class ActivityUploadQueue {
   final DateTime Function() _now;
 
   StreamSubscription<bool>? _connectivitySubscription;
+  Timer? _retryTimer;
+  bool _disposed = false;
   final StreamController<void> _drainCompletedController =
       StreamController<void>.broadcast();
   late final SingleFlight<void> _drainFlight = SingleFlight<void>(
@@ -121,6 +126,9 @@ class ActivityUploadQueue {
   Future<void> drain() => _drainFlight.run();
 
   Future<void> _drainGuarded() async {
+    // Re-armed below only when a record is still waiting out a backoff.
+    _retryTimer?.cancel();
+    _retryTimer = null;
     try {
       await _drain();
     } catch (error) {
@@ -167,6 +175,7 @@ class ActivityUploadQueue {
         ? retryableRecords.toList()
         : _recordsForActiveProfile(retryableRecords.toList(), activeProfile);
     if (pending.isEmpty) {
+      _scheduleRetry(records, profileProvider, activeProfile);
       return;
     }
 
@@ -207,6 +216,53 @@ class ActivityUploadQueue {
       DiagnosticsEvents.activityUploadQueueDrainFinished,
       details: {'uploaded': uploaded, 'failed': failed},
     );
+
+    // Failed attempts just persisted a new backoff; re-read to arm the timer.
+    _scheduleRetry(
+      await _repository.listUploadQueueCandidates(),
+      profileProvider,
+      activeProfile,
+    );
+  }
+
+  /// Arms the single retry timer for the earliest future `next_attempt_at`
+  /// among the active profile's [records] that are waiting out a backoff.
+  /// Only reached after the configuration, authorization and profile gates of
+  /// [_drain] passed, so a signed-out app never schedules a retry.
+  void _scheduleRetry(
+    List<LocalActivityRecord> records,
+    Future<ConnectionProfile?> Function()? profileProvider,
+    ConnectionProfile? activeProfile,
+  ) {
+    if (_disposed) {
+      return;
+    }
+    final scoped = profileProvider == null
+        ? records
+        : _recordsForActiveProfile(records, activeProfile);
+    final now = _now();
+    DateTime? earliest;
+    for (final record in scoped) {
+      final next = record.nextUploadAttemptAt;
+      final waiting =
+          record.uploadStatus != LocalActivityUploadStatus.uploaded &&
+          next != null &&
+          next.isAfter(now) &&
+          (record.uploadStatus == LocalActivityUploadStatus.pending ||
+              record.autoRetryEligible);
+      if (waiting && (earliest == null || next.isBefore(earliest))) {
+        earliest = next;
+      }
+    }
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    if (earliest == null) {
+      return;
+    }
+    _retryTimer = Timer(earliest.difference(now), () {
+      _retryTimer = null;
+      unawaited(drain());
+    });
   }
 
   List<LocalActivityRecord> _recordsForActiveProfile(
@@ -224,6 +280,9 @@ class ActivityUploadQueue {
   }
 
   void dispose() {
+    _disposed = true;
+    _retryTimer?.cancel();
+    _retryTimer = null;
     unawaited(_connectivitySubscription?.cancel());
     _connectivitySubscription = null;
     unawaited(_drainCompletedController.close());
