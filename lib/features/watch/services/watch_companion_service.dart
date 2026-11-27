@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:endurain/core/diagnostics/diagnostics_service.dart';
 import 'package:endurain/core/utils/single_flight.dart';
-import 'package:endurain/features/watch/models/watch_link_status.dart';
 import 'package:endurain/features/watch/models/watch_session_handoff.dart';
 import 'package:endurain/features/watch/models/watch_transport_event.dart';
 import 'package:endurain/features/watch/services/watch_session_ingestion_service.dart';
 import 'package:endurain/features/watch/services/watch_transport_adapter.dart';
-import 'package:flutter/foundation.dart';
 
 /// Summary of one sync pass over the pending watch handoffs.
 class WatchSyncSummary {
@@ -84,19 +82,7 @@ class WatchCompanionService {
         combine: (total, next) => total + next,
         canContinue: () => !_disposed,
       );
-  WatchLinkStatus _linkStatus = WatchLinkStatus.unsupported;
   bool _disposed = false;
-
-  /// Last known reachability of the paired watch.
-  WatchLinkStatus get linkStatus => _linkStatus;
-
-  /// Refreshes [linkStatus] from the transport.
-  @visibleForTesting
-  Future<WatchLinkStatus> refreshLinkStatus() async {
-    final status = await _transport.linkStatus();
-    _linkStatus = status;
-    return status;
-  }
 
   /// Drains every pending handoff, persisting each finished watch session as a
   /// local activity and acknowledging the ones that reached a terminal state.
@@ -214,7 +200,6 @@ class WatchCompanionService {
       case WatchTransportEventType.linkStatusChanged:
         final status = event.linkStatus;
         if (status != null) {
-          _linkStatus = status;
           if (status.isReachable) {
             unawaited(syncPendingSessions());
           }

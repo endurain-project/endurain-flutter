@@ -16,6 +16,8 @@ class TileServerUrlChanges extends ChangeNotifier {
   void notifyChanged() => notifyListeners();
 }
 
+/// Reads and persists the map tile source (URL and attribution) per server
+/// origin.
 class MapSettingsRepository {
   const MapSettingsRepository({
     required this._preferences,
@@ -25,6 +27,7 @@ class MapSettingsRepository {
   });
 
   static const _tileServerUrlKey = 'tile_server_url';
+  static const _tileAttributionKey = 'tile_server_attribution';
 
   final AppPreferencesStore _preferences;
   final AppConfig config;
@@ -84,7 +87,29 @@ class MapSettingsRepository {
       throw const AppException(AppErrorCode.notAuthenticated);
     }
     await _preferences.write(key: _keyForOrigin(resolvedOrigin), value: url);
+    // A user-chosen URL has no known attribution; drop any attribution that
+    // belonged to the previous (server-provided) source.
+    await _preferences.delete(key: _attributionKeyForOrigin(resolvedOrigin));
     changes?.notifyChanged();
+  }
+
+  /// The attribution text for the tile source stored for [origin], or null
+  /// when the default OpenStreetMap source is in use or none was provided.
+  Future<String?> getTileAttribution({String? origin}) async {
+    final resolvedOrigin = origin ?? await activeConnectionOrigin?.call();
+    if (activeConnectionOrigin != null &&
+        (resolvedOrigin == null || resolvedOrigin.isEmpty)) {
+      return null;
+    }
+    final url = await getTileServerUrl(origin: resolvedOrigin);
+    if (url == MapConstants.defaultTileServerUrl) {
+      return null;
+    }
+    final text = await _preferences.read(
+      key: _attributionKeyForOrigin(resolvedOrigin),
+    );
+    final trimmed = text?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
   }
 
   /// Persists any map-related fields from [settings] that have valid,
@@ -98,7 +123,20 @@ class MapSettingsRepository {
     final url = settings.tileserverUrl;
     if (url != null && url.isNotEmpty && isValidTileServerUrl(url)) {
       await saveTileServerUrl(url, origin: origin);
+      final attribution = settings.tileserverAttribution?.trim();
+      if (attribution != null && attribution.isNotEmpty) {
+        await _preferences.write(
+          key: _attributionKeyForOrigin(origin),
+          value: attribution,
+        );
+        changes?.notifyChanged();
+      }
     }
+  }
+
+  String _attributionKeyForOrigin(String? origin) {
+    if (origin == null || origin.isEmpty) return _tileAttributionKey;
+    return scopedStorageKey(_tileAttributionKey, origin);
   }
 
   String _keyForOrigin(String? origin) {

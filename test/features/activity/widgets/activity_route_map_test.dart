@@ -1,3 +1,4 @@
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
 import 'package:endurain/features/activity/widgets/activity_route_map.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -12,6 +13,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: ActivityRouteMap(
+              urlLauncher: UrlLauncherService(),
               route: GpxRoute(
                 segments: [
                   [
@@ -33,11 +35,31 @@ void main() {
       expect(find.byType(PolylineLayer), findsOneWidget);
     });
 
+    testWidgets('credits the tile source', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ActivityRouteMap(
+              urlLauncher: UrlLauncherService(),
+              route: GpxRoute(segments: []),
+              tileServerUrl: 'https://tile.example/{z}/{x}/{y}.png',
+              tileAttribution: 'Example Maps',
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(RichAttributionWidget), findsOneWidget);
+      expect(find.byTooltip('Example Maps'), findsOneWidget);
+    });
+
     testWidgets('renders safely for a single-point route', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: ActivityRouteMap(
+              urlLauncher: UrlLauncherService(),
               route: GpxRoute(
                 segments: [
                   [LatLng(41.10, -8.60)],

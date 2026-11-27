@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
@@ -10,7 +12,6 @@ import 'package:endurain/features/activity/screens/activity_details_screen.dart'
 import 'package:endurain/features/activity/services/activity_upload_queue.dart';
 import 'package:endurain/features/activity/widgets/activity_record_tile.dart';
 import 'package:endurain/features/activity/widgets/lazy_list_section.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -20,6 +21,7 @@ import 'package:material_ui/material_ui.dart';
 class ActivityHistoryScreen extends StatefulWidget {
   const ActivityHistoryScreen({
     super.key,
+    required this.urlLauncher,
     this.controller,
     this.createController,
     this.uploadQueue,
@@ -28,6 +30,9 @@ class ActivityHistoryScreen extends StatefulWidget {
          controller != null || createController != null,
          'Pass a controller or a factory for one.',
        );
+
+  /// Opens the route preview map's attribution link.
+  final UrlLauncherService urlLauncher;
 
   /// Injected controller (tests); otherwise one is built with
   /// [createController] and owned by the screen.
@@ -135,8 +140,10 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
       context,
       (context) => ActivityDetailsScreen(
         recordId: record.id,
+        urlLauncher: widget.urlLauncher,
         controller: _controller,
         tileServerUrlProvider: _tileServerUrlProvider(record),
+        tileAttributionProvider: _tileAttributionProvider(record),
       ),
     );
   }
@@ -149,6 +156,17 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
       return null;
     }
     return () => mapSettings.getTileServerUrl(origin: record.connectionOrigin);
+  }
+
+  Future<String?> Function()? _tileAttributionProvider(
+    LocalActivityRecord record,
+  ) {
+    final mapSettings = _mapSettings;
+    if (mapSettings == null) {
+      return null;
+    }
+    return () =>
+        mapSettings.getTileAttribution(origin: record.connectionOrigin);
   }
 
   /// The record for the details pane, or null when there are none.
@@ -198,8 +216,12 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
                     child: ActivityDetailsScreen(
                       key: ValueKey(paneRecord.id),
                       recordId: paneRecord.id,
+                      urlLauncher: widget.urlLauncher,
                       controller: _controller,
                       tileServerUrlProvider: _tileServerUrlProvider(paneRecord),
+                      tileAttributionProvider: _tileAttributionProvider(
+                        paneRecord,
+                      ),
                       embedded: true,
                       onDeleted: () => setState(() => _selectedRecordId = null),
                     ),

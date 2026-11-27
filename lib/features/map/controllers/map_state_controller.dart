@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -30,6 +30,7 @@ class MapStateController extends SafeNotifier {
     MapConstants.defaultLongitude,
   );
   String _tileServerUrl = MapConstants.defaultTileServerUrl;
+  String? _tileAttribution;
   bool _isLoadingLocation = false;
   bool _hasLocationPermission = false;
   bool _isLocationLocked = true;
@@ -37,6 +38,9 @@ class MapStateController extends SafeNotifier {
 
   LatLng get currentLocation => _currentLocation;
   String get tileServerUrl => _tileServerUrl;
+
+  /// Attribution of the custom tile source, or null for OpenStreetMap.
+  String? get tileAttribution => _tileAttribution;
   bool get isLoadingLocation => _isLoadingLocation;
   bool get hasLocationPermission => _hasLocationPermission;
   bool get isLocationLocked => _isLocationLocked;
@@ -64,8 +68,10 @@ class MapStateController extends SafeNotifier {
   Future<void> _loadSettings() async {
     final generation = ++_settingsGeneration;
     final String tileServerUrl;
+    final String? tileAttribution;
     try {
       tileServerUrl = await _mapSettingsRepository.getTileServerUrl();
+      tileAttribution = await _mapSettingsRepository.getTileAttribution();
     } catch (_) {
       // Storage unavailable: keep drawing with the URL already in use.
       return;
@@ -74,6 +80,7 @@ class MapStateController extends SafeNotifier {
       return;
     }
     _tileServerUrl = tileServerUrl;
+    _tileAttribution = tileAttribution;
     notify();
   }
 

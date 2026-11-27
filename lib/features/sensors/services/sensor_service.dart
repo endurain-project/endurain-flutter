@@ -4,6 +4,7 @@ import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 
@@ -131,7 +132,8 @@ class SensorService {
       _adapter.currentBluetoothState();
 
   /// Requests the runtime permissions needed to scan and connect.
-  Future<bool> ensurePermissions() => _adapter.ensurePermissions();
+  Future<SensorPermissionResult> ensurePermissions() =>
+      _adapter.ensurePermissions();
 
   /// Scans for nearby sensors of this service's kind.
   Stream<List<BleSensorDevice>> scan({

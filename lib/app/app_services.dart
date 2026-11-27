@@ -5,10 +5,10 @@ import 'package:endurain/app/modules/health_module.dart';
 import 'package:endurain/app/modules/sensors_module.dart';
 import 'package:endurain/app/modules/watch_module.dart';
 import 'package:endurain/core/config/app_config.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/features/account_migration/repositories/legacy_profile_alias_repository.dart';
 import 'package:endurain/features/account_migration/services/legacy_profile_adoption_service.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:flutter/foundation.dart';
 
 /// The application's composition root.

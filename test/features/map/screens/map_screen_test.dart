@@ -1,5 +1,7 @@
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/activity/models/activity_recording_state.dart';
@@ -12,7 +14,6 @@ import 'package:endurain/features/activity/services/start_countdown_platform_ada
 import 'package:endurain/features/activity/widgets/activity_recording_overlay.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/screens/map_screen.dart';
 import 'package:endurain/features/map/widgets/location_marker.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
@@ -74,6 +75,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -118,6 +120,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -176,6 +179,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapStateController,
             activityController: activityController,
@@ -215,6 +219,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -261,6 +266,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -301,6 +307,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -376,6 +383,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -411,6 +419,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -459,6 +468,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -495,6 +505,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             recordingOverlayBuilder: _defaultOverlay,
             controller: mapController,
             activityController: activityController,
@@ -545,6 +556,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             controller: mapController,
             activityController: activityController,
             recordingOverlayBuilder: (context, controller, reserved) =>
@@ -622,6 +634,7 @@ void main() {
         await tester.pumpWidget(
           _MapTestApp(
             child: MapScreen(
+              urlLauncher: const UrlLauncherService(),
               controller: mapController,
               activityController: activityController,
               recordingOverlayBuilder: (context, controller, reserved) =>
@@ -677,6 +690,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             controller: mapController,
             activityController: activityController,
             recordingOverlayBuilder: (context, controller, reserved) =>
@@ -735,6 +749,7 @@ void main() {
       await tester.pumpWidget(
         _MapTestApp(
           child: MapScreen(
+            urlLauncher: const UrlLauncherService(),
             controller: mapController,
             activityController: activityController,
             recordingOverlayBuilder: (context, controller, reserved) =>
@@ -795,6 +810,7 @@ void main() {
                   viewPadding: const EdgeInsets.only(bottom: 34),
                 ),
                 child: MapScreen(
+                  urlLauncher: const UrlLauncherService(),
                   recordingOverlayBuilder: _defaultOverlay,
                   controller: mapController,
                   activityController: activityController,
@@ -847,6 +863,7 @@ void main() {
                   viewPadding: const EdgeInsets.only(bottom: 24),
                 ),
                 child: MapScreen(
+                  urlLauncher: const UrlLauncherService(),
                   recordingOverlayBuilder: _defaultOverlay,
                   controller: mapController,
                   activityController: activityController,
@@ -914,6 +931,9 @@ class _RecordingCountdownPlatform implements StartCountdownPlatformAdapter {
 
   @override
   Future<void> endWarmUp() async => warmUpsEnded++;
+
+  @override
+  Future<bool> requestNotificationPermission() async => true;
 }
 
 /// Pumps frames, letting real async work run, until [condition] holds.

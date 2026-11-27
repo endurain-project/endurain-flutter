@@ -4,6 +4,7 @@ import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 
 /// A controllable [SensorConnectionAdapter] for unit tests, standing in for the
@@ -22,7 +23,12 @@ class FakeSensorConnectionAdapter implements SensorConnectionAdapter {
       StreamController<SensorBluetoothState>.broadcast(sync: true);
 
   SensorBluetoothState bluetoothStateValue = SensorBluetoothState.ready;
-  bool permissionGranted = true;
+  SensorPermissionResult permissionResult = SensorPermissionResult.granted;
+
+  /// When set, [ensurePermissions] waits for it, modelling an open system
+  /// permission prompt.
+  Completer<void>? permissionGate;
+  int scanCalls = 0;
 
   /// When true, [currentBluetoothState] reports [SensorBluetoothState.unknown]
   /// until [ensurePermissions] has been called, mirroring devices that only
@@ -76,10 +82,11 @@ class FakeSensorConnectionAdapter implements SensorConnectionAdapter {
   }
 
   @override
-  Future<bool> ensurePermissions() async {
+  Future<SensorPermissionResult> ensurePermissions() async {
     ensurePermissionsCalls++;
+    await permissionGate?.future;
     _permissionRequested = true;
-    return permissionGranted;
+    return permissionResult;
   }
 
   @override
@@ -87,6 +94,7 @@ class FakeSensorConnectionAdapter implements SensorConnectionAdapter {
     Duration timeout = const Duration(seconds: 15),
   }) async* {
     lastScanTimeout = timeout;
+    scanCalls++;
     yield scanDevices;
   }
 

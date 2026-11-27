@@ -867,6 +867,28 @@ class AppLocalizationsHr extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Pristup zdravstvenim podacima';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Pristup Bluetoothu';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Dopušteno';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth je isključen';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Blokirano u postavkama sustava';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Nije dopušteno';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Nije dostupno na ovom uređaju';
+
+  @override
   String get deviceAccessChecking => 'Provjera pristupa...';
 
   @override
@@ -1137,6 +1159,16 @@ class AppLocalizationsHr extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Otvorite aplikaciju Zdravlje, dodirnite svoju profilnu sliku, zatim Aplikacije i usluge. Odaberite Endurain i ažurirajte kategorije podataka.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Dopustite pristup u Health Connectu';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect prestaje pitati nakon što je pristup dvaput odbijen. Otvorite Health Connect kako biste dopustili Endurainu čitanje vaših treninga, ruta i srčane frekvencije.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Otvori Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Poveži zdravstvene podatke';

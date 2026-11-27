@@ -1,3 +1,4 @@
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/models/local_activity_record.dart';
@@ -51,6 +52,7 @@ void main() {
         AdaptiveApp(
           title: 'Test',
           home: ActivityDetailsScreen(
+            urlLauncher: const UrlLauncherService(),
             recordId: 'rec-1',
             controller: controller,
           ),
@@ -73,6 +75,7 @@ void main() {
         AdaptiveApp(
           title: 'Test',
           home: ActivityDetailsScreen(
+            urlLauncher: const UrlLauncherService(),
             recordId: 'rec-1',
             controller: controller,
           ),
@@ -265,6 +268,7 @@ void main() {
           AdaptiveApp(
             title: 'Test',
             home: ActivityDetailsScreen(
+              urlLauncher: const UrlLauncherService(),
               recordId: _baseRecord.id,
               controller: controller,
             ),
@@ -334,6 +338,7 @@ void main() {
         AdaptiveApp(
           title: 'Test',
           home: ActivityDetailsScreen(
+            urlLauncher: const UrlLauncherService(),
             recordId: _baseRecord.id,
             controller: controller,
             tileServerUrlProvider: () async =>
@@ -416,6 +421,7 @@ Future<void> _pumpDetails(
   VoidCallback? onDeleted,
 }) async {
   final details = ActivityDetailsScreen(
+    urlLauncher: const UrlLauncherService(),
     recordId: _baseRecord.id,
     controller: controller,
     embedded: embedded,

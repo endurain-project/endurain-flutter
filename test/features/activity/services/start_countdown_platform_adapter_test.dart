@@ -57,6 +57,36 @@ void main() {
       ]);
     });
 
+    test(
+      'reports the notification permission answer from the platform',
+      () async {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+              calls.add(call);
+              return false;
+            });
+
+        expect(await adapter.requestNotificationPermission(), isFalse);
+        expect(
+          calls.single.method,
+          NativeActivityRecorderChannelContract.requestNotificationPermission,
+        );
+      },
+    );
+
+    test('treats a missing native implementation as granted', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            throw MissingPluginException();
+          });
+
+      expect(await adapter.requestNotificationPermission(), isTrue);
+    });
+
+    test('treats a null reply as not granted', () async {
+      expect(await adapter.requestNotificationPermission(), isFalse);
+    });
+
     test('passes the countdown length to the warm-up', () async {
       await adapter.beginWarmUp(countdownSeconds: 10);
 

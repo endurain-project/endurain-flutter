@@ -1,4 +1,3 @@
-import 'package:endurain/features/watch/models/watch_link_status.dart';
 import 'package:endurain/features/watch/models/watch_transport_event.dart';
 import 'package:endurain/features/watch/services/watch_transport_channel.dart';
 import 'package:flutter/services.dart';
@@ -35,28 +34,6 @@ void main() {
   });
 
   group('MethodChannelWatchTransport', () {
-    test('maps the native link status', () async {
-      messenger.setMockMethodCallHandler(
-        methodChannel,
-        (call) async => 'connected',
-      );
-
-      final transport = MethodChannelWatchTransport();
-
-      expect(await transport.linkStatus(), WatchLinkStatus.connected);
-    });
-
-    test('falls back to unsupported for an unknown status', () async {
-      messenger.setMockMethodCallHandler(
-        methodChannel,
-        (call) async => 'something-new',
-      );
-
-      final transport = MethodChannelWatchTransport();
-
-      expect(await transport.linkStatus(), WatchLinkStatus.unsupported);
-    });
-
     test('drains handoffs and skips unreadable envelopes', () async {
       messenger.setMockMethodCallHandler(methodChannel, (call) async {
         if (call.method == WatchTransportChannelContract.drainHandoffs) {
@@ -118,7 +95,6 @@ void main() {
       // MissingPluginException, which the adapter must absorb.
       final transport = MethodChannelWatchTransport();
 
-      expect(await transport.linkStatus(), WatchLinkStatus.unsupported);
       expect(await transport.drainPendingHandoffs(), isEmpty);
       expect(await transport.events.toList(), isEmpty);
       await expectLater(transport.acknowledgeHandoff('session_1'), completes);

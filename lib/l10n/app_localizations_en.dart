@@ -838,6 +838,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Health data access';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Bluetooth access';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Allowed';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth is turned off';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Blocked in system settings';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Not allowed';
+
+  @override
+  String get deviceAccessBluetoothUnavailable => 'Not available on this device';
+
+  @override
   String get deviceAccessChecking => 'Checking access…';
 
   @override
@@ -1104,6 +1125,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Open the Health app, tap your profile picture, then Apps and Services. Select Endurain and update the data categories.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Allow access in Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect stops asking after access has been declined twice. Open Health Connect to allow Endurain to read your workouts, routes and heart rate.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Open Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Connect to health data';

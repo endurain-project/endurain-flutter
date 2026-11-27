@@ -1099,6 +1099,34 @@
   "@deviceAccessHealthTitle": {
     "description": "Health permission row title - Used in: device_access_screen.dart"
   },
+  "deviceAccessBluetoothSection": "Bluetooth",
+  "@deviceAccessBluetoothSection": {
+    "description": "Device access screen section heading - Used in: device_access_screen.dart"
+  },
+  "deviceAccessBluetoothTitle": "Bluetooth access",
+  "@deviceAccessBluetoothTitle": {
+    "description": "Bluetooth permission row title - Used in: device_access_screen.dart"
+  },
+  "deviceAccessBluetoothAllowed": "Allowed",
+  "@deviceAccessBluetoothAllowed": {
+    "description": "Bluetooth row status when access is allowed and Bluetooth is on - Used in: device_access_screen.dart"
+  },
+  "deviceAccessBluetoothOff": "Bluetooth is turned off",
+  "@deviceAccessBluetoothOff": {
+    "description": "Bluetooth row status when Bluetooth is turned off - Used in: device_access_screen.dart"
+  },
+  "deviceAccessBluetoothBlocked": "Blocked in system settings",
+  "@deviceAccessBluetoothBlocked": {
+    "description": "Bluetooth row status when access is blocked in system settings - Used in: device_access_screen.dart"
+  },
+  "deviceAccessBluetoothNotAllowed": "Not allowed",
+  "@deviceAccessBluetoothNotAllowed": {
+    "description": "Bluetooth row status when access has not been allowed yet - Used in: device_access_screen.dart"
+  },
+  "deviceAccessBluetoothUnavailable": "Not available on this device",
+  "@deviceAccessBluetoothUnavailable": {
+    "description": "Bluetooth row status when the device has no Bluetooth Low Energy support - Used in: device_access_screen.dart"
+  },
   "deviceAccessChecking": "Checking access…",
   "@deviceAccessChecking": {
     "description": "Temporary status while device permissions are checked - Used in: device_access_screen.dart"
@@ -1457,6 +1485,18 @@
   "healthAccessReviewIosInstructions": "Open the Health app, tap your profile picture, then Apps and Services. Select Endurain and update the data categories.",
   "@healthAccessReviewIosInstructions": {
     "description": "Instructions for changing HealthKit read access - Used in: health_access_screen.dart"
+  },
+  "healthAccessBlockedTitle": "Allow access in Health Connect",
+  "@healthAccessBlockedTitle": {
+    "description": "Title of the dialog guiding the user to Health Connect after access was denied - Used in: health_access_screen.dart"
+  },
+  "healthAccessBlockedMessage": "Health Connect stops asking after access has been declined twice. Open Health Connect to allow Endurain to read your workouts, routes and heart rate.",
+  "@healthAccessBlockedMessage": {
+    "description": "Explains that Health Connect no longer shows its permission prompt and asks the user to allow access there - Used in: health_access_screen.dart"
+  },
+  "healthAccessOpenHealthConnect": "Open Health Connect",
+  "@healthAccessOpenHealthConnect": {
+    "description": "Confirm button that opens the Health Connect permission screen - Used in: health_access_screen.dart"
   },
   "healthSyncAuthorize": "Connect to health data",
   "@healthSyncAuthorize": {

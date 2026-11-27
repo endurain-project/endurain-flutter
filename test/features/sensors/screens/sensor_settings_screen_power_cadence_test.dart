@@ -46,7 +46,10 @@ void main() {
       preferences: prefs(),
       rememberedKey: SensorPreferencesRepository.rememberedHeartRateSensorKey,
     );
-    heartRateController = SensorSectionController(service: heartRateService);
+    heartRateController = SensorSectionController(
+      openAppSettings: () async => true,
+      service: heartRateService,
+    );
 
     powerAdapter = FakeSensorConnectionAdapter()
       ..bluetoothStateValue = SensorBluetoothState.ready;
@@ -55,7 +58,10 @@ void main() {
       preferences: prefs(),
       rememberedKey: SensorPreferencesRepository.rememberedPowerSensorKey,
     );
-    powerController = SensorSectionController(service: powerService);
+    powerController = SensorSectionController(
+      openAppSettings: () async => true,
+      service: powerService,
+    );
 
     cadenceAdapter = FakeSensorConnectionAdapter()
       ..bluetoothStateValue = SensorBluetoothState.ready;
@@ -64,7 +70,10 @@ void main() {
       preferences: prefs(),
       rememberedKey: SensorPreferencesRepository.rememberedCadenceSensorKey,
     );
-    cadenceController = SensorSectionController(service: cadenceService);
+    cadenceController = SensorSectionController(
+      openAppSettings: () async => true,
+      service: cadenceService,
+    );
   });
 
   tearDown(() async {
@@ -82,6 +91,7 @@ void main() {
       AdaptiveApp(
         title: 'Test',
         home: SensorSettingsScreen(
+          openAppSettings: () async => true,
           controller: heartRateController,
           powerController: powerController,
           cadenceController: cadenceController,

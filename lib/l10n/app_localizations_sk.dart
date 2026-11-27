@@ -866,6 +866,29 @@ class AppLocalizationsSk extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Prístup k zdravotným údajom';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Prístup k Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Povolené';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth je vypnutý';
+
+  @override
+  String get deviceAccessBluetoothBlocked =>
+      'Blokované v systémových nastaveniach';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Nie je povolené';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Nie je k dispozícii na tomto zariadení';
+
+  @override
   String get deviceAccessChecking => 'Kontroluje sa prístup…';
 
   @override
@@ -1138,6 +1161,16 @@ class AppLocalizationsSk extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Otvorte aplikáciu Zdravie, klepnite na svoj profilový obrázok a potom na položku Aplikácie a služby. Vyberte Endurain a aktualizujte kategórie údajov.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Povoľte prístup v Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect sa prestane pýtať, keď bol prístup dvakrát odmietnutý. Otvorte Health Connect a povoľte Endurain čítať vaše tréningy, trasy a tepovú frekvenciu.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Otvoriť Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Pripojiť k zdravotným údajom';

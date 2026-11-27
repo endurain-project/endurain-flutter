@@ -49,6 +49,31 @@ typedef ConfirmLegacyProfile = Future<bool?> Function(
 /// and health sync imports every workout again under new idempotency keys,
 /// which duplicates them on the server.
 ///
+/// ## Removal criterion
+///
+/// This whole module is temporary. The app has required server v0.21 or newer
+/// since v0.11.0+20 (2026-11-17), so no install can sign in to a server that
+/// still uses integer ids; what remains is only data written by v0.10.x or
+/// older that was never uploaded or imported. Delete the module once the
+/// minimum supported Endurain server is v0.21 or newer (already true) AND at
+/// least five minor app releases have shipped since v0.11.0 (that is, from
+/// v0.16.0 on), by which point a stranded pre-v0.21 queue is no longer
+/// plausible. Records that were never adopted are then simply orphaned.
+///
+/// Delete together:
+/// - `lib/features/account_migration/` (this service, the
+///   `LegacyProfileAliasRepository` and the
+///   `legacy_profile_adoption_dialog.dart` dialog) and their tests;
+/// - the legacy helpers in `ConnectionIdentity`
+///   (`isLegacyAccountId`, `isLegacyProfileIdFor`);
+/// - the `reconcileProfile: legacyProfileAdoption.reapply` argument of the
+///   upload queue in the composition root (`lib/app/app_services.dart`), and
+///   the `reconcileProfile` hook it feeds;
+/// - the `legacyProfileAdoption` field there, the `captureLegacyHint` call at
+///   launch, and the `resolveAfterSignIn` call plus the
+///   `confirmLegacyProfileAdoption` dialog wiring in `lib/app.dart`;
+/// - the related localized strings and diagnostics events.
+///
 /// The flow:
 /// 1. [captureLegacyHint] runs at launch, before anything can clear the stored
 ///    session, and remembers its legacy profile id and a username hash.

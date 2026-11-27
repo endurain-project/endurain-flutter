@@ -4,16 +4,18 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
 import 'package:endurain/core/location/location_settings_builder.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/features/activity/controllers/activity_recording_controller.dart';
 import 'package:endurain/features/map/controllers/map_sensor_controller.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:endurain/features/map/widgets/location_marker.dart';
 import 'package:endurain/features/map/widgets/map_sensor_indicators.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
+import 'package:endurain/shared/map/map_tile_layer.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -24,6 +26,7 @@ class MapScreen extends StatefulWidget {
     super.key,
     required this.activityController,
     required this.recordingOverlayBuilder,
+    required this.urlLauncher,
     this.controller,
     this.locationService,
     this.mapSettings,
@@ -54,6 +57,9 @@ class MapScreen extends StatefulWidget {
   final MapStateController? controller;
   final LocationService? locationService;
   final MapSettingsRepository? mapSettings;
+
+  /// Opens the tile attribution link.
+  final UrlLauncherService urlLauncher;
 
   /// The sensor coordinators the top-of-map indicators show, one controller
   /// each.
@@ -268,9 +274,10 @@ class _MapScreenState extends State<MapScreen>
     final routePolylines = _polylines();
 
     return [
-      TileLayer(
-        urlTemplate: _controller.tileServerUrl,
-        userAgentPackageName: MapConstants.userAgent,
+      ...buildMapTileLayers(
+        tileServerUrl: _controller.tileServerUrl,
+        attribution: _controller.tileAttribution,
+        urlLauncher: widget.urlLauncher,
       ),
       if (routePolylines.isNotEmpty) PolylineLayer(polylines: routePolylines),
       if (_shouldShowLocationMarker)

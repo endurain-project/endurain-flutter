@@ -847,6 +847,27 @@ class AppLocalizationsEt extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Juurdepääs terviseandmetele';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Juurdepääs Bluetoothile';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Lubatud';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth on välja lülitatud';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Süsteemi seadetes blokeeritud';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Pole lubatud';
+
+  @override
+  String get deviceAccessBluetoothUnavailable => 'Pole selles seadmes saadaval';
+
+  @override
   String get deviceAccessChecking => 'Juurdepääsu kontrollimine…';
 
   @override
@@ -1117,6 +1138,17 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Avage rakendus Health, puudutage oma profiilipilti ja seejärel valikut Rakendused ja teenused. Valige Endurain ja värskendage andmekategooriaid.';
+
+  @override
+  String get healthAccessBlockedTitle =>
+      'Luba juurdepääs rakenduses Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect lõpetab küsimise, kui juurdepääs on kaks korda keelatud. Ava Health Connect, et lubada Endurainil lugeda su treeninguid, marsruute ja pulssi.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Ava Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Ühenda terviseandmetega';

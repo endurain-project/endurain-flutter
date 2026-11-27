@@ -848,6 +848,29 @@ class AppLocalizationsNl extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Toegang tot gezondheidsgegevens';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Toegang tot Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Toegestaan';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth staat uit';
+
+  @override
+  String get deviceAccessBluetoothBlocked =>
+      'Geblokkeerd in systeeminstellingen';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Niet toegestaan';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Niet beschikbaar op dit apparaat';
+
+  @override
   String get deviceAccessChecking => 'Toegang wordt gecontroleerd…';
 
   @override
@@ -1121,6 +1144,16 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Open de Gezondheid-app, tik op je profielfoto en vervolgens op Apps en services. Selecteer Endurain en werk de gegevenscategorieën bij.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Sta toegang toe in Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect vraagt niet meer om toestemming nadat de toegang twee keer is geweigerd. Open Health Connect om Endurain toestemming te geven je trainingen, routes en hartslag te lezen.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Health Connect openen';
 
   @override
   String get healthSyncAuthorize => 'Verbinden met gezondheidsgegevens';

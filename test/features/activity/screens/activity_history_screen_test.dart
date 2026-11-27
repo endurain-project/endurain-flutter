@@ -1,5 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/controllers/local_activity_history_controller.dart';
 import 'package:endurain/features/activity/models/activity_type.dart';
@@ -35,7 +36,10 @@ void main() {
     await tester.pumpWidget(
       AdaptiveApp(
         title: 'Test',
-        home: ActivityHistoryScreen(controller: controller),
+        home: ActivityHistoryScreen(
+          urlLauncher: const UrlLauncherService(),
+          controller: controller,
+        ),
       ),
     );
 
@@ -54,7 +58,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -76,7 +83,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -97,7 +107,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -118,7 +131,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -133,7 +149,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -148,7 +167,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -171,7 +193,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -187,7 +212,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       // Pump a few frames — avoid pumpAndSettle due to continuous animation.
@@ -213,7 +241,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -229,7 +260,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -256,7 +290,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -276,7 +313,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -298,7 +338,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -332,7 +375,10 @@ void main() {
       await tester.pumpWidget(
         AdaptiveApp(
           title: 'Test',
-          home: ActivityHistoryScreen(controller: controller),
+          home: ActivityHistoryScreen(
+            urlLauncher: const UrlLauncherService(),
+            controller: controller,
+          ),
         ),
       );
       await tester.pumpAndSettle();

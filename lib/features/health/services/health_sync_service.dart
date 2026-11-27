@@ -19,7 +19,6 @@ import 'package:endurain/features/health/services/health_discovery_cursor.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
 import 'package:endurain/features/health/services/health_workout_importer.dart';
-import 'package:flutter/foundation.dart';
 
 const Duration _discoveryPageWindow = Duration(days: 30);
 
@@ -222,17 +221,6 @@ class HealthSyncService {
   }
 
   // ── Preview ─────────────────────────────────────────────────────────────
-
-  /// Loads the first page of importable workouts from the default 30-day
-  /// range, discarding pagination metadata.
-  ///
-  /// A convenience wrapper over [loadAvailable] for callers and tests that only
-  /// need the items; the controller uses [loadAvailable] directly so it can
-  /// page with `hasMore`.
-  @visibleForTesting
-  Future<List<HealthWorkout>> listImportable() {
-    return loadAvailable().then((page) => page.items);
-  }
 
   Future<HealthWorkoutPage> loadAvailable({
     HealthImportRange range = HealthImportRange.defaultRange,

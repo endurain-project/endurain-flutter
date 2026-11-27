@@ -846,6 +846,28 @@ class AppLocalizationsNb extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Helsedatatilgang';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Tilgang til Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Tillatt';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth er slått av';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Blokkert i systeminnstillingene';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Ikke tillatt';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Ikke tilgjengelig på denne enheten';
+
+  @override
   String get deviceAccessChecking => 'Sjekker tilgang …';
 
   @override
@@ -1116,6 +1138,16 @@ class AppLocalizationsNb extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Åpne Helse-appen, trykk på profilbildet ditt og deretter Apper og tjenester. Velg Endurain og oppdater datakategoriene.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Tillat tilgang i Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect slutter å spørre etter at tilgang er avslått to ganger. Åpne Health Connect for å la Endurain lese treningsøktene, rutene og pulsen din.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Åpne Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Koble til helsedata';

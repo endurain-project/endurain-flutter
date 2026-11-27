@@ -2,10 +2,10 @@ import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
 import 'package:endurain/core/models/server_settings.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../helpers/fake_preferences_store.dart';
+import '../../helpers/fake_preferences_store.dart';
 
 void main() {
   const originA = 'https://a.example';
@@ -99,6 +99,46 @@ void main() {
         );
       },
     );
+
+    group('tile attribution', () {
+      const url = 'https://tiles.example.test/{z}/{x}/{y}.png';
+
+      test('is stored with a server-provided tile source', () async {
+        await repository.saveFromServerSettings(
+          ServerSettings.fromJson({
+            'tileserver_url': url,
+            'tileserver_attribution': ' (c) Example Maps ',
+          }),
+          origin: originA,
+        );
+
+        expect(
+          await repository.getTileAttribution(origin: originA),
+          '(c) Example Maps',
+        );
+        expect(await repository.getTileAttribution(origin: originB), isNull);
+      });
+
+      test('is null for the default source', () async {
+        expect(await repository.getTileAttribution(origin: originA), isNull);
+      });
+
+      test('is dropped when the user saves their own URL', () async {
+        await repository.saveFromServerSettings(
+          ServerSettings.fromJson({
+            'tileserver_url': url,
+            'tileserver_attribution': 'Example Maps',
+          }),
+          origin: originA,
+        );
+        await repository.saveTileServerUrl(
+          'https://mine.example.test/{z}/{x}/{y}.png',
+          origin: originA,
+        );
+
+        expect(await repository.getTileAttribution(origin: originA), isNull);
+      });
+    });
 
     group('tile URL template', () {
       test('accepts the z/x/y placeholders with s, r and d', () {

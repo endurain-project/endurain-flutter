@@ -5,6 +5,7 @@ import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/services/sensor_connection_adapter.dart';
 import 'package:endurain/features/sensors/services/sensor_measurement_decoder.dart';
 import 'package:endurain/features/sensors/services/sensor_profile.dart';
@@ -56,12 +57,19 @@ class UniversalBleSensorConnectionAdapter implements SensorConnectionAdapter {
   }
 
   @override
-  Future<bool> ensurePermissions() async {
+  Future<SensorPermissionResult> ensurePermissions() async {
     try {
       await UniversalBle.requestPermissions();
-      return true;
     } catch (_) {
-      return false;
+      // The plugin throws when the user refuses a runtime permission.
+      return SensorPermissionResult.denied;
+    }
+    try {
+      return SensorPermissionResult.fromBluetoothState(
+        await currentBluetoothState(),
+      );
+    } catch (_) {
+      return SensorPermissionResult.unavailable;
     }
   }
 

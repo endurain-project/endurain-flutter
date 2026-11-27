@@ -1,5 +1,5 @@
 import 'package:endurain/core/config/app_config.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
 /// Outcome of the tile-server host policy check for a candidate URL.

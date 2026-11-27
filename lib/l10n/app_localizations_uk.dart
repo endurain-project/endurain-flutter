@@ -847,6 +847,28 @@ class AppLocalizationsUk extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Доступ до даних про здоров\'я';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Доступ до Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Дозволено';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth вимкнено';
+
+  @override
+  String get deviceAccessBluetoothBlocked =>
+      'Заблоковано в системних налаштуваннях';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Не дозволено';
+
+  @override
+  String get deviceAccessBluetoothUnavailable => 'Недоступно на цьому пристрої';
+
+  @override
   String get deviceAccessChecking => 'Перевірка доступу…';
 
   @override
@@ -1115,6 +1137,16 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Відкрийте програму «Здоровʼя», торкніться свого зображення профілю, а потім «Програми та служби». Виберіть Endurain і оновіть категорії даних.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Дозвольте доступ у Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect перестає запитувати після двох відмов у доступі. Відкрийте Health Connect, щоб дозволити Endurain читати ваші тренування, маршрути та пульс.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Відкрити Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Підключитися до даних про здоров’я';

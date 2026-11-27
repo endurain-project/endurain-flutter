@@ -43,6 +43,13 @@ class NativeActivityRecorderChannelContract {
   static const String beginStartWarmUp = 'beginStartWarmUp';
   static const String endStartWarmUp = 'endStartWarmUp';
 
+  /// Android only: asks for the notification permission (API 33+) that keeps
+  /// the recorder's foreground notification visible. Replies whether it is
+  /// granted; recording never depends on the answer. iOS does not implement
+  /// it, so callers treat a missing implementation as granted.
+  static const String requestNotificationPermission =
+      'requestNotificationPermission';
+
   // Event payload keys.
   static const String eventType = 'type';
   static const String eventSession = 'session';

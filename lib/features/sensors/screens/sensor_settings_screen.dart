@@ -9,6 +9,7 @@ import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
+import 'package:endurain/features/sensors/widgets/sensor_bluetooth_guidance.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
@@ -27,6 +28,7 @@ class SensorSettingsScreen extends StatefulWidget {
     this.heartRateService,
     this.powerService,
     this.cadenceService,
+    required this.openAppSettings,
   }) : assert(
          controller != null || heartRateService != null,
          'Pass a heart-rate controller or its service.',
@@ -56,6 +58,11 @@ class SensorSettingsScreen extends StatefulWidget {
   final SensorService? powerService;
   final SensorService? cadenceService;
 
+  /// Opens the app's system settings so a denied Bluetooth permission can be
+  /// granted. Supplied by the composition root (the same opener the Device
+  /// access screen uses).
+  final Future<bool> Function() openAppSettings;
+
   @override
   State<SensorSettingsScreen> createState() => _SensorSettingsScreenState();
 }
@@ -77,13 +84,22 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
     _ownsCadence = widget.cadenceController == null;
     _heartRate =
         widget.controller ??
-        SensorSectionController(service: widget.heartRateService!);
+        SensorSectionController(
+          service: widget.heartRateService!,
+          openAppSettings: widget.openAppSettings,
+        );
     _power =
         widget.powerController ??
-        SensorSectionController(service: widget.powerService!);
+        SensorSectionController(
+          service: widget.powerService!,
+          openAppSettings: widget.openAppSettings,
+        );
     _cadence =
         widget.cadenceController ??
-        SensorSectionController(service: widget.cadenceService!);
+        SensorSectionController(
+          service: widget.cadenceService!,
+          openAppSettings: widget.openAppSettings,
+        );
     final controllers = [_heartRate, _power, _cadence];
     controllers.map((c) => c.initialize()).forEach(unawaited);
     _sections = Listenable.merge(controllers);
@@ -218,7 +234,7 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
           child: Center(child: AdaptiveLoadingIndicator()),
         )
       else
-        AdaptiveListSection(children: [_buildBluetoothStateTile(l10n, view)]),
+        SensorBluetoothGuidance(view: view),
     ];
   }
 
@@ -310,14 +326,7 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
             ? null
             : (view.isScanning ? view.stopScan : view.startScan),
       ),
-      if (view.permissionDenied)
-        Padding(
-          padding: const EdgeInsets.only(top: UIConstants.paddingCompact),
-          child: Text(
-            l10n.sensorsPermissionRequired,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ),
+      if (view.permissionDenied) SensorPermissionDeniedNotice(view: view),
       const SizedBox(height: UIConstants.paddingStandard),
       ..._buildScanResults(
         context,
@@ -385,34 +394,6 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
             .toList(growable: false),
       ),
     ];
-  }
-
-  Widget _buildBluetoothStateTile(
-    AppLocalizations l10n,
-    SensorSectionView view,
-  ) {
-    final String message;
-    switch (view.bluetoothState) {
-      case SensorBluetoothState.off:
-        message = l10n.sensorsBluetoothOff;
-      case SensorBluetoothState.unauthorized:
-      case SensorBluetoothState.unknown:
-        // An indeterminate state after the permission request most often means
-        // access was not granted; guide the user to allow it rather than
-        // asserting a definitive (and possibly wrong) "off".
-        message = l10n.sensorsBluetoothUnauthorized;
-      case SensorBluetoothState.unsupported:
-        message = l10n.sensorsBluetoothUnsupported;
-      case SensorBluetoothState.ready:
-        message = l10n.sensorsBluetoothOff;
-    }
-    return AdaptiveListTile(
-      leading: const AdaptiveIcon(
-        materialIcon: Icons.bluetooth_disabled,
-        cupertinoIcon: CupertinoIcons.bluetooth,
-      ),
-      title: message,
-    );
   }
 
   Widget _buildConnectedTile(

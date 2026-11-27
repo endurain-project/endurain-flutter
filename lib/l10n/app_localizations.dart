@@ -1587,6 +1587,48 @@ abstract class AppLocalizations {
   /// **'Health data access'**
   String get deviceAccessHealthTitle;
 
+  /// Device access screen section heading - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth'**
+  String get deviceAccessBluetoothSection;
+
+  /// Bluetooth permission row title - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth access'**
+  String get deviceAccessBluetoothTitle;
+
+  /// Bluetooth row status when access is allowed and Bluetooth is on - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get deviceAccessBluetoothAllowed;
+
+  /// Bluetooth row status when Bluetooth is turned off - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth is turned off'**
+  String get deviceAccessBluetoothOff;
+
+  /// Bluetooth row status when access is blocked in system settings - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked in system settings'**
+  String get deviceAccessBluetoothBlocked;
+
+  /// Bluetooth row status when access has not been allowed yet - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed'**
+  String get deviceAccessBluetoothNotAllowed;
+
+  /// Bluetooth row status when the device has no Bluetooth Low Energy support - Used in: device_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Not available on this device'**
+  String get deviceAccessBluetoothUnavailable;
+
   /// Temporary status while device permissions are checked - Used in: device_access_screen.dart
   ///
   /// In en, this message translates to:
@@ -2078,6 +2120,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open the Health app, tap your profile picture, then Apps and Services. Select Endurain and update the data categories.'**
   String get healthAccessReviewIosInstructions;
+
+  /// Title of the dialog guiding the user to Health Connect after access was denied - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Allow access in Health Connect'**
+  String get healthAccessBlockedTitle;
+
+  /// Explains that Health Connect no longer shows its permission prompt and asks the user to allow access there - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Health Connect stops asking after access has been declined twice. Open Health Connect to allow Endurain to read your workouts, routes and heart rate.'**
+  String get healthAccessBlockedMessage;
+
+  /// Confirm button that opens the Health Connect permission screen - Used in: health_access_screen.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Open Health Connect'**
+  String get healthAccessOpenHealthConnect;
 
   /// Button to request health authorization - Used in: health_sync_screen.dart
   ///

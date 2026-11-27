@@ -1,8 +1,8 @@
 import 'package:endurain/core/config/app_config.dart';
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/tile_server_settings_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_preferences_store.dart';

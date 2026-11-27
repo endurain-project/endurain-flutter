@@ -852,6 +852,28 @@ class AppLocalizationsBg extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Достъп до здравни данни';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Достъп до Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Разрешено';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth е изключен';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Блокирано в системните настройки';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Не е разрешено';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Не е налично на това устройство';
+
+  @override
   String get deviceAccessChecking => 'Достъпът се проверява...';
 
   @override
@@ -1122,6 +1144,16 @@ class AppLocalizationsBg extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Отворете приложението Здраве, докоснете профилната си снимка, след това Приложения и услуги. Изберете Endurain и актуализирайте категориите данни.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Разрешете достъп в Health Connect';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect спира да пита, след като достъпът е отказан два пъти. Отворете Health Connect, за да разрешите на Endurain да чете вашите тренировки, маршрути и пулс.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Отвори Health Connect';
 
   @override
   String get healthSyncAuthorize => 'Свържи здравните данни';

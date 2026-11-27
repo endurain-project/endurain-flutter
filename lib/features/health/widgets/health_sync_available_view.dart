@@ -2,7 +2,6 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
-import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter_scope.dart';
 import 'package:endurain/features/activity/widgets/activity_type_label.dart';
 import 'package:endurain/features/activity/widgets/lazy_list_section.dart';
@@ -146,46 +145,16 @@ class HealthSyncAvailableView extends StatelessWidget {
       HealthImportRangePreset.allHistory: l10n.healthSyncRangeAll,
       HealthImportRangePreset.custom: l10n.healthSyncRangeCustom,
     };
-    final preset = PlatformUtils.isApplePlatform
-        ? await showCupertinoModalPopup<HealthImportRangePreset>(
-            context: context,
-            builder: (context) => CupertinoActionSheet(
-              title: Text(l10n.healthSyncDateRange),
-              actions: [
-                for (final entry in labels.entries)
-                  CupertinoActionSheetAction(
-                    onPressed: () => Navigator.pop(context, entry.key),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (entry.key == current.preset) ...[
-                          const Icon(CupertinoIcons.check_mark, size: 18),
-                          const SizedBox(width: UIConstants.paddingCompact),
-                        ],
-                        Text(entry.value),
-                      ],
-                    ),
-                  ),
-              ],
-              cancelButton: CupertinoActionSheetAction(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l10n.cancel),
-              ),
-            ),
-          )
-        : await showDialog<HealthImportRangePreset>(
-            context: context,
-            builder: (context) => SimpleDialog(
-              title: Text(l10n.healthSyncDateRange),
-              children: [
-                for (final entry in labels.entries)
-                  SimpleDialogOption(
-                    onPressed: () => Navigator.pop(context, entry.key),
-                    child: Text(entry.value),
-                  ),
-              ],
-            ),
-          );
+    final preset = await showAdaptiveChoicePicker<HealthImportRangePreset>(
+      context: context,
+      title: l10n.healthSyncDateRange,
+      cancelLabel: l10n.cancel,
+      selected: current.preset,
+      choices: [
+        for (final entry in labels.entries)
+          AdaptiveChoice(value: entry.key, label: entry.value),
+      ],
+    );
     if (!context.mounted || preset == null) return;
     if (preset != HealthImportRangePreset.custom) {
       await controller.setRange(_rangeForPreset(preset));

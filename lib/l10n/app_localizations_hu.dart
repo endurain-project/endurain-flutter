@@ -855,6 +855,29 @@ class AppLocalizationsHu extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Hozzáférés az egészségügyi adatokhoz';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Bluetooth-hozzáférés';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Engedélyezve';
+
+  @override
+  String get deviceAccessBluetoothOff => 'A Bluetooth ki van kapcsolva';
+
+  @override
+  String get deviceAccessBluetoothBlocked =>
+      'Letiltva a rendszerbeállításokban';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Nem engedélyezett';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Nem érhető el ezen az eszközön';
+
+  @override
   String get deviceAccessChecking => 'Hozzáférés ellenőrzése…';
 
   @override
@@ -1126,6 +1149,17 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Nyissa meg az Egészség alkalmazást, koppintson a profilképére, majd az Alkalmazások és szolgáltatások elemre. Válassza az Enduraint, és frissítse az adatkategóriákat.';
+
+  @override
+  String get healthAccessBlockedTitle =>
+      'Engedélyezd a hozzáférést a Health Connectben';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'A Health Connect nem kérdez többé, ha a hozzáférést kétszer elutasították. Nyisd meg a Health Connectet, hogy engedélyezd az Endurainnek az edzéseid, útvonalaid és pulzusod olvasását.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Health Connect megnyitása';
 
   @override
   String get healthSyncAuthorize => 'Csatlakozás egészségügyi adatokhoz';

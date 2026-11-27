@@ -47,9 +47,6 @@ class FakeWatchTransport implements WatchTransportAdapter {
   Stream<WatchTransportEvent> get events => controller.stream;
 
   @override
-  Future<WatchLinkStatus> linkStatus() async => status;
-
-  @override
   Future<List<WatchSessionHandoff>> drainPendingHandoffs() async {
     drainCount++;
     final snapshot = handoffs;
@@ -359,7 +356,7 @@ void main() {
     await service.dispose();
   });
 
-  test('becoming reachable syncs and updates the link status', () async {
+  test('becoming reachable syncs pending handoffs', () async {
     final transport = FakeWatchTransport(handoffs: [buildHandoff()]);
     final service = WatchCompanionService(
       transport: transport,
@@ -371,7 +368,6 @@ void main() {
     );
     await pumpEventQueue();
 
-    expect(service.linkStatus, WatchLinkStatus.connected);
     expect(transport.drainCount, 1);
     await service.dispose();
   });
@@ -388,7 +384,6 @@ void main() {
     );
     await pumpEventQueue();
 
-    expect(service.linkStatus, WatchLinkStatus.disconnected);
     expect(transport.drainCount, 0);
     await service.dispose();
   });
@@ -407,22 +402,9 @@ void main() {
     expect(transport.drainCount, 0);
   });
 
-  test('refreshLinkStatus reads the transport', () async {
-    final transport = FakeWatchTransport(status: WatchLinkStatus.unpaired);
-    final service = WatchCompanionService(
-      transport: transport,
-      ingestionService: ingestion,
-    );
-
-    expect(await service.refreshLinkStatus(), WatchLinkStatus.unpaired);
-    expect(service.linkStatus, WatchLinkStatus.unpaired);
-    await service.dispose();
-  });
-
   test('the unsupported transport is inert', () async {
     const transport = UnsupportedWatchTransport();
 
-    expect(await transport.linkStatus(), WatchLinkStatus.unsupported);
     expect(await transport.drainPendingHandoffs(), isEmpty);
     await transport.acknowledgeHandoff('session_1');
     await transport.dispose();

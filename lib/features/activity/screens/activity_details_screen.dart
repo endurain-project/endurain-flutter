@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/models/app_exception.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/utils/date_time_formatting.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
@@ -22,9 +23,11 @@ class ActivityDetailsScreen extends StatefulWidget {
   const ActivityDetailsScreen({
     super.key,
     required this.recordId,
+    required this.urlLauncher,
     this.controller,
     this.createController,
     this.tileServerUrlProvider,
+    this.tileAttributionProvider,
     this.embedded = false,
     this.onDeleted,
   }) : assert(
@@ -33,6 +36,9 @@ class ActivityDetailsScreen extends StatefulWidget {
        );
 
   final String recordId;
+
+  /// Opens the route preview map's attribution link.
+  final UrlLauncherService urlLauncher;
 
   /// The history screen's controller, so a record opened from there stays in
   /// sync with the list. Otherwise one is built with [createController] and
@@ -43,6 +49,9 @@ class ActivityDetailsScreen extends StatefulWidget {
   /// Supplies the tile-server URL for the route preview map. When null, the map
   /// is not shown (e.g. in tests that do not exercise the map).
   final Future<String> Function()? tileServerUrlProvider;
+
+  /// Resolves the attribution of a custom tile source; null for OpenStreetMap.
+  final Future<String?> Function()? tileAttributionProvider;
 
   /// Whether this is the details pane beside the history list rather than a
   /// page of its own: it then has no navigation bar of its own.
@@ -161,7 +170,10 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
           primary: widget.embedded ? false : null,
           padding: readableContentPadding(context),
           children: [
-            _RouteMapSection(future: _routeMapFor(record)),
+            _RouteMapSection(
+              future: _routeMapFor(record),
+              urlLauncher: widget.urlLauncher,
+            ),
             _SummarySection(record: record, controller: _controller),
             const SizedBox(height: UIConstants.paddingStandard),
             FutureBuilder<bool>(
@@ -219,7 +231,12 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       return null;
     }
     final tileServerUrl = await provider();
-    return _ActivityRouteMapData(route: route, tileServerUrl: tileServerUrl);
+    final tileAttribution = await widget.tileAttributionProvider?.call();
+    return _ActivityRouteMapData(
+      route: route,
+      tileServerUrl: tileServerUrl,
+      tileAttribution: tileAttribution,
+    );
   }
 }
 
@@ -240,9 +257,10 @@ class _DetailsMessage extends StatelessWidget {
 }
 
 class _RouteMapSection extends StatelessWidget {
-  const _RouteMapSection({required this.future});
+  const _RouteMapSection({required this.future, required this.urlLauncher});
 
   final Future<_ActivityRouteMapData?> future;
+  final UrlLauncherService urlLauncher;
 
   @override
   Widget build(BuildContext context) {
@@ -258,6 +276,8 @@ class _RouteMapSection extends StatelessWidget {
           child: ActivityRouteMap(
             route: data.route,
             tileServerUrl: data.tileServerUrl,
+            tileAttribution: data.tileAttribution,
+            urlLauncher: urlLauncher,
           ),
         );
       },
@@ -269,10 +289,12 @@ class _ActivityRouteMapData {
   const _ActivityRouteMapData({
     required this.route,
     required this.tileServerUrl,
+    this.tileAttribution,
   });
 
   final GpxRoute route;
   final String tileServerUrl;
+  final String? tileAttribution;
 }
 
 class _SummarySection extends StatelessWidget {

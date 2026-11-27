@@ -1,7 +1,7 @@
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/location/location_service.dart';
+import 'package:endurain/core/services/map_settings_repository.dart';
 import 'package:endurain/features/map/controllers/map_state_controller.dart';
-import 'package:endurain/features/map/repositories/map_settings_repository.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

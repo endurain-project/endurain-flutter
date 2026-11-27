@@ -1,7 +1,9 @@
 import 'package:endurain/core/constants/map_constants.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/services/platform/url_launcher_service.dart';
 import 'package:endurain/core/theme/app_theme_tokens.dart';
 import 'package:endurain/features/activity/services/gpx_route_parser.dart';
+import 'package:endurain/shared/map/map_tile_layer.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
@@ -14,11 +16,19 @@ class ActivityRouteMap extends StatelessWidget {
     super.key,
     required this.route,
     required this.tileServerUrl,
+    required this.urlLauncher,
+    this.tileAttribution,
     this.height = 220,
   });
 
   final GpxRoute route;
   final String tileServerUrl;
+
+  /// Attribution of a custom tile source; null shows the OpenStreetMap credit.
+  final String? tileAttribution;
+
+  /// Opens the attribution link.
+  final UrlLauncherService urlLauncher;
   final double height;
 
   static const double _endpointSize = 16;
@@ -35,9 +45,10 @@ class ActivityRouteMap extends StatelessWidget {
         child: FlutterMap(
           options: _mapOptions(points),
           children: [
-            TileLayer(
-              urlTemplate: tileServerUrl,
-              userAgentPackageName: MapConstants.userAgent,
+            ...buildMapTileLayers(
+              tileServerUrl: tileServerUrl,
+              attribution: tileAttribution,
+              urlLauncher: urlLauncher,
             ),
             PolylineLayer(
               polylines: [

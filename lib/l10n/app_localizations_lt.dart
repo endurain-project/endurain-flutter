@@ -844,6 +844,28 @@ class AppLocalizationsLt extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Prieiga prie sveikatos duomenų';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Prieiga prie Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'Leidžiama';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth išjungtas';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Užblokuota sistemos nustatymuose';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'Neleidžiama';
+
+  @override
+  String get deviceAccessBluetoothUnavailable =>
+      'Šiame įrenginyje nepasiekiama';
+
+  @override
   String get deviceAccessChecking => 'Tikrinama prieiga…';
 
   @override
@@ -1113,6 +1135,16 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Atidarykite programą „Sveikata“, bakstelėkite savo profilio nuotrauką, tada „Programos ir paslaugos“. Pasirinkite Endurain ir atnaujinkite duomenų kategorijas.';
+
+  @override
+  String get healthAccessBlockedTitle => 'Leiskite prieigą „Health Connect“';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      '„Health Connect“ nustoja klausti, kai prieiga buvo du kartus atmesta. Atidarykite „Health Connect“, kad leistumėte „Endurain“ skaityti jūsų treniruotes, maršrutus ir pulsą.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Atidaryti „Health Connect“';
 
   @override
   String get healthSyncAuthorize => 'Prisijungti prie sveikatos duomenų';

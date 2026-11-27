@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:endurain/features/sensors/controllers/sensor_section_controller.dart';
 import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 import 'package:endurain/features/sensors/repositories/sensor_preferences_repository.dart';
 import 'package:endurain/features/sensors/services/sensor_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,7 +30,10 @@ void main() {
         ),
         rememberedKey: SensorPreferencesRepository.rememberedCadenceSensorKey,
       );
-      controller = SensorSectionController(service: service);
+      controller = SensorSectionController(
+        openAppSettings: () async => true,
+        service: service,
+      );
     });
 
     tearDown(() async {
@@ -58,7 +64,10 @@ void main() {
     });
 
     test('initialize stops when disposed before it finishes', () async {
-      final early = SensorSectionController(service: service);
+      final early = SensorSectionController(
+        openAppSettings: () async => true,
+        service: service,
+      );
 
       final initializing = early.initialize();
       early.dispose();
@@ -73,13 +82,70 @@ void main() {
     });
 
     test('startScan flags permission denial without scanning', () async {
-      adapter.permissionGranted = false;
+      adapter.permissionResult = SensorPermissionResult.denied;
       await controller.initialize();
 
       await controller.startScan();
 
       expect(controller.permissionDenied, isTrue);
+      expect(controller.permissionUnavailable, isFalse);
       expect(controller.isScanning, isFalse);
+    });
+
+    test('startScan flags an unavailable adapter separately', () async {
+      adapter.permissionResult = SensorPermissionResult.unavailable;
+      await controller.initialize();
+
+      await controller.startScan();
+
+      expect(controller.permissionDenied, isFalse);
+      expect(controller.permissionUnavailable, isTrue);
+    });
+
+    test('double tap during the permission prompt starts one scan', () async {
+      await controller.initialize();
+      adapter.permissionGate = Completer<void>();
+      final before = adapter.ensurePermissionsCalls;
+
+      final first = controller.startScan();
+      final second = controller.startScan();
+      adapter.permissionGate!.complete();
+      await Future.wait([first, second]);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(adapter.ensurePermissionsCalls - before, 1);
+      expect(adapter.scanCalls, 1);
+    });
+
+    test('dispose during the permission prompt starts no scan', () async {
+      final early = SensorSectionController(
+        openAppSettings: () async => true,
+        service: service,
+      );
+      await early.initialize();
+      adapter.permissionGate = Completer<void>();
+
+      final scanning = early.startScan();
+      early.dispose();
+      adapter.permissionGate!.complete();
+      await scanning;
+
+      expect(adapter.scanCalls, 0);
+    });
+
+    test('openAppSettings delegates to the injected opener', () async {
+      var opened = 0;
+      final withOpener = SensorSectionController(
+        service: service,
+        openAppSettings: () async {
+          opened++;
+          return true;
+        },
+      );
+      addTearDown(withOpener.dispose);
+
+      expect(await withOpener.openAppSettings(), isTrue);
+      expect(opened, 1);
     });
 
     test('startScan collects discovered devices then stops', () async {

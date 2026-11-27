@@ -40,6 +40,10 @@ class _FakeUploadQueue extends ActivityUploadQueue {
   Future<void> drain() async => drainCount++;
 }
 
+/// First page of importable workouts, discarding pagination metadata.
+Future<List<HealthWorkout>> _listImportable(HealthSyncService service) async =>
+    (await service.loadAvailable()).items;
+
 void main() {
   const origin = 'https://example.test';
   const profile = ConnectionProfile(
@@ -144,14 +148,14 @@ void main() {
 
     test('listImportable returns empty without calling adapter', () async {
       adapter.workouts = [makeWorkout('w1')];
-      final result = await disabledService.listImportable();
+      final result = await _listImportable(disabledService);
       expect(result, isEmpty);
       expect(adapter.readWorkoutsCallCount, 0);
     });
 
     test('importWorkouts returns zero counts', () async {
       adapter.workouts = [makeWorkout('w1')];
-      await disabledService.listImportable();
+      await _listImportable(disabledService);
       final result = await disabledService.importWorkouts(['w1']);
       expect(result.imported, 0);
       expect(result.failed, 0);
@@ -198,7 +202,7 @@ void main() {
         isTransient: true,
       );
 
-      await expectLater(service.listImportable(), throwsA(isA<AppException>()));
+      await expectLater(_listImportable(service), throwsA(isA<AppException>()));
 
       expect(await settings.isConnected(profile.id), isTrue);
     });
@@ -255,7 +259,7 @@ void main() {
       await service.importAll();
       adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
 
-      final result = await service.listImportable();
+      final result = await _listImportable(service);
       expect(result, isEmpty);
     });
 
@@ -295,7 +299,7 @@ void main() {
           localActivityId: 'missing-local',
         );
 
-        final result = await service.listImportable();
+        final result = await _listImportable(service);
 
         expect(result, isEmpty);
         expect(
@@ -307,7 +311,7 @@ void main() {
         expect(imported.localActivity, isNull);
         await service.restoreMissingImport(imported);
 
-        final restored = await service.listImportable();
+        final restored = await _listImportable(service);
         expect(restored.map((workout) => workout.sourceId), ['w1']);
       },
     );
@@ -317,7 +321,7 @@ void main() {
         makeWorkout('w1', hasRoute: false),
         makeWorkout('w2'),
       ];
-      final result = await service.listImportable();
+      final result = await _listImportable(service);
       expect(result, hasLength(2));
       expect(result.where((w) => w.hasRoute), hasLength(1));
       expect(result.where((w) => !w.hasRoute), hasLength(1));
@@ -327,7 +331,7 @@ void main() {
       adapter.routeConsentDeniedCountValue = 2;
       adapter.workouts = [makeWorkout('w1', hasRoute: false)];
 
-      await service.listImportable();
+      await _listImportable(service);
 
       expect(service.routeConsentDeniedCount, 2);
     });
@@ -337,7 +341,7 @@ void main() {
       () async {
         adapter.routeConsentDeniedCountValue = 2;
         adapter.workouts = [makeWorkout('w1', hasRoute: false)];
-        await service.listImportable();
+        await _listImportable(service);
         expect(service.routeConsentDeniedCount, 2);
 
         await service.clearDiscoveryCache();
@@ -348,7 +352,7 @@ void main() {
 
     test('returns empty list when no workouts from adapter', () async {
       adapter.workouts = [];
-      expect(await service.listImportable(), isEmpty);
+      expect(await _listImportable(service), isEmpty);
     });
 
     test('clears a stale connection when the read lacks permission', () async {
@@ -358,7 +362,7 @@ void main() {
         AppErrorCode.healthPermissionDenied,
       );
 
-      await expectLater(service.listImportable(), throwsA(isA<AppException>()));
+      await expectLater(_listImportable(service), throwsA(isA<AppException>()));
 
       expect(await settings.isConnected(profile.id), isFalse);
     });
@@ -370,7 +374,7 @@ void main() {
         AppErrorCode.healthReadFailed,
       );
 
-      await expectLater(service.listImportable(), throwsA(isA<AppException>()));
+      await expectLater(_listImportable(service), throwsA(isA<AppException>()));
 
       expect(await settings.isConnected(profile.id), isTrue);
     });
@@ -380,7 +384,7 @@ void main() {
       await service.importAll();
       adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
 
-      final result = await service.listImportable();
+      final result = await _listImportable(service);
 
       expect(result.map((w) => w.sourceId), ['w2']);
       expect(adapter.excludedSourceIds, ['w1']);
@@ -423,7 +427,7 @@ void main() {
         makeWorkout('w2'),
         makeWorkout('w3'),
       ];
-      await service.listImportable();
+      await _listImportable(service);
 
       final result = await service.importWorkouts(['w1', 'w2']);
 
@@ -450,7 +454,7 @@ void main() {
 
     test('derives a stable idempotency key from the source workout', () async {
       adapter.workouts = [makeWorkout('w1')];
-      await service.listImportable();
+      await _listImportable(service);
       await service.importWorkouts(['w1']);
 
       final pending = await localActivities.listByUploadStatus({
@@ -467,7 +471,7 @@ void main() {
 
     test('skips no-route workouts', () async {
       adapter.workouts = [makeWorkout('w1', hasRoute: false)];
-      await service.listImportable();
+      await _listImportable(service);
 
       final result = await service.importWorkouts(['w1']);
       expect(result.imported, 0);
@@ -480,7 +484,7 @@ void main() {
 
     test('counts a selected workout missing from the list as failed', () async {
       adapter.workouts = [makeWorkout('w1')];
-      await service.listImportable();
+      await _listImportable(service);
 
       final result = await service.importWorkouts(['w1', 'unknown']);
 
@@ -490,9 +494,9 @@ void main() {
 
     test('does not count a selection imported meanwhile as failed', () async {
       adapter.workouts = [makeWorkout('w1')];
-      await service.listImportable();
+      await _listImportable(service);
       await service.importWorkouts(['w1']);
-      await service.listImportable();
+      await _listImportable(service);
 
       final result = await service.importWorkouts(['w1']);
 
@@ -502,7 +506,7 @@ void main() {
 
     test('drain is called after successful imports', () async {
       adapter.workouts = [makeWorkout('w1')];
-      await service.listImportable();
+      await _listImportable(service);
       uploadQueue.drainCount = 0;
 
       await service.importWorkouts(['w1']);
@@ -514,10 +518,10 @@ void main() {
       'unselected workouts are still importable on next listImportable',
       () async {
         adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
-        await service.listImportable();
+        await _listImportable(service);
         await service.importWorkouts(['w1']);
 
-        final candidates = await service.listImportable();
+        final candidates = await _listImportable(service);
         expect(candidates.map((w) => w.sourceId), contains('w2'));
         expect(candidates.map((w) => w.sourceId), isNot(contains('w1')));
       },
@@ -548,7 +552,7 @@ void main() {
     test('are not offered for import', () async {
       adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
 
-      final result = await watchAwareService.listImportable();
+      final result = await _listImportable(watchAwareService);
 
       expect(result.map((w) => w.sourceId), ['w2']);
     });
@@ -568,7 +572,7 @@ void main() {
 
     test('are skipped even when selected explicitly', () async {
       adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
-      await service.listImportable();
+      await _listImportable(service);
 
       final result = await watchAwareService.importWorkouts(['w1']);
 
@@ -610,7 +614,7 @@ void main() {
         makeWorkout('w2'),
         makeWorkout('w3', hasRoute: false),
       ];
-      await service.listImportable();
+      await _listImportable(service);
 
       final result = await service.importAll();
 
@@ -853,7 +857,7 @@ void main() {
       adapter.workouts = [makeWorkout('w1')];
 
       await expectLater(
-        guestService.listImportable(),
+        _listImportable(guestService),
         throwsA(
           isA<AppException>().having(
             (error) => error.code,
@@ -893,7 +897,7 @@ void main() {
           origin: 'https://same.example',
           kind: ConnectionKind.selfHosted,
         );
-        final candidates = await scopedService.listImportable();
+        final candidates = await _listImportable(scopedService);
 
         expect(candidates.map((workout) => workout.sourceId), contains('w1'));
         expect(
@@ -909,7 +913,7 @@ void main() {
 
     test('distinct concurrent selections are serialized, not merged', () async {
       adapter.workouts = [makeWorkout('w1'), makeWorkout('w2')];
-      await service.listImportable();
+      await _listImportable(service);
 
       final results = await Future.wait([
         service.importWorkouts(['w1']),

@@ -31,6 +31,13 @@ abstract class StartCountdownPlatformAdapter {
   /// Ends [beginWarmUp] when no recording started from it. Safe to call when
   /// no warm-up is running, and after the recording has started.
   Future<void> endWarmUp();
+
+  /// Asks for the Android 13+ notification permission, which keeps the
+  /// recording's foreground notification visible. Call it right before a
+  /// recording or its countdown starts, while the user is looking at the app.
+  /// Resolves to whether the permission is granted; recording proceeds either
+  /// way. Always true where there is nothing to ask (older Android, iOS).
+  Future<bool> requestNotificationPermission();
 }
 
 /// No-op adapter for platforms without the native recorder channel.
@@ -50,6 +57,9 @@ class UnsupportedStartCountdownPlatformAdapter
 
   @override
   Future<void> endWarmUp() async {}
+
+  @override
+  Future<bool> requestNotificationPermission() async => true;
 }
 
 /// [StartCountdownPlatformAdapter] backed by the native recorder method
@@ -96,5 +106,18 @@ class MethodChannelStartCountdownPlatformAdapter
     return _methodChannel.invokeMethod<void>(
       NativeActivityRecorderChannelContract.endStartWarmUp,
     );
+  }
+
+  @override
+  Future<bool> requestNotificationPermission() async {
+    try {
+      return await _methodChannel.invokeMethod<bool>(
+            NativeActivityRecorderChannelContract.requestNotificationPermission,
+          ) ??
+          false;
+    } on MissingPluginException {
+      // iOS has no such prompt to show here.
+      return true;
+    }
   }
 }

@@ -29,6 +29,11 @@ abstract class SensorSectionView implements Listenable {
   /// Whether the last scan attempt was blocked by a denied permission.
   bool get permissionDenied;
 
+  /// Whether the last scan attempt found Bluetooth unusable on this device
+  /// (unsupported hardware or a failed permission request), as opposed to a
+  /// denial the user can reverse in the system settings.
+  bool get permissionUnavailable;
+
   /// The remembered sensor for this section, or `null`.
   BleSensorDevice? get rememberedDevice;
 
@@ -40,6 +45,10 @@ abstract class SensorSectionView implements Listenable {
 
   /// Requests permission if needed, then scans for nearby sensors.
   Future<void> startScan();
+
+  /// Opens the app's system settings so a denied Bluetooth permission can be
+  /// granted. Resolves to whether a settings screen was launched.
+  Future<bool> openAppSettings();
 
   /// Stops an in-progress scan.
   Future<void> stopScan();

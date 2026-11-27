@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/services/platform/health_connect_settings_service.dart';
 import 'package:endurain/core/utils/dialog_utils.dart';
 import 'package:endurain/core/utils/error_localizations.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
@@ -10,6 +11,7 @@ import 'package:endurain/l10n/app_localizations.dart';
 import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:endurain/shared/layout/readable_content.dart';
 import 'package:endurain/shared/state/owned_controllers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Shows the health data Endurain requests and its platform permission state.
@@ -17,16 +19,24 @@ import 'package:material_ui/material_ui.dart';
 /// Importing workouts remains in the Health Sync screen. This screen only
 /// manages the read access needed for that workflow.
 class HealthAccessScreen extends StatefulWidget {
-  const HealthAccessScreen({super.key, this.controller, this.createController})
-    : assert(
-        controller != null || createController != null,
-        'Pass a controller or a factory for one.',
-      );
+  const HealthAccessScreen({
+    super.key,
+    this.controller,
+    this.createController,
+    this.settingsService = const PlatformHealthConnectSettingsService(),
+  }) : assert(
+         controller != null || createController != null,
+         'Pass a controller or a factory for one.',
+       );
 
   /// Injected controller (shared by the caller, or tests); otherwise one is
   /// built with [createController] and owned by the screen.
   final HealthSyncController? controller;
   final HealthSyncController Function()? createController;
+
+  /// Opens the Health Connect permission screen on Android once the system
+  /// dialog can no longer be shown. Injected in tests.
+  final HealthConnectSettingsService settingsService;
 
   @override
   State<HealthAccessScreen> createState() => _HealthAccessScreenState();
@@ -163,6 +173,30 @@ class _HealthAccessScreenState extends State<HealthAccessScreen>
       return;
     }
     await _controller.requestAccess();
+    if (!mounted || !_needsHealthConnectGuidance()) return;
+    // Health Connect stops showing its dialog after two denials, so point the
+    // user at the screen where access can still be allowed.
+    final open = await DialogUtils.showConfirmDialog(
+      context,
+      title: l10n.healthAccessBlockedTitle,
+      message: l10n.healthAccessBlockedMessage,
+      confirmText: l10n.healthAccessOpenHealthConnect,
+    );
+    if (open) {
+      await widget.settingsService.openPermissions();
+    }
+  }
+
+  /// Whether, on Android, some requested data is still not allowed after the
+  /// permission request.
+  bool _needsHealthConnectGuidance() {
+    if (defaultTargetPlatform != TargetPlatform.android) return false;
+    final details = _controller.state.accessDetails;
+    return [
+      details.workouts,
+      details.workoutRoutes,
+      details.heartRate,
+    ].contains(HealthDataAccessStatus.needsAttention);
   }
 
   AdaptiveListTile _dataTile(

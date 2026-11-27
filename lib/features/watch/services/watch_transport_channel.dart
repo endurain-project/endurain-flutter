@@ -149,22 +149,6 @@ class MethodChannelWatchTransport implements WatchTransportAdapter {
   }
 
   @override
-  Future<WatchLinkStatus> linkStatus() async {
-    try {
-      final result = await _methodChannel.invokeMethod<String>(
-        WatchTransportChannelContract.linkStatus,
-        {
-          WatchTransportChannelContract.argVersion:
-              WatchTransportChannelContract.payloadVersion,
-        },
-      );
-      return WatchLinkStatus.fromJson(result);
-    } on MissingPluginException {
-      return WatchLinkStatus.unsupported;
-    }
-  }
-
-  @override
   Future<List<WatchSessionHandoff>> drainPendingHandoffs() async {
     final result = await _invokeDrain();
     if (result == null) {

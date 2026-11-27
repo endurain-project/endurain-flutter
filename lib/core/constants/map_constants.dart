@@ -45,3 +45,15 @@ class LocationMarkerConstants {
 class ActivityRouteConstants {
   static const double strokeWidth = 5.0;
 }
+
+/// Attribution shown for the default OpenStreetMap tile source.
+class MapAttributionConstants {
+  /// Proper-noun legal text required by the OSM tile usage policy; it is not
+  /// localized.
+  static const String openStreetMapText = '© OpenStreetMap contributors';
+
+  /// Where the OpenStreetMap attribution links to.
+  static final Uri openStreetMapCopyright = Uri.parse(
+    'https://www.openstreetmap.org/copyright',
+  );
+}

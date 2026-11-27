@@ -839,6 +839,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deviceAccessHealthTitle => 'Sağlık verilerine erişim';
 
   @override
+  String get deviceAccessBluetoothSection => 'Bluetooth';
+
+  @override
+  String get deviceAccessBluetoothTitle => 'Bluetooth erişimi';
+
+  @override
+  String get deviceAccessBluetoothAllowed => 'İzin verildi';
+
+  @override
+  String get deviceAccessBluetoothOff => 'Bluetooth kapalı';
+
+  @override
+  String get deviceAccessBluetoothBlocked => 'Sistem ayarlarında engellendi';
+
+  @override
+  String get deviceAccessBluetoothNotAllowed => 'İzin verilmiyor';
+
+  @override
+  String get deviceAccessBluetoothUnavailable => 'Bu cihazda kullanılamıyor';
+
+  @override
   String get deviceAccessChecking => 'Erişim kontrol ediliyor…';
 
   @override
@@ -1108,6 +1129,17 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get healthAccessReviewIosInstructions =>
       'Sağlık uygulamasını açın, profil resminize, ardından Uygulamalar ve Hizmetler\'e dokunun. Endurain\'i seçin ve veri kategorilerini güncelleyin.';
+
+  @override
+  String get healthAccessBlockedTitle =>
+      'Health Connect\'te erişime izin verin';
+
+  @override
+  String get healthAccessBlockedMessage =>
+      'Health Connect, erişim iki kez reddedildikten sonra sormayı bırakır. Endurain\'in antrenmanlarınızı, rotalarınızı ve kalp atış hızınızı okumasına izin vermek için Health Connect\'i açın.';
+
+  @override
+  String get healthAccessOpenHealthConnect => 'Health Connect\'i aç';
 
   @override
   String get healthSyncAuthorize => 'Sağlık verilerine bağlan';

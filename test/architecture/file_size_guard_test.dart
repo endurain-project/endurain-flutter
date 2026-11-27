@@ -13,14 +13,7 @@ const Map<String, int> _legacyCaps = {
   'lib/features/activity/services/activity_recording_service.dart': 812,
   'lib/features/activity/services/activity_upload_service.dart': 556,
   'lib/features/auth/screens/login_screen.dart': 572,
-  'lib/features/health/services/health_package_platform_adapter.dart': 685,
-  'lib/features/health/services/health_sync_service.dart': 620,
-  'lib/features/sensors/screens/sensor_settings_screen.dart': 512,
-  'android/app/src/main/kotlin/com/endurain/endurain/activity/ActivityRecorderService.kt':
-      921,
-  'android/wear/src/main/kotlin/com/endurain/endurain/wear/WorkoutRecorder.kt':
-      586,
-  'ios/EndurainWatch/WorkoutManager.swift': 556,
+  'lib/features/health/services/health_sync_service.dart': 608,
 };
 
 /// Source roots checked, with the file extension each one holds. Generated
@@ -28,8 +21,11 @@ const Map<String, int> _legacyCaps = {
 const Map<String, String> _roots = {
   'lib': '.dart',
   'android/app/src/main/kotlin': '.kt',
+  'android/app/src/watchLinkNone/kotlin': '.kt',
+  'android/app/src/watchLinkPlay/kotlin': '.kt',
   'android/wear/src/main/kotlin': '.kt',
-  'android/watch_shared/kotlin': '.kt',
+  'android/watch_shared/common/kotlin': '.kt',
+  'android/watch_shared/watch/kotlin': '.kt',
   'ios/Runner': '.swift',
   'ios/EndurainWatch': '.swift',
   'ios/Shared': '.swift',

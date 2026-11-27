@@ -7,6 +7,7 @@ export 'adaptive_back_button.dart';
 export 'adaptive_bottom_navigation.dart';
 export 'adaptive_button.dart';
 export 'adaptive_checkbox_list_tile.dart';
+export 'adaptive_choice_picker.dart';
 export 'adaptive_date_range_picker.dart';
 export 'adaptive_empty_state_text.dart';
 export 'adaptive_floating_action_button.dart';

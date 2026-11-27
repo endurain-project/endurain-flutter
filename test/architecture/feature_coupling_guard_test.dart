@@ -50,6 +50,22 @@ void main() {
     );
   });
 
+  test('activity does not import the map feature', () {
+    final offenders = importsFrom('activity')
+        .where((target) => target.startsWith('map/'))
+        .toList();
+
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          'The map already imports activity, so activity importing map would '
+          'be a cycle. Share what both need from lib/core or lib/shared (the '
+          'tile-source settings live in core/services). Offending imports: '
+          '${offenders.join(', ')}',
+    );
+  });
+
   test('settings imports no activity code and only allowed health entries', () {
     const allowedHealthImports = <String>{
       'health/controllers/health_sync_controller.dart',

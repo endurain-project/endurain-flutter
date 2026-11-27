@@ -2,6 +2,7 @@ import 'package:endurain/features/sensors/models/ble_sensor_device.dart';
 import 'package:endurain/features/sensors/models/sensor_bluetooth_state.dart';
 import 'package:endurain/features/sensors/models/sensor_connection_status.dart';
 import 'package:endurain/features/sensors/models/sensor_measurement.dart';
+import 'package:endurain/features/sensors/models/sensor_permission_result.dart';
 
 /// Injectable boundary over the platform BLE stack for a single external
 /// cycling/running sensor (power meter or cadence sensor).
@@ -21,8 +22,9 @@ abstract class SensorConnectionAdapter {
 
   /// Requests the runtime permissions needed to scan and connect.
   ///
-  /// Returns `true` when scanning is permitted.
-  Future<bool> ensurePermissions();
+  /// Reports whether scanning is permitted, denied, or impossible on this
+  /// device.
+  Future<SensorPermissionResult> ensurePermissions();
 
   /// Starts a scan and emits the cumulative list of discovered sensors
   /// advertising any of this adapter's profiles' services, strongest signal
@@ -68,7 +70,8 @@ class UnsupportedSensorConnectionAdapter implements SensorConnectionAdapter {
       SensorBluetoothState.unsupported;
 
   @override
-  Future<bool> ensurePermissions() async => false;
+  Future<SensorPermissionResult> ensurePermissions() async =>
+      SensorPermissionResult.unavailable;
 
   @override
   Stream<List<BleSensorDevice>> scanForSensors({
