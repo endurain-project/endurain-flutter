@@ -107,10 +107,20 @@ class ActivityRecordingController extends SafeNotifier {
 
   Future<void> start(ActivityType type) async {
     await _activeRecovery;
-    if (_state.isActive ||
-        _state.status == ActivityRecordingStatus.stopping ||
-        _state.status == ActivityRecordingStatus.completed) {
+    if (_state.isActive || _state.status == ActivityRecordingStatus.stopping) {
       return;
+    }
+    if (_state.status == ActivityRecordingStatus.completed) {
+      // A finished activity still on screen is already saved; starting a new
+      // one dismisses its summary instead of silently doing nothing. An
+      // upload in flight keeps the summary, so its result is not lost.
+      if (_uploadStatus == ActivityUploadStatus.uploading) {
+        return;
+      }
+      await clearCompleted();
+      if (_state.status == ActivityRecordingStatus.completed) {
+        return;
+      }
     }
     _completedLocalActivityId = null;
     _completedLocalActivityRecord = null;
@@ -227,6 +237,9 @@ class ActivityRecordingController extends SafeNotifier {
     );
     if (await _isUploadAuthorized()) {
       unawaited(uploadCompletedGpx());
+    } else {
+      // Saved as pending; the upload queue sends it after the next sign-in.
+      _setUploadState(ActivityUploadStatus.awaitingSignIn);
     }
   }
 

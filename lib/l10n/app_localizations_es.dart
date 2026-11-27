@@ -607,6 +607,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get activityUploadReady => 'Lista para subir';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Guardada en este dispositivo. Se subirá cuando inicies sesión.';
+
+  @override
   String get activityUploaded => 'Subida';
 
   @override

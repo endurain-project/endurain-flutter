@@ -95,12 +95,60 @@ void main() {
         findsOneWidget,
       );
 
+      // A failed upload stays queued for retry, so it can be dismissed too.
+      expect(find.text(AppLocalizationsEn().activityDone), findsOneWidget);
+
       await tester.tap(find.text(AppLocalizationsEn().activityRetryUpload));
       await tester.tap(find.text(AppLocalizationsEn().activityDeleteLocal));
 
       expect(retried, isTrue);
       expect(deleted, isTrue);
     });
+
+    for (final status in [
+      ActivityUploadStatus.awaitingSignIn,
+      ActivityUploadStatus.idle,
+    ]) {
+      testWidgets('lets a saved activity be dismissed when ${status.name}', (
+        tester,
+      ) async {
+        var done = false;
+        var viewedHistory = false;
+        var deleted = false;
+
+        await tester.pumpWidget(
+          _TestApp(
+            child: ActivityUploadStatusPanel(
+              status: status,
+              error: null,
+              onRetry: () {},
+              onDone: () => done = true,
+              onDelete: () => deleted = true,
+              onViewHistory: () => viewedHistory = true,
+            ),
+          ),
+        );
+
+        final l10n = AppLocalizationsEn();
+        expect(
+          find.text(
+            status == ActivityUploadStatus.awaitingSignIn
+                ? l10n.activityUploadAwaitingSignIn
+                : l10n.activityUploadReady,
+          ),
+          findsOneWidget,
+        );
+        expect(find.text(l10n.activityRetryUpload), findsNothing);
+
+        await tester.tap(find.text(l10n.activityDone));
+        await tester.tap(find.text(l10n.activityViewHistory));
+        await tester.tap(find.text(l10n.activityDeleteLocal));
+
+        expect(done, isTrue);
+        expect(viewedHistory, isTrue);
+        expect(deleted, isTrue);
+      });
+    }
 
     testWidgets('shows cleanup failure without retry action', (tester) async {
       var deleted = false;
@@ -126,6 +174,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(AppLocalizationsEn().activityRetryUpload), findsNothing);
+      expect(find.text(AppLocalizationsEn().activityDone), findsOneWidget);
 
       await tester.tap(find.text(AppLocalizationsEn().activityDeleteLocal));
 

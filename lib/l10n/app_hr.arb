@@ -155,6 +155,7 @@
   "activityUploadFailed": "Prijenos nije uspio",
   "activityUploadCleanupFailed": "Preneseno, ali čišćenje nije uspjelo",
   "activityUploadReady": "Spremno za prijenos",
+  "activityUploadAwaitingSignIn": "Spremljeno na ovom uređaju. Prenijet će se nakon prijave.",
   "activityUploaded": "Preneseno",
   "activityUploading": "Prijenos",
   "activityUploadStatusPending": "Na čekanju",

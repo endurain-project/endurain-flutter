@@ -46,25 +46,25 @@ class ActivityUploadStatusPanel extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
-        if (status == ActivityUploadStatus.failed ||
-            status == ActivityUploadStatus.uploaded ||
-            status == ActivityUploadStatus.cleanupFailed) ...[
+        // The activity is saved durably before this panel shows, and the
+        // upload queue keeps retrying it, so every settled state can be
+        // dismissed. Only an upload in flight hides the actions.
+        if (status != ActivityUploadStatus.uploading) ...[
           const SizedBox(height: 8),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (status == ActivityUploadStatus.uploaded)
-                AdaptiveButton(
-                  label: l10n.activityDone,
-                  onPressed: onDone,
-                  icon: const AdaptiveIcon(
-                    materialIcon: Icons.check,
-                    cupertinoIcon: CupertinoIcons.check_mark,
-                    size: 20,
-                  ),
+              AdaptiveButton(
+                label: l10n.activityDone,
+                onPressed: onDone,
+                icon: const AdaptiveIcon(
+                  materialIcon: Icons.check,
+                  cupertinoIcon: CupertinoIcons.check_mark,
+                  size: 20,
                 ),
+              ),
               if (status == ActivityUploadStatus.failed)
                 AdaptiveButton(
                   label: l10n.activityRetryUpload,
@@ -107,6 +107,7 @@ class ActivityUploadStatusPanel extends StatelessWidget {
   String _statusText(AppLocalizations l10n) {
     return switch (status) {
       ActivityUploadStatus.idle => l10n.activityUploadReady,
+      ActivityUploadStatus.awaitingSignIn => l10n.activityUploadAwaitingSignIn,
       ActivityUploadStatus.uploading => l10n.activityUploading,
       ActivityUploadStatus.uploaded => l10n.activityUploaded,
       ActivityUploadStatus.failed => l10n.activityUploadFailed,

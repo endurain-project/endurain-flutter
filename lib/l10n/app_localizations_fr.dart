@@ -610,6 +610,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get activityUploadReady => 'Prêt à envoyer';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Enregistrée sur cet appareil. Elle sera envoyée après votre connexion.';
+
+  @override
   String get activityUploaded => 'Envoyé';
 
   @override

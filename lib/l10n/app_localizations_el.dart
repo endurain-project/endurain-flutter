@@ -613,6 +613,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get activityUploadReady => 'Έτοιμο για μεταφόρτωση';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Αποθηκεύτηκε σε αυτήν τη συσκευή. Θα μεταφορτωθεί μόλις συνδεθείτε.';
+
+  @override
   String get activityUploaded => 'Μεταφορτώθηκε';
 
   @override

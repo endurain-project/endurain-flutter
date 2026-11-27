@@ -602,6 +602,10 @@ class AppLocalizationsLv extends AppLocalizations {
   String get activityUploadReady => 'Gatavs augšupielādei';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Saglabāts šajā ierīcē. Tas tiks augšupielādēts pēc pierakstīšanās.';
+
+  @override
   String get activityUploaded => 'Augšupielādēts';
 
   @override

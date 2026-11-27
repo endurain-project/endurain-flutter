@@ -594,6 +594,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityUploadReady => 'Ready to upload';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Saved on this device. It will upload after you sign in.';
+
+  @override
   String get activityUploaded => 'Uploaded';
 
   @override

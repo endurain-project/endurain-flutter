@@ -155,6 +155,7 @@
   "activityUploadFailed": "Caricamento non riuscito",
   "activityUploadCleanupFailed": "Caricato, ma pulizia non riuscita",
   "activityUploadReady": "Pronto per il caricamento",
+  "activityUploadAwaitingSignIn": "Salvata su questo dispositivo. Verrà caricata dopo l'accesso.",
   "activityUploaded": "Caricato",
   "activityUploading": "Caricamento in corso",
   "activityUploadStatusPending": "In attesa",

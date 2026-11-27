@@ -608,6 +608,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get activityUploadReady => 'Pronto per il caricamento';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Salvata su questo dispositivo. Verrà caricata dopo l\'accesso.';
+
+  @override
   String get activityUploaded => 'Caricato';
 
   @override

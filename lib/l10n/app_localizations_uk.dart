@@ -602,6 +602,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get activityUploadReady => 'Готово до завантаження';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Збережено на цьому пристрої. Буде вивантажено після входу.';
+
+  @override
   String get activityUploaded => 'Завантажено';
 
   @override

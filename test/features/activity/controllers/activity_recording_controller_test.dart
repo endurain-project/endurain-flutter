@@ -767,9 +767,46 @@ void main() {
         await pumpEventQueue();
 
         final record = (await repository.list()).single;
-        expect(controller.uploadStatus, ActivityUploadStatus.idle);
+        expect(controller.uploadStatus, ActivityUploadStatus.awaitingSignIn);
         expect(record.uploadStatus, LocalActivityUploadStatus.pending);
         expect(await repository.hasGpx(record), isTrue);
+      },
+    );
+
+    test(
+      'starting again after a guest activity dismisses its summary and records',
+      () async {
+        final adapter = RecordingLocationPlatformAdapter();
+        final tempDirectory = await Directory.systemTemp.createTemp(
+          'endurain_guest_start_again_',
+        );
+        addTearDown(() => tempDirectory.deleteSync(recursive: true));
+        final repository = _repositoryFor(tempDirectory);
+        var nextId = 0;
+        final controller = createTestRecordingController(
+          recordingService: _recordingService(adapter: adapter),
+          localActivityRepository: repository,
+          localActivityIdProvider: () => 'guest_activity_${nextId++}',
+          isUploadAuthorized: () async => false,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.start(ActivityType.run);
+        adapter.addPosition(recordingPosition());
+        await pumpEventQueue();
+        await controller.stop();
+        await pumpEventQueue();
+        expect(controller.state.status, ActivityRecordingStatus.completed);
+
+        await controller.start(ActivityType.walk);
+        await pumpEventQueue();
+
+        expect(controller.state.status, ActivityRecordingStatus.recording);
+        expect(controller.state.activityType, ActivityType.walk);
+        expect(controller.uploadStatus, ActivityUploadStatus.idle);
+        // The first activity stays saved for upload after sign-in.
+        final saved = (await repository.list()).single;
+        expect(saved.uploadStatus, LocalActivityUploadStatus.pending);
       },
     );
 

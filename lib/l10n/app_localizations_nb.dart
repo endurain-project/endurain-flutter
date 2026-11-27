@@ -601,6 +601,10 @@ class AppLocalizationsNb extends AppLocalizations {
   String get activityUploadReady => 'Klar til opplasting';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Lagret på denne enheten. Den lastes opp når du logger på.';
+
+  @override
   String get activityUploaded => 'Lastet opp';
 
   @override

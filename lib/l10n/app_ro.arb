@@ -155,6 +155,7 @@
   "activityUploadFailed": "Încărcarea a eșuat",
   "activityUploadCleanupFailed": "Încărcat, dar curățarea a eșuat",
   "activityUploadReady": "Gata de încărcare",
+  "activityUploadAwaitingSignIn": "Salvată pe acest dispozitiv. Va fi încărcată după ce vă conectați.",
   "activityUploaded": "Încărcat",
   "activityUploading": "Se încarcă",
   "activityUploadStatusPending": "În așteptare",

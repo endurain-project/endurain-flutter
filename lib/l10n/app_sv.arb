@@ -155,6 +155,7 @@
   "activityUploadFailed": "Uppladdningen misslyckades",
   "activityUploadCleanupFailed": "Uppladdad, men rensningen misslyckades",
   "activityUploadReady": "Redo att laddas upp",
+  "activityUploadAwaitingSignIn": "Sparad på den här enheten. Den laddas upp när du loggar in.",
   "activityUploaded": "Uppladdad",
   "activityUploading": "Laddar upp",
   "activityUploadStatusPending": "Väntar",

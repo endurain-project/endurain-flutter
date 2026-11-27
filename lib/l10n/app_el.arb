@@ -155,6 +155,7 @@
   "activityUploadFailed": "Η μεταφόρτωση απέτυχε",
   "activityUploadCleanupFailed": "Μεταφορτώθηκε, αλλά ο καθαρισμός απέτυχε",
   "activityUploadReady": "Έτοιμο για μεταφόρτωση",
+  "activityUploadAwaitingSignIn": "Αποθηκεύτηκε σε αυτήν τη συσκευή. Θα μεταφορτωθεί μόλις συνδεθείτε.",
   "activityUploaded": "Μεταφορτώθηκε",
   "activityUploading": "Μεταφόρτωση",
   "activityUploadStatusPending": "Σε εκκρεμότητα",

@@ -603,6 +603,10 @@ class AppLocalizationsSk extends AppLocalizations {
   String get activityUploadReady => 'Pripravené na nahranie';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Uložené v tomto zariadení. Nahrá sa po prihlásení.';
+
+  @override
   String get activityUploaded => 'Nahraté';
 
   @override

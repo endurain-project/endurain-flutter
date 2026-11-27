@@ -606,6 +606,10 @@ class AppLocalizationsBg extends AppLocalizations {
   String get activityUploadReady => 'Готово за качване';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Запазено на това устройство. Ще бъде качено, след като влезете.';
+
+  @override
   String get activityUploaded => 'Качено';
 
   @override

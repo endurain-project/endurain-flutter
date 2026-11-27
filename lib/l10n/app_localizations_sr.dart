@@ -605,6 +605,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get activityUploadReady => 'Спремно за отпремање';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Сачувано на овом уређају. Биће отпремљено када се пријавите.';
+
+  @override
   String get activityUploaded => 'Отпремљено';
 
   @override

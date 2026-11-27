@@ -547,6 +547,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityUploadReady => '准备上传';
 
   @override
+  String get activityUploadAwaitingSignIn => '已保存在此设备上。登录后将上传。';
+
+  @override
   String get activityUploaded => '已上传';
 
   @override
@@ -1966,6 +1969,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityUploadReady => '準備上傳';
+
+  @override
+  String get activityUploadAwaitingSignIn => '已儲存在此裝置上。登入後將上傳。';
 
   @override
   String get activityUploaded => '已上傳';

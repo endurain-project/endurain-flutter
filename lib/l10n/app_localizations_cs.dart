@@ -603,6 +603,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get activityUploadReady => 'Připraveno k nahrání';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Uloženo v tomto zařízení. Nahraje se po přihlášení.';
+
+  @override
   String get activityUploaded => 'Nahráno';
 
   @override

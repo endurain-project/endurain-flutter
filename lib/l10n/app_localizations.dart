@@ -1155,6 +1155,12 @@ abstract class AppLocalizations {
   /// **'Ready to upload'**
   String get activityUploadReady;
 
+  /// Activity upload status when the activity is saved locally and will upload after the user signs in - Used in: activity_upload_status_panel.dart
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this device. It will upload after you sign in.'**
+  String get activityUploadAwaitingSignIn;
+
   /// Activity uploaded status label - Used in: activity_upload_status_panel.dart
   ///
   /// In en, this message translates to:

@@ -602,6 +602,10 @@ class AppLocalizationsSl extends AppLocalizations {
   String get activityUploadReady => 'Pripravljeno za nalaganje';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Shranjeno v tej napravi. Naložena bo, ko se prijavite.';
+
+  @override
   String get activityUploaded => 'Naloženo';
 
   @override

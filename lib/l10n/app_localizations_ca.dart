@@ -612,6 +612,10 @@ class AppLocalizationsCa extends AppLocalizations {
   String get activityUploadReady => 'A punt per penjar';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Desada en aquest dispositiu. Es pujarà quan inicieu la sessió.';
+
+  @override
   String get activityUploaded => 'Penjada';
 
   @override

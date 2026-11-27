@@ -155,6 +155,7 @@
   "activityUploadFailed": "Качването не бе успешно",
   "activityUploadCleanupFailed": "Качено, но почистването не бе успешно",
   "activityUploadReady": "Готово за качване",
+  "activityUploadAwaitingSignIn": "Запазено на това устройство. Ще бъде качено, след като влезете.",
   "activityUploaded": "Качено",
   "activityUploading": "Качване",
   "activityUploadStatusPending": "Чакащо",

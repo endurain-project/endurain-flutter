@@ -155,6 +155,7 @@
   "activityUploadFailed": "Lataus epäonnistui",
   "activityUploadCleanupFailed": "Ladattu, mutta siivous epäonnistui",
   "activityUploadReady": "Valmis ladattavaksi",
+  "activityUploadAwaitingSignIn": "Tallennettu tälle laitteelle. Se ladataan, kun kirjaudut sisään.",
   "activityUploaded": "Ladattu",
   "activityUploading": "Ladataan",
   "activityUploadStatusPending": "Odottaa",

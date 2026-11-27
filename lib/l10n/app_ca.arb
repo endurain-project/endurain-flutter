@@ -155,6 +155,7 @@
   "activityUploadFailed": "Ha fallat la pujada",
   "activityUploadCleanupFailed": "Penjada, però ha fallat la neteja",
   "activityUploadReady": "A punt per penjar",
+  "activityUploadAwaitingSignIn": "Desada en aquest dispositiu. Es pujarà quan inicieu la sessió.",
   "activityUploaded": "Penjada",
   "activityUploading": "Penjant",
   "activityUploadStatusPending": "Pendent",

@@ -155,6 +155,7 @@
   "activityUploadFailed": "Upload fehlgeschlagen",
   "activityUploadCleanupFailed": "Hochgeladen, aber Bereinigung fehlgeschlagen",
   "activityUploadReady": "Bereit zum Hochladen",
+  "activityUploadAwaitingSignIn": "Auf diesem Gerät gespeichert. Wird nach der Anmeldung hochgeladen.",
   "activityUploaded": "Hochgeladen",
   "activityUploading": "Wird hochgeladen",
   "activityUploadStatusPending": "Ausstehend",

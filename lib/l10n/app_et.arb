@@ -155,6 +155,7 @@
   "activityUploadFailed": "Üleslaadimine ebaõnnestus",
   "activityUploadCleanupFailed": "Üles laaditud, kuid puhastamine ebaõnnestus",
   "activityUploadReady": "Üleslaadimiseks valmis",
+  "activityUploadAwaitingSignIn": "Salvestatud sellesse seadmesse. See laaditakse üles pärast sisselogimist.",
   "activityUploaded": "Üles laaditud",
   "activityUploading": "Üleslaadimine",
   "activityUploadStatusPending": "Ootel",

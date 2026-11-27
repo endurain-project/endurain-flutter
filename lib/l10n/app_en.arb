@@ -757,6 +757,10 @@
   "@activityUploadReady": {
     "description": "Activity upload pending status label - Used in: activity_upload_status_panel.dart"
   },
+  "activityUploadAwaitingSignIn": "Saved on this device. It will upload after you sign in.",
+  "@activityUploadAwaitingSignIn": {
+    "description": "Activity upload status when the activity is saved locally and will upload after the user signs in - Used in: activity_upload_status_panel.dart"
+  },
   "activityUploaded": "Uploaded",
   "@activityUploaded": {
     "description": "Activity uploaded status label - Used in: activity_upload_status_panel.dart"

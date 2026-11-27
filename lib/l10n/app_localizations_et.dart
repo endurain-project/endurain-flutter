@@ -601,6 +601,10 @@ class AppLocalizationsEt extends AppLocalizations {
   String get activityUploadReady => 'Üleslaadimiseks valmis';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Salvestatud sellesse seadmesse. See laaditakse üles pärast sisselogimist.';
+
+  @override
   String get activityUploaded => 'Üles laaditud';
 
   @override

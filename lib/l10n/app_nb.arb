@@ -155,6 +155,7 @@
   "activityUploadFailed": "Opplasting mislyktes",
   "activityUploadCleanupFailed": "Lastet opp, men opprydding mislyktes",
   "activityUploadReady": "Klar til opplasting",
+  "activityUploadAwaitingSignIn": "Lagret på denne enheten. Den lastes opp når du logger på.",
   "activityUploaded": "Lastet opp",
   "activityUploading": "Laster opp",
   "activityUploadStatusPending": "Venter",

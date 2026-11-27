@@ -730,6 +730,10 @@
   "@activityUploadReady": {
     "description": "Estado de envio pendente de atividade - Usado em: activity_upload_status_panel.dart"
   },
+  "activityUploadAwaitingSignIn": "Guardada neste dispositivo. Será enviada depois de iniciar sessão.",
+  "@activityUploadAwaitingSignIn": {
+    "description": "Estado de envio quando a atividade está guardada localmente e será enviada depois de o utilizador iniciar sessão - Usado em: activity_upload_status_panel.dart"
+  },
   "activityUploaded": "Enviado",
   "@activityUploaded": {
     "description": "Estado de atividade enviada - Usado em: activity_upload_status_panel.dart"

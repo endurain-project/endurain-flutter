@@ -601,6 +601,10 @@ class AppLocalizationsDa extends AppLocalizations {
   String get activityUploadReady => 'Klar til upload';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Gemt på denne enhed. Den uploades, når du logger ind.';
+
+  @override
   String get activityUploaded => 'Uploadet';
 
   @override

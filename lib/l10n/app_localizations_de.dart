@@ -612,6 +612,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get activityUploadReady => 'Bereit zum Hochladen';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Auf diesem Gerät gespeichert. Wird nach der Anmeldung hochgeladen.';
+
+  @override
   String get activityUploaded => 'Hochgeladen';
 
   @override

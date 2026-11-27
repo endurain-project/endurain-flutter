@@ -603,6 +603,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityUploadReady => 'Klaar om te uploaden';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Opgeslagen op dit apparaat. Wordt geüpload nadat je bent ingelogd.';
+
+  @override
   String get activityUploaded => 'Geüpload';
 
   @override

@@ -155,6 +155,7 @@
   "activityUploadFailed": "Yükleme başarısız oldu",
   "activityUploadCleanupFailed": "Yüklendi, ancak temizleme başarısız oldu",
   "activityUploadReady": "Yüklemeye hazır",
+  "activityUploadAwaitingSignIn": "Bu cihaza kaydedildi. Oturum açtıktan sonra yüklenecek.",
   "activityUploaded": "Yüklendi",
   "activityUploading": "Yükleniyor",
   "activityUploadStatusPending": "Beklemede",

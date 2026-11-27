@@ -155,6 +155,7 @@
   "activityUploadFailed": "Upload mislykkedes",
   "activityUploadCleanupFailed": "Uploadet, men oprydning mislykkedes",
   "activityUploadReady": "Klar til upload",
+  "activityUploadAwaitingSignIn": "Gemt på denne enhed. Den uploades, når du logger ind.",
   "activityUploaded": "Uploadet",
   "activityUploading": "Uploader",
   "activityUploadStatusPending": "Afventer",

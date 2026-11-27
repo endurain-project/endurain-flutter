@@ -599,6 +599,10 @@ class AppLocalizationsLt extends AppLocalizations {
   String get activityUploadReady => 'Paruošta įkelti';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Išsaugota šiame įrenginyje. Bus įkelta, kai prisijungsite.';
+
+  @override
   String get activityUploaded => 'Įkelta';
 
   @override

@@ -155,6 +155,7 @@
   "activityUploadFailed": "Error en la subida",
   "activityUploadCleanupFailed": "Subida completada, pero falló la limpieza",
   "activityUploadReady": "Lista para subir",
+  "activityUploadAwaitingSignIn": "Guardada en este dispositivo. Se subirá cuando inicies sesión.",
   "activityUploaded": "Subida",
   "activityUploading": "Subiendo",
   "activityUploadStatusPending": "Pendiente",

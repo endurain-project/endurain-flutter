@@ -155,6 +155,7 @@
   "activityUploadFailed": "Įkelti nepavyko",
   "activityUploadCleanupFailed": "Įkelta, bet valymas nepavyko",
   "activityUploadReady": "Paruošta įkelti",
+  "activityUploadAwaitingSignIn": "Išsaugota šiame įrenginyje. Bus įkelta, kai prisijungsite.",
   "activityUploaded": "Įkelta",
   "activityUploading": "Įkeliama",
   "activityUploadStatusPending": "Laukiama",

@@ -608,6 +608,10 @@ class AppLocalizationsGl extends AppLocalizations {
   String get activityUploadReady => 'Lista para subir';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Gardada neste dispositivo. Subirase cando inicies sesión.';
+
+  @override
   String get activityUploaded => 'Subida';
 
   @override

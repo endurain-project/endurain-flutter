@@ -609,6 +609,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityUploadReady => 'Feltöltésre kész';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Mentve ezen az eszközön. Bejelentkezés után feltöltődik.';
+
+  @override
   String get activityUploaded => 'Feltöltve';
 
   @override

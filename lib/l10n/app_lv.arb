@@ -155,6 +155,7 @@
   "activityUploadFailed": "Augšupielāde neizdevās",
   "activityUploadCleanupFailed": "Augšupielādēts, bet tīrīšana neizdevās",
   "activityUploadReady": "Gatavs augšupielādei",
+  "activityUploadAwaitingSignIn": "Saglabāts šajā ierīcē. Tas tiks augšupielādēts pēc pierakstīšanās.",
   "activityUploaded": "Augšupielādēts",
   "activityUploading": "Notiek augšupielāde",
   "activityUploadStatusPending": "Gaida",

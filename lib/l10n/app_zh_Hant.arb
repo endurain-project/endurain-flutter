@@ -155,6 +155,7 @@
   "activityUploadFailed": "上傳失敗",
   "activityUploadCleanupFailed": "已上傳，但清理失敗",
   "activityUploadReady": "準備上傳",
+  "activityUploadAwaitingSignIn": "已儲存在此裝置上。登入後將上傳。",
   "activityUploaded": "已上傳",
   "activityUploading": "正在上傳",
   "activityUploadStatusPending": "待處理",

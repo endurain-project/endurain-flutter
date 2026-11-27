@@ -608,6 +608,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get activityUploadReady => 'Gata de încărcare';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Salvată pe acest dispozitiv. Va fi încărcată după ce vă conectați.';
+
+  @override
   String get activityUploaded => 'Încărcat';
 
   @override

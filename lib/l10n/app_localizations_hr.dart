@@ -607,6 +607,10 @@ class AppLocalizationsHr extends AppLocalizations {
   String get activityUploadReady => 'Spremno za prijenos';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Spremljeno na ovom uređaju. Prenijet će se nakon prijave.';
+
+  @override
   String get activityUploaded => 'Preneseno';
 
   @override

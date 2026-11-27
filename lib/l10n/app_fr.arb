@@ -155,6 +155,7 @@
   "activityUploadFailed": "Échec de l'envoi",
   "activityUploadCleanupFailed": "Envoyé, mais le nettoyage a échoué",
   "activityUploadReady": "Prêt à envoyer",
+  "activityUploadAwaitingSignIn": "Enregistrée sur cet appareil. Elle sera envoyée après votre connexion.",
   "activityUploaded": "Envoyé",
   "activityUploading": "Envoi en cours",
   "activityUploadStatusPending": "En attente",

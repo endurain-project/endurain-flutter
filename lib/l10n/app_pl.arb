@@ -155,6 +155,7 @@
   "activityUploadFailed": "Przesyłanie nie powiodło się",
   "activityUploadCleanupFailed": "Przesłano, ale czyszczenie nie powiodło się",
   "activityUploadReady": "Gotowe do przesłania",
+  "activityUploadAwaitingSignIn": "Zapisano na tym urządzeniu. Zostanie przesłana po zalogowaniu.",
   "activityUploaded": "Przesłano",
   "activityUploading": "Przesyłanie",
   "activityUploadStatusPending": "Oczekujące",

@@ -155,6 +155,7 @@
   "activityUploadFailed": "Nahrávanie zlyhalo",
   "activityUploadCleanupFailed": "Nahraté, ale čistenie zlyhalo",
   "activityUploadReady": "Pripravené na nahranie",
+  "activityUploadAwaitingSignIn": "Uložené v tomto zariadení. Nahrá sa po prihlásení.",
   "activityUploaded": "Nahraté",
   "activityUploading": "Nahrávanie",
   "activityUploadStatusPending": "Čaká",

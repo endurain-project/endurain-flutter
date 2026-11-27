@@ -155,6 +155,7 @@
   "activityUploadFailed": "Nahrání se nezdařilo",
   "activityUploadCleanupFailed": "Nahráno, ale vyčištění se nezdařilo",
   "activityUploadReady": "Připraveno k nahrání",
+  "activityUploadAwaitingSignIn": "Uloženo v tomto zařízení. Nahraje se po přihlášení.",
   "activityUploaded": "Nahráno",
   "activityUploading": "Nahrávání",
   "activityUploadStatusPending": "Čeká",

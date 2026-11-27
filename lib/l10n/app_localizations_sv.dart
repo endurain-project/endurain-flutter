@@ -605,6 +605,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get activityUploadReady => 'Redo att laddas upp';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Sparad på den här enheten. Den laddas upp när du loggar in.';
+
+  @override
   String get activityUploaded => 'Uppladdad';
 
   @override

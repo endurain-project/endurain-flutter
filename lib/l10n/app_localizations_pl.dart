@@ -608,6 +608,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get activityUploadReady => 'Gotowe do przesłania';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Zapisano na tym urządzeniu. Zostanie przesłana po zalogowaniu.';
+
+  @override
   String get activityUploaded => 'Przesłano';
 
   @override

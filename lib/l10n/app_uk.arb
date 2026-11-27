@@ -155,6 +155,7 @@
   "activityUploadFailed": "Помилка завантаження",
   "activityUploadCleanupFailed": "Завантажено, але не вдалося очистити",
   "activityUploadReady": "Готово до завантаження",
+  "activityUploadAwaitingSignIn": "Збережено на цьому пристрої. Буде вивантажено після входу.",
   "activityUploaded": "Завантажено",
   "activityUploading": "Завантаження",
   "activityUploadStatusPending": "Очікує",

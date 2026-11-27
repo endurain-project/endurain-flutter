@@ -595,6 +595,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get activityUploadReady => 'Yüklemeye hazır';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Bu cihaza kaydedildi. Oturum açtıktan sonra yüklenecek.';
+
+  @override
   String get activityUploaded => 'Yüklendi';
 
   @override

@@ -155,6 +155,7 @@
   "activityUploadFailed": "Uploaden mislukt",
   "activityUploadCleanupFailed": "Geüpload, maar opschonen mislukt",
   "activityUploadReady": "Klaar om te uploaden",
+  "activityUploadAwaitingSignIn": "Opgeslagen op dit apparaat. Wordt geüpload nadat je bent ingelogd.",
   "activityUploaded": "Geüpload",
   "activityUploading": "Bezig met uploaden",
   "activityUploadStatusPending": "In behandeling",

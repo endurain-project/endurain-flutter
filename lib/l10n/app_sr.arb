@@ -155,6 +155,7 @@
   "activityUploadFailed": "Отпремање није успело",
   "activityUploadCleanupFailed": "Отпремљено, али чишћење није успело",
   "activityUploadReady": "Спремно за отпремање",
+  "activityUploadAwaitingSignIn": "Сачувано на овом уређају. Биће отпремљено када се пријавите.",
   "activityUploaded": "Отпремљено",
   "activityUploading": "Отпремање",
   "activityUploadStatusPending": "На чекању",

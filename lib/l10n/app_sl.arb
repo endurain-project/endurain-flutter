@@ -155,6 +155,7 @@
   "activityUploadFailed": "Nalaganje ni uspelo",
   "activityUploadCleanupFailed": "Naloženo, vendar čiščenje ni uspelo",
   "activityUploadReady": "Pripravljeno za nalaganje",
+  "activityUploadAwaitingSignIn": "Shranjeno v tej napravi. Naložena bo, ko se prijavite.",
   "activityUploaded": "Naloženo",
   "activityUploading": "Nalaganje",
   "activityUploadStatusPending": "V čakanju",

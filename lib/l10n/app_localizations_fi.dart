@@ -605,6 +605,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get activityUploadReady => 'Valmis ladattavaksi';
 
   @override
+  String get activityUploadAwaitingSignIn =>
+      'Tallennettu tälle laitteelle. Se ladataan, kun kirjaudut sisään.';
+
+  @override
   String get activityUploaded => 'Ladattu';
 
   @override

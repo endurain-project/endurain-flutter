@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- After finishing an activity while signed out, the summary no longer leaves the map without a way to start a new recording. It says the activity is saved on the device and uploads after sign-in, and every settled upload state (including a failed one) offers Done, View history and Delete. Starting a new recording also dismisses a finished activity's summary.
 - The Android themed icon (Android 13+) shows the logo instead of a solid tile: the launcher glyph is now transparent with its own monochrome layer, and the splash screen uses a matching icon.
 - A BLE sensor scan no longer races with a second scan starting or stopping.
 - A Wear OS recording that cannot be read after a crash is cleared instead of being left on the watch to fail the same way on every launch.
