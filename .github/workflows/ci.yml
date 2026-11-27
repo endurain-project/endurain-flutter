@@ -73,6 +73,11 @@ jobs:
       - name: Analyze Dart code
         run: flutter analyze
 
+      # Fails on public lib/ declarations that nothing in lib/ references.
+      # Justified exceptions live in .github/dead-code-allowlist.txt.
+      - name: Check for unreferenced public declarations
+        run: dart run tool/check_dead_code.dart
+
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -138,6 +143,10 @@ jobs:
       - name: Run native Kotlin unit tests
         shell: bash
         run: cd android && ./gradlew :app:testDebugUnitTest --console=plain
+
+      - name: Lint the Android app
+        shell: bash
+        run: cd android && ./gradlew :app:lintDebug --console=plain
 
       # The default build links to the Wear OS app through
       # play-services-wearable; -Pendurain.wearable=false swaps in a stub.
