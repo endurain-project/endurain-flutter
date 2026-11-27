@@ -9,6 +9,7 @@ import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/local_activity_summary_builder.dart';
+import 'package:endurain/features/activity/services/recording_live_activity_publisher.dart';
 
 /// Builds an [ActivityRecordingController] with default collaborators, which
 /// the production constructor deliberately requires from the composition root.
@@ -27,6 +28,7 @@ ActivityRecordingController createTestRecordingController({
   DiagnosticsRecorder? diagnostics,
   String Function()? localActivityIdProvider,
   DateTime Function()? now,
+  RecordingLiveActivityPublisher? liveActivity,
   bool ownsService = true,
 }) {
   final repository = localActivityRepository ?? LocalActivityRepository();
@@ -47,6 +49,7 @@ ActivityRecordingController createTestRecordingController({
     diagnostics: diagnostics,
     localActivityIdProvider: localActivityIdProvider,
     now: now,
+    liveActivity: liveActivity,
     ownsService: ownsService,
   );
 }

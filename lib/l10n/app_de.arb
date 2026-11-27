@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Wähle, wie lange ohne Bewegung gewartet werden soll, bevor pausiert wird.",
   "activityAutoPauseDelayOptionLabel": "{seconds} Sekunden",
   "activityAutoPausedIndicator": "Automatisch pausiert",
+  "activityPausedIndicator": "Pausiert",
   "startCountdownSettingsTitle": "Start-Countdown",
   "startCountdownSettingsSubtitle": "Vor dem Aufzeichnen herunterzählen",
   "startCountdownToggleLabel": "Vor dem Start herunterzählen",

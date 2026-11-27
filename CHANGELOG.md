@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - During a Wear OS workout, the ongoing activity on the watch face and in recents shows the elapsed time and whether the workout is paused.
 - Starting a workout on Wear OS while another app is recording one asks for confirmation first, because Health Services ends the other app's workout.
 - When Precise Location is off, the iPhone and Apple Watch apps ask for temporary precise location while recording. Recording continues if the user declines.
+- On iPhone, a recording in progress shows its elapsed time, distance and pace (or speed) on the Lock Screen and in the Dynamic Island, and whether it is paused. It can be turned off in the iPhone's Settings for Endurain under Live Activities.
 - Every map shows its tile source's attribution: the OpenStreetMap credit for the default source, and the server's attribution (or the host name) for a custom one.
 - The Health access screen opens the Health Connect permission screen when Android no longer shows the permission dialog. The sensor screens, and a new Bluetooth row on Device Access, open the system settings when Bluetooth access is blocked.
 - The Health Connect permission rationale screen links to the [mobile app privacy policy](https://docs.endurain.com/privacy/mobile-app-privacy-policy/), in every language.
@@ -24,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - The minimum iOS version is now 17.0. The Apple Watch app still needs watchOS 10.0.
+- The iPhone recorder uses the newer Core Location live updates. After iOS terminates the app during a recording, iOS now relaunches it by resuming those updates instead of by a significant location change. With auto-pause on, a recording still auto-pauses when the iPhone stops reporting fixes because it is standing still.
 - The two-factor sign-in step shows one box per character. An authenticator code takes six digits only, and "Use a backup code" switches to eight boxes of letters and digits, which the app sends as `XXXX-XXXX`. Pasted or autofilled codes with spaces or a dash fill the boxes, and password managers can still fill authenticator codes. The code is sent as soon as the last box is filled. If the server rejects it, the boxes clear and the reason shows under them, so the user can type the next code straight away.
 - In the Wear OS app:
   - In ambient mode the workout screen shows only the elapsed time. Heart rate and distance arrive in batches while the screen is dimmed, so they could be out of date.

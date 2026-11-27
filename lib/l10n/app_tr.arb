@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Duraklatmadan önce hareketsiz geçecek süreyi seçin.",
   "activityAutoPauseDelayOptionLabel": "{seconds} saniye",
   "activityAutoPausedIndicator": "Otomatik duraklatıldı",
+  "activityPausedIndicator": "Duraklatıldı",
   "startCountdownSettingsTitle": "Başlangıç geri sayımı",
   "startCountdownSettingsSubtitle": "Kayıt başlamadan önce geri say",
   "startCountdownToggleLabel": "Başlamadan önce geri say",

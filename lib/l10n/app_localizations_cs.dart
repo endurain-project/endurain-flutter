@@ -670,6 +670,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatická pauza';
 
   @override
+  String get activityPausedIndicator => 'Pozastaveno';
+
+  @override
   String get startCountdownSettingsTitle => 'Odpočet před startem';
 
   @override

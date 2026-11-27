@@ -654,6 +654,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Otomatik duraklatıldı';
 
   @override
+  String get activityPausedIndicator => 'Duraklatıldı';
+
+  @override
   String get startCountdownSettingsTitle => 'Başlangıç geri sayımı';
 
   @override

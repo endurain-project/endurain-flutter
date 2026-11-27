@@ -13,6 +13,13 @@ enum LocationFixPolicy {
     static let maxAccuracyMeters: CLLocationAccuracy = 100
     static let maxSpeedMetersPerSecond: CLLocationSpeed = 90
 
+    /// Minimum movement (meters) between the points the recorder stores while
+    /// auto-pause is off. The live update stream delivers every fix; this
+    /// keeps a slow or standing recording from storing near-duplicate points.
+    /// With auto-pause on, every usable fix is stored, because the auto-pause
+    /// detector needs a steady flow of fixes to time stillness.
+    static let distanceFilterMeters: CLLocationDistance = 3
+
     /// Slack (ms) allowed between a fix's timestamp and the collection
     /// (re)start it must not predate, for clock rounding between the fix and
     /// `Date()`.
@@ -38,6 +45,15 @@ enum LocationFixPolicy {
             return false
         }
         return true
+    }
+
+    /// Whether [location] is closer than `distanceFilterMeters` to
+    /// [previous], the fix of the last stored point.
+    static func isWithinDistanceFilter(_ location: CLLocation, of previous: CLLocation?) -> Bool {
+        guard let previous else {
+            return false
+        }
+        return location.distance(from: previous) < distanceFilterMeters
     }
 
     /// Whether a fix's horizontal accuracy is valid and good enough for the

@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Elige cuánto tiempo sin movimiento se debe esperar antes de pausar.",
   "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
   "activityAutoPausedIndicator": "En pausa automática",
+  "activityPausedIndicator": "En pausa",
   "startCountdownSettingsTitle": "Cuenta atrás de inicio",
   "startCountdownSettingsSubtitle": "Cuenta atrás antes de empezar a grabar",
   "startCountdownToggleLabel": "Cuenta atrás antes de empezar",

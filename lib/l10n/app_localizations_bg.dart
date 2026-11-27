@@ -665,6 +665,9 @@ class AppLocalizationsBg extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Автоматична пауза';
 
   @override
+  String get activityPausedIndicator => 'На пауза';
+
+  @override
   String get startCountdownSettingsTitle => 'Обратно броене преди старт';
 
   @override

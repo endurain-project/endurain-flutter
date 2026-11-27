@@ -29,7 +29,7 @@
 		AA00000000000000000000BA /* AnnouncementScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AA /* AnnouncementScheduler.swift */; };
 		AA00000000000000000000BB /* AudioAnnouncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AB /* AudioAnnouncer.swift */; };
 		AA00000000000000000000BC /* SessionTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AC /* SessionTiming.swift */; };
-		AA00000000000000000000E2 /* StartCountdownWarmUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000E1 /* StartCountdownWarmUp.swift */; };
+		AA00000000000000000000E2 /* LiveLocationSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000E1 /* LiveLocationSource.swift */; };
 		AA00000000000000000000F6 /* CoreLocationActivityRecorder+AutoPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000F5 /* CoreLocationActivityRecorder+AutoPause.swift */; };
 		AA00000000000000000000BD /* GeoDistanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AD /* GeoDistanceTests.swift */; };
 		AA00000000000000000000BE /* AnnouncementThresholdCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000AE /* AnnouncementThresholdCalculatorTests.swift */; };
@@ -88,6 +88,14 @@
 		AB0000000000000000000019 /* WorkoutFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000009 /* WorkoutFormatTests.swift */; };
 		AB000000000000000000001A /* PhoneLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000000000000000000000A /* PhoneLinkTests.swift */; };
 		AB000000000000000000001B /* SharedPlatformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000000000000000000000B /* SharedPlatformTests.swift */; };
+		1A000000000000000000000B /* WorkoutLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000001 /* WorkoutLiveActivity.swift */; };
+		1A000000000000000000000C /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000002 /* WorkoutActivityAttributes.swift */; };
+		1A000000000000000000000D /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000002 /* WorkoutActivityAttributes.swift */; };
+		1A000000000000000000000E /* EndurainLiveActivityBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000003 /* EndurainLiveActivityBundle.swift */; };
+		1A000000000000000000000F /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000004 /* WorkoutLiveActivityWidget.swift */; };
+		1A0000000000000000000010 /* EndurainLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000006 /* EndurainLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1A0000000000000000000041 /* WorkoutLiveActivityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000040 /* WorkoutLiveActivityTests.swift */; };
+		1A0000000000000000000051 /* StartCountdownWarmUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000050 /* StartCountdownWarmUp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +120,13 @@
 			remoteGlobalIDString = EE0000000000000000000001;
 			remoteInfo = EndurainWatch;
 		};
+		1A0000000000000000000019 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A0000000000000000000014;
+			remoteInfo = EndurainLiveActivity;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -134,6 +149,17 @@
 				DD0000000000000000000011 /* EndurainWatch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A0000000000000000000018 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1A0000000000000000000010 /* EndurainLiveActivity.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -181,7 +207,7 @@
 		AA00000000000000000000AA /* AnnouncementScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AnnouncementScheduler.swift; sourceTree = "<group>"; };
 		AA00000000000000000000AB /* AudioAnnouncer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/AudioAnnouncer.swift; sourceTree = "<group>"; };
 		AA00000000000000000000AC /* SessionTiming.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/SessionTiming.swift; sourceTree = "<group>"; };
-		AA00000000000000000000E1 /* StartCountdownWarmUp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/StartCountdownWarmUp.swift; sourceTree = "<group>"; };
+		AA00000000000000000000E1 /* LiveLocationSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/LiveLocationSource.swift; sourceTree = "<group>"; };
 		AA00000000000000000000F5 /* CoreLocationActivityRecorder+AutoPause.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Activity/CoreLocationActivityRecorder+AutoPause.swift"; sourceTree = "<group>"; };
 		AA00000000000000000000AD /* GeoDistanceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeoDistanceTests.swift; sourceTree = "<group>"; };
 		AA00000000000000000000AE /* AnnouncementThresholdCalculatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncementThresholdCalculatorTests.swift; sourceTree = "<group>"; };
@@ -223,6 +249,14 @@
 		FF0000000000000000000007 /* WorkoutCountdown.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutCountdown.swift; sourceTree = "<group>"; };
 		FF0000000000000000000008 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		EE0000000000000000000A01 /* NativeSharedVectorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSharedVectorsTests.swift; sourceTree = "<group>"; };
+		1A0000000000000000000001 /* WorkoutLiveActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/WorkoutLiveActivity.swift; sourceTree = "<group>"; };
+		1A0000000000000000000002 /* WorkoutActivityAttributes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveActivity/WorkoutActivityAttributes.swift; sourceTree = "<group>"; };
+		1A0000000000000000000003 /* EndurainLiveActivityBundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndurainLiveActivityBundle.swift; sourceTree = "<group>"; };
+		1A0000000000000000000004 /* WorkoutLiveActivityWidget.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityWidget.swift; sourceTree = "<group>"; };
+		1A0000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A0000000000000000000006 /* EndurainLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EndurainLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A0000000000000000000040 /* WorkoutLiveActivityTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityTests.swift; sourceTree = "<group>"; };
+		1A0000000000000000000050 /* StartCountdownWarmUp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity/StartCountdownWarmUp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -249,6 +283,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		EE0000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A0000000000000000000016 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -285,6 +326,7 @@
 				AA00000000000000000000F3 /* HeartRateSeriesEncodingTests.swift */,
 				CC0000000000000000000010 /* WatchTransportTests.swift */,
 				AB000000000000000000000B /* SharedPlatformTests.swift */,
+				1A0000000000000000000040 /* WorkoutLiveActivityTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -308,6 +350,7 @@
 				97C146F01CF9000F007C117D /* Runner */,
 				EE000000000000000000000D /* Shared */,
 				EE000000000000000000000C /* EndurainWatch */,
+				1A000000000000000000001B /* EndurainLiveActivity */,
 				AB000000000000000000003B /* EndurainWatchTests */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
@@ -321,6 +364,7 @@
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 				CC000000000000000000000F /* EndurainWatch.app */,
 				AB000000000000000000003A /* EndurainWatchTests.xctest */,
+				1A0000000000000000000006 /* EndurainLiveActivity.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -349,7 +393,8 @@
 				AA00000000000000000000AA /* AnnouncementScheduler.swift */,
 				AA00000000000000000000AB /* AudioAnnouncer.swift */,
 				AA00000000000000000000AC /* SessionTiming.swift */,
-				AA00000000000000000000E1 /* StartCountdownWarmUp.swift */,
+				AA00000000000000000000E1 /* LiveLocationSource.swift */,
+				1A0000000000000000000050 /* StartCountdownWarmUp.swift */,
 				AA00000000000000000000F5 /* CoreLocationActivityRecorder+AutoPause.swift */,
 				AA00000000000000000000C5 /* AnnouncementStateCache.swift */,
 				AA00000000000000000000CD /* HealthKitHeartRateMonitor.swift */,
@@ -360,6 +405,7 @@
 				FF0000000000000000000003 /* PrivacyInfo.xcprivacy */,
 				FF0000000000000000000002 /* ActivityAnnouncementController.swift */,
 				FF0000000000000000000001 /* LocationFixPolicy.swift */,
+				1A0000000000000000000001 /* WorkoutLiveActivity.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -400,8 +446,19 @@
 				AB0000000000000000000001 /* AppLogger.swift */,
 				AB0000000000000000000002 /* HealthKitActivityMapping.swift */,
 				AB0000000000000000000003 /* LocationManagerConfiguration.swift */,
+				1A0000000000000000000002 /* WorkoutActivityAttributes.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		1A000000000000000000001B /* EndurainLiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000000000000000000003 /* EndurainLiveActivityBundle.swift */,
+				1A0000000000000000000004 /* WorkoutLiveActivityWidget.swift */,
+				1A0000000000000000000005 /* Info.plist */,
+			);
+			path = EndurainLiveActivity;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -435,12 +492,14 @@
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				EE000000000000000000000B /* Embed Watch Content */,
+				1A0000000000000000000018 /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				EE000000000000000000000A /* PBXTargetDependency */,
+				1A000000000000000000001A /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -485,6 +544,23 @@
 			productReference = AB000000000000000000003A /* EndurainWatchTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		1A0000000000000000000014 /* EndurainLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A000000000000000000001C /* Build configuration list for PBXNativeTarget "EndurainLiveActivity" */;
+			buildPhases = (
+				1A0000000000000000000015 /* Sources */,
+				1A0000000000000000000016 /* Frameworks */,
+				1A0000000000000000000017 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EndurainLiveActivity;
+			productName = EndurainLiveActivity;
+			productReference = 1A0000000000000000000006 /* EndurainLiveActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -509,6 +585,9 @@
 					AB0000000000000000000030 = {
 						CreatedOnToolsVersion = 27.2;
 						TestTargetID = EE0000000000000000000001;
+					};
+					1A0000000000000000000014 = {
+						CreatedOnToolsVersion = 27.2;
 					};
 				};
 			};
@@ -562,6 +641,7 @@
 				331C8080294A63A400263BE5 /* RunnerTests */,
 				EE0000000000000000000001 /* EndurainWatch */,
 				AB0000000000000000000030 /* EndurainWatchTests */,
+				1A0000000000000000000014 /* EndurainLiveActivity */,
 			);
 		};
 /* End PBXProject section */
@@ -602,6 +682,13 @@
 				DD0000000000000000000014 /* Localizable.xcstrings in Resources */,
 				DD0000000000000000000015 /* InfoPlist.xcstrings in Resources */,
 				FF0000000000000000000108 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A0000000000000000000017 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -670,6 +757,7 @@
 				AA00000000000000000000F4 /* HeartRateSeriesEncodingTests.swift in Sources */,
 				DD0000000000000000000012 /* WatchTransportTests.swift in Sources */,
 				AB000000000000000000001B /* SharedPlatformTests.swift in Sources */,
+				1A0000000000000000000041 /* WorkoutLiveActivityTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -691,7 +779,8 @@
 				AA00000000000000000000BA /* AnnouncementScheduler.swift in Sources */,
 				AA00000000000000000000BB /* AudioAnnouncer.swift in Sources */,
 				AA00000000000000000000BC /* SessionTiming.swift in Sources */,
-				AA00000000000000000000E2 /* StartCountdownWarmUp.swift in Sources */,
+				AA00000000000000000000E2 /* LiveLocationSource.swift in Sources */,
+				1A0000000000000000000051 /* StartCountdownWarmUp.swift in Sources */,
 				AA00000000000000000000F6 /* CoreLocationActivityRecorder+AutoPause.swift in Sources */,
 				AA00000000000000000000C4 /* AnnouncementStateCache.swift in Sources */,
 				AA00000000000000000000CC /* HealthKitHeartRateMonitor.swift in Sources */,
@@ -709,6 +798,8 @@
 				AB0000000000000000000013 /* LocationManagerConfiguration.swift in Sources */,
 				FF0000000000000000000102 /* ActivityAnnouncementController.swift in Sources */,
 				FF0000000000000000000101 /* LocationFixPolicy.swift in Sources */,
+				1A000000000000000000000B /* WorkoutLiveActivity.swift in Sources */,
+				1A000000000000000000000C /* WorkoutActivityAttributes.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -739,6 +830,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A0000000000000000000015 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A000000000000000000000D /* WorkoutActivityAttributes.swift in Sources */,
+				1A000000000000000000000E /* EndurainLiveActivityBundle.swift in Sources */,
+				1A000000000000000000000F /* WorkoutLiveActivityWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -756,6 +857,11 @@
 			isa = PBXTargetDependency;
 			target = EE0000000000000000000001 /* EndurainWatch */;
 			targetProxy = EE0000000000000000000009 /* PBXContainerItemProxy */;
+		};
+		1A000000000000000000001A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A0000000000000000000014 /* EndurainLiveActivity */;
+			targetProxy = 1A0000000000000000000019 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1217,6 +1323,87 @@
 			};
 			name = Profile;
 		};
+		1A000000000000000000001D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = R6G3846D66;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EndurainLiveActivity/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.endurain.endurain.LiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		1A000000000000000000001E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = R6G3846D66;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EndurainLiveActivity/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.endurain.endurain.LiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		1A000000000000000000001F /* Profile */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = R6G3846D66;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EndurainLiveActivity/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.endurain.endurain.LiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1266,6 +1453,16 @@
 				EE0000000000000000000006 /* Debug */,
 				EE0000000000000000000007 /* Release */,
 				EE0000000000000000000008 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A000000000000000000001C /* Build configuration list for PBXNativeTarget "EndurainLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A000000000000000000001D /* Debug */,
+				1A000000000000000000001E /* Release */,
+				1A000000000000000000001F /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

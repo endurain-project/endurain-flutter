@@ -668,6 +668,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatikusan szüneteltetve';
 
   @override
+  String get activityPausedIndicator => 'Szüneteltetve';
+
+  @override
   String get startCountdownSettingsTitle => 'Visszaszámlálás indítás előtt';
 
   @override

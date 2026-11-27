@@ -10,6 +10,11 @@ import Foundation
 /// its own manager and drops every fix: the app stays awake for the whole
 /// countdown, and GPS has a fix by the time the recorder starts. It never
 /// touches the durable session store.
+///
+/// A `CLLocationManager` rather than the recorder's live updates: those stop
+/// while the device is stationary, which a phone set down for the countdown
+/// usually is, and the app can then be suspended mid-countdown. Automatic
+/// pausing is turned off here, so updates keep the app running.
 @MainActor
 final class StartCountdownWarmUp: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()

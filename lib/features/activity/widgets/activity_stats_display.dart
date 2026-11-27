@@ -95,19 +95,14 @@ class ActivityStatsDisplay extends StatelessWidget {
           value: formatter.formatDistance(stats.distanceMeters, locale: locale),
         ),
         _StatItem(
-          label: state.activityType == ActivityType.run
+          label: ActivityStatsFormatter.showsPace(state.activityType)
               ? l10n.activityStatPace
               : l10n.activityStatSpeed,
-          value: state.activityType == ActivityType.run
-              ? formatter.formatPace(
-                  stats.currentSpeedMetersPerSecond ??
-                      stats.averageSpeedMetersPerSecond,
-                )
-              : formatter.formatSpeed(
-                  stats.currentSpeedMetersPerSecond ??
-                      stats.averageSpeedMetersPerSecond,
-                  locale: locale,
-                ),
+          value: formatter.formatLivePaceOrSpeed(
+            stats,
+            activityType: state.activityType,
+            locale: locale,
+          ),
         ),
         // Always shown (like pace/speed): displays "-" until a reading arrives.
         _StatItem(

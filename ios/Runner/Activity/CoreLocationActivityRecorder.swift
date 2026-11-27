@@ -4,12 +4,14 @@ import CoreLocation
 /// CoreLocation-backed recorder that persists points to the native active store
 /// before notifying Flutter.
 ///
-/// Mirrors the Android `ActivityRecorderService` collection loop. The manager is
-/// configured for background fitness tracking: background updates enabled,
-/// automatic pausing disabled, the system background indicator shown, and the
-/// `.fitness` activity type. Segment policy matches the Dart recorder: a new
-/// segment starts after a pause/resume boundary or a large time gap between
-/// fixes. Coordinates are never written to diagnostics.
+/// Mirrors the Android `ActivityRecorderService` collection loop. Fixes come
+/// from a `LiveLocationSource` (`CLLocationUpdate.liveUpdates(.fitness)` held
+/// with a background activity session), which keeps delivering after the app
+/// is backgrounded and resumes the app after iOS terminates it. The location
+/// manager is kept only for the authorization status and its change callback.
+/// Segment policy matches the Dart recorder: a new segment starts after a
+/// pause/resume boundary or a large time gap between fixes. Coordinates are
+/// never written to diagnostics.
 ///
 /// **External sensors are owned by Dart on this platform.** Unlike Android —
 /// where the foreground service takes over the BLE connection because a
@@ -32,11 +34,9 @@ import CoreLocation
 final class CoreLocationActivityRecorder:
     NSObject,
     @preconcurrency CLLocationManagerDelegate {
-    /// Minimum movement (meters) between delivered fixes.
-    private static let distanceFilterMeters: CLLocationDistance = 3
-
     let store: ActiveActivityStore
     private let manager: CLLocationManager
+    private let locationSource: LiveLocationSource
     let announcements: ActivityAnnouncementController
     private let heartRateMonitor: HealthKitHeartRateMonitor
 
@@ -48,6 +48,19 @@ final class CoreLocationActivityRecorder:
     /// Whether no fix has been accepted since the collection (re)started.
     private var awaitingFirstFix = true
     var autoPauseDetector: MovementAutoPauseDetector?
+    /// The pending auto-pause while the device is stationary and Core
+    /// Location has stopped delivering fixes.
+    var stationaryAutoPauseTask: Task<Void, Never>?
+    /// Whether the last update of the stream said the device is stationary.
+    /// No further update follows until it moves, so a reset of the
+    /// auto-pause detector has to schedule the stationary auto-pause again.
+    private var isStationary = false
+    /// Whether fixes closer than `LocationFixPolicy.distanceFilterMeters` to
+    /// the last stored one are dropped (auto-pause off).
+    private var usesDistanceFilter = true
+    /// The fix of the last point stored in this collection, for the distance
+    /// filter.
+    private var lastStoredLocation: CLLocation?
     private var nextPointOffset = 0
     private var didRequestFullAccuracy = false
 
@@ -58,10 +71,12 @@ final class CoreLocationActivityRecorder:
     init(
         store: ActiveActivityStore,
         manager: CLLocationManager = CLLocationManager(),
+        locationSource: LiveLocationSource? = nil,
         heartRateMonitor: HealthKitHeartRateMonitor? = nil
     ) {
         self.store = store
         self.manager = manager
+        self.locationSource = locationSource ?? CoreLocationLiveUpdates()
         self.announcements = ActivityAnnouncementController(store: store)
         self.heartRateMonitor = heartRateMonitor ?? HealthKitHeartRateMonitor()
         super.init()
@@ -83,10 +98,6 @@ final class CoreLocationActivityRecorder:
             )
         }
         manager.delegate = self
-        manager.applyFitnessConfiguration(
-            distanceFilter: CoreLocationActivityRecorder.distanceFilterMeters
-        )
-        manager.pausesLocationUpdatesAutomatically = false
     }
 
     /// Starts (or resumes) location collection. Restores the last persisted
@@ -114,21 +125,17 @@ final class CoreLocationActivityRecorder:
         default:
             break
         }
-        requestFullAccuracyIfNeeded()
-
-        // Both grants keep recording in the background: with the `location`
-        // background mode, updates started in the foreground continue after
-        // the app is backgrounded even under When In Use. Only the relaunch
-        // after termination needs Always (see `startTerminationRecovery`).
-        manager.allowsBackgroundLocationUpdates = true
-        manager.showsBackgroundLocationIndicator = true
+        if #unavailable(iOS 18.0) {
+            // From iOS 18 the source's `CLServiceSession` asks instead.
+            requestFullAccuracyIfNeeded()
+        }
 
         announcements.restore()
         segmenter.lastPointEpochMillis = IsoTime.toEpochMillis(store.lastPoint()?.timestamp)
         let session = store.loadSession()
-        manager.distanceFilter = session?.autoPauseEnabled == true
-            ? kCLDistanceFilterNone
-            : CoreLocationActivityRecorder.distanceFilterMeters
+        usesDistanceFilter = session?.autoPauseEnabled != true
+        lastStoredLocation = nil
+        isStationary = false
         let nowMillis = LocationFixPolicy.nowMillis()
         autoPauseDetector = MovementAutoPauseDetector(config: MovementAutoPauseConfig(
             enabled: session?.autoPauseEnabled ?? false,
@@ -140,8 +147,9 @@ final class CoreLocationActivityRecorder:
         autoPauseDetector?.reset(movementAtMillis: nowMillis)
         markCollectionStarted(atMillis: nowMillis)
         nextPointOffset = store.pointCount()
-        manager.startUpdatingLocation()
-        startTerminationRecovery()
+        locationSource.start { [weak self] update in
+            self?.handleUpdate(update)
+        }
         heartRateMonitor.start(activityType: session?.activityType ?? "other")
         isCollecting = true
         announcements.scheduleNextTimeAnnouncement()
@@ -158,32 +166,10 @@ final class CoreLocationActivityRecorder:
         )
     }
 
-    /// Arms significant-location-change monitoring for the duration of a
-    /// recording.
-    ///
-    /// `startUpdatingLocation` alone does not survive the app being terminated
-    /// under memory pressure: the process dies, updates stop, and the rest of
-    /// the ride is lost silently. Significant-location-change is the only
-    /// CoreLocation API that relaunches a terminated app in the background, so
-    /// it is armed alongside the high-accuracy stream purely as a wake-up
-    /// trigger. Its own coarse fixes are ignored for the track — see
-    /// `AppDelegate` and `resumeAfterRelaunch()`, which re-arm the accurate
-    /// stream once the process is back.
-    ///
-    /// Requires Always authorization: under When In Use the recording
-    /// continues in the background but cannot be relaunched after
-    /// termination, so the monitoring is not armed.
-    private func startTerminationRecovery() {
-        guard currentAuthorizationStatus() == .authorizedAlways,
-              CLLocationManager.significantLocationChangeMonitoringAvailable() else {
-            return
-        }
-        manager.startMonitoringSignificantLocationChanges()
-    }
-
     /// Re-arms collection after the process was relaunched (for example by
-    /// iOS for a significant location change) while a recording session that
-    /// needs location monitoring is still active on disk.
+    /// iOS to resume the live location updates of a background activity
+    /// session) while a recording session that needs location monitoring is
+    /// still active on disk.
     ///
     /// Returns `true` when a recording was resumed. Called from `AppDelegate`
     /// on every launch, independent of the Flutter engine: scene-based apps
@@ -248,9 +234,9 @@ final class CoreLocationActivityRecorder:
     func stopCollection() {
         announcements.flush()
         announcements.cancelTimeAnnouncement()
-        manager.stopUpdatingLocation()
-        manager.stopMonitoringSignificantLocationChanges()
-        manager.allowsBackgroundLocationUpdates = false
+        cancelStationaryAutoPause()
+        isStationary = false
+        locationSource.stop()
         heartRateMonitor.stop()
         AudioAnnouncer.shared.stop()
         isCollecting = false
@@ -288,8 +274,12 @@ final class CoreLocationActivityRecorder:
         guard isCollecting else {
             return startCollection()
         }
+        cancelStationaryAutoPause()
         autoPauseDetector?.reset(movementAtMillis: nowMillis)
         markCollectionStarted(atMillis: nowMillis)
+        if isStationary {
+            scheduleStationaryAutoPause()
+        }
         announcements.scheduleNextTimeAnnouncement()
         return true
     }
@@ -299,21 +289,31 @@ final class CoreLocationActivityRecorder:
         awaitingFirstFix = true
     }
 
-    // MARK: - CLLocationManagerDelegate
+    // MARK: - Location updates
 
-    func locationManager(
-        _ manager: CLLocationManager,
-        didUpdateLocations locations: [CLLocation]
-    ) {
-        guard isCollecting, !locations.isEmpty else {
+    /// Takes one update from the location stream. Updates that arrive after
+    /// collection stopped are dropped.
+    func handleUpdate(_ update: LiveLocationUpdate) {
+        guard isCollecting else {
             return
         }
-        for location in locations {
-            guard isCollecting else {
-                // A failure earlier in this batch already stopped collection.
-                return
+        if let location = update.location {
+            if !update.isStationary {
+                applyOverdueStationaryAutoPause(
+                    atMillis: LocationFixPolicy.effectiveMillis(location)
+                )
             }
             handleLocationFix(location)
+        }
+        guard isCollecting else {
+            // A failure while storing the fix stopped collection.
+            return
+        }
+        isStationary = update.isStationary
+        if update.isStationary {
+            scheduleStationaryAutoPause()
+        } else {
+            cancelStationaryAutoPause()
         }
     }
 
@@ -368,7 +368,9 @@ final class CoreLocationActivityRecorder:
         }
 
         guard LocationFixPolicy.hasUsableAccuracy(location.horizontalAccuracy),
-              !segmenter.isImplausible(millis: effectiveMillis, speed: location.speed)
+              !segmenter.isImplausible(millis: effectiveMillis, speed: location.speed),
+              !usesDistanceFilter
+                || !LocationFixPolicy.isWithinDistanceFilter(location, of: lastStoredLocation)
         else {
             return
         }
@@ -404,6 +406,7 @@ final class CoreLocationActivityRecorder:
             stopAfterPersistenceFailure()
             return
         }
+        lastStoredLocation = location
 
         ActivityRecorderCoordinator.shared.emitPointBatch(
             [point],
@@ -414,21 +417,11 @@ final class CoreLocationActivityRecorder:
         announcements.announce([point], isNewSegmentFlags: [isNewSegment], session: session)
     }
 
-    func locationManager(
-        _ manager: CLLocationManager,
-        didFailWithError error: Error
-    ) {
-        // CoreLocation transient failures (e.g. no fix yet) should not abort the
-        // recording. Only a hard denial is surfaced; report stream trouble
-        // without leaking error specifics.
-        if let clError = error as? CLError, clError.code == .denied {
-            persistFailure()
-            ActivityRecorderCoordinator.shared.emitFailed(
-                ActivityRecorderCoordinator.reasonPermissionLost
-            )
-        }
-    }
+    // MARK: - CLLocationManagerDelegate
 
+    /// Stops the recording when location access is revoked. Any other grant
+    /// keeps it running: the background activity session keeps updates
+    /// coming in the background under When In Use as well as Always.
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         guard isCollecting else {
             return
@@ -440,14 +433,6 @@ final class CoreLocationActivityRecorder:
             ActivityRecorderCoordinator.shared.emitFailed(
                 ActivityRecorderCoordinator.reasonPermissionLost
             )
-        case .authorizedWhenInUse:
-            // A downgrade from Always keeps the running updates, including in
-            // the background; only the relaunch after termination is lost.
-            manager.stopMonitoringSignificantLocationChanges()
-        case .authorizedAlways:
-            manager.allowsBackgroundLocationUpdates = true
-            manager.showsBackgroundLocationIndicator = true
-            startTerminationRecovery()
         default:
             break
         }

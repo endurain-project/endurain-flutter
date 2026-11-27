@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Изберете колко дълго да чака без движение, преди да постави записа на пауза.",
   "activityAutoPauseDelayOptionLabel": "{seconds} секунди",
   "activityAutoPausedIndicator": "Автоматична пауза",
+  "activityPausedIndicator": "На пауза",
   "startCountdownSettingsTitle": "Обратно броене преди старт",
   "startCountdownSettingsSubtitle": "Обратно броене преди началото на записа",
   "startCountdownToggleLabel": "Броене преди старт",

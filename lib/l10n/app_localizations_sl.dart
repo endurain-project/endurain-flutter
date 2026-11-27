@@ -669,6 +669,9 @@ class AppLocalizationsSl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Samodejno prekinjeno';
 
   @override
+  String get activityPausedIndicator => 'Prekinjeno';
+
+  @override
   String get startCountdownSettingsTitle => 'Odštevanje pred začetkom';
 
   @override

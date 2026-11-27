@@ -667,6 +667,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatycznie wstrzymano';
 
   @override
+  String get activityPausedIndicator => 'Wstrzymano';
+
+  @override
   String get startCountdownSettingsTitle => 'Odliczanie przed startem';
 
   @override

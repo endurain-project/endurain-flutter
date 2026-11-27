@@ -19,16 +19,19 @@ final class ActivityRecorderChannel:
     private let store: ActiveActivityStore
     private let recorder: CoreLocationActivityRecorder
     private let startWarmUp = StartCountdownWarmUp()
+    private let liveActivity: WorkoutLiveActivity
 
     private var methodChannel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
 
     init(
         store: ActiveActivityStore = .shared,
-        recorder: CoreLocationActivityRecorder? = nil
+        recorder: CoreLocationActivityRecorder? = nil,
+        liveActivity: WorkoutLiveActivity? = nil
     ) {
         self.store = store
         self.recorder = recorder ?? CoreLocationActivityRecorder(store: store)
+        self.liveActivity = liveActivity ?? WorkoutLiveActivity(store: store)
         super.init()
     }
 
@@ -96,6 +99,8 @@ final class ActivityRecorderChannel:
         case ActivityRecorderChannel.methodEndStartWarmUp:
             startWarmUp.end()
             result(nil)
+        case ActivityRecorderChannel.methodUpdateLiveActivity:
+            handleUpdateLiveActivity(call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -408,6 +413,20 @@ final class ActivityRecorderChannel:
         result(nil)
     }
 
+    /// Shows the formatted distance and pace or speed of the recording on its
+    /// Live Activity. iOS only; the durable session is never touched.
+    private func handleUpdateLiveActivity(_ call: FlutterMethodCall, result: FlutterResult) {
+        let arguments = call.arguments as? [String: Any]
+        guard isSupportedVersion(arguments),
+              let localSessionId = arguments?["localSessionId"] as? String,
+              let metrics = WorkoutActivityAttributes.Metrics(channelArguments: arguments) else {
+            result(FlutterError(code: Self.errorArgs, message: "Invalid Live Activity metrics", details: nil))
+            return
+        }
+        liveActivity.updateMetrics(metrics, localSessionId: localSessionId)
+        result(nil)
+    }
+
     /// Speaks one short start-countdown cue. Like the preview, it never
     /// touches the durable store.
     private func handleSpeakCue(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -456,6 +475,7 @@ final class ActivityRecorderChannel:
     static let methodSpeakCue = "speakCue"
     static let methodBeginStartWarmUp = "beginStartWarmUp"
     static let methodEndStartWarmUp = "endStartWarmUp"
+    static let methodUpdateLiveActivity = "updateLiveActivity"
 
     static let errorArgs = "invalid_arguments"
     static let errorState = "invalid_state"

@@ -20,15 +20,19 @@ import 'package:endurain/features/activity/repositories/local_activity_repositor
 import 'package:endurain/features/activity/services/activity_gpx_builder.dart';
 import 'package:endurain/features/activity/services/activity_location_recorder.dart';
 import 'package:endurain/features/activity/services/activity_recording_service.dart';
+import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/features/activity/services/activity_storage_paths.dart';
 import 'package:endurain/features/activity/services/activity_upload_service.dart';
 import 'package:endurain/features/activity/services/movement_auto_pause_config.dart';
+import 'package:endurain/features/activity/services/recording_live_activity_publisher.dart';
+import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../helpers/active_activity_session_x.dart';
 import '../../../helpers/active_activity_store.dart';
 import '../../../helpers/fake_preferences_store.dart';
+import '../../../helpers/fake_recording_live_activity_adapter.dart';
 import '../../../helpers/file_active_activity_store.dart';
 import '../../../helpers/geolocator_activity_location_recorder.dart';
 import '../../../helpers/in_memory_active_activity_store.dart';
@@ -65,6 +69,37 @@ void main() {
       expect(controller.selectedActivityType, ActivityType.ride);
       expect(controller.state.status, ActivityRecordingStatus.recording);
       expect(controller.state.activityType, ActivityType.ride);
+    });
+
+    test('shows the started recording on its Live Activity', () async {
+      final l10n = AppLocalizationsEn();
+      final liveActivity = FakeRecordingLiveActivityAdapter();
+      final controller = createTestRecordingController(
+        recordingService: _recordingService(),
+        localActivityIdProvider: () => 'live_session',
+        liveActivity: RecordingLiveActivityPublisher(adapter: liveActivity),
+      );
+      addTearDown(controller.dispose);
+
+      controller.configureLiveActivity(
+        RecordingLiveActivityLabels(
+          formatter: ActivityStatsFormatter.of(l10n),
+          numberLocale: 'en',
+          activityTypes: {ActivityType.other: l10n.activityTypeOther},
+          distance: l10n.activityStatDistance,
+          pace: l10n.activityStatPace,
+          speed: l10n.activityStatSpeed,
+          paused: l10n.activityPausedIndicator,
+          autoPaused: l10n.activityAutoPausedIndicator,
+        ),
+      );
+      await controller.start(ActivityType.ride);
+      await pumpEventQueue();
+
+      final content = liveActivity.updates.last;
+      expect(content.localSessionId, 'live_session');
+      expect(content.title, l10n.activityTypeOther);
+      expect(content.speedLabel, l10n.activityStatSpeed);
     });
 
     test(

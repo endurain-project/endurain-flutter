@@ -601,6 +601,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityAutoPausedIndicator => '自动暂停中';
 
   @override
+  String get activityPausedIndicator => '已暂停';
+
+  @override
   String get startCountdownSettingsTitle => '开始倒计时';
 
   @override
@@ -2024,6 +2027,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get activityAutoPausedIndicator => '自動暫停中';
+
+  @override
+  String get activityPausedIndicator => '已暫停';
 
   @override
   String get startCountdownSettingsTitle => '開始倒數';

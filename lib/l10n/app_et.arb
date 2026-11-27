@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Valige, kui kaua ilma liikumiseta enne peatamist oodata.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekundit",
   "activityAutoPausedIndicator": "Automaatselt peatatud",
+  "activityPausedIndicator": "Peatatud",
   "startCountdownSettingsTitle": "Alguse loendus",
   "startCountdownSettingsSubtitle": "Loenda enne salvestamise algust",
   "startCountdownToggleLabel": "Loenda enne alustamist",

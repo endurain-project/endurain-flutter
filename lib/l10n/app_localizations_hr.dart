@@ -673,6 +673,9 @@ class AppLocalizationsHr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatski pauzirano';
 
   @override
+  String get activityPausedIndicator => 'Pauzirano';
+
+  @override
   String get startCountdownSettingsTitle => 'Odbrojavanje prije početka';
 
   @override

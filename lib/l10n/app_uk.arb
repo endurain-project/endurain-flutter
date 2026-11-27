@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Виберіть, скільки часу без руху чекати перед призупиненням.",
   "activityAutoPauseDelayOptionLabel": "{seconds} с",
   "activityAutoPausedIndicator": "Автоматично призупинено",
+  "activityPausedIndicator": "Призупинено",
   "startCountdownSettingsTitle": "Зворотний відлік перед стартом",
   "startCountdownSettingsSubtitle": "Відлік перед початком запису",
   "startCountdownToggleLabel": "Відлік перед стартом",

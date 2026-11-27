@@ -44,6 +44,31 @@ final class MovementAutoPauseDetectorTests: XCTestCase {
     }
   }
 
+  func testStationaryWithoutFixesAutoPausesAtTheConfiguredDelay() {
+    let detector = MovementAutoPauseDetector(
+      config: MovementAutoPauseConfig(enabled: true, pauseDelayMillis: 5_000))
+    detector.reset(movementAtMillis: baseMillis)
+
+    XCTAssertEqual(detector.autoPauseDueAtMillis, baseMillis + 5_000)
+    guard case .none = detector.onStationary(atMillis: baseMillis + 4_999) else {
+      return XCTFail("expected .none")
+    }
+    guard case .autoPause = detector.onStationary(atMillis: baseMillis + 5_000) else {
+      return XCTFail("expected .autoPause")
+    }
+  }
+
+  func testStationaryNeverAutoPausesWhenDisabled() {
+    let detector = MovementAutoPauseDetector(
+      config: MovementAutoPauseConfig(enabled: false, pauseDelayMillis: 1_000))
+    detector.reset(movementAtMillis: baseMillis)
+
+    XCTAssertNil(detector.autoPauseDueAtMillis)
+    guard case .none = detector.onStationary(atMillis: baseMillis + 60_000) else {
+      return XCTFail("expected .none")
+    }
+  }
+
   func testAutoPausesAfterStillnessPersistsForTheConfiguredDelay() {
     let detector = MovementAutoPauseDetector(
       config: MovementAutoPauseConfig(enabled: true, pauseDelayMillis: 5_000))

@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Επιλέξτε πόσο χρόνο χωρίς κίνηση θα περιμένει πριν από την παύση.",
   "activityAutoPauseDelayOptionLabel": "{seconds} δευτερόλεπτα",
   "activityAutoPausedIndicator": "Αυτόματη παύση",
+  "activityPausedIndicator": "Σε παύση",
   "startCountdownSettingsTitle": "Αντίστροφη μέτρηση έναρξης",
   "startCountdownSettingsSubtitle": "Αντίστροφη μέτρηση πριν από την καταγραφή",
   "startCountdownToggleLabel": "Αντίστροφη μέτρηση πριν την έναρξη",

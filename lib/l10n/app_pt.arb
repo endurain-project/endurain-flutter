@@ -777,6 +777,10 @@
   "activityAutoPauseDelayHelperText": "Escolha quanto tempo sem movimento esperar antes de pausar.",
   "activityAutoPauseDelayOptionLabel": "{seconds} segundos",
   "activityAutoPausedIndicator": "Em pausa automática",
+  "activityPausedIndicator": "Em pausa",
+  "@activityPausedIndicator": {
+    "description": "Mostrado na Live Activity do ecrã bloqueado e da Dynamic Island enquanto uma gravação está em pausa manual - Usado em: activity_recording_overlay.dart"
+  },
   "startCountdownSettingsTitle": "Contagem decrescente",
   "@startCountdownSettingsTitle": {
     "description": "Título do ecrã de definições da contagem decrescente e etiqueta de navegação nas definições - Usado em: start_countdown_settings_screen.dart, settings_screen.dart"

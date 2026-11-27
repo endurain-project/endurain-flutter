@@ -671,6 +671,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get activityAutoPausedIndicator => 'En pausa automàtica';
 
   @override
+  String get activityPausedIndicator => 'En pausa';
+
+  @override
   String get startCountdownSettingsTitle => 'Compte enrere d\'inici';
 
   @override

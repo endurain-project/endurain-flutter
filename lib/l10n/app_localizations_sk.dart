@@ -670,6 +670,9 @@ class AppLocalizationsSk extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automaticky pozastavené';
 
   @override
+  String get activityPausedIndicator => 'Pozastavené';
+
+  @override
   String get startCountdownSettingsTitle => 'Odpočítavanie pred štartom';
 
   @override

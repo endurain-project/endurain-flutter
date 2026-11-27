@@ -1,4 +1,6 @@
 import 'package:endurain/core/models/measurement_system.dart';
+import 'package:endurain/features/activity/models/activity_recording_stats.dart';
+import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/activity/services/activity_stats_formatter.dart';
 import 'package:endurain/l10n/app_localizations_en.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -43,6 +45,43 @@ void main() {
         expect(formatter.formatCadence(null), '-');
         expect(formatter.formatCadence(88), '88 rpm');
       }
+    });
+  });
+
+  group('ActivityStatsFormatter (live pace or speed)', () {
+    test('shows pace only for a run', () {
+      for (final type in [...ActivityType.values, null]) {
+        expect(
+          ActivityStatsFormatter.showsPace(type),
+          type == ActivityType.run,
+        );
+      }
+    });
+
+    test('prefers the current speed and falls back to the average', () {
+      const current = ActivityRecordingStats(
+        distanceMeters: 0,
+        durationSeconds: 0,
+        averageSpeedMetersPerSecond: 2,
+        currentSpeedMetersPerSecond: 5,
+      );
+      const averageOnly = ActivityRecordingStats(
+        distanceMeters: 0,
+        durationSeconds: 0,
+        averageSpeedMetersPerSecond: 2,
+      );
+
+      expect(
+        metric.formatLivePaceOrSpeed(current, activityType: ActivityType.run),
+        metric.formatPace(5),
+      );
+      expect(
+        metric.formatLivePaceOrSpeed(
+          averageOnly,
+          activityType: ActivityType.ride,
+        ),
+        metric.formatSpeed(2),
+      );
     });
   });
 

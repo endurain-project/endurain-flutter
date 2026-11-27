@@ -658,6 +658,9 @@ class AppLocalizationsLt extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Automatiškai pristabdyta';
 
   @override
+  String get activityPausedIndicator => 'Pristabdyta';
+
+  @override
   String get startCountdownSettingsTitle => 'Pradžios atgalinis skaičiavimas';
 
   @override

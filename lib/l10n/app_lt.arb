@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Pasirinkite, kiek laiko be judėjimo laukti prieš pristabdant.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sek.",
   "activityAutoPausedIndicator": "Automatiškai pristabdyta",
+  "activityPausedIndicator": "Pristabdyta",
   "startCountdownSettingsTitle": "Pradžios atgalinis skaičiavimas",
   "startCountdownSettingsSubtitle": "Atgalinis skaičiavimas prieš pradedant įrašymą",
   "startCountdownToggleLabel": "Skaičiuoti atgal prieš pradedant",

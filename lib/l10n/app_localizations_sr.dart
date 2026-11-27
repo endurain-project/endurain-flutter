@@ -671,6 +671,9 @@ class AppLocalizationsSr extends AppLocalizations {
   String get activityAutoPausedIndicator => 'Аутоматски паузирано';
 
   @override
+  String get activityPausedIndicator => 'Паузирано';
+
+  @override
   String get startCountdownSettingsTitle => 'Одбројавање пре почетка';
 
   @override

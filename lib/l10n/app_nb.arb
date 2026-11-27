@@ -172,6 +172,7 @@
   "activityAutoPauseDelayHelperText": "Velg hvor lenge uten bevegelse det skal gå før pause.",
   "activityAutoPauseDelayOptionLabel": "{seconds} sekunder",
   "activityAutoPausedIndicator": "Automatisk pause",
+  "activityPausedIndicator": "Satt på pause",
   "startCountdownSettingsTitle": "Nedtelling før start",
   "startCountdownSettingsSubtitle": "Tell ned før opptaket starter",
   "startCountdownToggleLabel": "Tell ned før start",
