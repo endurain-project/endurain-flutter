@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - The minimum iOS version is now 17.0. The Apple Watch app still needs watchOS 10.0.
+- The iPhone recorder uses the newer Core Location live updates. After iOS terminates the app during a recording, iOS now relaunches it by resuming those updates instead of by a significant location change. With auto-pause on, a recording still auto-pauses when the iPhone stops reporting fixes because it is standing still.
 - The two-factor sign-in step shows one box per character. An authenticator code takes six digits only, and "Use a backup code" switches to eight boxes of letters and digits, which the app sends as `XXXX-XXXX`. Pasted or autofilled codes with spaces or a dash fill the boxes, and password managers can still fill authenticator codes. The code is sent as soon as the last box is filled. If the server rejects it, the boxes clear and the reason shows under them, so the user can type the next code straight away.
 - In the Wear OS app:
   - In ambient mode the workout screen shows only the elapsed time. Heart rate and distance arrive in batches while the screen is dimmed, so they could be out of date.
@@ -51,6 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The GitLab mirror runs only for `main` and `v*` tags. It pushes only branches and tags, so GitHub's pull-request refs no longer make it fail.
 - Android and Wear OS dependencies, the Android Gradle plugin and the Kotlin version are declared once, in the Gradle version catalog `android/gradle/libs.versions.toml`.
 - Internal changes:
+  - The iPhone start countdown keeps the app awake with the recorder's own location stream instead of a separate location manager.
   - Audio announcement settings moved into the activity feature.
   - Settings repositories share typed preference helpers.
   - The upload queue and watch sync share one single-flight helper, and both databases share one open helper.

@@ -46,7 +46,51 @@ extension CoreLocationActivityRecorder {
         announcements.scheduleNextTimeAnnouncement()
     }
 
+    /// Auto-pauses once the stillness reaches the pause delay while the
+    /// device stays stationary.
+    ///
+    /// Core Location stops delivering fixes while the device is stationary,
+    /// so no further fix would reach the detector to time the stillness.
+    /// Does nothing when one is already pending, auto-pause is off, or the
+    /// recording is not active.
+    func scheduleStationaryAutoPause() {
+        guard stationaryAutoPauseTask == nil,
+              let dueAtMillis = autoPauseDetector?.autoPauseDueAtMillis,
+              store.loadSession()?.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let delayMillis = max(0, dueAtMillis - LocationFixPolicy.nowMillis())
+        stationaryAutoPauseTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(delayMillis) * 1_000_000)
+            guard !Task.isCancelled, let self else {
+                return
+            }
+            self.stationaryAutoPauseTask = nil
+            self.autoPauseWhileStationary()
+        }
+    }
+
+    /// Drops the pending stationary auto-pause, for a fix that shows the
+    /// device moving again or a stop, pause or resume.
+    func cancelStationaryAutoPause() {
+        stationaryAutoPauseTask?.cancel()
+        stationaryAutoPauseTask = nil
+    }
+
+    private func autoPauseWhileStationary() {
+        guard let detector = autoPauseDetector,
+              let session = store.loadSession(),
+              session.status == ActiveActivitySessionData.statusRecording else {
+            return
+        }
+        let nowMillis = LocationFixPolicy.nowMillis()
+        if case .autoPause = detector.onStationary(atMillis: nowMillis) {
+            transitionToAutoPaused(session, nowMillis: nowMillis)
+        }
+    }
+
     func transitionToAutoPaused(_ session: ActiveActivitySessionData, nowMillis: Int64) {
+        cancelStationaryAutoPause()
         // Back-date the pause to when movement last stopped so the stillness
         // delay is not counted as recorded time.
         let anchorMillis = IsoTime.toEpochMillis(session.resumedAt ?? session.startedAt)

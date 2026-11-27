@@ -91,9 +91,34 @@ final class MovementAutoPauseDetector {
             lastMovementAtMillis = sample.timestampMillis
             return .none
         }
-        let since = lastMovementAtMillis ?? sample.timestampMillis
+        return stillness(atMillis: sample.timestampMillis)
+    }
+
+    /// Advances stillness timing to `millis` without a fix, while the
+    /// recording is actively collecting. Core Location stops delivering fixes
+    /// while the device is stationary, so `onActivePoint` alone would never
+    /// see the stillness last long enough to auto-pause. Returns `.autoPause`
+    /// under the same rule as a still fix at that time.
+    func onStationary(atMillis millis: Int64) -> MovementAutoPauseTransition {
+        guard config.enabled else {
+            return .none
+        }
+        return stillness(atMillis: millis)
+    }
+
+    /// When the stillness that started at `lastMovementAtMillis` reaches the
+    /// pause delay, or nil when auto-pause is disabled.
+    var autoPauseDueAtMillis: Int64? {
+        guard config.enabled, let since = lastMovementAtMillis else {
+            return nil
+        }
+        return since + config.pauseDelayMillis
+    }
+
+    private func stillness(atMillis millis: Int64) -> MovementAutoPauseTransition {
+        let since = lastMovementAtMillis ?? millis
         lastMovementAtMillis = since
-        let stillForMillis = sample.timestampMillis - since
+        let stillForMillis = millis - since
         return stillForMillis >= config.pauseDelayMillis ? .autoPause : .none
     }
 

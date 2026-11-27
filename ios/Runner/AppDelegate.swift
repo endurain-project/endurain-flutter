@@ -33,12 +33,14 @@ import os
   ) -> Bool {
     excludeHealthDataFromBackup()
     // A recording interrupted by termination continues as soon as the
-    // process is back, whatever relaunched it: significant-location-change
-    // monitoring, which the recorder arms while a recording is active, or
-    // the user. The `.location` launch option is not used because it is
-    // unreliable for scene-based apps. Resuming here rather than when Dart
-    // attaches matters: a background relaunch has a short execution window,
-    // and the durable store already holds everything needed to continue.
+    // process is back, whatever relaunched it: Core Location resuming the
+    // live updates of the recorder's background activity session, or the
+    // user. Core Location expects that session and the update stream to be
+    // recreated during launch. The `.location` launch option is not used
+    // because it is unreliable for scene-based apps. Resuming here rather
+    // than when Dart attaches matters: a background relaunch has a short
+    // execution window, and the durable store already holds everything
+    // needed to continue.
     let recorder = CoreLocationActivityRecorder(store: .shared)
     activityRecorder = recorder
     recorder.resumeAfterRelaunch()

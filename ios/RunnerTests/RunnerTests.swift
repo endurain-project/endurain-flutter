@@ -201,7 +201,8 @@ final class ActivityRecorderChannelPersistenceTests: XCTestCase {
       try data.write(to: url, options: .atomic)
     })
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     let channel = ActivityRecorderChannel(store: store, recorder: recorder)
     defer {
       recorder.stopCollection()
@@ -223,7 +224,7 @@ final class ActivityRecorderChannelPersistenceTests: XCTestCase {
         XCTAssertTrue(recorder.startCollection())
       }
     }
-    let startsBeforeCommand = manager.startCount
+    let startsBeforeCommand = source.startCount
     var events: [[String: Any]] = []
     _ = channel.onListen(withArguments: nil) { payload in
       if let event = payload as? [String: Any] {
@@ -245,7 +246,7 @@ final class ActivityRecorderChannelPersistenceTests: XCTestCase {
 
     XCTAssertEqual(replies, 1)
     XCTAssertEqual((reply as? FlutterError)?.code, ActivityRecorderChannel.errorStoreWrite)
-    XCTAssertEqual(manager.startCount, startsBeforeCommand)
+    XCTAssertEqual(source.startCount, startsBeforeCommand)
     XCTAssertEqual(store.loadSession()?.status, initialStatus)
     XCTAssertEqual(store.pointCount(), initialStatus == nil ? 0 : 1)
     XCTAssertEqual(events.compactMap { $0["type"] as? String }, [
@@ -290,11 +291,12 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     let original = session()
     XCTAssertTrue(store.saveSession(original))
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
     XCTAssertTrue(recorder.startCollection())
     let firstTime = Date()
-    recorder.locationManager(manager, didUpdateLocations: [location(firstTime, latitude: 41.1)])
+    source.deliver([location(firstTime, latitude: 41.1)])
 
     let recovered = try XCTUnwrap(recorder.recoverActiveSession())
     let again = try XCTUnwrap(recorder.recoverActiveSession())
@@ -305,11 +307,9 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     XCTAssertEqual(recovered.startedAt, original.startedAt)
     XCTAssertNil(recovered.resumedAt)
     XCTAssertEqual(again.resumedAt, recovered.resumedAt)
-    XCTAssertEqual(manager.startCount, 1)
-    XCTAssertEqual(manager.stopCount, 0)
-    recorder.locationManager(
-      manager,
-      didUpdateLocations: [location(firstTime.addingTimeInterval(1), latitude: 41.2)]
+    XCTAssertEqual(source.startCount, 1)
+    XCTAssertEqual(source.stopCount, 0)
+    source.deliver([location(firstTime.addingTimeInterval(1), latitude: 41.2)]
     )
     let points = try store.readPoints()
     XCTAssertEqual(points.count, 2)
@@ -321,22 +321,24 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     let original = session()
     XCTAssertTrue(store.saveSession(original))
     let firstManager = RecoveryLocationManager()
-    let first = CoreLocationActivityRecorder(store: store, manager: firstManager)
+    let firstSource = FakeLiveLocationSource()
+    let first = CoreLocationActivityRecorder(store: store, manager: firstManager, locationSource: firstSource)
     XCTAssertTrue(first.startCollection())
     let firstTime = Date().addingTimeInterval(-1)
-    first.locationManager(firstManager, didUpdateLocations: [location(firstTime, latitude: 41.1)])
+    firstSource.deliver([location(firstTime, latitude: 41.1)])
     first.stopCollection()
 
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
     let recovered = try XCTUnwrap(recorder.recoverActiveSession())
     XCTAssertEqual(recovered.localSessionId, original.localSessionId)
     XCTAssertEqual(recovered.connectionProfileId, original.connectionProfileId)
     XCTAssertEqual(recovered.status, ActiveActivitySessionData.statusRecording)
     XCTAssertNotNil(recovered.resumedAt)
-    XCTAssertEqual(manager.startCount, 1)
-    recorder.locationManager(manager, didUpdateLocations: [location(Date(), latitude: 41.2)])
+    XCTAssertEqual(source.startCount, 1)
+    source.deliver([location(Date(), latitude: 41.2)])
     XCTAssertEqual(try store.readPoints().map { $0.segmentIndex }, [0, 1])
   }
 
@@ -350,11 +352,12 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
         )
       ])
       let manager = RecoveryLocationManager()
-      let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+      let source = FakeLiveLocationSource()
+      let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
       let recovered = try XCTUnwrap(recorder.recoverActiveSession())
       XCTAssertEqual(recovered.status, ActiveActivitySessionData.statusPaused)
       XCTAssertEqual(recovered.localSessionId, "existing_session")
-      XCTAssertEqual(manager.startCount, 0)
+      XCTAssertEqual(source.startCount, 0)
       XCTAssertEqual(store.pointCount(), 1)
     }
   }
@@ -363,12 +366,13 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     let store = makeStore()
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
 
     XCTAssertEqual(recorder.recoverActiveSession()?.status, ActiveActivitySessionData.statusRecording)
     XCTAssertEqual(store.loadSession()?.localSessionId, "existing_session")
-    XCTAssertEqual(manager.startCount, 1)
+    XCTAssertEqual(source.startCount, 1)
     XCTAssertEqual(store.pointCount(), 0)
   }
 
@@ -376,12 +380,13 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     let store = makeStore()
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
+    let source = FakeLiveLocationSource()
     manager.permission = .denied
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
 
     XCTAssertEqual(recorder.recoverActiveSession()?.status, ActiveActivitySessionData.statusPaused)
     XCTAssertEqual(store.loadSession()?.localSessionId, "existing_session")
-    XCTAssertEqual(manager.startCount, 0)
+    XCTAssertEqual(source.startCount, 0)
   }
 
   func testFailedRecoveryWriteDoesNotStartCollectionOrErasePoints() throws {
@@ -399,9 +404,10 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     try FileManager.default.removeItem(at: sessionFile)
     try FileManager.default.createDirectory(at: sessionFile, withIntermediateDirectories: false)
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     XCTAssertEqual(recorder.recoverActiveSession()?.status, ActiveActivitySessionData.statusFailed)
-    XCTAssertEqual(manager.startCount, 0)
+    XCTAssertEqual(source.startCount, 0)
     XCTAssertEqual(store.pointCount(), 1)
   }
 
@@ -418,18 +424,19 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     })
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
     XCTAssertTrue(recorder.startCollection())
     let firstTime = Date()
-    recorder.locationManager(manager, didUpdateLocations: [location(firstTime, latitude: 41.1)])
+    source.deliver([location(firstTime, latitude: 41.1)])
     failWrites = true
-    recorder.locationManager(manager, didUpdateLocations: [
+    source.deliver([
       location(firstTime.addingTimeInterval(31), latitude: 41.2)
     ])
     XCTAssertEqual(store.pointCount(), 1)
     XCTAssertEqual(store.loadSession()?.currentSegmentIndex, 0)
-    XCTAssertEqual(manager.stopCount, 1)
+    XCTAssertEqual(source.stopCount, 1)
   }
 
   private func millis(_ date: Date) -> Int64 {
@@ -473,12 +480,13 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
       ])
     )))
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
     XCTAssertTrue(recorder.startCollection())
     XCTAssertTrue(recorder.isTimeAnnouncementScheduled)
 
-    recorder.locationManager(manager, didUpdateLocations: [
+    source.deliver([
       fix(start.addingTimeInterval(1), speed: 3),
       fix(start.addingTimeInterval(2)),
       fix(start.addingTimeInterval(8)),
@@ -502,30 +510,31 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
 
     // Still for 1 s since the resume: the movement seen before the
     // auto-pause must not count, or this fix would auto-pause again.
-    recorder.locationManager(manager, didUpdateLocations: [fix(start.addingTimeInterval(21))])
+    source.deliver([fix(start.addingTimeInterval(21))])
 
     XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusRecording)
     XCTAssertEqual(store.pointCount(), pointsBeforeResume + 1)
     XCTAssertEqual(try store.readPoints().last?.segmentIndex, 1)
-    XCTAssertEqual(manager.startCount, 1)
+    XCTAssertEqual(source.startCount, 1)
   }
 
   func testRejectsFixesWithInvalidOrPoorAccuracy() throws {
     let store = makeStore()
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
     XCTAssertTrue(recorder.startCollection())
     let now = Date()
 
-    recorder.locationManager(manager, didUpdateLocations: [
+    source.deliver([
       fix(now, horizontalAccuracy: -1),
       fix(now, horizontalAccuracy: 101),
     ])
     XCTAssertEqual(store.pointCount(), 0)
 
-    recorder.locationManager(manager, didUpdateLocations: [fix(now, horizontalAccuracy: 100)])
+    source.deliver([fix(now, horizontalAccuracy: 100)])
     XCTAssertEqual(store.pointCount(), 1)
   }
 
@@ -533,12 +542,13 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     let store = makeStore()
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
     XCTAssertTrue(recorder.startCollection())
     let now = Date()
 
-    recorder.locationManager(manager, didUpdateLocations: [
+    source.deliver([
       fix(now.addingTimeInterval(-30), latitude: 40.0),
       fix(now, latitude: 41.1),
     ])
@@ -569,65 +579,204 @@ final class ActivityRecordingRecoveryTests: XCTestCase {
     ))
   }
 
-  func testWhenInUseRecordsWithoutTerminationRecovery() throws {
+  func testWhenInUseRecordsOnTheLiveUpdateStream() throws {
     let store = makeStore()
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
     manager.permission = .authorizedWhenInUse
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
 
     XCTAssertTrue(recorder.startCollection())
-    XCTAssertEqual(manager.startCount, 1)
-    XCTAssertEqual(manager.significantStartCount, 0)
-    XCTAssertTrue(manager.allowsBackgroundLocationUpdates)
-    recorder.locationManager(manager, didUpdateLocations: [fix(Date())])
+    XCTAssertTrue(source.isRunning)
+    source.deliver([fix(Date())])
     XCTAssertEqual(store.pointCount(), 1)
   }
 
-  func testDowngradeToWhenInUseKeepsRecordingAndStopsTerminationRecovery() throws {
+  func testDowngradeToWhenInUseKeepsRecording() throws {
     let store = makeStore()
     XCTAssertTrue(store.saveSession(session()))
     let manager = RecoveryLocationManager()
-    let recorder = CoreLocationActivityRecorder(store: store, manager: manager)
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
     defer { recorder.stopCollection() }
     XCTAssertTrue(recorder.startCollection())
-    XCTAssertEqual(manager.significantStartCount, 1)
 
     manager.permission = .authorizedWhenInUse
     recorder.locationManagerDidChangeAuthorization(manager)
 
-    XCTAssertEqual(manager.significantStopCount, 1)
-    XCTAssertEqual(manager.stopCount, 0)
+    XCTAssertEqual(source.stopCount, 0)
     XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusRecording)
-    recorder.locationManager(manager, didUpdateLocations: [fix(Date())])
+    source.deliver([fix(Date())])
     XCTAssertEqual(store.pointCount(), 1)
+  }
+
+  func testRevokedPermissionStopsTheStreamAndFailsTheSession() throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(session()))
+    let manager = RecoveryLocationManager()
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
+    XCTAssertTrue(recorder.startCollection())
+
+    manager.permission = .denied
+    recorder.locationManagerDidChangeAuthorization(manager)
+
+    XCTAssertFalse(source.isRunning)
+    XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusFailed)
+  }
+
+  func testDistanceFilterDropsNearbyFixesOnlyWithoutAutoPause() throws {
+    for autoPauseEnabled in [false, true] {
+      let store = makeStore()
+      XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
+        localSessionId: "filter_session",
+        activityType: "run",
+        status: ActiveActivitySessionData.statusRecording,
+        startedAt: IsoTime.nowUtc(),
+        autoPauseEnabled: autoPauseEnabled,
+        autoPauseDelaySeconds: 60
+      )))
+      let source = FakeLiveLocationSource()
+      let recorder = CoreLocationActivityRecorder(
+        store: store, manager: RecoveryLocationManager(), locationSource: source
+      )
+      XCTAssertTrue(recorder.startCollection())
+      let now = Date()
+      // ~1 m, then ~11 m north of the first fix.
+      source.deliver([
+        fix(now, latitude: 41.1, speed: 3),
+        fix(now.addingTimeInterval(1), latitude: 41.10001, speed: 3),
+        fix(now.addingTimeInterval(2), latitude: 41.1001, speed: 3),
+      ])
+      XCTAssertEqual(store.pointCount(), autoPauseEnabled ? 3 : 2)
+      recorder.stopCollection()
+    }
+  }
+
+  func testWarmUpDropsFixesAndTheRecordingKeepsItsStream() throws {
+    let store = makeStore()
+    let manager = RecoveryLocationManager()
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(store: store, manager: manager, locationSource: source)
+    defer { recorder.stopCollection() }
+
+    recorder.beginWarmUp()
+    XCTAssertTrue(source.isRunning)
+    source.deliver([fix(Date())])
+    XCTAssertEqual(store.pointCount(), 0)
+
+    XCTAssertTrue(store.saveSession(session()))
+    XCTAssertTrue(recorder.startCollection())
+    recorder.endWarmUp()
+    XCTAssertTrue(source.isRunning)
+    XCTAssertEqual(source.startCount, 1)
+    source.deliver([fix(Date())])
+    XCTAssertEqual(store.pointCount(), 1)
+  }
+
+  func testEndWarmUpStopsAnUnusedStreamAndWarmUpNeedsPermission() {
+    let manager = RecoveryLocationManager()
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(
+      store: makeStore(), manager: manager, locationSource: source
+    )
+    recorder.beginWarmUp()
+    recorder.endWarmUp()
+    XCTAssertFalse(source.isRunning)
+
+    manager.permission = .denied
+    recorder.beginWarmUp()
+    XCTAssertFalse(source.isRunning)
+  }
+
+  func testStationaryUpdateAutoPausesWithoutFurtherFixes() async throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
+      localSessionId: "stationary_session",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: IsoTime.nowUtc(),
+      autoPauseEnabled: true,
+      autoPauseDelaySeconds: 1
+    )))
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(
+      store: store, manager: RecoveryLocationManager(), locationSource: source
+    )
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+
+    source.deliver([fix(Date())], isStationary: true)
+    XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusRecording)
+    try await Task.sleep(nanoseconds: 1_500_000_000)
+
+    let paused = try XCTUnwrap(store.loadSession())
+    XCTAssertEqual(paused.status, ActiveActivitySessionData.statusPaused)
+    XCTAssertTrue(paused.pausedAutomatically)
+    XCTAssertTrue(source.isRunning)
+  }
+
+  func testMovingUpdateCancelsTheStationaryAutoPause() async throws {
+    let store = makeStore()
+    XCTAssertTrue(store.saveSession(ActiveActivitySessionData(
+      localSessionId: "stationary_session",
+      activityType: "run",
+      status: ActiveActivitySessionData.statusRecording,
+      startedAt: IsoTime.nowUtc(),
+      autoPauseEnabled: true,
+      autoPauseDelaySeconds: 1
+    )))
+    let source = FakeLiveLocationSource()
+    let recorder = CoreLocationActivityRecorder(
+      store: store, manager: RecoveryLocationManager(), locationSource: source
+    )
+    defer { recorder.stopCollection() }
+    XCTAssertTrue(recorder.startCollection())
+
+    source.deliver([fix(Date())], isStationary: true)
+    source.deliver([fix(Date(), latitude: 41.2, speed: 3)])
+    try await Task.sleep(nanoseconds: 1_500_000_000)
+
+    XCTAssertEqual(store.loadSession()?.status, ActiveActivitySessionData.statusRecording)
   }
 }
 
+/// Grants location access without touching Core Location.
 private final class RecoveryLocationManager: CLLocationManager {
   var permission = CLAuthorizationStatus.authorizedAlways
-  var startCount = 0
-  var stopCount = 0
-  var significantStartCount = 0
-  var significantStopCount = 0
-  private var backgroundUpdates = false
-  private var backgroundIndicator = false
 
   override var authorizationStatus: CLAuthorizationStatus { permission }
-  override var allowsBackgroundLocationUpdates: Bool {
-    get { backgroundUpdates }
-    set { backgroundUpdates = newValue }
-  }
-  override var showsBackgroundLocationIndicator: Bool {
-    get { backgroundIndicator }
-    set { backgroundIndicator = newValue }
-  }
-  override func startUpdatingLocation() { startCount += 1 }
-  override func stopUpdatingLocation() { stopCount += 1 }
-  override func startMonitoringSignificantLocationChanges() { significantStartCount += 1 }
-  override func stopMonitoringSignificantLocationChanges() { significantStopCount += 1 }
   override func requestAlwaysAuthorization() {}
+}
+
+/// Live location stream the tests push fixes through.
+@MainActor
+private final class FakeLiveLocationSource: LiveLocationSource {
+  private(set) var startCount = 0
+  private(set) var stopCount = 0
+  private var onUpdate: (@MainActor (LiveLocationUpdate) -> Void)?
+
+  var isRunning: Bool { onUpdate != nil }
+
+  func start(onUpdate: @escaping @MainActor (LiveLocationUpdate) -> Void) {
+    guard self.onUpdate == nil else { return }
+    startCount += 1
+    self.onUpdate = onUpdate
+  }
+
+  func stop() {
+    guard onUpdate != nil else { return }
+    stopCount += 1
+    onUpdate = nil
+  }
+
+  func deliver(_ locations: [CLLocation], isStationary: Bool = false) {
+    for location in locations {
+      onUpdate?(LiveLocationUpdate(location: location, isStationary: isStationary))
+    }
+  }
 }
 
 /// Unit tests for the native activity-recorder serialization models.
