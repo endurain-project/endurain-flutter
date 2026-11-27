@@ -10,6 +10,11 @@ import Foundation
 final class WorkoutLocationSource: NSObject {
     private let manager = CLLocationManager()
     private var isUpdating = false
+    private var didRequestFullAccuracy = false
+
+    /// Key of the purpose string under
+    /// `NSLocationTemporaryUsageDescriptionDictionary` in Info.plist.
+    static let fullAccuracyPurposeKey = "EndurainWorkoutRoute"
 
     /// Called with every batch of fixes Core Location delivers.
     var onLocations: (([CLLocation]) -> Void)?
@@ -30,7 +35,26 @@ final class WorkoutLocationSource: NSObject {
     func requestAuthorizationIfNeeded() {
         if manager.authorizationStatus == .notDetermined {
             manager.requestWhenInUseAuthorization()
+        } else {
+            requestFullAccuracyIfNeeded()
         }
+    }
+
+    /// A route recorded with approximate location is useless, so when the
+    /// user granted access but turned Precise Location off, asks once per
+    /// launch to turn it on for now. The workout records either way.
+    func requestFullAccuracyIfNeeded() {
+        guard !didRequestFullAccuracy,
+              manager.authorizationStatus == .authorizedWhenInUse
+                || manager.authorizationStatus == .authorizedAlways,
+              manager.accuracyAuthorization == .reducedAccuracy
+        else {
+            return
+        }
+        didRequestFullAccuracy = true
+        manager.requestTemporaryFullAccuracyAuthorization(
+            withPurposeKey: Self.fullAccuracyPurposeKey
+        )
     }
 
     func start() {
@@ -70,6 +94,7 @@ extension WorkoutLocationSource: CLLocationManagerDelegate {
         let status = manager.authorizationStatus
         Task { @MainActor in
             self.onAuthorizationChange?(status)
+            self.requestFullAccuracyIfNeeded()
         }
     }
 }

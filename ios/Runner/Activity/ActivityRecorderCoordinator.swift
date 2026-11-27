@@ -87,9 +87,6 @@ final class ActivityRecorderCoordinator {
     static let eventFailed = "failed"
     static let eventRecoverableStateChanged = "recoverableStateChanged"
 
-    static let reasonLocationStreamFailed = "locationStreamFailed"
-    static let reasonLocationUnavailable = "locationUnavailable"
     static let reasonPermissionLost = "permissionLost"
     static let reasonPersistenceFailed = "persistenceFailed"
-    static let reasonUnsupportedPlatform = "unsupportedPlatform"
 }

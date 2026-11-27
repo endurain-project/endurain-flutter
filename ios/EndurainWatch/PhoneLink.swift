@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import WatchConnectivity
 
 /// Watch end of the link to the Endurain iPhone app.
@@ -10,27 +11,34 @@ import WatchConnectivity
 /// phone cannot store yet (for example one without a GPS route) is never lost
 /// on the watch. A delivered workout still unconfirmed after
 /// [redeliveryDelay] is sent again, because the phone may have failed to keep
-/// the file it received; unconfirmed workouts are never dropped.
+/// the file it received. A workout the phone never confirms is resent with an
+/// exponential backoff (doubling up to [maxRedeliveryDelay]) rather than at a
+/// fixed rate, and is never dropped.
 ///
 /// Main-actor isolated for SwiftUI. WatchConnectivity calls the delegate on a
 /// background queue, so the delegate methods and the transfer logic are
 /// nonisolated: they only touch `WCSession` and the self-locking outbox.
 @MainActor
-final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
+@Observable
+final class PhoneLink: NSObject, WCSessionDelegate {
     static let shared = PhoneLink()
 
     /// How long a delivered workout waits for the phone's confirmation
-    /// before it is sent again.
+    /// before it is sent again. Doubles with every further unconfirmed
+    /// delivery, up to [maxRedeliveryDelay].
     nonisolated static let redeliveryDelay: TimeInterval = 10 * 60
+
+    /// Longest wait between two deliveries of an unconfirmed workout.
+    nonisolated static let maxRedeliveryDelay: TimeInterval = 24 * 60 * 60
 
     /// A failed transfer is retried after this long, or sooner when the phone
     /// becomes reachable.
     nonisolated static let retryDelay: TimeInterval = 60
 
     /// Workouts not yet confirmed by the phone.
-    @Published private(set) var waitingCount = 0
+    private(set) var waitingCount = 0
 
-    nonisolated let outbox: HandoffFileStore
+    @ObservationIgnored nonisolated let outbox: HandoffFileStore
 
     init(outbox: HandoffFileStore = HandoffFileStore(directory: PhoneLink.defaultOutboxDirectory())) {
         self.outbox = outbox
@@ -38,11 +46,8 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
     }
 
     nonisolated static func defaultOutboxDirectory() -> URL {
-        let support = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first ?? FileManager.default.temporaryDirectory
-        return support.appendingPathComponent("watch_outbox", isDirectory: true)
+        return WatchStorage.applicationSupportDirectory
+            .appendingPathComponent("watch_outbox", isDirectory: true)
     }
 
     func activate() {
@@ -60,7 +65,8 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
     }
 
     /// Starts a transfer for every workout not yet delivered, or delivered
-    /// but unconfirmed for [redeliveryDelay], and not already on its way.
+    /// but unconfirmed past its backoff (see [redeliveryDelay]), and not
+    /// already on its way.
     nonisolated func sendPending() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
@@ -69,7 +75,8 @@ final class PhoneLink: NSObject, ObservableObject, WCSessionDelegate {
             transfer.file.metadata?[WatchProtocol.keySessionId] as? String
         })
         let entries = outbox.entriesToTransfer(
-            redeliverDeliveredBefore: Date().addingTimeInterval(-Self.redeliveryDelay)
+            baseDelay: Self.redeliveryDelay,
+            maxDelay: Self.maxRedeliveryDelay
         )
         for entry in entries where !inFlight.contains(entry.sessionId) {
             session.transferFile(

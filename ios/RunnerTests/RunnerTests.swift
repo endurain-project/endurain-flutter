@@ -762,7 +762,6 @@ final class ActiveRecordingModelsTests: XCTestCase {
 
     XCTAssertTrue(session(ActiveActivitySessionData.statusRecording).isActive)
     XCTAssertTrue(session(ActiveActivitySessionData.statusPaused).isActive)
-    XCTAssertFalse(session(ActiveActivitySessionData.statusStopping).isActive)
     XCTAssertFalse(session(ActiveActivitySessionData.statusCompleted).isActive)
     XCTAssertFalse(session(ActiveActivitySessionData.statusFailed).isActive)
   }

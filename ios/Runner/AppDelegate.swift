@@ -46,23 +46,16 @@ import UIKit
   }
 
   private func excludeHealthDataFromBackup() {
-    guard let support = FileManager.default.urls(
-      for: .applicationSupportDirectory,
-      in: .userDomainMask
-    ).first else {
-      return
-    }
+    let support = WatchStorage.applicationSupportDirectory
     let directoryNames = ["activity_records", "endurain_private"]
     for directoryName in directoryNames {
-      var directory = support.appendingPathComponent(directoryName, isDirectory: true)
+      let directory = support.appendingPathComponent(directoryName, isDirectory: true)
       do {
         try FileManager.default.createDirectory(
           at: directory,
           withIntermediateDirectories: true
         )
-        var values = URLResourceValues()
-        values.isExcludedFromBackup = true
-        try directory.setResourceValues(values)
+        try WatchStorage.excludeFromBackup(directory)
       } catch {
         NSLog("Unable to exclude private Endurain storage from backup: %@", error.localizedDescription)
       }

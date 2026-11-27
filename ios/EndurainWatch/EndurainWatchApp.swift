@@ -4,14 +4,12 @@ import WatchKit
 @main
 struct EndurainWatchApp: App {
     @WKApplicationDelegateAdaptor(WatchAppDelegate.self) private var appDelegate
-    @StateObject private var workout = WorkoutManager.shared
-    @StateObject private var phoneLink = PhoneLink.shared
 
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environmentObject(workout)
-                .environmentObject(phoneLink)
+                .environment(WorkoutManager.shared)
+                .environment(PhoneLink.shared)
         }
     }
 }

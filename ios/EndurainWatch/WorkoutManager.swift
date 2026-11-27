@@ -1,6 +1,7 @@
 import CoreLocation
 import Foundation
 import HealthKit
+import Observation
 import WatchKit
 
 /// Records one outdoor workout on the watch and hands it to the iPhone.
@@ -16,7 +17,8 @@ import WatchKit
 /// The track is kept by [WorkoutRouteRecorder], the GPS stream by
 /// [WorkoutLocationSource], and the HealthKit mapping by [WorkoutHealthKit].
 @MainActor
-final class WorkoutManager: NSObject, ObservableObject {
+@Observable
+final class WorkoutManager: NSObject {
     static let shared = WorkoutManager()
 
     enum Phase: Equatable {
@@ -41,28 +43,28 @@ final class WorkoutManager: NSObject, ObservableObject {
     private static let countdownSecondsKey = "startCountdownSeconds"
 
     /// Seconds counted down before a workout starts, saved on the watch.
-    @Published var countdownSeconds: Int {
+    var countdownSeconds: Int {
         didSet {
             UserDefaults.standard.set(countdownSeconds, forKey: Self.countdownSecondsKey)
         }
     }
 
-    @Published private(set) var phase: Phase = .idle
-    @Published private(set) var activityType: WatchActivityType?
-    @Published private(set) var distanceMeters: Double?
-    @Published private(set) var heartRateBpm: Int?
-    @Published private(set) var locationAuthorization: CLAuthorizationStatus
-    @Published var errorMessage: String?
+    private(set) var phase: Phase = .idle
+    private(set) var activityType: WatchActivityType?
+    private(set) var distanceMeters: Double?
+    private(set) var heartRateBpm: Int?
+    private(set) var locationAuthorization: CLAuthorizationStatus
+    var errorMessage: String?
 
-    private let healthStore = HKHealthStore()
-    private let location = WorkoutLocationSource()
-    private let store: WatchRecordingStore
-    private let route: WorkoutRouteRecorder
-    private var session: HKWorkoutSession?
-    private var builder: HKLiveWorkoutBuilder?
-    private var recording: WatchRecording?
-    private var pendingStart: (session: HKWorkoutSession, builder: HKLiveWorkoutBuilder, type: WatchActivityType)?
-    private var countdownTask: Task<Void, Never>?
+    @ObservationIgnored private let healthStore = HKHealthStore()
+    @ObservationIgnored private let location = WorkoutLocationSource()
+    @ObservationIgnored private let store: WatchRecordingStore
+    @ObservationIgnored private let route: WorkoutRouteRecorder
+    @ObservationIgnored private var session: HKWorkoutSession?
+    @ObservationIgnored private var builder: HKLiveWorkoutBuilder?
+    @ObservationIgnored private var recording: WatchRecording?
+    @ObservationIgnored private var pendingStart: (session: HKWorkoutSession, builder: HKLiveWorkoutBuilder, type: WatchActivityType)?
+    @ObservationIgnored private var countdownTask: Task<Void, Never>?
 
     init(store: WatchRecordingStore = WatchRecordingStore(directory: WorkoutManager.defaultRecordingDirectory())) {
         self.store = store
@@ -80,11 +82,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     nonisolated static func defaultRecordingDirectory() -> URL {
-        let support = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first ?? FileManager.default.temporaryDirectory
-        return support.appendingPathComponent("watch_recording", isDirectory: true)
+        return WatchStorage.applicationSupportDirectory
+            .appendingPathComponent("watch_recording", isDirectory: true)
     }
 
     /// Active (unpaused) seconds of the current workout as of [date].
