@@ -32,6 +32,20 @@ object ExercisePermissions {
             WorkoutMetric.DISTANCE -> Manifest.permission.ACTIVITY_RECOGNITION
         }
 
+    /**
+     * What the start flow asks for in one prompt. Android lets the user
+     * downgrade to approximate location, so both location permissions are
+     * requested together; only the precise one is accepted to start.
+     */
+    fun requestedAtStart(sdkInt: Int): Array<String> =
+        buildList {
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+            add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            add(Manifest.permission.ACTIVITY_RECOGNITION)
+            add(heartRate(sdkInt))
+            if (sdkInt >= 33) add(Manifest.permission.POST_NOTIFICATIONS)
+        }.toTypedArray()
+
     /** The metrics whose permission [isGranted] reports as granted. */
     fun permitted(
         sdkInt: Int,

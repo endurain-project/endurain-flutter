@@ -3,6 +3,7 @@ package com.endurain.endurain.wear
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.SystemClock
+import androidx.core.content.ContextCompat
 import androidx.health.services.client.ExerciseClient
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
@@ -102,6 +103,10 @@ interface ExerciseGateway {
 }
 
 class HealthServicesExerciseGateway(context: Context) : ExerciseGateway {
+    // Updates are delivered on the main thread, where the recorder keeps its
+    // state; the recorder moves the file writes off it. Passed explicitly so
+    // the callback does not depend on the client's default executor.
+    private val callbackExecutor = ContextCompat.getMainExecutor(context.applicationContext)
     private val client: ExerciseClient by lazy { HealthServices.getClient(context.applicationContext).exerciseClient }
     private var registered: ExerciseUpdateCallback? = null
 
@@ -183,7 +188,7 @@ class HealthServicesExerciseGateway(context: Context) : ExerciseGateway {
                 }
             }
         registered = callback
-        client.setUpdateCallback(callback)
+        client.setUpdateCallback(callbackExecutor, callback)
     }
 
     override suspend fun clearListener() {

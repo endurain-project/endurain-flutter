@@ -1,18 +1,14 @@
 package com.endurain.endurain.wear
 
-import android.util.Log
 import com.endurain.endurain.watchlink.WatchRecordedPoint
 import com.endurain.endurain.watchlink.WatchRecording
-import com.endurain.endurain.watchlink.WatchRecordingStore
-import java.io.IOException
 
 /**
  * The GPS track of the workout being recorded: the points received so far,
- * and those not yet written to the durable [WatchRecordingStore].
+ * and those not yet handed to the [RecordingWriter] for the durable store.
+ * Only used from the main thread.
  */
-internal class WorkoutTrack(
-    private val store: WatchRecordingStore,
-) {
+internal class WorkoutTrack {
     private val points = mutableListOf<WatchRecordedPoint>()
     private val unsavedPoints = mutableListOf<WatchRecordedPoint>()
     private var lastHeartRate: Pair<Int, Long>? = null
@@ -35,7 +31,7 @@ internal class WorkoutTrack(
         lastHeartRate = bpm to atMillis
     }
 
-    /** Adds the usable [fixes] of [recording]; true when enough are unsaved to [flush]. */
+    /** Adds the usable [fixes] of [recording]; true when enough are unsaved to [drainUnsaved]. */
     fun add(
         fixes: List<GatewayLocation>,
         recording: WatchRecording,
@@ -59,18 +55,11 @@ internal class WorkoutTrack(
         return unsavedPoints.size >= POINT_FLUSH_THRESHOLD
     }
 
-    /** Writes the unsaved points; true when some were written. */
-    fun flush(): Boolean {
-        if (unsavedPoints.isEmpty()) return false
-        return try {
-            store.append(unsavedPoints.toList())
-            unsavedPoints.clear()
-            true
-        } catch (error: IOException) {
-            // Kept in memory and retried with the next batch.
-            Log.w(TAG, "Could not save workout points", error)
-            false
-        }
+    /** Takes the points not yet handed to the writer, leaving none unsaved. */
+    fun drainUnsaved(): List<WatchRecordedPoint> {
+        val batch = unsavedPoints.toList()
+        unsavedPoints.clear()
+        return batch
     }
 
     private companion object {

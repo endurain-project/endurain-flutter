@@ -39,4 +39,16 @@ class ExercisePermissionsTest {
             ExercisePermissions.permitted(36, (granted + readHeartRate)::contains),
         )
     }
+
+    @Test
+    fun theStartPromptAsksForBothLocationsAndTheOptionalSensors() {
+        val old = ExercisePermissions.requestedAtStart(32).toList()
+        assertEquals(
+            listOf(location, "android.permission.ACCESS_COARSE_LOCATION", activityRecognition, bodySensors),
+            old,
+        )
+        val current = ExercisePermissions.requestedAtStart(36).toList()
+        assertEquals(readHeartRate, current[3])
+        assertEquals("android.permission.POST_NOTIFICATIONS", current.last())
+    }
 }

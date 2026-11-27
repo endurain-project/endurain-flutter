@@ -230,10 +230,12 @@ class WorkoutRecorderTest {
             assertEquals(1, gateway.paused)
             gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.PAUSED))
             assertEquals(WorkoutPhase.Active(paused = true), recorder.state.value.phase)
+            runCurrent()
             assertTrue(store.load()!!.first.isPaused)
 
             gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.ACTIVE))
             assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+            runCurrent()
             assertEquals(1, store.load()!!.first.segmentIndex)
         }
 
@@ -570,5 +572,90 @@ class WorkoutRecorderTest {
             recorder.restoreUnfinishedRecording()
             runCurrent()
             assertEquals(WorkoutPhase.Idle, recorder.state.value.phase)
+        }
+
+    @Test
+    fun restoreClearsARecordingThatCannotBeRead() =
+        runTest {
+            saveRecording()
+            File(directory, "recording.json").writeText("{broken")
+            val platform = FakePlatform { BASE_TIME + testScheduler.currentTime }
+            val recorder = recorder(this, platform)
+
+            recorder.restoreUnfinishedRecording()
+            runCurrent()
+
+            assertEquals(WorkoutPhase.Idle, recorder.state.value.phase)
+            assertEquals(false, store.hasRecording())
+            assertEquals(false, recorder.hasSavedRecording())
+            assertTrue(handoffs.isEmpty())
+            assertEquals(0, gateway.ownershipCalls)
+
+            // Nothing is left to block a new workout.
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            assertEquals(WorkoutPhase.Active(paused = false), recorder.state.value.phase)
+        }
+
+    private fun fixes(vararg seconds: Int) =
+        seconds.map {
+            GatewayLocation(BASE_TIME + it * 1000L, 38.7, -9.1, Double.NaN, Double.NaN, null, null)
+        }
+
+    @Test
+    fun pointsAreSavedOffTheCallbackInOrder() =
+        runTest {
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            // The test dispatcher is queued: nothing is written until it runs.
+            val first = fixes(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+            val second = fixes(11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+            gateway.registered!!.onUpdate(
+                ExerciseSnapshot(GatewayExerciseState.ACTIVE, distanceTotalMeters = 50.0, locations = first),
+            )
+            gateway.registered!!.onUpdate(ExerciseSnapshot(GatewayExerciseState.ACTIVE, locations = second))
+            assertTrue(store.load()!!.second.isEmpty())
+
+            runCurrent()
+
+            val (saved, points) = store.load()!!
+            assertEquals((1..20).map { BASE_TIME + it * 1000L }, points.map { it.timestampMillis })
+            assertEquals(50.0, saved.lastDistanceMeters)
+        }
+
+    @Test
+    fun finishHandsOverThePointsStillUnsaved() =
+        runTest {
+            val recorder = recorder(this)
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+            gateway.registered!!.onUpdate(
+                ExerciseSnapshot(GatewayExerciseState.ACTIVE, locations = fixes(1, 2, 3)),
+            )
+
+            recorder.end()
+            runCurrent()
+
+            val summary = (recorder.state.value.phase as WorkoutPhase.Finished).summary
+            assertTrue(summary.hasRoute)
+            assertEquals(1, handoffs.size)
+            assertEquals(false, store.hasRecording())
+        }
+
+    @Test
+    fun aFailedHandoffKeepsTheRecordingAndWarns() =
+        runTest {
+            val recorder =
+                recorder(this, sink = HandoffSink { _, _ -> throw IOException("full") })
+            recorder.start(WatchActivityType.RUN)
+            runCurrent()
+
+            recorder.end()
+            runCurrent()
+
+            assertTrue(recorder.state.value.phase is WorkoutPhase.Finished)
+            assertEquals(R.string.queue_failed, recorder.state.value.errorMessage)
+            assertTrue(store.hasRecording())
         }
 }
