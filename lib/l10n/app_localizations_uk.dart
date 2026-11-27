@@ -1208,11 +1208,11 @@ class AppLocalizationsUk extends AppLocalizations {
   String get healthSyncReviewAccess => 'Перевірити доступ';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Автосинхронізація під час відкриття';
+  String get healthSyncAutoSyncTitle => 'Імпортувати автоматично';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Автоматично імпортувати нові тренування, коли відкривається застосунок.';
+      'Нові тренування під час відкриття застосунку та, якщо дозволено, у фоновому режимі.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

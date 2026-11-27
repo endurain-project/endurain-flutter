@@ -21,6 +21,19 @@ import os
   /// Strong reference so Health Sync's heart rate series reader stays registered.
   private var heartRateSeriesChannel: HeartRateSeriesChannel?
 
+  /// Strong reference so the automatic import's workout changes reader stays
+  /// registered.
+  private var healthWorkoutChangesChannel: HealthWorkoutChangesChannel?
+
+  /// Strong reference so the app's engine keeps running background health
+  /// imports.
+  private var healthBackgroundSyncChannel: HealthBackgroundSyncChannel?
+
+  /// Imports new workouts on HealthKit background delivery. Created at launch,
+  /// where HealthKit expects the observer queries to be set up again, since a
+  /// delivery may be what launched the app.
+  private var healthBackgroundSync: HealthBackgroundSync?
+
   /// The single activity recorder, created at launch so its location
   /// manager and delegate exist before iOS delivers the event a background
   /// relaunch was for, and handed to the recorder channel once the Flutter
@@ -59,6 +72,9 @@ import os
     // Activated before the engine so sessions the watch queued while the app
     // was closed land in the durable inbox as soon as they are delivered.
     WatchConnectivityBridge.shared.activate()
+    let healthSync = HealthBackgroundSync()
+    healthBackgroundSync = healthSync
+    healthSync.startIfScheduled()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -110,6 +126,31 @@ import os
       let channel = HeartRateSeriesChannel()
       channel.register(with: registrar.messenger())
       heartRateSeriesChannel = channel
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(
+      forPlugin: "EndurainHealthWorkoutChangesChannel"
+    ) {
+      let channel = HealthWorkoutChangesChannel()
+      channel.register(with: registrar.messenger())
+      healthWorkoutChangesChannel = channel
+    }
+    if let healthSync = healthBackgroundSync,
+      let registrar = engineBridge.pluginRegistry.registrar(
+        forPlugin: "EndurainHealthBackgroundSyncChannel"
+      )
+    {
+      let channel = HealthBackgroundSyncChannel(
+        setScheduled: { [weak healthSync] scheduled in
+          try await healthSync?.setScheduled(scheduled)
+        },
+        onListen: { [weak healthSync] channel in
+          healthSync?.listen(channel)
+        },
+        // Only a headless engine reports a finished run.
+        onFinished: { _ in }
+      )
+      channel.register(with: registrar.messenger())
+      healthBackgroundSyncChannel = channel
     }
     if let registrar = engineBridge.pluginRegistry.registrar(
       forPlugin: "EndurainActivityRecorderChannel"

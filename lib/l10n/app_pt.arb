@@ -1488,11 +1488,11 @@
   "@healthSyncReviewAccess": {
     "description": "Botão para pedir novamente permissões do HealthKit - Usado em: health_sync_screen.dart"
   },
-  "healthSyncAutoSyncTitle": "Sincronizar ao abrir",
+  "healthSyncAutoSyncTitle": "Importar automaticamente",
   "@healthSyncAutoSyncTitle": {
     "description": "Título do botão de sincronização automática - Usado em: health_sync_screen.dart"
   },
-  "healthSyncAutoSyncSubtitle": "Importar novos treinos automaticamente ao abrir a aplicação.",
+  "healthSyncAutoSyncSubtitle": "Novos treinos, ao abrir a aplicação e, se permitido, em segundo plano.",
   "@healthSyncAutoSyncSubtitle": {
     "description": "Subtítulo do botão de sincronização automática - Usado em: health_sync_screen.dart"
   },

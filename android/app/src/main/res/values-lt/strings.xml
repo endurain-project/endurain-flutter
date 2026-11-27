@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Įrašymo įspėjimai</string>
     <string name="activity_recording_alert_channel_description">Rodoma, kai įrašymas sustoja, kol Endurain veikia fone.</string>
     <string name="health_rationale_title">Endurain sveikatos duomenys</string>
-    <string name="health_rationale_usage">Endurain skaito treniruotes, maršrutus, pulsą ir atstumą tik tam, kad importuotų pasirinktas veiklas.</string>
+    <string name="health_rationale_usage">Endurain skaito treniruotes, maršrutus, pulsą ir atstumą tik tam, kad importuotų veiklas: pasirinktas ir, įjungus automatinį importavimą, naujas fone.</string>
     <string name="health_rationale_storage">Pasirinktų maršrutų duomenys saugomi šiame įrenginyje ir įkeliami tik į Endurain serverį, prie kurio prisijungiate.</string>
     <string name="health_rationale_privacy_policy">Privatumo politika</string>
 </resources>

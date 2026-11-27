@@ -29,6 +29,10 @@
     <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
     <!-- Required for Health Connect reads older than its standard 30-day window. -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+    <!-- Required for the automatic import's periodic background reads
+         (HealthBackgroundSyncWorker), requested only when the user turns
+         automatic import on. -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
 
     <!-- Bluetooth Low Energy for external sensors (e.g. heart-rate straps).
          BLUETOOTH_SCAN declares neverForLocation so scanning does not require

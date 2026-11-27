@@ -1231,12 +1231,11 @@ class AppLocalizationsCa extends AppLocalizations {
   String get healthSyncReviewAccess => 'Revisa l\'accés';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Sincronització automàtica en obrir l\'aplicació';
+  String get healthSyncAutoSyncTitle => 'Importa automàticament';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importa nous entrenaments automàticament quan s\'obre l\'aplicació.';
+      'Entrenaments nous, en obrir l\'aplicació i, si es permet, en segon pla.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

@@ -1209,11 +1209,11 @@ class AppLocalizationsDa extends AppLocalizations {
   String get healthSyncReviewAccess => 'Gennemgå adgang';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automatisk synkronisering ved åbning';
+  String get healthSyncAutoSyncTitle => 'Importer automatisk';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importer nye træningspas automatisk, når appen åbnes.';
+      'Nye træningspas, når appen åbnes og, hvis det er tilladt, i baggrunden.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

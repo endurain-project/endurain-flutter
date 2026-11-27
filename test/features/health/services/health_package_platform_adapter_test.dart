@@ -4,9 +4,11 @@ import 'package:endurain/features/activity/models/activity_type.dart';
 import 'package:endurain/features/health/models/health_authorization_status.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/models/health_workout.dart';
+import 'package:endurain/features/health/models/health_workout_changes.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:endurain/features/health/services/health_package_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
+import 'package:endurain/features/health/services/health_workout_changes_reader.dart';
 import 'package:endurain/features/health/services/heart_rate_series_reader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -1108,6 +1110,144 @@ void main() {
       expect(error.isTransient, isFalse);
     });
   });
+
+  group('HealthPackagePlatformAdapter background access', () {
+    HealthPackagePlatformAdapter androidAdapter(_FakeHealth health) =>
+        HealthPackagePlatformAdapter(
+          health: health,
+          targetPlatform: () => TargetPlatform.android,
+        );
+
+    test('needs no extra permission on iOS', () async {
+      final adapter = HealthPackagePlatformAdapter(
+        health: _FakeHealth(hasPermissionsResult: null),
+        targetPlatform: () => TargetPlatform.iOS,
+      );
+
+      expect(await adapter.hasBackgroundReadAccess(), isTrue);
+      expect(await adapter.requestBackgroundReadAccess(), isTrue);
+    });
+
+    test('needs the Health Connect permission on Android', () async {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        backgroundAvailable: true,
+      );
+
+      expect(await androidAdapter(health).hasBackgroundReadAccess(), isFalse);
+      expect(health.requestBackgroundCallCount, 0);
+    });
+
+    test('asks for the permission only when it is missing', () async {
+      final missing = _FakeHealth(
+        hasPermissionsResult: true,
+        backgroundAvailable: true,
+        requestBackgroundResult: true,
+      );
+      final held = _FakeHealth(
+        hasPermissionsResult: true,
+        backgroundAvailable: true,
+        backgroundAuthorized: true,
+      );
+
+      expect(
+        await androidAdapter(missing).requestBackgroundReadAccess(),
+        isTrue,
+      );
+      expect(missing.requestBackgroundCallCount, 1);
+      expect(await androidAdapter(held).requestBackgroundReadAccess(), isTrue);
+      expect(held.requestBackgroundCallCount, 0);
+    });
+
+    test('is unavailable without the Health Connect feature', () async {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        backgroundAuthorized: true,
+      );
+
+      expect(await androidAdapter(health).hasBackgroundReadAccess(), isFalse);
+      expect(
+        await androidAdapter(health).requestBackgroundReadAccess(),
+        isFalse,
+      );
+      expect(health.requestBackgroundCallCount, 0);
+    });
+
+    test('maps a missing Health Connect to healthUnavailable', () async {
+      final health = _FakeHealth(
+        hasPermissionsResult: true,
+        backgroundAvailable: true,
+        requestBackgroundError: UnsupportedError('Health Connect missing'),
+      );
+
+      await expectLater(
+        androidAdapter(health).requestBackgroundReadAccess(),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.healthUnavailable,
+          ),
+        ),
+      );
+    });
+  });
+
+  group('HealthPackagePlatformAdapter workout changes', () {
+    test('reads changes through the injected reader', () async {
+      final health = _FakeHealth(hasPermissionsResult: true);
+      final adapter = HealthPackagePlatformAdapter(
+        health: health,
+        workoutChangesReader: _FakeChangesReader(),
+      );
+
+      expect(await adapter.workoutChangesToken(), 'anchors');
+      final changes = await adapter.workoutChangesSince('anchors');
+
+      expect(changes.nextToken, 'anchors-next');
+      expect(health.configureCallCount, 1);
+    });
+
+    test('maps a failed read to healthReadFailed', () async {
+      final adapter = HealthPackagePlatformAdapter(
+        health: _FakeHealth(hasPermissionsResult: true),
+        workoutChangesReader: _FakeChangesReader(error: StateError('locked')),
+      );
+
+      await expectLater(
+        adapter.workoutChangesToken(),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.healthReadFailed,
+          ),
+        ),
+      );
+      await expectLater(
+        adapter.workoutChangesSince('anchors'),
+        throwsA(isA<AppException>()),
+      );
+    });
+  });
+}
+
+class _FakeChangesReader implements HealthWorkoutChangesReader {
+  _FakeChangesReader({this.error});
+
+  final Error? error;
+
+  @override
+  Future<String> currentToken() async {
+    if (error case final error?) throw error;
+    return 'anchors';
+  }
+
+  @override
+  Future<HealthWorkoutChanges> changesSince(String token) async {
+    if (error case final error?) throw error;
+    return HealthWorkoutChanges(nextToken: '$token-next');
+  }
 }
 
 class _FakeHealth extends Health {
@@ -1121,7 +1261,19 @@ class _FakeHealth extends Health {
     this.readError,
     this.errorByType = const {},
     this.authError,
+    this.backgroundAvailable = false,
+    this.backgroundAuthorized = false,
+    this.requestBackgroundResult = false,
+    this.requestBackgroundError,
   });
+
+  final bool backgroundAvailable;
+  final bool backgroundAuthorized;
+  final bool requestBackgroundResult;
+
+  /// Thrown by requestHealthDataInBackgroundAuthorization when set.
+  final Object? requestBackgroundError;
+  int requestBackgroundCallCount = 0;
 
   final bool? hasPermissionsResult;
 
@@ -1153,6 +1305,22 @@ class _FakeHealth extends Health {
   @override
   Future<void> configure() async {
     configureCallCount++;
+  }
+
+  @override
+  Future<bool> isHealthDataInBackgroundAvailable() async => backgroundAvailable;
+
+  @override
+  Future<bool> isHealthDataInBackgroundAuthorized() async =>
+      backgroundAuthorized;
+
+  @override
+  Future<bool> requestHealthDataInBackgroundAuthorization() async {
+    requestBackgroundCallCount++;
+    if (requestBackgroundError case final error?) {
+      Error.throwWithStackTrace(error, StackTrace.current);
+    }
+    return requestBackgroundResult;
   }
 
   @override

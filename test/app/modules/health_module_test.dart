@@ -26,6 +26,7 @@ void main() {
       final health = services.health;
 
       expect(identical(health.syncService, health.syncService), isTrue);
+      expect(identical(health.autoSyncService, health.autoSyncService), isTrue);
       expect(identical(health.syncSettings, health.syncSettings), isTrue);
       expect(
         identical(health.importRepository, health.importRepository),

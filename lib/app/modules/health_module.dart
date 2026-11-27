@@ -5,17 +5,20 @@ import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/features/health/controllers/health_sync_controller.dart';
 import 'package:endurain/features/health/repositories/health_import_repository.dart';
 import 'package:endurain/features/health/repositories/health_sync_settings_repository.dart';
+import 'package:endurain/features/health/services/health_auto_sync_service.dart';
+import 'package:endurain/features/health/services/health_background_sync_adapter.dart';
 import 'package:endurain/features/health/services/health_package_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_sync_service.dart';
+import 'package:endurain/features/health/services/health_workout_changes_reader.dart';
 import 'package:endurain/features/health/services/health_workout_gpx_builder.dart';
 import 'package:endurain/features/health/services/heart_rate_series_reader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 
 /// Wires the Health platform sync feature (Apple HealthKit / Android Health
-/// Connect): import provenance, sync settings, the sync service, and the
-/// route-owned sync controller.
+/// Connect): import provenance, sync settings, the sync and automatic-import
+/// services, the background trigger, and the route-owned sync controller.
 ///
 /// Depends on [AppInfrastructure], [AuthModule] (for the active connection
 /// profile), and [ActivityModule] (imported workouts become local activities
@@ -44,8 +47,10 @@ class HealthModule {
 
   late final HealthImportRepository importRepository = HealthImportRepository();
 
+  late final HealthPlatformAdapter _platformAdapter = createPlatformAdapter();
+
   late final HealthSyncService syncService = HealthSyncService(
-    adapter: createPlatformAdapter(),
+    adapter: _platformAdapter,
     importRepository: importRepository,
     localActivities: _activity.localActivities,
     uploadQueue: _activity.uploadQueue,
@@ -57,6 +62,38 @@ class HealthModule {
     isRecordedElsewhere: _isRecordedElsewhere,
   );
 
+  late final HealthBackgroundSyncAdapter _backgroundSync = isMobilePlatform
+      ? const MethodChannelHealthBackgroundSyncAdapter()
+      : const UnsupportedHealthBackgroundSyncAdapter();
+
+  late final HealthAutoSyncService autoSyncService = HealthAutoSyncService(
+    syncService: syncService,
+    adapter: _platformAdapter,
+    background: _backgroundSync,
+    settings: syncSettings,
+    importRepository: importRepository,
+    uploadQueue: _activity.uploadQueue,
+    diagnostics: _infra.diagnostics,
+    healthSyncEnabled: _infra.config.healthSyncEnabled,
+    activeConnectionProfile: _auth.session.getConnectionProfile,
+  );
+
+  /// Makes this (the app's) engine run the background syncs the platform
+  /// starts while the app is running, instead of a headless engine.
+  Future<void> listenForBackgroundSync() {
+    return _backgroundSync.listen(autoSyncService.syncInBackground);
+  }
+
+  /// Runs the one background sync a headless engine was started for.
+  /// Returns whether it ran without failures; it never throws.
+  Future<bool> runBackgroundSync() => autoSyncService.syncInBackground();
+
+  /// Tells the platform the headless engine's sync is over, so it can be
+  /// destroyed.
+  Future<void> reportBackgroundSyncFinished({required bool succeeded}) {
+    return _backgroundSync.reportFinished(succeeded: succeeded);
+  }
+
   /// Creates a route-owned controller for health-platform workout sync.
   ///
   /// Health UI state contains profile-scoped rows and selections, so it must
@@ -64,6 +101,7 @@ class HealthModule {
   HealthSyncController createSyncController() {
     return HealthSyncController(
       service: syncService,
+      autoSync: autoSyncService,
       diagnostics: _infra.diagnostics,
       uploadCompletedSignal: _activity.uploadQueue.onDrainCompleted,
     );
@@ -83,6 +121,11 @@ class HealthModule {
         // value each, so iOS reads heart rate through its own channel.
         heartRateSeriesReader: defaultTargetPlatform == TargetPlatform.iOS
             ? const MethodChannelHeartRateSeriesReader()
+            : null,
+        // The plugin tracks changes only in Health Connect; on iOS they come
+        // from HealthKit anchored queries over a channel of the app's own.
+        workoutChangesReader: defaultTargetPlatform == TargetPlatform.iOS
+            ? const MethodChannelHealthWorkoutChangesReader()
             : null,
       );
     }

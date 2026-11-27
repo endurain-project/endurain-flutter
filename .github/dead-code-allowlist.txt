@@ -16,6 +16,11 @@ lib/features/activity/services/native_activity_recorder_channel.dart:NativeActiv
 lib/features/watch/services/watch_transport_channel.dart:WatchTransportChannelContract.errorInvalidArguments
 lib/features/watch/services/watch_transport_channel.dart:WatchTransportChannelContract.errorUnsupportedVersion
 lib/features/watch/services/watch_transport_channel.dart:WatchTransportChannelContract.errorStoreReadFailed
+lib/features/health/services/health_background_sync_adapter.dart:HealthBackgroundSyncChannelContract.errorInvalidArguments
+lib/features/health/services/health_background_sync_adapter.dart:HealthBackgroundSyncChannelContract.errorScheduleFailed
+
+# --- Dart entry point native code starts by name on a headless engine (HealthBackgroundSyncRunner.kt, HealthBackgroundSync.swift) ---
+lib/main.dart:healthBackgroundSyncMain
 
 # --- Enum values decoded by name from native (WatchLinkStatus.fromJson / WatchSource.tryFromJson) ---
 lib/features/watch/models/watch_link_status.dart:WatchLinkStatus.unavailable

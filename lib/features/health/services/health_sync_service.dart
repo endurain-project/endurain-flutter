@@ -21,12 +21,6 @@ import 'package:endurain/features/health/services/health_workout_gpx_builder.dar
 import 'package:endurain/features/health/services/health_workout_importer.dart';
 
 const Duration _discoveryPageWindow = Duration(days: 30);
-
-/// How far before the last successful sync an incremental pass looks again.
-///
-/// Wearables can sync a workout into Health hours or days after it ended, so
-/// the watermark alone would skip late arrivals.
-const Duration _incrementalOverlap = Duration(hours: 48);
 const int _defaultImportedPageSize = 20;
 
 /// Orchestrates the health import pipeline.
@@ -90,21 +84,6 @@ class HealthSyncService {
   /// than the platform's readable history window need a history access the
   /// user has not granted (Health Connect without `READ_HEALTH_DATA_HISTORY`).
   bool get olderWorkoutsUnavailable => _cursor.historyUnavailable;
-
-  /// Returns `true` when auto-sync on app resume has been enabled by the user.
-  ///
-  /// Used by the optional Phase N auto-sync path in `app.dart`.
-  Future<bool> isAutoSyncOnResumeEnabled() async {
-    final profile = await _activeConnectionProfile();
-    if (profile == null) return false;
-    return _syncSettings.isAutoSyncOnResumeEnabled(profile.id);
-  }
-
-  /// Enables or disables auto-sync on app resume.
-  Future<void> setAutoSyncOnResumeEnabled(bool enabled) async {
-    final profile = await _requireActiveProfile();
-    await _syncSettings.setAutoSyncOnResumeEnabled(profile.id, enabled);
-  }
 
   // ── Status ──────────────────────────────────────────────────────────────
 
@@ -251,7 +230,7 @@ class HealthSyncService {
   /// Reads the next page of importable workouts into [cursor].
   ///
   /// The Health Sync screen pages through the service's own cursor; one-shot
-  /// imports ([importAll], [autoSyncOnResume]) pass a fresh one so they never
+  /// imports ([importAll], [importIncremental]) pass a fresh one so they never
   /// disturb what the screen is showing.
   Future<HealthWorkoutPage> _loadAvailableForProfile(
     ConnectionProfile profile, {
@@ -511,62 +490,55 @@ class HealthSyncService {
   /// 30-day range.
   ///
   /// Ignores any wider range from a prior [loadAvailable] preview and
-  /// re-discovers the default range before importing. The resume path performs
-  /// the same import through [autoSyncOnResume]; this is the unconditional
-  /// entry point for one-shot "import everything" flows.
+  /// re-discovers the default range before importing. Automatic imports go
+  /// through [importIncremental] instead; this is the unconditional entry
+  /// point for one-shot "import everything" flows.
   Future<({int imported, int failed})> importAll() {
     if (!_healthSyncEnabled) {
       return Future.value((imported: 0, failed: 0));
     }
     return _serialize(() async {
       final profile = await _requireActiveProfile();
-      return _importDefaultRangeForProfile(profile);
+      return _importBounds(
+        profile,
+        HealthImportRange.defaultRange.resolve(_now()),
+      );
     });
   }
 
-  /// Runs the optional resume import against one pinned connection profile.
+  /// Imports every route-bearing workout in [bounds] for [profile], as one
+  /// automatic pass (see `HealthAutoSyncService`).
   ///
-  /// Returns `null` when auto-sync is disabled or authorization is unavailable.
-  Future<({int imported, int failed})?> autoSyncOnResume() {
-    if (!_healthSyncEnabled) return Future.value(null);
+  /// The last-sync time only moves when nothing failed, so a failed workout
+  /// stays inside the next pass. With `null` [bounds] nothing is read: the
+  /// pass found no changes and only records the sync time.
+  ///
+  /// Throws [AppException] with [AppErrorCode.notAuthenticated] when the
+  /// active profile is no longer [profile].
+  Future<({int imported, int failed})> importIncremental(
+    ConnectionProfile profile,
+    HealthImportBounds? bounds,
+  ) {
+    if (!_healthSyncEnabled) {
+      return Future.value((imported: 0, failed: 0));
+    }
     return _serialize(() async {
-      final profile = await _requireActiveProfile();
-      if (!await _syncSettings.isAutoSyncOnResumeEnabled(profile.id)) {
-        return null;
-      }
       await _ensureProfileUnchanged(profile);
-      final authorization = await _currentAuthorizationStatusFor(profile);
-      if (authorization != HealthAuthorizationStatus.granted) return null;
-      return _importDefaultRangeForProfile(profile, incremental: true);
+      if (bounds == null) {
+        return _importSelected(profile, const {}, const [], incremental: true);
+      }
+      return _importBounds(profile, bounds, incremental: true);
     });
   }
 
-  /// Discovers and imports the default range with its own discovery state,
-  /// leaving the Health Sync screen's list and paging untouched.
-  ///
-  /// With [incremental], discovery starts at the stored last-sync time minus
-  /// [_incrementalOverlap] instead of re-reading the whole default range on
-  /// every resume. It never reaches further back than the default range, and
-  /// falls back to it when there is no prior sync.
-  Future<({int imported, int failed})> _importDefaultRangeForProfile(
-    ConnectionProfile profile, {
+  /// Discovers and imports [bounds] with its own discovery state, leaving the
+  /// Health Sync screen's list and paging untouched.
+  Future<({int imported, int failed})> _importBounds(
+    ConnectionProfile profile,
+    HealthImportBounds bounds, {
     bool incremental = false,
   }) async {
     final cursor = HealthDiscoveryCursor();
-    final defaultBounds = HealthImportRange.defaultRange.resolve(_now());
-    var bounds = defaultBounds;
-    if (incremental) {
-      final lastSyncAt = await _importRepo.lastSyncAt(profile.id);
-      if (lastSyncAt != null) {
-        final start = lastSyncAt.toUtc().subtract(_incrementalOverlap);
-        if (start.isAfter(defaultBounds.startInclusive)) {
-          bounds = HealthImportBounds(
-            startInclusive: start,
-            endExclusive: defaultBounds.endExclusive,
-          );
-        }
-      }
-    }
     await _loadAvailableForProfile(
       profile,
       cursor: cursor,

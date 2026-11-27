@@ -8,6 +8,7 @@ import 'package:endurain/features/health/models/health_import_range.dart';
 import 'package:endurain/features/health/models/health_imported_workout.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/models/health_sync_state.dart';
+import 'package:endurain/features/health/services/health_auto_sync_service.dart';
 import 'package:endurain/features/health/services/health_sync_service.dart';
 import 'package:endurain/shared/state/safe_notifier.dart';
 
@@ -21,6 +22,7 @@ import 'package:endurain/shared/state/safe_notifier.dart';
 class HealthSyncController extends SafeNotifier {
   HealthSyncController({
     required this._service,
+    required this._autoSync,
     DiagnosticsRecorder? diagnostics,
     Stream<void>? uploadCompletedSignal,
   }) : _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder() {
@@ -37,6 +39,7 @@ class HealthSyncController extends SafeNotifier {
   }
 
   final HealthSyncService _service;
+  final HealthAutoSyncService _autoSync;
   final DiagnosticsRecorder _diagnostics;
   bool _refreshImportedAfterCurrentLoad = false;
   StreamSubscription<void>? _uploadCompletedSubscription;
@@ -62,12 +65,12 @@ class HealthSyncController extends SafeNotifier {
       HealthAuthorizationStatus authStatus =
           HealthAuthorizationStatus.notDetermined;
       var accessDetails = const HealthDataAccessDetails.systemManaged();
-      var autoSyncOnResume = false;
+      var autoSync = false;
       DateTime? lastSyncAt;
       if (sdkStatus == HealthSdkStatus.available) {
         authStatus = await _service.currentAuthorizationStatus();
         accessDetails = await _service.accessDetails();
-        autoSyncOnResume = await _service.isAutoSyncOnResumeEnabled();
+        autoSync = await _autoSync.isEnabled();
         lastSyncAt = await _service.lastSyncAt();
       }
       _update(
@@ -75,7 +78,7 @@ class HealthSyncController extends SafeNotifier {
           sdkStatus: sdkStatus,
           authStatus: authStatus,
           accessDetails: accessDetails,
-          autoSyncOnResume: autoSyncOnResume,
+          autoSync: autoSync,
           lastSyncAt: lastSyncAt,
           isCheckingStatus: false,
           error: null,
@@ -95,15 +98,15 @@ class HealthSyncController extends SafeNotifier {
     }
   }
 
-  /// Enables or disables automatic import of new workouts on app resume.
-  Future<void> setAutoSyncOnResume(bool enabled) async {
+  /// Enables or disables automatic import of new workouts.
+  Future<void> setAutoSync(bool enabled) async {
     if (_state.isUpdatingAutoSync) return;
     _update(_state.copyWith(isUpdatingAutoSync: true, error: null));
     try {
-      await _service.setAutoSyncOnResumeEnabled(enabled);
+      await _autoSync.setEnabled(enabled);
       _update(
         _state.copyWith(
-          autoSyncOnResume: enabled,
+          autoSync: enabled,
           isUpdatingAutoSync: false,
           error: null,
         ),

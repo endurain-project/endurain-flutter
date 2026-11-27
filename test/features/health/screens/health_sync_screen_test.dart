@@ -25,6 +25,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/fake_share_service.dart';
 import '../../../helpers/widget_test_app.dart';
+import '../fakes/fake_health_auto_sync_service.dart';
 import '../fakes/fake_health_sync_service.dart';
 
 void main() {
@@ -70,12 +71,17 @@ void main() {
   );
 
   late FakeHealthSyncService service;
+  late FakeHealthAutoSyncService autoSync;
   late HealthSyncController controller;
 
-  HealthSyncController makeController() => HealthSyncController(
-    service: service,
-    diagnostics: const NoopDiagnosticsRecorder(),
-  );
+  HealthSyncController makeController() {
+    autoSync = FakeHealthAutoSyncService();
+    return HealthSyncController(
+      service: service,
+      autoSync: autoSync,
+      diagnostics: const NoopDiagnosticsRecorder(),
+    );
+  }
 
   Future<void> pumpScreen(WidgetTester tester) async {
     controller = makeController();
@@ -484,7 +490,9 @@ void main() {
       addTearDown(controller.dispose);
     });
 
-    testWidgets('toggling auto-sync persists via the service', (tester) async {
+    testWidgets('toggling auto-sync persists via the auto-sync service', (
+      tester,
+    ) async {
       service = FakeHealthSyncService(
         sdkStatus: HealthSdkStatus.available,
         authStatus: HealthAuthorizationStatus.granted,
@@ -498,8 +506,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(service.autoSyncOnResumeEnabled, isTrue);
-      expect(controller.state.autoSyncOnResume, isTrue);
+      expect(autoSync.enabled, isTrue);
+      expect(controller.state.autoSync, isTrue);
       addTearDown(controller.dispose);
     });
 

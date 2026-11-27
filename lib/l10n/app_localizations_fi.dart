@@ -1219,11 +1219,11 @@ class AppLocalizationsFi extends AppLocalizations {
   String get healthSyncReviewAccess => 'Tarkista käyttöoikeudet';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automaattinen synkronointi avattaessa';
+  String get healthSyncAutoSyncTitle => 'Tuo automaattisesti';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Tuo uudet harjoitukset automaattisesti, kun sovellus avautuu.';
+      'Uudet harjoitukset, kun sovellus avautuu ja, jos se on sallittu, taustalla.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

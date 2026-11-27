@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:endurain/core/auth/secure_storage_service.dart';
@@ -657,190 +656,6 @@ void main() {
     });
   });
 
-  group('autoSyncOnResume', () {
-    test('does nothing while the profile setting is disabled', () async {
-      adapter.workouts = [makeWorkout('w1')];
-
-      final result = await service.autoSyncOnResume();
-
-      expect(result, isNull);
-      expect(adapter.currentAuthorizationStatusCallCount, 0);
-      expect(adapter.readWorkoutsCallCount, 0);
-    });
-
-    test('does nothing when health authorization is unavailable', () async {
-      await service.setAutoSyncOnResumeEnabled(true);
-      adapter.authStatus = HealthAuthorizationStatus.denied;
-      adapter.workouts = [makeWorkout('w1')];
-
-      final result = await service.autoSyncOnResume();
-
-      expect(result, isNull);
-      expect(adapter.readWorkoutsCallCount, 0);
-    });
-
-    test('imports the bounded default range when enabled', () async {
-      await service.setAutoSyncOnResumeEnabled(true);
-      adapter.workouts = [makeWorkout('w1')];
-
-      final result = await service.autoSyncOnResume();
-
-      expect(result?.imported, 1);
-      expect(adapter.readWindows, hasLength(1));
-      expect(
-        adapter.readWindows.single.end.difference(
-          adapter.readWindows.single.start,
-        ),
-        lessThanOrEqualTo(const Duration(days: 30)),
-      );
-    });
-
-    test(
-      'first sync reads the whole default range and stamps the sync',
-      () async {
-        await service.setAutoSyncOnResumeEnabled(true);
-        adapter.workouts = [makeWorkout('w1')];
-
-        await service.autoSyncOnResume();
-
-        expect(
-          adapter.readWindows.last.start,
-          DateTime.utc(2025, 6, 1, 11).subtract(const Duration(days: 30)),
-        );
-        expect(
-          await importStore.lastSyncAt(profile.id),
-          DateTime.utc(2025, 6, 1, 11),
-        );
-      },
-    );
-
-    test('later passes start 48 hours before the last sync', () async {
-      await service.setAutoSyncOnResumeEnabled(true);
-      await importStore.setLastSyncAt(profile.id, DateTime.utc(2025, 5, 30, 8));
-      adapter.workouts = [makeWorkout('w1')];
-
-      await service.autoSyncOnResume();
-
-      expect(adapter.readWindows, hasLength(1));
-      expect(adapter.readWindows.single.start, DateTime.utc(2025, 5, 28, 8));
-    });
-
-    test('an old last sync never reaches past the default range', () async {
-      await service.setAutoSyncOnResumeEnabled(true);
-      await importStore.setLastSyncAt(profile.id, DateTime.utc(2025, 1, 1));
-
-      await service.autoSyncOnResume();
-
-      expect(
-        adapter.readWindows.first.start,
-        DateTime.utc(2025, 6, 1, 11).subtract(const Duration(days: 30)),
-      );
-    });
-
-    test('a failed pass does not advance the last sync', () async {
-      await service.setAutoSyncOnResumeEnabled(true);
-      final previous = DateTime.utc(2025, 5, 30, 8);
-      await importStore.setLastSyncAt(profile.id, previous);
-      adapter.readWorkoutsError = const AppException(
-        AppErrorCode.healthImportFailed,
-      );
-
-      await expectLater(
-        service.autoSyncOnResume(),
-        throwsA(isA<AppException>()),
-      );
-
-      expect(await importStore.lastSyncAt(profile.id), previous);
-    });
-
-    test('a pass with nothing new still advances the last sync', () async {
-      await service.setAutoSyncOnResumeEnabled(true);
-      await importStore.setLastSyncAt(profile.id, DateTime.utc(2025, 5, 30, 8));
-
-      final result = await service.autoSyncOnResume();
-
-      expect(result, (imported: 0, failed: 0));
-      expect(
-        await importStore.lastSyncAt(profile.id),
-        DateTime.utc(2025, 6, 1, 11),
-      );
-    });
-
-    test('leaves the screen list and paging untouched', () async {
-      await service.setAutoSyncOnResumeEnabled(true);
-      adapter.routeConsentDeniedCountValue = 1;
-      adapter.workoutPages = [
-        [makeWorkout('recent')],
-        [makeWorkout('older')],
-        [makeWorkout('recent')],
-      ];
-      await service.loadAvailable(range: const HealthImportRange.last3Months());
-      await service.loadMoreAvailable();
-      final secondPage = adapter.readWindows[1];
-
-      final autoSync = await service.autoSyncOnResume();
-      expect(autoSync?.imported, 1);
-      expect(service.routeConsentDeniedCount, 2);
-
-      // The older workout, outside the default range, is still importable.
-      final result = await service.importWorkouts(['older']);
-      expect(result, (imported: 1, failed: 0));
-
-      // Paging continues the screen's range where it left off.
-      await service.loadMoreAvailable();
-      expect(
-        adapter.readWindows.last.end,
-        secondPage.start.subtract(const Duration(microseconds: 1)),
-      );
-    });
-
-    test('rejects a profile switch while authorization is in flight', () async {
-      var activeProfile = const ConnectionProfile(
-        id: 'profile-a',
-        origin: origin,
-        kind: ConnectionKind.selfHosted,
-      );
-      final scopedService = HealthSyncService(
-        adapter: adapter,
-        importRepository: HealthImportRepository(store: importStore),
-        localActivities: localActivities,
-        uploadQueue: uploadQueue,
-        gpxBuilder: const HealthWorkoutGpxBuilder(),
-        syncSettings: makeSyncSettings(),
-        diagnostics: const NoopDiagnosticsRecorder(),
-        healthSyncEnabled: true,
-        activeConnectionProfile: () async => activeProfile,
-        now: () => DateTime.utc(2025, 6, 1, 11),
-      );
-      await scopedService.setAutoSyncOnResumeEnabled(true);
-      final authorization = Completer<HealthAuthorizationStatus>();
-      adapter.currentAuthorizationStatusFuture = authorization.future;
-
-      final result = scopedService.autoSyncOnResume();
-      while (adapter.currentAuthorizationStatusCallCount == 0) {
-        await pumpEventQueue();
-      }
-      activeProfile = const ConnectionProfile(
-        id: 'profile-b',
-        origin: origin,
-        kind: ConnectionKind.selfHosted,
-      );
-      authorization.complete(HealthAuthorizationStatus.granted);
-
-      await expectLater(
-        result,
-        throwsA(
-          isA<AppException>().having(
-            (error) => error.code,
-            'code',
-            AppErrorCode.notAuthenticated,
-          ),
-        ),
-      );
-      expect(adapter.readWorkoutsCallCount, 0);
-    });
-  });
-
   group('connection ownership and coordination', () {
     test('guest mode cannot discover or import health data', () async {
       final guestService = HealthSyncService(
@@ -933,7 +748,7 @@ void main() {
 
     test('disconnect revokes access and clears active-origin state', () async {
       await service.requestAccess();
-      await service.setAutoSyncOnResumeEnabled(true);
+      await makeSyncSettings().setAutoSyncEnabled(profile.id, true);
       adapter.workouts = [makeWorkout('w1')];
       await service.importAll();
 
@@ -941,7 +756,7 @@ void main() {
 
       expect(adapter.revokePermissionsCallCount, 1);
       expect(await makeSyncSettings().isConnected(profile.id), isFalse);
-      expect(await service.isAutoSyncOnResumeEnabled(), isFalse);
+      expect(await makeSyncSettings().isAutoSyncEnabled(profile.id), isFalse);
       expect(
         await importStore.isImported(profileId: profile.id, sourceId: 'w1'),
         isFalse,

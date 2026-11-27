@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Opozorila snemanja</string>
     <string name="activity_recording_alert_channel_description">Prikaže se, ko se snemanje ustavi, medtem ko Endurain deluje v ozadju.</string>
     <string name="health_rationale_title">Zdravstveni podatki v Endurainu</string>
-    <string name="health_rationale_usage">Endurain bere vadbe, poti, srčni utrip in razdaljo samo za uvoz izbranih aktivnosti.</string>
+    <string name="health_rationale_usage">Endurain bere vadbe, poti, srčni utrip in razdaljo samo za uvoz aktivnosti: izbranih in, ko je samodejni uvoz vklopljen, novih v ozadju.</string>
     <string name="health_rationale_storage">Podatki izbranih poti so shranjeni v tej napravi in naloženi samo na strežnik Endurain, s katerim se povežete.</string>
     <string name="health_rationale_privacy_policy">Pravilnik o zasebnosti</string>
 </resources>

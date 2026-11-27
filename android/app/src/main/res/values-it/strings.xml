@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Avvisi di registrazione</string>
     <string name="activity_recording_alert_channel_description">Mostrato quando una registrazione si interrompe mentre Endurain è in background.</string>
     <string name="health_rationale_title">Dati sanitari di Endurain</string>
-    <string name="health_rationale_usage">Endurain legge allenamenti, percorsi, frequenza cardiaca e distanza solo per importare le attività selezionate.</string>
+    <string name="health_rationale_usage">Endurain legge allenamenti, percorsi, frequenza cardiaca e distanza solo per importare attività: quelle selezionate e, con l\'importazione automatica attiva, quelle nuove in background.</string>
     <string name="health_rationale_storage">I dati dei percorsi selezionati vengono memorizzati su questo dispositivo e caricati solo sul server Endurain a cui ti connetti.</string>
     <string name="health_rationale_privacy_policy">Informativa sulla privacy</string>
 </resources>

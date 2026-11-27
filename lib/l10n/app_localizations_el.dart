@@ -1235,12 +1235,11 @@ class AppLocalizationsEl extends AppLocalizations {
   String get healthSyncReviewAccess => 'Έλεγχος πρόσβασης';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Αυτόματος συγχρονισμός κατά το άνοιγμα';
+  String get healthSyncAutoSyncTitle => 'Αυτόματη εισαγωγή';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Αυτόματη εισαγωγή νέων προπονήσεων όταν ανοίγει η εφαρμογή.';
+      'Νέες προπονήσεις, όταν ανοίγει η εφαρμογή και, αν επιτρέπεται, στο παρασκήνιο.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Tallennushälytykset</string>
     <string name="activity_recording_alert_channel_description">Näytetään, kun tallennus pysähtyy Endurainin ollessa taustalla.</string>
     <string name="health_rationale_title">Endurainin terveystiedot</string>
-    <string name="health_rationale_usage">Endurain lukee harjoituksia, reittejä, sykettä ja matkaa vain valittujen aktiviteettien tuomiseksi.</string>
+    <string name="health_rationale_usage">Endurain lukee harjoituksia, reittejä, sykettä ja matkaa vain aktiviteettien tuomiseksi: valittujen sekä automaattisen tuonnin ollessa päällä uusien taustalla.</string>
     <string name="health_rationale_storage">Valittujen reittien tiedot tallennetaan tälle laitteelle ja ladataan vain siihen Endurain-palvelimeen, johon muodostat yhteyden.</string>
     <string name="health_rationale_privacy_policy">Tietosuojakäytäntö</string>
 </resources>

@@ -3,6 +3,7 @@ import 'package:endurain/features/health/models/health_authorization_status.dart
 import 'package:endurain/features/health/models/health_data_access_details.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/models/health_workout.dart';
+import 'package:endurain/features/health/models/health_workout_changes.dart';
 
 /// Abstract adapter for health platform access (HealthKit / Health Connect).
 ///
@@ -89,6 +90,32 @@ abstract class HealthPlatformAdapter {
     required DateTime end,
     Future<bool> Function(String sourceId)? exclude,
   });
+
+  /// Returns a token for the workout changes made from now on: a Health
+  /// Connect changes token, or HealthKit query anchors.
+  ///
+  /// Throws [AppException] like [readWorkouts].
+  Future<String> workoutChangesToken();
+
+  /// Returns which workouts (and workout routes) were added or changed since
+  /// [token], a value from [workoutChangesToken] or an earlier
+  /// [HealthWorkoutChanges.nextToken].
+  ///
+  /// Throws [AppException] like [readWorkouts].
+  Future<HealthWorkoutChanges> workoutChangesSince(String token);
+
+  /// Whether health data may be read while the app is not in the foreground.
+  ///
+  /// HealthKit needs no extra permission. Health Connect needs
+  /// `READ_HEALTH_DATA_IN_BACKGROUND`, on versions that have the feature.
+  Future<bool> hasBackgroundReadAccess();
+
+  /// Like [hasBackgroundReadAccess], but asks the user for the Health Connect
+  /// background permission when it can be granted and is not yet.
+  ///
+  /// Throws [AppException] with [AppErrorCode.healthUnavailable] when the
+  /// health platform is missing.
+  Future<bool> requestBackgroundReadAccess();
 }
 
 /// [HealthPlatformAdapter] implementation for platforms where health sync is
@@ -133,4 +160,18 @@ class UnsupportedHealthPlatformAdapter implements HealthPlatformAdapter {
     required DateTime end,
     Future<bool> Function(String sourceId)? exclude,
   }) async => const [];
+
+  @override
+  Future<String> workoutChangesToken() async =>
+      throw const AppException(AppErrorCode.healthUnavailable);
+
+  @override
+  Future<HealthWorkoutChanges> workoutChangesSince(String token) async =>
+      throw const AppException(AppErrorCode.healthUnavailable);
+
+  @override
+  Future<bool> hasBackgroundReadAccess() async => false;
+
+  @override
+  Future<bool> requestBackgroundReadAccess() async => false;
 }

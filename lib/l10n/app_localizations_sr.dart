@@ -1235,12 +1235,11 @@ class AppLocalizationsSr extends AppLocalizations {
   String get healthSyncReviewAccess => 'Прегледај приступ';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Аутоматска синхронизација при отварању';
+  String get healthSyncAutoSyncTitle => 'Аутоматски увоз';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Аутоматски увози нове тренинге када се апликација отвори.';
+      'Нове тренинге, када се апликација отвори и, ако је дозвољено, у позадини.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

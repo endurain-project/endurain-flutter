@@ -1221,11 +1221,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get healthSyncReviewAccess => 'Toegang controleren';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automatisch synchroniseren bij openen';
+  String get healthSyncAutoSyncTitle => 'Automatisch importeren';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Nieuwe trainingen automatisch importeren wanneer de app wordt geopend.';
+      'Nieuwe trainingen bij het openen van de app en, indien toegestaan, op de achtergrond.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

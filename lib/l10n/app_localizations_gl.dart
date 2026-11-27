@@ -1225,11 +1225,11 @@ class AppLocalizationsGl extends AppLocalizations {
   String get healthSyncReviewAccess => 'Revisar o acceso';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Sincronización automática ao abrir';
+  String get healthSyncAutoSyncTitle => 'Importar automaticamente';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importa novos adestramentos automaticamente cando se abre a aplicación.';
+      'Adestramentos novos, ao abrir a aplicación e, se se permite, en segundo plano.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

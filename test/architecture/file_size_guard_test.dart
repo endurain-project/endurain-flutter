@@ -13,7 +13,7 @@ const Map<String, int> _legacyCaps = {
   'lib/features/activity/services/activity_recording_service.dart': 812,
   'lib/features/activity/services/activity_upload_service.dart': 556,
   'lib/features/auth/screens/login_screen.dart': 572,
-  'lib/features/health/services/health_sync_service.dart': 608,
+  'lib/features/health/services/health_sync_service.dart': 580,
 };
 
 /// Source roots checked, with the file extension each one holds. Generated

@@ -1215,11 +1215,11 @@ class AppLocalizationsNb extends AppLocalizations {
   String get healthSyncReviewAccess => 'Gjennomgå tilgang';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Automatisk synkronisering ved åpning';
+  String get healthSyncAutoSyncTitle => 'Importer automatisk';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importer nye treningsøkter automatisk når appen åpnes.';
+      'Nye treningsøkter når appen åpnes og, hvis det er tillatt, i bakgrunnen.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

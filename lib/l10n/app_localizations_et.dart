@@ -1216,12 +1216,11 @@ class AppLocalizationsEt extends AppLocalizations {
   String get healthSyncReviewAccess => 'Vaata juurdepääs üle';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automaatne sünkroonimine rakenduse avamisel';
+  String get healthSyncAutoSyncTitle => 'Impordi automaatselt';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Impordib uued treeningud automaatselt, kui rakendus avatakse.';
+      'Uued treeningud rakenduse avamisel ja, kui see on lubatud, taustal.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

@@ -20,31 +20,7 @@ Future<void> main() async {
   // without one (tests).
   // Holding the instance here also keeps the same diagnostics object available
   // to the root-zone error handler below, which runs outside the widget tree.
-  final services = AppServices(
-    config: AppConfig(
-      healthSyncEnabled: const bool.fromEnvironment(
-        'ENABLE_HEALTH_SYNC',
-        defaultValue: true,
-      ),
-      // Managed diagnostics DSN, injected at build time by the official CI via
-      // `--dart-define=ENDURAIN_CRASH_REPORTING_DSN=...`. Source and F-Droid
-      // builds omit it, so no fork points its opt-in crash reports at the
-      // Endurain-operated endpoint by default. An empty value means "no managed
-      // default", which keeps remote reporting inactive.
-      crashReportingDsn: const String.fromEnvironment(
-        'ENDURAIN_CRASH_REPORTING_DSN',
-      ),
-      // Origin of the managed ("Endurain Cloud") service. No managed service
-      // exists yet, so every current build leaves this empty and treats every
-      // origin as a user-chosen self-hosted instance. Setting it must be paired
-      // with the OS-level pins in the Android network security config and the
-      // iOS Info.plist.
-      cloudBaseUrl: const String.fromEnvironment('ENDURAIN_CLOUD_BASE_URL'),
-      allowedTileServerHosts: AppConfig.parseTileServerHostAllowlist(
-        const String.fromEnvironment('ENDURAIN_ALLOWED_TILE_HOSTS'),
-      ),
-    ),
-  );
+  final services = AppServices(config: _appConfig());
   final diagnostics = services.infra.diagnostics;
   // Opt-in remote crash reporting, independent of local diagnostics. Held here
   // so the root-zone error handler below (which runs outside the widget tree)
@@ -151,6 +127,11 @@ Future<void> main() async {
       // Best-effort and self-guarded; a no-op when no sensor was ever paired.
       unawaited(services.sensors.reconnectRemembered(withRetries: true));
 
+      // Run the automatic health imports the platform starts in the
+      // background while the app is running on this engine, instead of on a
+      // headless one. Inert on platforms without a background trigger.
+      unawaited(services.health.listenForBackgroundSync());
+
       // Pull any workout a paired companion watch finished while the app was
       // not running. Touching the coordinator also starts it listening for
       // watch push events; app resume alone would miss a cold launch. Inert
@@ -173,6 +154,54 @@ Future<void> main() async {
     },
   );
   await appRunner;
+}
+
+/// Runtime configuration, from the values the build defines.
+AppConfig _appConfig() {
+  return AppConfig(
+    healthSyncEnabled: const bool.fromEnvironment(
+      'ENABLE_HEALTH_SYNC',
+      defaultValue: true,
+    ),
+    // Managed diagnostics DSN, injected at build time by the official CI via
+    // `--dart-define=ENDURAIN_CRASH_REPORTING_DSN=...`. Source and F-Droid
+    // builds omit it, so no fork points its opt-in crash reports at the
+    // Endurain-operated endpoint by default. An empty value means "no managed
+    // default", which keeps remote reporting inactive.
+    crashReportingDsn: const String.fromEnvironment(
+      'ENDURAIN_CRASH_REPORTING_DSN',
+    ),
+    // Origin of the managed ("Endurain Cloud") service. No managed service
+    // exists yet, so every current build leaves this empty and treats every
+    // origin as a user-chosen self-hosted instance. Setting it must be paired
+    // with the OS-level pins in the Android network security config and the
+    // iOS Info.plist.
+    cloudBaseUrl: const String.fromEnvironment('ENDURAIN_CLOUD_BASE_URL'),
+    allowedTileServerHosts: AppConfig.parseTileServerHostAllowlist(
+      const String.fromEnvironment('ENDURAIN_ALLOWED_TILE_HOSTS'),
+    ),
+  );
+}
+
+/// Entry point of the headless engine that the native background trigger
+/// (WorkManager on Android, a HealthKit background delivery on iOS) starts
+/// when the app is not running: imports new health workouts without UI and
+/// reports back, so the platform can destroy the engine.
+@pragma('vm:entry-point')
+Future<void> healthBackgroundSyncMain() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final services = AppServices(config: _appConfig());
+  final diagnostics = services.infra.diagnostics;
+  // Best-effort and bounded, as at launch: diagnostics must never keep the
+  // sync from running or from reporting back.
+  try {
+    await diagnostics.initialize().timeout(const Duration(seconds: 3));
+  } catch (_) {}
+  final succeeded = await services.health.runBackgroundSync();
+  try {
+    await diagnostics.flush().timeout(const Duration(seconds: 3));
+  } catch (_) {}
+  await services.health.reportBackgroundSyncFinished(succeeded: succeeded);
 }
 
 Future<void> _startCrashReporting(CrashReportingService crashReporting) async {

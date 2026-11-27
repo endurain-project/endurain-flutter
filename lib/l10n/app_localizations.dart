@@ -2238,13 +2238,13 @@ abstract class AppLocalizations {
   /// Title of the auto-sync toggle - Used in: health_sync_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Auto-sync on resume'**
+  /// **'Import automatically'**
   String get healthSyncAutoSyncTitle;
 
   /// Subtitle of the auto-sync toggle - Used in: health_sync_screen.dart
   ///
   /// In en, this message translates to:
-  /// **'Import new workouts automatically when the app opens.'**
+  /// **'New workouts, when the app opens and, if allowed, in the background.'**
   String get healthSyncAutoSyncSubtitle;
 
   /// Banner shown when workouts exist but none have GPS routes - Used in: health_sync_screen.dart

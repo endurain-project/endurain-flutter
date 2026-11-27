@@ -8,6 +8,7 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../fakes/fake_health_auto_sync_service.dart';
 import '../fakes/fake_health_sync_service.dart';
 
 void main() {
@@ -25,7 +26,10 @@ void main() {
           heartRate: HealthDataAccessStatus.allowed,
         ),
       );
-      final controller = HealthSyncController(service: service);
+      final controller = HealthSyncController(
+        service: service,
+        autoSync: FakeHealthAutoSyncService(),
+      );
       addTearDown(controller.dispose);
 
       await tester.pumpWidget(
@@ -61,7 +65,10 @@ void main() {
         authStatus: HealthAuthorizationStatus.denied,
         accessDetailsValue: details,
       );
-      final controller = HealthSyncController(service: service);
+      final controller = HealthSyncController(
+        service: service,
+        autoSync: FakeHealthAutoSyncService(),
+      );
       addTearDown(controller.dispose);
       final settings = _FakeSettings();
       await tester.pumpWidget(
@@ -133,7 +140,10 @@ void main() {
     final service = FakeHealthSyncService(
       authStatus: HealthAuthorizationStatus.granted,
     );
-    final controller = HealthSyncController(service: service);
+    final controller = HealthSyncController(
+      service: service,
+      autoSync: FakeHealthAutoSyncService(),
+    );
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
@@ -162,7 +172,10 @@ void main() {
         canInspectIndividualPermissions: true,
       ),
     );
-    final controller = HealthSyncController(service: service);
+    final controller = HealthSyncController(
+      service: service,
+      autoSync: FakeHealthAutoSyncService(),
+    );
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(

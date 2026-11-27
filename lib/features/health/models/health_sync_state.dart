@@ -34,7 +34,7 @@ class HealthSyncState {
     this.isLoadingMoreAvailable = false,
     this.isLoadingImported = false,
     this.isUpdatingAutoSync = false,
-    this.autoSyncOnResume = false,
+    this.autoSync = false,
     this.lastSyncAt,
     this.importedCount = 0,
     this.failedImportCount = 0,
@@ -81,8 +81,9 @@ class HealthSyncState {
   final bool isLoadingImported;
   final bool isUpdatingAutoSync;
 
-  /// Whether new workouts are imported automatically when the app resumes.
-  final bool autoSyncOnResume;
+  /// Whether new workouts are imported automatically: when the app resumes
+  /// and, where the platform allows, in the background.
+  final bool autoSync;
 
   /// UTC timestamp of the last successful import, or `null` if never synced.
   final DateTime? lastSyncAt;
@@ -128,7 +129,7 @@ class HealthSyncState {
     bool? isLoadingMoreAvailable,
     bool? isLoadingImported,
     bool? isUpdatingAutoSync,
-    bool? autoSyncOnResume,
+    bool? autoSync,
     Object? lastSyncAt = _unset,
     int? importedCount,
     int? failedImportCount,
@@ -154,7 +155,7 @@ class HealthSyncState {
           isLoadingMoreAvailable ?? this.isLoadingMoreAvailable,
       isLoadingImported: isLoadingImported ?? this.isLoadingImported,
       isUpdatingAutoSync: isUpdatingAutoSync ?? this.isUpdatingAutoSync,
-      autoSyncOnResume: autoSyncOnResume ?? this.autoSyncOnResume,
+      autoSync: autoSync ?? this.autoSync,
       lastSyncAt: lastSyncAt == _unset
           ? this.lastSyncAt
           : lastSyncAt as DateTime?,

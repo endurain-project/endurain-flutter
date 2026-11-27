@@ -1216,12 +1216,11 @@ class AppLocalizationsLv extends AppLocalizations {
   String get healthSyncReviewAccess => 'Pārskatīt piekļuvi';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automātiskā sinhronizācija, atverot lietotni';
+  String get healthSyncAutoSyncTitle => 'Importēt automātiski';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Automātiski importēt jaunus treniņus, kad tiek atvērta lietotne.';
+      'Jaunus treniņus, atverot lietotni, un, ja atļauts, fonā.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

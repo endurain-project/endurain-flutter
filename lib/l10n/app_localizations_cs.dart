@@ -1226,12 +1226,11 @@ class AppLocalizationsCs extends AppLocalizations {
   String get healthSyncReviewAccess => 'Zkontrolovat přístup';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automatická synchronizace při otevření';
+  String get healthSyncAutoSyncTitle => 'Importovat automaticky';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Automaticky importovat nové tréninky po otevření aplikace.';
+      'Nové tréninky, při otevření aplikace a, pokud je to povoleno, na pozadí.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

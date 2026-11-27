@@ -1572,11 +1572,11 @@
   "@healthSyncReviewAccess": {
     "description": "Button to request HealthKit permissions again - Used in: health_sync_screen.dart"
   },
-  "healthSyncAutoSyncTitle": "Auto-sync on resume",
+  "healthSyncAutoSyncTitle": "Import automatically",
   "@healthSyncAutoSyncTitle": {
     "description": "Title of the auto-sync toggle - Used in: health_sync_screen.dart"
   },
-  "healthSyncAutoSyncSubtitle": "Import new workouts automatically when the app opens.",
+  "healthSyncAutoSyncSubtitle": "New workouts, when the app opens and, if allowed, in the background.",
   "@healthSyncAutoSyncSubtitle": {
     "description": "Subtitle of the auto-sync toggle - Used in: health_sync_screen.dart"
   },

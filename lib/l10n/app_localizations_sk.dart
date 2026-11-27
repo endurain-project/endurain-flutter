@@ -1232,12 +1232,11 @@ class AppLocalizationsSk extends AppLocalizations {
   String get healthSyncReviewAccess => 'Skontrolovať prístup';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automatická synchronizácia pri otvorení';
+  String get healthSyncAutoSyncTitle => 'Importovať automaticky';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Automaticky importovať nové tréningy po otvorení aplikácie.';
+      'Nové tréningy pri otvorení aplikácie a, ak je to povolené, na pozadí.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

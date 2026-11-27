@@ -1200,11 +1200,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get healthSyncReviewAccess => 'Erişimi incele';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Açılışta otomatik senkronizasyon';
+  String get healthSyncAutoSyncTitle => 'Otomatik içe aktar';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Uygulama açıldığında yeni antrenmanlar otomatik olarak içe aktarılır.';
+      'Yeni antrenmanlar, uygulama açıldığında ve izin veriliyorsa arka planda.';
 
   @override
   String get healthSyncNoRoutesExplanation =>
