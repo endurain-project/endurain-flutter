@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Every map shows its tile source's attribution: the OpenStreetMap credit for the default source, and the server's attribution (or the host name) for a custom one.
+- The Health access screen opens the Health Connect permission screen when Android no longer shows the permission dialog, and the sensor screens open the system settings when Bluetooth access is blocked.
+- The Apple Watch unit tests (`ios/EndurainWatchTests`) run in the iOS workflow, and that workflow now also runs on pull requests that change iOS, watchOS, `lib/` or the shared test vectors.
+- A shared adaptive choice picker, and a shared map tile layer used by every map.
+
+### Changed
+
+- The minimum iOS version is now 17.0. The Apple Watch app still needs watchOS 10.0.
+- On Android, the notification permission is requested right before the first recording or start countdown instead of at launch. Recording does not depend on the answer.
+- A failed upload retry now arms a timer for the earliest due attempt, so it runs while the app stays open instead of waiting for a resume or a connectivity change.
+- The Android recorder and the Wear OS app do their file and sensor work off the main thread.
+- The Wear OS app uses Material 3 components with a transforming list, and its "Start workout" tile uses the Material 3 tile layout.
+- Android and Wear OS dependencies, the Android Gradle plugin and the Kotlin version are declared once, in the Gradle version catalog `android/gradle/libs.versions.toml`.
+- Internal changes:
+  - `android/watch_shared` is split into `common` (compiled by the phone and Wear OS builds) and `watch` (Wear OS only).
+  - Large Android, Wear OS, watchOS and Dart modules are split into smaller files, and the file-size guard checks the native sources too.
+  - `MapSettingsRepository` moved to `lib/core/services`, and `lib/features/activity` may no longer import `lib/features/map`.
+
+### Fixed
+
+- The Android themed icon (Android 13+) shows the logo instead of a solid tile: the launcher glyph is now transparent with its own monochrome layer, and the splash screen uses a matching icon.
+- A BLE sensor scan no longer races with a second scan starting or stopping.
+- A Wear OS recording that cannot be read after a crash is cleared instead of being left on the watch to fail the same way on every launch.
+- GPX files are written atomically, so an interrupted write can no longer leave a truncated file.
+- A single sign-on callback, success or error, is ignored when no sign-in is in progress.
+
+### Security
+
+- Diagnostics and crash reports also redact hosts and IP addresses in socket errors and the credentials of `Authorization` values (`Bearer`, `Basic` and `Digest`).
+
 ## [v0.12.4+26] - 2026-11-27
 
 This release adds a new two-factor code entry with backup codes and a Wear OS tile, and fixes the findings of a second review of the app, its native code, CI and docs. Recordings recover more reliably on Android and Wear OS, and both watch apps follow current platform guidance more closely.

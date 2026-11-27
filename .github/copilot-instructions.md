@@ -3,7 +3,7 @@
 ## Tech Stack
 - **Flutter**: 3.50+ (stable channel; CI pins 3.50.1)
 - **Dart**: 3.14.0+
-- **Platforms**: Android, iOS, plus the Wear OS (`android/wear`) and Apple Watch (`ios/EndurainWatch`) companion apps
+- **Platforms**: Android, iOS, plus the Wear OS (`android/wear`) and Apple Watch (`ios/EndurainWatch`) companion apps (iOS 17.0+, watchOS 10.0+; Android `minSdk` 26, Wear OS `minSdk` 30). Android/Wear dependency and plugin versions are in `android/gradle/libs.versions.toml`; shared Kotlin is split into `android/watch_shared/common` (phone and watch) and `android/watch_shared/watch` (watch only)
 - **State Management**: view-model controllers extending `SafeNotifier` (`lib/shared/state/safe_notifier.dart`), wired in a composition root (`AppServices`, `lib/app/modules`, `lib/app/navigation/app_screens.dart`); features receive dependencies through constructors, never through `AppScope`/`AppServices`
 - **UI Toolkit**: `material_ui` and `cupertino_ui` packages (not the core-SDK `material.dart`/`cupertino.dart`)
 - **Map Provider**: OpenStreetMap (flutter_map + latlong2)
@@ -81,7 +81,7 @@ lib/
 │   ├── auth/                  # secure_storage_service.dart, session store
 │   ├── location/              # location_service.dart
 │   ├── theme/
-│   └── ...                    # config, constants, diagnostics, models, network, services, utils
+│   └── ...                    # config, constants, diagnostics, models, network, services (incl. services/platform/ adapters and the map tile-source settings repository), utils
 ├── app/                       # Composition root: AppServices, modules/, navigation/, widgets/ (app_bottom_nav.dart)
 ├── features/
 │   ├── map/
@@ -93,7 +93,7 @@ lib/
 │   │   ├── screens/           # settings_screen.dart, server_settings_screen.dart
 │   │   └── services/
 │   └── ...                    # account_migration, activity, auth, health, sensors, watch
-├── shared/                    # adaptive/, layout/, state/
+├── shared/                    # adaptive/, layout/, map/ (shared tile layer with OSM attribution), state/
 └── l10n/                      # app_en.arb, app_<code>.arb, README.md
 ```
 
@@ -114,8 +114,10 @@ invent synonyms (no `Manager`, `ViewModel`, `Helper`, or `DAO`).
 Rules:
 - **Repository vs Store**: the *Repository* is the swappable public seam; the
   *Store* is its persistence backend. Add a Store only when there is real
-  persistence to isolate — features with no database (e.g. `map`, `sensors`,
-  `settings`) expose only a Repository. When both exist, the repository owns
+  persistence to isolate — features with no database (e.g. `sensors`,
+  `settings`) expose only a Repository. The map's tile-source settings
+  (`MapSettingsRepository`) live in `lib/core/services` because both the map
+  and the activity feature read them. When both exist, the repository owns
   the store and no other layer touches the store directly.
 - **Screens delegate to a Controller.** Do not read/write a repository from a
   screen with `setState`; hold a `SafeNotifier` controller instead. App-
@@ -147,11 +149,17 @@ before working around it:
 - `feature_boundary_guard_test.dart`: no feature imports another feature's
   `…Store`, and stores are used only in repositories, services and the
   composition root.
+- `feature_coupling_guard_test.dart`: `lib/features/auth` and
+  `lib/features/activity` never import `lib/features/map` (the map already
+  imports activity, so that would be a cycle); `lib/features/settings` imports
+  no activity code and only the listed health entry points.
 - `map_activity_coupling_guard_test.dart`: the map imports only
   `activity_recording_controller.dart` and `activity_recording_overlay.dart`
   from the activity feature.
-- `file_size_guard_test.dart`: source files stay under 500 lines; larger
-  legacy files are capped at their current size and may only shrink.
+- `file_size_guard_test.dart`: source files stay under 500 lines, across `lib`,
+  the Android phone, Wear OS and `watch_shared/{common,watch}` Kotlin sources
+  and the iOS Swift sources; the few larger legacy Dart files are capped at
+  their current size and may only shrink.
 - `design_system_migration_guard_test.dart`: use `material_ui`/`cupertino_ui`;
   the legacy core-SDK Material/Cupertino imports and the generated
   `AppLocalizations.localizationsDelegates` are not allowed (use

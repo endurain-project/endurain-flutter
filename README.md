@@ -18,7 +18,6 @@
 
 - [What is Endurain mobile app?](#what-is-endurain-mobile-app)
 - [Current Features](#current-features)
-- [Roadmap](#roadmap)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Health Platform Permissions](#health-platform-permissions)
@@ -65,7 +64,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Optional start countdown (with a spoken option) and movement-based auto-pause, both configured in Settings
 - Metric or imperial units, chosen in Settings
 - GPS track capture with elapsed-time tracking across pauses and resumes
-- Background location tracking while a recording is active, including Android foreground-service notification support and iOS Always-location guidance
+- Background location tracking while a recording is active, including Android foreground-service notification support (the Android 13+ notification permission is requested right before the first recording or start countdown, not at launch) and iOS Always-location guidance
 - Location permission and disabled-location error handling, including app settings shortcut
 - Stop confirmation flow with discard option
 - GPX 1.1 generation from completed tracks
@@ -73,7 +72,7 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Completed activity retention in private app storage (SQLite metadata store + GPX files), including local summary metadata, GPX availability, and upload state
 - Non-destructive post-upload flow with `Done`, `View history`, retry, and explicit delete actions
 - Richer local post-recording summary shown on the map when a recording completes, before or after upload: activity type, start time, duration, distance, average pace/speed, max speed, elevation gain, and GPS point count. Max speed and elevation gain are persisted and also shown on the saved activity details screen
-- Durable upload recovery: a finished activity is always saved locally first. Transient network, timeout, and server failures remain eligible for automatic recovery by an app-lifetime upload queue on app resume or restored connectivity. Validation, authentication, configuration, and missing-file failures stay available for explicit manual retry instead of looping on every resume. The retry state is persisted: after each transient failure the next attempt waits 1 minute, doubling up to 6 hours, and survives app restarts. Drain requests received during an active run trigger a follow-up scan so newly imported activities are not stranded
+- Durable upload recovery: a finished activity is always saved locally first. Transient network, timeout, and server failures remain eligible for automatic recovery by an app-lifetime upload queue on app resume or restored connectivity. Validation, authentication, configuration, and missing-file failures stay available for explicit manual retry instead of looping on every resume. The retry state is persisted: after each transient failure the next attempt waits 1 minute, doubling up to 6 hours, and survives app restarts. While the app is open, a timer set for the earliest due retry runs it without waiting for a resume or a connectivity change. Drain requests received during an active run trigger a follow-up scan so newly imported activities are not stranded
 - Forward-compatible upload de-duplication: each upload carries the local activity id as an `Idempotency-Key` request header. This is fully optional on the server — Endurain servers that do not recognize the header simply ignore it and uploads work unchanged, while a server that adopts it can de-duplicate automatically retried uploads with no app changes
 - Local activity history and details screens for completed recordings saved on the device, with incremental pagination
 - Activity route preview map on the details screen, drawn from the retained GPX file on OpenStreetMap tiles (shown while the GPX is still stored on the device)
@@ -126,18 +125,14 @@ The app is designed with privacy in mind, connecting directly to your self-hoste
 - Platform-native health controls: Material checkboxes for Android batch selection, whole-row selection with trailing checkmarks on iOS, switches only for immediate settings, accurate sport glyphs on both platforms, and tested dark-mode/200% text layouts
 - Local SSO provider icon assets with remote icon fallback
 
-## Roadmap
-
-Planned work is tracked in [devdocs/roadmap.md](devdocs/roadmap.md). See [Local Activity Storage Design](#local-activity-storage-design) below for the current on-device storage design behind activity recording and retention.
-
 ## Tech Stack
 
 - **Framework:** Flutter 3.50+ (Dart 3.14+)
-- **Platforms:** iOS 15.0+ (with an Apple Watch app for watchOS 10.0+), Android 8.0+ (`minSdk` 26) and Wear OS 3+ (`minSdk` 30)
+- **Platforms:** iOS 17.0+ (with an Apple Watch app for watchOS 10.0+), Android 8.0+ (`minSdk` 26) and Wear OS 3+ (`minSdk` 30)
 - **State Management:** Focused view-model controllers (extending `SafeNotifier`, a guarded `ChangeNotifier`) wired in a composition root (`AppServices`, `lib/app`); features receive their dependencies through constructors
 - **UI Toolkit:** `material_ui` and `cupertino_ui`, the standalone Material and Cupertino packages, behind the adaptive widgets in `lib/shared/adaptive`
 - **Navigation:** `go_router` for top-level, auth-guarded routing that redirects off the session state and is ready for deep links
-- **Map Provider:** OpenStreetMap with `flutter_map` and `latlong2`
+- **Map Provider:** OpenStreetMap with `flutter_map` and `latlong2`; every map shows the tile source's attribution (the OpenStreetMap credit for the default source)
 - **Location Services:** `geolocator`, including position streams and movement heading
 - **Connectivity:** `connectivity_plus` to retry pending activity uploads when the network returns
 - **File Sharing:** `share_plus` for the OS share sheet used by GPX file export
@@ -210,7 +205,7 @@ flutter devices
 flutter run -d <android-device-id>
 ```
 
-The Android build scripts use Kotlin DSL (`.kts` files). The AGP 9 opt-outs `android.builtInKotlin=false` and `android.newDsl=false` stay in `android/gradle.properties` on purpose: Flutter's Gradle tooling re-adds them on every `flutter build apk`, and Flutter plugins still apply `org.jetbrains.kotlin.android` and the legacy variant API. The Kotlin plugin is therefore applied explicitly (version 2.4.21 in `settings.gradle.kts`). Once the Flutter tool stops adding the flags, they can be removed. Current Android builds can still show upstream plugin warnings; if the debug build succeeds, track them with dependency updates rather than editing files in the local pub cache.
+The Android build scripts use Kotlin DSL (`.kts` files). The AGP 9 opt-outs `android.builtInKotlin=false` and `android.newDsl=false` stay in `android/gradle.properties` on purpose: Flutter's Gradle tooling re-adds them on every `flutter build apk`, and Flutter plugins still apply `org.jetbrains.kotlin.android` and the legacy variant API. The Kotlin plugin is therefore applied explicitly (version 2.4.21 in `settings.gradle.kts`). Dependency versions, the Android Gradle plugin and the Kotlin version for both the phone and Wear OS builds are declared once, in the shared version catalog `android/gradle/libs.versions.toml`. Once the Flutter tool stops adding the flags, they can be removed. Current Android builds can still show upstream plugin warnings; if the debug build succeeds, track them with dependency updates rather than editing files in the local pub cache.
 
 ### Android Health Sync Availability
 
@@ -266,7 +261,11 @@ the release whose feature uses it.
 
 After an app update adds a new Health Connect permission, existing users must
 open Health sync and authorize access again; Android does not add the new grant
-automatically.
+automatically. Health Connect stops showing its permission dialog after two
+denials, so the Health access screen then offers a button that opens the Health
+Connect permission screen (or the app's system settings if that screen cannot be
+opened). The sensor screens likewise offer a button that opens the system
+settings when Bluetooth access is blocked.
 
 ## SSO/OAuth Callback
 
@@ -284,7 +283,7 @@ A successful sign-in returns a `session_id` query parameter, which the app excha
 com.endurain.endurain:/auth/sso/callback?session_id=...
 ```
 
-A failed sign-in returns an `error` parameter instead (for example `sso_email_unverified`). The app shows a specific message only for the failure codes the server documents and a generic one for anything else.
+A failed sign-in returns an `error` parameter instead (for example `sso_email_unverified`). The app shows a specific message only for the failure codes the server documents and a generic one for anything else. A callback, success or error, that arrives when no single sign-on is in progress is ignored, so another app cannot cancel a sign-in or spend its PKCE verifier on a forged `session_id`.
 
 The old `endurain://auth/sso/callback` address is no longer registered, so links to it do not open the app.
 
@@ -303,7 +302,7 @@ The app keeps a local diagnostics report to help investigate field issues when a
 
 Diagnostics are stored only in the app's private support directory and are never uploaded automatically. The report starts with a header naming the app version, build mode, platform, OS version, and device model. It then keeps up to 150 high-level breadcrumbs: app startup and lifecycle (consecutive changes are folded into one entry), screen changes and router redirects, session changes with their reason, token refreshes that failed, failed HTTP requests, single sign-on steps, errors shown to the user, activity recording start/pause/resume/stop, uploads, health sync, point-count milestones, and catchable Flutter/Dart errors.
 
-The report is built to be safe to share. It never records GPS coordinates, the device's name or identifiers, server addresses, or message text from the server. An HTTP request is recorded by endpoint template only (`/api/v1/auth/sessions/:id/tokens`), a route outside the app's own as `unmatched`, and an error by its type, code, and HTTP status. Token-like values, home/container paths, and coordinate-looking strings are also scrubbed before saving. The report is written atomically, so closing the app mid-write cannot corrupt it or turn collection off.
+The report is built to be safe to share. It never records GPS coordinates, the device's name or identifiers, server addresses, or message text from the server. Hosts and IP addresses in socket errors, email addresses, and the credentials in `Authorization` values (`Bearer`, `Basic`, `Digest`) are scrubbed too. An HTTP request is recorded by endpoint template only (`/api/v1/auth/sessions/:id/tokens`), a route outside the app's own as `unmatched`, and an error by its type, code, and HTTP status. Token-like values, home/container paths, and coordinate-looking strings are also scrubbed before saving. The report is written atomically, so closing the app mid-write cannot corrupt it or turn collection off.
 
 Separately, **opt-in remote crash reporting** can forward captured Flutter/Dart errors to Endurain's managed diagnostics service. It is off by default and fully independent of local diagnostics — the user may enable neither, either, or both. Reporting uses the Sentry protocol and always targets the managed Endurain diagnostics endpoint (`diagnostics.endurain.com`); there is no user-configurable DSN. The same privacy redaction applied to local diagnostics scrubs error payloads before they leave the device, and nothing is transmitted until the user opts in and the managed endpoint is configured in the build.
 
@@ -360,7 +359,10 @@ flutter test
 ### What CI verifies (and what it does not)
 
 CI runs a Flutter version pin check (the `Version pins` job), formatting, Dart
-analysis, the Dart test suite with a coverage threshold (80% overall and 60%
+analysis, a dead-code check (`dart run tool/check_dead_code.dart`, which fails
+when a public declaration in `lib/` is referenced nowhere in `lib/`; justified
+exceptions go in `.github/dead-code-allowlist.txt` with a reason), the Dart
+test suite with a coverage threshold (80% overall and 60%
 per file), the Kotlin unit tests, Android lint (`:app:lintDebug`) for the phone
 app, and a debug Android build. It also builds, tests and lints the Wear OS app
 (a separate Gradle build, see [Wear OS app](#wear-os-app)). The `Integration`
@@ -371,11 +373,15 @@ pull requests: `Conventional Commits` validates the PR title and every commit
 verifies the accepted agreement.
 
 A separate iOS workflow builds the app for the simulator, runs the native
-XCTests in `ios/RunnerTests` and the integration tests on a macOS runner. macOS
-runners are the most expensive, so it does not run on pull requests: it runs on
-pushes to `main` and can be started by hand from the Actions tab
-(`workflow_dispatch`) to check a branch before merging. It takes about 15
-minutes, so for quicker feedback while changing `ios/**`, build locally first:
+XCTests in `ios/RunnerTests`, the Apple Watch unit tests in
+`ios/EndurainWatchTests` (the `EndurainWatch` scheme on a watchOS simulator)
+and the integration tests on a macOS runner. macOS runners are the most
+expensive, so on pull requests it runs only when a change can break iOS or
+watchOS: `ios/**`, `lib/**`, `pubspec.yaml`, `pubspec.lock`, `.flutter-version`,
+`test/fixtures/**`, `integration_test/**` or the workflow itself. It also runs
+on pushes to `main` and can be started by hand from the Actions tab
+(`workflow_dispatch`). It takes about 15 minutes, so for quicker feedback while
+changing `ios/**`, build locally first:
 
 ```bash
 # Compiles the Swift sources, the embedded Apple Watch app and the Xcode
@@ -454,7 +460,9 @@ finished session to the iPhone over WatchConnectivity. The iPhone keeps it in
 a durable inbox (`ios/Runner/Watch`) until Endurain has stored it as a local
 activity, which then uploads like any other; only then is the watch told to
 delete its copy. Code shared by both apps (the transfer protocol, the handoff
-envelope and the file stores) lives in `ios/Shared/Watch`.
+envelope and the file stores) lives in `ios/Shared/Watch`; the logging, the
+HealthKit activity mapping and the location-manager configuration both apps use
+are in `ios/Shared/Platform`.
 
 - The watch app's bundle identifier is `com.endurain.endurain.watchkitapp`,
   with the HealthKit capability. Register it for the development team before
@@ -467,8 +475,9 @@ envelope and the file stores) lives in `ios/Shared/Watch`.
 - Workouts without a GPS route (location denied, or no fix) stay queued on
   both devices, because the server does not accept a GPX without track points
   yet. The watch keeps every workout until the phone confirms it, and sends a
-  delivered workout again if the phone has not confirmed it within 10
-  minutes, the next time the watch syncs (the phone ignores duplicates).
+  delivered workout again if the phone has not confirmed it, the next time
+  the watch syncs (the phone ignores duplicates). The first resend waits 10
+  minutes and each later one twice as long, up to 24 hours.
 - Health Sync skips every workout the watch app saved to Health, so a watch
   workout is never imported twice.
 
@@ -531,7 +540,9 @@ over the Wearable Data Layer. The phone app keeps it in a durable inbox
 until Endurain has stored it as a local activity, which then uploads like
 any other; only then does the watch delete its copy. Code shared by both
 apps (the protocol, the handoff envelope and the file stores) lives in
-`android/watch_shared`.
+`android/watch_shared/common`, which both Gradle builds compile. Code only the
+watch uses (the recording model and the handoff builder) is in
+`android/watch_shared/watch`, which only the Wear OS build compiles.
 
 A "Start workout" tile opens the app. While a workout runs, its ongoing
 activity shows the elapsed time and whether it is paused. Starting a workout
@@ -627,7 +638,7 @@ lib/
 │   ├── location/             # Location service and settings
 │   ├── models/               # Shared app models and exception types
 │   ├── network/              # API client, HTTP policies, and connectivity
-│   ├── services/             # Preferences store and platform wrappers
+│   ├── services/             # Preferences store, map tile-source settings, and platform wrappers (platform/)
 │   ├── theme/                # Theme configuration and tokens
 │   └── utils/                # Validators, dialogs, error localization, platform helpers
 ├── features/                 # Each feature: controllers, models, repositories, screens, services, widgets (as needed)
@@ -635,18 +646,19 @@ lib/
 │   ├── activity/             # Recording, local storage, upload queue, history and details
 │   ├── auth/                 # Login, MFA, SSO, and session controllers
 │   ├── health/               # HealthKit/Health Connect import, sync, and access screens
-│   ├── map/                  # Map screen, map settings, and location state
+│   ├── map/                  # Map screen, tile-server settings, and location state
 │   ├── sensors/              # Bluetooth heart-rate, power, and cadence/speed sensors
 │   ├── settings/             # Settings and server configuration screens
 │   └── watch/                # Apple Watch and Wear OS handoff inbox
 ├── shared/
 │   ├── adaptive/             # Material/Cupertino adaptive components
 │   ├── layout/               # Large-screen and readable-width layout helpers
+│   ├── map/                  # Shared map tile layer with the source attribution
 │   └── state/                # SafeNotifier and controller ownership helpers
 └── l10n/                     # ARB files and generated localizations
 test/
 ├── app/                      # Composition root, modules, and navigation tests
-├── architecture/             # Architecture guard tests (layering, boundaries, file size)
+├── architecture/             # Architecture guard tests (layering, boundaries, feature coupling, file size)
 ├── core/                     # Unit tests for services, models, and utilities
 ├── features/                 # Feature unit and widget tests
 ├── fixtures/                 # Shared JSON test vectors (also run by the Kotlin and Swift tests)
@@ -659,13 +671,19 @@ tool/                         # Coverage threshold and dead-code utilities
 android/
 ├── app/                      # Phone app: native recorder, foreground service, Kotlin unit tests
 ├── wear/                     # Wear OS app (separate Gradle build)
-└── watch_shared/             # Kotlin code shared by the phone and Wear OS apps
+├── watch_shared/
+│   ├── common/               # Kotlin shared by the phone and Wear OS apps
+│   └── watch/                # Kotlin used only by the Wear OS app
+└── gradle/libs.versions.toml # Version catalog: Android/Wear dependency, AGP and Kotlin versions
 ios/
 ├── Runner/                   # iPhone app: native recorder, HealthKit, watch inbox
-├── RunnerTests/              # XCTests
+├── RunnerTests/              # XCTests for the iPhone app and the shared Swift code
 ├── EndurainWatch/            # Apple Watch app
-└── Shared/                   # Swift code shared by the iPhone and Apple Watch apps
-devdocs/                      # Roadmap and developer notes
+├── EndurainWatchTests/       # Apple Watch unit tests (EndurainWatch scheme)
+└── Shared/                   # Swift code shared by the iPhone and Apple Watch apps (Watch/, Platform/)
+docker/
+└── flutter-build/            # Dockerfile of the CI builder image
+.github/                      # Workflows, composite actions, CI scripts, dead-code allowlist
 ```
 
 ## Local Activity Storage Design

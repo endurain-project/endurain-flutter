@@ -131,10 +131,11 @@ dev_dependencies:
   # Generate app icons for all platforms
   flutter_launcher_icons: ^0.14.4
 
-# geolocator_linux 0.2.6, the latest, still requires dbus ^0.7, which blocks
-# universal_ble >=3.1.1 and connectivity_plus >=7.3.2 (both need dbus ^0.8).
-# The app builds only for Android and iOS, so geolocator_linux is never built
-# into it. Remove this once a geolocator_linux release accepts dbus ^0.8.
+# geolocator_linux 0.2.6, the latest, still requires dbus ^0.7.3. universal_ble
+# 3.4.x depends on bluez ^0.9.0, which requires dbus ^0.8.0, so the two cannot
+# resolve together. The app builds only for Android and iOS, so
+# geolocator_linux is never built into it. Remove this once a geolocator_linux
+# release accepts dbus ^0.8.
 dependency_overrides:
   dbus: ^0.8.0
 

@@ -75,6 +75,7 @@ multi-environment requirement that the current approach cannot satisfy.
 - iOS should render through `cupertino_ui` widgets where supported.
 - Import `material_ui`/`cupertino_ui`, never the core-SDK `material.dart`/`cupertino.dart`, and use `appLocalizationsDelegates` rather than the generated `localizationsDelegates`.
 - Do not hand-roll platform visual effects, custom glass/blur surfaces, or platform-lookalike widgets when native Flutter families do not expose that behavior.
+- Use `adaptive_choice_picker.dart` for single-choice lists (a Cupertino action sheet on Apple platforms, a dialog elsewhere) instead of building a per-screen picker.
 - Add a new adaptive primitive only when the pattern repeats across features.
 
 ## Platform And Mobile Best Practices
@@ -82,12 +83,13 @@ multi-environment requirement that the current approach cannot satisfy.
 - Put plugin calls behind injectable adapters before they appear in controllers or screens.
 - Handle permissions, denial states, unavailable services, and platform exceptions gracefully.
 - Keep permission declarations aligned with actual behavior. Request and describe background location only as the native background recorder uses it (Android foreground service, iOS background location).
+- Android and Wear OS dependency, Android Gradle plugin and Kotlin versions live in `android/gradle/libs.versions.toml`; Kotlin shared by the phone and Wear OS apps is in `android/watch_shared/common`, watch-only Kotlin in `android/watch_shared/watch`.
 - Keep release identifiers production-looking and consistent across Android and iOS.
 - Do not sign Android release builds with debug keys.
 
 ## Architecture Guards
 
-`test/architecture/` fails `flutter test` when a rule is broken: no `AppScope`/`AppServices` in `lib/features`; `AppServices` and the auth session services (`AuthService`, `SsoService`, `ApiClient`, `AuthSessionStore`) are constructed only in the composition root and auth infrastructure; feature controllers extend `SafeNotifier`; `core`/`shared` do not import `features`/`app`; no cross-feature `…Store` imports; the map imports only two activity entry points; source files stay under 500 lines (legacy files are capped); no legacy core-SDK Material/Cupertino imports; Android manifest, Health Connect permissions and backup exclusions stay consistent. Read the guard before working around it.
+`test/architecture/` fails `flutter test` when a rule is broken: no `AppScope`/`AppServices` in `lib/features`; `AppServices` and the auth session services (`AuthService`, `SsoService`, `ApiClient`, `AuthSessionStore`) are constructed only in the composition root and auth infrastructure; feature controllers extend `SafeNotifier`; `core`/`shared` do not import `features`/`app`; no cross-feature `…Store` imports; `auth` and `activity` never import `map`, and `settings` imports no activity code (`feature_coupling_guard_test.dart`); the map imports only two activity entry points; source files stay under 500 lines across Dart, Android, Wear OS, `watch_shared` and iOS sources (a few legacy Dart files are capped); no legacy core-SDK Material/Cupertino imports; Android manifest, Health Connect permissions and backup exclusions stay consistent. Read the guard before working around it.
 
 ## Testing And Validation
 

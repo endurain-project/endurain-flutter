@@ -69,6 +69,9 @@ flutter analyze
 flutter test --coverage
 # Thresholds plus the exclusion list in .github/coverage-excludes.txt
 .github/scripts/check_coverage.sh
+# Fails when a public declaration in lib/ is referenced nowhere in lib/;
+# justified exceptions go in .github/dead-code-allowlist.txt, with a reason
+dart run tool/check_dead_code.dart
 ```
 
 Android (the `Android unit tests` and `Android build` jobs; needs the Android
@@ -85,9 +88,23 @@ flutter build apk --config-only
 flutter build apk --debug --target-platform android-arm64
 ```
 
+iOS and watchOS (the `iOS` workflow runs them on a macOS runner for pull
+requests that touch `ios/**`, `lib/**`, the pubspec files, `.flutter-version`,
+`test/fixtures/**` or `integration_test/**`, and on pushes to `main`; needs
+Xcode, and the first command generates the Xcode configuration):
+
+```bash
+flutter build ios --simulator --debug --config-only
+# Pick a simulator with `xcrun simctl list devices available`
+xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner \
+  -destination 'platform=iOS Simulator,name=<iPhone simulator>' CODE_SIGNING_ALLOWED=NO
+xcodebuild test -workspace ios/Runner.xcworkspace -scheme EndurainWatch \
+  -destination 'platform=watchOS Simulator,name=<Apple Watch simulator>' CODE_SIGNING_ALLOWED=NO
+```
+
 On-device smoke tests (the `Integration` workflow runs them on an Android
 emulator for changes to `lib/`, `android/` or `integration_test/`; the iOS ones
-run in the iOS workflow on pushes to `main`). Start an emulator or simulator,
+run in the iOS workflow). Start an emulator or simulator,
 then:
 
 ```bash
