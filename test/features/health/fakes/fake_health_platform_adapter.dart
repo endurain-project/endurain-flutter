@@ -3,6 +3,7 @@ import 'package:endurain/features/health/models/health_authorization_status.dart
 import 'package:endurain/features/health/models/health_data_access_details.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/models/health_workout.dart';
+import 'package:endurain/features/health/models/health_workout_changes.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 
 /// Configurable fake [HealthPlatformAdapter] for use in unit and widget tests.
@@ -33,8 +34,22 @@ class FakeHealthPlatformAdapter implements HealthPlatformAdapter {
   Future<HealthAuthorizationStatus>? currentAuthorizationStatusFuture;
   HealthDataAccessDetails accessDetails;
 
+  /// Returned by [workoutChangesToken]; each call takes the next one.
+  List<String> changesTokens = const ['token-1'];
+
+  /// Returned by [workoutChangesSince], by token; a missing token throws.
+  Map<String, HealthWorkoutChanges> changesByToken = {};
+
+  bool backgroundReadAccess = true;
+
+  /// What [requestBackgroundReadAccess] grants.
+  bool backgroundReadAccessOnRequest = true;
+
   // Call counters
   int getSdkStatusCallCount = 0;
+  int workoutChangesTokenCallCount = 0;
+  int requestBackgroundReadAccessCallCount = 0;
+  final List<String> changesSinceTokens = [];
   int requestAuthorizationCallCount = 0;
   int currentAuthorizationStatusCallCount = 0;
   int readWorkoutsCallCount = 0;
@@ -129,5 +144,36 @@ class FakeHealthPlatformAdapter implements HealthPlatformAdapter {
       }
     }
     return List.unmodifiable(result);
+  }
+
+  @override
+  Future<String> workoutChangesToken() async {
+    final token =
+        changesTokens[workoutChangesTokenCallCount.clamp(
+          0,
+          changesTokens.length - 1,
+        )];
+    workoutChangesTokenCallCount++;
+    return token;
+  }
+
+  @override
+  Future<HealthWorkoutChanges> workoutChangesSince(String token) async {
+    changesSinceTokens.add(token);
+    final changes = changesByToken[token];
+    if (changes == null) {
+      throw StateError('No changes programmed for token $token');
+    }
+    return changes;
+  }
+
+  @override
+  Future<bool> hasBackgroundReadAccess() async => backgroundReadAccess;
+
+  @override
+  Future<bool> requestBackgroundReadAccess() async {
+    requestBackgroundReadAccessCallCount++;
+    backgroundReadAccess = backgroundReadAccessOnRequest;
+    return backgroundReadAccess;
   }
 }

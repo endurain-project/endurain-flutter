@@ -15,7 +15,6 @@ class FakeHealthSyncService implements HealthSyncService {
   List<HealthWorkout> workouts;
   int routeConsentDeniedCountValue;
   bool olderWorkoutsUnavailableValue = false;
-  bool autoSyncOnResumeEnabled = false;
   HealthDataAccessDetails accessDetailsValue;
   DateTime? lastSyncAtValue;
   List<HealthImportedWorkout> importedWorkouts = const [];
@@ -150,19 +149,10 @@ class FakeHealthSyncService implements HealthSyncService {
   }
 
   @override
-  Future<bool> isAutoSyncOnResumeEnabled() async => autoSyncOnResumeEnabled;
-
-  @override
-  Future<void> setAutoSyncOnResumeEnabled(bool enabled) async {
-    autoSyncOnResumeEnabled = enabled;
-  }
-
-  @override
   Future<void> disconnect() async {
     _maybeThrow();
     disconnectCallCount++;
     authStatus = HealthAuthorizationStatus.notDetermined;
-    autoSyncOnResumeEnabled = false;
   }
 
   @override

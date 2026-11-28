@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Starting a workout on Wear OS while another app is recording one asks for confirmation first, because Health Services ends the other app's workout.
 - When Precise Location is off, the iPhone and Apple Watch apps ask for temporary precise location while recording. Recording continues if the user declines.
 - On iPhone, a recording in progress shows its elapsed time, distance and pace (or speed) on the Lock Screen and in the Dynamic Island, and whether it is paused. It can be turned off in the iPhone's Settings for Endurain under Live Activities.
+- Health Sync can import new workouts in the background, without the app being opened. The "Import automatically" toggle (formerly "Auto-sync on resume") also covers background imports.
+  - On Android, turning it on asks for Health Connect's background read permission (`READ_HEALTH_DATA_IN_BACKGROUND`). With the permission, WorkManager checks for new workouts about once an hour. Without it, workouts still import when the app opens.
+  - On iPhone, HealthKit wakes the app when a new workout or workout route is saved (background delivery).
+  - Each automatic import reads only the workouts added or changed since the last one: Health Connect changes tokens on Android, HealthKit anchored queries on iOS. The first import, or one after a token expires, reads the window since the last sync as before.
 - Every map shows its tile source's attribution: the OpenStreetMap credit for the default source, and the server's attribution (or the host name) for a custom one.
 - The Health access screen opens the Health Connect permission screen when Android no longer shows the permission dialog. The sensor screens, and a new Bluetooth row on Device Access, open the system settings when Bluetooth access is blocked.
 - The Health Connect permission rationale screen links to the [mobile app privacy policy](https://docs.endurain.com/privacy/mobile-app-privacy-policy/), in every language.

@@ -1128,10 +1128,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get healthSyncReviewAccess => '查看访问权限';
 
   @override
-  String get healthSyncAutoSyncTitle => '打开应用时自动同步';
+  String get healthSyncAutoSyncTitle => '自动导入';
 
   @override
-  String get healthSyncAutoSyncSubtitle => '打开应用时自动导入新的锻炼。';
+  String get healthSyncAutoSyncSubtitle => '新的锻炼：在打开应用时导入，若获允许也会在后台导入。';
 
   @override
   String get healthSyncNoRoutesExplanation =>
@@ -2556,10 +2556,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get healthSyncReviewAccess => '檢查存取權限';
 
   @override
-  String get healthSyncAutoSyncTitle => '開啟應用程式時自動同步';
+  String get healthSyncAutoSyncTitle => '自動匯入';
 
   @override
-  String get healthSyncAutoSyncSubtitle => '開啟應用程式時自動匯入新的運動。';
+  String get healthSyncAutoSyncSubtitle => '新的運動：在開啟應用程式時匯入，若獲允許也會在背景匯入。';
 
   @override
   String get healthSyncNoRoutesExplanation =>

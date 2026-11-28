@@ -10,6 +10,7 @@ import 'package:endurain/shared/adaptive/adaptive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../health/fakes/fake_health_auto_sync_service.dart';
 import '../../health/fakes/fake_health_sync_service.dart';
 
 void main() {
@@ -121,6 +122,7 @@ void main() {
     );
     final healthController = HealthSyncController(
       service: FakeHealthSyncService(sdkStatus: HealthSdkStatus.unsupported),
+      autoSync: FakeHealthAutoSyncService(),
     );
     addTearDown(controller.dispose);
     addTearDown(healthController.dispose);
@@ -268,4 +270,5 @@ class _FakeLocationPlatformAdapter implements LocationPlatformAdapter {
 /// Sync is off). Never loaded, so it needs no teardown.
 HealthSyncController _idleHealthController() => HealthSyncController(
   service: FakeHealthSyncService(sdkStatus: HealthSdkStatus.unsupported),
+  autoSync: FakeHealthAutoSyncService(),
 );

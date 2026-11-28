@@ -1221,12 +1221,11 @@ class AppLocalizationsBg extends AppLocalizations {
   String get healthSyncReviewAccess => 'Прегледай достъпа';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Автоматично синхронизиране при отваряне';
+  String get healthSyncAutoSyncTitle => 'Автоматично импортиране';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Автоматично импортира нови тренировки, когато приложението се отвори.';
+      'Нови тренировки – при отваряне на приложението и, ако е разрешено, във фонов режим.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

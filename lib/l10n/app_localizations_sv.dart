@@ -1211,12 +1211,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get healthSyncReviewAccess => 'Granska åtkomst';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automatisk synkronisering när appen öppnas';
+  String get healthSyncAutoSyncTitle => 'Importera automatiskt';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importera nya träningspass automatiskt när appen öppnas.';
+      'Nya träningspass när appen öppnas och, om det är tillåtet, i bakgrunden.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

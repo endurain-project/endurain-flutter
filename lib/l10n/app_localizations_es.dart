@@ -1224,11 +1224,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get healthSyncReviewAccess => 'Revisar acceso';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Sincronización automática al abrir';
+  String get healthSyncAutoSyncTitle => 'Importar automáticamente';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importa nuevos entrenamientos automáticamente cuando se abre la aplicación.';
+      'Entrenamientos nuevos, al abrir la aplicación y, si se permite, en segundo plano.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

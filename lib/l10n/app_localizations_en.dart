@@ -1196,11 +1196,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get healthSyncReviewAccess => 'Review access';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Auto-sync on resume';
+  String get healthSyncAutoSyncTitle => 'Import automatically';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Import new workouts automatically when the app opens.';
+      'New workouts, when the app opens and, if allowed, in the background.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

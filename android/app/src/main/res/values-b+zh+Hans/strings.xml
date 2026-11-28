@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">记录提醒</string>
     <string name="activity_recording_alert_channel_description">当 Endurain 在后台运行且记录停止时显示。</string>
     <string name="health_rationale_title">Endurain 健康数据</string>
-    <string name="health_rationale_usage">Endurain 读取锻炼、路线、心率和距离，仅用于导入所选活动。</string>
+    <string name="health_rationale_usage">Endurain 读取锻炼、路线、心率和距离，仅用于导入活动：所选活动，以及开启自动导入后在后台导入的新活动。</string>
     <string name="health_rationale_storage">所选路线数据存储在此设备上，并且只会上传到您连接的 Endurain 服务器。</string>
     <string name="health_rationale_privacy_policy">隐私政策</string>
 </resources>

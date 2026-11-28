@@ -58,10 +58,10 @@ class HealthSyncAvailableView extends StatelessWidget {
                     AdaptiveSwitchListTile(
                       title: l10n.healthSyncAutoSyncTitle,
                       subtitle: automationSubtitle,
-                      value: state.autoSyncOnResume,
+                      value: state.autoSync,
                       onChanged: state.isImporting || state.isUpdatingAutoSync
                           ? null
-                          : controller.setAutoSyncOnResume,
+                          : controller.setAutoSync,
                     ),
                   ],
                 ),

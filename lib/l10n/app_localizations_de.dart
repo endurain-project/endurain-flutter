@@ -1230,12 +1230,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get healthSyncReviewAccess => 'Zugriff prüfen';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Beim Öffnen automatisch synchronisieren';
+  String get healthSyncAutoSyncTitle => 'Automatisch importieren';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Neue Trainings automatisch importieren, wenn die App geöffnet wird.';
+      'Neue Trainings beim Öffnen der App und, falls erlaubt, im Hintergrund.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

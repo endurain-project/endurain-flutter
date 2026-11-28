@@ -1221,12 +1221,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get healthSyncReviewAccess => 'Hozzáférés áttekintése';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automatikus szinkronizálás megnyitáskor';
+  String get healthSyncAutoSyncTitle => 'Automatikus importálás';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Új edzések automatikus importálása az alkalmazás megnyitásakor.';
+      'Új edzések az alkalmazás megnyitásakor és, ha engedélyezett, a háttérben.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

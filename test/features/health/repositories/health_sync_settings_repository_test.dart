@@ -51,33 +51,54 @@ void main() {
       });
     });
 
-    group('isAutoSyncOnResumeEnabled', () {
+    group('isAutoSyncEnabled', () {
       test('defaults to false when no value is stored', () async {
         final repo = makeRepo();
-        expect(await repo.isAutoSyncOnResumeEnabled(profileA), isFalse);
+        expect(await repo.isAutoSyncEnabled(profileA), isFalse);
       });
 
-      test('setAutoSyncOnResumeEnabled round-trips', () async {
+      test('setAutoSyncEnabled round-trips', () async {
         final repo = makeRepo();
-        await repo.setAutoSyncOnResumeEnabled(profileA, true);
-        expect(await repo.isAutoSyncOnResumeEnabled(profileA), isTrue);
-        expect(await repo.isAutoSyncOnResumeEnabled(profileB), isFalse);
-        await repo.setAutoSyncOnResumeEnabled(profileA, false);
-        expect(await repo.isAutoSyncOnResumeEnabled(profileA), isFalse);
+        await repo.setAutoSyncEnabled(profileA, true);
+        expect(await repo.isAutoSyncEnabled(profileA), isTrue);
+        expect(await repo.isAutoSyncEnabled(profileB), isFalse);
+        await repo.setAutoSyncEnabled(profileA, false);
+        expect(await repo.isAutoSyncEnabled(profileA), isFalse);
       });
     });
 
     test('clearForProfile removes both settings for that profile', () async {
       final repo = makeRepo();
       await repo.setConnected(profileA, true);
-      await repo.setAutoSyncOnResumeEnabled(profileA, true);
+      await repo.setAutoSyncEnabled(profileA, true);
       await repo.setConnected(profileB, true);
 
       await repo.clearForProfile(profileA);
 
       expect(await repo.isConnected(profileA), isFalse);
-      expect(await repo.isAutoSyncOnResumeEnabled(profileA), isFalse);
+      expect(await repo.isAutoSyncEnabled(profileA), isFalse);
       expect(await repo.isConnected(profileB), isTrue);
+    });
+
+    test('the workout changes token is kept per profile', () async {
+      final repo = makeRepo();
+      expect(await repo.workoutChangesToken(profileA), isNull);
+
+      await repo.setWorkoutChangesToken(profileA, 'token-a');
+
+      expect(await repo.workoutChangesToken(profileA), 'token-a');
+      expect(await repo.workoutChangesToken(profileB), isNull);
+    });
+
+    test('clearForProfile removes the workout changes token', () async {
+      final repo = makeRepo();
+      await repo.setWorkoutChangesToken(profileA, 'token-a');
+      await repo.setWorkoutChangesToken(profileB, 'token-b');
+
+      await repo.clearForProfile(profileA);
+
+      expect(await repo.workoutChangesToken(profileA), isNull);
+      expect(await repo.workoutChangesToken(profileB), 'token-b');
     });
   });
 
@@ -85,31 +106,31 @@ void main() {
     test('moves both settings and removes the old ones', () async {
       final repo = makeRepo();
       await repo.setConnected(profileA, true);
-      await repo.setAutoSyncOnResumeEnabled(profileA, true);
+      await repo.setAutoSyncEnabled(profileA, true);
 
       await repo.moveProfile(fromProfileId: profileA, toProfileId: profileB);
 
       expect(await repo.isConnected(profileB), isTrue);
-      expect(await repo.isAutoSyncOnResumeEnabled(profileB), isTrue);
+      expect(await repo.isAutoSyncEnabled(profileB), isTrue);
       expect(await repo.isConnected(profileA), isFalse);
-      expect(await repo.isAutoSyncOnResumeEnabled(profileA), isFalse);
+      expect(await repo.isAutoSyncEnabled(profileA), isFalse);
     });
 
     test('keeps a value the target already has', () async {
       final repo = makeRepo();
-      await repo.setAutoSyncOnResumeEnabled(profileA, true);
-      await repo.setAutoSyncOnResumeEnabled(profileB, false);
+      await repo.setAutoSyncEnabled(profileA, true);
+      await repo.setAutoSyncEnabled(profileB, false);
 
       await repo.moveProfile(fromProfileId: profileA, toProfileId: profileB);
 
-      expect(await repo.isAutoSyncOnResumeEnabled(profileB), isFalse);
+      expect(await repo.isAutoSyncEnabled(profileB), isFalse);
     });
 
     test('is a no-op when there is nothing to move', () async {
       final repo = makeRepo();
       await repo.moveProfile(fromProfileId: profileA, toProfileId: profileB);
       expect(await repo.isConnected(profileB), isFalse);
-      expect(await repo.isAutoSyncOnResumeEnabled(profileB), isFalse);
+      expect(await repo.isAutoSyncEnabled(profileB), isFalse);
     });
   });
 }

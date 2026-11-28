@@ -144,6 +144,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     // enableEdgeToEdge() for MainActivity and the Health Connect rationale.
     implementation(libs.androidx.activity)
+    // Periodic background import of Health Connect workouts
+    // (HealthBackgroundSyncWorker), run on the app's or a headless engine.
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.kotlinx.coroutines.android)
 
     if (watchLinkEnabled) {
         implementation(libs.play.services.wearable)
@@ -156,6 +160,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
     testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.work.testing)
 }
 
 kotlin {

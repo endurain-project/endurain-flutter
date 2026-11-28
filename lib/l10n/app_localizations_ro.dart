@@ -1241,11 +1241,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get healthSyncReviewAccess => 'Verificați accesul';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Sincronizare automată la deschidere';
+  String get healthSyncAutoSyncTitle => 'Importă automat';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Importă automat antrenamentele noi când se deschide aplicația.';
+      'Antrenamentele noi, la deschiderea aplicației și, dacă este permis, în fundal.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Salvestamise hoiatused</string>
     <string name="activity_recording_alert_channel_description">Kuvatakse, kui salvestamine peatub ajal, mil Endurain töötab taustal.</string>
     <string name="health_rationale_title">Endurain\'i terviseandmed</string>
-    <string name="health_rationale_usage">Endurain loeb treeninguid, marsruute, pulssi ja vahemaad ainult valitud tegevuste importimiseks.</string>
+    <string name="health_rationale_usage">Endurain loeb treeninguid, marsruute, pulssi ja vahemaad ainult tegevuste importimiseks: valitud tegevuste ja automaatse importimise korral ka uute tegevuste taustal.</string>
     <string name="health_rationale_storage">Valitud marsruutide andmed salvestatakse sellesse seadmesse ja laaditakse üles ainult Endurain\'i serverisse, millega ühenduse loote.</string>
     <string name="health_rationale_privacy_policy">Privaatsuspoliitika</string>
 </resources>

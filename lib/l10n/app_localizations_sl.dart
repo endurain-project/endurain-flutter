@@ -1238,11 +1238,11 @@ class AppLocalizationsSl extends AppLocalizations {
   String get healthSyncReviewAccess => 'Preglej dostop';
 
   @override
-  String get healthSyncAutoSyncTitle => 'Samodejna sinhronizacija ob odprtju';
+  String get healthSyncAutoSyncTitle => 'Samodejno uvozi';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Samodejno uvozite nove vadbe, ko se aplikacija odpre.';
+      'Nove vadbe, ko se aplikacija odpre in, če je dovoljeno, v ozadju.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

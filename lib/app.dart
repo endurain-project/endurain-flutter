@@ -94,8 +94,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       // and recorded inside the queue.
       unawaited(_services.activity.uploadQueue.drain());
       // If the user enabled auto-sync, import any new workouts from the health
-      // platform silently. Best-effort failures are contained and recorded
-      // without depending on mutable Health Sync screen state.
+      // platform silently, and keep its background trigger in line with the
+      // setting and permissions. Best-effort failures are contained and
+      // recorded without depending on mutable Health Sync screen state.
       if (_services.config.healthSyncEnabled) {
         unawaited(_autoSyncHealthOnResume());
       }
@@ -119,7 +120,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
   Future<void> _autoSyncHealthOnResume() async {
     try {
-      await _services.health.syncService.autoSyncOnResume();
+      await _services.health.autoSyncService.syncOnResume();
     } catch (error) {
       _services.infra.diagnostics.recordBreadcrumbSync(
         DiagnosticsEvents.healthAutoSyncFailed,

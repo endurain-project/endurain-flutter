@@ -7,6 +7,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.endurain.endurain.activity.ActivityRecorderChannel
 import com.endurain.endurain.activity.NotificationPermissionGate
+import com.endurain.endurain.health.HealthBackgroundSyncChannel
+import com.endurain.endurain.health.HealthBackgroundSyncRunner
+import com.endurain.endurain.health.HealthBackgroundSyncWorker
 import com.endurain.endurain.watch.WatchInbox
 import com.endurain.endurain.watch.WatchLinkFactory
 import com.endurain.endurain.watch.WatchTransportChannel
@@ -18,6 +21,7 @@ class MainActivity : FlutterFragmentActivity() {
     private var deviceMeasurementSystemChannel: DeviceMeasurementSystemChannel? = null
     private var healthConnectSettingsChannel: HealthConnectSettingsChannel? = null
     private var watchTransportChannel: WatchTransportChannel? = null
+    private var healthBackgroundSyncChannel: HealthBackgroundSyncChannel? = null
 
     /**
      * Asks for the Android 13+ notification permission when Dart requests it
@@ -73,6 +77,15 @@ class MainActivity : FlutterFragmentActivity() {
         ).also {
             it.register(flutterEngine.dartExecutor.binaryMessenger)
         }
+        // Background health imports run on this engine while Dart listens.
+        healthBackgroundSyncChannel = HealthBackgroundSyncChannel(
+            setScheduled = { HealthBackgroundSyncWorker.schedule(applicationContext, it) },
+            onListen = HealthBackgroundSyncRunner::listen,
+            // Only a headless engine reports a finished run.
+            onFinished = {},
+        ).also {
+            it.register(flutterEngine.dartExecutor.binaryMessenger)
+        }
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
@@ -86,6 +99,11 @@ class MainActivity : FlutterFragmentActivity() {
         notificationPermissionGate.cancelPending()
         watchTransportChannel?.unregister()
         watchTransportChannel = null
+        healthBackgroundSyncChannel?.let {
+            HealthBackgroundSyncRunner.stopListening(it)
+            it.unregister()
+        }
+        healthBackgroundSyncChannel = null
         super.cleanUpFlutterEngine(flutterEngine)
     }
 

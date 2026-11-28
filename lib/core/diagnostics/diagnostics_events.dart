@@ -71,6 +71,10 @@ class DiagnosticsEvents {
   static const String activityUploadRetryFailed =
       'activity.upload_retry_failed';
   static const String healthAutoSyncFailed = 'health.auto_sync_failed';
+  static const String healthBackgroundSyncFailed =
+      'health.background_sync_failed';
+  static const String healthBackgroundScheduleFailed =
+      'health.background_schedule_failed';
   static const String healthAuthRequested = 'health.auth_requested';
   static const String healthListImportable = 'health.list_importable';
   static const String healthImportWorkouts = 'health.import_workouts';

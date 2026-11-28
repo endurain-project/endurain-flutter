@@ -1206,12 +1206,11 @@ class AppLocalizationsLt extends AppLocalizations {
   String get healthSyncReviewAccess => 'Peržiūrėti prieigą';
 
   @override
-  String get healthSyncAutoSyncTitle =>
-      'Automatinis sinchronizavimas atidarius';
+  String get healthSyncAutoSyncTitle => 'Importuoti automatiškai';
 
   @override
   String get healthSyncAutoSyncSubtitle =>
-      'Automatiškai importuoti naujas treniruotes atidarius programą.';
+      'Naujas treniruotes atidarius programą ir, jei leidžiama, fone.';
 
   @override
   String get healthSyncNoRoutesExplanation =>

@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Alertas de grabación</string>
     <string name="activity_recording_alert_channel_description">Se muestra cuando una grabación se detiene mientras Endurain está en segundo plano.</string>
     <string name="health_rationale_title">Datos de salud de Endurain</string>
-    <string name="health_rationale_usage">Endurain lee entrenamientos, rutas, frecuencia cardíaca y distancia solo para importar las actividades seleccionadas.</string>
+    <string name="health_rationale_usage">Endurain lee entrenamientos, rutas, frecuencia cardíaca y distancia solo para importar actividades: las seleccionadas y, con la importación automática activada, las nuevas en segundo plano.</string>
     <string name="health_rationale_storage">Los datos de las rutas seleccionadas se guardan en este dispositivo y solo se suben al servidor de Endurain al que te conectes.</string>
     <string name="health_rationale_privacy_policy">Política de privacidad</string>
 </resources>

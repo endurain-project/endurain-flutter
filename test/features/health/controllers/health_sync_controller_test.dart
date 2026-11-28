@@ -14,6 +14,7 @@ import 'package:endurain/features/health/models/health_workout.dart';
 import 'package:endurain/features/health/models/health_workout_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../fakes/fake_health_auto_sync_service.dart';
 import '../fakes/fake_health_sync_service.dart';
 
 void main() {
@@ -40,6 +41,7 @@ void main() {
     );
     controller = HealthSyncController(
       service: service,
+      autoSync: FakeHealthAutoSyncService(),
       diagnostics: const NoopDiagnosticsRecorder(),
     );
   });
@@ -51,6 +53,7 @@ void main() {
       final localService = FakeHealthSyncService();
       final localController = HealthSyncController(
         service: localService,
+        autoSync: FakeHealthAutoSyncService(),
         diagnostics: const NoopDiagnosticsRecorder(),
       );
 
@@ -193,6 +196,7 @@ void main() {
         controller.dispose();
         controller = HealthSyncController(
           service: service,
+          autoSync: FakeHealthAutoSyncService(),
           diagnostics: const NoopDiagnosticsRecorder(),
           uploadCompletedSignal: uploadCompleted.stream,
         );

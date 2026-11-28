@@ -221,9 +221,13 @@ Health Connect settings. On Android, Health Connect's permission rationale scree
 [mobile app privacy policy](https://docs.endurain.com/privacy/mobile-app-privacy-policy/).
 
 On iOS, the Runner target requires the HealthKit capability
-(`com.apple.developer.healthkit`), `NSHealthShareUsageDescription`, and
+(`com.apple.developer.healthkit`) with background delivery
+(`com.apple.developer.healthkit.background-delivery`, which the App ID's
+provisioning profile must include), `NSHealthShareUsageDescription`, and
 `NSHealthUpdateUsageDescription` (the iPhone and the Apple Watch app both
-request share access, see below). For Health sync, Endurain requests read access
+request share access, see below). Background delivery lets HealthKit wake the
+app when a workout or workout route is saved, so automatic import runs without
+the app being opened. For Health sync, Endurain requests read access
 to:
 
 - Workouts, to discover activity sessions and their start/end times.
@@ -252,6 +256,10 @@ On Android, the manifest declares these Health Connect permissions:
 - `READ_HEALTH_DATA_HISTORY`, to read beyond Health Connect's standard 30-day
   window. Endurain requests this only when the selected range reaches older
   data and falls back to the readable recent window if the user declines.
+- `READ_HEALTH_DATA_IN_BACKGROUND`, for automatic import while the app is not
+  in the foreground (periodic WorkManager work). Endurain requests it only when
+  the user turns automatic import on. Without it, automatic import runs only
+  when the app opens.
 
 Endurain does not request `READ_STEPS` or `READ_TOTAL_CALORIES_BURNED`:
 nothing in the app uses step counts or calories, and Google Play rejects Health

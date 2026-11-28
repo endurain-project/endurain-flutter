@@ -18,6 +18,7 @@ void main() {
         'android.permission.health.READ_HEART_RATE',
         'android.permission.health.READ_EXERCISE_ROUTES',
         'android.permission.health.READ_HEALTH_DATA_HISTORY',
+        'android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND',
       }),
     );
     expect(
@@ -42,6 +43,7 @@ void main() {
       'android.permission.health.READ_HEART_RATE',
       'android.permission.health.READ_EXERCISE_ROUTES',
       'android.permission.health.READ_HEALTH_DATA_HISTORY',
+      'android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND',
     });
   });
 

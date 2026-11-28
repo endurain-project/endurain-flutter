@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Alerte de înregistrare</string>
     <string name="activity_recording_alert_channel_description">Afișată când o înregistrare se oprește în timp ce Endurain rulează în fundal.</string>
     <string name="health_rationale_title">Datele de sănătate Endurain</string>
-    <string name="health_rationale_usage">Endurain citește antrenamente, trasee, ritm cardiac și distanță doar pentru a importa activitățile selectate.</string>
+    <string name="health_rationale_usage">Endurain citește antrenamente, trasee, ritm cardiac și distanță doar pentru a importa activități: cele selectate și, cu importul automat activat, cele noi în fundal.</string>
     <string name="health_rationale_storage">Datele traseelor selectate sunt stocate pe acest dispozitiv și încărcate doar pe serverul Endurain la care vă conectați.</string>
     <string name="health_rationale_privacy_policy">Politica de confidențialitate</string>
 </resources>

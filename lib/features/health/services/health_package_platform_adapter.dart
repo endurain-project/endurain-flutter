@@ -4,10 +4,12 @@ import 'package:endurain/features/health/models/health_authorization_status.dart
 import 'package:endurain/features/health/models/health_data_access_details.dart';
 import 'package:endurain/features/health/models/health_sdk_status.dart';
 import 'package:endurain/features/health/models/health_workout.dart';
+import 'package:endurain/features/health/models/health_workout_changes.dart';
 import 'package:endurain/features/health/services/health_heart_rate_index.dart';
 import 'package:endurain/features/health/services/health_platform_adapter.dart';
 import 'package:endurain/features/health/services/health_read_failure.dart';
 import 'package:endurain/features/health/services/health_read_window.dart';
+import 'package:endurain/features/health/services/health_workout_changes_reader.dart';
 import 'package:endurain/features/health/services/health_workout_mapper.dart';
 import 'package:endurain/features/health/services/heart_rate_series_reader.dart';
 import 'package:flutter/foundation.dart';
@@ -31,6 +33,10 @@ const _androidWorkoutSummaryReadTypes = [HealthDataType.DISTANCE_DELTA];
 /// per workout instead of through the plugin, so readings HealthKit condensed
 /// into a series are not reduced to one value each. If it fails, the plugin
 /// read is used instead.
+///
+/// Workout changes are read through `workoutChangesReader` when given (iOS,
+/// where the plugin has no change tracking), and otherwise through the
+/// plugin's Health Connect changes token.
 class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
   HealthPackagePlatformAdapter({
     Health? health,
@@ -38,14 +44,19 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
     TargetPlatform Function()? targetPlatform,
     DateTime Function()? now,
     HeartRateSeriesReader? heartRateSeriesReader,
+    HealthWorkoutChangesReader? workoutChangesReader,
   }) : _health = health ?? Health(),
        _diagnostics = diagnostics ?? const NoopDiagnosticsRecorder(),
        _targetPlatform = targetPlatform ?? _defaultTargetPlatform,
        _now = now ?? DateTime.now,
-       _heartRateSeriesReader = heartRateSeriesReader;
+       _heartRateSeriesReader = heartRateSeriesReader,
+       _injectedChangesReader = workoutChangesReader;
 
   final Health _health;
   final HeartRateSeriesReader? _heartRateSeriesReader;
+  final HealthWorkoutChangesReader? _injectedChangesReader;
+  late final HealthWorkoutChangesReader _changesReader =
+      _injectedChangesReader ?? HealthConnectWorkoutChangesReader(_health);
   final DiagnosticsRecorder _diagnostics;
   final TargetPlatform Function() _targetPlatform;
   final DateTime Function() _now;
@@ -313,6 +324,60 @@ class HealthPackagePlatformAdapter implements HealthPlatformAdapter {
       rethrow;
     } catch (e) {
       throw healthReadFailed(e);
+    }
+  }
+
+  // ── Change tracking & background access ─────────────────────────────────
+
+  @override
+  Future<String> workoutChangesToken() async {
+    try {
+      await _ensureConfigured();
+      return await _changesReader.currentToken();
+    } catch (error) {
+      throw healthReadFailed(error);
+    }
+  }
+
+  @override
+  Future<HealthWorkoutChanges> workoutChangesSince(String token) async {
+    try {
+      await _ensureConfigured();
+      return await _changesReader.changesSince(token);
+    } catch (error) {
+      throw healthReadFailed(error);
+    }
+  }
+
+  @override
+  Future<bool> hasBackgroundReadAccess() async {
+    if (_targetPlatform() == TargetPlatform.iOS) return true;
+    if (_targetPlatform() != TargetPlatform.android) return false;
+    try {
+      await _ensureConfigured();
+      return await _health.isHealthDataInBackgroundAvailable() &&
+          await _health.isHealthDataInBackgroundAuthorized();
+    } catch (error) {
+      throw healthReadFailed(error);
+    }
+  }
+
+  @override
+  Future<bool> requestBackgroundReadAccess() async {
+    if (_targetPlatform() == TargetPlatform.iOS) return true;
+    if (_targetPlatform() != TargetPlatform.android) return false;
+    try {
+      await _ensureConfigured();
+      // Without the feature (an older Health Connect), reads only work while
+      // the app is in the foreground.
+      if (!await _health.isHealthDataInBackgroundAvailable()) return false;
+      if (await _health.isHealthDataInBackgroundAuthorized()) return true;
+      return await _health.requestHealthDataInBackgroundAuthorization();
+    } catch (error) {
+      if (isHealthPlatformUnavailable(error)) {
+        throw AppException(AppErrorCode.healthUnavailable, cause: error);
+      }
+      throw AppException(AppErrorCode.healthPermissionDenied, cause: error);
     }
   }
 

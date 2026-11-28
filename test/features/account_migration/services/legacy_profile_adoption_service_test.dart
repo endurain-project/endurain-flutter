@@ -74,7 +74,7 @@ void main() {
       localActivityId: id,
     );
     await healthSettings.setConnected(profileId, true);
-    await healthSettings.setAutoSyncOnResumeEnabled(profileId, true);
+    await healthSettings.setAutoSyncEnabled(profileId, true);
   }
 
   Future<void> expectAdopted(String legacyId, {String id = 'run-1'}) async {
@@ -89,7 +89,7 @@ void main() {
       id,
     );
     expect(await healthSettings.isConnected(_current), isTrue);
-    expect(await healthSettings.isAutoSyncOnResumeEnabled(_current), isTrue);
+    expect(await healthSettings.isAutoSyncEnabled(_current), isTrue);
     expect(await healthSettings.isConnected(legacyId), isFalse);
   }
 

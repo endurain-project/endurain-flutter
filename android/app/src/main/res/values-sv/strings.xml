@@ -9,7 +9,7 @@
     <string name="activity_recording_alert_channel_name">Inspelningsvarningar</string>
     <string name="activity_recording_alert_channel_description">Visas när en inspelning stoppas medan Endurain körs i bakgrunden.</string>
     <string name="health_rationale_title">Hälsodata i Endurain</string>
-    <string name="health_rationale_usage">Endurain läser träningspass, rutter, puls och distans endast för att importera valda aktiviteter.</string>
+    <string name="health_rationale_usage">Endurain läser träningspass, rutter, puls och distans endast för att importera aktiviteter: valda och, när automatisk import är på, nya i bakgrunden.</string>
     <string name="health_rationale_storage">Data för valda rutter lagras på den här enheten och laddas bara upp till den Endurain-server du ansluter till.</string>
     <string name="health_rationale_privacy_policy">Integritetspolicy</string>
 </resources>
